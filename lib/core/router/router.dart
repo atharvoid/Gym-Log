@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../shared/widgets/app_shell.dart';
 import '../../shared/widgets/placeholder_screen.dart';
 import '../../features/workout/presentation/screens/log_screen.dart';
 import '../../features/workout/presentation/screens/active_workout_screen.dart';
@@ -10,7 +11,7 @@ final routerProvider = Provider<GoRouter>((ref) {
     initialLocation: '/log',
     routes: [
       ShellRoute(
-        builder: (context, state, child) => child,
+        builder: (context, state, child) => AppShell(child: child),
         routes: [
           GoRoute(path: '/log', builder: (c, s) => const LogScreen()),
           GoRoute(path: '/history', builder: (c, s) => const PlaceholderScreen(title: 'History')),
