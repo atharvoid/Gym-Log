@@ -11,8 +11,7 @@ dependencies:
 
   # DB
   drift: ^2.18.0
-  drift_flutter: ^0.2.0
-  sqlite3_flutter_libs: ^0.5.0
+  sqlite3_flutter_libs: ^0.5.42
 
   # State
   flutter_riverpod: ^2.5.0
@@ -24,6 +23,7 @@ dependencies:
   # Auth
   supabase_flutter: ^2.5.0
   flutter_secure_storage: ^9.0.0
+  google_sign_in: ^6.2.0
 
   # Exercise data / media
   cached_network_image: ^3.3.0
@@ -46,9 +46,13 @@ dependencies:
   freezed_annotation: ^2.4.0
   json_annotation: ^4.9.0
   shared_preferences: ^2.2.0
-  connectivity_plus: ^5.0.0
-  vibration: ^1.9.0
+  connectivity_plus: ^7.1.1
+  vibration: ^3.1.8
   path_provider: ^2.1.0
+  flutter_web_plugins:
+    sdk: flutter
+  flutter_dotenv: ^6.0.1
+  path: ^1.9.1
 
 dev_dependencies:
   flutter_test:
@@ -65,4 +69,5 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   assets:
+    - .env
     - assets/db/

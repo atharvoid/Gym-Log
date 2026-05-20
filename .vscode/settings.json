@@ -1,4 +1,5 @@
 {
     "dart.flutterSdkPath": "C:\\puro\\envs\\stable\\flutter",
-    "dart.sdkPath": "C:\\puro\\envs\\stable\\flutter\\bin\\cache\\dart-sdk"
+    "dart.sdkPath": "C:\\puro\\envs\\stable\\flutter\\bin\\cache\\dart-sdk",
+    "cmake.sourceDirectory": "C:/Users/Atharva Patil/Documents/projects/gymlog/linux"
 }

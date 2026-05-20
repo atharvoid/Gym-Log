@@ -6,9 +6,9 @@ import 'active_workout_bar.dart';
 import 'bottom_nav_bar.dart';
 
 /// [app_shell.dart]
-/// Purpose: App shell with persistent bottom nav and active workout bar
+/// Purpose: High-Density Tracker - App shell with bottom nav
 /// Dependencies: flutter/material.dart, flutter_riverpod, app_colors.dart
-/// Last modified: Track 0, Step 0.7
+/// Last modified: High-Density Tracker Overhaul
 
 class AppShell extends ConsumerWidget {
   final Widget child;
@@ -16,11 +16,19 @@ class AppShell extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isWorkoutActive = ref.watch(activeWorkoutProvider.select((s) => s.isActive));
+    final isWorkoutActive = ref.watch(activeWorkoutProvider) != null;
 
     return Scaffold(
       backgroundColor: AppColors.bgBase,
-      body: child,
+      body: SafeArea(
+        bottom: false,
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 600),
+            child: child,
+          ),
+        ),
+      ),
       bottomNavigationBar: Column(
         mainAxisSize: MainAxisSize.min,
         children: [

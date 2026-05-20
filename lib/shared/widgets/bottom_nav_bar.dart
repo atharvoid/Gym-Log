@@ -1,21 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../core/theme/app_colors.dart';
-import '../../core/theme/app_typography.dart';
 
 /// [bottom_nav_bar.dart]
-/// Purpose: Brutalist bottom navigation bar with active state
-/// Dependencies: flutter/material.dart, go_router, app_colors.dart, app_typography.dart
-/// Last modified: Track 0, Step 0.6
+/// Purpose: High-Density Tracker - 3-tab navigation (Home, Workout, Profile)
+/// Dependencies: flutter/material.dart, go_router, google_fonts, app_colors.dart
+/// Last modified: High-Density Tracker Overhaul
 
 class BottomNavBar extends StatelessWidget {
   const BottomNavBar({super.key});
 
   static const _tabs = [
-    _NavItem(icon: Icons.fitness_center, label: 'Log', path: '/log'),
-    _NavItem(icon: Icons.history, label: 'History', path: '/history'),
-    _NavItem(icon: Icons.list, label: 'Routines', path: '/routines'),
-    _NavItem(icon: Icons.show_chart, label: 'Analytics', path: '/analytics'),
+    _NavItem(icon: Icons.home_filled, label: 'Home', path: '/'),
+    _NavItem(icon: Icons.fitness_center, label: 'Routines', path: '/workout'),
     _NavItem(icon: Icons.person, label: 'Profile', path: '/profile'),
   ];
 
@@ -25,21 +23,12 @@ class BottomNavBar extends StatelessWidget {
 
     return Container(
       decoration: const BoxDecoration(
-        color: AppColors.bgSurface,
-        border: Border(
-          top: BorderSide(color: AppColors.border, width: 2),
-        ),
-        boxShadow: [
-          BoxShadow(
-            offset: Offset(0, -3),
-            color: AppColors.accent,
-            blurRadius: 0,
-          ),
-        ],
+        color: AppColors.bgBase,
       ),
       child: SafeArea(
+        top: false,
         child: SizedBox(
-          height: 64,
+          height: 72,
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: _tabs.map((tab) {
@@ -80,30 +69,23 @@ class _NavButton extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-        decoration: isActive
-            ? BoxDecoration(
-                color: AppColors.accent,
-                border: const Border.symmetric(
-                  vertical: BorderSide(color: AppColors.border, width: 2),
-                ),
-              )
-            : null,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
               item.icon,
-              color: isActive ? AppColors.accentFg : AppColors.textSecondary,
-              size: 22,
+              color: isActive ? AppColors.accentPrimary : AppColors.textSecondary,
+              size: 26,
             ),
             const SizedBox(height: 2),
             Text(
               item.label,
-              style: AppTypography.label(context).copyWith(
-                color: isActive ? AppColors.accentFg : AppColors.textSecondary,
-                fontSize: 10,
+              style: GoogleFonts.inter(
+                color: isActive ? AppColors.accentPrimary : AppColors.textSecondary,
+                fontWeight: FontWeight.w500,
+                fontSize: 11,
               ),
             ),
           ],
@@ -112,3 +94,4 @@ class _NavButton extends StatelessWidget {
     );
   }
 }
+

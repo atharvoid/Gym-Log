@@ -1,7 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:go_router/go_router.dart';
 import 'package:gymlog/core/theme/app_colors.dart';
 import 'package:gymlog/features/workout/presentation/providers/active_workout_provider.dart';
+import 'package:gymlog/features/workout/presentation/providers/workout_timer_provider.dart';
+import 'package:gymlog/shared/widgets/ui/primary_button.dart';
+import 'package:gymlog/core/database/database.dart';
+import 'package:gymlog/shared/widgets/ui/secondary_button.dart';
+import 'package:gymlog/features/exercises/presentation/screens/exercise_selection_screen.dart';
+import 'package:gymlog/features/exercises/presentation/providers/exercises_provider.dart';
 import '../widgets/exercise_block.dart';
 
 class ActiveWorkoutScreen extends ConsumerStatefulWidget {
@@ -13,225 +21,198 @@ class ActiveWorkoutScreen extends ConsumerStatefulWidget {
 }
 
 class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
-  late TextEditingController _nameController;
-  late Stopwatch _stopwatch;
-  late Duration _elapsedTime;
-
-  @override
-  void initState() {
-    super.initState();
-    _nameController = TextEditingController(text: 'My Workout');
-    _stopwatch = Stopwatch()..start();
-    _elapsedTime = Duration.zero;
-    _startTimer();
+  Future<void> _confirmDiscard() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppColors.bgSurface,
+        title: Text('Discard Workout?',
+            style: GoogleFonts.inter(color: AppColors.textPrimary)),
+        content: Text('All progress will be lost.',
+            style: GoogleFonts.inter(color: AppColors.textSecondary)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text('Cancel',
+                style: GoogleFonts.inter(color: AppColors.textSecondary)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text('Discard',
+                style: GoogleFonts.inter(color: AppColors.error)),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true && mounted) {
+      ref.read(activeWorkoutProvider.notifier).discardWorkout();
+      Navigator.pop(context);
+    }
   }
 
-  void _startTimer() {
-    Future.doWhile(() async {
-      await Future.delayed(const Duration(seconds: 1));
-      if (mounted) {
-        setState(() {
-          _elapsedTime = _stopwatch.elapsed;
-        });
-      }
-      return mounted;
-    });
-  }
-
-  String _formatDuration(Duration duration) {
-    final hours = duration.inHours;
-    final minutes = duration.inMinutes.remainder(60);
-    final seconds = duration.inSeconds.remainder(60);
-    return '${hours.toString().padLeft(1, '0')}:${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
-  }
-
-  @override
-  void dispose() {
-    _nameController.dispose();
-    _stopwatch.stop();
-    super.dispose();
+  Future<void> _finish() async {
+    await ref.read(activeWorkoutProvider.notifier).finishWorkout();
+    if (mounted) context.go('/');
   }
 
   @override
   Widget build(BuildContext context) {
+    final workout = ref.watch(activeWorkoutProvider);
+    final notifier = ref.read(activeWorkoutProvider.notifier);
+    final timer = ref.watch(workoutTimerProvider);
+    final exercisesAsync = ref.watch(exerciseListProvider);
+
     return Scaffold(
       backgroundColor: AppColors.bgBase,
       body: Column(
         children: [
-          // Top bar
+          // Header
           Container(
             color: AppColors.bgSurface,
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             child: SafeArea(
+              bottom: false,
               child: Row(
                 children: [
+                  // Discard
+                  IconButton(
+                    icon: const Icon(Icons.close, color: AppColors.textPrimary),
+                    onPressed: _confirmDiscard,
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                  ),
+                  const Spacer(),
                   // Timer
                   Text(
-                    _formatDuration(_elapsedTime),
-                    style: const TextStyle(
-                      fontFamily: 'monospace',
+                    timer,
+                    style: GoogleFonts.inter(
                       color: AppColors.textPrimary,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
-                  const SizedBox(width: 16),
+                  const Spacer(),
+                  // Finish
+                  PrimaryButton(
+                    label: 'Finish',
+                    onPressed: _finish,
+                    isFullWidth: false,
+                  ),
+                ],
+              ),
+            ),
+          ),
 
-                  // Editable name
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: () {
-                        showDialog(
-                          context: context,
-                          builder: (context) => AlertDialog(
-                            backgroundColor: AppColors.bgSurface,
-                            title: const Text(
-                              'Workout Name',
-                              style: TextStyle(color: AppColors.textPrimary),
-                            ),
-                            content: TextField(
-                              controller: _nameController,
-                              style: const TextStyle(
-                                color: AppColors.textPrimary,
-                              ),
-                              decoration: InputDecoration(
-                                filled: true,
-                                fillColor: AppColors.bgElevated,
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                  borderSide:
-                                      const BorderSide(color: AppColors.border),
+          // Body
+          Expanded(
+            child: workout == null
+                ? const Center(child: SizedBox.shrink())
+                : ListView.builder(
+                    padding: const EdgeInsets.only(top: 8, bottom: 24),
+                    itemCount: workout.exercises.length + 1,
+                    itemBuilder: (context, index) {
+                      if (index == workout.exercises.length) {
+                        // Footer
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 8),
+                          child: SecondaryButton(
+                            label: '+ Add Exercise',
+                            onPressed: () async {
+                              final selected =
+                                  await Navigator.push<Exercise>(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) =>
+                                      const ExerciseSelectionScreen(),
                                 ),
-                              ),
-                            ),
-                            actions: [
-                              TextButton(
-                                onPressed: () => Navigator.pop(context),
-                                child: const Text('Cancel',
-                                    style: TextStyle(
-                                        color: AppColors.textSecondary)),
-                              ),
-                              TextButton(
-                                onPressed: () {
-                                  setState(() {});
-                                  Navigator.pop(context);
-                                },
-                                child: const Text('Save',
-                                    style:
-                                        TextStyle(color: AppColors.accent)),
-                              ),
-                            ],
+                              );
+                              if (selected != null && mounted) {
+                                notifier.addExercise(
+                                  selected.id,
+                                  selected.name,
+                                );
+                              }
+                            },
                           ),
                         );
-                      },
-                      child: Text(
-                        _nameController.text,
-                        style: const TextStyle(
-                          color: AppColors.textPrimary,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
+                      }
+
+                      final exercise = workout.exercises[index];
+                      final driftEx = exercisesAsync.maybeWhen(
+                        data: (list) => list.firstWhere(
+                          (e) => e.id == exercise.exerciseId,
+                          orElse: () => Exercise(
+                            id: exercise.exerciseId,
+                            name: exercise.name,
+                            bodyPart: '',
+                            equipment: '',
+                            target: '',
+                            isCustom: false,
+                          ),
                         ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-
-                  // Finish button
-                  ElevatedButton(
-                    onPressed: () {
-                      ref
-                          .read(activeWorkoutProvider.notifier)
-                          .finishWorkout();
-                      Navigator.pop(context);
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.accent,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 8,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                    child: const Text(
-                      'Finish',
-                      style: TextStyle(fontSize: 12),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-
-          // Body - scrollable exercises
-          Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.only(bottom: 80),
-              child: Column(
-                children: [
-                  // Mock exercise data for demo
-                  ExerciseBlock(
-                    exerciseId: 1,
-                    exerciseName: 'Bench Press',
-                    muscleGroup: 'Chest',
-                    numSets: 3,
-                    onRemove: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Exercise removed')),
+                        orElse: () => Exercise(
+                          id: exercise.exerciseId,
+                          name: exercise.name,
+                          bodyPart: '',
+                          equipment: '',
+                          target: '',
+                          isCustom: false,
+                        ),
                       );
-                    },
-                    onReplace: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Replace exercise')),
-                      );
-                    },
-                    onAddNote: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Add note')),
+                      return ExerciseBlock(
+                        exerciseIndex: index,
+                        exercise: exercise,
+                        driftExercise: driftEx,
+                        onRemove: () => notifier.removeExercise(index),
+                        onReplace: () async {
+                          final selected = await Navigator.push<Exercise>(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) =>
+                                  const ExerciseSelectionScreen(),
+                            ),
+                          );
+                          if (selected != null && mounted) {
+                            notifier.replaceExercise(
+                              index,
+                              selected.id,
+                              selected.name,
+                            );
+                          }
+                        },
+                        onAddNote: () {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Add note')),
+                          );
+                        },
+                        onAddSet: () => notifier.addSet(index),
+                        onSetChanged: (updatedSet) {
+                          final setIdx =
+                              exercise.sets.indexWhere((s) => s.id == updatedSet.id);
+                          if (setIdx != -1) {
+                            notifier.updateSet(
+                              index,
+                              setIdx,
+                              weight: updatedSet.weightKg,
+                              reps: updatedSet.reps,
+                              type: updatedSet.setType,
+                            );
+                          }
+                        },
+                        onToggleSetCompletion: () {
+                          // Toggle the first uncompleted set, or last set if all done
+                          final targetIdx = exercise.sets.indexWhere((s) => !s.isCompleted);
+                          notifier.toggleSetCompletion(
+                            index,
+                            targetIdx == -1 ? exercise.sets.length - 1 : targetIdx,
+                          );
+                        },
                       );
                     },
                   ),
-                  ExerciseBlock(
-                    exerciseId: 2,
-                    exerciseName: 'Incline Dumbbell Press',
-                    muscleGroup: 'Upper Chest',
-                    numSets: 3,
-                    onRemove: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Exercise removed')),
-                      );
-                    },
-                    onReplace: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Replace exercise')),
-                      );
-                    },
-                    onAddNote: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Add note')),
-                      );
-                    },
-                  ),
-                ],
-              ),
-            ),
           ),
         ],
-      ),
-
-      // FAB
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Add exercise')),
-          );
-        },
-        backgroundColor: AppColors.accent,
-        label: const Text('Add Exercise'),
-        icon: const Icon(Icons.add),
       ),
     );
   }
