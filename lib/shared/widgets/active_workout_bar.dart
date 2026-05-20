@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../core/theme/app_colors.dart';
-import '../../core/theme/app_typography.dart';
 
 /// [active_workout_bar.dart]
-/// Purpose: Persistent active workout bar shown above bottom nav
-/// Dependencies: flutter/material.dart, go_router, app_colors.dart, app_typography.dart
-/// Last modified: Track 0, Step 0.7
+/// Purpose: High-Density Tracker - Active workout indicator (solid purple, no gradient)
+/// Dependencies: flutter/material.dart, go_router, google_fonts, app_colors.dart
+/// Last modified: High-Density Tracker Overhaul
 
 class ActiveWorkoutBar extends StatelessWidget {
   const ActiveWorkoutBar({super.key});
@@ -16,24 +16,26 @@ class ActiveWorkoutBar extends StatelessWidget {
     return GestureDetector(
       onTap: () => context.push('/workout/active'),
       child: Container(
-        height: 48,
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: const BoxDecoration(
-          color: AppColors.accentGreen,
-          border: Border(
-            top: BorderSide(color: AppColors.border, width: 2),
-            bottom: BorderSide(color: AppColors.border, width: 2),
-          ),
+          color: AppColors.accentPrimary,
+          borderRadius: BorderRadius.all(Radius.circular(12)),
         ),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.play_arrow, color: AppColors.accentFg, size: 20),
-            const SizedBox(width: 8),
-            Text(
-              'Workout in progress — tap to resume',
-              style: AppTypography.body(context).copyWith(
-                color: AppColors.accentFg,
-                fontWeight: FontWeight.w700,
+            const Icon(Icons.play_circle_filled, color: AppColors.textPrimary, size: 20),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                'Workout in progress — tap to resume',
+                style: GoogleFonts.inter(
+                  color: AppColors.textPrimary,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 14,
+                ),
+                textAlign: TextAlign.center,
               ),
             ),
           ],

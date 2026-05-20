@@ -1,4 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../database/database.dart';
 
-// Placeholder database provider. Replace with Drift AppDatabase provider.
-final databaseProvider = Provider((ref) => null);
+final databaseProvider = Provider<AppDatabase>((ref) {
+  return AppDatabase();
+});
