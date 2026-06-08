@@ -1,438 +1,716 @@
-# GymLog — Custom Routine Screen: Atomic Fix Prompts (v2 → v3)
+# GymLog — Custom Routine Detail Screen: Atomic Fix Prompts (v3, Flutter + fl_chart)
 
-> **For Claude Code.** Feed this file in full, or one atomic block at a time. Each block is self-contained: it tells you exactly WHERE the bug is, WHY it is wrong (industry + design-system rule), and HOW to fix it down to the pixel/parameter. Do not freelance — match the acceptance criteria literally.
+> **For Claude Code.** Pixel-precise, stack-aware fix prompts for the GymLog routine detail screen. Feed in full or one atomic block at a time. Each block is self-contained: WHERE the bug is, WHY it is wrong, HOW to fix it down to the API/parameter, and ACCEPTANCE CRITERIA.
 
 ---
 
 ## 0. Global Context (read once before starting)
 
-- **Screen under repair:** Routine detail screen reached by tapping a custom routine in the Routines section.
-- **Design system:** "Luminous Engine" — OLED true-black base (`#000000`), electric purple primary accent (`#8A4DFF` / iteratively `#7C3AED`), Inter for general UI, **Space Grotesk for high-impact numerics**.
-- **Core rule violated repeatedly: the "No-Line" rule.** Containers are NEVER defined by 1px solid strokes. They are defined by **tonal background elevation** — i.e. `bgSurface` sitting on `bgBase`, where `bgSurface` is ~6–10% lighter than `bgBase`. The only acceptable stroke is a "ghost border" at 10–20% opacity for accessibility edge cases (e.g. high-contrast mode).
-- **Out of scope:** The literal string `"Custom Routine"` in the AppBar title — this is user-set, not a UI defect. Do not touch the title text.
-- **Definition of done for the screen:** Every atomic task below passes its acceptance criteria. Composite UI/UX target score: **≥ 8.5/10** (up from current 6.5/10).
+**Project:** GymLog — Flutter 3 / Dart `>=3.0.0 <4.0.0`, local-first fitness tracker.
+
+**Stack (authoritative — confirmed from `pubspec.yaml` + source scan):**
+- State: `flutter_riverpod ^2.5.0`, `riverpod_annotation ^2.3.0`
+- Persistence: `drift ^2.18.0` on sqlite3, schemaVersion = 1
+- Routing: `go_router ^14.0.0`, route `/routines/:id` → `RoutineDetailScreen`
+- **Charts: `fl_chart ^0.68.0`** — all chart fixes target this API
+- Fonts: `google_fonts ^6.2.0` — **`GoogleFonts.inter` is the ONLY font in the project for headings and body. Do NOT introduce Space Grotesk or any other font.**
+- Models: `freezed` for `ActiveWorkoutState`, `WorkoutExerciseState`, `WorkoutSetState`
+- Images: `cached_network_image ^3.3.0`, `gif_view ^0.4.0` (exercise GIFs from Supabase Storage public bucket)
+
+**Theme files (do not invent tokens — reuse what exists):**
+- `lib/core/theme/app_theme.dart`
+- `lib/core/theme/app_colors.dart`
+
+**Authoritative color tokens (current production values — these ARE the design):**
+```
+AppColors.bgBase         = #000000   OLED black, app background
+AppColors.bgSurface      = #1C1C1E   elevated surfaces: cards, filled buttons, dropdowns
+AppColors.accentPrimary  = #8A2BE2   electric purple — primary CTA, chart line, chart dots
+AppColors.textPrimary    = #FFFFFF   high-contrast text, hero numerics
+AppColors.textSecondary  = #8E8E93   muted labels, axis ticks, subtitles
+AppColors.borderSubtle   = #2C2C2E   reserved for accessibility/edge cases only (NOT a default container stroke)
+```
+
+**Design discipline (agreed by user, derived from the v2 audit):**
+- Containers are defined by **tonal background elevation** (`bgSurface` on `bgBase`), NOT by 1px strokes.
+- `AppColors.borderSubtle` exists but is reserved — do NOT use it as a default container outline. Two visible borders on this screen (Edit Routine, All Time dropdown) are violations to be removed.
+- Numeric columns use Inter with `FontFeature.tabularFigures()` for digit alignment — Inter supports this natively, no font swap needed.
+- Tap targets ≥ 48 logical pixels (Material 3).
+- Test at the smallest supported viewport: **360×640 logical pixels**. If it breaks at 360, it ships broken.
+
+**Out of scope:**
+- The literal string `Custom Routine` in the AppBar title — user-set, not a defect.
+- `test/widget_test.dart` — known-broken on main (references `MyApp` instead of `GymLogApp`). Do not fix it here; do not let it confuse your test pass/fail signal.
+
+**Definition of done:** Every atomic block below passes its acceptance criteria. Composite UI/UX target: **≥ 8.5/10** (up from current 6.5/10).
 
 ---
 
-# CATEGORY A — CRITICAL CHART BUGS (do these FIRST)
+# CATEGORY A — CRITICAL CHART BUGS (fl_chart)
 
-These make the screen look broken. Ship nothing else until they are fixed.
+The volume chart is rendered with `LineChart(LineChartData(...))` from `fl_chart ^0.68.0`. Locate the chart widget under `lib/features/routines/presentation/` (likely `RoutineVolumeChart.dart` or inlined inside `RoutineDetailScreen`). All A-series fixes mutate that `LineChartData` configuration and its upstream Riverpod provider / Drift query.
 
 ---
 
 ## A1. Fix Y-axis label collision at the top of the chart
 
-**Severity:** Critical (visible bug, looks like a crash)
-**Where:** `TotalVolumeChart` — Y-axis tick renderer.
+**Severity:** Critical (visible rendering bug)
+**Where:** `LineChartData.maxY`, `LineChartData.titlesData.leftTitles`, and any standalone "peak data value" `Text` annotation overlaying the chart.
 
-**Current behavior:** The labels `2047` (the actual peak data value) and `2000` (the topmost gridline scale label) are rendered at almost the exact same Y-pixel and visually overlap into an unreadable smear.
+**Current behavior:** `2047` (peak data value) and `2000` (top gridline tick) collide into an unreadable smear at the top of the Y-axis.
 
-**Root cause:** The Y-axis maximum is being set equal to (or just slightly above) the dataset's max value, AND the chart is rendering both a "highest gridline tick" label and a "highest data point" label in the same row. Two label sources are colliding.
+**Root cause:** Two label sources collide — `maxY` is set near `dataMax` (no headroom) AND a manually placed annotation widget renders the peak value at the same pixel row as the topmost gridline tick.
 
 **Industry rule:**
-- **Material Design 3 — Data Visualization:** "Provide breathing room above the highest data point. The Y-axis maximum should exceed the data max by 10–15%."
-- **Apple HIG — Charts:** "Avoid placing labels within 8pt of each other."
-- **Edward Tufte — basic dataviz:** never let two text labels overlap.
+- Material Design 3 — Data Viz: top label has ≥ 10–15% headroom above peak data.
+- Apple HIG — Charts: never place two labels within 8pt of each other.
 
 **Exact fix:**
-1. Compute `yMax = ceil((dataMax * 1.15) / niceStep) * niceStep` where `niceStep` is the nearest "nice" interval (100, 200, 250, 500, 1000).
-2. Use only ONE label source on the Y-axis: the gridline ticks. Remove the standalone "peak data value" label that is currently rendered at the data point's pixel Y-position.
-3. If the peak value must be shown, show it as a **tooltip on tap** on the topmost data point — never as a permanent axis label.
-4. Compute gridlines as 4 evenly spaced steps: `[0, yMax*0.25, yMax*0.5, yMax*0.75, yMax]`.
-5. Round each label using a "nice number" formatter so the user sees `0, 500, 1000, 1500, 2000` not `0, 511.75, 1023.5, …`.
+
+1. Compute `maxY` with headroom and snap to a "nice" round number:
+   ```dart
+   double _niceCeil(double v) {
+     final step = v <= 100 ? 50 : v <= 500 ? 100 : v <= 2000 ? 250 : 500;
+     return (v / step).ceil() * step;
+   }
+   final dataMax = samples.map((s) => s.volume).reduce(math.max);
+   final maxY = _niceCeil(dataMax * 1.15);
+   ```
+
+2. Use **only the gridline tick labels** for the Y-axis. Delete any standalone `Text`/`Positioned` widget that draws the peak value on top of the chart.
+
+3. Configure `leftTitles` so there are exactly 4 evenly spaced labels (`0, maxY/4, maxY/2, 3*maxY/4, maxY`):
+   ```dart
+   leftTitles: AxisTitles(
+     sideTitles: SideTitles(
+       showTitles: true,
+       reservedSize: 44, // room for 4-digit numbers
+       interval: maxY / 4,
+       getTitlesWidget: (value, meta) => Padding(
+         padding: const EdgeInsets.only(right: 8),
+         child: Text(
+           value.toStringAsFixed(0),
+           style: GoogleFonts.inter(
+             fontSize: 11,
+             color: AppColors.textSecondary,
+             fontFeatures: const [FontFeature.tabularFigures()],
+           ),
+         ),
+       ),
+     ),
+   ),
+   ```
+
+4. If the peak data value must still be surfaced, surface it via `LineChartData.lineTouchData` (tap tooltip), NEVER as a permanent overlay label.
 
 **Acceptance criteria:**
-- No two Y-axis labels share a pixel row.
-- The top label is the chart maximum (e.g. `2500`), not a data value (`2047`).
-- There is at least 12dp of clear vertical space between the topmost gridline and the topmost rendered data point.
+- No two Y-axis labels occupy overlapping pixel rows.
+- Top label is the chart maximum (e.g. `2500`), not a data value (`2047`).
+- ≥ 12 logical pixels of clear space between the topmost gridline and the topmost data point.
 
 ---
 
 ## A2. Fix X-axis duplicate date labels (`May 23 May 23`, `Jun 7 Jun 7`)
 
-**Severity:** Critical (data viz bug — the chart looks broken to the user)
-**Where:** `TotalVolumeChart` — X-axis tick renderer + data aggregation.
+**Severity:** Critical (data viz bug)
+**Where:** The Drift query / Riverpod provider feeding the chart, AND `LineChartData.titlesData.bottomTitles`.
 
-**Current behavior:** The X-axis reads: `May 23   May 23   Jun 6   Jun 7   Jun 7`. Two sessions occurred on May 23 and two on Jun 7 — the renderer prints the date label once per session, producing adjacent duplicates.
+**Current behavior:** Bottom axis reads `May 23  May 23  Jun 6  Jun 7  Jun 7`. The chart plots one point per session, and two sessions occurred on May 23 + two on Jun 7.
 
-**Root cause:** The chart's X-axis is "session-indexed" (one tick per workout session) rather than "date-indexed" (one tick per calendar day), AND the tick label formatter has no deduplication step.
+**Root cause:** The data feed is session-indexed (one row per `workout_sessions` row) instead of day-indexed. The bottom axis formatter has no deduplication.
 
-**Exact fix:**
-1. **Aggregate data by calendar day** *before* rendering. For each day with sessions, sum the total volumes of all sessions that day into a single data point: `{ date: '2026-06-07', volume: session1.volume + session2.volume }`. This is the canonical fix.
-2. Render one X-axis tick per unique date.
-3. If aggregation is impossible because the design requires per-session granularity:
-   - Keep the multiple data points but render only one date label per unique day (deduplicate `xLabels`).
-   - Add a small bracket or subtle "1 / 2" sub-label to indicate "session 1 of 2 on this day."
-4. The X-axis must scale to **date space**, not **session ordinal space**. Two sessions on the same day should plot at the same X coordinate (or extremely close, e.g. 4px apart with the bracket treatment).
+**Exact fix — Option A (preferred: aggregate by calendar day):**
+
+1. Locate the Drift query (likely in `lib/features/routines/data/` or a `workouts_dao.dart`). Add a method that aggregates by day for a given routine:
+   ```dart
+   // Drift custom select — adapt names to your actual table/column identifiers
+   Future<List<DailyVolumeSample>> dailyVolumeForRoutine(String routineId) {
+     return customSelect(
+       '''
+       SELECT
+         DATE(ws.started_at) AS day,
+         SUM(ws.total_volume_kg) AS volume
+       FROM workout_sessions ws
+       WHERE ws.routine_id = ?
+       GROUP BY DATE(ws.started_at)
+       ORDER BY day ASC;
+       ''',
+       variables: [Variable.withString(routineId)],
+       readsFrom: {workoutSessions},
+     ).get().then((rows) => rows.map((r) => DailyVolumeSample(
+       day: DateTime.parse(r.read<String>('day')),
+       volume: r.read<double>('volume'),
+     )).toList());
+   }
+   ```
+   If `total_volume_kg` isn't stored, sum `weight_kg * reps` over `workout_sets` joined to `workout_exercises` joined to `workout_sessions`.
+
+2. Expose via a Riverpod provider: `routineDailyVolumeProvider(routineId)` → `AsyncValue<List<DailyVolumeSample>>`.
+
+3. The chart's spots become `FlSpot(dayIndex.toDouble(), sample.volume)` — one spot per unique calendar day.
+
+**Option B (only if product blocks aggregation):**
+
+Keep per-session spots but deduplicate the bottom labels using a set captured outside the chart callback:
+```dart
+final shown = <String>{};
+bottomTitles: AxisTitles(
+  sideTitles: SideTitles(
+    showTitles: true,
+    reservedSize: 28,
+    getTitlesWidget: (value, meta) {
+      final label = DateFormat('MMM d').format(samples[value.toInt()].startedAt);
+      if (shown.contains(label)) return const SizedBox.shrink();
+      shown.add(label);
+      return Text(label, style: _axisLabelStyle);
+    },
+  ),
+),
+```
+Reset `shown` on every rebuild (e.g. recompute inside the `build` method, not as a class field).
 
 **Acceptance criteria:**
 - No two adjacent X-axis labels are identical strings.
-- If two sessions occurred on the same day, they are visually grouped (same X, or a tight cluster with a single date label).
-- Hovering / tapping a multi-session day shows both sessions in the tooltip.
+- Option A: each X position represents a unique calendar day; aggregated volume is the SUM of all sessions that day.
+- Option B: tap tooltip differentiates the two sessions on the same day.
 
 ---
 
-## A3. Switch chart from smooth Bezier curve to linear interpolation
+## A3. Switch chart from smooth curve to linear interpolation
 
 **Severity:** High (misleading data viz)
-**Where:** `TotalVolumeChart` — line renderer.
+**Where:** `LineChartBarData.isCurved`.
 
-**Current behavior:** The chart connects data points with a smooth spline. Between actual measured points, the curve bulges above/below real values, implying continuous change between workouts that never happened.
-
-**Root cause:** Chart library default. (e.g. `curve: 'cardinal'`, `tension: 0.4`, `smooth: true`.)
-
-**Industry rule:** *Information Visualization* (Munzner): for discrete, time-sampled data with no underlying continuous process, **use straight-line segments**. Smooth curves are appropriate for genuinely continuous functions (temperature over time), not for stepwise behavior (workouts on specific days).
+**Current behavior:** Smooth Bezier between points implies continuous workout volume between sessions — false.
 
 **Exact fix:**
-- Set the line renderer to **linear interpolation**.
-  - Chart.js: `tension: 0` (or `cubicInterpolationMode: 'default'` with `tension: 0`).
-  - ECharts: `smooth: false`.
-  - D3: `d3.curveLinear`.
-  - Recharts: `type="linear"`.
-  - Plotly: `line.shape = 'linear'`.
+```dart
+LineChartBarData(
+  isCurved: false,                // was true
+  preventCurveOverShooting: true, // belt + suspenders
+  spots: spots,
+  color: AppColors.accentPrimary,
+  barWidth: 2.5,
+  isStrokeCapRound: true,
+  dotData: FlDotData(
+    show: true,
+    getDotPainter: (spot, percent, bar, index) => FlDotCirclePainter(
+      radius: 4,
+      color: AppColors.accentPrimary,
+      strokeWidth: 0,
+    ),
+  ),
+  belowBarData: BarAreaData(...), // see A5
+),
+```
 
 **Acceptance criteria:**
 - Lines between data points are straight segments.
-- No curve overshoots or undershoots a data point.
+- No overshoot/undershoot above the topmost or below the bottommost data point.
 
 ---
 
-## A4. Y-axis must start at 0 (not 518)
+## A4. Y-axis must start at 0
 
 **Severity:** High (visual distortion — exaggerates trend)
-**Where:** `TotalVolumeChart` — Y-axis scale.
+**Where:** `LineChartData.minY`.
 
-**Current behavior:** Y-axis minimum equals the dataset minimum (518). The chart looks "zoomed in," which exaggerates the visual delta between the lowest and highest values.
-
-**Industry rule:**
-- **Apple HIG / Material Design / Tufte:** Bar charts MUST start at 0. Line charts SHOULD start at 0 unless there is a strong reason (e.g. stock prices over a narrow band).
-- For **fitness volume data**, the user's mental model includes "I lifted nothing before I started." Starting at 0 is honest.
+**Current behavior:** `minY == dataMin == 518`. The chart looks zoomed-in.
 
 **Exact fix:**
-- Set `yMin = 0`.
-- Combined with A1's `yMax = ceil((dataMax * 1.15) / niceStep) * niceStep`, recompute ticks as `[0, yMax*0.25, yMax*0.5, yMax*0.75, yMax]`.
+```dart
+LineChartData(
+  minY: 0,             // was something like samples.first.volume
+  maxY: maxY,          // from A1
+  // ...
+)
+```
 
 **Acceptance criteria:**
-- Y-axis bottom label reads `0`.
-- The chart no longer looks "zoomed in" — there is visible empty space below the lowest data point.
+- Bottom Y-axis label reads `0`.
+- Visible empty space below the lowest data point.
 
 ---
 
-## A5. Reduce area-fill opacity so gridlines are visible through it
+## A5. Reduce area-fill opacity so gridlines read through it
 
-**Severity:** Medium (data legibility)
-**Where:** `TotalVolumeChart` — area fill below the line.
+**Severity:** Medium (legibility)
+**Where:** `LineChartBarData.belowBarData` and `LineChartData.gridData`.
 
-**Current behavior:** The purple gradient fill under the line is opaque enough to obscure the dashed horizontal gridlines in the lower portion of the chart. The user cannot read values through the fill.
-
-**Industry rule:** Charting best practice — area fills supplement gridlines, they do not replace them. **Max opacity for an area fill: 25%.** Ideal: linear vertical gradient from `0.25` at the top to `0.05` at the bottom.
+**Current behavior:** The purple gradient fill obscures the dashed horizontal gridlines in the lower portion of the chart.
 
 **Exact fix:**
-- Implement a vertical linear gradient:
-  - Top stop: `rgba(138, 77, 255, 0.25)` (purple at 25% alpha).
-  - Bottom stop: `rgba(138, 77, 255, 0.02)` (essentially transparent at the axis).
-- Ensure dashed gridlines render **above** the area fill in the z-order (or use `globalCompositeOperation` accordingly).
-- Gridline color: `rgba(255, 255, 255, 0.08)` dashed `4 4`.
+```dart
+// On LineChartBarData:
+belowBarData: BarAreaData(
+  show: true,
+  gradient: LinearGradient(
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+    colors: [
+      AppColors.accentPrimary.withOpacity(0.25),
+      AppColors.accentPrimary.withOpacity(0.02),
+    ],
+  ),
+),
+
+// On LineChartData:
+gridData: FlGridData(
+  show: true,
+  drawHorizontalLine: true,
+  drawVerticalLine: false,
+  horizontalInterval: maxY / 4,
+  getDrawingHorizontalLine: (value) => FlLine(
+    color: Colors.white.withOpacity(0.08),
+    strokeWidth: 1,
+    dashArray: [4, 4],
+  ),
+),
+```
 
 **Acceptance criteria:**
-- All four gridlines are visible from left edge to right edge of the chart, including where they pass through the densest part of the area fill.
-- The fill is still visible enough to add depth — not flat-zero opacity.
+- All four horizontal gridlines visible from left to right edge of the chart, including through the densest part of the fill.
+- The fill still adds visible depth — not flat zero opacity.
 
 ---
 
-# CATEGORY B — DESIGN-SYSTEM VIOLATIONS (No-Line rule)
+# CATEGORY B — TONAL ELEVATION (remove decorative borders)
 
-Two visible 1px borders above the fold. Both must go.
+Two visible 1px borders above the fold. Both are replaced with `AppColors.bgSurface` tonal elevation. **`AppColors.borderSubtle` is reserved for accessibility/edge cases and must NOT be reintroduced as a default outline.**
 
 ---
 
-## B1. Remove the border on the "Edit Routine" button — use tonal elevation
+## B1. Remove the border on the Edit Routine button — use bgSurface
 
-**Severity:** High (direct design-system violation)
-**Where:** `EditRoutineButton` component.
+**Severity:** High
+**Where:** The `Edit Routine` button, likely in `RoutineDetailScreen` or a `RoutineActions` sub-widget.
 
-**Current behavior:** The Edit Routine button is defined by a visible ~1px stroked outline against the OLED black background. This is a textbook No-Line violation.
-
-**Industry / design-system rule:**
-- "Luminous Engine" No-Line rule: containers are defined by tonal background elevation, not strokes.
-- Apple HIG, Material 3, and Fluent 2 all permit tonal-elevation surfaces; the Luminous Engine has *banned* strokes for container definition.
+**Current behavior:** Stroked outline on the OLED background.
 
 **Exact fix:**
-1. Remove `border` / `BorderSide` / `OutlinedButton` entirely from this button.
-2. Replace with a filled button using `bgSurface` color:
-   - Background: `#141414` (≈ 8% white on OLED black) — call this `surfaceElevated1`.
-   - Hover/pressed: lift to `#1C1C1C` (`surfaceElevated2`).
-3. Keep the same pill shape (`borderRadius: 999`) and the same dimensions as the Start Routine button so visual rhythm is preserved.
-4. Text color: `#E9E9EE` (off-white at ~92% opacity), NOT pure white — to subordinate it to the primary CTA.
-5. Text weight: see B3.
+```dart
+SizedBox(
+  width: double.infinity,
+  child: Material(
+    color: AppColors.bgSurface,                 // #1C1C1E
+    borderRadius: BorderRadius.circular(999),   // pill, match Start Routine
+    child: InkWell(
+      borderRadius: BorderRadius.circular(999),
+      onTap: onEditTap,
+      child: Container(
+        height: 56,                              // same as Start Routine
+        alignment: Alignment.center,
+        child: Text(
+          'Edit Routine',
+          style: GoogleFonts.inter(
+            fontSize: 16,
+            fontWeight: FontWeight.w500,         // medium — see B3
+            color: AppColors.textPrimary.withOpacity(0.92),
+          ),
+        ),
+      ),
+    ),
+  ),
+),
+```
+- NO border. NO outline. NO `BoxDecoration` with `border:`.
+- If an `OutlinedButton` is currently used, replace it with the structure above.
 
 **Acceptance criteria:**
-- No stroke anywhere on the button at any state (default, hover, pressed, focused).
-- The button reads as a darker pill resting on the black background — distinct from the surface but with no outline.
-- Tap target: 48dp minimum height (WCAG 2.5.5).
+- No stroke in any state (default, hover, pressed, focused).
+- Button reads as a darker pill on black.
+- Tap target ≥ 48 logical pixels tall.
 
 ---
 
-## B2. Remove the border on the "All Time" filter dropdown — use tonal elevation
+## B2. Remove the border on the All Time dropdown — use bgSurface
 
-**Severity:** High (direct design-system violation)
-**Where:** `TimeRangeDropdown` / `AllTimeFilter` component, top-right of the chart header.
-
-**Current behavior:** The dropdown is bounded by a visible ~1px stroked outline.
+**Severity:** High
+**Where:** The time-range filter pill to the right of `Total Volume (kg)`.
 
 **Exact fix:**
-1. Remove the stroke.
-2. Apply background `surfaceElevated1` (`#141414`).
-3. Border radius: `12dp` (or match the pill family if it should be pill-shaped).
-4. Internal padding: `8dp vertical, 12dp horizontal`.
-5. Caret icon: `#9CA3AF` (muted gray), 16dp.
-6. Label "All Time": Inter Medium 14sp, color `#E9E9EE`.
+```dart
+Semantics(
+  label: 'Time range filter',
+  button: true,
+  child: Material(
+    color: AppColors.bgSurface,
+    borderRadius: BorderRadius.circular(12),
+    child: InkWell(
+      borderRadius: BorderRadius.circular(12),
+      onTap: openTimeRangeMenu,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              currentRangeLabel,                 // 'All Time' / 'This Month' / etc.
+              style: GoogleFonts.inter(
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+                color: AppColors.textPrimary.withOpacity(0.92),
+              ),
+            ),
+            const SizedBox(width: 4),
+            Icon(
+              Icons.keyboard_arrow_down_rounded,
+              size: 16,
+              color: AppColors.textSecondary,
+            ),
+          ],
+        ),
+      ),
+    ),
+  ),
+),
+```
 
 **Acceptance criteria:**
-- No stroke on the dropdown.
-- Visually distinct from the OLED background via lightness alone.
-- Tap target ≥ 44dp.
+- No stroke.
+- Visually distinct from background by lightness alone.
+- Tap target ≥ 44 logical pixels.
 
 ---
 
-## B3. Subordinate the "Edit Routine" button text weight to the primary CTA
+## B3. Subordinate Edit Routine text weight to the primary CTA
 
 **Severity:** Medium (visual hierarchy)
-**Where:** `EditRoutineButton` text style.
-
-**Current behavior:** "Edit Routine" is set in the same bold weight as "Start Routine," making the two buttons read as co-primary actions rather than primary + secondary.
-
-**Industry rule:**
-- **Apple HIG — Buttons:** Primary action = filled + bold; secondary action = tonal/outlined + **medium or regular** weight.
-- **Material Design 3:** Primary FilledButton uses Label/Large/SemiBold; secondary TonalButton uses Label/Large/Medium.
+**Where:** Text styles on the two buttons.
 
 **Exact fix:**
-- "Start Routine" text: Inter **SemiBold (600)**, 16sp, white `#FFFFFF`.
-- "Edit Routine" text: Inter **Medium (500)**, 16sp, color `#E9E9EE`.
+- `Start Routine`: `GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.white)`.
+- `Edit Routine`: `GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w500, color: AppColors.textPrimary.withOpacity(0.92))`.
 
 **Acceptance criteria:**
-- Direct visual comparison shows "Start Routine" is heavier than "Edit Routine."
-- A blurred screenshot still resolves which button is the primary CTA.
+- Side-by-side visual comparison: Start is heavier than Edit.
+- Blurred screenshot still resolves which is the primary CTA.
 
 ---
 
 # CATEGORY C — UX RESTORATIONS
 
-Information lost between v1 and v2. Restore it.
-
 ---
 
-## C1. Restore the AppBar subtitle (exercise count + last performed)
+## C1. Restore the AppBar subtitle
 
 **Severity:** High (regression from v1)
-**Where:** AppBar of the routine detail screen.
+**Where:** `AppBar` of `RoutineDetailScreen`.
 
-**Current behavior:** AppBar has only the title. v1 had a subtitle ("4 exercises · Last performed Jun 6") which has been removed.
-
-**Industry rule:**
-- **Apple HIG — Navigation:** "Provide context at every level of navigation."
-- **Material Design — Top App Bar:** subtitle slot is the canonical location for context.
+**Current behavior:** AppBar shows only the title.
 
 **Exact fix:**
-- Restore a two-line AppBar:
-  - **Line 1 (title):** the routine name. Inter SemiBold 22sp, white.
-  - **Line 2 (subtitle):** `{exerciseCount} exercises · Last performed {relativeTime}`. Inter Regular 13sp, color `#9CA3AF`.
-- Use **relative time** (`2 days ago`, `yesterday`, `last week`), not absolute dates, unless the gap exceeds 30 days — then fall back to absolute (`May 23`).
-- If `lastPerformed` is null (never started): show just `{exerciseCount} exercises`.
+```dart
+AppBar(
+  backgroundColor: AppColors.bgBase,
+  elevation: 0,
+  scrolledUnderElevation: 0,
+  leading: const BackButton(color: Colors.white),
+  titleSpacing: 0,
+  title: Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    mainAxisAlignment: MainAxisAlignment.center,
+    children: [
+      Text(
+        routine.name,
+        style: GoogleFonts.inter(
+          fontSize: 22,
+          fontWeight: FontWeight.w600,
+          color: AppColors.textPrimary,
+          height: 1.1,
+        ),
+        overflow: TextOverflow.ellipsis,
+      ),
+      const SizedBox(height: 2),
+      Text(
+        _routineSubtitle(routine),
+        style: GoogleFonts.inter(
+          fontSize: 13,
+          color: AppColors.textSecondary,
+        ),
+        overflow: TextOverflow.ellipsis,
+      ),
+    ],
+  ),
+  actions: [/* three-dot menu — see G2 */],
+)
+
+String _routineSubtitle(Routine r) {
+  final count = r.exerciseCount;
+  if (r.lastPerformedAt == null) return '$count exercises';
+  return '$count exercises · Last performed ${_relative(r.lastPerformedAt!)}';
+}
+
+String _relative(DateTime t) {
+  final diff = DateTime.now().difference(t);
+  if (diff.inHours < 24) return 'today';
+  if (diff.inDays == 1) return 'yesterday';
+  if (diff.inDays < 30) return '${diff.inDays} days ago';
+  return DateFormat('MMM d').format(t); // package: intl
+}
+```
 
 **Acceptance criteria:**
-- Subtitle is visible on first render.
-- Subtitle updates after a workout is completed (`Last performed: just now`).
-- Subtitle text never wraps; it truncates with ellipsis if absurdly long.
+- Subtitle visible on first render.
+- Subtitle uses relative time within 30 days, absolute date beyond.
+- Truncates with ellipsis if absurdly long.
+- If `lastPerformedAt == null`, shows only `$count exercises`.
 
 ---
 
 ## C2. Add set sequence numbers next to type chips
 
-**Severity:** High (information loss — user cannot tell which set is which)
-**Where:** Exercise card → set table → "Set" column.
+**Severity:** High (information loss)
+**Where:** The Set column inside each exercise card's set table.
 
-**Current behavior:** The "Set" column shows only type chips (Drop / Fail / Warm). The set ordinal (1, 2, 3) is gone. The user cannot tell whether the Drop set was set 1, 2, or 3.
+**Current behavior:** Only the type chip renders (Drop / Fail / Warm). Set ordinal is gone.
 
 **Exact fix:**
-1. Render each row in the Set column as: `{setNumber}  {typeChip}` — two visual elements on a single row.
-   - Set number: Space Grotesk Medium 16sp, color `#E9E9EE`, fixed 24dp width column-internal slot (so all numbers align).
-   - 8dp gap.
-   - Type chip: existing chip component.
-2. If a set has no special type (a standard working set), render just the number with no chip OR a subtle "Work" chip — pick one and apply consistently across the app. Recommendation: **no chip for standard sets**, chips only for special sets (Warm, Drop, Fail, AMRAP, etc.). This makes special sets stand out.
+- Render `Row([SetNumber, gap, TypeChip?])`. Standard working sets get **no chip** — only the number — so chips become genuine signal for special sets.
+```dart
+Row(
+  children: [
+    SizedBox(
+      width: 24,
+      child: Text(
+        '${set.indexInExercise + 1}', // 1-based
+        textAlign: TextAlign.left,
+        style: GoogleFonts.inter(
+          fontSize: 16,
+          fontWeight: FontWeight.w500,
+          color: AppColors.textPrimary,
+          fontFeatures: const [FontFeature.tabularFigures()],
+        ),
+      ),
+    ),
+    const SizedBox(width: 8),
+    if (set.type != SetType.standard) TypeChip(type: set.type),
+  ],
+),
+```
 
 **Acceptance criteria:**
-- Every row in the Set column starts with a numeral (1, 2, 3…).
-- Chips only render for non-standard set types.
+- Every Set-column row starts with a numeral.
+- Chip renders only for non-standard set types (Warm, Drop, Fail, …).
 - Numerals align vertically across rows.
 
 ---
 
-## C3. Sort warm-up sets to the top, working/special sets after
+## C3. Sort warm-up sets first, working/special sets after
 
-**Severity:** Medium (logical ordering)
-**Where:** Exercise card → set list ordering.
+**Severity:** Medium
+**Where:** The Riverpod selector that exposes per-exercise sets to the UI (NOT the widget tree).
 
-**Current behavior:** The order shown is Drop → Fail → Warm. Warm-up sets are physically performed **first** in a workout, so a warm-up at the bottom of the list is either a display bug or a data-entry mistake the UI is not flagging.
+**Current behavior:** Display order is Drop → Fail → Warm. Warm-ups should always lead.
 
 **Exact fix:**
-- Define a canonical sort order for set types: `Warm → Work → Drop → Fail → Cool` (or whatever the full type taxonomy is — confirm with the data model).
-- Sort sets within each exercise by `(typeOrder, executionTimestamp)` so warm-ups always lead.
-- If the user has manually reordered sets in the editor, **respect their order** — only apply default sorting on data entry / first render.
+1. Define canonical order on the `SetType` enum (or wherever it lives):
+   ```dart
+   enum SetType { warm, standard, drop, fail, cool }
+   // `.index` defines display order.
+   ```
+2. In the Riverpod selector that returns `List<WorkoutSetState>` for an exercise:
+   ```dart
+   sets.sort((a, b) {
+     final byType = a.type.index.compareTo(b.type.index);
+     if (byType != 0) return byType;
+     return a.recordedAt.compareTo(b.recordedAt);
+   });
+   ```
+3. If the user has manually reordered sets in the editor (persisted `displayOrder` field), respect their order — apply default sort only on first hydrate.
 
 **Acceptance criteria:**
-- For a Dumbbell Bench Press with sets [Drop, Fail, Warm], the rendered order is [Warm, Drop, Fail].
-- Set numbers (from C2) reflect this canonical order: Warm = 1, Drop = 2, Fail = 3.
+- For an exercise with sets [Drop, Fail, Warm], the rendered order is [Warm, Drop, Fail].
+- Set numbers from C2 reflect the new order (Warm=1, Drop=2, Fail=3).
 
 ---
 
-## C4. Add a one-time onboarding tooltip or persistent legend for chip colors
+## C4. Chip-color discovery affordance
 
 **Severity:** Medium (learnability)
-**Where:** Exercise card → first appearance of set type chips.
+**Where:** Exercise card → above the set table header.
 
-**Current behavior:** Three colored chips (purple Drop, red-orange Fail, amber Warm) appear with no explanation of what they mean. A new user has no way to learn the conventions.
+**Current behavior:** Three colored chips appear with no explanation.
 
-**Exact fix — pick ONE of these patterns, not both:**
-
-**Option A (preferred): A small "?" affordance next to the table header that opens a bottom sheet legend.**
-- "?" icon, 16dp, muted gray, tap target 44dp.
-- Bottom sheet shows each chip + a 1-line description:
+**Exact fix (Option A — preferred):**
+- Add a small `?` `IconButton` next to the `Set / Kg / Reps` header row:
+  ```dart
+  IconButton(
+    icon: const Icon(Icons.help_outline_rounded, size: 16),
+    color: AppColors.textSecondary,
+    padding: EdgeInsets.zero,
+    constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
+    onPressed: () => _showChipLegend(context),
+  ),
+  ```
+- `_showChipLegend` calls `showModalBottomSheet` with `backgroundColor: AppColors.bgSurface` and rows:
   - **Warm** — Warm-up set, lower intensity to prepare the body.
   - **Work** — Standard working set.
-  - **Drop** — Drop set, weight reduced mid-set to extend the rep range.
+  - **Drop** — Weight reduced mid-set to extend the rep range.
   - **Fail** — Set taken to muscular failure.
-
-**Option B: One-time onboarding tooltip.**
-- The first time a user sees a chip, anchor a small purple-bordered popover to it: "Tap to learn about set types." Dismissable, never shown again (persist in user preferences).
+- Each row uses the actual chip widget on the left and `GoogleFonts.inter(fontSize: 14, color: AppColors.textSecondary)` for the description on the right.
 
 **Acceptance criteria:**
-- A new user can discover the meaning of every chip color without reading external documentation.
-- The discovery affordance does not clutter the screen on subsequent visits.
+- A new user can discover chip meanings without external docs.
+- The `?` affordance does not clutter on repeat visits.
 
 ---
 
 # CATEGORY D — TABLE CORRECTIONS
 
-The set table inside each exercise card.
-
 ---
 
-## D1. Right-align all numeric values (kg, Reps)
+## D1. Right-align Kg and Reps columns with tabular figures
 
-**Severity:** High (table design fundamental)
-**Where:** Set table → kg and Reps columns (data rows AND header rows).
+**Severity:** High (table fundamental)
+**Where:** Set table data + header cells.
 
-**Current behavior:** Numeric values `30, 30, 30` (kg) and `12, 10, 8` (Reps) are center-aligned. Different digit widths fail to align — `100` and `8` would not share a decimal column.
-
-**Industry rule:** **Universal across Material, Fluent, Apple, IBM Carbon, GitHub Primer:** numeric columns are right-aligned (or decimal-aligned). Center-aligning numerics is a known mistake.
+**Current behavior:** Numerics are centered; digit widths fail to align.
 
 **Exact fix:**
-- Both column data cells and column headers: `textAlign: right`.
-- Right-align with a consistent right gutter of **16dp** from the column boundary.
-- For numerics, use **tabular figures** (`font-feature-settings: "tnum"` for CSS, `FontFeature.tabularFigures()` for Flutter, `numericVariant: tabularNumbers` for SwiftUI) so digit widths are uniform.
+```dart
+// Data cell:
+Text(
+  '$value',
+  textAlign: TextAlign.right,
+  style: GoogleFonts.inter(
+    fontSize: 22,
+    fontWeight: FontWeight.w500,
+    color: AppColors.textPrimary,
+    fontFeatures: const [FontFeature.tabularFigures()],
+  ),
+),
+
+// Header cell:
+Text(
+  'Kg', // or 'Reps' — see D3
+  textAlign: TextAlign.right,
+  style: GoogleFonts.inter(
+    fontSize: 12,
+    fontWeight: FontWeight.w500,
+    color: AppColors.textSecondary,
+    letterSpacing: 0.4,
+  ),
+),
+```
+- Right gutter from the column boundary: `16` logical pixels.
+- If using a `DataTable` / `Table`, set `numeric: true` on Kg and Reps `DataColumn`s.
 
 **Acceptance criteria:**
-- 100 and 8 in the same column align on their last digit.
-- The header label (e.g. `kg`) sits flush-right above its data column.
+- `100` and `8` in the same column align on their last digit.
+- Headers and data share the same right edge.
 
 ---
 
 ## D2. Header alignment must match column data alignment
 
 **Severity:** Medium (consistency)
-**Where:** Set table → header row.
-
-**Current behavior:** "Set" left-aligned, "kg" appears center-ish, "Reps" appears right-ish — alignment is inconsistent across the header row.
+**Where:** Set table header row.
 
 **Exact fix:**
-- "Set" column: left-aligned header AND data.
-- "kg" column: right-aligned header AND data (per D1).
-- "Reps" column: right-aligned header AND data (per D1).
-- All headers: Inter Medium 12sp, color `#9CA3AF`, letter-spacing `0.04em`.
+- `Set` column: header AND data left-aligned.
+- `Kg` and `Reps` columns: header AND data right-aligned (per D1).
+- All headers share the style from D1's header cell.
 
-**Acceptance criteria:**
-- A vertical line drawn through any column passes through both the header text edge AND the data text edge at the same horizontal coordinate.
+**Acceptance criteria:** A vertical line drawn through any column passes through both header text edge and data text edge at the same X.
 
 ---
 
-## D3. Decide and lock the case for the "kg" header
+## D3. Lock header case to `Set / Kg / Reps`
 
 **Severity:** Low (consistency polish)
-**Where:** Set table → "kg" column header.
+**Where:** Set table header strings.
 
-**Current behavior:** "Set" and "Reps" are Title Case, "kg" is lowercase. Visually it reads as an oversight.
-
-**Decision (apply this — no debate):**
-- **Use `Kg` (Title Case)** in the header for visual consistency with sibling headers.
-- The lowercase `kg` convention is correct in body copy where the unit follows a number (e.g. `30 kg`), but in a header label divorced from a number, `Kg` reads cleaner alongside `Set` and `Reps`.
-- Apply globally: any header label gets Title Case; any inline unit annotation following a number stays lowercase (`30 kg`, `8 reps`).
+**Decision (apply, no debate):**
+- Headers: `Set`, `Kg`, `Reps`.
+- Body / inline copy stays lowercase in context: `30 kg`, `8 reps`.
 
 **Acceptance criteria:**
-- Table headers: `Set`, `Kg`, `Reps`.
-- Subtitle copy unchanged: `Last: 30 kg × 8 reps • 3 sets` (lowercase in context).
+- Headers visually consistent.
+- Subtitle copy unchanged: `Last: 30 kg × 8 reps • 3 sets`.
 
 ---
 
-## D4. Increase row vertical padding to 14dp
+## D4. Increase row vertical padding to 14
 
 **Severity:** Low (mobile ergonomics)
-**Where:** Set table → row spacing.
-
-**Current behavior:** Rows feel cramped on mobile.
+**Where:** Set table row layout.
 
 **Exact fix:**
-- Each table row: `paddingTop: 14dp, paddingBottom: 14dp`.
-- Minimum row height: 56dp (covers tap targets if rows ever become tappable).
-- Inter-row separation by spacing only — **no divider lines** (No-Line rule).
+- Each row: `padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 0)`.
+- Minimum row height: `56` logical pixels (covers future tap-target needs).
+- NO horizontal divider lines between rows — separation by spacing only.
 
 **Acceptance criteria:**
-- Adjacent set rows have ~12dp of clear vertical space between text baselines.
-- No horizontal divider lines anywhere in the table.
+- ≥ 12 logical pixels of clear space between adjacent row text baselines.
+- No divider lines anywhere in the set table.
 
 ---
 
-# CATEGORY E — TYPOGRAPHY
+# CATEGORY E — TYPOGRAPHY POLISH (Inter only — no font swaps)
+
+The project uses `GoogleFonts.inter` for everything. Do NOT introduce Space Grotesk or any other font.
 
 ---
 
-## E1. Use Space Grotesk for high-impact numeric data
+## E1. Lock numeric typography to Inter Medium + tabular figures
 
-**Severity:** Medium (design-system adherence)
-**Where:** All large numerics in the set table (`30`, `12`, `10`, `8`) and any large stat numerals on this screen.
+**Severity:** Medium
+**Where:** Any "hero numeric" on this screen — set table values, chart axis labels, set sequence numbers.
 
-**Current behavior:** Large numerics appear to be in Inter (a humanist sans, soft).
-
-**Design-system rule:** "Luminous Engine" specifies Space Grotesk for "high-impact numerical data." Space Grotesk has slightly engineered/futuristic letterforms that read as precise — appropriate for fitness measurements.
+**Current behavior:** Already on Inter (correct), but missing `FontFeature.tabularFigures()`, so digit widths don't align across rows.
 
 **Exact fix:**
-- Set table data cells (kg, Reps): Space Grotesk Medium 22sp, color `#FFFFFF`, tabular figures.
-- Y-axis labels in chart: Space Grotesk Regular 11sp, color `#9CA3AF`, tabular figures.
-- Subtitle numerics like `30 kg × 8 reps • 3 sets`: **keep Inter** here because the numerics are inline with running text — Space Grotesk only for "hero" numerals.
-- Body copy and labels: stay on Inter.
+```dart
+// Hero numerics in set table (Kg, Reps cells):
+GoogleFonts.inter(
+  fontSize: 22,
+  fontWeight: FontWeight.w500,
+  color: AppColors.textPrimary,
+  fontFeatures: const [FontFeature.tabularFigures()],
+)
+
+// Chart Y-axis labels:
+GoogleFonts.inter(
+  fontSize: 11,
+  fontWeight: FontWeight.w500,
+  color: AppColors.textSecondary,
+  fontFeatures: const [FontFeature.tabularFigures()],
+)
+
+// Set sequence numbers (C2):
+GoogleFonts.inter(
+  fontSize: 16,
+  fontWeight: FontWeight.w500,
+  color: AppColors.textPrimary,
+  fontFeatures: const [FontFeature.tabularFigures()],
+)
+```
+- Inline numerics in running text (e.g. subtitle `30 kg × 8 reps • 3 sets`) stay on proportional figures — no change needed; proportional reads more naturally inline.
 
 **Acceptance criteria:**
-- Visual A/B against the previous build shows tighter, more engineered numerics in the set table.
-- The same font family is used for all "hero" numerics across the app.
+- Numbers in the same column line up vertically by digit, not by total width.
+- Inter remains the only font referenced anywhere on this screen.
 
 ---
 
-## E2. Remove the visible "Time Range" label or demote to a screen-reader-only label
+## E2. Remove or restructure the "Time Range" label
 
 **Severity:** Medium (visual clutter)
 **Where:** Chart header row.
 
-**Current behavior:** The row reads `Total Volume (kg)` … `Time Range` … `All Time ▾`. The middle "Time Range" text is muted and crammed between two higher-contrast elements. It is redundant — the "All Time" button already communicates its purpose.
+**Current behavior:** Row reads `Total Volume (kg)` … `Time Range` … `All Time ▾` — three elements on one mobile-width row, middle muted and redundant.
 
-**Exact fix — pick ONE:**
+**Exact fix — Option A (preferred):**
+- Delete the visible `Time Range` Text widget entirely.
+- Move the label to a `Semantics(label: 'Time range filter', ...)` wrapper around the dropdown (already included in B2's snippet).
 
-**Option A (preferred):** Delete the visible "Time Range" text node entirely. Add an `accessibilityLabel` / `aria-label` of `"Time range filter"` to the dropdown itself so screen readers still get the context.
-
-**Option B:** If the design lead insists on a visible label, **stack** the label above the dropdown instead of inline. `Time Range` (12sp muted) on top, dropdown below. Don't cram three elements in one row on a narrow mobile screen.
+**Option B (only if product insists on a visible label):**
+- Stack the label above the dropdown (label-above pattern), not inline.
 
 **Acceptance criteria:**
-- After the fix, the chart header reads as two visual elements only: `Total Volume (kg)` left, `All Time ▾` right.
-- Accessibility label preserved on the dropdown for screen readers.
+- Chart header reads as exactly two visual elements: `Total Volume (kg)` left, `All Time ▾` right.
+- Screen readers announce "Time range filter" on focus.
 
 ---
 
@@ -443,14 +721,28 @@ The set table inside each exercise card.
 ## F1. Apply corner radius to exercise thumbnail images
 
 **Severity:** Low (visual consistency)
-**Where:** Exercise card → leading thumbnail image.
+**Where:** Leading thumbnail in each exercise card. Currently uses `CachedNetworkImage` for the static thumb / `GifView` for animated frames.
 
-**Current behavior:** The thumbnail container has rounded corners, but the underlying image is square with hard corners. There's a visible mismatch.
+**Current behavior:** Container has rounded corners; the image inside is square with hard corners → visible mismatch.
 
 **Exact fix:**
-- Apply `borderRadius: 12dp` to the **image itself** (clip), not just the container.
-- Container: optional 1dp ghost border at `rgba(255,255,255,0.04)` (effectively invisible — only present for high-contrast mode); otherwise no border.
-- Thumbnail size: 56×56dp.
+```dart
+ClipRRect(
+  borderRadius: BorderRadius.circular(12),
+  child: SizedBox(
+    width: 56,
+    height: 56,
+    child: CachedNetworkImage(
+      imageUrl: gifThumbUrl,
+      fit: BoxFit.cover,
+      placeholder: (_, __) => Container(color: AppColors.bgSurface),
+      errorWidget: (_, __, ___) => Container(color: AppColors.bgSurface),
+    ),
+  ),
+),
+```
+- Do NOT wrap in a bordered container.
+- If you currently have `Container(decoration: BoxDecoration(border: ...))`, remove it.
 
 **Acceptance criteria:**
 - Image corners exactly match container corners.
@@ -461,125 +753,181 @@ The set table inside each exercise card.
 ## F2. Reconsider stacked full-width Start + Edit buttons
 
 **Severity:** Medium (layout efficiency)
-**Where:** Top of the routine detail screen — primary + secondary CTAs.
+**Where:** Top action area of `RoutineDetailScreen`.
 
-**Current behavior:** Two full-width pill buttons stacked vertically eat a large vertical band above the chart. The chart is pushed down and the first fold of the screen feels button-heavy.
+**Current behavior:** Two full-width pill buttons stacked vertically dominate the fold and push the chart below the visible area at 360×640.
 
-**Exact fix — pick ONE pattern:**
+**Pick ONE — default Option A:**
 
-**Option A (preferred — visual hierarchy):**
-- "Start Routine" stays full-width filled purple.
-- "Edit Routine" becomes a smaller secondary tonal button, **right-aligned and ~40% width**, sitting below the Start button. The remaining left space contains a thin metadata strip: e.g. last performed date or total time estimate.
+**Option A — visual hierarchy (preferred):**
+- `Start Routine` stays full-width, filled `AppColors.accentPrimary`, height 56.
+- `Edit Routine` becomes a tonal button (`AppColors.bgSurface`), height **48**, width **~40%**, right-aligned beneath Start. The remaining ~60% on the left is empty or holds a thin metadata strip (e.g. `Last performed yesterday`).
 
-**Option B (most space-efficient):**
-- "Start Routine" stays as the only full-width primary.
-- "Edit" moves to a text button in the **AppBar trailing area**, next to the three-dot menu. Tap target 48dp.
+**Option B — most space-efficient:**
+- `Start Routine` becomes the only full-width primary.
+- `Edit` moves to a `TextButton` in the AppBar trailing area, beside the three-dot menu, with a 48-pixel tap-target wrapper.
 
-**Option C (status quo, only if A and B are rejected):**
-- Keep both stacked full-width but reduce button height to `52dp` (currently appears ~64dp). Reduce inter-button gap to `8dp`. Avoids dominating the fold.
+**Option C — minimum-change fallback (only if A and B rejected by product):**
+- Keep both stacked full-width, but reduce each height to **52** and the gap to **8**.
 
 **Acceptance criteria:**
-- The chart is visible without scrolling on a 360×640dp viewport (smallest supported phone).
-- "Start Routine" remains unambiguously the primary action regardless of which option is chosen.
+- The chart is visible without scrolling on a 360×640 logical-pixel viewport.
+- `Start Routine` remains the unambiguous primary CTA in any chosen option.
 
 ---
 
-## F3. Increase chart internal top-padding
+## F3. Increase chart internal padding
 
 **Severity:** Low
-**Where:** `TotalVolumeChart` plot area.
-
-**Current behavior:** The Y-axis label region runs flush to the top of the chart, contributing to the A1 collision.
+**Where:** Chart `Padding` wrapper and `LineChartData.titlesData.*.sideTitles.reservedSize`.
 
 **Exact fix:**
-- Internal top padding inside the chart container: `24dp`.
-- Internal left padding (reserved for Y-axis labels): `40dp` to accommodate 4-digit numbers (`2500`) without truncation.
-- Internal bottom padding (X-axis labels): `28dp`.
-- Internal right padding: `12dp`.
+```dart
+Padding(
+  padding: const EdgeInsets.fromLTRB(0, 24, 12, 8),
+  child: LineChart(
+    LineChartData(
+      // ...
+      titlesData: FlTitlesData(
+        show: true,
+        leftTitles: AxisTitles(
+          sideTitles: SideTitles(showTitles: true, reservedSize: 44, /* ... */),
+        ),
+        bottomTitles: AxisTitles(
+          sideTitles: SideTitles(showTitles: true, reservedSize: 28, /* ... */),
+        ),
+        rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+        topTitles:   const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+      ),
+    ),
+  ),
+),
+```
 
 **Acceptance criteria:**
-- The topmost gridline label has 12dp+ clear space above it.
-- Y-axis labels are never clipped on the left edge.
+- The topmost gridline label has ≥ 12 logical pixels of clear space above it.
+- Y-axis labels never clipped on the left edge (4-digit numbers fit comfortably).
 
 ---
 
-# CATEGORY G — INFORMATION-ARCHITECTURE ADDITIONS
-
-Take this screen from functional to motivating. Optional but high-leverage.
+# CATEGORY G — INFORMATION ARCHITECTURE ADDITIONS
 
 ---
 
-## G1. Add a "Volume delta since first session" callout
+## G1. Add a volume-delta callout
 
 **Severity:** Low (delight / motivation)
-**Where:** Below the chart, above the exercise list.
+**Where:** Between the chart and the exercise list inside `RoutineDetailScreen`.
 
-**Current behavior:** No motivational layer. The user has clearly progressed — first session 518 kg, latest session ~2000+ kg — but the UI doesn't surface this win.
+**Current behavior:** No motivational layer despite a clear positive trend in the data.
 
 **Exact fix:**
-- Render a compact pill or small card:
-  - Icon: trending-up, purple.
-  - Label: `Volume up 295% since May 23` (or `Best session: 2,047 kg on Jun 6`).
-- Compute delta as `(latestVolume - firstVolume) / firstVolume * 100`, rounded to nearest integer.
-- If delta is negative, show in muted color, label: `Volume down 12% since {date}` — no shame, just data.
-- If only one session exists, hide the pill.
+- New widget `RoutineProgressPill` rendered only if the daily-volume samples (from A2) length ≥ 2.
+- Computes percentage delta from the first sample to the latest:
+  ```dart
+  final first = samples.first.volume;
+  final latest = samples.last.volume;
+  final delta = ((latest - first) / first * 100).round();
+  ```
+- Renders:
+  ```dart
+  Container(
+    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+    decoration: BoxDecoration(
+      color: AppColors.bgSurface,
+      borderRadius: BorderRadius.circular(999),
+    ),
+    child: Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(
+          delta >= 0 ? Icons.trending_up_rounded : Icons.trending_down_rounded,
+          size: 16,
+          color: delta >= 0 ? AppColors.accentPrimary : AppColors.textSecondary,
+        ),
+        const SizedBox(width: 6),
+        Text(
+          delta >= 0
+              ? 'Volume up $delta% since ${DateFormat('MMM d').format(samples.first.day)}'
+              : 'Volume down ${-delta}% since ${DateFormat('MMM d').format(samples.first.day)}',
+          style: GoogleFonts.inter(
+            fontSize: 13,
+            fontWeight: FontWeight.w500,
+            color: AppColors.textPrimary,
+          ),
+        ),
+      ],
+    ),
+  )
+  ```
 
 **Acceptance criteria:**
-- Pill renders only when ≥ 2 sessions exist.
-- Tap on pill opens a more detailed progress view (optional; if not built, pill is read-only).
+- Pill renders only with ≥ 2 daily samples.
+- Computation matches the formula exactly.
+- Updates when a new session completes (Riverpod invalidates → rebuild).
 
 ---
 
 ## G2. Three-dot menu tap target
 
 **Severity:** Low (accessibility)
-**Where:** AppBar trailing three-dot menu.
+**Where:** AppBar trailing three-dot icon.
 
-**Current behavior:** Icon-only button; tap target may be smaller than WCAG 2.5.5's 44×44pt minimum.
+**Current behavior:** Bare `Icon` widget — possibly under 48×48 tap target.
 
 **Exact fix:**
-- Wrap the icon in a `44×44dp` minimum touch area (`IconButton` with `padding: 12dp` around a 20dp icon).
-- Hit slop expanded to ensure edge-of-screen tap reliability.
+```dart
+IconButton(
+  icon: const Icon(Icons.more_vert_rounded, size: 24),
+  color: AppColors.textPrimary,
+  padding: EdgeInsets.zero,
+  constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
+  splashRadius: 24,
+  onPressed: openRoutineMenu,
+),
+```
 
 **Acceptance criteria:**
-- Tap target ≥ 44×44dp on all densities.
-- Visual icon remains 20dp — only the hit area grows.
+- Tap target ≥ 48×48 logical pixels at all densities.
+- Visual icon stays 24.
 
 ---
 
-# FINAL CHECKLIST (run before declaring done)
+# FINAL CHECKLIST
 
-- [ ] A1 — Y-axis top labels no longer collide.
-- [ ] A2 — No duplicate X-axis labels.
-- [ ] A3 — Chart uses linear interpolation, not splines.
-- [ ] A4 — Y-axis starts at 0.
-- [ ] A5 — Gridlines visible through the area fill.
-- [ ] B1 — Edit Routine button has no border.
-- [ ] B2 — All Time dropdown has no border.
-- [ ] B3 — Edit Routine text is medium weight, not bold.
-- [ ] C1 — AppBar subtitle restored with exercise count + relative last-performed time.
-- [ ] C2 — Set numbers visible alongside type chips.
-- [ ] C3 — Warm-up sets appear before working/special sets.
-- [ ] C4 — Chip-color discovery affordance present (legend or onboarding).
-- [ ] D1 — kg and Reps columns are right-aligned with tabular figures.
-- [ ] D2 — Headers align with their column data.
-- [ ] D3 — Header reads `Set / Kg / Reps`.
-- [ ] D4 — Row vertical padding is 14dp.
-- [ ] E1 — Space Grotesk applied to hero numerics.
-- [ ] E2 — "Time Range" label removed or restructured.
-- [ ] F1 — Thumbnail image corners match container corners.
-- [ ] F2 — Button stack reduced or restructured.
-- [ ] F3 — Chart internal padding restored.
-- [ ] G1 — Volume delta callout added (if ≥ 2 sessions).
-- [ ] G2 — Three-dot menu tap target ≥ 44dp.
+- [ ] A1 — Y-axis top labels no longer collide; `maxY` padded 15%; only gridline labels render
+- [ ] A2 — No duplicate X-axis labels; data aggregated by calendar day (or labels deduplicated)
+- [ ] A3 — `LineChartBarData.isCurved: false`
+- [ ] A4 — `LineChartData.minY: 0`
+- [ ] A5 — Gridlines visible through area fill (fill alpha ≤ 0.25)
+- [ ] B1 — Edit Routine button uses `AppColors.bgSurface`, no border
+- [ ] B2 — All Time dropdown uses `AppColors.bgSurface`, no border
+- [ ] B3 — Start = `FontWeight.w600`, Edit = `FontWeight.w500`
+- [ ] C1 — AppBar subtitle restored with exercise count + relative last-performed
+- [ ] C2 — Set numbers render alongside type chips; standard sets show no chip
+- [ ] C3 — Warm-up sets sort first; provider-level ordering
+- [ ] C4 — `?` icon opens chip legend bottom sheet
+- [ ] D1 — Kg/Reps right-aligned with `FontFeature.tabularFigures()`
+- [ ] D2 — Header alignment matches column data alignment
+- [ ] D3 — Headers read `Set`, `Kg`, `Reps`
+- [ ] D4 — Row `vertical: 14` padding, no divider lines
+- [ ] E1 — Hero numerics use Inter w500 + tabular figures; no other font introduced
+- [ ] E2 — `Time Range` label removed, semantics label added to dropdown
+- [ ] F1 — Thumbnails wrapped in `ClipRRect(borderRadius: 12)`
+- [ ] F2 — Button layout reduced per chosen option (A/B/C)
+- [ ] F3 — Chart internal padding (top 24, reservedSize left 44 / bottom 28)
+- [ ] G1 — Volume delta pill renders with ≥ 2 daily samples
+- [ ] G2 — Three-dot menu tap target ≥ 48×48
 
-**Target score after all fixes: ≥ 8.5/10 overall.**
+**Target composite UI/UX score: ≥ 8.5/10.**
 
 ---
 
-## Notes for the implementer
+## Implementer Notes
 
-- Do NOT modify the literal string `"Custom Routine"` in the AppBar title — it is a user-set value, not a defect.
-- When in doubt between two visual options, **fewer lines, more tonal elevation, more breathing room**. The "Luminous Engine" aesthetic is restraint + precision + electric purple as the only loud color.
-- Test on a 360dp-wide viewport (smallest supported). If something breaks at 360dp, it will break in production.
-- After every category is done, take a screenshot and self-audit against the checklist before moving to the next.
+- Do NOT modify the literal `Custom Routine` AppBar title — it is a user-set value, not a defect.
+- Do NOT introduce Space Grotesk, Roboto, or any font other than Inter. The project ships GoogleFonts.inter only.
+- Do NOT add new color tokens to `app_colors.dart` unless a fix explicitly requires it. Reuse `bgBase`, `bgSurface`, `accentPrimary`, `textPrimary`, `textSecondary`. `borderSubtle` is reserved.
+- Do NOT touch `test/widget_test.dart` here — known-broken on main since before this task.
+- Do NOT freelance refactors. If a fix would require touching the Drift schema (e.g. adding a `total_volume_kg` column), pause and ask first.
+- Test at 360×640 logical pixels. If it breaks at 360, it ships broken.

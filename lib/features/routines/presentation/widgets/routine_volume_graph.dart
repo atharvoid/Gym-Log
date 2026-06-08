@@ -6,13 +6,8 @@ import '../../../../core/database/daos/workouts_dao.dart';
 import '../../../../core/theme/app_colors.dart';
 
 /// [routine_volume_graph.dart]
-/// Data-honest volume chart with strict threshold logic:
-///   - n == 0: empty state
-///   - n == 1: single annotated dot
-///   - n == 2: straight line
-///   - n >= 3: smooth cubic bezier + gradient fill
-///   - Horizontal dotted grid at 4% opacity
-///   - Y-axis uses Space Grotesk, includes 0 baseline
+/// Hevy-style volume chart with tap-to-select header, no gray tooltip box,
+/// no edge clipping, and subtle solid horizontal grid lines.
 
 class RoutineVolumeGraph extends StatefulWidget {
   final List<DailyVolumeSample> data;
@@ -28,16 +23,15 @@ class _RoutineVolumeGraphState extends State<RoutineVolumeGraph> {
 
   @override
   Widget build(BuildContext context) {
-    final data = widget.data;
-    if (data.isEmpty) {
+    if (widget.data.isEmpty) {
       return _buildEmptyState();
     }
 
-    if (data.length == 1) {
-      return _buildSinglePoint(data.first);
+    if (widget.data.length == 1) {
+      return _buildSinglePoint(widget.data.first);
     }
 
-    final samples = data;
+    final samples = widget.data;
     double stepFn(double maxV) => maxV <= 1500 ? 500 : 1000;
     double niceMaxY(double maxV) {
       final s = stepFn(maxV);
@@ -228,5 +222,4 @@ class _RoutineVolumeGraphState extends State<RoutineVolumeGraph> {
       ],
     );
   }
-
 }
