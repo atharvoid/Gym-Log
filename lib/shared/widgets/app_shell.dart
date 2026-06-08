@@ -32,7 +32,26 @@ class AppShell extends ConsumerWidget {
       bottomNavigationBar: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          if (isWorkoutActive) const ActiveWorkoutBar(),
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 280),
+            switchInCurve: Curves.easeOutCubic,
+            switchOutCurve: Curves.easeOutCubic,
+            transitionBuilder: (child, animation) {
+              return SizeTransition(
+                sizeFactor: animation,
+                child: SlideTransition(
+                  position: Tween<Offset>(
+                    begin: const Offset(0, 1.0),
+                    end: Offset.zero,
+                  ).animate(animation),
+                  child: child,
+                ),
+              );
+            },
+            child: isWorkoutActive 
+                ? const ActiveWorkoutBar(key: ValueKey('activeBar')) 
+                : const SizedBox.shrink(key: ValueKey('emptyBar')),
+          ),
           const BottomNavBar(),
         ],
       ),

@@ -32,7 +32,7 @@ class AuthRepository {
     final accessToken = googleAuth.accessToken;
 
     if (idToken == null) {
-      print('DEBUG [GoogleSignIn]: ID Token is null. Account details: email=${googleUser.email}, displayName=${googleUser.displayName}, id=${googleUser.id}, serverAuthCode=${googleUser.serverAuthCode}');
+      debugPrint('DEBUG [GoogleSignIn]: ID Token is null. Account details: email=${googleUser.email}, displayName=${googleUser.displayName}, id=${googleUser.id}, serverAuthCode=${googleUser.serverAuthCode}');
       throw Exception('No ID Token found');
     }
 

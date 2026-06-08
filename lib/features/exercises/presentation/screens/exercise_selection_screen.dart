@@ -86,6 +86,7 @@ class _ExerciseSelectionScreenState
                   itemBuilder: (context, index) {
                     final exercise = exercises[index];
                     return ListTile(
+                      key: ValueKey(exercise.id),
                       title: Text(
                         exercise.name,
                         style: GoogleFonts.inter(

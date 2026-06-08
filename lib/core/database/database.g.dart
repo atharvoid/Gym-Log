@@ -4450,9 +4450,8 @@ final class $$RoutineDaysTableReferences
           $_aliasNameGenerator(db.routineDays.routineId, db.routines.id));
 
   $$RoutinesTableProcessedTableManager? get routineId {
-    if ($_item.routineId == null) return null;
     final manager = $$RoutinesTableTableManager($_db, $_db.routines)
-        .filter((f) => f.id($_item.routineId!));
+        .filter((f) => f.id($_item.routineId));
     final item = $_typedResult.readTableOrNull(_routineIdTable($_db));
     if (item == null) return manager;
     return ProcessedTableManager(
@@ -4793,9 +4792,8 @@ final class $$RoutineExercisesTableReferences extends BaseReferences<
           db.routineExercises.routineDayId, db.routineDays.id));
 
   $$RoutineDaysTableProcessedTableManager? get routineDayId {
-    if ($_item.routineDayId == null) return null;
     final manager = $$RoutineDaysTableTableManager($_db, $_db.routineDays)
-        .filter((f) => f.id($_item.routineDayId!));
+        .filter((f) => f.id($_item.routineDayId));
     final item = $_typedResult.readTableOrNull(_routineDayIdTable($_db));
     if (item == null) return manager;
     return ProcessedTableManager(
@@ -4807,9 +4805,8 @@ final class $$RoutineExercisesTableReferences extends BaseReferences<
           db.routineExercises.exerciseId, db.exercises.id));
 
   $$ExercisesTableProcessedTableManager? get exerciseId {
-    if ($_item.exerciseId == null) return null;
     final manager = $$ExercisesTableTableManager($_db, $_db.exercises)
-        .filter((f) => f.id($_item.exerciseId!));
+        .filter((f) => f.id($_item.exerciseId));
     final item = $_typedResult.readTableOrNull(_exerciseIdTable($_db));
     if (item == null) return manager;
     return ProcessedTableManager(
@@ -5508,10 +5505,9 @@ final class $$WorkoutExercisesTableReferences extends BaseReferences<
           db.workoutExercises.sessionId, db.workoutSessions.id));
 
   $$WorkoutSessionsTableProcessedTableManager? get sessionId {
-    if ($_item.sessionId == null) return null;
     final manager =
         $$WorkoutSessionsTableTableManager($_db, $_db.workoutSessions)
-            .filter((f) => f.id($_item.sessionId!));
+            .filter((f) => f.id($_item.sessionId));
     final item = $_typedResult.readTableOrNull(_sessionIdTable($_db));
     if (item == null) return manager;
     return ProcessedTableManager(
@@ -5523,9 +5519,8 @@ final class $$WorkoutExercisesTableReferences extends BaseReferences<
           db.workoutExercises.exerciseId, db.exercises.id));
 
   $$ExercisesTableProcessedTableManager? get exerciseId {
-    if ($_item.exerciseId == null) return null;
     final manager = $$ExercisesTableTableManager($_db, $_db.exercises)
-        .filter((f) => f.id($_item.exerciseId!));
+        .filter((f) => f.id($_item.exerciseId));
     final item = $_typedResult.readTableOrNull(_exerciseIdTable($_db));
     if (item == null) return manager;
     return ProcessedTableManager(
@@ -5948,10 +5943,9 @@ final class $$WorkoutSetsTableReferences
           db.workoutSets.workoutExerciseId, db.workoutExercises.id));
 
   $$WorkoutExercisesTableProcessedTableManager? get workoutExerciseId {
-    if ($_item.workoutExerciseId == null) return null;
     final manager =
         $$WorkoutExercisesTableTableManager($_db, $_db.workoutExercises)
-            .filter((f) => f.id($_item.workoutExerciseId!));
+            .filter((f) => f.id($_item.workoutExerciseId));
     final item = $_typedResult.readTableOrNull(_workoutExerciseIdTable($_db));
     if (item == null) return manager;
     return ProcessedTableManager(

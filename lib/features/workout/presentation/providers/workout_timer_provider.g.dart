@@ -6,7 +6,7 @@ part of 'workout_timer_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$workoutTimerHash() => r'19f54a6b3cde68b5ebae7f14c6f554c713962d25';
+String _$workoutTimerHash() => r'40162002bf3992f5520406bdc0553f790f0a3d3e';
 
 /// See also [WorkoutTimer].
 @ProviderFor(WorkoutTimer)

@@ -3,7 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/providers/database_provider.dart';
 import '../providers/auth_provider.dart';
+
+/// [splash_screen.dart]
+/// Purpose: 2-second brand screen. Resolves auth state + profile existence
+/// to decide the correct initial route: /auth → /onboarding → /
 
 class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
@@ -16,15 +21,33 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    Future.delayed(const Duration(seconds: 2), () {
-      if (!mounted) return;
-      final isSignedIn = ref.read(authProvider) != null;
-      if (isSignedIn) {
-        context.go('/');
-      } else {
-        context.go('/auth');
-      }
-    });
+    _resolveInitialRoute();
+  }
+
+  Future<void> _resolveInitialRoute() async {
+    await Future.delayed(const Duration(seconds: 2));
+    if (!mounted) return;
+
+    final user = ref.read(authProvider);
+
+    // Not logged in → go to auth screen
+    if (user == null) {
+      context.go('/auth');
+      return;
+    }
+
+    // Logged in → check if local profile exists
+    final db = ref.read(databaseProvider);
+    final profile = await db.userDao.getUserOrNull(user.id);
+
+    if (!mounted) return;
+
+    if (profile == null) {
+      // First-time user: capture name before entering the app
+      context.go('/onboarding');
+    } else {
+      context.go('/');
+    }
   }
 
   @override

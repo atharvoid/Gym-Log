@@ -14,7 +14,7 @@ final appTheme = ThemeData(
   
   colorScheme: const ColorScheme.dark(
     surface: AppColors.bgBase,
-    surfaceVariant: AppColors.bgSurface,
+    surfaceContainerHighest: AppColors.bgSurface,
     primary: AppColors.accentPrimary,
     onPrimary: AppColors.textPrimary,
     secondary: AppColors.bgSurface,

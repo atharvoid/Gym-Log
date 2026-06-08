@@ -24,4 +24,14 @@ abstract class AppColors {
   static const error          = Color(0xFFFF5449);
   static const success        = Color(0xFF34C759); // iOS green
   static const warning        = Color(0xFFFFCC00); // iOS yellow
+
+  // Charts
+  static const muscleSplitPalette = [
+    Color(0xFF8A2BE2), // Electric Purple (primary)
+    Color(0xFF7B68EE), // Medium Slate Blue
+    Color(0xFFB19CD9), // Light Pastel Purple
+    Color(0xFF4B0082), // Indigo
+    Color(0xFF9932CC), // Dark Orchid
+    Color(0xFF5D3FD3), // Ultra Violet
+  ];
 }

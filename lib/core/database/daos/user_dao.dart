@@ -23,4 +23,17 @@ class UserDao extends DatabaseAccessor<AppDatabase> with _$UserDaoMixin {
   Future<void> deleteUser(String id) {
     return (delete(userProfiles)..where((t) => t.id.equals(id))).go();
   }
+
+  /// Returns null instead of throwing when user has no local profile yet.
+  Future<UserProfile?> getUserOrNull(String id) async {
+    final results =
+        await (select(userProfiles)..where((t) => t.id.equals(id))).get();
+    return results.isEmpty ? null : results.first;
+  }
+
+  /// Reactive stream of the user profile — updates instantly on DB writes.
+  Stream<UserProfile?> watchUser(String id) {
+    return (select(userProfiles)..where((t) => t.id.equals(id)))
+        .watchSingleOrNull();
+  }
 }
