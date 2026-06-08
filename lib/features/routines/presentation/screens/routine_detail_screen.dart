@@ -438,14 +438,13 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
                 ),
               ),
               actions: [
-                SizedBox(
-                  width: 48,
-                  height: 48,
-                  child: IconButton(
-                    icon: const Icon(Icons.more_horiz),
-                    color: AppColors.textPrimary,
-                    onPressed: () => _showActionsSheet(routine),
-                  ),
+                IconButton(
+                  icon: const Icon(Icons.more_vert_rounded, size: 24),
+                  color: AppColors.textPrimary,
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
+                  splashRadius: 24,
+                  onPressed: () => _showActionsSheet(routine),
                 ),
               ],
             ),
