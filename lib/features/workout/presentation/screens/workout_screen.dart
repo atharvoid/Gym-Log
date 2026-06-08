@@ -4,9 +4,16 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/widgets/ui/secondary_button.dart';
+import '../../../../shared/widgets/ui/tracker_card.dart';
 import '../../../routines/presentation/widgets/routine_card.dart';
+import '../../../routines/presentation/providers/routines_provider.dart';
 import '../../domain/active_workout_state.dart';
 import '../providers/active_workout_provider.dart';
+import 'package:gymlog/core/database/daos/routines_dao.dart';
+
+/// [workout_screen.dart]
+/// Purpose: Routines tab — shows user's saved routines from Drift in real-time.
+/// State: hydratedRoutinesProvider (StreamProvider) — auto-refreshes on DB writes.
 
 class WorkoutScreen extends ConsumerStatefulWidget {
   const WorkoutScreen({super.key});
@@ -18,38 +25,28 @@ class WorkoutScreen extends ConsumerStatefulWidget {
 class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
   bool _routinesExpanded = true;
 
-  final _routines = [
-    _RoutineData(
-      title: 'Push Day',
-      exercises: ['Bench Press', 'Overhead Press', 'Tricep Dips', 'Lateral Raises'],
-    ),
-    _RoutineData(
-      title: 'Pull Day',
-      exercises: ['Deadlift', 'Pull-ups', 'Barbell Row', 'Face Pulls'],
-    ),
-    _RoutineData(
-      title: 'Leg Day',
-      exercises: ['Squat', 'Leg Press', 'Hamstring Curl', 'Calf Raises'],
-    ),
-  ];
+  void _startRoutine(HydratedRoutine routine) {
+    if (routine.exerciseIds.isEmpty) return;
 
-  void _startRoutine(List<String> exerciseNames) {
-    final exercises = exerciseNames.asMap().entries.map((e) {
+    final exercises = routine.exerciseIds.asMap().entries.map((e) {
       return WorkoutExerciseState(
-        exerciseId: e.key + 1,
-        name: e.value,
+        exerciseId: e.value,
+        name: routine.exerciseNames[e.key],
         sets: [WorkoutSetState.create()],
       );
     }).toList();
 
     ref.read(activeWorkoutProvider.notifier).startWorkout(
-      initialExercises: exercises,
-    );
+          routineId: routine.routine.id,
+          initialExercises: exercises,
+        );
     context.push('/workout/active');
   }
 
   @override
   Widget build(BuildContext context) {
+    final routinesAsync = ref.watch(hydratedRoutinesProvider);
+
     return Scaffold(
       backgroundColor: AppColors.bgBase,
       appBar: AppBar(
@@ -67,17 +64,6 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Section: Routines
-            Text(
-              'Routines',
-              style: GoogleFonts.inter(
-                color: AppColors.textPrimary,
-                fontSize: 20,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-            const SizedBox(height: 12),
-
             // Action Row
             Row(
               children: [
@@ -100,57 +86,109 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
             ),
             const SizedBox(height: 16),
 
-            // Collapsible Header
+            // Collapsible header
             GestureDetector(
-              onTap: () => setState(() => _routinesExpanded = !_routinesExpanded),
-              child: Row(
-                children: [
-                  Icon(
-                    _routinesExpanded
-                        ? Icons.keyboard_arrow_down
-                        : Icons.keyboard_arrow_right,
-                    color: AppColors.textSecondary,
-                    size: 20,
-                  ),
-                  const SizedBox(width: 4),
-                  Expanded(
-                    child: Text(
-                      'My Routines (${_routines.length})',
-                      style: GoogleFonts.inter(
-                        color: AppColors.textSecondary,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                      ),
+              onTap: () =>
+                  setState(() => _routinesExpanded = !_routinesExpanded),
+              behavior: HitTestBehavior.opaque,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: Row(
+                  children: [
+                    Icon(
+                      _routinesExpanded
+                          ? Icons.keyboard_arrow_down
+                          : Icons.keyboard_arrow_right,
+                      color: AppColors.textSecondary,
+                      size: 20,
                     ),
-                  ),
-                ],
+                    const SizedBox(width: 4),
+                    routinesAsync.when(
+                      data: (routines) => Text(
+                        'My Routines (${routines.length})',
+                        style: GoogleFonts.inter(
+                          color: AppColors.textSecondary,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      loading: () => Text(
+                        'My Routines',
+                        style: GoogleFonts.inter(
+                          color: AppColors.textSecondary,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      error: (_, __) => const SizedBox.shrink(),
+                    ),
+                  ],
+                ),
               ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 8),
 
-            // Routine Cards
+            // Routine list from DB
             if (_routinesExpanded)
-              ..._routines.map((routine) => Padding(
-                    padding: const EdgeInsets.only(bottom: 12),
-                    child: RoutineCard(
-                      routineName: routine.title,
-                      exerciseNames: routine.exercises,
-                      onStartTap: () => _startRoutine(routine.exercises),
-                    ),
-                  )),
+              routinesAsync.when(
+                loading: () => const Center(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(vertical: 32),
+                    child: CircularProgressIndicator(
+                        color: AppColors.accentPrimary),
+                  ),
+                ),
+                error: (e, _) => TrackerCard(
+                  child: Text(
+                    'Failed to load routines',
+                    style: GoogleFonts.inter(color: AppColors.error),
+                  ),
+                ),
+                data: (routines) {
+                  if (routines.isEmpty) {
+                    return TrackerCard(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'No routines yet',
+                            style: GoogleFonts.inter(
+                              color: AppColors.textPrimary,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'Save a workout as a routine, or create one above.',
+                            style: GoogleFonts.inter(
+                              color: AppColors.textSecondary,
+                              fontSize: 13,
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+
+                  return Column(
+                    children: routines.map((routine) {
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 12),
+                        child: RoutineCard(
+                          routineId: routine.routine.id,
+                          routineName: routine.routine.name,
+                          exerciseNames: routine.exerciseNames,
+                          onStartTap: () => _startRoutine(routine),
+                        ),
+                      );
+                    }).toList(),
+                  );
+                },
+              ),
           ],
         ),
       ),
     );
   }
-}
-
-class _RoutineData {
-  final String title;
-  final List<String> exercises;
-
-  _RoutineData({
-    required this.title,
-    required this.exercises,
-  });
 }

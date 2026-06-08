@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter/services.dart';
 import '../../core/theme/app_colors.dart';
 
 /// [bottom_nav_bar.dart]
@@ -36,7 +37,10 @@ class BottomNavBar extends StatelessWidget {
               return _NavButton(
                 item: tab,
                 isActive: isActive,
-                onTap: () => context.go(tab.path),
+                onTap: () {
+                  HapticFeedback.selectionClick();
+                  context.go(tab.path);
+                },
               );
             }).toList(),
           ),

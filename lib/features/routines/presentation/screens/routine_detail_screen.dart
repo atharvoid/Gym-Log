@@ -556,28 +556,28 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
                             Text(
-                              'Total Volume',
-                              style: GoogleFonts.spaceGrotesk(
-                                color: const Color(0xFF9CA3AF),
-                                fontSize: 14,
-                                fontWeight: FontWeight.w700,
+                              'Total Volume (kg)',
+                              style: GoogleFonts.inter(
+                                color: AppColors.textPrimary,
+                                fontSize: 18,
+                                fontWeight: FontWeight.w600,
                               ),
                             ),
-                            const SizedBox(width: 6),
-                            Text(
-                              '(kg)',
-                              style: GoogleFonts.spaceGrotesk(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w500,
-                                color: const Color(0xFF6B7280),
+                            Semantics(
+                              label: 'Time range filter',
+                              button: true,
+                              child: _TimeFilterTapTarget(
+                                value: _selectedTimeRange,
+                                onTap: () => _showTimeRangeSheet(context),
                               ),
                             ),
                           ],
                         ),
-                        const SizedBox(height: 16), // 16px rhythm: graph header to graph container
+                        const SizedBox(height: 12), // 12px rhythm: graph header to graph container
                         Container(
                           height: 200,
                           decoration: BoxDecoration(
@@ -610,16 +610,6 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
                               ),
                             ),
                           ),
-                        ),
-                        const SizedBox(height: 16), // C1 gap
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          children: [
-                            _TimeFilterTapTarget(
-                              value: _selectedTimeRange,
-                              onTap: () => _showTimeRangeSheet(context),
-                            ),
-                          ],
                         ),
                         // Section break: 24px between analytics and exercise data
                         const SizedBox(height: 24),
@@ -953,7 +943,7 @@ class _TimeFilterTapTarget extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         alignment: Alignment.center,
         decoration: BoxDecoration(
-          color: const Color(0xFF141414),
+          color: AppColors.bgSurface,
           borderRadius: BorderRadius.circular(12),
         ),
         child: Row(
@@ -964,7 +954,7 @@ class _TimeFilterTapTarget extends StatelessWidget {
               style: GoogleFonts.inter(
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
-                color: const Color(0xFFE9E9EE),
+                color: AppColors.textPrimary.withValues(alpha: 0.92),
               ),
             ),
             const SizedBox(width: 4),

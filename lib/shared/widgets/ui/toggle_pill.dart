@@ -30,13 +30,14 @@ class TogglePill extends StatelessWidget {
           color: isActive ? AppColors.accentPrimary : AppColors.borderSubtle,
           borderRadius: BorderRadius.circular(99),
         ),
-        child: Text(
-          label,
+        child: AnimatedDefaultTextStyle(
+          duration: const Duration(milliseconds: 200),
           style: GoogleFonts.inter(
             color: isActive ? AppColors.textPrimary : AppColors.textSecondary,
             fontSize: 14,
             fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
           ),
+          child: Text(label),
         ),
       ),
     );

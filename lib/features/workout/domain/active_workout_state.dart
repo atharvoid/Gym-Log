@@ -11,6 +11,7 @@ class WorkoutSetState with _$WorkoutSetState {
     @Default(0.0) double weightKg,
     @Default(0) int reps,
     @Default(false) bool isCompleted,
+    DateTime? completedAt,
   }) = _WorkoutSetState;
 
   factory WorkoutSetState.create() => WorkoutSetState(
@@ -21,6 +22,7 @@ class WorkoutSetState with _$WorkoutSetState {
 @freezed
 class WorkoutExerciseState with _$WorkoutExerciseState {
   const factory WorkoutExerciseState({
+    @Default('') String id,
     required int exerciseId,
     required String name,
     @Default([]) List<WorkoutSetState> sets,
@@ -33,6 +35,9 @@ class ActiveWorkoutState with _$ActiveWorkoutState {
     required String id,
     required DateTime startTime,
     String? routineId,
+    String? name,
     @Default([]) List<WorkoutExerciseState> exercises,
+    String? originalSessionId,
+    Duration? historicalDuration,
   }) = _ActiveWorkoutState;
 }

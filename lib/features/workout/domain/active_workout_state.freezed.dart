@@ -21,6 +21,7 @@ mixin _$WorkoutSetState {
   double get weightKg => throw _privateConstructorUsedError;
   int get reps => throw _privateConstructorUsedError;
   bool get isCompleted => throw _privateConstructorUsedError;
+  DateTime? get completedAt => throw _privateConstructorUsedError;
 
   @JsonKey(ignore: true)
   $WorkoutSetStateCopyWith<WorkoutSetState> get copyWith =>
@@ -34,7 +35,12 @@ abstract class $WorkoutSetStateCopyWith<$Res> {
       _$WorkoutSetStateCopyWithImpl<$Res, WorkoutSetState>;
   @useResult
   $Res call(
-      {String id, String setType, double weightKg, int reps, bool isCompleted});
+      {String id,
+      String setType,
+      double weightKg,
+      int reps,
+      bool isCompleted,
+      DateTime? completedAt});
 }
 
 /// @nodoc
@@ -55,6 +61,7 @@ class _$WorkoutSetStateCopyWithImpl<$Res, $Val extends WorkoutSetState>
     Object? weightKg = null,
     Object? reps = null,
     Object? isCompleted = null,
+    Object? completedAt = freezed,
   }) {
     return _then(_value.copyWith(
       id: null == id
@@ -77,6 +84,10 @@ class _$WorkoutSetStateCopyWithImpl<$Res, $Val extends WorkoutSetState>
           ? _value.isCompleted
           : isCompleted // ignore: cast_nullable_to_non_nullable
               as bool,
+      completedAt: freezed == completedAt
+          ? _value.completedAt
+          : completedAt // ignore: cast_nullable_to_non_nullable
+              as DateTime?,
     ) as $Val);
   }
 }
@@ -90,7 +101,12 @@ abstract class _$$WorkoutSetStateImplCopyWith<$Res>
   @override
   @useResult
   $Res call(
-      {String id, String setType, double weightKg, int reps, bool isCompleted});
+      {String id,
+      String setType,
+      double weightKg,
+      int reps,
+      bool isCompleted,
+      DateTime? completedAt});
 }
 
 /// @nodoc
@@ -109,6 +125,7 @@ class __$$WorkoutSetStateImplCopyWithImpl<$Res>
     Object? weightKg = null,
     Object? reps = null,
     Object? isCompleted = null,
+    Object? completedAt = freezed,
   }) {
     return _then(_$WorkoutSetStateImpl(
       id: null == id
@@ -131,6 +148,10 @@ class __$$WorkoutSetStateImplCopyWithImpl<$Res>
           ? _value.isCompleted
           : isCompleted // ignore: cast_nullable_to_non_nullable
               as bool,
+      completedAt: freezed == completedAt
+          ? _value.completedAt
+          : completedAt // ignore: cast_nullable_to_non_nullable
+              as DateTime?,
     ));
   }
 }
@@ -143,7 +164,8 @@ class _$WorkoutSetStateImpl implements _WorkoutSetState {
       this.setType = 'normal',
       this.weightKg = 0.0,
       this.reps = 0,
-      this.isCompleted = false});
+      this.isCompleted = false,
+      this.completedAt});
 
   @override
   @JsonKey()
@@ -160,10 +182,12 @@ class _$WorkoutSetStateImpl implements _WorkoutSetState {
   @override
   @JsonKey()
   final bool isCompleted;
+  @override
+  final DateTime? completedAt;
 
   @override
   String toString() {
-    return 'WorkoutSetState(id: $id, setType: $setType, weightKg: $weightKg, reps: $reps, isCompleted: $isCompleted)';
+    return 'WorkoutSetState(id: $id, setType: $setType, weightKg: $weightKg, reps: $reps, isCompleted: $isCompleted, completedAt: $completedAt)';
   }
 
   @override
@@ -177,12 +201,14 @@ class _$WorkoutSetStateImpl implements _WorkoutSetState {
                 other.weightKg == weightKg) &&
             (identical(other.reps, reps) || other.reps == reps) &&
             (identical(other.isCompleted, isCompleted) ||
-                other.isCompleted == isCompleted));
+                other.isCompleted == isCompleted) &&
+            (identical(other.completedAt, completedAt) ||
+                other.completedAt == completedAt));
   }
 
   @override
-  int get hashCode =>
-      Object.hash(runtimeType, id, setType, weightKg, reps, isCompleted);
+  int get hashCode => Object.hash(
+      runtimeType, id, setType, weightKg, reps, isCompleted, completedAt);
 
   @JsonKey(ignore: true)
   @override
@@ -198,7 +224,8 @@ abstract class _WorkoutSetState implements WorkoutSetState {
       final String setType,
       final double weightKg,
       final int reps,
-      final bool isCompleted}) = _$WorkoutSetStateImpl;
+      final bool isCompleted,
+      final DateTime? completedAt}) = _$WorkoutSetStateImpl;
 
   @override
   String get id;
@@ -211,6 +238,8 @@ abstract class _WorkoutSetState implements WorkoutSetState {
   @override
   bool get isCompleted;
   @override
+  DateTime? get completedAt;
+  @override
   @JsonKey(ignore: true)
   _$$WorkoutSetStateImplCopyWith<_$WorkoutSetStateImpl> get copyWith =>
       throw _privateConstructorUsedError;
@@ -218,6 +247,7 @@ abstract class _WorkoutSetState implements WorkoutSetState {
 
 /// @nodoc
 mixin _$WorkoutExerciseState {
+  String get id => throw _privateConstructorUsedError;
   int get exerciseId => throw _privateConstructorUsedError;
   String get name => throw _privateConstructorUsedError;
   List<WorkoutSetState> get sets => throw _privateConstructorUsedError;
@@ -233,7 +263,8 @@ abstract class $WorkoutExerciseStateCopyWith<$Res> {
           $Res Function(WorkoutExerciseState) then) =
       _$WorkoutExerciseStateCopyWithImpl<$Res, WorkoutExerciseState>;
   @useResult
-  $Res call({int exerciseId, String name, List<WorkoutSetState> sets});
+  $Res call(
+      {String id, int exerciseId, String name, List<WorkoutSetState> sets});
 }
 
 /// @nodoc
@@ -250,11 +281,16 @@ class _$WorkoutExerciseStateCopyWithImpl<$Res,
   @pragma('vm:prefer-inline')
   @override
   $Res call({
+    Object? id = null,
     Object? exerciseId = null,
     Object? name = null,
     Object? sets = null,
   }) {
     return _then(_value.copyWith(
+      id: null == id
+          ? _value.id
+          : id // ignore: cast_nullable_to_non_nullable
+              as String,
       exerciseId: null == exerciseId
           ? _value.exerciseId
           : exerciseId // ignore: cast_nullable_to_non_nullable
@@ -279,7 +315,8 @@ abstract class _$$WorkoutExerciseStateImplCopyWith<$Res>
       __$$WorkoutExerciseStateImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({int exerciseId, String name, List<WorkoutSetState> sets});
+  $Res call(
+      {String id, int exerciseId, String name, List<WorkoutSetState> sets});
 }
 
 /// @nodoc
@@ -293,11 +330,16 @@ class __$$WorkoutExerciseStateImplCopyWithImpl<$Res>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
+    Object? id = null,
     Object? exerciseId = null,
     Object? name = null,
     Object? sets = null,
   }) {
     return _then(_$WorkoutExerciseStateImpl(
+      id: null == id
+          ? _value.id
+          : id // ignore: cast_nullable_to_non_nullable
+              as String,
       exerciseId: null == exerciseId
           ? _value.exerciseId
           : exerciseId // ignore: cast_nullable_to_non_nullable
@@ -318,11 +360,15 @@ class __$$WorkoutExerciseStateImplCopyWithImpl<$Res>
 
 class _$WorkoutExerciseStateImpl implements _WorkoutExerciseState {
   const _$WorkoutExerciseStateImpl(
-      {required this.exerciseId,
+      {this.id = '',
+      required this.exerciseId,
       required this.name,
       final List<WorkoutSetState> sets = const []})
       : _sets = sets;
 
+  @override
+  @JsonKey()
+  final String id;
   @override
   final int exerciseId;
   @override
@@ -338,7 +384,7 @@ class _$WorkoutExerciseStateImpl implements _WorkoutExerciseState {
 
   @override
   String toString() {
-    return 'WorkoutExerciseState(exerciseId: $exerciseId, name: $name, sets: $sets)';
+    return 'WorkoutExerciseState(id: $id, exerciseId: $exerciseId, name: $name, sets: $sets)';
   }
 
   @override
@@ -346,6 +392,7 @@ class _$WorkoutExerciseStateImpl implements _WorkoutExerciseState {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$WorkoutExerciseStateImpl &&
+            (identical(other.id, id) || other.id == id) &&
             (identical(other.exerciseId, exerciseId) ||
                 other.exerciseId == exerciseId) &&
             (identical(other.name, name) || other.name == name) &&
@@ -353,7 +400,7 @@ class _$WorkoutExerciseStateImpl implements _WorkoutExerciseState {
   }
 
   @override
-  int get hashCode => Object.hash(runtimeType, exerciseId, name,
+  int get hashCode => Object.hash(runtimeType, id, exerciseId, name,
       const DeepCollectionEquality().hash(_sets));
 
   @JsonKey(ignore: true)
@@ -367,10 +414,13 @@ class _$WorkoutExerciseStateImpl implements _WorkoutExerciseState {
 
 abstract class _WorkoutExerciseState implements WorkoutExerciseState {
   const factory _WorkoutExerciseState(
-      {required final int exerciseId,
+      {final String id,
+      required final int exerciseId,
       required final String name,
       final List<WorkoutSetState> sets}) = _$WorkoutExerciseStateImpl;
 
+  @override
+  String get id;
   @override
   int get exerciseId;
   @override
@@ -388,8 +438,11 @@ mixin _$ActiveWorkoutState {
   String get id => throw _privateConstructorUsedError;
   DateTime get startTime => throw _privateConstructorUsedError;
   String? get routineId => throw _privateConstructorUsedError;
+  String? get name => throw _privateConstructorUsedError;
   List<WorkoutExerciseState> get exercises =>
       throw _privateConstructorUsedError;
+  String? get originalSessionId => throw _privateConstructorUsedError;
+  Duration? get historicalDuration => throw _privateConstructorUsedError;
 
   @JsonKey(ignore: true)
   $ActiveWorkoutStateCopyWith<ActiveWorkoutState> get copyWith =>
@@ -406,7 +459,10 @@ abstract class $ActiveWorkoutStateCopyWith<$Res> {
       {String id,
       DateTime startTime,
       String? routineId,
-      List<WorkoutExerciseState> exercises});
+      String? name,
+      List<WorkoutExerciseState> exercises,
+      String? originalSessionId,
+      Duration? historicalDuration});
 }
 
 /// @nodoc
@@ -425,7 +481,10 @@ class _$ActiveWorkoutStateCopyWithImpl<$Res, $Val extends ActiveWorkoutState>
     Object? id = null,
     Object? startTime = null,
     Object? routineId = freezed,
+    Object? name = freezed,
     Object? exercises = null,
+    Object? originalSessionId = freezed,
+    Object? historicalDuration = freezed,
   }) {
     return _then(_value.copyWith(
       id: null == id
@@ -440,10 +499,22 @@ class _$ActiveWorkoutStateCopyWithImpl<$Res, $Val extends ActiveWorkoutState>
           ? _value.routineId
           : routineId // ignore: cast_nullable_to_non_nullable
               as String?,
+      name: freezed == name
+          ? _value.name
+          : name // ignore: cast_nullable_to_non_nullable
+              as String?,
       exercises: null == exercises
           ? _value.exercises
           : exercises // ignore: cast_nullable_to_non_nullable
               as List<WorkoutExerciseState>,
+      originalSessionId: freezed == originalSessionId
+          ? _value.originalSessionId
+          : originalSessionId // ignore: cast_nullable_to_non_nullable
+              as String?,
+      historicalDuration: freezed == historicalDuration
+          ? _value.historicalDuration
+          : historicalDuration // ignore: cast_nullable_to_non_nullable
+              as Duration?,
     ) as $Val);
   }
 }
@@ -460,7 +531,10 @@ abstract class _$$ActiveWorkoutStateImplCopyWith<$Res>
       {String id,
       DateTime startTime,
       String? routineId,
-      List<WorkoutExerciseState> exercises});
+      String? name,
+      List<WorkoutExerciseState> exercises,
+      String? originalSessionId,
+      Duration? historicalDuration});
 }
 
 /// @nodoc
@@ -477,7 +551,10 @@ class __$$ActiveWorkoutStateImplCopyWithImpl<$Res>
     Object? id = null,
     Object? startTime = null,
     Object? routineId = freezed,
+    Object? name = freezed,
     Object? exercises = null,
+    Object? originalSessionId = freezed,
+    Object? historicalDuration = freezed,
   }) {
     return _then(_$ActiveWorkoutStateImpl(
       id: null == id
@@ -492,10 +569,22 @@ class __$$ActiveWorkoutStateImplCopyWithImpl<$Res>
           ? _value.routineId
           : routineId // ignore: cast_nullable_to_non_nullable
               as String?,
+      name: freezed == name
+          ? _value.name
+          : name // ignore: cast_nullable_to_non_nullable
+              as String?,
       exercises: null == exercises
           ? _value._exercises
           : exercises // ignore: cast_nullable_to_non_nullable
               as List<WorkoutExerciseState>,
+      originalSessionId: freezed == originalSessionId
+          ? _value.originalSessionId
+          : originalSessionId // ignore: cast_nullable_to_non_nullable
+              as String?,
+      historicalDuration: freezed == historicalDuration
+          ? _value.historicalDuration
+          : historicalDuration // ignore: cast_nullable_to_non_nullable
+              as Duration?,
     ));
   }
 }
@@ -507,7 +596,10 @@ class _$ActiveWorkoutStateImpl implements _ActiveWorkoutState {
       {required this.id,
       required this.startTime,
       this.routineId,
-      final List<WorkoutExerciseState> exercises = const []})
+      this.name,
+      final List<WorkoutExerciseState> exercises = const [],
+      this.originalSessionId,
+      this.historicalDuration})
       : _exercises = exercises;
 
   @override
@@ -516,6 +608,8 @@ class _$ActiveWorkoutStateImpl implements _ActiveWorkoutState {
   final DateTime startTime;
   @override
   final String? routineId;
+  @override
+  final String? name;
   final List<WorkoutExerciseState> _exercises;
   @override
   @JsonKey()
@@ -526,8 +620,13 @@ class _$ActiveWorkoutStateImpl implements _ActiveWorkoutState {
   }
 
   @override
+  final String? originalSessionId;
+  @override
+  final Duration? historicalDuration;
+
+  @override
   String toString() {
-    return 'ActiveWorkoutState(id: $id, startTime: $startTime, routineId: $routineId, exercises: $exercises)';
+    return 'ActiveWorkoutState(id: $id, startTime: $startTime, routineId: $routineId, name: $name, exercises: $exercises, originalSessionId: $originalSessionId, historicalDuration: $historicalDuration)';
   }
 
   @override
@@ -540,13 +639,25 @@ class _$ActiveWorkoutStateImpl implements _ActiveWorkoutState {
                 other.startTime == startTime) &&
             (identical(other.routineId, routineId) ||
                 other.routineId == routineId) &&
+            (identical(other.name, name) || other.name == name) &&
             const DeepCollectionEquality()
-                .equals(other._exercises, _exercises));
+                .equals(other._exercises, _exercises) &&
+            (identical(other.originalSessionId, originalSessionId) ||
+                other.originalSessionId == originalSessionId) &&
+            (identical(other.historicalDuration, historicalDuration) ||
+                other.historicalDuration == historicalDuration));
   }
 
   @override
-  int get hashCode => Object.hash(runtimeType, id, startTime, routineId,
-      const DeepCollectionEquality().hash(_exercises));
+  int get hashCode => Object.hash(
+      runtimeType,
+      id,
+      startTime,
+      routineId,
+      name,
+      const DeepCollectionEquality().hash(_exercises),
+      originalSessionId,
+      historicalDuration);
 
   @JsonKey(ignore: true)
   @override
@@ -561,7 +672,10 @@ abstract class _ActiveWorkoutState implements ActiveWorkoutState {
       {required final String id,
       required final DateTime startTime,
       final String? routineId,
-      final List<WorkoutExerciseState> exercises}) = _$ActiveWorkoutStateImpl;
+      final String? name,
+      final List<WorkoutExerciseState> exercises,
+      final String? originalSessionId,
+      final Duration? historicalDuration}) = _$ActiveWorkoutStateImpl;
 
   @override
   String get id;
@@ -570,7 +684,13 @@ abstract class _ActiveWorkoutState implements ActiveWorkoutState {
   @override
   String? get routineId;
   @override
+  String? get name;
+  @override
   List<WorkoutExerciseState> get exercises;
+  @override
+  String? get originalSessionId;
+  @override
+  Duration? get historicalDuration;
   @override
   @JsonKey(ignore: true)
   _$$ActiveWorkoutStateImplCopyWith<_$ActiveWorkoutStateImpl> get copyWith =>

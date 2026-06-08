@@ -26,6 +26,16 @@ android {
 
     buildTypes {
         release {
+            // R8 code shrinking + resource shrinking for release builds.
+            // isMinifyEnabled runs R8 which dead-code-eliminates unused classes
+            // from all dependencies (biggest single APK size reduction).
+            // isShrinkResources strips unused Android resource entries.
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
             // Signing with the debug keys for now, so `flutter run --release` works.
             signingConfig = signingConfigs.getByName("debug")
         }

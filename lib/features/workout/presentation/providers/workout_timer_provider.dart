@@ -24,6 +24,13 @@ class WorkoutTimer extends _$WorkoutTimer {
       return '00:00:00';
     }
 
+    // Timer suppression for historical workout edits
+    if (workout.originalSessionId != null && workout.historicalDuration != null) {
+      _timer?.cancel();
+      _timer = null;
+      return _formatDuration(workout.historicalDuration!);
+    }
+
     _timer?.cancel();
     _updateElapsed(workout.startTime);
     _timer = Timer.periodic(const Duration(seconds: 1), (_) {
@@ -31,6 +38,13 @@ class WorkoutTimer extends _$WorkoutTimer {
     });
 
     return state;
+  }
+
+  String _formatDuration(Duration d) {
+    final h = d.inHours.toString().padLeft(2, '0');
+    final m = d.inMinutes.remainder(60).toString().padLeft(2, '0');
+    final s = d.inSeconds.remainder(60).toString().padLeft(2, '0');
+    return '$h:$m:$s';
   }
 
   void _updateElapsed(DateTime startTime) {

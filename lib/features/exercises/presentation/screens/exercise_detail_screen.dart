@@ -1,3 +1,5 @@
+import 'dart:convert';
+import 'dart:math' show min, max;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -6,17 +8,25 @@ import 'package:intl/intl.dart';
 import 'package:gymlog/core/theme/app_colors.dart';
 import 'package:gymlog/core/database/database.dart';
 import 'package:gymlog/core/database/daos/workouts_dao.dart';
+import 'package:gymlog/shared/widgets/exercise_gif_widget.dart';
+import 'package:gymlog/core/providers/database_provider.dart';
 import '../providers/exercise_analytics_provider.dart';
 
 class ExerciseDetailScreen extends ConsumerStatefulWidget {
-  final Exercise exercise;
+  final int exerciseId;
+  final Exercise? exercise;
 
-  const ExerciseDetailScreen({super.key, required this.exercise});
+  const ExerciseDetailScreen({super.key, required this.exerciseId, this.exercise});
 
   @override
   ConsumerState<ExerciseDetailScreen> createState() =>
       _ExerciseDetailScreenState();
 }
+
+final _exerciseFallbackProvider = FutureProvider.family<Exercise, int>((ref, id) {
+  final db = ref.watch(databaseProvider);
+  return db.exercisesDao.getExerciseById(id);
+});
 
 class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
   int _activeToggleIndex = 0;
@@ -26,34 +36,11 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
     'Heaviest Weight',
     'One Rep Max',
     'Best Set',
-    'Best Volume',
+    'Session Volume',
   ];
 
   static const _timeRangeOptions = ['1M', '3M', '6M', '1Y', 'All Time'];
 
-  List<ExerciseHistoryData> _filteredHistory(List<ExerciseHistoryData> history) {
-    final now = DateTime.now();
-    switch (_selectedTimeRange) {
-      case '1M':
-        return history
-            .where((e) => e.date.isAfter(now.subtract(const Duration(days: 30))))
-            .toList();
-      case '3M':
-        return history
-            .where((e) => e.date.isAfter(now.subtract(const Duration(days: 90))))
-            .toList();
-      case '6M':
-        return history
-            .where((e) => e.date.isAfter(now.subtract(const Duration(days: 180))))
-            .toList();
-      case '1Y':
-        return history
-            .where((e) => e.date.isAfter(now.subtract(const Duration(days: 365))))
-            .toList();
-      default:
-        return history;
-    }
-  }
 
   double _metricForToggle(ExerciseHistoryData e, int index) {
     switch (index) {
@@ -73,93 +60,104 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final historyAsync =
-        ref.watch(exerciseAnalyticsProvider(widget.exercise.id));
+        ref.watch(exerciseAnalyticsProvider((widget.exerciseId, _selectedTimeRange)));
 
-    return Scaffold(
-      backgroundColor: AppColors.bgBase,
-      appBar: AppBar(
-        title: Text(
-          widget.exercise.name,
-          style: GoogleFonts.inter(
-            fontWeight: FontWeight.w700,
-            fontSize: 18,
-            color: AppColors.textPrimary,
-          ),
-        ),
-        backgroundColor: AppColors.bgSurface,
-        iconTheme: const IconThemeData(color: AppColors.textPrimary),
-      ),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          // Media Placeholder
-          Container(
-            height: 200,
-            decoration: BoxDecoration(
-              color: AppColors.bgSurface,
-              borderRadius: BorderRadius.circular(12),
+    final exerciseAsync = widget.exercise != null 
+        ? AsyncValue.data(widget.exercise!) 
+        : ref.watch(_exerciseFallbackProvider(widget.exerciseId));
+
+    return exerciseAsync.when(
+      loading: () => const Scaffold(backgroundColor: AppColors.bgBase, body: Center(child: CircularProgressIndicator(color: AppColors.accentPrimary))),
+      error: (e, st) => Scaffold(backgroundColor: AppColors.bgBase, body: Center(child: Text('Error loading exercise', style: GoogleFonts.inter(color: AppColors.error)))),
+      data: (exercise) {
+        return Scaffold(
+          backgroundColor: AppColors.bgBase,
+          appBar: AppBar(
+            title: Text(
+              exercise.name,
+              style: GoogleFonts.inter(
+                fontWeight: FontWeight.w700,
+                fontSize: 18,
+                color: AppColors.textPrimary,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
-            child: const Center(
-              child: Icon(Icons.image, size: 48, color: AppColors.textSecondary),
-            ),
+            backgroundColor: AppColors.bgSurface,
+            iconTheme: const IconThemeData(color: AppColors.textPrimary),
           ),
+          body: ListView(
+            padding: const EdgeInsets.all(16),
+            children: [
+              // Exercise GIF — loads from Supabase, cached permanently offline
+              ExerciseGifWidget(
+                gifUrl: exercise.gifUrl,
+                width: double.infinity,
+                height: 220,
+                fit: BoxFit.contain,
+              ),
 
-          const SizedBox(height: 16),
+              const SizedBox(height: 16),
 
-          // Exercise Name & Metadata
-          Text(
-            widget.exercise.name,
-            style: GoogleFonts.inter(
-              color: AppColors.textPrimary,
-              fontSize: 24,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            '${widget.exercise.target} • ${widget.exercise.equipment}',
-            style: GoogleFonts.inter(
-              color: AppColors.textSecondary,
-              fontSize: 14,
-              fontWeight: FontWeight.w400,
-            ),
-          ),
-
-          const SizedBox(height: 24),
-
-          historyAsync.when(
-            loading: () => const Center(
-              child: Padding(
-                padding: EdgeInsets.symmetric(vertical: 60),
-                child: CircularProgressIndicator(
-                  color: AppColors.accentPrimary,
+              // Exercise Name & Metadata
+              Text(
+                exercise.name,
+                style: GoogleFonts.inter(
+                  color: AppColors.textPrimary,
+                  fontSize: 24,
+                  fontWeight: FontWeight.w800,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                '${exercise.target} • ${exercise.equipment}',
+                style: GoogleFonts.inter(
+                  color: AppColors.textSecondary,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w400,
                 ),
               ),
-            ),
-            error: (err, _) => Center(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 60),
-                child: Text(
-                  'Failed to load analytics',
-                  style: GoogleFonts.inter(color: AppColors.error),
+
+              const SizedBox(height: 24),
+
+              historyAsync.when(
+                loading: () => const Center(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(vertical: 60),
+                    child: CircularProgressIndicator(
+                      color: AppColors.accentPrimary,
+                    ),
+                  ),
                 ),
+                error: (err, _) => Center(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 60),
+                    child: Text(
+                      'Failed to load analytics',
+                      style: GoogleFonts.inter(color: AppColors.error),
+                    ),
+                  ),
+                ),
+                data: (history) {
+                  return Column(
+                    children: [
+                      _buildGraphSection(history),
+                      const SizedBox(height: 24),
+                      _buildStatToggles(),
+                      const SizedBox(height: 24),
+                      _buildPersonalRecords(history),
+                      const SizedBox(height: 24),
+                      _buildInstructions(exercise),
+                    ],
+                  );
+                },
               ),
-            ),
-            data: (history) {
-              final filtered = _filteredHistory(history);
-              return Column(
-                children: [
-                  _buildGraphSection(filtered),
-                  const SizedBox(height: 24),
-                  _buildStatToggles(),
-                  const SizedBox(height: 24),
-                  _buildPersonalRecords(filtered),
-                ],
-              );
-            },
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 
@@ -210,7 +208,8 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
                 );
               }).toList(),
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
                   color: AppColors.bgSurface,
                   borderRadius: BorderRadius.circular(8),
@@ -255,11 +254,22 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
     );
   }
 
-  LineChartData _chartData(List<FlSpot> spots, List<ExerciseHistoryData> history) {
-    final maxY = spots.isEmpty
-        ? 50.0
-        : spots.map((s) => s.y).reduce((a, b) => a > b ? a : b) * 1.15;
-
+  LineChartData _chartData(
+      List<FlSpot> spots, List<ExerciseHistoryData> history) {
+    double minY;
+    double maxY;
+    if (spots.isEmpty) {
+      minY = 0;
+      maxY = 100;
+    } else {
+      final values = history
+          .map((d) => _metricForToggle(d, _activeToggleIndex))
+          .toList();
+      final minVal = values.reduce(min);
+      final maxVal = values.reduce(max);
+      minY = (minVal * 0.9).floorToDouble();
+      maxY = (maxVal * 1.1).ceilToDouble();
+    }
     return LineChartData(
       gridData: FlGridData(
         show: true,
@@ -313,7 +323,7 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
         ),
       ),
       borderData: FlBorderData(show: false),
-      minY: 0,
+      minY: minY,
       maxY: maxY,
       lineBarsData: [
         LineChartBarData(
@@ -440,8 +450,7 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
       children: [
         Row(
           children: [
-            const Icon(Icons.emoji_events,
-                color: AppColors.warning, size: 20),
+            const Icon(Icons.emoji_events, color: AppColors.warning, size: 20),
             const SizedBox(width: 8),
             Text(
               'Personal Records',
@@ -465,7 +474,7 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
               _prDivider(),
               _prRow('Best 1RM', '${max1RM.toStringAsFixed(2)} kg'),
               _prDivider(),
-              _prRow('Best Set Volume', '${maxVolume.toStringAsFixed(0)} kg'),
+              _prRow('Max Session Volume', '${maxVolume.toStringAsFixed(0)} kg'),
               _prDivider(),
               _prRow('Max Reps', '$maxReps reps'),
             ],
@@ -507,6 +516,105 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
       height: 1,
       indent: 16,
       endIndent: 16,
+    );
+  }
+
+  Widget _buildInstructions(Exercise exercise) {
+    if (exercise.instructions == null ||
+        exercise.instructions!.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    List<String> steps;
+    try {
+      steps = (jsonDecode(exercise.instructions!) as List<dynamic>)
+          .cast<String>();
+    } catch (_) {
+      return const SizedBox.shrink();
+    }
+
+    if (steps.isEmpty) return const SizedBox.shrink();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            const Icon(Icons.list_alt_rounded,
+                color: AppColors.accentPrimary, size: 20),
+            const SizedBox(width: 8),
+            Text(
+              'How to Perform',
+              style: GoogleFonts.inter(
+                color: AppColors.textPrimary,
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        Container(
+          decoration: BoxDecoration(
+            color: AppColors.bgSurface,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Column(
+            children: steps.asMap().entries.map((entry) {
+              final isLast = entry.key == steps.length - 1;
+              return Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          width: 24,
+                          height: 24,
+                          decoration: BoxDecoration(
+                            color:
+                                AppColors.accentPrimary.withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Center(
+                            child: Text(
+                              '${entry.key + 1}',
+                              style: GoogleFonts.inter(
+                                color: AppColors.accentPrimary,
+                                fontSize: 11,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            entry.value,
+                            style: GoogleFonts.inter(
+                              color: AppColors.textPrimary,
+                              fontSize: 14,
+                              height: 1.5,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  if (!isLast)
+                    const Divider(
+                      color: AppColors.borderSubtle,
+                      height: 1,
+                      indent: 52,
+                      endIndent: 16,
+                    ),
+                ],
+              );
+            }).toList(),
+          ),
+        ),
+      ],
     );
   }
 }

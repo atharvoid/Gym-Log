@@ -4,8 +4,45 @@ import '../database.dart';
 import '../tables/routines_table.dart';
 import '../tables/routine_days_table.dart';
 import '../tables/routine_exercises_table.dart';
+import 'workouts_dao.dart';
 
 part 'routines_dao.g.dart';
+
+/// Hydrated representation of a Routine with fully resolved exercise names/IDs.
+/// Used by the UI instead of raw relational rows.
+class HydratedRoutine {
+  final Routine routine;
+  final List<String> exerciseNames;
+  final List<int> exerciseIds;
+
+  const HydratedRoutine({
+    required this.routine,
+    required this.exerciseNames,
+    required this.exerciseIds,
+  });
+}
+
+/// Rich detail representation for [RoutineDetailScreen].
+/// Includes full exercise metadata + per-exercise routine config.
+class HydratedRoutineExercise {
+  final Exercise exercise;
+  final RoutineExercise config;
+
+  const HydratedRoutineExercise({
+    required this.exercise,
+    required this.config,
+  });
+}
+
+class HydratedRoutineDetail {
+  final Routine routine;
+  final List<HydratedRoutineExercise> exercises;
+
+  const HydratedRoutineDetail({
+    required this.routine,
+    required this.exercises,
+  });
+}
 
 @DriftAccessor(tables: [Routines, RoutineDays, RoutineExercises])
 class RoutinesDao extends DatabaseAccessor<AppDatabase>
@@ -15,6 +52,91 @@ class RoutinesDao extends DatabaseAccessor<AppDatabase>
   // Routines
   Future<List<Routine>> getRoutinesForUser(String userId) =>
       (select(routines)..where((t) => t.userId.equals(userId))).get();
+
+  /// Reactive stream of raw routines for a user.
+  Stream<List<Routine>> watchRoutinesForUser(String userId) {
+    return (select(routines)
+          ..where((t) => t.userId.equals(userId))
+          ..orderBy([(t) => OrderingTerm.desc(t.createdAt)]))
+        .watch();
+  }
+
+  /// Resolves exercise names and IDs for every routine in one reactive stream.
+  Stream<List<HydratedRoutine>> watchHydratedRoutinesForUser(String userId) {
+    return watchRoutinesForUser(userId).asyncMap((routineList) async {
+      final result = <HydratedRoutine>[];
+      for (final routine in routineList) {
+        final hydrated = await _hydrateRoutine(routine);
+        result.add(hydrated);
+      }
+      return result;
+    });
+  }
+
+  /// Reactive stream of a single hydrated routine by ID.
+  Stream<HydratedRoutine?> watchHydratedRoutine(String routineId) {
+    return (select(routines)..where((t) => t.id.equals(routineId)))
+        .watchSingleOrNull()
+        .asyncMap((routine) async {
+      if (routine == null) return null;
+      return _hydrateRoutine(routine);
+    });
+  }
+
+  /// Reactive stream of a single routine with full exercise metadata + config.
+  Stream<HydratedRoutineDetail?> watchHydratedRoutineDetail(String routineId) {
+    return (select(routines)..where((t) => t.id.equals(routineId)))
+        .watchSingleOrNull()
+        .asyncMap((routine) async {
+      if (routine == null) return null;
+      return getHydratedRoutineDetail(routineId);
+    });
+  }
+
+  Future<HydratedRoutineDetail?> getHydratedRoutineDetail(String routineId) async {
+    final routine = await (select(routines)
+          ..where((t) => t.id.equals(routineId)))
+        .getSingleOrNull();
+    if (routine == null) return null;
+
+    final days = await getDaysForRoutine(routineId);
+    final exercises = <HydratedRoutineExercise>[];
+
+    for (final day in days) {
+      final routineExercises = await getExercisesForDay(day.id);
+      for (final re in routineExercises) {
+        final exercise = await db.exercisesDao.getExerciseById(re.exerciseId);
+        exercises.add(HydratedRoutineExercise(
+          exercise: exercise,
+          config: re,
+        ));
+      }
+    }
+
+    return HydratedRoutineDetail(
+      routine: routine,
+      exercises: exercises,
+    );
+  }
+
+  Future<HydratedRoutine> _hydrateRoutine(Routine routine) async {
+    final days = await getDaysForRoutine(routine.id);
+    final names = <String>[];
+    final ids = <int>[];
+    for (final day in days) {
+      final routineExercises = await getExercisesForDay(day.id);
+      for (final re in routineExercises) {
+        final exercise = await db.exercisesDao.getExerciseById(re.exerciseId);
+        names.add(exercise.name);
+        ids.add(exercise.id);
+      }
+    }
+    return HydratedRoutine(
+      routine: routine,
+      exerciseNames: names,
+      exerciseIds: ids,
+    );
+  }
 
   Future<Routine> getRoutine(String id) =>
       (select(routines)..where((t) => t.id.equals(id))).getSingle();
@@ -54,7 +176,7 @@ class RoutinesDao extends DatabaseAccessor<AppDatabase>
   Future<void> deleteRoutineExercise(String id) =>
       (delete(routineExercises)..where((t) => t.id.equals(id))).go();
 
-  Future<void> saveWorkoutAsRoutine(String userId, String routineName, List<int> exerciseIds) async {
+  Future<void> saveWorkoutAsRoutine(String userId, String routineName, List<HydratedWorkoutExercise> exercises) async {
     return transaction(() async {
       final routineId = const Uuid().v4();
       final now = DateTime.now();
@@ -74,12 +196,25 @@ class RoutinesDao extends DatabaseAccessor<AppDatabase>
         orderIndex: 0,
       ));
 
-      for (int i = 0; i < exerciseIds.length; i++) {
+      for (int i = 0; i < exercises.length; i++) {
+        final ex = exercises[i];
+        final setsCount = ex.sets.length;
+        int? defaultReps;
+        double? defaultWeightKg;
+        
+        if (setsCount > 0) {
+          defaultReps = ex.sets.first.reps;
+          defaultWeightKg = ex.sets.first.weightKg;
+        }
+
         await insertRoutineExercise(RoutineExercisesCompanion.insert(
           id: Value(const Uuid().v4()),
           routineDayId: dayId,
-          exerciseId: exerciseIds[i],
+          exerciseId: ex.exerciseMetadata.id,
           orderIndex: i,
+          defaultSets: Value(setsCount > 0 ? setsCount : 3),
+          defaultReps: Value(defaultReps),
+          defaultWeightKg: Value(defaultWeightKg),
         ));
       }
     });

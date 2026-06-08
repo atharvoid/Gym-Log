@@ -20,13 +20,19 @@ void main() async {
   // 4. Initialize Supabase
   await Supabase.initialize(
     url: dotenv.env['SUPABASE_URL'] ?? '',
-    anonKey: dotenv.env['SUPABASE_ANON_KEY'] ?? '',
+    publishableKey: dotenv.env['SUPABASE_ANON_KEY'] ?? '',
   );
 
-  // 5. Pre-initialize database (triggers Drift web worker setup if needed)
+  // 5. Pre-initialize database and seed exercise library on first launch
   final db = AppDatabase();
   await db.customSelect('SELECT 1').getSingle(); // Warm-up query
-  await db.exercisesDao.seedDefaultExercises();
+
+  await db.exercisesDao.hydrateFromJson(); // One-time JSON hydration
+
+  final user = Supabase.instance.client.auth.currentUser;
+  if (user != null) {
+    await db.workoutsDao.deleteOrphanedSessions(user.id);
+  }
 
   // 6. Run app with shared database instance
   runApp(

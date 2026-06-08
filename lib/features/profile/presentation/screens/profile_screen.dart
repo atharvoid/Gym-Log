@@ -1,27 +1,34 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/widgets/ui/tracker_card.dart';
 import '../../../../shared/widgets/ui/secondary_button.dart';
 import '../../../../shared/widgets/ui/toggle_pill.dart';
+import '../providers/profile_provider.dart';
 
 /// [profile_screen.dart]
-/// Purpose: High-Density Tracker - Profile Tab with Dashboard & Feed
-/// Dependencies: flutter/material.dart, google_fonts, app_colors.dart
-/// Last modified: High-Density Tracker Overhaul
+/// Purpose: High-Density Tracker — Profile tab with live stats from Drift.
+/// State: workoutCountProvider, currentUserProfileProvider (StreamProviders).
 
-class ProfileScreen extends StatefulWidget {
+class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
 
   @override
-  State<ProfileScreen> createState() => _ProfileScreenState();
+  ConsumerState<ProfileScreen> createState() => _ProfileScreenState();
 }
 
-class _ProfileScreenState extends State<ProfileScreen> {
+class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   String _selectedMetric = 'Duration';
 
   @override
   Widget build(BuildContext context) {
+    final workoutCount = ref.watch(workoutCountProvider);
+    final profileAsync = ref.watch(currentUserProfileProvider);
+
+    // Derive display name: local DB profile > Supabase metadata > fallback
+    final displayName = profileAsync.valueOrNull?.displayName ?? '...';
+
     return Scaffold(
       backgroundColor: AppColors.bgBase,
       body: SafeArea(
@@ -30,12 +37,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Header: Username & Workout Count Only
+              // Header: Username & live workout count
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'noobyoume',
+                    displayName,
                     style: GoogleFonts.inter(
                       color: AppColors.textPrimary,
                       fontSize: 20,
@@ -43,13 +50,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                   ),
                   const SizedBox(height: 4),
-                  Text(
-                    'Workouts: 147',
-                    style: GoogleFonts.inter(
-                      color: AppColors.textSecondary,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w400,
+                  workoutCount.when(
+                    data: (count) => Text(
+                      'Workouts: $count',
+                      style: GoogleFonts.inter(
+                        color: AppColors.textSecondary,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w400,
+                      ),
                     ),
+                    loading: () => Text(
+                      'Workouts: —',
+                      style: GoogleFonts.inter(
+                        color: AppColors.textSecondary,
+                        fontSize: 14,
+                      ),
+                    ),
+                    error: (_, __) => const SizedBox.shrink(),
                   ),
                 ],
               ),
@@ -79,13 +96,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
               const SizedBox(height: 16),
 
-              // Mock Chart Area
+              // Chart placeholder
               TrackerCard(
                 child: Container(
                   height: 200,
                   alignment: Alignment.center,
                   child: Text(
-                    'Chart Area',
+                    'Chart — Track 10',
                     style: GoogleFonts.inter(
                       color: AppColors.textSecondary,
                       fontSize: 14,
@@ -95,7 +112,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
               const SizedBox(height: 16),
 
-              // Toggle Row
+              // Metric Toggle Row
               SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 child: Row(
@@ -103,7 +120,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     TogglePill(
                       label: 'Duration',
                       isActive: _selectedMetric == 'Duration',
-                      onTap: () => setState(() => _selectedMetric = 'Duration'),
+                      onTap: () =>
+                          setState(() => _selectedMetric = 'Duration'),
                     ),
                     const SizedBox(width: 8),
                     TogglePill(
@@ -122,31 +140,47 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
               const SizedBox(height: 16),
 
-              // Action Buttons: Vertical Stack
+              // Action Buttons
               Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   SecondaryButton(
                     label: 'Statistics',
-                    onPressed: () {},
+                    onPressed: () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Coming soon')),
+                      );
+                    },
                     icon: Icons.bar_chart,
                   ),
                   const SizedBox(height: 12),
                   SecondaryButton(
                     label: 'Exercises',
-                    onPressed: () {},
+                    onPressed: () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Coming soon')),
+                      );
+                    },
                     icon: Icons.fitness_center,
                   ),
                   const SizedBox(height: 12),
                   SecondaryButton(
                     label: 'Measures',
-                    onPressed: () {},
+                    onPressed: () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Coming soon')),
+                      );
+                    },
                     icon: Icons.straighten,
                   ),
                   const SizedBox(height: 12),
                   SecondaryButton(
                     label: 'Calendar',
-                    onPressed: () {},
+                    onPressed: () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Coming soon')),
+                      );
+                    },
                     icon: Icons.calendar_month,
                   ),
                 ],
