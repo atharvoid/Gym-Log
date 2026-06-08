@@ -233,50 +233,48 @@ class _RoutineExerciseBlockState extends State<RoutineExerciseBlock> {
         // Header row
         Padding(
           padding: const EdgeInsets.only(bottom: 8),
-          child: Row(
-            children: [
-              SizedBox(
-                  width: 64,
-                  child: Text('Set',
-                      textAlign: TextAlign.left,
-                      style: GoogleFonts.inter(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.textSecondary.withValues(alpha: 0.6),
-                          letterSpacing: 0.5))),
-              const SizedBox(width: 16),
-              SizedBox(
-                  width: 68,
-                  child: Align(
-                    alignment: Alignment.centerRight,
-                    child: Padding(
-                      padding: const EdgeInsets.only(right: 16),
-                      child: Text('kg',
-                          textAlign: TextAlign.right,
-                          style: GoogleFonts.inter(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.textSecondary.withValues(alpha: 0.6),
-                              letterSpacing: 0.5)),
-                    ),
-                  )),
-              const SizedBox(width: 16),
-              SizedBox(
-                  width: 68,
-                  child: Align(
-                    alignment: Alignment.centerRight,
-                    child: Padding(
-                      padding: const EdgeInsets.only(right: 16),
-                      child: Text('Reps',
-                          textAlign: TextAlign.right,
-                          style: GoogleFonts.inter(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.textSecondary.withValues(alpha: 0.6),
-                              letterSpacing: 0.5)),
-                    ),
-                  )),
-            ],
+          child: Builder(
+            builder: (context) {
+              final headerStyle = GoogleFonts.inter(
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+                color: AppColors.textSecondary,
+                letterSpacing: 0.4,
+              );
+              return Row(
+                children: [
+                  SizedBox(
+                      width: 64,
+                      child: Text('Set',
+                          textAlign: TextAlign.left,
+                          style: headerStyle)),
+                  const SizedBox(width: 16),
+                  SizedBox(
+                      width: 68,
+                      child: Align(
+                        alignment: Alignment.centerRight,
+                        child: Padding(
+                          padding: const EdgeInsets.only(right: 16),
+                          child: Text('Kg',
+                              textAlign: TextAlign.right,
+                              style: headerStyle),
+                        ),
+                      )),
+                  const SizedBox(width: 16),
+                  SizedBox(
+                      width: 68,
+                      child: Align(
+                        alignment: Alignment.centerRight,
+                        child: Padding(
+                          padding: const EdgeInsets.only(right: 16),
+                          child: Text('Reps',
+                              textAlign: TextAlign.right,
+                              style: headerStyle),
+                        ),
+                      )),
+                ],
+              );
+            }
           ),
         ),
         // Data rows
