@@ -613,32 +613,31 @@ class WorkoutsDao extends DatabaseAccessor<AppDatabase>
 
   // ── Routine Volume History ───────────────────────────────────────────────
 
-  Future<List<DailyVolumeSample>> dailyVolumeForRoutine(String routineId) async {
-    final rows = await customSelect(
-      '''
-      SELECT
-        DATE(s.started_at) AS day,
-        CAST(SUM(st.weight_kg * st.reps) AS REAL) AS volume
-      FROM workout_sets st
-      JOIN workout_exercises we ON we.id = st.workout_exercise_id
-      JOIN workout_sessions  s  ON s.id  = we.session_id
-      WHERE s.routine_id = ?
-      GROUP BY DATE(s.started_at)
-      ORDER BY day ASC;
-      ''',
-      variables: [Variable.withString(routineId)],
-      readsFrom: {workoutSets, workoutExercises, workoutSessions},
-    ).get();
+  Stream<List<DailyVolumeSample>> watchDailyVolumeForRoutine(
+    String routineId, {
+    DateTime? since,
+  }) {
+    final dayExpr = workoutSessions.startedAt.date;
+    final volSum  = workoutSessions.totalVolumeKg.sum();
 
-    final samples = rows.map((r) {
-      final dayStr = r.read<String>('day');
-      return DailyVolumeSample(
-        day: DateTime.parse(dayStr),
-        volume: r.read<double>('volume'),
-      );
-    }).toList();
-    
-    return samples;
+    var query = selectOnly(workoutSessions)
+      ..addColumns([dayExpr, volSum])
+      ..where(workoutSessions.routineId.equals(routineId) & workoutSessions.endedAt.isNotNull())
+      ..groupBy([dayExpr])
+      ..orderBy([OrderingTerm.asc(dayExpr)]);
+
+    if (since != null) {
+      query = query..where(workoutSessions.startedAt.isBiggerOrEqualValue(since));
+    }
+
+    return query.watch().map((rows) {
+      final samples = rows.map((r) => DailyVolumeSample(
+        day: DateTime.parse(r.read(dayExpr)!),
+        volume: (r.read(volSum) ?? 0).toDouble(),
+      )).toList();
+      debugPrint('watchDailyVolumeForRoutine($routineId) -> ${samples.length} rows');
+      return samples;
+    });
   }
 
   /// Atomically updates a historical workout by:
