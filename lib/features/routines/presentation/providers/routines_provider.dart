@@ -20,35 +20,11 @@ final routineDetailProvider =
   return db.routinesDao.watchHydratedRoutineDetail(routineId);
 });
 
-/// Maps a time-range label to a [DateTime] cutoff, or null for all-time.
-DateTime? _sinceForRange(String range) {
-  final now = DateTime.now();
-  switch (range) {
-    case '1M':
-      return now.subtract(const Duration(days: 30));
-    case '3M':
-      return now.subtract(const Duration(days: 90));
-    case '6M':
-      return now.subtract(const Duration(days: 180));
-    case '1Y':
-      return now.subtract(const Duration(days: 365));
-    default:
-      return null;
-  }
-}
 
-/// Reactive daily volume history for a routine, filterable by time range.
-/// Key: (routineId, selectedRange) — e.g. ('uuid', '3M') or ('uuid', 'All Time').
-final routineDailyVolumeProvider = StreamProvider.family<List<DailyVolumeSample>, (
-  String,
-  String
-)>((ref, args) {
-  final (routineId, selectedRange) = args;
+/// Reactive daily volume history for a routine.
+final routineDailyVolumeProvider = FutureProvider.family<List<DailyVolumeSample>, String>((ref, routineId) async {
   final db = ref.watch(databaseProvider);
-  return db.workoutsDao.watchDailyVolumeForRoutine(
-    routineId,
-    since: _sinceForRange(selectedRange),
-  );
+  return db.workoutsDao.dailyVolumeForRoutine(routineId);
 });
 
 /// Fetches the last logged session sets for every exercise in a routine.

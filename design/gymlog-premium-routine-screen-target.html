@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>GymLog — Premium Routine Screen</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --bg:#000000;
+    --surface:#0C0C0E;        /* near-black: felt, not seen */
+    --surface-2:#141416;       /* slightly lifted for chips/buttons */
+    --accent:#8A2BE2;
+    --text:#FFFFFF;
+    --text-2:#8E8E93;
+    --text-3:#5A5A5F;
+    --hair:rgba(255,255,255,0.06);
+    --amber:#E0A422;
+    --red:#E5484D;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-font-smoothing:antialiased;}
+  body{
+    background:
+      radial-gradient(1200px 600px at 50% -10%, #141018 0%, #060606 55%, #000 100%);
+    font-family:'Inter',sans-serif;
+    color:var(--text);
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    padding:32px 16px 64px;
+    gap:18px;
+  }
+  .caption{
+    color:var(--text-2);font-size:13px;letter-spacing:.02em;text-align:center;max-width:520px;line-height:1.5;
+  }
+  .caption b{color:#cdb4ff;font-weight:600;}
+  .frames{display:flex;gap:28px;flex-wrap:wrap;justify-content:center;align-items:flex-start;}
+  .phone{
+    width:390px;
+    background:var(--bg);
+    border-radius:42px;
+    border:1px solid rgba(255,255,255,0.08);
+    box-shadow:0 40px 120px rgba(0,0,0,.7), inset 0 0 0 6px #050505;
+    overflow:hidden;
+    position:relative;
+  }
+  .phone-label{
+    text-align:center;color:var(--text-2);font-size:12px;font-weight:600;
+    letter-spacing:.08em;text-transform:uppercase;margin-bottom:10px;
+  }
+  .col{display:flex;flex-direction:column;align-items:center;}
+
+  /* ---------- status bar ---------- */
+  .status{display:flex;justify-content:space-between;align-items:center;padding:16px 26px 6px;font-size:14px;font-weight:600;}
+  .status .right{display:flex;gap:7px;align-items:center;font-size:13px;color:var(--text);}
+  .battery{border:1.5px solid rgba(255,255,255,.6);border-radius:4px;padding:1px 4px;font-size:10px;font-weight:700;}
+
+  /* ---------- screen padding ---------- */
+  .screen{padding:6px 20px 26px;}
+
+  /* ---------- appbar ---------- */
+  .appbar{display:flex;align-items:flex-start;justify-content:space-between;padding-top:10px;}
+  .appbar .lead{display:flex;gap:14px;align-items:flex-start;}
+  .chev,.kebab{width:28px;height:28px;display:flex;align-items:center;justify-content:center;color:#fff;flex:0 0 auto;margin-top:3px;}
+  .kebab{color:var(--text);}
+  .titles h1{font-size:22px;font-weight:700;letter-spacing:-.01em;line-height:1.15;}
+  .titles .sub{font-size:13px;color:var(--text-2);margin-top:3px;font-weight:400;}
+
+  /* ---------- actions ---------- */
+  .actions{margin-top:22px;display:flex;flex-direction:column;gap:10px;}
+  .btn-primary{
+    height:54px;border-radius:16px;background:var(--accent);
+    display:flex;align-items:center;justify-content:center;gap:10px;
+    font-size:16px;font-weight:600;color:#fff;
+    box-shadow:0 8px 24px rgba(138,43,226,.35);
+  }
+  .btn-primary .play{width:0;height:0;border-left:11px solid #fff;border-top:7px solid transparent;border-bottom:7px solid transparent;}
+  .secondary-row{display:flex;gap:10px;}
+  .btn-ghost{
+    flex:1;height:46px;border-radius:14px;background:var(--surface-2);
+    display:flex;align-items:center;justify-content:center;gap:8px;
+    font-size:14px;font-weight:500;color:rgba(255,255,255,.86);
+  }
+  .btn-ghost svg{opacity:.8;}
+
+  /* ---------- section header ---------- */
+  .sec-head{display:flex;align-items:center;justify-content:space-between;margin-top:30px;margin-bottom:14px;}
+  .sec-head .label{font-size:15px;font-weight:600;color:#fff;}
+  .sec-head .label span{color:var(--text-2);font-weight:500;}
+  .pill-select{
+    background:var(--surface-2);border-radius:10px;padding:7px 12px;
+    font-size:13px;font-weight:500;color:rgba(255,255,255,.86);
+    display:flex;align-items:center;gap:6px;
+  }
+  .pill-select svg{opacity:.6;}
+
+  /* ---------- chart card ---------- */
+  .chart-card{
+    background:linear-gradient(180deg, #0E0E11 0%, #09090B 100%);
+    border-radius:20px;padding:18px 14px 8px;border:1px solid var(--hair);
+  }
+  .delta{
+    display:inline-flex;align-items:center;gap:6px;margin-top:14px;
+    background:rgba(138,43,226,.12);border:1px solid rgba(138,43,226,.25);
+    padding:6px 11px;border-radius:999px;font-size:12.5px;font-weight:600;color:#cbb2ff;
+  }
+
+  /* ---------- exercise group ---------- */
+  .ex-group{margin-top:26px;}
+  .ex-head{display:flex;gap:14px;align-items:center;}
+  .thumb{width:52px;height:52px;border-radius:13px;object-fit:cover;flex:0 0 auto;background:#1a1a1d;border:1px solid var(--hair);}
+  .ex-meta h3{font-size:17px;font-weight:600;letter-spacing:-.01em;}
+  .ex-meta .last{font-size:13px;color:var(--text-2);margin-top:2px;}
+
+  table{width:100%;border-collapse:collapse;margin-top:16px;}
+  thead th{
+    font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;
+    color:var(--text-3);padding-bottom:10px;
+  }
+  thead th.l{text-align:left;}
+  thead th.r{text-align:right;}
+  tbody td{padding:11px 0;border-top:1px solid var(--hair);}
+  tbody tr:first-child td{border-top:none;}
+  .set-cell{display:flex;align-items:center;gap:10px;}
+  .set-no{font-size:15px;font-weight:600;color:rgba(255,255,255,.9);width:14px;text-align:left;font-variant-numeric:tabular-nums;}
+  .chip{
+    display:inline-flex;align-items:center;gap:5px;
+    padding:3px 9px;border-radius:8px;font-size:11px;font-weight:600;letter-spacing:.01em;
+  }
+  .chip svg{width:11px;height:11px;}
+  .chip.warm{background:rgba(224,164,34,.14);color:var(--amber);}
+  .chip.drop{background:rgba(138,43,226,.16);color:#b98cff;}
+  .chip.fail{background:rgba(229,72,77,.14);color:#ff6b70;}
+  .num{font-size:17px;font-weight:600;text-align:right;font-variant-numeric:tabular-nums;letter-spacing:.01em;}
+  .num.muted{color:rgba(255,255,255,.92);}
+
+  .add-ex{
+    margin-top:20px;height:50px;border-radius:14px;background:var(--surface-2);
+    display:flex;align-items:center;justify-content:center;gap:9px;
+    font-size:15px;font-weight:600;color:rgba(255,255,255,.9);
+  }
+
+  /* empty-state variant */
+  .empty{
+    background:linear-gradient(180deg, #0E0E11 0%, #09090B 100%);
+    border-radius:20px;border:1px solid var(--hair);
+    height:150px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;
+  }
+  .empty .spark{display:flex;gap:5px;align-items:flex-end;height:34px;opacity:.5;}
+  .empty .spark i{width:6px;border-radius:3px;background:linear-gradient(180deg,#3a2a55,#1a1a1d);}
+  .empty .txt{font-size:13.5px;color:var(--text-2);font-weight:500;}
+  .empty .sub{font-size:12px;color:var(--text-3);}
+</style>
+<style>
+.ha-img-placeholder{display:flex;align-items:center;justify-content:center;flex-direction:column;gap:6px;background:#f4f4f5;border:1px dashed #d4d4d8;border-radius:8px;color:#71717a;font-size:12px;font-family:system-ui,sans-serif;min-height:80px;padding:16px;box-sizing:border-box;animation:ha-img-pulse 1.5s ease-in-out infinite}
+.ha-img-placeholder.ha-failed{animation:none;opacity:.7}
+@keyframes ha-img-pulse{0%,100%{opacity:1}50%{opacity:.5}}
+@media(prefers-color-scheme:dark){.ha-img-placeholder{background:#27272a;border-color:#3f3f46;color:#a1a1aa}}
+</style>
+</head>
+<body>
+  <div class="caption">
+    Premium target for the Routine Detail screen — real Inter type, your exact tokens
+    (<b>#000</b> base · <b>#8A2BE2</b> accent), calibrated number scale, a chart surface that's felt-not-seen,
+    and a tasteful empty state. Left = populated (the good state) · Right = the slim empty state that replaces the dead gray box.
+  </div>
+
+  <div class="frames">
+
+    <!-- ============ POPULATED ============ -->
+    <div class="col">
+      <div class="phone-label">Populated · target</div>
+      <div class="phone">
+        <div class="status">
+          <span>16:04</span>
+          <span class="right">·ıl &nbsp; <svg width="16" height="12" viewBox="0 0 16 12" fill="none"><path d="M8 2.5c2 0 3.8.8 5 2.1l1.2-1.3A9.5 9.5 0 0 0 8 .5 9.5 9.5 0 0 0 1.8 3.3L3 4.6A7.2 7.2 0 0 1 8 2.5Z" fill="#fff"/><path d="M8 6c1 0 2 .4 2.7 1.1l1.2-1.3A6 6 0 0 0 8 4a6 6 0 0 0-3.9 1.8l1.2 1.3A4 4 0 0 1 8 6Z" fill="#fff"/><circle cx="8" cy="9.6" r="1.6" fill="#fff"/></svg> <span class="battery">42</span></span>
+        </div>
+        <div class="screen">
+          <div class="appbar">
+            <div class="lead">
+              <div class="chev"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+              <div class="titles">
+                <h1>Custom Routine</h1>
+                <div class="sub">4 exercises · Last performed today</div>
+              </div>
+            </div>
+            <div class="kebab"><svg width="20" height="20" viewBox="0 0 24 24" fill="#fff"><circle cx="12" cy="5" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="12" cy="19" r="1.8"/></svg></div>
+          </div>
+
+          <div class="actions">
+            <div class="btn-primary"><span class="play"></span> Start Routine</div>
+            <div class="secondary-row">
+              <div class="btn-ghost">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5Z" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                Edit Routine
+              </div>
+            </div>
+          </div>
+
+          <div class="sec-head">
+            <div class="label">Total Volume <span>(kg)</span></div>
+            <div class="pill-select">All Time
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+          </div>
+
+          <div class="chart-card">
+            <svg width="100%" height="190" viewBox="0 0 330 190" preserveAspectRatio="none" style="display:block">
+              <defs>
+                <linearGradient id="fill" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#8A2BE2" stop-opacity="0.30"/>
+                  <stop offset="100%" stop-color="#8A2BE2" stop-opacity="0.02"/>
+                </linearGradient>
+              </defs>
+              <!-- gridlines -->
+              <g stroke="rgba(255,255,255,0.07)" stroke-width="1" stroke-dasharray="4 5">
+                <line x1="40" y1="20"  x2="330" y2="20"/>
+                <line x1="40" y1="68"  x2="330" y2="68"/>
+                <line x1="40" y1="116" x2="330" y2="116"/>
+                <line x1="40" y1="164" x2="330" y2="164"/>
+              </g>
+              <!-- y labels -->
+              <g fill="#5A5A5F" font-family="Inter" font-size="10" font-weight="500" text-anchor="end">
+                <text x="32" y="24">3000</text>
+                <text x="32" y="72">2000</text>
+                <text x="32" y="120">1000</text>
+                <text x="32" y="168">0</text>
+              </g>
+              <!-- area -->
+              <path d="M55 156 L150 110 L245 74 L300 42 L300 164 L55 164 Z" fill="url(#fill)"/>
+              <!-- line -->
+              <path d="M55 156 L150 110 L245 74 L300 42" fill="none" stroke="#8A2BE2" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <!-- dots -->
+              <g fill="#8A2BE2"><circle cx="55" cy="156" r="3.5"/><circle cx="150" cy="110" r="3.5"/><circle cx="245" cy="74" r="3.5"/></g>
+              <circle cx="300" cy="42" r="5.5" fill="#8A2BE2" stroke="#fff" stroke-width="2.5"/>
+              <!-- x labels -->
+              <g fill="#5A5A5F" font-family="Inter" font-size="10" font-weight="500" text-anchor="middle">
+                <text x="55" y="182">May 23</text>
+                <text x="150" y="182">May 30</text>
+                <text x="245" y="182">Jun 6</text>
+                <text x="300" y="182">Jun 8</text>
+              </g>
+            </svg>
+          </div>
+          <div class="delta">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M3 17l6-6 4 4 7-7M21 8v5h-5" stroke="#cbb2ff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Volume up 419% since May 23
+          </div>
+
+          <div class="ex-group">
+            <div class="ex-head">
+              <img class="thumb" src="https://otcfigaprxfknickyrdh.supabase.co/storage/v1/object/public/excercises/0025.gif" alt="" onerror="this.style.background='#1a1a1d';this.src='';"/>
+              <div class="ex-meta">
+                <h3>Dumbbell Bench Press</h3>
+                <div class="last">Last: 30 kg × 8 reps · 3 sets</div>
+              </div>
+            </div>
+            <table>
+              <thead><tr><th class="l">Set</th><th class="r">Kg</th><th class="r">Reps</th></tr></thead>
+              <tbody>
+                <tr>
+                  <td><div class="set-cell"><span class="set-no">1</span>
+                    <span class="chip warm"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2s5 4 5 9a5 5 0 0 1-10 0c0-2 1-3 1-3s-1 4 1 4 2-2 2-4-1-3 0-6Z"/></svg>Warm</span></div></td>
+                  <td class="num muted">30</td><td class="num muted">12</td>
+                </tr>
+                <tr>
+                  <td><div class="set-cell"><span class="set-no">2</span>
+                    <span class="chip drop"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7l10 10M17 9v8h-8"/></svg>Drop</span></div></td>
+                  <td class="num muted">30</td><td class="num muted">10</td>
+                </tr>
+                <tr>
+                  <td><div class="set-cell"><span class="set-no">3</span>
+                    <span class="chip fail"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8v5M12 16.5v.5M10.3 3.9 2.4 18a1.8 1.8 0 0 0 1.6 2.7h16a1.8 1.8 0 0 0 1.6-2.7L13.7 3.9a1.9 1.9 0 0 0-3.4 0Z"/></svg>Fail</span></div></td>
+                  <td class="num muted">30</td><td class="num muted">8</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="add-ex">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/></svg>
+            Add Exercise
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ EMPTY STATE ============ -->
+    <div class="col">
+      <div class="phone-label">Empty state · replaces the gray void</div>
+      <div class="phone">
+        <div class="status">
+          <span>16:04</span>
+          <span class="right">·ıl &nbsp; <svg width="16" height="12" viewBox="0 0 16 12" fill="none"><path d="M8 2.5c2 0 3.8.8 5 2.1l1.2-1.3A9.5 9.5 0 0 0 8 .5 9.5 9.5 0 0 0 1.8 3.3L3 4.6A7.2 7.2 0 0 1 8 2.5Z" fill="#fff"/><path d="M8 6c1 0 2 .4 2.7 1.1l1.2-1.3A6 6 0 0 0 8 4a6 6 0 0 0-3.9 1.8l1.2 1.3A4 4 0 0 1 8 6Z" fill="#fff"/><circle cx="8" cy="9.6" r="1.6" fill="#fff"/></svg> <span class="battery">42</span></span>
+        </div>
+        <div class="screen">
+          <div class="appbar">
+            <div class="lead">
+              <div class="chev"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M15 18l-6-6 6-6" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+              <div class="titles">
+                <h1>Custom Routine</h1>
+                <div class="sub">1 exercise</div>
+              </div>
+            </div>
+            <div class="kebab"><svg width="20" height="20" viewBox="0 0 24 24" fill="#fff"><circle cx="12" cy="5" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="12" cy="19" r="1.8"/></svg></div>
+          </div>
+
+          <div class="actions">
+            <div class="btn-primary"><span class="play"></span> Start Routine</div>
+            <div class="secondary-row">
+              <div class="btn-ghost">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5Z" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                Edit Routine
+              </div>
+            </div>
+          </div>
+
+          <div class="sec-head">
+            <div class="label">Total Volume <span>(kg)</span></div>
+            <div class="pill-select">All Time
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+          </div>
+
+          <div class="empty">
+            <div class="spark"><i style="height:40%"></i><i style="height:65%"></i><i style="height:50%"></i><i style="height:80%"></i><i style="height:95%"></i></div>
+            <div class="txt">No sessions logged yet</div>
+            <div class="sub">Finish a workout to see your volume trend</div>
+          </div>
+
+          <div class="ex-group">
+            <div class="ex-head">
+              <img class="thumb" src="" alt="" onerror="this.style.background='#1a1a1d'"/>
+              <div class="ex-meta">
+                <h3>Assisted Chest Dip</h3>
+                <div class="last">Last: 12 kg × 14 reps · 2 sets</div>
+              </div>
+            </div>
+            <table>
+              <thead><tr><th class="l">Set</th><th class="r">Kg</th><th class="r">Reps</th></tr></thead>
+              <tbody>
+                <tr><td><div class="set-cell"><span class="set-no">1</span></div></td><td class="num muted">12</td><td class="num muted">16</td></tr>
+                <tr><td><div class="set-cell"><span class="set-no">2</span></div></td><td class="num muted">12</td><td class="num muted">14</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="add-ex">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/></svg>
+            Add Exercise
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+<script>
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape' && window.parent !== window) {
+    window.parent.postMessage({ type: 'close-fullscreen' }, '*');
+  }
+});
+</script>
+<!-- broken-img-handler -->
+<script>
+(function(){
+  if(window.__brokenImgHandler)return;
+  window.__brokenImgHandler=true;
+  var MAX=5,DELAYS=[2000,4000,8000,16000,32000];
+  document.addEventListener('error',function(e){
+    var img=e.target;
+    if(!img||img.tagName!=='IMG')return;
+    var liveSrc=img.getAttribute('src');
+    var src=img.dataset.haOriginalSrc||liveSrc;
+    if(!src)return;
+    if(img.dataset.haOriginalSrc&&liveSrc&&liveSrc!==img.dataset.haOriginalSrc&&liveSrc.indexOf('_r=')<0){src=liveSrc;img.dataset.haOriginalSrc=src;img.dataset.haRetryCount='0'}
+    else if(!img.dataset.haOriginalSrc){img.dataset.haOriginalSrc=src}
+    var attempt=parseInt(img.dataset.haRetryCount||'0',10);
+    if(img.dataset.haPhId){var old=document.getElementById(img.dataset.haPhId);if(old)old.remove()}
+    var ph=document.createElement('div');
+    ph.className='ha-img-placeholder'+(attempt>=MAX?' ha-failed':'');
+    ph.id='ha-ph-'+Math.random().toString(36).slice(2,9);
+    var w=img.getAttribute('width');var h=img.getAttribute('height');
+    if(w)ph.style.width=w+(isNaN(Number(w))?'':'px');
+    else if(img.style.width)ph.style.width=img.style.width;
+    else if(img.width>1)ph.style.width=img.width+'px';
+    if(h)ph.style.height=h+(isNaN(Number(h))?'':'px');
+    else if(img.style.height)ph.style.height=img.style.height;
+    else if(img.height>1)ph.style.height=img.height+'px';
+    ph.textContent=attempt>=MAX?'Image unavailable':'Loading image\u2026';
+    img.dataset.haPhId=ph.id;
+    if(img.dataset.haOrigDisplay==null)img.dataset.haOrigDisplay=img.style.display||'';
+    img.style.display='none';
+    img.insertAdjacentElement('afterend',ph);
+    if(attempt<MAX){
+      img.dataset.haRetryCount=String(attempt+1);
+      setTimeout(function(){
+        if(!img.isConnected)return;
+        if(img.dataset.haOriginalSrc!==src)return;
+        if(img.complete&&img.naturalWidth>0)return;
+        var curSrc=img.getAttribute('src');
+        if(curSrc&&curSrc.indexOf(src)!==0)return;
+        var fresh=src+(src.indexOf('?')>=0?'&':'?')+'_r='+(attempt+1)+'_'+Date.now();
+        img.src=fresh;
+      },DELAYS[attempt]);
+    }
+  },true);
+  document.addEventListener('load',function(e){
+    var img=e.target;
+    if(!img||img.tagName!=='IMG')return;
+    if(img.dataset.haPhId){
+      var ph=document.getElementById(img.dataset.haPhId);
+      if(ph)ph.remove();
+      delete img.dataset.haPhId;
+      img.style.display=img.dataset.haOrigDisplay||'';
+      delete img.dataset.haOrigDisplay;
+      delete img.dataset.haOriginalSrc;
+      delete img.dataset.haRetryCount;
+    }
+  },true);
+})();
+</script>
+</body>
+</html>
