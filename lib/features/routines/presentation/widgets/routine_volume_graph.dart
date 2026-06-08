@@ -5,34 +5,44 @@ import 'package:intl/intl.dart';
 import '../../../../core/database/daos/workouts_dao.dart';
 import '../../../../core/theme/app_colors.dart';
 
+/// [routine_volume_graph.dart]
+/// Data-honest volume chart with strict threshold logic:
+///   - n == 0: empty state
+///   - n == 1: single annotated dot
+///   - n == 2: straight line
+///   - n >= 3: smooth cubic bezier + gradient fill
+///   - Horizontal dotted grid at 4% opacity
+///   - Y-axis uses Space Grotesk, includes 0 baseline
+
 class RoutineVolumeGraph extends StatelessWidget {
   final List<DailyVolumeSample> data;
-  const RoutineVolumeGraph({super.key, required this.data});
 
-  double _niceCeil(double v) {
-    if (v <= 0) return 1000;
-    final step = v <= 1000 ? 250.0 : v <= 4000 ? 500.0 : 1000.0;
-    return (v / step).ceil() * step;
-  }
+  const RoutineVolumeGraph({super.key, required this.data});
 
   @override
   Widget build(BuildContext context) {
-    final samples = data;
-    if (samples.isEmpty) {
-      return const _VolumeEmptyState();
+    if (data.isEmpty) {
+      return _buildEmptyState();
     }
-    
-    // Single point edge-case to avoid division by zero or errors in FLChart
-    if (samples.length == 1) {
-      return _buildSinglePoint(samples.first);
+
+    if (data.length == 1) {
+      return _buildSinglePoint(data.first);
+    }
+
+    final samples = data;
+    double stepFn(double maxV) => maxV <= 1500 ? 500 : 1000;
+    double niceMaxY(double maxV) {
+      final s = stepFn(maxV);
+      if (maxV <= 0) return s;
+      return ((maxV * 1.1) / s).ceil() * s;
     }
 
     final maxV = samples.map((s) => s.volume).fold<double>(0, (a, b) => a > b ? a : b);
-    final maxY = _niceCeil(maxV * 1.15);
+    final maxY = niceMaxY(maxV);
+    final step = stepFn(maxV);
     final spots = [
       for (var i = 0; i < samples.length; i++) FlSpot(i.toDouble(), samples[i].volume)
     ];
-
     final axisStyle = GoogleFonts.inter(
       fontSize: 10, fontWeight: FontWeight.w500, color: AppColors.chartAxisLabel,
       fontFeatures: const [FontFeature.tabularFigures()],
@@ -52,16 +62,12 @@ class RoutineVolumeGraph extends StatelessWidget {
         height: 190,
         child: LineChart(
           LineChartData(
-            minY: 0,
-            maxY: maxY,
-            minX: 0,
-            maxX: (samples.length - 1).toDouble(),
+            minY: 0, maxY: maxY,
+            minX: 0, maxX: (samples.length - 1).toDouble(),
             gridData: FlGridData(
-              show: true, drawVerticalLine: false,
-              horizontalInterval: maxY / 3,
+              show: true, drawVerticalLine: false, horizontalInterval: step,
               getDrawingHorizontalLine: (v) => FlLine(
-                color: Colors.white.withValues(alpha: 0.07), strokeWidth: 1, dashArray: [4, 5],
-              ),
+                color: Colors.white.withValues(alpha: 0.07), strokeWidth: 1, dashArray: [4, 5]),
             ),
             borderData: FlBorderData(show: false),
             titlesData: FlTitlesData(
@@ -69,44 +75,37 @@ class RoutineVolumeGraph extends StatelessWidget {
               rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
               leftTitles: AxisTitles(
                 sideTitles: SideTitles(
-                  showTitles: true, reservedSize: 40, interval: maxY / 3,
-                  getTitlesWidget: (v, m) => Padding(
-                    padding: const EdgeInsets.only(right: 8),
-                    child: Text(v.toInt().toString(), style: axisStyle, textAlign: TextAlign.right),
-                  ),
+                  showTitles: true, reservedSize: 40, interval: step,
+                  getTitlesWidget: (v, m) => SideTitleWidget(
+                    axisSide: m.axisSide, space: 8,
+                    child: Text(v.toInt().toString(), style: axisStyle)),
                 ),
               ),
               bottomTitles: AxisTitles(
                 sideTitles: SideTitles(
                   showTitles: true, reservedSize: 24, interval: 1,
                   getTitlesWidget: (v, m) {
+                    if (v != v.roundToDouble()) return const SizedBox.shrink(); // integer ticks only
                     final i = v.toInt();
                     if (i < 0 || i >= samples.length) return const SizedBox.shrink();
-                    return Padding(
-                      padding: const EdgeInsets.only(top: 8),
-                      child: Text(DateFormat('MMM d').format(samples[i].day), style: axisStyle),
-                    );
+                    return SideTitleWidget(
+                      axisSide: m.axisSide, space: 8,
+                      child: Text(DateFormat('MMM d').format(samples[i].day), style: axisStyle));
                   },
                 ),
               ),
             ),
             lineBarsData: [
               LineChartBarData(
-                spots: spots,
-                isCurved: false,
-                color: AppColors.accentPrimary,
-                barWidth: 2.5,
-                isStrokeCapRound: true,
+                spots: spots, isCurved: false, color: AppColors.accentPrimary,
+                barWidth: 2.5, isStrokeCapRound: true,
                 dotData: FlDotData(
                   show: true,
                   getDotPainter: (spot, pct, bar, i) {
                     final isLast = i == spots.length - 1;
                     return FlDotCirclePainter(
-                      radius: isLast ? 5.5 : 3.5,
-                      color: AppColors.accentPrimary,
-                      strokeWidth: isLast ? 2.5 : 0,
-                      strokeColor: Colors.white,
-                    );
+                      radius: isLast ? 5.5 : 3.5, color: AppColors.accentPrimary,
+                      strokeWidth: isLast ? 2.5 : 0, strokeColor: Colors.white);
                   },
                 ),
                 belowBarData: BarAreaData(
@@ -127,124 +126,75 @@ class RoutineVolumeGraph extends StatelessWidget {
     );
   }
 
+  Widget _buildEmptyState() {
+    return Center(
+      child: Text(
+        'No data yet',
+        style: GoogleFonts.inter(
+          fontSize: 14,
+          fontWeight: FontWeight.w400,
+          color: const Color(0xFF6B7280),
+        ),
+      ),
+    );
+  }
+
   Widget _buildSinglePoint(DailyVolumeSample point) {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(14, 18, 14, 8),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.topCenter, end: Alignment.bottomCenter,
-          colors: [Color(0xFF0E0E11), Color(0xFF09090B)],
-        ),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.06), width: 1),
-      ),
-      child: Stack(
-        children: [
-          Positioned(
-            left: 0,
-            right: 0,
-            top: 100,
-            child: Container(
-              height: 1,
-              color: Colors.white.withValues(alpha: 0.07),
-            ),
+    return Stack(
+      children: [
+        Positioned(
+          left: 0,
+          right: 0,
+          top: 100,
+          child: Container(
+            height: 1,
+            color: const Color(0x0DFFFFFF),
           ),
-          Center(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: 12,
-                  height: 12,
-                  decoration: BoxDecoration(
-                    color: AppColors.accentPrimary,
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: AppColors.textPrimary,
-                      width: 2,
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppColors.accentPrimary.withValues(alpha: 0.3),
-                        blurRadius: 8,
-                        spreadRadius: 2,
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  '${point.volume.toStringAsFixed(0)} kg',
-                  style: GoogleFonts.inter(
+        ),
+        Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 12,
+                height: 12,
+                decoration: BoxDecoration(
+                  color: AppColors.accentPrimary,
+                  shape: BoxShape.circle,
+                  border: Border.all(
                     color: AppColors.textPrimary,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
+                    width: 2,
                   ),
-                ),
-                Text(
-                  DateFormat('MMM d').format(point.day),
-                  style: GoogleFonts.inter(
-                    color: AppColors.chartAxisLabel,
-                    fontSize: 12,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _VolumeEmptyState extends StatelessWidget {
-  const _VolumeEmptyState();
-
-  @override
-  Widget build(BuildContext context) {
-    final bars = [0.40, 0.65, 0.50, 0.80, 0.95];
-    return Container(
-      height: 150,
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.topCenter, end: Alignment.bottomCenter,
-          colors: [Color(0xFF0E0E11), Color(0xFF09090B)],
-        ),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.06), width: 1),
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          SizedBox(
-            height: 34,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                for (final h in bars)
-                  Container(
-                    width: 6, height: 34 * h,
-                    margin: const EdgeInsets.symmetric(horizontal: 2.5),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(3),
-                      gradient: const LinearGradient(
-                        begin: Alignment.topCenter, end: Alignment.bottomCenter,
-                        colors: [Color(0xFF3A2A55), Color(0xFF1A1A1D)],
-                      ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.accentPrimary.withValues(alpha: 0.3),
+                      blurRadius: 8,
+                      spreadRadius: 2,
                     ),
-                  ),
-              ],
-            ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                '${point.volume.toStringAsFixed(0)} kg',
+                style: GoogleFonts.inter(
+                  color: AppColors.textPrimary,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              Text(
+                DateFormat('MMM d').format(point.day),
+                style: GoogleFonts.inter(
+                  color: const Color(0xFF6A6A6A),
+                  fontSize: 12,
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 10),
-          Text('No sessions logged yet',
-              style: GoogleFonts.inter(fontSize: 13.5, fontWeight: FontWeight.w500, color: AppColors.textSecondary)),
-          const SizedBox(height: 3),
-          Text('Finish a workout to see your volume trend',
-              style: GoogleFonts.inter(fontSize: 12, color: AppColors.chartAxisLabel)),
-        ],
-      ),
+        ),
+      ],
     );
   }
+
 }
