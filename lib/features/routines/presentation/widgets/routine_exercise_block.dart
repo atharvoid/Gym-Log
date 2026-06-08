@@ -282,7 +282,7 @@ class _RoutineExerciseBlockState extends State<RoutineExerciseBlock> {
           final index = entry.key;
           final set = entry.value;
           return Container(
-            color: index % 2 == 1 ? AppColors.bgSurface : Colors.transparent,
+            color: Colors.transparent,
             padding: const EdgeInsets.symmetric(vertical: 14),
             child: Row(
               children: [
