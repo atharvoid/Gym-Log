@@ -14,13 +14,21 @@ import '../../../../core/theme/app_colors.dart';
 ///   - Horizontal dotted grid at 4% opacity
 ///   - Y-axis uses Space Grotesk, includes 0 baseline
 
-class RoutineVolumeGraph extends StatelessWidget {
+class RoutineVolumeGraph extends StatefulWidget {
   final List<DailyVolumeSample> data;
 
   const RoutineVolumeGraph({super.key, required this.data});
 
   @override
+  State<RoutineVolumeGraph> createState() => _RoutineVolumeGraphState();
+}
+
+class _RoutineVolumeGraphState extends State<RoutineVolumeGraph> {
+  int? _touchedIndex; // null => show latest point
+
+  @override
   Widget build(BuildContext context) {
+    final data = widget.data;
     if (data.isEmpty) {
       return _buildEmptyState();
     }
@@ -48,80 +56,104 @@ class RoutineVolumeGraph extends StatelessWidget {
       fontFeatures: const [FontFeature.tabularFigures()],
     );
 
+    final selIndex = _touchedIndex ?? (samples.length - 1);
+    final sel = samples[selIndex];
+
     return Container(
-      padding: const EdgeInsets.fromLTRB(14, 18, 14, 8),
+      padding: const EdgeInsets.fromLTRB(14, 16, 14, 8),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
           begin: Alignment.topCenter, end: Alignment.bottomCenter,
-          colors: [Color(0xFF0E0E11), Color(0xFF09090B)],
-        ),
+          colors: [Color(0xFF0E0E11), Color(0xFF09090B)]),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: Colors.white.withValues(alpha: 0.06), width: 1),
       ),
-      child: SizedBox(
-        height: 190,
-        child: LineChart(
-          LineChartData(
-            minY: 0, maxY: maxY,
-            minX: 0, maxX: (samples.length - 1).toDouble(),
-            gridData: FlGridData(
-              show: true, drawVerticalLine: false, horizontalInterval: step,
-              getDrawingHorizontalLine: (v) => FlLine(
-                color: Colors.white.withValues(alpha: 0.07), strokeWidth: 1, dashArray: [4, 5]),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Hevy-style value header (updates on tap)
+          Padding(
+            padding: const EdgeInsets.only(left: 6, bottom: 12),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.baseline,
+              textBaseline: TextBaseline.alphabetic,
+              children: [
+                Text('${sel.volume.toStringAsFixed(0)} kg',
+                  style: GoogleFonts.inter(fontSize: 22, fontWeight: FontWeight.w700, color: Colors.white)),
+                const SizedBox(width: 8),
+                Text(DateFormat('MMM d').format(sel.day),
+                  style: GoogleFonts.inter(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.accentPrimary)),
+              ],
             ),
-            borderData: FlBorderData(show: false),
-            titlesData: FlTitlesData(
-              topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-              rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-              leftTitles: AxisTitles(
-                sideTitles: SideTitles(
-                  showTitles: true, reservedSize: 40, interval: step,
-                  getTitlesWidget: (v, m) => SideTitleWidget(
-                    axisSide: m.axisSide, space: 8,
-                    child: Text(v.toInt().toString(), style: axisStyle)),
-                ),
+          ),
+          SizedBox(
+            height: 180,
+            child: LineChart(LineChartData(
+              minY: 0, maxY: maxY,
+              minX: -0.35, maxX: (samples.length - 1) + 0.35,   // <-- breathing room: no edge clipping
+              clipData: const FlClipData.none(),                 // <-- dots never clipped by the plot box
+              gridData: FlGridData(
+                show: true, drawVerticalLine: false, horizontalInterval: step,
+                getDrawingHorizontalLine: (v) => FlLine(
+                  color: Colors.white.withValues(alpha: 0.06), strokeWidth: 1),  // solid subtle (Hevy)
               ),
-              bottomTitles: AxisTitles(
-                sideTitles: SideTitles(
+              borderData: FlBorderData(show: false),
+              titlesData: FlTitlesData(
+                topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                leftTitles: AxisTitles(sideTitles: SideTitles(
+                  showTitles: true, reservedSize: 40, interval: step,
+                  getTitlesWidget: (v, m) {
+                    if (v < 0 || v > maxY) return const SizedBox.shrink();
+                    return SideTitleWidget(axisSide: m.axisSide, space: 8,
+                      child: Text(v.toInt().toString(), style: axisStyle));
+                  })),
+                bottomTitles: AxisTitles(sideTitles: SideTitles(
                   showTitles: true, reservedSize: 24, interval: 1,
                   getTitlesWidget: (v, m) {
-                    if (v != v.roundToDouble()) return const SizedBox.shrink(); // integer ticks only
+                    if (v != v.roundToDouble()) return const SizedBox.shrink();
                     final i = v.toInt();
                     if (i < 0 || i >= samples.length) return const SizedBox.shrink();
-                    return SideTitleWidget(
-                      axisSide: m.axisSide, space: 8,
+                    return SideTitleWidget(axisSide: m.axisSide, space: 8,
                       child: Text(DateFormat('MMM d').format(samples[i].day), style: axisStyle));
-                  },
-                ),
+                  })),
               ),
-            ),
-            lineBarsData: [
-              LineChartBarData(
+              lineTouchData: LineTouchData(
+                enabled: true,
+                handleBuiltInTouches: true,
+                touchTooltipData: LineTouchTooltipData(
+                  getTooltipColor: (_) => Colors.transparent,   // kill the gray box
+                  tooltipPadding: EdgeInsets.zero,
+                  tooltipMargin: 0,
+                  getTooltipItems: (spots) => spots.map((_) => null).toList(), // no text bubble
+                ),
+                getTouchedSpotIndicator: (bar, indexes) => indexes.map((i) =>
+                  TouchedSpotIndicatorData(
+                    FlLine(color: AppColors.accentPrimary.withValues(alpha: 0.25), strokeWidth: 1), // thin, not thick
+                    FlDotData(show: true, getDotPainter: (s, p, b, ix) => FlDotCirclePainter(
+                      radius: 5.5, color: AppColors.accentPrimary, strokeWidth: 2.5, strokeColor: Colors.white)),
+                  )).toList(),
+                touchCallback: (event, resp) {
+                  if (resp?.lineBarSpots == null || resp!.lineBarSpots!.isEmpty) return;
+                  setState(() => _touchedIndex = resp.lineBarSpots!.first.spotIndex);
+                },
+              ),
+              lineBarsData: [LineChartBarData(
                 spots: spots, isCurved: false, color: AppColors.accentPrimary,
                 barWidth: 2.5, isStrokeCapRound: true,
-                dotData: FlDotData(
-                  show: true,
-                  getDotPainter: (spot, pct, bar, i) {
-                    final isLast = i == spots.length - 1;
-                    return FlDotCirclePainter(
-                      radius: isLast ? 5.5 : 3.5, color: AppColors.accentPrimary,
-                      strokeWidth: isLast ? 2.5 : 0, strokeColor: Colors.white);
-                  },
-                ),
-                belowBarData: BarAreaData(
-                  show: true,
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter, end: Alignment.bottomCenter,
-                    colors: [
-                      AppColors.accentPrimary.withValues(alpha: 0.30),
-                      AppColors.accentPrimary.withValues(alpha: 0.02),
-                    ],
-                  ),
-                ),
-              ),
-            ],
+                dotData: FlDotData(show: true, getDotPainter: (spot, pct, bar, i) {
+                  final isLast = i == spots.length - 1;
+                  return FlDotCirclePainter(
+                    radius: isLast ? 5.5 : 3.5, color: AppColors.accentPrimary,
+                    strokeWidth: isLast ? 2.5 : 0, strokeColor: Colors.white);
+                }),
+                belowBarData: BarAreaData(show: true, gradient: LinearGradient(
+                  begin: Alignment.topCenter, end: Alignment.bottomCenter,
+                  colors: [AppColors.accentPrimary.withValues(alpha: 0.30), AppColors.accentPrimary.withValues(alpha: 0.02)])),
+              )],
+            )),
           ),
-        ),
+        ],
       ),
     );
   }
