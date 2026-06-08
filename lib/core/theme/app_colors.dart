@@ -25,6 +25,11 @@ abstract class AppColors {
   static const success        = Color(0xFF34C759); // iOS green
   static const warning        = Color(0xFFFFCC00); // iOS yellow
 
+  // --- Premium routine-detail surfaces (added 2026-06) ---
+  static const surfaceCard    = Color(0xFF0C0C0E); // chart/empty card base
+  static const surfaceRaised  = Color(0xFF141416); // ghost buttons, pills, add-exercise
+  static const chartAxisLabel = Color(0xFF5A5A5F); // chart axis + table header text
+
   // Charts
   static const muscleSplitPalette = [
     Color(0xFF8A2BE2), // Electric Purple (primary)
@@ -34,9 +39,4 @@ abstract class AppColors {
     Color(0xFF9932CC), // Dark Orchid
     Color(0xFF5D3FD3), // Ultra Violet
   ];
-
-  // --- Premium routine-detail surfaces (added 2026-06) ---
-  static const Color surfaceCard    = Color(0xFF0C0C0E); // chart/empty card base
-  static const Color surfaceRaised  = Color(0xFF141416); // ghost buttons, pills, add-exercise
-  static const Color chartAxisLabel = Color(0xFF5A5A5F); // chart axis + table header text
 }
