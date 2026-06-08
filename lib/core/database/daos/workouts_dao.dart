@@ -613,35 +613,32 @@ class WorkoutsDao extends DatabaseAccessor<AppDatabase>
 
   // ── Routine Volume History ───────────────────────────────────────────────
 
-  Stream<List<DailyVolumeSample>> watchDailyVolumeForRoutine(
-    String routineId, {
-    DateTime? since,
-  }) {
-    final sinceClause = since != null ? '\n      AND ws.started_at >= ?' : '';
-    final query = '''
-    SELECT
-      DATE(ws.started_at) AS day,
-      SUM(ws.total_volume_kg) AS volume
-    FROM workout_sessions ws
-    WHERE ws.routine_id = ?
-      AND ws.ended_at IS NOT NULL$sinceClause
-    GROUP BY DATE(ws.started_at)
-    ORDER BY day ASC
-    ''';
+  Future<List<DailyVolumeSample>> dailyVolumeForRoutine(String routineId) async {
+    final rows = await customSelect(
+      '''
+      SELECT
+        DATE(s.started_at) AS day,
+        CAST(SUM(st.weight_kg * st.reps) AS REAL) AS volume
+      FROM workout_sets st
+      JOIN workout_exercises we ON we.id = st.workout_exercise_id
+      JOIN workout_sessions  s  ON s.id  = we.session_id
+      WHERE s.routine_id = ?
+      GROUP BY DATE(s.started_at)
+      ORDER BY day ASC;
+      ''',
+      variables: [Variable.withString(routineId)],
+      readsFrom: {workoutSets, workoutExercises, workoutSessions},
+    ).get();
 
-    final variables = <Variable>[
-      Variable.withString(routineId),
-      if (since != null) Variable.withString(since.toIso8601String()),
-    ];
-
-    return customSelect(
-      query,
-      variables: variables,
-      readsFrom: {workoutSessions},
-    ).watch().map((rows) => rows.map((r) => DailyVolumeSample(
-      day: DateTime.parse(r.read<String>('day')),
-      volume: r.read<double>('volume'),
-    )).toList());
+    final samples = rows.map((r) {
+      final dayStr = r.read<String>('day');
+      return DailyVolumeSample(
+        day: DateTime.parse(dayStr),
+        volume: r.read<double>('volume'),
+      );
+    }).toList();
+    
+    return samples;
   }
 
   /// Atomically updates a historical workout by:

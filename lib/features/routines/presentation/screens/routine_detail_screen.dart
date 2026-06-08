@@ -261,8 +261,7 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
 
   Future<void> _onRefresh() async {
     ref.invalidate(routineDetailProvider(widget.routineId));
-    ref.invalidate(
-        routineDailyVolumeProvider((widget.routineId, _selectedTimeRange)));
+    ref.invalidate(routineDailyVolumeProvider(widget.routineId));
     ref.invalidate(routineLastSetsProvider(widget.routineId));
   }
 
@@ -363,7 +362,7 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
   Widget build(BuildContext context) {
     final routineAsync = ref.watch(routineDetailProvider(widget.routineId));
     final volumeAsync = ref.watch(
-      routineDailyVolumeProvider((widget.routineId, _selectedTimeRange)),
+      routineDailyVolumeProvider(widget.routineId),
     );
     final lastSetsAsync = ref.watch(routineLastSetsProvider(widget.routineId));
 
