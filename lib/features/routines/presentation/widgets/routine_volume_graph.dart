@@ -19,16 +19,7 @@ class RoutineVolumeGraph extends StatelessWidget {
   Widget build(BuildContext context) {
     final samples = data;
     if (samples.isEmpty) {
-      return Center(
-        child: Text(
-          'No data yet',
-          style: GoogleFonts.inter(
-            fontSize: 14,
-            fontWeight: FontWeight.w400,
-            color: const Color(0xFF6B7280),
-          ),
-        ),
-      );
+      return const _VolumeEmptyState();
     }
     
     // Single point edge-case to avoid division by zero or errors in FLChart
@@ -200,6 +191,58 @@ class RoutineVolumeGraph extends StatelessWidget {
               ],
             ),
           ),
+        ],
+      ),
+    );
+  }
+}
+
+class _VolumeEmptyState extends StatelessWidget {
+  const _VolumeEmptyState();
+
+  @override
+  Widget build(BuildContext context) {
+    final bars = [0.40, 0.65, 0.50, 0.80, 0.95];
+    return Container(
+      height: 150,
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          begin: Alignment.topCenter, end: Alignment.bottomCenter,
+          colors: [Color(0xFF0E0E11), Color(0xFF09090B)],
+        ),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.06), width: 1),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          SizedBox(
+            height: 34,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                for (final h in bars)
+                  Container(
+                    width: 6, height: 34 * h,
+                    margin: const EdgeInsets.symmetric(horizontal: 2.5),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(3),
+                      gradient: const LinearGradient(
+                        begin: Alignment.topCenter, end: Alignment.bottomCenter,
+                        colors: [Color(0xFF3A2A55), Color(0xFF1A1A1D)],
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 10),
+          Text('No sessions logged yet',
+              style: GoogleFonts.inter(fontSize: 13.5, fontWeight: FontWeight.w500, color: AppColors.textSecondary)),
+          const SizedBox(height: 3),
+          Text('Finish a workout to see your volume trend',
+              style: GoogleFonts.inter(fontSize: 12, color: AppColors.chartAxisLabel)),
         ],
       ),
     );
