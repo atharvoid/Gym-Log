@@ -550,33 +550,15 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
                     ),
                   ),
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Text(
-                              'Total Volume (kg)',
-                              style: GoogleFonts.inter(
-                                color: AppColors.textPrimary,
-                                fontSize: 18,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            Semantics(
-                              label: 'Time range filter',
-                              button: true,
-                              child: _TimeFilterTapTarget(
-                                value: _selectedTimeRange,
-                                onTap: () => _showTimeRangeSheet(context),
-                              ),
-                            ),
-                          ],
+                        _SectionHeader(
+                          currentRange: _selectedTimeRange,
+                          onTapRange: () => _showTimeRangeSheet(context),
                         ),
-                        const SizedBox(height: 12), // 12px rhythm: graph header to graph container
+                        const SizedBox(height: 14),
                         volumeAsync.when(
                           loading: () => const Center(
                             child: CircularProgressIndicator(
@@ -593,18 +575,16 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
                               ),
                             ),
                           ),
-                          data: (data) => AnimatedSwitcher(
-                            duration: const Duration(milliseconds: 300),
-                            child: RoutineVolumeGraph(
-                              key: ValueKey(_selectedTimeRange +
-                                  data.length.toString()),
-                              data: data,
-                            ),
+                          data: (samples) => Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              RoutineVolumeGraph(
+                                key: ValueKey(_selectedTimeRange + samples.length.toString()),
+                                data: samples,
+                              ),
+                              _DeltaPill(samples: samples),
+                            ],
                           ),
-                        ),
-                        volumeAsync.maybeWhen(
-                          data: (data) => _RoutineProgressPill(samples: data),
-                          orElse: () => const SizedBox.shrink(),
                         ),
                         // Section break: 24px between analytics and exercise data
                         const SizedBox(height: 24),
@@ -922,48 +902,6 @@ class _StartRoutineButtonState extends State<_StartRoutineButton>
   }
 }
 
-class _TimeFilterTapTarget extends StatelessWidget {
-  final String value;
-  final VoidCallback onTap;
-
-  const _TimeFilterTapTarget({required this.value, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      behavior: HitTestBehavior.opaque,
-      child: Container(
-        constraints: const BoxConstraints(minHeight: 44),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          color: AppColors.bgSurface,
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              value,
-              style: GoogleFonts.inter(
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-                color: AppColors.textPrimary.withValues(alpha: 0.92),
-              ),
-            ),
-            const SizedBox(width: 4),
-            const Icon(
-              Icons.keyboard_arrow_down_rounded,
-              size: 16,
-              color: Color(0xFF9CA3AF),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
 
 class _SheetActionRow extends StatelessWidget {
   final IconData icon;
@@ -1096,51 +1034,78 @@ class _DashedBorderPainter extends CustomPainter {
   }
 }
 
-class _RoutineProgressPill extends StatelessWidget {
-  final List<DailyVolumeSample> samples;
+class _SectionHeader extends StatelessWidget {
+  final String currentRange;
+  final VoidCallback onTapRange;
+  const _SectionHeader({required this.currentRange, required this.onTapRange});
 
-  const _RoutineProgressPill({required this.samples});
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text.rich(TextSpan(children: [
+          TextSpan(text: 'Total Volume ',
+            style: GoogleFonts.inter(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+          TextSpan(text: '(kg)',
+            style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w500, color: AppColors.textSecondary)),
+        ])),
+        Semantics(
+          label: 'Time range filter', button: true,
+          child: Material(
+            color: AppColors.surfaceRaised,
+            borderRadius: BorderRadius.circular(10),
+            child: InkWell(
+              borderRadius: BorderRadius.circular(10),
+              onTap: onTapRange,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                child: Row(mainAxisSize: MainAxisSize.min, children: [
+                  Text(currentRange,
+                    style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w500, color: Colors.white.withValues(alpha: 0.86))),
+                  const SizedBox(width: 6),
+                  const Icon(Icons.keyboard_arrow_down_rounded, size: 16, color: AppColors.textSecondary),
+                ]),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _DeltaPill extends StatelessWidget {
+  final List<DailyVolumeSample> samples;
+  const _DeltaPill({required this.samples});
 
   @override
   Widget build(BuildContext context) {
     if (samples.length < 2) return const SizedBox.shrink();
-
-    final first = samples.first.volume;
-    final latest = samples.last.volume;
-    if (first == 0) return const SizedBox.shrink();
-
-    final delta = ((latest - first) / first * 100).round();
-    final isUp = delta >= 0;
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+    final first = samples.first.volume, last = samples.last.volume;
+    if (first <= 0) return const SizedBox.shrink();
+    final delta = ((last - first) / first * 100).round();
+    final up = delta >= 0;
+    final sinceLabel = DateFormat('MMM d').format(samples.first.day);
+    return Align(
+      alignment: Alignment.centerLeft,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        margin: const EdgeInsets.only(top: 14),
+        padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 6),
         decoration: BoxDecoration(
-          color: AppColors.bgSurface,
+          color: AppColors.accentPrimary.withValues(alpha: 0.12),
           borderRadius: BorderRadius.circular(999),
+          border: Border.all(color: AppColors.accentPrimary.withValues(alpha: 0.25), width: 1),
         ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              isUp ? Icons.trending_up_rounded : Icons.trending_down_rounded,
-              size: 16,
-              color: isUp ? AppColors.accentPrimary : AppColors.textSecondary,
-            ),
-            const SizedBox(width: 6),
-            Text(
-              isUp
-                  ? 'Volume up $delta% since ${DateFormat('MMM d').format(samples.first.day)}'
-                  : 'Volume down ${-delta}% since ${DateFormat('MMM d').format(samples.first.day)}',
-              style: GoogleFonts.inter(
-                fontSize: 13,
-                fontWeight: FontWeight.w500,
-                color: AppColors.textPrimary,
-              ),
-            ),
-          ],
-        ),
+        child: Row(mainAxisSize: MainAxisSize.min, children: [
+          Icon(up ? Icons.trending_up_rounded : Icons.trending_down_rounded,
+              size: 14, color: const Color(0xFFCBB2FF)),
+          const SizedBox(width: 6),
+          Text(
+            up ? 'Volume up $delta% since $sinceLabel' : 'Volume down ${-delta}% since $sinceLabel',
+            style: GoogleFonts.inter(fontSize: 12.5, fontWeight: FontWeight.w600, color: const Color(0xFFCBB2FF)),
+          ),
+        ]),
       ),
     );
   }
