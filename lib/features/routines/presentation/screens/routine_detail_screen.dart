@@ -577,36 +577,28 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
                           ],
                         ),
                         const SizedBox(height: 12), // 12px rhythm: graph header to graph container
-                        Container(
-                          height: 200,
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF121212),
-                            borderRadius: BorderRadius.circular(20),
+                        volumeAsync.when(
+                          loading: () => const Center(
+                            child: CircularProgressIndicator(
+                              color: AppColors.accentPrimary,
+                            ),
                           ),
-                          padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
-                          child: volumeAsync.when(
-                            loading: () => const Center(
-                              child: CircularProgressIndicator(
-                                color: AppColors.accentPrimary,
+                          error: (_, __) => Center(
+                            child: Text(
+                              'No data yet',
+                              style: GoogleFonts.inter(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w400,
+                                color: const Color(0xFF6B7280),
                               ),
                             ),
-                            error: (_, __) => Center(
-                              child: Text(
-                                'No data yet',
-                                style: GoogleFonts.inter(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w400,
-                                  color: const Color(0xFF6B7280),
-                                ),
-                              ),
-                            ),
-                            data: (data) => AnimatedSwitcher(
-                              duration: const Duration(milliseconds: 300),
-                              child: RoutineVolumeGraph(
-                                key: ValueKey(_selectedTimeRange +
-                                    data.length.toString()),
-                                data: data,
-                              ),
+                          ),
+                          data: (data) => AnimatedSwitcher(
+                            duration: const Duration(milliseconds: 300),
+                            child: RoutineVolumeGraph(
+                              key: ValueKey(_selectedTimeRange +
+                                  data.length.toString()),
+                              data: data,
                             ),
                           ),
                         ),
