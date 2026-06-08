@@ -25,10 +25,10 @@ abstract class AppColors {
   static const success        = Color(0xFF34C759); // iOS green
   static const warning        = Color(0xFFFFCC00); // iOS yellow
 
-  // --- Premium routine-detail surfaces (added 2026-06) ---
-  static const surfaceCard    = Color(0xFF0C0C0E); // chart/empty card base
-  static const surfaceRaised  = Color(0xFF141416); // ghost buttons, pills, add-exercise
-  static const chartAxisLabel = Color(0xFF5A5A5F); // chart axis + table header text
+  // Surfaces
+  static const surfaceCard    = Color(0xFF0C0C0E);
+  static const surfaceRaised  = Color(0xFF141416);
+  static const chartAxisLabel = Color(0xFF5A5A5F);
 
   // Charts
   static const muscleSplitPalette = [
