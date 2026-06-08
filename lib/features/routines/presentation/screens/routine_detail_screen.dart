@@ -68,12 +68,6 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
     return '${(diff.inDays / 30).floor()} months ago';
   }
 
-  String _subtitle(HydratedRoutineDetail routine, DateTime? lastDate) {
-    final count = routine.exercises.length;
-    final rel = lastDate == null ? '' : ' · Last performed ${_relativeTime(lastDate)}';
-    return '$count exercise${count == 1 ? '' : 's'}$rel';
-  }
-
 
 
   void _startRoutine(HydratedRoutineDetail routine) {
@@ -267,7 +261,8 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
 
   Future<void> _onRefresh() async {
     ref.invalidate(routineDetailProvider(widget.routineId));
-    ref.invalidate(routineDailyVolumeProvider(widget.routineId));
+    ref.invalidate(
+        routineDailyVolumeProvider((widget.routineId, _selectedTimeRange)));
     ref.invalidate(routineLastSetsProvider(widget.routineId));
   }
 
@@ -368,7 +363,7 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
   Widget build(BuildContext context) {
     final routineAsync = ref.watch(routineDetailProvider(widget.routineId));
     final volumeAsync = ref.watch(
-      routineDailyVolumeProvider(widget.routineId),
+      routineDailyVolumeProvider((widget.routineId, _selectedTimeRange)),
     );
     final lastSetsAsync = ref.watch(routineLastSetsProvider(widget.routineId));
 
@@ -401,6 +396,7 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
     final lastDate = volumeAsync.valueOrNull?.isNotEmpty == true
         ? volumeAsync.valueOrNull!.last.day
         : null;
+    final exerciseCount = routine.exercises.length;
 
     return NotificationListener<ScrollNotification>(
       onNotification: (_) => false,
@@ -423,30 +419,31 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
               automaticallyImplyLeading: false,
               titleSpacing: 0,
               centerTitle: false,
-              leading: IconButton(
-                icon: const Icon(Icons.chevron_left_rounded, color: Colors.white, size: 28),
-                onPressed: () => context.pop(),
+              title: Text(
+                routine.routine.name,
+                style: GoogleFonts.inter(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textPrimary,
+                  letterSpacing: -0.3,
+                ),
               ),
-              title: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    routine.routine.name,
-                    style: GoogleFonts.inter(fontSize: 22, fontWeight: FontWeight.w700, color: AppColors.textPrimary, height: 1.15, letterSpacing: -0.2),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 3),
-                  Text(
-                    _subtitle(routine, lastDate),
-                    style: GoogleFonts.inter(fontSize: 13, color: AppColors.textSecondary),
-                  ),
-                ],
+              leading: SizedBox(
+                width: 48,
+                height: 48,
+                child: IconButton(
+                  icon: const Icon(Icons.arrow_back_ios_new),
+                  color: AppColors.textPrimary,
+                  onPressed: () => context.pop(),
+                ),
               ),
               actions: [
                 IconButton(
-                  icon: const Icon(Icons.more_vert_rounded, color: Colors.white, size: 24),
+                  icon: const Icon(Icons.more_vert_rounded, size: 24),
+                  color: AppColors.textPrimary,
+                  padding: EdgeInsets.zero,
                   constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
+                  splashRadius: 24,
                   onPressed: () => _showActionsSheet(routine),
                 ),
               ],
@@ -472,42 +469,56 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
                     ),
                   ),
                   child: Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 22, 20, 0),
+                    padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        SizedBox(
-                          height: 54, width: double.infinity,
-                          child: Material(
-                            color: AppColors.accentPrimary, borderRadius: BorderRadius.circular(16),
-                            child: InkWell(
-                              borderRadius: BorderRadius.circular(16), onTap: () {
-                                HapticFeedback.mediumImpact();
-                                _startRoutine(routine);
-                              },
-                              child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                                const Icon(Icons.play_arrow_rounded, color: Colors.white, size: 24),
-                                const SizedBox(width: 8),
-                                Text('Start Routine', style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.white)),
-                              ]),
-                            ),
+                        Text(
+                          '$exerciseCount exercise${exerciseCount != 1 ? 's' : ''}${lastDate != null ? ' · Last performed ${_relativeTime(lastDate)}' : ''}',
+                          style: GoogleFonts.inter(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w400,
+                            color: Colors.white.withValues(alpha: 0.6),
                           ),
                         ),
-                        const SizedBox(height: 10),
-                        SizedBox(
-                          height: 46, width: double.infinity,
+                        const SizedBox(height: 16), // 16px rhythm: subtitle to primary action
+                        Semantics(
+                          button: true,
+                          label: 'Start Routine',
+                          child: _StartRoutineButton(
+                            onTap: () {
+                              HapticFeedback.mediumImpact();
+                              _startRoutine(routine);
+                            },
+                          ),
+                        ),
+                        const SizedBox(height: 12), // 12px rhythm: primary to secondary action
+                        Align(
+                          alignment: Alignment.centerRight,
                           child: Material(
-                            color: AppColors.surfaceRaised, borderRadius: BorderRadius.circular(14),
+                            color: const Color(0xFF141414),
+                            borderRadius: BorderRadius.circular(999),
                             child: InkWell(
-                              borderRadius: BorderRadius.circular(14), onTap: () {
+                              borderRadius: BorderRadius.circular(999),
+                              hoverColor: const Color(0xFF1C1C1C),
+                              highlightColor: const Color(0xFF1C1C1C),
+                              onTap: () {
                                 HapticFeedback.lightImpact();
                                 _editRoutine();
                               },
-                              child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                                Icon(Icons.edit_outlined, size: 15, color: Colors.white.withValues(alpha: 0.86)),
-                                const SizedBox(width: 8),
-                                Text('Edit Routine', style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w500, color: Colors.white.withValues(alpha: 0.86))),
-                              ]),
+                              child: Container(
+                                height: 44,
+                                padding: const EdgeInsets.symmetric(horizontal: 24),
+                                alignment: Alignment.center,
+                                child: Text(
+                                  'Edit Routine',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w500,
+                                    color: const Color(0xFFE9E9EE),
+                                  ),
+                                ),
+                              ),
                             ),
                           ),
                         ),
@@ -540,41 +551,69 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
                     ),
                   ),
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        _SectionHeader(
-                          currentRange: _selectedTimeRange,
-                          onTapRange: () => _showTimeRangeSheet(context),
-                        ),
-                        const SizedBox(height: 14),
-                        volumeAsync.when(
-                          loading: () => const Center(
-                            child: CircularProgressIndicator(
-                              color: AppColors.accentPrimary,
-                            ),
-                          ),
-                          error: (_, __) => Center(
-                            child: Text(
-                              'No data yet',
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Text(
+                              'Total Volume (kg)',
                               style: GoogleFonts.inter(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w400,
-                                color: const Color(0xFF6B7280),
+                                color: AppColors.textPrimary,
+                                fontSize: 18,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            Semantics(
+                              label: 'Time range filter',
+                              button: true,
+                              child: _TimeFilterTapTarget(
+                                value: _selectedTimeRange,
+                                onTap: () => _showTimeRangeSheet(context),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12), // 12px rhythm: graph header to graph container
+                        Container(
+                          height: 200,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF121212),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+                          child: volumeAsync.when(
+                            loading: () => const Center(
+                              child: CircularProgressIndicator(
+                                color: AppColors.accentPrimary,
+                              ),
+                            ),
+                            error: (_, __) => Center(
+                              child: Text(
+                                'No data yet',
+                                style: GoogleFonts.inter(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w400,
+                                  color: const Color(0xFF6B7280),
+                                ),
+                              ),
+                            ),
+                            data: (data) => AnimatedSwitcher(
+                              duration: const Duration(milliseconds: 300),
+                              child: RoutineVolumeGraph(
+                                key: ValueKey(_selectedTimeRange +
+                                    data.length.toString()),
+                                data: data,
                               ),
                             ),
                           ),
-                          data: (samples) => Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              RoutineVolumeGraph(
-                                key: ValueKey(_selectedTimeRange + samples.length.toString()),
-                                data: samples,
-                              ),
-                              _DeltaPill(samples: samples),
-                            ],
-                          ),
+                        ),
+                        volumeAsync.maybeWhen(
+                          data: (data) => _RoutineProgressPill(samples: data),
+                          orElse: () => const SizedBox.shrink(),
                         ),
                         // Section break: 24px between analytics and exercise data
                         const SizedBox(height: 24),
@@ -797,6 +836,144 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
 // Sub-widgets
 // ══════════════════════════════════════════════════════════════════════════════
 
+class _StartRoutineButton extends StatefulWidget {
+  final VoidCallback onTap;
+
+  const _StartRoutineButton({required this.onTap});
+
+  @override
+  State<_StartRoutineButton> createState() => _StartRoutineButtonState();
+}
+
+class _StartRoutineButtonState extends State<_StartRoutineButton>
+    with SingleTickerProviderStateMixin {
+  double _scale = 1.0;
+
+  void _onTapDown(TapDownDetails _) => setState(() => _scale = 0.97);
+  void _onTapUp(TapUpDetails _) => setState(() => _scale = 1.0);
+  void _onTapCancel() => setState(() => _scale = 1.0);
+
+  void _onTap() {
+    HapticFeedback.mediumImpact();
+    widget.onTap();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTapDown: _onTapDown,
+      onTapUp: _onTapUp,
+      onTapCancel: _onTapCancel,
+      onTap: _onTap,
+      child: AnimatedScale(
+        scale: _scale,
+        duration: const Duration(milliseconds: 150),
+        curve: Curves.easeOutQuint,
+        child: Container(
+          height: 56,
+          width: double.infinity,
+          decoration: BoxDecoration(
+            color: AppColors.accentPrimary,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.25),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
+                spreadRadius: -2,
+              ),
+            ],
+          ),
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
+              border: Border(
+                top: BorderSide(
+                  color: Colors.white.withValues(alpha: 0.08),
+                  width: 1,
+                ),
+              ),
+            ),
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                borderRadius: BorderRadius.circular(16),
+                highlightColor: Colors.transparent,
+                splashColor: Colors.transparent,
+                onTap: _onTap,
+                child: Center(
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(
+                        Icons.play_arrow_rounded,
+                        color: Colors.white,
+                        size: 20,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Start Routine',
+                        style: GoogleFonts.inter(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _TimeFilterTapTarget extends StatelessWidget {
+  final String value;
+  final VoidCallback onTap;
+
+  const _TimeFilterTapTarget({required this.value, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: Container(
+        constraints: const BoxConstraints(minHeight: 44),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: AppColors.bgSurface,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              value,
+              style: GoogleFonts.inter(
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+                color: AppColors.textPrimary.withValues(alpha: 0.92),
+              ),
+            ),
+            const SizedBox(width: 4),
+            const Icon(
+              Icons.keyboard_arrow_down_rounded,
+              size: 16,
+              color: Color(0xFF9CA3AF),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class _SheetActionRow extends StatelessWidget {
   final IconData icon;
   final Color iconColor;
@@ -928,78 +1105,51 @@ class _DashedBorderPainter extends CustomPainter {
   }
 }
 
-class _SectionHeader extends StatelessWidget {
-  final String currentRange;
-  final VoidCallback onTapRange;
-  const _SectionHeader({required this.currentRange, required this.onTapRange});
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text.rich(TextSpan(children: [
-          TextSpan(text: 'Total Volume ',
-            style: GoogleFonts.inter(fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
-          TextSpan(text: '(kg)',
-            style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w500, color: AppColors.textSecondary)),
-        ])),
-        Semantics(
-          label: 'Time range filter', button: true,
-          child: Material(
-            color: AppColors.surfaceRaised,
-            borderRadius: BorderRadius.circular(10),
-            child: InkWell(
-              borderRadius: BorderRadius.circular(10),
-              onTap: onTapRange,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-                child: Row(mainAxisSize: MainAxisSize.min, children: [
-                  Text(currentRange,
-                    style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w500, color: Colors.white.withValues(alpha: 0.86))),
-                  const SizedBox(width: 6),
-                  const Icon(Icons.keyboard_arrow_down_rounded, size: 16, color: AppColors.textSecondary),
-                ]),
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _DeltaPill extends StatelessWidget {
+class _RoutineProgressPill extends StatelessWidget {
   final List<DailyVolumeSample> samples;
-  const _DeltaPill({required this.samples});
+
+  const _RoutineProgressPill({required this.samples});
 
   @override
   Widget build(BuildContext context) {
     if (samples.length < 2) return const SizedBox.shrink();
-    final first = samples.first.volume, last = samples.last.volume;
-    if (first <= 0) return const SizedBox.shrink();
-    final delta = ((last - first) / first * 100).round();
-    final up = delta >= 0;
-    final sinceLabel = DateFormat('MMM d').format(samples.first.day);
-    return Align(
-      alignment: Alignment.centerLeft,
+
+    final first = samples.first.volume;
+    final latest = samples.last.volume;
+    if (first == 0) return const SizedBox.shrink();
+
+    final delta = ((latest - first) / first * 100).round();
+    final isUp = delta >= 0;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Container(
-        margin: const EdgeInsets.only(top: 14),
-        padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 6),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
-          color: AppColors.accentPrimary.withValues(alpha: 0.12),
+          color: AppColors.bgSurface,
           borderRadius: BorderRadius.circular(999),
-          border: Border.all(color: AppColors.accentPrimary.withValues(alpha: 0.25), width: 1),
         ),
-        child: Row(mainAxisSize: MainAxisSize.min, children: [
-          Icon(up ? Icons.trending_up_rounded : Icons.trending_down_rounded,
-              size: 14, color: const Color(0xFFCBB2FF)),
-          const SizedBox(width: 6),
-          Text(
-            up ? 'Volume up $delta% since $sinceLabel' : 'Volume down ${-delta}% since $sinceLabel',
-            style: GoogleFonts.inter(fontSize: 12.5, fontWeight: FontWeight.w600, color: const Color(0xFFCBB2FF)),
-          ),
-        ]),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              isUp ? Icons.trending_up_rounded : Icons.trending_down_rounded,
+              size: 16,
+              color: isUp ? AppColors.accentPrimary : AppColors.textSecondary,
+            ),
+            const SizedBox(width: 6),
+            Text(
+              isUp
+                  ? 'Volume up $delta% since ${DateFormat('MMM d').format(samples.first.day)}'
+                  : 'Volume down ${-delta}% since ${DateFormat('MMM d').format(samples.first.day)}',
+              style: GoogleFonts.inter(
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+                color: AppColors.textPrimary,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
