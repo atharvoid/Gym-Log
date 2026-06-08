@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
 import 'package:uuid/uuid.dart';
 import '../../../../core/database/daos/routines_dao.dart';
 import '../../../../core/database/daos/workouts_dao.dart';
@@ -611,6 +612,10 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
                             ),
                           ),
                         ),
+                        volumeAsync.maybeWhen(
+                          data: (data) => _RoutineProgressPill(samples: data),
+                          orElse: () => const SizedBox.shrink(),
+                        ),
                         // Section break: 24px between analytics and exercise data
                         const SizedBox(height: 24),
                       ],
@@ -1098,5 +1103,55 @@ class _DashedBorderPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant _DashedBorderPainter oldDelegate) {
     return oldDelegate.color != color;
+  }
+}
+
+class _RoutineProgressPill extends StatelessWidget {
+  final List<DailyVolumeSample> samples;
+
+  const _RoutineProgressPill({required this.samples});
+
+  @override
+  Widget build(BuildContext context) {
+    if (samples.length < 2) return const SizedBox.shrink();
+
+    final first = samples.first.volume;
+    final latest = samples.last.volume;
+    if (first == 0) return const SizedBox.shrink();
+
+    final delta = ((latest - first) / first * 100).round();
+    final isUp = delta >= 0;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: AppColors.bgSurface,
+          borderRadius: BorderRadius.circular(999),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              isUp ? Icons.trending_up_rounded : Icons.trending_down_rounded,
+              size: 16,
+              color: isUp ? AppColors.accentPrimary : AppColors.textSecondary,
+            ),
+            const SizedBox(width: 6),
+            Text(
+              isUp
+                  ? 'Volume up $delta% since ${DateFormat('MMM d').format(samples.first.day)}'
+                  : 'Volume down ${-delta}% since ${DateFormat('MMM d').format(samples.first.day)}',
+              style: GoogleFonts.inter(
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+                color: AppColors.textPrimary,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

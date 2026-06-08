@@ -278,9 +278,7 @@ class _RoutineExerciseBlockState extends State<RoutineExerciseBlock> {
           ),
         ),
         // Data rows
-        ...sets.asMap().entries.map((entry) {
-          final index = entry.key;
-          final set = entry.value;
+        ...sets.map((set) {
           return Container(
             color: Colors.transparent,
             padding: const EdgeInsets.symmetric(vertical: 14),
