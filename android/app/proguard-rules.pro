@@ -36,3 +36,13 @@
 # Suppress warnings for unused platform-specific stubs
 -dontwarn java.lang.instrument.ClassFileTransformer
 -dontwarn sun.misc.SignalHandler
+
+# Flutter Play Core deferred components (not used by this app).
+# The blanket `-keep class io.flutter.** { *; }` rule above retains
+# PlayStoreDeferredComponentManager, whose Play Core references aren't on
+# the classpath (we don't ship Play Feature Delivery). R8 treats those
+# missing classes as fatal during :app:minifyReleaseWithR8 — these rules
+# tell it they're intentionally absent.
+-dontwarn com.google.android.play.core.splitcompat.**
+-dontwarn com.google.android.play.core.splitinstall.**
+-dontwarn com.google.android.play.core.tasks.**
