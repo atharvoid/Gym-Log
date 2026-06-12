@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gymlog/core/database/daos/routines_dao.dart';
 import 'package:gymlog/core/database/daos/workouts_dao.dart';
@@ -48,7 +49,10 @@ final routineDailyVolumeProvider = StreamProvider.family<List<DailyVolumeSample>
   return db.workoutsDao.watchDailyVolumeForRoutine(
     routineId,
     since: _sinceForRange(selectedRange),
-  );
+  ).map((list) {
+    debugPrint('vol: routine=$routineId since=${_sinceForRange(selectedRange)} rows=${list.length}');
+    return list;
+  });
 });
 
 /// Fetches the last logged session sets for every exercise in a routine.

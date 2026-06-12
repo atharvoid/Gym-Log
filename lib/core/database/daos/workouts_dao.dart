@@ -617,33 +617,35 @@ class WorkoutsDao extends DatabaseAccessor<AppDatabase>
     String routineId, {
     DateTime? since,
   }) {
-    final sinceClause = since != null ? '\n      AND ws.started_at >= ?' : '';
-    final query = '''
-    SELECT
-      DATE(ws.started_at) AS day,
-      SUM(ws.total_volume_kg) AS volume
-    FROM workout_sessions ws
-    WHERE ws.routine_id = ?
-      AND ws.ended_at IS NOT NULL$sinceClause
-    GROUP BY DATE(ws.started_at)
-    ORDER BY day ASC
-    ''';
+    final dayExpr = workoutSessions.startedAt.date;
+    final volSum  = workoutSessions.totalVolumeKg.sum();
 
-    final variables = <Variable>[
-      Variable.withString(routineId),
-      if (since != null) Variable.withString(since.toIso8601String()),
-    ];
+    final query = selectOnly(workoutSessions)
+      ..addColumns([dayExpr, volSum])
+      ..where(workoutSessions.routineId.equals(routineId))
+      ..where(workoutSessions.endedAt.isNotNull())
+      ..groupBy([dayExpr])
+      ..orderBy([OrderingTerm.asc(dayExpr)]);
+    if (since != null) {
+      query.where(workoutSessions.startedAt.isBiggerOrEqualValue(since));
+    }
 
-    return customSelect(
-      query,
-      variables: variables,
-      readsFrom: {workoutSessions},
-    ).watch().map((rows) => rows.map((r) => DailyVolumeSample(
-      day: DateTime.parse(r.read<String>('day')),
-      volume: r.read<double>('volume'),
+    return query.watch().map((rows) => rows.map((r) => DailyVolumeSample(
+      day: DateTime.parse(r.read(dayExpr)!),
+      volume: (r.read(volSum) ?? 0).toDouble(),
     )).toList());
   }
-
+/// Most recent COMPLETED session date for a routine — powers the
+  /// "Last trained …" label on the routines list. Null if never completed.
+  Future<DateTime?> lastTrainedForRoutine(String routineId) async {
+    final session = await (select(workoutSessions)
+          ..where((t) =>
+              t.routineId.equals(routineId) & t.endedAt.isNotNull())
+          ..orderBy([(t) => OrderingTerm.desc(t.startedAt)])
+          ..limit(1))
+        .getSingleOrNull();
+    return session?.startedAt;
+  }
   /// Atomically updates a historical workout by:
   ///   1. Updating the session row (name, totalVolumeKg, synced).
   ///   2. Deleting all existing workout_exercises and workout_sets.

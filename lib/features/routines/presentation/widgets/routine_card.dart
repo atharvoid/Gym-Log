@@ -4,18 +4,19 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/providers/database_provider.dart';
-import '../../../../shared/widgets/ui/primary_button.dart';
-import '../../../../shared/widgets/ui/tracker_card.dart';
 import '../../../../shared/widgets/ui/action_bottom_sheet.dart';
+import 'routine_detail_styles.dart';
 
-/// [routine_card.dart]
-/// Purpose: Tappable routine card. Tap anywhere on the card → detail screen.
-/// The 3-dot menu handles edit/delete actions without triggering navigation.
-
+/// Premium routine card for the Routines list.
+/// - Tapping the body opens the routine detail (`/routines/:id`).
+/// - The compact "Start" pill fires [onStartTap] (and won't trigger the body tap).
+/// - Renders muscle tags, exercise count, last-trained, and a 1-line preview.
 class RoutineCard extends ConsumerWidget {
   final String routineId;
   final String routineName;
   final List<String> exerciseNames;
+  final List<String> muscleTags;
+  final DateTime? lastTrained;
   final VoidCallback onStartTap;
 
   const RoutineCard({
@@ -24,72 +25,177 @@ class RoutineCard extends ConsumerWidget {
     required this.routineName,
     required this.exerciseNames,
     required this.onStartTap,
+    this.muscleTags = const [],
+    this.lastTrained,
   });
+
+  String _relative(DateTime d) {
+    final diff = DateTime.now().difference(d);
+    if (diff.inDays < 1) return 'today';
+    if (diff.inDays == 1) return 'yesterday';
+    if (diff.inDays < 7) return '${diff.inDays} days ago';
+    if (diff.inDays < 14) return '1 week ago';
+    if (diff.inDays < 30) return '${(diff.inDays / 7).floor()} weeks ago';
+    if (diff.inDays < 60) return '1 month ago';
+    return '${(diff.inDays / 30).floor()} months ago';
+  }
+
+  Widget _tag(String label) => Container(
+        padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3),
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.05),
+          borderRadius: BorderRadius.circular(7),
+        ),
+        child: Text(
+          label,
+          style: GoogleFonts.inter(
+            fontSize: 11,
+            fontWeight: FontWeight.w500,
+            color: const Color(0xFFB8B8BD),
+          ),
+        ),
+      );
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final preview = exerciseNames.take(3).join(', ') +
-        (exerciseNames.length > 3 ? '...' : '');
+    final count = exerciseNames.length;
+    final exLabel = count == 1 ? 'exercise' : 'exercises';
+    final meta = lastTrained == null
+        ? '$count $exLabel'
+        : '$count $exLabel  ·  Last trained ${_relative(lastTrained!)}';
 
-    return TrackerCard(
-      padding: EdgeInsets.zero,
-      // Tap the card body to open routine detail
-      onTap: () => context.push('/routines/$routineId'),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Top Row: Name + more_vert
-            Row(
+    final preview = exerciseNames.isEmpty
+        ? 'No exercises yet'
+        : exerciseNames.take(3).join(', ') +
+            (count > 3 ? '  +${count - 3}' : '');
+
+    final tags = muscleTags.take(3).toList();
+    final extraTags = muscleTags.length - tags.length;
+
+    return Container(
+      decoration: BoxDecoration(
+        gradient: RDStyles.cardGradient,
+        borderRadius: BorderRadius.circular(18),
+        border: RDStyles.hairlineBorder,
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () => context.push('/routines/$routineId'),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(15, 14, 10, 13),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(
-                  child: Text(
-                    routineName,
-                    style: GoogleFonts.inter(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
+                // ── Header: glyph + name/meta + menu ─────────────────────
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      width: 44,
+                      height: 44,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: AppColors.surfaceRaised,
+                        borderRadius: BorderRadius.circular(12),
+                        border: RDStyles.hairlineBorder,
+                      ),
+                      child: const Icon(
+                        Icons.fitness_center_rounded,
+                        size: 21,
+                        color: Color(0xFFB98CFF),
+                      ),
+                    ),
+                    const SizedBox(width: 13),
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.only(top: 2),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              routineName,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: GoogleFonts.inter(
+                                fontSize: 17,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.textPrimary,
+                                letterSpacing: -0.2,
+                              ),
+                            ),
+                            const SizedBox(height: 3),
+                            Text(
+                              meta,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: GoogleFonts.inter(
+                                fontSize: 12.5,
+                                color: AppColors.textSecondary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    IconButton(
+                      padding: EdgeInsets.zero,
+                      constraints:
+                          const BoxConstraints(minWidth: 44, minHeight: 44),
+                      iconSize: 20,
+                      splashRadius: 22,
+                      icon: const Icon(Icons.more_horiz,
+                          color: AppColors.textSecondary),
+                      onPressed: () => _showOptions(context, ref),
+                    ),
+                  ],
+                ),
+
+                // ── Muscle tags (aligned under the text column) ──────────
+                if (tags.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(left: 57, top: 11),
+                    child: Wrap(
+                      spacing: 6,
+                      runSpacing: 6,
+                      children: [
+                        for (final t in tags) _tag(t),
+                        if (extraTags > 0) _tag('+$extraTags'),
+                      ],
                     ),
                   ),
+
+                // ── Divider ──────────────────────────────────────────────
+                Padding(
+                  padding: const EdgeInsets.only(top: 13),
+                  child: Container(height: 1, color: RDStyles.hairline),
                 ),
-                // 3-dot stops tap propagation naturally (button handles its own gesture)
-                IconButton(
-                  icon: const Icon(
-                    Icons.more_horiz,
-                    color: AppColors.textSecondary,
-                    size: 20,
+
+                // ── Footer: preview + compact Start pill ─────────────────
+                Padding(
+                  padding: const EdgeInsets.only(top: 12),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          preview,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.inter(
+                            fontSize: 12.5,
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      _StartPill(onTap: onStartTap),
+                    ],
                   ),
-                  onPressed: () => _showOptions(context, ref),
-                  padding: const EdgeInsets.all(12),
-                  constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
                 ),
               ],
             ),
-
-            const SizedBox(height: 4),
-
-            // Subtitle: exercise preview
-            if (preview.isNotEmpty)
-              Text(
-                preview,
-                style: GoogleFonts.inter(
-                  color: Colors.white.withValues(alpha: 0.6),
-                  fontSize: 13,
-                  fontWeight: FontWeight.w400,
-                ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-
-            const SizedBox(height: 16),
-
-            // Footer: Start Routine button
-            PrimaryButton(
-              label: 'Start Routine',
-              onPressed: onStartTap,
-            ),
-          ],
+          ),
         ),
       ),
     );
@@ -107,16 +213,7 @@ class RoutineCard extends ConsumerWidget {
           title: 'Edit Routine',
           onTap: (sheetContext) {
             Navigator.of(sheetContext).pop();
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(
-                  'Coming soon',
-                  style: GoogleFonts.inter(color: AppColors.textPrimary),
-                ),
-                backgroundColor: AppColors.bgSurface,
-                behavior: SnackBarBehavior.floating,
-              ),
-            );
+            _renameRoutine(context, ref);
           },
         ),
         ActionSheetItem(
@@ -129,27 +226,100 @@ class RoutineCard extends ConsumerWidget {
           subtitleColor: AppColors.error.withValues(alpha: 0.7),
           onTap: (sheetContext) {
             Navigator.of(sheetContext).pop();
-            _confirmDeleteRoutine(context, ref, routineId, routineName);
+            _confirmDelete(context, ref);
           },
         ),
       ],
     );
   }
 
-  void _confirmDeleteRoutine(
-    BuildContext context,
-    WidgetRef ref,
-    String routineId,
-    String routineName,
-  ) {
+  void _renameRoutine(BuildContext context, WidgetRef ref) {
+    final controller = TextEditingController(text: routineName);
     showDialog<void>(
       context: context,
       useRootNavigator: true,
       builder: (dialogCtx) => AlertDialog(
-        backgroundColor: AppColors.bgSurface,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
+        backgroundColor: const Color(0xFF121212),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Text(
+          'Rename Routine',
+          style: GoogleFonts.inter(
+            fontWeight: FontWeight.w700,
+            fontSize: 18,
+            color: AppColors.textPrimary,
+          ),
         ),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          textCapitalization: TextCapitalization.words,
+          cursorColor: AppColors.accentPrimary,
+          style: GoogleFonts.inter(color: AppColors.textPrimary, fontSize: 16),
+          decoration: InputDecoration(
+            hintText: 'Routine name',
+            hintStyle: GoogleFonts.inter(color: AppColors.textSecondary),
+            filled: true,
+            fillColor: AppColors.surfaceRaised,
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide.none,
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide:
+                  const BorderSide(color: AppColors.accentPrimary, width: 1.5),
+            ),
+          ),
+          onSubmitted: (_) {
+            final name = controller.text.trim();
+            if (name.isEmpty) return;
+            Navigator.of(dialogCtx).pop();
+            ref.read(databaseProvider).routinesDao.renameRoutine(routineId, name);
+          },
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogCtx).pop(),
+            child: Text(
+              'Cancel',
+              style: GoogleFonts.inter(
+                color: AppColors.textSecondary,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+          TextButton(
+            onPressed: () {
+              final name = controller.text.trim();
+              if (name.isEmpty) return;
+              Navigator.of(dialogCtx).pop();
+              ref
+                  .read(databaseProvider)
+                  .routinesDao
+                  .renameRoutine(routineId, name);
+            },
+            child: Text(
+              'Save',
+              style: GoogleFonts.inter(
+                color: AppColors.accentPrimary,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _confirmDelete(BuildContext context, WidgetRef ref) {
+    showDialog<void>(
+      context: context,
+      useRootNavigator: true,
+      builder: (dialogCtx) => AlertDialog(
+        backgroundColor: const Color(0xFF121212),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Text(
           'Delete Routine?',
           style: GoogleFonts.inter(
@@ -179,8 +349,7 @@ class RoutineCard extends ConsumerWidget {
           TextButton(
             onPressed: () async {
               Navigator.of(dialogCtx).pop();
-              final db = ref.read(databaseProvider);
-              await db.routinesDao.deleteRoutine(routineId);
+              await ref.read(databaseProvider).routinesDao.deleteRoutine(routineId);
             },
             child: Text(
               'Delete',
@@ -196,4 +365,37 @@ class RoutineCard extends ConsumerWidget {
   }
 }
 
+class _StartPill extends StatelessWidget {
+  final VoidCallback onTap;
+  const _StartPill({required this.onTap});
 
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: AppColors.accentPrimary,
+      borderRadius: BorderRadius.circular(999),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 9),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.play_arrow_rounded, size: 16, color: Colors.white),
+              const SizedBox(width: 5),
+              Text(
+                'Start',
+                style: GoogleFonts.inter(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}

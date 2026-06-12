@@ -6,6 +6,8 @@ import 'package:gymlog/core/database/daos/routines_dao.dart';
 import 'package:gymlog/core/database/daos/workouts_dao.dart';
 import 'routine_detail_styles.dart';
 
+/// Exercise block — sits directly on the black background (no gray card).
+/// Grouping comes from spacing + the set-table hairlines only.
 class RoutineExerciseBlock extends StatelessWidget {
   final HydratedRoutineExercise hydratedExercise;
   final List<LastSessionSetData>? lastSets;
@@ -28,15 +30,16 @@ class RoutineExerciseBlock extends StatelessWidget {
 
   String _summary(List<LastSessionSetData> sets) {
     if (sets.isEmpty) return 'No history yet';
-    final top = sets.reduce(
-        (a, b) => (a.weightKg ?? 0) >= (b.weightKg ?? 0) ? a : b);
+    final top =
+        sets.reduce((a, b) => (a.weightKg ?? 0) >= (b.weightKg ?? 0) ? a : b);
     final r = top.reps?.toString() ?? '–';
     return 'Last: ${_fmtKg(top.weightKg)} kg × $r reps · ${sets.length} sets';
   }
 
   @override
   Widget build(BuildContext context) {
-    final sets = [...?lastSets]..sort((a, b) => a.setNumber.compareTo(b.setNumber));
+    final sets = [...?lastSets]
+      ..sort((a, b) => a.setNumber.compareTo(b.setNumber));
 
     return Padding(
       padding: const EdgeInsets.only(top: 26),
@@ -116,6 +119,10 @@ class _SetTable extends StatelessWidget {
   final List<LastSessionSetData> sets;
   const _SetTable({required this.sets});
 
+  /// Right gutter so the numeric columns sit inboard of the screen edge
+  /// instead of terminating exactly where the screen ends.
+  static const double _numGutter = 20;
+
   String _fmtKg(double? w) => w == null
       ? '–'
       : (w % 1 == 0 ? w.toInt().toString() : w.toStringAsFixed(1));
@@ -130,13 +137,21 @@ class _SetTable extends StatelessWidget {
             children: [
               Expanded(flex: 5, child: Text('SET', style: RDStyles.tableHeader)),
               Expanded(
-                  flex: 3,
+                flex: 3,
+                child: Padding(
+                  padding: const EdgeInsets.only(right: _numGutter),
                   child: Text('KG',
-                      style: RDStyles.tableHeader, textAlign: TextAlign.right)),
+                      style: RDStyles.tableHeader, textAlign: TextAlign.right),
+                ),
+              ),
               Expanded(
-                  flex: 3,
+                flex: 3,
+                child: Padding(
+                  padding: const EdgeInsets.only(right: _numGutter),
                   child: Text('REPS',
-                      style: RDStyles.tableHeader, textAlign: TextAlign.right)),
+                      style: RDStyles.tableHeader, textAlign: TextAlign.right),
+                ),
+              ),
             ],
           ),
         ),
@@ -168,13 +183,19 @@ class _SetTable extends StatelessWidget {
                 ),
                 Expanded(
                   flex: 3,
-                  child: Text(_fmtKg(sets[i].weightKg),
-                      style: RDStyles.numCell, textAlign: TextAlign.right),
+                  child: Padding(
+                    padding: const EdgeInsets.only(right: _numGutter),
+                    child: Text(_fmtKg(sets[i].weightKg),
+                        style: RDStyles.numCell, textAlign: TextAlign.right),
+                  ),
                 ),
                 Expanded(
                   flex: 3,
-                  child: Text(sets[i].reps?.toString() ?? '–',
-                      style: RDStyles.numCell, textAlign: TextAlign.right),
+                  child: Padding(
+                    padding: const EdgeInsets.only(right: _numGutter),
+                    child: Text(sets[i].reps?.toString() ?? '–',
+                        style: RDStyles.numCell, textAlign: TextAlign.right),
+                  ),
                 ),
               ],
             ),
@@ -202,7 +223,7 @@ class _SetTable extends StatelessWidget {
             fg: Color(0xFFFF6B70),
             icon: Icons.warning_amber_rounded);
       default:
-        return null;
+        return null; // 'normal' / null → no chip
     }
   }
 }
