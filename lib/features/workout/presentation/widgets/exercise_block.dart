@@ -21,9 +21,9 @@ class ExerciseBlock extends StatelessWidget {
   final Exercise? driftExercise;
   final String unit;
 
-  /// The drag handle index for the enclosing ReorderableListView. When
-  /// non-null, a long-press grip appears and the card becomes draggable.
-  final int? reorderIndex;
+  /// Opens the focus-safe reorder sheet. Null when there's only one
+  /// exercise (nothing to reorder).
+  final VoidCallback? onReorderExercises;
   final VoidCallback onRemove;
   final VoidCallback onReplace;
   final VoidCallback? onUnitTap;
@@ -38,7 +38,7 @@ class ExerciseBlock extends StatelessWidget {
     required this.exercise,
     this.driftExercise,
     this.unit = 'kg',
-    this.reorderIndex,
+    this.onReorderExercises,
     required this.onRemove,
     required this.onReplace,
     this.onUnitTap,
@@ -63,6 +63,17 @@ class ExerciseBlock extends StatelessWidget {
             onReplace();
           },
         ),
+        if (onReorderExercises != null)
+          ActionSheetItem(
+            icon: Icons.swap_vert_rounded,
+            iconColor: AppColors.textSecondary,
+            iconBackground: AppColors.bgBase,
+            title: 'Reorder Exercises',
+            onTap: (sheetContext) {
+              Navigator.pop(sheetContext);
+              onReorderExercises!();
+            },
+          ),
         ActionSheetItem(
           icon: Icons.delete_outline_rounded,
           iconColor: AppColors.error,
@@ -132,21 +143,6 @@ class ExerciseBlock extends StatelessWidget {
                     ),
                   ),
                 ),
-                // Long-press drag grip — reorder exercises within the session.
-                if (reorderIndex != null)
-                  ReorderableDelayedDragStartListener(
-                    index: reorderIndex!,
-                    child: Container(
-                      width: 40,
-                      height: 48,
-                      alignment: Alignment.center,
-                      child: Icon(
-                        Icons.drag_indicator_rounded,
-                        size: 20,
-                        color: Colors.white.withValues(alpha: 0.30),
-                      ),
-                    ),
-                  ),
                 IconButton(
                   tooltip: 'Exercise options',
                   constraints:

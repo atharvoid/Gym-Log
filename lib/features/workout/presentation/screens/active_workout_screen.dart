@@ -107,6 +107,148 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
     }
   }
 
+  /// Focus-safe reorder: a dedicated sheet of plain exercise-name tiles.
+  /// Because it contains NO text fields, ReorderableListView is safe here —
+  /// dragging can't steal focus from a weight/reps input.
+  void _showReorderSheet() {
+    HapticFeedback.lightImpact();
+    showModalBottomSheet<void>(
+      context: context,
+      useRootNavigator: true,
+      useSafeArea: true,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (sheetCtx) {
+        return DraggableScrollableSheet(
+          initialChildSize: 0.6,
+          minChildSize: 0.4,
+          maxChildSize: 0.9,
+          expand: false,
+          builder: (context, scrollController) => Container(
+            decoration: const BoxDecoration(
+              color: Color(0xFF121212),
+              borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+            ),
+            child: Column(
+              children: [
+                const SizedBox(height: 12),
+                Container(
+                  width: 36,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF6A6A6A),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'Reorder Exercises',
+                  style: GoogleFonts.inter(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Drag to change the order',
+                  style: GoogleFonts.inter(
+                    fontSize: 13,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Expanded(
+                  // Consumer so the list reflects live order as it changes.
+                  child: Consumer(
+                    builder: (context, ref, _) {
+                      final exercises =
+                          ref.watch(activeWorkoutProvider)?.exercises ??
+                              const [];
+                      return ReorderableListView.builder(
+                        scrollController: scrollController,
+                        padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+                        buildDefaultDragHandles: false,
+                        onReorderStart: (_) => HapticFeedback.selectionClick(),
+                        onReorderItem: (oldIndex, newIndex) => ref
+                            .read(activeWorkoutProvider.notifier)
+                            .reorderExercise(oldIndex, newIndex),
+                        itemCount: exercises.length,
+                        itemBuilder: (context, index) {
+                          final ex = exercises[index];
+                          return Padding(
+                            key: ValueKey('reorder_${ex.id}'),
+                            padding: const EdgeInsets.only(bottom: 8),
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: AppColors.surfaceRaised,
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                              padding: const EdgeInsets.fromLTRB(16, 14, 8, 14),
+                              child: Row(
+                                children: [
+                                  Container(
+                                    width: 26,
+                                    height: 26,
+                                    alignment: Alignment.center,
+                                    decoration: BoxDecoration(
+                                      color: AppColors.accentPrimary
+                                          .withValues(alpha: 0.14),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: Text(
+                                      '${index + 1}',
+                                      style: GoogleFonts.inter(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w700,
+                                        color: const Color(0xFFCBB2FF),
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Text(
+                                      ex.name,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: GoogleFonts.inter(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w600,
+                                        color: AppColors.textPrimary,
+                                      ),
+                                    ),
+                                  ),
+                                  ReorderableDragStartListener(
+                                    index: index,
+                                    child: Container(
+                                      width: 44,
+                                      height: 44,
+                                      alignment: Alignment.center,
+                                      child: Icon(
+                                        Icons.drag_handle_rounded,
+                                        size: 22,
+                                        color:
+                                            Colors.white.withValues(alpha: 0.4),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   Future<void> _pickUnit(int exerciseId) async {
     final globalUnit = ref.read(weightUnitProvider);
     final current = ref.read(exerciseUnitProvider(exerciseId));
@@ -220,51 +362,46 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
             ),
           ),
 
-          // ── Body — long-press an exercise to drag-reorder ─────────────
+          // ── Body ──────────────────────────────────────────────────────
+          // Plain ListView (NOT ReorderableListView): the latter assigns
+          // internal per-item GlobalKeys, and a keystroke → updateSet →
+          // provider rebuild made those keys collide, throwing
+          // "Multiple widgets used the same GlobalKey" and stealing focus
+          // from the weight/reps field (keyboard dismissed every tap).
+          // A keyed StatefulWidget SetRow inside a plain ListView keeps its
+          // FocusNode across rebuilds. Reordering moved to a focus-safe
+          // sheet (no live text fields) — see _showReorderSheet.
           Expanded(
             child: workout == null
                 ? const SizedBox.shrink()
-                : ReorderableListView.builder(
+                : ListView.builder(
                     padding: const EdgeInsets.only(top: 8, bottom: 140.0),
-                    buildDefaultDragHandles: false,
-                    onReorderStart: (_) => HapticFeedback.heavyImpact(),
-                    onReorderEnd: (_) => HapticFeedback.mediumImpact(),
-                    proxyDecorator: (child, index, animation) =>
-                        AnimatedBuilder(
-                      animation: animation,
-                      builder: (context, _) {
-                        final t = Curves.easeInOut.transform(animation.value);
-                        return Transform.scale(
-                          scale: 1 + 0.02 * t,
-                          child: Material(
-                            color: Colors.transparent,
-                            child: child,
+                    itemCount: workout.exercises.length + 1,
+                    itemBuilder: (context, index) {
+                      if (index == workout.exercises.length) {
+                        return Padding(
+                          key: const ValueKey('footer'),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 8),
+                          child: SecondaryButton(
+                            label: '+ Add Exercise',
+                            onPressed: () async {
+                              final selected = await Navigator.push<Exercise>(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) =>
+                                      const ExerciseSelectionScreen(),
+                                ),
+                              );
+                              if (selected != null && mounted) {
+                                notifier.addExercise(
+                                    selected.id, selected.name);
+                              }
+                            },
                           ),
                         );
-                      },
-                    ),
-                    onReorderItem: notifier.reorderExercise,
-                    footer: Padding(
-                      key: const ValueKey('footer'),
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 8),
-                      child: SecondaryButton(
-                        label: '+ Add Exercise',
-                        onPressed: () async {
-                          final selected = await Navigator.push<Exercise>(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => const ExerciseSelectionScreen(),
-                            ),
-                          );
-                          if (selected != null && mounted) {
-                            notifier.addExercise(selected.id, selected.name);
-                          }
-                        },
-                      ),
-                    ),
-                    itemCount: workout.exercises.length,
-                    itemBuilder: (context, index) {
+                      }
+
                       final exercise = workout.exercises[index];
                       final driftEx = exercisesAsync.maybeWhen(
                         data: (list) => list
@@ -278,10 +415,12 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
                       return ExerciseBlock(
                         key: ValueKey(exercise.id),
                         exerciseIndex: index,
-                        reorderIndex: index,
                         exercise: exercise,
                         driftExercise: driftEx,
                         unit: unit,
+                        onReorderExercises: workout.exercises.length > 1
+                            ? _showReorderSheet
+                            : null,
                         onRemove: () => notifier.removeExercise(index),
                         onUnitTap: () => _pickUnit(exercise.exerciseId),
                         onReplace: () async {
