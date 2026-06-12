@@ -16,7 +16,6 @@ class ExerciseBlock extends StatelessWidget {
   final Exercise? driftExercise;
   final VoidCallback onRemove;
   final VoidCallback onReplace;
-  final VoidCallback onAddNote;
   final VoidCallback onAddSet;
   final ValueChanged<WorkoutSetState> onSetChanged;
   final void Function(int setIndex) onToggleSetCompletion;
@@ -28,10 +27,9 @@ class ExerciseBlock extends StatelessWidget {
     this.driftExercise,
     required this.onRemove,
     required this.onReplace,
-    required this.onAddNote,
     required this.onAddSet,
     required this.onSetChanged,
-    required this.onToggleSetCompletion, // ignore: avoid_positional_boolean_parameters
+    required this.onToggleSetCompletion,
   });
 
   void _showMenu(BuildContext context) {
@@ -163,6 +161,7 @@ class _ExerciseBlockHeader extends StatelessWidget {
             ),
           ),
           IconButton(
+            tooltip: 'Exercise options',
             icon: const Icon(
               Icons.more_vert,
               color: AppColors.textSecondary,

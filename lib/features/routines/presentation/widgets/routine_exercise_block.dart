@@ -51,22 +51,28 @@ class RoutineExerciseBlock extends StatelessWidget {
             borderRadius: BorderRadius.circular(12),
             child: Row(
               children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(13),
-                  child: Container(
-                    width: 52,
-                    height: 52,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(13),
-                      border: RDStyles.hairlineBorder,
-                    ),
-                    child: CachedNetworkImage(
-                      imageUrl: hydratedExercise.exercise.gifUrl ?? '',
-                      fit: BoxFit.cover,
-                      placeholder: (_, __) =>
-                          Container(color: const Color(0xFF1A1A1D)),
-                      errorWidget: (_, __, ___) =>
-                          Container(color: const Color(0xFF1A1A1D)),
+                RepaintBoundary(
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(13),
+                    child: Container(
+                      width: 52,
+                      height: 52,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(13),
+                        border: RDStyles.hairlineBorder,
+                      ),
+                      child: CachedNetworkImage(
+                        imageUrl: hydratedExercise.exercise.gifUrl ?? '',
+                        fit: BoxFit.cover,
+                        // List thumbnail: cap decode size — a 52dp cell must
+                        // not hold a full-resolution animated GIF in memory.
+                        memCacheWidth: 200,
+                        maxHeightDiskCache: 400,
+                        placeholder: (_, __) =>
+                            Container(color: const Color(0xFF1A1A1D)),
+                        errorWidget: (_, __, ___) =>
+                            Container(color: const Color(0xFF1A1A1D)),
+                      ),
                     ),
                   ),
                 ),

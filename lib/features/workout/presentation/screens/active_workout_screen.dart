@@ -2,16 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
-import 'package:flutter/services.dart';
 import 'package:gymlog/core/theme/app_colors.dart';
 import 'package:gymlog/features/workout/presentation/providers/active_workout_provider.dart';
 import 'package:gymlog/features/workout/presentation/providers/workout_timer_provider.dart';
 import 'package:gymlog/shared/widgets/ui/primary_button.dart';
 import 'package:gymlog/core/database/database.dart';
 import 'package:gymlog/shared/widgets/ui/secondary_button.dart';
+import 'package:gymlog/shared/widgets/ui/app_dialog.dart';
 import 'package:gymlog/features/exercises/presentation/screens/exercise_selection_screen.dart';
 import 'package:gymlog/features/exercises/presentation/providers/exercises_provider.dart';
 import '../widgets/exercise_block.dart';
+import '../widgets/pr_celebration_overlay.dart';
 
 class ActiveWorkoutScreen extends ConsumerStatefulWidget {
   const ActiveWorkoutScreen({super.key});
@@ -23,39 +24,20 @@ class ActiveWorkoutScreen extends ConsumerStatefulWidget {
 
 class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
   Future<void> _confirmDiscard() async {
-    final confirmed = await showDialog<bool>(
+    final confirmed = await showAppConfirmDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: AppColors.bgSurface,
-        title: Text('Discard Workout?',
-            style: GoogleFonts.inter(color: AppColors.textPrimary)),
-        content: Text('All progress will be lost.',
-            style: GoogleFonts.inter(color: AppColors.textSecondary)),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: Text('Cancel',
-                style: GoogleFonts.inter(color: AppColors.textSecondary)),
-          ),
-          TextButton(
-            onPressed: () {
-              HapticFeedback.lightImpact();
-              Navigator.pop(context, true);
-            },
-            child: Text('Discard',
-                style: GoogleFonts.inter(color: AppColors.error)),
-          ),
-        ],
-      ),
+      title: 'Discard Workout?',
+      message: 'All progress from this session will be lost.',
+      confirmLabel: 'Discard',
+      isDestructive: true,
     );
-    if (confirmed == true && mounted) {
+    if (confirmed && mounted) {
       ref.read(activeWorkoutProvider.notifier).discardWorkout();
       Navigator.pop(context);
     }
   }
 
   Future<void> _finish() async {
-    HapticFeedback.heavyImpact();
     final workout = ref.read(activeWorkoutProvider);
     if (workout == null) return;
 
@@ -66,48 +48,33 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
       (sum, ex) => sum + ex.sets.where((s) => s.isCompleted).length,
     );
 
-    // Spec: warn when 10+ completed sets were logged in under 5 minutes.
-    // This is physically implausible and usually means the timer wasn't started.
+    // Warn when 10+ completed sets were logged in under 5 minutes —
+    // physically implausible, usually means the timer wasn't started.
     if (completedSets >= 10 && durationMinutes < 5) {
-      final confirmed = await showDialog<bool>(
+      final confirmed = await showAppConfirmDialog(
         context: context,
-        builder: (ctx) => AlertDialog(
-          backgroundColor: AppColors.bgSurface,
-          title: Text(
-            'Short Workout',
-            style: GoogleFonts.inter(color: AppColors.textPrimary),
-          ),
-          content: Text(
-            'This workout was very short. Are you sure ?',
-            style: GoogleFonts.inter(color: AppColors.textSecondary),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx, false),
-              child: Text(
-                'Go Back',
-                style: GoogleFonts.inter(color: AppColors.textSecondary),
-              ),
-            ),
-            TextButton(
-              onPressed: () => Navigator.pop(ctx, true),
-              child: Text(
-                'Finish Anyway',
-                style: GoogleFonts.inter(color: AppColors.accentPrimary),
-              ),
-            ),
-          ],
-        ),
+        title: 'Short Workout',
+        message:
+            'This workout lasted under 5 minutes. Finish and save it anyway?',
+        confirmLabel: 'Finish Anyway',
+        cancelLabel: 'Go Back',
       );
-      if (confirmed != true) return;
+      if (!confirmed) return;
     }
 
-    await ref.read(activeWorkoutProvider.notifier).finishWorkout();
-    if (mounted) context.go('/');
+    final prs = await ref.read(activeWorkoutProvider.notifier).finishWorkout();
+    if (!mounted) return;
+
+    // Celebrate before navigating — the dopamine hit lands while the
+    // accomplishment is still on screen.
+    if (prs.isNotEmpty) {
+      await showPrCelebration(context, prs);
+      if (!mounted) return;
+    }
+    context.go('/');
   }
 
   Future<void> _saveChanges() async {
-    HapticFeedback.heavyImpact();
     await ref.read(activeWorkoutProvider.notifier).saveEditedWorkout();
     if (mounted) context.go('/');
   }
@@ -134,6 +101,7 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
                 children: [
                   // Discard
                   IconButton(
+                    tooltip: 'Discard workout',
                     icon: const Icon(Icons.close, color: AppColors.textPrimary),
                     onPressed: _confirmDiscard,
                   ),
@@ -261,11 +229,6 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
                               selected.name,
                             );
                           }
-                        },
-                        onAddNote: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Add note')),
-                          );
                         },
                         onAddSet: () => notifier.addSet(index),
                         onSetChanged: (updatedSet) {

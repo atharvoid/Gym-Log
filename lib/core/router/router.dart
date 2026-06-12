@@ -80,6 +80,10 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (c, s) => const ExerciseSelectionScreen(),
       ),
       GoRoute(
+        path: '/exercises/library',
+        builder: (c, s) => const ExerciseSelectionScreen(browse: true),
+      ),
+      GoRoute(
         path: '/exercise/detail/:id',
         builder: (context, state) {
           final exercise = state.extra as Exercise?;
@@ -89,7 +93,8 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/routines/edit',
-        builder: (c, s) => const RoutineEditorScreen(),
+        builder: (c, s) =>
+            RoutineEditorScreen(routineId: s.uri.queryParameters['id']),
       ),
       GoRoute(
         path: '/routines/:id',

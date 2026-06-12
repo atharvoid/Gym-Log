@@ -11,7 +11,7 @@ import 'package:gymlog/core/providers/database_provider.dart';
 import 'package:gymlog/shared/widgets/exercise_gif_widget.dart';
 import 'package:gymlog/shared/widgets/ui/tracker_card.dart';
 import 'package:gymlog/shared/widgets/ui/action_bottom_sheet.dart';
-import '../../../home/presentation/providers/recent_workouts_provider.dart';
+import 'package:gymlog/shared/widgets/ui/app_dialog.dart';
 import '../providers/workout_detail_provider.dart';
 import '../providers/workout_actions_provider.dart';
 import '../providers/active_workout_provider.dart';
@@ -240,63 +240,17 @@ class WorkoutDetailScreen extends ConsumerWidget {
     );
   }
 
-  void _confirmDelete(BuildContext context, WidgetRef ref) {
-    showDialog<void>(
+  Future<void> _confirmDelete(BuildContext context, WidgetRef ref) async {
+    final confirmed = await showAppConfirmDialog(
       context: context,
-      // useRootNavigator: renders the dialog over the entire screen including
-      // the bottom navigation bar — prevents the nav bar from showing through.
-      useRootNavigator: true,
-      builder: (dialogCtx) => AlertDialog(
-        backgroundColor: AppColors.bgSurface,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
-        title: Text(
-          'Delete Workout?',
-          style: GoogleFonts.inter(
-            fontWeight: FontWeight.w700,
-            fontSize: 18,
-            color: AppColors.textPrimary,
-          ),
-        ),
-        content: Text(
-          'This workout will be permanently removed from your history.',
-          style: GoogleFonts.inter(
-            fontSize: 15,
-            color: AppColors.textSecondary,
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogCtx).pop(),
-            child: Text(
-              'Cancel',
-              style: GoogleFonts.inter(
-                color: AppColors.textSecondary,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ),
-          TextButton(
-            onPressed: () async {
-              Navigator.of(dialogCtx).pop();
-              await ref
-                  .read(workoutActionsProvider.notifier)
-                  .deleteSession(sessionId);
-              ref.invalidate(recentWorkoutsProvider);
-              if (context.mounted) context.pop();
-            },
-            child: Text(
-              'Delete',
-              style: GoogleFonts.inter(
-                color: AppColors.error,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ),
-        ],
-      ),
+      title: 'Delete Workout?',
+      message: 'This workout will be permanently removed from your history.',
+      confirmLabel: 'Delete',
+      isDestructive: true,
     );
+    if (!confirmed || !context.mounted) return;
+    await ref.read(workoutActionsProvider.notifier).deleteSession(sessionId);
+    if (context.mounted) context.pop();
   }
 }
 
@@ -344,6 +298,7 @@ class _HeroSliver extends StatelessWidget {
       elevation: 0,
       expandedHeight: _kExpandedHeight,
       leading: IconButton(
+        tooltip: 'Back',
         icon: const Icon(
           Icons.arrow_back_ios_new,
           size: 18,
@@ -454,6 +409,7 @@ class _HeroSliver extends StatelessWidget {
                           // Three-dots icon — locked to the right edge,
                           // horizontally aligned with the title text center.
                           IconButton(
+                            tooltip: 'Workout options',
                             icon: const Icon(
                               Icons.more_horiz,
                               size: 22,

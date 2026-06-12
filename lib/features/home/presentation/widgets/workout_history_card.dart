@@ -77,14 +77,15 @@ class WorkoutHistoryCard extends StatelessWidget {
                 ),
                 if (onMenuPressed != null)
                   IconButton(
+                    tooltip: 'Workout options',
                     icon: const Icon(
                       Icons.more_horiz,
                       size: 20,
                       color: AppColors.textSecondary,
                     ),
                     constraints: const BoxConstraints(
-                      minWidth: 32,
-                      minHeight: 32,
+                      minWidth: 44,
+                      minHeight: 44,
                     ),
                     padding: EdgeInsets.zero,
                     onPressed: onMenuPressed,
@@ -174,7 +175,7 @@ class _ExerciseRow extends ConsumerWidget {
     // AsyncValue handles loading / error / data states cleanly.
     final frameAsync = ref.watch(gifLastFrameProvider(url));
 
-    return frameAsync.when(
+    return _wrapBoundary(frameAsync.when(
       // ── Loading: subtle shimmer container while the codec runs ────────────
       loading: () => Container(
         width: 52,
@@ -202,8 +203,11 @@ class _ExerciseRow extends ConsumerWidget {
           ),
         );
       },
-    );
+    ));
   }
+
+  /// Isolates thumbnail repaints from the scrolling list layer.
+  Widget _wrapBoundary(Widget child) => RepaintBoundary(child: child);
 
   Widget _iconFallback() {
     return Container(

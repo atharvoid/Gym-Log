@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:math' show min, max;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:fl_chart/fl_chart.dart';
@@ -8,7 +9,9 @@ import 'package:intl/intl.dart';
 import 'package:gymlog/core/theme/app_colors.dart';
 import 'package:gymlog/core/database/database.dart';
 import 'package:gymlog/core/database/daos/workouts_dao.dart';
+import 'package:gymlog/core/providers/premium_provider.dart';
 import 'package:gymlog/shared/widgets/exercise_gif_widget.dart';
+import 'package:gymlog/shared/widgets/premium_paywall.dart';
 import 'package:gymlog/core/providers/database_provider.dart';
 import '../providers/exercise_analytics_provider.dart';
 
@@ -23,7 +26,8 @@ class ExerciseDetailScreen extends ConsumerStatefulWidget {
       _ExerciseDetailScreenState();
 }
 
-final _exerciseFallbackProvider = FutureProvider.family<Exercise, int>((ref, id) {
+final _exerciseFallbackProvider =
+    FutureProvider.autoDispose.family<Exercise, int>((ref, id) {
   final db = ref.watch(databaseProvider);
   return db.exercisesDao.getExerciseById(id);
 });
@@ -83,7 +87,8 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
-            backgroundColor: AppColors.bgSurface,
+            backgroundColor: AppColors.bgBase,
+            scrolledUnderElevation: 0,
             iconTheme: const IconThemeData(color: AppColors.textPrimary),
           ),
           body: ListView(
@@ -141,13 +146,21 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
                   ),
                 ),
                 data: (history) {
+                  // Free tier: 3 most recent sessions in the chart as a
+                  // teaser. PR aggregates stay free — they're core
+                  // motivation, not deep analytics.
+                  final isPremium = ref.watch(isPremiumProvider);
+                  final visible = gateChartSamples(history, isPremium);
                   return Column(
                     children: [
-                      _buildGraphSection(history),
+                      _buildGraphSection(visible,
+                          showProPill: !isPremium && history.length > 3),
                       const SizedBox(height: 24),
                       _buildStatToggles(),
-                      const SizedBox(height: 24),
-                      _buildPersonalRecords(history),
+                      if (history.isNotEmpty) ...[
+                        const SizedBox(height: 24),
+                        _buildPersonalRecords(history),
+                      ],
                       const SizedBox(height: 24),
                       _buildInstructions(exercise),
                     ],
@@ -161,7 +174,8 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
     );
   }
 
-  Widget _buildGraphSection(List<ExerciseHistoryData> history) {
+  Widget _buildGraphSection(List<ExerciseHistoryData> history,
+      {bool showProPill = false}) {
     final spots = history.asMap().entries.map((entry) {
       final i = entry.key;
       final e = entry.value;
@@ -182,6 +196,11 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
               ),
             ),
             const Spacer(),
+            if (showProPill)
+              const Padding(
+                padding: EdgeInsets.only(right: 10),
+                child: ProLockPill(label: 'FULL HISTORY'),
+              ),
             PopupMenuButton<String>(
               offset: const Offset(0, 36),
               color: AppColors.bgSurface,
@@ -189,6 +208,7 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
                 borderRadius: BorderRadius.circular(12),
               ),
               onSelected: (val) {
+                HapticFeedback.lightImpact();
                 setState(() => _selectedTimeRange = val);
               },
               itemBuilder: (context) => _timeRangeOptions.map((opt) {

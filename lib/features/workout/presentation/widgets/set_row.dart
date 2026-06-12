@@ -198,6 +198,10 @@ class _SetRowState extends State<SetRow> {
                     textAlign: TextAlign.center,
                     textInputAction: TextInputAction.next,
                     keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    inputFormatters: [
+                      FilteringTextInputFormatter.allow(RegExp(r'[0-9.+]')),
+                      LengthLimitingTextInputFormatter(7),
+                    ],
                     style: GoogleFonts.inter(
                       color: isCompleted ? AppColors.textSecondary : AppColors.textPrimary,
                       fontSize: 16,
@@ -217,7 +221,9 @@ class _SetRowState extends State<SetRow> {
                       final cleanVal = val.replaceFirst('+', '');
                       final w = double.tryParse(cleanVal);
                       if (w != null) {
-                        widget.onChanged(widget.setData.copyWith(weightKg: w));
+                        // Clamp to a sane range — no negative or 5-digit kg.
+                        widget.onChanged(widget.setData
+                            .copyWith(weightKg: w.clamp(0.0, 999.5)));
                       }
                     },
                     onSubmitted: (_) => FocusScope.of(context).nextFocus(),
@@ -236,6 +242,10 @@ class _SetRowState extends State<SetRow> {
                     textAlign: TextAlign.center,
                     textInputAction: TextInputAction.done,
                     keyboardType: TextInputType.number,
+                    inputFormatters: [
+                      FilteringTextInputFormatter.digitsOnly,
+                      LengthLimitingTextInputFormatter(3),
+                    ],
                     style: GoogleFonts.inter(
                       color: isCompleted ? AppColors.textSecondary : AppColors.textPrimary,
                       fontSize: 16,
@@ -254,7 +264,8 @@ class _SetRowState extends State<SetRow> {
                     onChanged: (val) {
                       final r = int.tryParse(val);
                       if (r != null) {
-                        widget.onChanged(widget.setData.copyWith(reps: r));
+                        widget.onChanged(
+                            widget.setData.copyWith(reps: r.clamp(0, 999)));
                       }
                     },
                   ),

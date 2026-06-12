@@ -112,6 +112,43 @@ class DailyVolumeSample {
   });
 }
 
+/// A personal record detected at workout finish.
+/// Returned by [WorkoutsDao.detectAndMarkPrs] so the UI can celebrate it.
+class PrRecord {
+  final int exerciseId;
+  final String exerciseName;
+  final double weightKg;
+  final int reps;
+  final double estimated1rm;
+
+  /// The previous best estimated 1RM for this exercise (0 if first ever).
+  final double previousBest1rm;
+
+  const PrRecord({
+    required this.exerciseId,
+    required this.exerciseName,
+    required this.weightKg,
+    required this.reps,
+    required this.estimated1rm,
+    required this.previousBest1rm,
+  });
+}
+
+/// Per-session aggregate used by the Profile dashboard chart.
+class SessionStat {
+  final DateTime date;
+  final Duration duration;
+  final double volumeKg;
+  final int reps;
+
+  const SessionStat({
+    required this.date,
+    required this.duration,
+    required this.volumeKg,
+    required this.reps,
+  });
+}
+
 @DriftAccessor(tables: [WorkoutSessions, WorkoutExercises, WorkoutSets])
 class WorkoutsDao extends DatabaseAccessor<AppDatabase>
     with _$WorkoutsDaoMixin {
@@ -120,6 +157,10 @@ class WorkoutsDao extends DatabaseAccessor<AppDatabase>
   // WorkoutSessions
   Future<WorkoutSession> getSession(String id) =>
       (select(workoutSessions)..where((t) => t.id.equals(id))).getSingle();
+
+  Future<WorkoutSession?> getSessionOrNull(String id) =>
+      (select(workoutSessions)..where((t) => t.id.equals(id)))
+          .getSingleOrNull();
 
   Future<List<WorkoutSession>> getSessionsForUser(String userId) =>
       (select(workoutSessions)..where((t) => t.userId.equals(userId))).get();
@@ -130,14 +171,33 @@ class WorkoutsDao extends DatabaseAccessor<AppDatabase>
   Future<void> updateSession(WorkoutSessionsCompanion session) =>
       update(workoutSessions).replace(session);
 
-  Future<void> deleteSession(String id) =>
-      (delete(workoutSessions)..where((t) => t.id.equals(id))).go();
+  /// Deletes a session **and all of its children** atomically.
+  ///
+  /// workout_sets / workout_exercises reference the session via FKs; deleting
+  /// only the parent row would leave orphaned sets that keep polluting PR
+  /// detection and exercise history forever.
+  Future<void> deleteSession(String id) {
+    return transaction(() async {
+      await customUpdate(
+        'DELETE FROM workout_sets WHERE workout_exercise_id IN '
+        '(SELECT id FROM workout_exercises WHERE session_id = ?)',
+        variables: [Variable.withString(id)],
+        updates: {workoutSets},
+        updateKind: UpdateKind.delete,
+      );
+      await (delete(workoutExercises)..where((t) => t.sessionId.equals(id)))
+          .go();
+      await (delete(workoutSessions)..where((t) => t.id.equals(id))).go();
+    });
+  }
 
   Stream<int> watchWorkoutCountForUser(String userId) {
-    return (select(workoutSessions)
-          ..where((t) => t.userId.equals(userId) & t.endedAt.isNotNull()))
-        .watch()
-        .map((rows) => rows.length);
+    final count = workoutSessions.id.count();
+    final query = selectOnly(workoutSessions)
+      ..addColumns([count])
+      ..where(workoutSessions.userId.equals(userId) &
+          workoutSessions.endedAt.isNotNull());
+    return query.watchSingle().map((row) => row.read(count) ?? 0);
   }
 
   Stream<List<WorkoutSession>> watchSessionsForUser(String userId) {
@@ -145,6 +205,65 @@ class WorkoutsDao extends DatabaseAccessor<AppDatabase>
           ..where((t) => t.userId.equals(userId))
           ..orderBy([(t) => OrderingTerm.desc(t.startedAt)]))
         .watch();
+  }
+
+  /// Emits whenever anything in the workout tables changes for this user.
+  /// Drives the HomeScreen feed so it reloads reactively — no manual
+  /// invalidation signals needed after finishing / editing / deleting.
+  Stream<void> watchHistoryRevision(String userId) {
+    return customSelect(
+      'SELECT COUNT(*) AS c FROM workout_sessions WHERE user_id = ?',
+      variables: [Variable.withString(userId)],
+      readsFrom: {workoutSessions, workoutExercises, workoutSets},
+    ).watch().map((_) {});
+  }
+
+  /// Start dates of every completed session, newest first.
+  /// Day-grouping happens in Dart so streaks respect the local time zone.
+  Stream<List<DateTime>> watchCompletedSessionDates(String userId) {
+    final query = selectOnly(workoutSessions)
+      ..addColumns([workoutSessions.startedAt])
+      ..where(workoutSessions.userId.equals(userId) &
+          workoutSessions.endedAt.isNotNull())
+      ..orderBy([OrderingTerm.desc(workoutSessions.startedAt)]);
+    return query
+        .watch()
+        .map((rows) =>
+            rows.map((r) => r.read(workoutSessions.startedAt)!).toList());
+  }
+
+  /// Per-session (date, duration, volume, reps) for the Profile chart.
+  Stream<List<SessionStat>> watchSessionStatsForUser(
+    String userId, {
+    DateTime? since,
+  }) {
+    final sinceClause = since != null ? ' AND s.started_at >= ?' : '';
+    return customSelect(
+      '''
+      SELECT s.started_at, s.ended_at, s.total_volume_kg,
+        COALESCE((SELECT SUM(ws.reps)
+                  FROM workout_sets ws
+                  JOIN workout_exercises we ON ws.workout_exercise_id = we.id
+                  WHERE we.session_id = s.id), 0) AS total_reps
+      FROM workout_sessions s
+      WHERE s.user_id = ? AND s.ended_at IS NOT NULL$sinceClause
+      ORDER BY s.started_at ASC
+      ''',
+      variables: [
+        Variable.withString(userId),
+        if (since != null) Variable.withDateTime(since),
+      ],
+      readsFrom: {workoutSessions, workoutExercises, workoutSets},
+    ).watch().map((rows) => rows.map((r) {
+          final start = r.read<DateTime>('started_at');
+          final end = r.read<DateTime>('ended_at');
+          return SessionStat(
+            date: start,
+            duration: end.difference(start),
+            volumeKg: r.read<double>('total_volume_kg'),
+            reps: r.read<int>('total_reps'),
+          );
+        }).toList());
   }
 
   // WorkoutExercises
@@ -167,53 +286,101 @@ class WorkoutsDao extends DatabaseAccessor<AppDatabase>
             ..orderBy([(t) => OrderingTerm.asc(t.orderIndex)]))
           .get();
 
+  /// All sets of a session in ONE query, grouped by workout_exercise id.
+  Future<Map<String, List<WorkoutSet>>> _getSetsForSession(
+      String sessionId) async {
+    final rows = await (select(workoutSets).join([
+      innerJoin(
+        workoutExercises,
+        workoutExercises.id.equalsExp(workoutSets.workoutExerciseId),
+      ),
+    ])
+          ..where(workoutExercises.sessionId.equals(sessionId))
+          ..orderBy([OrderingTerm.asc(workoutSets.orderIndex)]))
+        .get();
+
+    final map = <String, List<WorkoutSet>>{};
+    for (final row in rows) {
+      final set = row.readTable(workoutSets);
+      map.putIfAbsent(set.workoutExerciseId, () => []).add(set);
+    }
+    return map;
+  }
+
   /// Returns the ordered sets from the **most recent completed session**
   /// (excluding [currentSessionId]) in which [exerciseId] was logged.
   ///
   /// Returns an empty list when this is the exercise's first appearance,
   /// so callers can hide the "VS PREV" column rather than show blanks.
-  ///
-  /// Query is two bounded steps — not N+1:
-  ///   1. Find the latest session_id for this exercise (LIMIT 1).
-  ///   2. Fetch that session's workout_exercise row, then its sets.
   Future<List<WorkoutSet>> getPreviousSessionSets(
     int exerciseId,
     String currentSessionId,
   ) async {
-    // Step 1: most recent completed session for this exercise, not the current one.
-    final sessionRows = await customSelect(
+    final map = await getPreviousSessionSetsBatch(
+      [exerciseId],
+      currentSessionId,
+    );
+    return map[exerciseId] ?? const [];
+  }
+
+  /// Previous-session sets for MANY exercises in a single query.
+  ///
+  /// For each exercise id, finds its most recent completed session (excluding
+  /// [currentSessionId]) and returns that session's ordered sets. One SQL
+  /// round-trip total — this used to be 3 queries *per exercise*.
+  Future<Map<int, List<WorkoutSet>>> getPreviousSessionSetsBatch(
+    List<int> exerciseIds,
+    String currentSessionId,
+  ) async {
+    if (exerciseIds.isEmpty) return {};
+    final placeholders = List.filled(exerciseIds.length, '?').join(',');
+
+    final rows = await customSelect(
       '''
-      SELECT s.id
-      FROM workout_sets ws
-      JOIN workout_exercises we ON ws.workout_exercise_id = we.id
-      JOIN workout_sessions  s  ON we.session_id = s.id
-      WHERE ws.exercise_id = ?
-        AND s.id           != ?
-        AND s.ended_at     IS NOT NULL
-      ORDER BY s.started_at DESC
-      LIMIT 1
+      SELECT cur.ex_id AS for_exercise,
+             ws.id, ws.workout_exercise_id, ws.exercise_id, ws.order_index,
+             ws.set_type, ws.weight_kg, ws.reps, ws.rpe, ws.is_pr,
+             ws.estimated_1rm, ws.completed_at
+      FROM (SELECT DISTINCT exercise_id AS ex_id FROM workout_exercises
+            WHERE exercise_id IN ($placeholders)) AS cur
+      JOIN workout_exercises we
+        ON we.exercise_id = cur.ex_id
+       AND we.session_id = (
+            SELECT s.id
+            FROM workout_sessions s
+            JOIN workout_exercises we2
+              ON we2.session_id = s.id AND we2.exercise_id = cur.ex_id
+            WHERE s.id != ? AND s.ended_at IS NOT NULL
+            ORDER BY s.started_at DESC
+            LIMIT 1)
+      JOIN workout_sets ws ON ws.workout_exercise_id = we.id
+      ORDER BY cur.ex_id, ws.order_index ASC
       ''',
       variables: [
-        Variable.withInt(exerciseId),
+        for (final id in exerciseIds) Variable.withInt(id),
         Variable.withString(currentSessionId),
       ],
       readsFrom: {workoutSets, workoutExercises, workoutSessions},
     ).get();
 
-    if (sessionRows.isEmpty) return [];
-    final prevSessionId = sessionRows.first.read<String>('id');
-
-    // Step 2: workout_exercise row for that session + exercise.
-    final weRow = await (select(workoutExercises)
-          ..where(
-            (t) =>
-                t.sessionId.equals(prevSessionId) &
-                t.exerciseId.equals(exerciseId),
-          ))
-        .getSingleOrNull();
-
-    if (weRow == null) return [];
-    return getSetsForExercise(weRow.id);
+    final map = <int, List<WorkoutSet>>{};
+    for (final r in rows) {
+      final forExercise = r.read<int>('for_exercise');
+      map.putIfAbsent(forExercise, () => []).add(WorkoutSet(
+            id: r.read<String>('id'),
+            workoutExerciseId: r.read<String>('workout_exercise_id'),
+            exerciseId: r.read<int>('exercise_id'),
+            orderIndex: r.read<int>('order_index'),
+            setType: r.read<String>('set_type'),
+            weightKg: r.read<double>('weight_kg'),
+            reps: r.read<int>('reps'),
+            rpe: r.read<double?>('rpe'),
+            isPr: r.read<bool>('is_pr'),
+            estimated1rm: r.read<double?>('estimated_1rm'),
+            completedAt: r.read<DateTime?>('completed_at'),
+          ));
+    }
+    return map;
   }
 
   Future<List<LastSessionSetData>> getLastSessionSetsForExercise({
@@ -274,7 +441,29 @@ class WorkoutsDao extends DatabaseAccessor<AppDatabase>
     required String routineId,
     required String userId,
   }) async {
-    final rows = await customSelect(
+    final rows = await _lastSessionSetsForRoutineQuery(
+      routineId: routineId,
+      userId: userId,
+    ).get();
+    return _mapLastSessionRows(rows);
+  }
+
+  /// Reactive version of [getLastSessionSetsForRoutine] — re-emits whenever
+  /// workout data changes so the Routine Detail set tables never go stale.
+  Stream<Map<String, List<LastSessionSetData>>> watchLastSessionSetsForRoutine({
+    required String routineId,
+    required String userId,
+  }) {
+    return _lastSessionSetsForRoutineQuery(routineId: routineId, userId: userId)
+        .watch()
+        .map(_mapLastSessionRows);
+  }
+
+  Selectable<QueryRow> _lastSessionSetsForRoutineQuery({
+    required String routineId,
+    required String userId,
+  }) {
+    return customSelect(
       '''
       SELECT ws.exercise_id, ws.order_index, ws.weight_kg, ws.reps, ws.set_type, ws.is_pr
       FROM workout_sets ws
@@ -295,8 +484,11 @@ class WorkoutsDao extends DatabaseAccessor<AppDatabase>
         Variable.withString(userId),
       ],
       readsFrom: {workoutSets, workoutExercises, workoutSessions},
-    ).get();
+    );
+  }
 
+  Map<String, List<LastSessionSetData>> _mapLastSessionRows(
+      List<QueryRow> rows) {
     final map = <String, List<LastSessionSetData>>{};
     for (final row in rows) {
       final exId = row.read<int>('exercise_id').toString();
@@ -323,56 +515,34 @@ class WorkoutsDao extends DatabaseAccessor<AppDatabase>
 
   // ── Epley 1RM Formula ────────────────────────────────────────────────────
 
-  /// Brzycki/Epley one-rep-max estimate.
+  /// Epley one-rep-max estimate.
   /// Guard: at reps <= 1 the formula is undefined or trivially returns weight.
   double _epley(double weight, int reps) {
     if (reps <= 1) return weight;
     return weight * (1 + reps / 30);
   }
 
-  Future<List<ExerciseHistoryData>> getExerciseHistory(int exerciseId) async {
-    const query = '''
-      SELECT
-        COALESCE(s.ended_at, s.started_at) AS session_date,
-        MAX(ws.weight_kg) AS max_weight,
-        MAX(ws.reps) AS max_reps,
-        SUM(ws.weight_kg * ws.reps) AS total_volume
-      FROM workout_sets ws
-      JOIN workout_exercises we ON ws.workout_exercise_id = we.id
-      JOIN workout_sessions s ON we.session_id = s.id
-      WHERE ws.exercise_id = ?
-        AND ws.weight_kg > 0
-        AND ws.reps > 0
-      GROUP BY s.id, COALESCE(s.ended_at, s.started_at)
-      ORDER BY session_date ASC
-    ''';
+  Future<List<ExerciseHistoryData>> getExerciseHistory(int exerciseId) =>
+      _exerciseHistoryQuery(exerciseId, null).get().then(_mapHistoryRows);
 
-    final rows = await customSelect(
-      query,
-      variables: [Variable.withInt(exerciseId)],
-      readsFrom: {workoutSets, workoutExercises, workoutSessions},
-    ).get();
-
-    return rows.map((row) {
-      final date = DateTime.parse(row.read<String>('session_date'));
-      final weight = row.read<double>('max_weight');
-      final reps = row.read<int>('max_reps');
-      final volume = row.read<double>('total_volume');
-      final estimated1RM = _epley(weight, reps);
-
-      return ExerciseHistoryData(
-        date: date,
-        weight: weight,
-        reps: reps,
-        estimated1RM: estimated1RM,
-        volume: volume,
-      );
-    }).toList();
+  Stream<List<ExerciseHistoryData>> watchExerciseHistory(
+    int exerciseId, {
+    DateTime? since,
+  }) {
+    return _exerciseHistoryQuery(exerciseId, since)
+        .watch()
+        .map(_mapHistoryRows);
   }
 
-  Stream<List<ExerciseHistoryData>> watchExerciseHistory(int exerciseId, {DateTime? since}) {
-    final sinceClause = since != null ? '\n        AND ws.completed_at >= ?' : '';
-    final query = '''
+  /// NOTE: dates are bound with [Variable.withDateTime] and read back with
+  /// `read<DateTime>` so they round-trip through drift's storage format
+  /// (unix seconds). Binding ISO strings here silently breaks every
+  /// comparison — SQLite orders INTEGER below TEXT, so `int >= 'iso'` is
+  /// always false and `int < 'iso'` is always true.
+  Selectable<QueryRow> _exerciseHistoryQuery(int exerciseId, DateTime? since) {
+    final sinceClause = since != null ? '\n        AND s.started_at >= ?' : '';
+    return customSelect(
+      '''
       SELECT
         COALESCE(s.ended_at, s.started_at) AS session_date,
         MAX(ws.weight_kg) AS max_weight,
@@ -386,64 +556,72 @@ class WorkoutsDao extends DatabaseAccessor<AppDatabase>
         AND ws.reps > 0$sinceClause
       GROUP BY s.id, COALESCE(s.ended_at, s.started_at)
       ORDER BY session_date ASC
-    ''';
-
-    final variables = <Variable>[
-      Variable.withInt(exerciseId),
-      if (since != null) Variable.withString(since.toIso8601String()),
-    ];
-
-    return customSelect(
-      query,
-      variables: variables,
+      ''',
+      variables: [
+        Variable.withInt(exerciseId),
+        if (since != null) Variable.withDateTime(since),
+      ],
       readsFrom: {workoutSets, workoutExercises, workoutSessions},
-    ).watch().map((rows) {
-      return rows.map((row) {
-        final date = DateTime.parse(row.read<String>('session_date'));
-        final weight = row.read<double>('max_weight');
-        final reps = row.read<int>('max_reps');
-        final volume = row.read<double>('total_volume');
-        final estimated1RM = _epley(weight, reps);
-
-        return ExerciseHistoryData(
-          date: date,
-          weight: weight,
-          reps: reps,
-          estimated1RM: estimated1RM,
-          volume: volume,
-        );
-      }).toList();
-    });
+    );
   }
 
-  Future<HydratedWorkout?> getHydratedWorkout(String sessionId) async {
-    final session = await getSession(sessionId);
+  List<ExerciseHistoryData> _mapHistoryRows(List<QueryRow> rows) {
+    return rows.map((row) {
+      final date = row.read<DateTime>('session_date');
+      final weight = row.read<double>('max_weight');
+      final reps = row.read<int>('max_reps');
+      final volume = row.read<double>('total_volume');
 
-    final workoutExercises = await getExercisesForSession(sessionId);
+      return ExerciseHistoryData(
+        date: date,
+        weight: weight,
+        reps: reps,
+        estimated1RM: _epley(weight, reps),
+        volume: volume,
+      );
+    }).toList();
+  }
+
+  /// Fully hydrates a workout in a FIXED number of queries (5), regardless
+  /// of how many exercises it contains:
+  ///   1. session row
+  ///   2. workout_exercises
+  ///   3. exercise metadata batch (IN clause)
+  ///   4. all sets of the session (single JOIN)
+  ///   5. previous-session sets for every exercise (single CTE query)
+  Future<HydratedWorkout?> getHydratedWorkout(String sessionId) async {
+    final session = await getSessionOrNull(sessionId);
+    if (session == null) return null;
+
+    final exercises = await getExercisesForSession(sessionId);
+    if (exercises.isEmpty) {
+      return HydratedWorkout(session: session, exercises: const []);
+    }
+
+    final exerciseIds = exercises.map((e) => e.exerciseId).toSet().toList();
+
+    final metaRows = await (db.select(db.exercises)
+          ..where((t) => t.id.isIn(exerciseIds)))
+        .get();
+    final metaById = {for (final e in metaRows) e.id: e};
+
+    final setsByWorkoutExercise = await _getSetsForSession(sessionId);
+    final previousByExercise =
+        await getPreviousSessionSetsBatch(exerciseIds, sessionId);
 
     final hydratedExercises = <HydratedWorkoutExercise>[];
-    for (final we in workoutExercises) {
-      final exerciseRow = await db.exercisesDao.getExerciseById(we.exerciseId);
-
-      final sets = await getSetsForExercise(we.id);
-
-      // Fetch cross-session historical sets to power "VS PREV" column.
-      // Returns [] on first appearance — UI hides the column in that case.
-      final previousSets =
-          await getPreviousSessionSets(we.exerciseId, sessionId);
-
+    for (final we in exercises) {
+      final meta = metaById[we.exerciseId];
+      if (meta == null) continue; // exercise row deleted — skip defensively
       hydratedExercises.add(HydratedWorkoutExercise(
         workoutExercise: we,
-        exerciseMetadata: exerciseRow,
-        sets: sets,
-        previousSets: previousSets,
+        exerciseMetadata: meta,
+        sets: setsByWorkoutExercise[we.id] ?? const [],
+        previousSets: previousByExercise[we.exerciseId] ?? const [],
       ));
     }
 
-    return HydratedWorkout(
-      session: session,
-      exercises: hydratedExercises,
-    );
+    return HydratedWorkout(session: session, exercises: hydratedExercises);
   }
 
   // ── Paginated session previews ───────────────────────────────────────────
@@ -451,6 +629,9 @@ class WorkoutsDao extends DatabaseAccessor<AppDatabase>
   /// Returns up to [limit] previews starting at [offset], ordered newest-first.
   /// Pass `limit = pageSize + 1` to detect `hasMore` — caller discards the
   /// extra item and treats `length == limit` as a hasMore signal.
+  ///
+  /// Runs exactly 3 queries per page (sessions + stats batch + top-exercise
+  /// batch) — previously this was ~6 queries *per session card*.
   Future<List<WorkoutSessionPreview>> getSessionPreviewsForUser(
     String userId, {
     required int limit,
@@ -464,109 +645,148 @@ class WorkoutsDao extends DatabaseAccessor<AppDatabase>
 
     if (sessions.isEmpty) return [];
 
-    final previews = <WorkoutSessionPreview>[];
+    final ids = sessions.map((s) => s.id).toList();
+    final placeholders = List.filled(ids.length, '?').join(',');
+    final idVars = [for (final id in ids) Variable.withString(id)];
 
-    for (final session in sessions) {
-      // ── PR count + exercise count via JOIN ──────────────────────────────
-      final statsRows = await customSelect(
-        '''
-        SELECT
-          COUNT(DISTINCT we.id)                                        AS exercise_count,
-          COALESCE(SUM(CASE WHEN wset.is_pr = 1 THEN 1 ELSE 0 END), 0) AS pr_count
-        FROM workout_exercises we
-        LEFT JOIN workout_sets wset ON wset.workout_exercise_id = we.id
-        WHERE we.session_id = ?
-        ''',
-        variables: [Variable.withString(session.id)],
-        readsFrom: {workoutExercises, workoutSets},
-      ).get();
+    // ── Batch 1: exercise count + PR count per session ─────────────────────
+    final statsRows = await customSelect(
+      '''
+      SELECT we.session_id,
+        COUNT(DISTINCT we.id) AS exercise_count,
+        COALESCE(SUM(CASE WHEN wset.is_pr = 1 THEN 1 ELSE 0 END), 0) AS pr_count
+      FROM workout_exercises we
+      LEFT JOIN workout_sets wset ON wset.workout_exercise_id = we.id
+      WHERE we.session_id IN ($placeholders)
+      GROUP BY we.session_id
+      ''',
+      variables: idVars,
+      readsFrom: {workoutExercises, workoutSets},
+    ).get();
 
-      final exerciseCount = statsRows.isNotEmpty
-          ? statsRows.first.read<int>('exercise_count')
-          : 0;
-      final prCount =
-          statsRows.isNotEmpty ? statsRows.first.read<int>('pr_count') : 0;
+    final statsBySession = <String, (int, int)>{
+      for (final r in statsRows)
+        r.read<String>('session_id'): (
+          r.read<int>('exercise_count'),
+          r.read<int>('pr_count'),
+        ),
+    };
 
-      // ── Top 2 exercises with GIF url ─────────────────────────────────────
-      final topWeRows = await (select(workoutExercises)
-            ..where((t) => t.sessionId.equals(session.id))
-            ..orderBy([(t) => OrderingTerm.asc(t.orderIndex)])
-            ..limit(2))
-          .get();
+    // ── Batch 2: top-2 exercises per session, with name/gif/set count ──────
+    final topRows = await customSelect(
+      '''
+      SELECT we.session_id, we.order_index, e.name, e.gif_url,
+        (SELECT COUNT(*) FROM workout_sets ws
+         WHERE ws.workout_exercise_id = we.id) AS set_count
+      FROM workout_exercises we
+      JOIN exercises e ON e.id = we.exercise_id
+      WHERE we.session_id IN ($placeholders) AND we.order_index <= 1
+      ORDER BY we.session_id, we.order_index ASC
+      ''',
+      variables: idVars,
+      readsFrom: {workoutExercises, workoutSets, db.exercises},
+    ).get();
 
-      final topExercises = <ExercisePreviewItem>[];
-      for (final we in topWeRows) {
-        final exercise = await db.exercisesDao.getExerciseById(we.exerciseId);
-        // All persisted sets are completed (finishWorkout only saves isCompleted==true)
-        final setCount = await (select(workoutSets)
-              ..where((t) => t.workoutExerciseId.equals(we.id)))
-            .get()
-            .then((rows) => rows.length);
-
-        topExercises.add(ExercisePreviewItem(
-          exerciseName: exercise.name,
-          gifUrl: exercise.gifUrl,
-          setCount: setCount,
-        ));
-      }
-
-      previews.add(WorkoutSessionPreview(
-        session: session,
-        duration: session.endedAt!.difference(session.startedAt),
-        totalVolumeKg: session.totalVolumeKg,
-        prCount: prCount,
-        topExercises: topExercises,
-        totalExerciseCount: exerciseCount,
-      ));
+    final topBySession = <String, List<ExercisePreviewItem>>{};
+    for (final r in topRows) {
+      topBySession
+          .putIfAbsent(r.read<String>('session_id'), () => [])
+          .add(ExercisePreviewItem(
+            exerciseName: r.read<String>('name'),
+            gifUrl: r.read<String?>('gif_url'),
+            setCount: r.read<int>('set_count'),
+          ));
     }
 
-    return previews;
+    return [
+      for (final session in sessions)
+        WorkoutSessionPreview(
+          session: session,
+          duration: session.endedAt!.difference(session.startedAt),
+          totalVolumeKg: session.totalVolumeKg,
+          prCount: statsBySession[session.id]?.$2 ?? 0,
+          topExercises: topBySession[session.id] ?? const [],
+          totalExerciseCount: statsBySession[session.id]?.$1 ?? 0,
+        ),
+    ];
   }
 
   // ── PR Detection ──────────────────────────────────────────────────────────
 
   /// Marks the best-1RM set per exercise in [sessionId] as a PR if it exceeds
-  /// the historical max for that exercise across all sessions before [sessionStart].
+  /// the historical max for that exercise across all sessions before
+  /// [sessionStart], and returns the list of PRs so the UI can celebrate.
   ///
   /// Epley formula: `estimated1RM = weight × (1 + reps / 30)`
   /// Only the single best set per exercise per session is ever marked.
-  Future<void> detectAndMarkPrs(String sessionId, DateTime sessionStart) async {
+  Future<List<PrRecord>> detectAndMarkPrs(
+    String sessionId,
+    DateTime sessionStart,
+  ) async {
+    final prs = <PrRecord>[];
     try {
       final exercises = await getExercisesForSession(sessionId);
+      if (exercises.isEmpty) return prs;
+
+      final setsByWorkoutExercise = await _getSetsForSession(sessionId);
 
       for (final we in exercises) {
-        final sets = await getSetsForExercise(we.id);
+        final sets = setsByWorkoutExercise[we.id] ?? const [];
         final priorMax =
             await _getMaxEstimated1rmBefore(we.exerciseId, sessionStart);
 
         double sessionBest1rm = 0;
-        String? bestSetId;
+        WorkoutSet? bestSet;
 
         for (final set in sets) {
           if (set.weightKg > 0 && set.reps > 0) {
             final e1rm = _epley(set.weightKg, set.reps);
             if (e1rm > sessionBest1rm) {
               sessionBest1rm = e1rm;
-              bestSetId = set.id;
+              bestSet = set;
             }
           }
         }
 
-        if (bestSetId != null && sessionBest1rm > priorMax) {
-          await (update(workoutSets)..where((t) => t.id.equals(bestSetId!)))
+        if (bestSet != null && sessionBest1rm > priorMax) {
+          await (update(workoutSets)..where((t) => t.id.equals(bestSet!.id)))
               .write(WorkoutSetsCompanion(
             isPr: const Value(true),
             estimated1rm: Value(sessionBest1rm),
           ));
-          debugPrint(
-            '[WorkoutsDao] PR ✓ exercise=${we.exerciseId} '
-            '1RM=${sessionBest1rm.toStringAsFixed(1)}kg '
-            '(prior=${priorMax.toStringAsFixed(1)}kg)',
-          );
+          prs.add(PrRecord(
+            exerciseId: we.exerciseId,
+            exerciseName: '', // filled from batch lookup below
+            weightKg: bestSet.weightKg,
+            reps: bestSet.reps,
+            estimated1rm: sessionBest1rm,
+            previousBest1rm: priorMax,
+          ));
         }
       }
+
+      if (prs.isEmpty) return prs;
+
+      // Resolve exercise names in one query.
+      final nameRows = await (db.select(db.exercises)
+            ..where((t) => t.id.isIn(prs.map((p) => p.exerciseId).toList())))
+          .get();
+      final nameById = {for (final e in nameRows) e.id: e.name};
+
+      return [
+        for (final p in prs)
+          PrRecord(
+            exerciseId: p.exerciseId,
+            exerciseName: nameById[p.exerciseId] ?? 'Exercise',
+            weightKg: p.weightKg,
+            reps: p.reps,
+            estimated1rm: p.estimated1rm,
+            previousBest1rm: p.previousBest1rm,
+          ),
+      ];
     } catch (e) {
-      debugPrint('[WorkoutsDao] detectAndMarkPrs failed: $e');
+      if (kDebugMode) debugPrint('[WorkoutsDao] detectAndMarkPrs failed: $e');
+      return prs;
     }
   }
 
@@ -579,13 +799,18 @@ class WorkoutsDao extends DatabaseAccessor<AppDatabase>
       JOIN workout_exercises we ON ws.workout_exercise_id = we.id
       JOIN workout_sessions s   ON we.session_id = s.id
       WHERE ws.exercise_id = ?
-        AND s.ended_at < ?
+        AND s.ended_at IS NOT NULL
+        AND s.started_at < ?
         AND ws.weight_kg > 0
         AND ws.reps > 0
       ''',
       variables: [
         Variable.withInt(exerciseId),
-        Variable.withString(before.toIso8601String()),
+        // Bound as a typed DateTime so it serializes to the same storage
+        // format as the column. An ISO-string bind compares INTEGER < TEXT,
+        // which is unconditionally true in SQLite — that made priorMax
+        // include the CURRENT session, so no PR could ever fire.
+        Variable.withDateTime(before),
       ],
       readsFrom: {workoutSets, workoutExercises, workoutSessions},
     ).get();
@@ -602,13 +827,23 @@ class WorkoutsDao extends DatabaseAccessor<AppDatabase>
     ).watch().asyncMap((_) => getHydratedWorkout(sessionId));
   }
 
+  /// Removes sessions that were started but never finished within 24h,
+  /// including any children they may have accumulated.
   Future<void> deleteOrphanedSessions(String userId) async {
-    await (delete(workoutSessions)
-      ..where((s) => s.userId.equals(userId) &
-                     s.endedAt.isNull() &
-                     s.startedAt.isSmallerThanValue(
-                       DateTime.now().subtract(const Duration(hours: 24))))
-    ).go();
+    final cutoff = DateTime.now().subtract(const Duration(hours: 24));
+    final stale = await (select(workoutSessions)
+          ..where((s) =>
+              s.userId.equals(userId) &
+              s.endedAt.isNull() &
+              s.startedAt.isSmallerThanValue(cutoff)))
+        .get();
+    if (stale.isEmpty) return;
+
+    await transaction(() async {
+      for (final session in stale) {
+        await deleteSession(session.id);
+      }
+    });
   }
 
   // ── Routine Volume History ───────────────────────────────────────────────
@@ -618,7 +853,7 @@ class WorkoutsDao extends DatabaseAccessor<AppDatabase>
     DateTime? since,
   }) {
     final dayExpr = workoutSessions.startedAt.date;
-    final volSum  = workoutSessions.totalVolumeKg.sum();
+    final volSum = workoutSessions.totalVolumeKg.sum();
 
     final query = selectOnly(workoutSessions)
       ..addColumns([dayExpr, volSum])
@@ -630,22 +865,46 @@ class WorkoutsDao extends DatabaseAccessor<AppDatabase>
       query.where(workoutSessions.startedAt.isBiggerOrEqualValue(since));
     }
 
-    return query.watch().map((rows) => rows.map((r) => DailyVolumeSample(
-      day: DateTime.parse(r.read(dayExpr)!),
-      volume: (r.read(volSum) ?? 0).toDouble(),
-    )).toList());
+    return query.watch().map((rows) => rows
+        .map((r) => DailyVolumeSample(
+              day: DateTime.parse(r.read(dayExpr)!),
+              volume: (r.read(volSum) ?? 0).toDouble(),
+            ))
+        .toList());
   }
-/// Most recent COMPLETED session date for a routine — powers the
+
+  /// Most recent COMPLETED session date for a routine — powers the
   /// "Last trained …" label on the routines list. Null if never completed.
   Future<DateTime?> lastTrainedForRoutine(String routineId) async {
     final session = await (select(workoutSessions)
-          ..where((t) =>
-              t.routineId.equals(routineId) & t.endedAt.isNotNull())
+          ..where(
+              (t) => t.routineId.equals(routineId) & t.endedAt.isNotNull())
           ..orderBy([(t) => OrderingTerm.desc(t.startedAt)])
           ..limit(1))
         .getSingleOrNull();
     return session?.startedAt;
   }
+
+  /// Last-trained dates for MANY routines in one query.
+  Future<Map<String, DateTime>> lastTrainedForRoutines(
+      List<String> routineIds) async {
+    if (routineIds.isEmpty) return {};
+    final lastStarted = workoutSessions.startedAt.max();
+    final query = selectOnly(workoutSessions)
+      ..addColumns([workoutSessions.routineId, lastStarted])
+      ..where(workoutSessions.routineId.isIn(routineIds) &
+          workoutSessions.endedAt.isNotNull())
+      ..groupBy([workoutSessions.routineId]);
+
+    final rows = await query.get();
+    return {
+      for (final r in rows)
+        if (r.read(workoutSessions.routineId) != null &&
+            r.read(lastStarted) != null)
+          r.read(workoutSessions.routineId)!: r.read(lastStarted)!,
+    };
+  }
+
   /// Atomically updates a historical workout by:
   ///   1. Updating the session row (name, totalVolumeKg, synced).
   ///   2. Deleting all existing workout_exercises and workout_sets.
@@ -669,8 +928,7 @@ class WorkoutsDao extends DatabaseAccessor<AppDatabase>
       }
 
       // 3. Update session — only mutable fields
-      await (update(workoutSessions)
-            ..where((t) => t.id.equals(sessionId)))
+      await (update(workoutSessions)..where((t) => t.id.equals(sessionId)))
           .write(WorkoutSessionsCompanion(
         name: Value(state.name),
         totalVolumeKg: Value(totalVolume),
@@ -678,12 +936,13 @@ class WorkoutsDao extends DatabaseAccessor<AppDatabase>
       ));
 
       // 4. Delete existing sets first (FK safety), then exercises
-      final existingExercises = await getExercisesForSession(sessionId);
-      for (final we in existingExercises) {
-        await (delete(workoutSets)
-              ..where((t) => t.workoutExerciseId.equals(we.id)))
-            .go();
-      }
+      await customUpdate(
+        'DELETE FROM workout_sets WHERE workout_exercise_id IN '
+        '(SELECT id FROM workout_exercises WHERE session_id = ?)',
+        variables: [Variable.withString(sessionId)],
+        updates: {workoutSets},
+        updateKind: UpdateKind.delete,
+      );
       await (delete(workoutExercises)
             ..where((t) => t.sessionId.equals(sessionId)))
           .go();
@@ -707,10 +966,8 @@ class WorkoutsDao extends DatabaseAccessor<AppDatabase>
           ),
         );
 
-        for (final setEntry in exercise.sets.asMap().entries) {
-          final setIndex = setEntry.key;
-          final set = setEntry.value;
-
+        var setIndex = 0;
+        for (final set in exercise.sets) {
           if (set.isCompleted) {
             await insertSet(
               WorkoutSetsCompanion(
@@ -724,6 +981,7 @@ class WorkoutsDao extends DatabaseAccessor<AppDatabase>
                 completedAt: Value(set.completedAt ?? DateTime.now()),
               ),
             );
+            setIndex++;
           }
         }
       }

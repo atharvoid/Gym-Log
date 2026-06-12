@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_colors.dart';
 
 /// [primary_button.dart]
 /// Purpose: PrimaryButton - Electric purple, 48px height, 12px radius, bold text
-/// Dependencies: flutter/material.dart, google_fonts, app_colors.dart
-/// Last modified: High-Density Tracker Overhaul
+/// Every primary action fires a medium impact — consistent app-wide feel.
 
 class PrimaryButton extends StatelessWidget {
   final String label;
@@ -27,7 +27,12 @@ class PrimaryButton extends StatelessWidget {
       height: 48,
       width: isFullWidth ? double.infinity : null,
       child: ElevatedButton(
-        onPressed: onPressed,
+        onPressed: onPressed == null
+            ? null
+            : () {
+                HapticFeedback.mediumImpact();
+                onPressed!();
+              },
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.accentPrimary,
           foregroundColor: AppColors.textPrimary,

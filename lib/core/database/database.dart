@@ -33,8 +33,39 @@ part 'database.g.dart';
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
+  /// Used by widget/unit tests to run against an in-memory database.
+  AppDatabase.forTesting(super.executor);
+
   @override
   int get schemaVersion => 1;
+
+  @override
+  MigrationStrategy get migration => MigrationStrategy(
+        beforeOpen: (details) async {
+          // Enforce referential integrity. SQLite ships with foreign keys
+          // OFF; without this, child rows silently outlive their parents.
+          await customStatement('PRAGMA foreign_keys = ON');
+
+          // Hot-path indexes (idempotent — schema files stay untouched).
+          // Every list/feed/analytics query filters or joins on these.
+          await customStatement(
+              'CREATE INDEX IF NOT EXISTS idx_we_session ON workout_exercises (session_id)');
+          await customStatement(
+              'CREATE INDEX IF NOT EXISTS idx_we_exercise ON workout_exercises (exercise_id)');
+          await customStatement(
+              'CREATE INDEX IF NOT EXISTS idx_ws_workout_exercise ON workout_sets (workout_exercise_id)');
+          await customStatement(
+              'CREATE INDEX IF NOT EXISTS idx_ws_exercise ON workout_sets (exercise_id)');
+          await customStatement(
+              'CREATE INDEX IF NOT EXISTS idx_sessions_user_started ON workout_sessions (user_id, started_at DESC)');
+          await customStatement(
+              'CREATE INDEX IF NOT EXISTS idx_sessions_routine_started ON workout_sessions (routine_id, started_at DESC)');
+          await customStatement(
+              'CREATE INDEX IF NOT EXISTS idx_re_day ON routine_exercises (routine_day_id)');
+          await customStatement(
+              'CREATE INDEX IF NOT EXISTS idx_rd_routine ON routine_days (routine_id)');
+        },
+      );
 
   static QueryExecutor _openConnection() {
     return LazyDatabase(() async {

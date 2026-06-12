@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/providers/database_provider.dart';
 import '../../../../shared/widgets/ui/action_bottom_sheet.dart';
+import '../../../../shared/widgets/ui/app_dialog.dart';
 import 'routine_detail_styles.dart';
 
 /// Premium routine card for the Routines list.
@@ -140,6 +142,7 @@ class RoutineCard extends ConsumerWidget {
                       ),
                     ),
                     IconButton(
+                      tooltip: 'Routine options',
                       padding: EdgeInsets.zero,
                       constraints:
                           const BoxConstraints(minWidth: 44, minHeight: 44),
@@ -213,7 +216,8 @@ class RoutineCard extends ConsumerWidget {
           title: 'Edit Routine',
           onTap: (sheetContext) {
             Navigator.of(sheetContext).pop();
-            _renameRoutine(context, ref);
+            HapticFeedback.selectionClick();
+            context.push('/routines/edit?id=$routineId');
           },
         ),
         ActionSheetItem(
@@ -233,135 +237,18 @@ class RoutineCard extends ConsumerWidget {
     );
   }
 
-  void _renameRoutine(BuildContext context, WidgetRef ref) {
-    final controller = TextEditingController(text: routineName);
-    showDialog<void>(
+  Future<void> _confirmDelete(BuildContext context, WidgetRef ref) async {
+    final confirmed = await showAppConfirmDialog(
       context: context,
-      useRootNavigator: true,
-      builder: (dialogCtx) => AlertDialog(
-        backgroundColor: const Color(0xFF121212),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text(
-          'Rename Routine',
-          style: GoogleFonts.inter(
-            fontWeight: FontWeight.w700,
-            fontSize: 18,
-            color: AppColors.textPrimary,
-          ),
-        ),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          textCapitalization: TextCapitalization.words,
-          cursorColor: AppColors.accentPrimary,
-          style: GoogleFonts.inter(color: AppColors.textPrimary, fontSize: 16),
-          decoration: InputDecoration(
-            hintText: 'Routine name',
-            hintStyle: GoogleFonts.inter(color: AppColors.textSecondary),
-            filled: true,
-            fillColor: AppColors.surfaceRaised,
-            contentPadding:
-                const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide.none,
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide:
-                  const BorderSide(color: AppColors.accentPrimary, width: 1.5),
-            ),
-          ),
-          onSubmitted: (_) {
-            final name = controller.text.trim();
-            if (name.isEmpty) return;
-            Navigator.of(dialogCtx).pop();
-            ref.read(databaseProvider).routinesDao.renameRoutine(routineId, name);
-          },
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogCtx).pop(),
-            child: Text(
-              'Cancel',
-              style: GoogleFonts.inter(
-                color: AppColors.textSecondary,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ),
-          TextButton(
-            onPressed: () {
-              final name = controller.text.trim();
-              if (name.isEmpty) return;
-              Navigator.of(dialogCtx).pop();
-              ref
-                  .read(databaseProvider)
-                  .routinesDao
-                  .renameRoutine(routineId, name);
-            },
-            child: Text(
-              'Save',
-              style: GoogleFonts.inter(
-                color: AppColors.accentPrimary,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ),
-        ],
-      ),
+      title: 'Delete Routine?',
+      message:
+          'This routine will be permanently deleted. Your workout history stays.',
+      confirmLabel: 'Delete',
+      isDestructive: true,
     );
-  }
-
-  void _confirmDelete(BuildContext context, WidgetRef ref) {
-    showDialog<void>(
-      context: context,
-      useRootNavigator: true,
-      builder: (dialogCtx) => AlertDialog(
-        backgroundColor: const Color(0xFF121212),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text(
-          'Delete Routine?',
-          style: GoogleFonts.inter(
-            fontWeight: FontWeight.w700,
-            fontSize: 18,
-            color: AppColors.textPrimary,
-          ),
-        ),
-        content: Text(
-          'This routine will be permanently deleted.',
-          style: GoogleFonts.inter(
-            fontSize: 15,
-            color: AppColors.textSecondary,
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogCtx).pop(),
-            child: Text(
-              'Cancel',
-              style: GoogleFonts.inter(
-                color: AppColors.textSecondary,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ),
-          TextButton(
-            onPressed: () async {
-              Navigator.of(dialogCtx).pop();
-              await ref.read(databaseProvider).routinesDao.deleteRoutine(routineId);
-            },
-            child: Text(
-              'Delete',
-              style: GoogleFonts.inter(
-                color: AppColors.error,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
+    if (confirmed) {
+      await ref.read(databaseProvider).routinesDao.deleteRoutine(routineId);
+    }
   }
 }
 

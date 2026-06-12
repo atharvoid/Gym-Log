@@ -59,6 +59,21 @@ class HydratedRoutineDetail {
   });
 }
 
+/// One exercise entry inside the routine editor's draft state.
+class RoutineDraftExercise {
+  final int exerciseId;
+  final int defaultSets;
+  final int? defaultReps;
+  final double? defaultWeightKg;
+
+  const RoutineDraftExercise({
+    required this.exerciseId,
+    this.defaultSets = 3,
+    this.defaultReps,
+    this.defaultWeightKg,
+  });
+}
+
 @DriftAccessor(tables: [Routines, RoutineDays, RoutineExercises])
 class RoutinesDao extends DatabaseAccessor<AppDatabase>
     with _$RoutinesDaoMixin {
@@ -76,36 +91,144 @@ class RoutinesDao extends DatabaseAccessor<AppDatabase>
         .watch();
   }
 
-  /// Resolves exercise names and IDs for every routine in one reactive stream.
+  /// Resolves exercise names, IDs, muscle tags and last-trained dates for
+  /// every routine — in 3 fixed queries total, re-emitting whenever routines,
+  /// their exercises, the exercise library, or workout history change.
+  ///
+  /// (The old version looped days → exercises → getExerciseById per routine:
+  /// a textbook N+1 storm, and it never refreshed "Last trained" after a
+  /// workout because it only watched the routines table.)
   Stream<List<HydratedRoutine>> watchHydratedRoutinesForUser(String userId) {
-    return watchRoutinesForUser(userId).asyncMap((routineList) async {
-      final result = <HydratedRoutine>[];
-      for (final routine in routineList) {
-        final hydrated = await _hydrateRoutine(routine);
-        result.add(hydrated);
+    final driver = customSelect(
+      'SELECT COUNT(*) AS c FROM routines WHERE user_id = ?',
+      variables: [Variable.withString(userId)],
+      readsFrom: {
+        routines,
+        routineDays,
+        routineExercises,
+        db.exercises,
+        db.workoutSessions,
+      },
+    ).watch();
+    return driver.asyncMap((_) => _getHydratedRoutines(userId));
+  }
+
+  Future<List<HydratedRoutine>> _getHydratedRoutines(String userId) async {
+    final routineList = await (select(routines)
+          ..where((t) => t.userId.equals(userId))
+          ..orderBy([(t) => OrderingTerm.desc(t.createdAt)]))
+        .get();
+    if (routineList.isEmpty) return const [];
+
+    final ids = routineList.map((r) => r.id).toList();
+
+    // Batch 1: every exercise of every routine, ordered, with metadata.
+    final exerciseRows = await _exercisesForRoutines(ids);
+
+    // Batch 2: last-trained per routine.
+    final lastTrainedById =
+        await db.workoutsDao.lastTrainedForRoutines(ids);
+
+    return [
+      for (final routine in routineList)
+        _assembleHydratedRoutine(
+          routine,
+          exerciseRows[routine.id] ?? const [],
+          lastTrainedById[routine.id],
+        ),
+    ];
+  }
+
+  HydratedRoutine _assembleHydratedRoutine(
+    Routine routine,
+    List<(Exercise, RoutineExercise)> rows,
+    DateTime? lastTrained,
+  ) {
+    final names = <String>[];
+    final ids = <int>[];
+    final tags = <String>{}; // LinkedHashSet — preserves first-seen order
+    for (final (exercise, _) in rows) {
+      names.add(exercise.name);
+      ids.add(exercise.id);
+      if (exercise.bodyPart.isNotEmpty) {
+        tags.add(_titleCase(exercise.bodyPart));
       }
-      return result;
-    });
+    }
+    return HydratedRoutine(
+      routine: routine,
+      exerciseNames: names,
+      exerciseIds: ids,
+      muscleTags: tags.toList(),
+      lastTrained: lastTrained,
+    );
+  }
+
+  /// All (exercise, config) pairs for the given routines in ONE query,
+  /// grouped by routine id and ordered by day + exercise order.
+  Future<Map<String, List<(Exercise, RoutineExercise)>>> _exercisesForRoutines(
+      List<String> routineIds) async {
+    if (routineIds.isEmpty) return {};
+    final rows = await (select(routineExercises).join([
+      innerJoin(routineDays,
+          routineDays.id.equalsExp(routineExercises.routineDayId)),
+      innerJoin(db.exercises,
+          db.exercises.id.equalsExp(routineExercises.exerciseId)),
+    ])
+          ..where(routineDays.routineId.isIn(routineIds))
+          ..orderBy([
+            OrderingTerm.asc(routineDays.orderIndex),
+            OrderingTerm.asc(routineExercises.orderIndex),
+          ]))
+        .get();
+
+    final map = <String, List<(Exercise, RoutineExercise)>>{};
+    for (final row in rows) {
+      final day = row.readTable(routineDays);
+      map.putIfAbsent(day.routineId, () => []).add((
+        row.readTable(db.exercises),
+        row.readTable(routineExercises),
+      ));
+    }
+    return map;
   }
 
   /// Reactive stream of a single hydrated routine by ID.
   Stream<HydratedRoutine?> watchHydratedRoutine(String routineId) {
-    return (select(routines)..where((t) => t.id.equals(routineId)))
-        .watchSingleOrNull()
-        .asyncMap((routine) async {
+    return customSelect(
+      'SELECT COUNT(*) AS c FROM routines WHERE id = ?',
+      variables: [Variable.withString(routineId)],
+      readsFrom: {
+        routines,
+        routineDays,
+        routineExercises,
+        db.exercises,
+        db.workoutSessions,
+      },
+    ).watch().asyncMap((_) async {
+      final routine = await (select(routines)
+            ..where((t) => t.id.equals(routineId)))
+          .getSingleOrNull();
       if (routine == null) return null;
-      return _hydrateRoutine(routine);
+      final exercises = await _exercisesForRoutines([routineId]);
+      final lastTrained =
+          await db.workoutsDao.lastTrainedForRoutine(routineId);
+      return _assembleHydratedRoutine(
+        routine,
+        exercises[routineId] ?? const [],
+        lastTrained,
+      );
     });
   }
 
   /// Reactive stream of a single routine with full exercise metadata + config.
+  /// Re-emits when the routine, its day/exercise structure, or the exercise
+  /// library change — so the detail screen updates live after editor saves.
   Stream<HydratedRoutineDetail?> watchHydratedRoutineDetail(String routineId) {
-    return (select(routines)..where((t) => t.id.equals(routineId)))
-        .watchSingleOrNull()
-        .asyncMap((routine) async {
-      if (routine == null) return null;
-      return getHydratedRoutineDetail(routineId);
-    });
+    return customSelect(
+      'SELECT COUNT(*) AS c FROM routines WHERE id = ?',
+      variables: [Variable.withString(routineId)],
+      readsFrom: {routines, routineDays, routineExercises, db.exercises},
+    ).watch().asyncMap((_) => getHydratedRoutineDetail(routineId));
   }
 
   Future<HydratedRoutineDetail?> getHydratedRoutineDetail(
@@ -115,53 +238,14 @@ class RoutinesDao extends DatabaseAccessor<AppDatabase>
         .getSingleOrNull();
     if (routine == null) return null;
 
-    final days = await getDaysForRoutine(routineId);
-    final exercises = <HydratedRoutineExercise>[];
-
-    for (final day in days) {
-      final routineExercises = await getExercisesForDay(day.id);
-      for (final re in routineExercises) {
-        final exercise = await db.exercisesDao.getExerciseById(re.exerciseId);
-        exercises.add(HydratedRoutineExercise(
-          exercise: exercise,
-          config: re,
-        ));
-      }
-    }
-
+    final rows = await _exercisesForRoutines([routineId]);
     return HydratedRoutineDetail(
       routine: routine,
-      exercises: exercises,
-    );
-  }
-
-  Future<HydratedRoutine> _hydrateRoutine(Routine routine) async {
-    final days = await getDaysForRoutine(routine.id);
-    final names = <String>[];
-    final ids = <int>[];
-    final tags = <String>{}; // LinkedHashSet — preserves first-seen order
-    for (final day in days) {
-      final routineExercises = await getExercisesForDay(day.id);
-      for (final re in routineExercises) {
-        final exercise = await db.exercisesDao.getExerciseById(re.exerciseId);
-        names.add(exercise.name);
-        ids.add(exercise.id);
-        if (exercise.bodyPart.isNotEmpty) {
-          tags.add(_titleCase(exercise.bodyPart));
-        }
-      }
-    }
-
-    // Latest completed session date for the "Last trained …" label.
-    final lastTrained =
-        await db.workoutsDao.lastTrainedForRoutine(routine.id);
-
-    return HydratedRoutine(
-      routine: routine,
-      exerciseNames: names,
-      exerciseIds: ids,
-      muscleTags: tags.toList(),
-      lastTrained: lastTrained,
+      exercises: [
+        for (final (exercise, config)
+            in rows[routineId] ?? const <(Exercise, RoutineExercise)>[])
+          HydratedRoutineExercise(exercise: exercise, config: config),
+      ],
     );
   }
 
@@ -183,8 +267,22 @@ class RoutinesDao extends DatabaseAccessor<AppDatabase>
     ));
   }
 
-  Future<void> deleteRoutine(String id) =>
-      (delete(routines)..where((t) => t.id.equals(id))).go();
+  /// Deletes a routine **and all of its children** atomically.
+  /// Past workout sessions keep their routineId reference by design —
+  /// history must survive routine deletion.
+  Future<void> deleteRoutine(String id) {
+    return transaction(() async {
+      await customUpdate(
+        'DELETE FROM routine_exercises WHERE routine_day_id IN '
+        '(SELECT id FROM routine_days WHERE routine_id = ?)',
+        variables: [Variable.withString(id)],
+        updates: {routineExercises},
+        updateKind: UpdateKind.delete,
+      );
+      await (delete(routineDays)..where((t) => t.routineId.equals(id))).go();
+      await (delete(routines)..where((t) => t.id.equals(id))).go();
+    });
+  }
 
   // RoutineDays
   Future<List<RoutineDay>> getDaysForRoutine(String routineId) =>
@@ -212,19 +310,60 @@ class RoutinesDao extends DatabaseAccessor<AppDatabase>
   Future<void> deleteRoutineExercise(String id) =>
       (delete(routineExercises)..where((t) => t.id.equals(id))).go();
 
-  Future<void> saveWorkoutAsRoutine(String userId, String routineName,
-      List<HydratedWorkoutExercise> exercises) async {
+  /// Returns the routine's first day, creating "Day 1" if none exists yet.
+  Future<RoutineDay> _ensureFirstDay(String routineId) async {
+    final days = await getDaysForRoutine(routineId);
+    if (days.isNotEmpty) return days.first;
+
+    final dayId = const Uuid().v4();
+    await insertDay(RoutineDaysCompanion.insert(
+      id: Value(dayId),
+      routineId: routineId,
+      name: 'Day 1',
+      orderIndex: 0,
+    ));
+    return RoutineDay(
+        id: dayId, routineId: routineId, name: 'Day 1', orderIndex: 0);
+  }
+
+  /// Appends an exercise to the routine's first day.
+  /// Powers the "Add Exercise" button on RoutineDetailScreen.
+  Future<void> addExerciseToRoutine(
+    String routineId,
+    int exerciseId, {
+    int defaultSets = 3,
+  }) {
+    return transaction(() async {
+      final day = await _ensureFirstDay(routineId);
+      final existing = await getExercisesForDay(day.id);
+      await insertRoutineExercise(RoutineExercisesCompanion.insert(
+        id: Value(const Uuid().v4()),
+        routineDayId: day.id,
+        exerciseId: exerciseId,
+        orderIndex: existing.length,
+        defaultSets: Value(defaultSets),
+      ));
+      await (update(routines)..where((t) => t.id.equals(routineId)))
+          .write(RoutinesCompanion(updatedAt: Value(DateTime.now())));
+    });
+  }
+
+  /// Creates a brand-new routine from the editor's draft. Returns its id.
+  Future<String> createRoutine({
+    required String userId,
+    required String name,
+    required List<RoutineDraftExercise> exercises,
+  }) {
     return transaction(() async {
       final routineId = const Uuid().v4();
       final now = DateTime.now();
       await insertRoutine(RoutinesCompanion.insert(
         id: Value(routineId),
         userId: userId,
-        name: routineName,
+        name: name,
         createdAt: now,
         updatedAt: now,
       ));
-
       final dayId = const Uuid().v4();
       await insertDay(RoutineDaysCompanion.insert(
         id: Value(dayId),
@@ -232,28 +371,73 @@ class RoutinesDao extends DatabaseAccessor<AppDatabase>
         name: 'Day 1',
         orderIndex: 0,
       ));
-
-      for (int i = 0; i < exercises.length; i++) {
-        final ex = exercises[i];
-        final setsCount = ex.sets.length;
-        int? defaultReps;
-        double? defaultWeightKg;
-
-        if (setsCount > 0) {
-          defaultReps = ex.sets.first.reps;
-          defaultWeightKg = ex.sets.first.weightKg;
-        }
-
-        await insertRoutineExercise(RoutineExercisesCompanion.insert(
-          id: Value(const Uuid().v4()),
-          routineDayId: dayId,
-          exerciseId: ex.exerciseMetadata.id,
-          orderIndex: i,
-          defaultSets: Value(setsCount > 0 ? setsCount : 3),
-          defaultReps: Value(defaultReps),
-          defaultWeightKg: Value(defaultWeightKg),
-        ));
-      }
+      await _insertDraftExercises(dayId, exercises);
+      return routineId;
     });
+  }
+
+  /// Replaces a routine's name + exercise list with the editor's draft.
+  /// Workout history is untouched — sessions reference exercises directly.
+  Future<void> replaceRoutineStructure({
+    required String routineId,
+    required String name,
+    required List<RoutineDraftExercise> exercises,
+  }) {
+    return transaction(() async {
+      await (update(routines)..where((t) => t.id.equals(routineId)))
+          .write(RoutinesCompanion(
+        name: Value(name),
+        updatedAt: Value(DateTime.now()),
+      ));
+
+      final day = await _ensureFirstDay(routineId);
+
+      // Clear all existing exercises across every day, then rebuild on day 1.
+      await customUpdate(
+        'DELETE FROM routine_exercises WHERE routine_day_id IN '
+        '(SELECT id FROM routine_days WHERE routine_id = ?)',
+        variables: [Variable.withString(routineId)],
+        updates: {routineExercises},
+        updateKind: UpdateKind.delete,
+      );
+
+      await _insertDraftExercises(day.id, exercises);
+    });
+  }
+
+  Future<void> _insertDraftExercises(
+    String dayId,
+    List<RoutineDraftExercise> exercises,
+  ) async {
+    for (var i = 0; i < exercises.length; i++) {
+      final draft = exercises[i];
+      await insertRoutineExercise(RoutineExercisesCompanion.insert(
+        id: Value(const Uuid().v4()),
+        routineDayId: dayId,
+        exerciseId: draft.exerciseId,
+        orderIndex: i,
+        defaultSets: Value(draft.defaultSets),
+        defaultReps: Value(draft.defaultReps),
+        defaultWeightKg: Value(draft.defaultWeightKg),
+      ));
+    }
+  }
+
+  Future<void> saveWorkoutAsRoutine(String userId, String routineName,
+      List<HydratedWorkoutExercise> exercises) async {
+    return createRoutine(
+      userId: userId,
+      name: routineName,
+      exercises: [
+        for (final ex in exercises)
+          RoutineDraftExercise(
+            exerciseId: ex.exerciseMetadata.id,
+            defaultSets: ex.sets.isNotEmpty ? ex.sets.length : 3,
+            defaultReps: ex.sets.isNotEmpty ? ex.sets.first.reps : null,
+            defaultWeightKg:
+                ex.sets.isNotEmpty ? ex.sets.first.weightKg : null,
+          ),
+      ],
+    ).then((_) {});
   }
 }

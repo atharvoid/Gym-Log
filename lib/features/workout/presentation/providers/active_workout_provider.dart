@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 import 'package:drift/drift.dart';
@@ -5,9 +6,6 @@ import '../../../../core/database/database.dart';
 import '../../../../core/database/daos/workouts_dao.dart';
 import '../../../../core/providers/database_provider.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
-import 'package:flutter/foundation.dart';
-import '../../../home/presentation/providers/home_provider.dart';
-import '../../../home/presentation/providers/recent_workouts_provider.dart';
 import '../../domain/active_workout_state.dart';
 
 class ActiveWorkoutNotifier extends StateNotifier<ActiveWorkoutState?> {
@@ -29,49 +27,69 @@ class ActiveWorkoutNotifier extends StateNotifier<ActiveWorkoutState?> {
     if (routineId != null && initialExercises == null) {
       final db = _ref.read(databaseProvider);
       final days = await db.routinesDao.getDaysForRoutine(routineId);
-      if (days.isNotEmpty) {
-        final routineExercises = await db.routinesDao.getExercisesForDay(days.first.id);
-        final exercises = <WorkoutExerciseState>[];
-        
-        for (final re in routineExercises) {
-          final exerciseMeta = await db.exercisesDao.getExerciseById(re.exerciseId);
-          final prevSets = await db.workoutsDao.getPreviousSessionSets(re.exerciseId, '');
-          
-          final sets = <WorkoutSetState>[];
-          for (int i = 0; i < re.defaultSets; i++) {
-            double weight = 0.0;
-            int reps = 0;
-            if (i < prevSets.length) {
-              weight = prevSets[i].weightKg;
-              reps = prevSets[i].reps;
-            } else {
-              weight = re.defaultWeightKg ?? 0.0;
-              reps = re.defaultReps ?? 0;
-            }
-            sets.add(WorkoutSetState(id: const Uuid().v4(), weightKg: weight, reps: reps));
+      if (days.isEmpty) return;
+
+      final routineExercises =
+          await db.routinesDao.getExercisesForDay(days.first.id);
+      if (routineExercises.isEmpty) return;
+
+      // Batch lookups — one query for metadata, one for previous sets,
+      // instead of 4 queries per routine exercise.
+      final exerciseIds =
+          routineExercises.map((re) => re.exerciseId).toSet().toList();
+      final metaRows = await (db.select(db.exercises)
+            ..where((t) => t.id.isIn(exerciseIds)))
+          .get();
+      final metaById = {for (final e in metaRows) e.id: e};
+      final prevSetsByExercise =
+          await db.workoutsDao.getPreviousSessionSetsBatch(exerciseIds, '');
+
+      final exercises = <WorkoutExerciseState>[];
+      for (final re in routineExercises) {
+        final meta = metaById[re.exerciseId];
+        if (meta == null) continue;
+        final prevSets = prevSetsByExercise[re.exerciseId] ?? const [];
+
+        final sets = <WorkoutSetState>[];
+        for (int i = 0; i < re.defaultSets; i++) {
+          double weight;
+          int reps;
+          if (i < prevSets.length) {
+            weight = prevSets[i].weightKg;
+            reps = prevSets[i].reps;
+          } else {
+            weight = re.defaultWeightKg ?? 0.0;
+            reps = re.defaultReps ?? 0;
           }
-          exercises.add(WorkoutExerciseState(
-            id: const Uuid().v4(),
-            exerciseId: re.exerciseId,
-            name: exerciseMeta.name,
-            sets: sets.isEmpty ? [WorkoutSetState.create()] : sets,
-          ));
+          sets.add(WorkoutSetState(
+              id: const Uuid().v4(), weightKg: weight, reps: reps));
         }
-        
-        if (state != null && state!.routineId == routineId) {
-          state = state!.copyWith(exercises: exercises);
-        }
+        exercises.add(WorkoutExerciseState(
+          id: const Uuid().v4(),
+          exerciseId: re.exerciseId,
+          name: meta.name,
+          sets: sets.isEmpty ? [WorkoutSetState.create()] : sets,
+        ));
+      }
+
+      // Guard against the user discarding / switching routines mid-load.
+      if (state != null && state!.routineId == routineId) {
+        state = state!.copyWith(exercises: exercises);
       }
     }
   }
 
-  Future<void> finishWorkout() async {
-    if (state == null) return;
+  /// Persists the active workout and returns any personal records that
+  /// were set — the screen turns them into a celebration moment.
+  /// The HomeScreen feed reloads itself via its Drift revision stream.
+  Future<List<PrRecord>> finishWorkout() async {
+    if (state == null) return const [];
 
-    final hasAnyCompletedSet = state!.exercises.any((e) => e.sets.any((s) => s.isCompleted));
+    final hasAnyCompletedSet =
+        state!.exercises.any((e) => e.sets.any((s) => s.isCompleted));
     if (!hasAnyCompletedSet) {
       state = null;
-      return;
+      return const [];
     }
 
     final db = _ref.read(databaseProvider);
@@ -91,7 +109,7 @@ class ActiveWorkoutNotifier extends StateNotifier<ActiveWorkoutState?> {
     final sessionId = const Uuid().v4();
 
     try {
-      await db.transaction(() async {
+      final prs = await db.transaction<List<PrRecord>>(() async {
         await db.workoutsDao.insertSession(
           WorkoutSessionsCompanion(
             id: Value(sessionId),
@@ -104,7 +122,7 @@ class ActiveWorkoutNotifier extends StateNotifier<ActiveWorkoutState?> {
           ),
         );
 
-        // Strip exercises where the user completed zero sets (phantom exercise fix)
+        // Strip exercises where the user completed zero sets
         final exercisesToSave = state!.exercises
             .where((ex) => ex.sets.any((s) => s.isCompleted))
             .toList();
@@ -123,10 +141,10 @@ class ActiveWorkoutNotifier extends StateNotifier<ActiveWorkoutState?> {
             ),
           );
 
-          for (final setEntry in exercise.sets.asMap().entries) {
-            final setIndex = setEntry.key;
-            final set = setEntry.value;
-
+          // Compact, gap-free set ordering — incomplete sets are skipped,
+          // so order_index must not inherit their slots ("Set 1, Set 3").
+          var setIndex = 0;
+          for (final set in exercise.sets) {
             if (set.isCompleted) {
               await db.workoutsDao.insertSet(
                 WorkoutSetsCompanion(
@@ -140,20 +158,21 @@ class ActiveWorkoutNotifier extends StateNotifier<ActiveWorkoutState?> {
                   completedAt: Value(set.completedAt ?? DateTime.now()),
                 ),
               );
+              setIndex++;
             }
           }
         }
 
-        // PR detection: marks best Epley 1RM set per exercise against prior history
-        await db.workoutsDao.detectAndMarkPrs(sessionId, state!.startTime);
+        // PR detection: marks best Epley 1RM set per exercise against
+        // prior history, and reports what was beaten.
+        return db.workoutsDao.detectAndMarkPrs(sessionId, state!.startTime);
       });
 
-      // Signal the HomeScreen feed to reset to page 1
-      _ref.read(workoutCompletedSignalProvider.notifier).state++;
-      _ref.invalidate(recentWorkoutsProvider);
       state = null;
+      return prs;
     } catch (e) {
       debugPrint('[finishWorkout] transaction failed: $e');
+      return const [];
     }
   }
 
@@ -165,14 +184,16 @@ class ActiveWorkoutNotifier extends StateNotifier<ActiveWorkoutState?> {
         id: const Uuid().v4(),
         exerciseId: he.exerciseMetadata.id,
         name: he.exerciseMetadata.name,
-        sets: he.sets.map((s) => WorkoutSetState(
-          id: const Uuid().v4(),
-          setType: s.setType,
-          weightKg: s.weightKg,
-          reps: s.reps,
-          isCompleted: true,
-          completedAt: s.completedAt,
-        )).toList(),
+        sets: he.sets
+            .map((s) => WorkoutSetState(
+                  id: const Uuid().v4(),
+                  setType: s.setType,
+                  weightKg: s.weightKg,
+                  reps: s.reps,
+                  isCompleted: true,
+                  completedAt: s.completedAt,
+                ))
+            .toList(),
       );
     }).toList();
 
@@ -194,9 +215,6 @@ class ActiveWorkoutNotifier extends StateNotifier<ActiveWorkoutState?> {
 
     try {
       await db.workoutsDao.updateHistoricalWorkout(state!);
-
-      _ref.invalidate(recentWorkoutsProvider);
-      _ref.invalidate(workoutHistoryProvider);
       state = null;
     } catch (e) {
       debugPrint('[saveEditedWorkout] transaction failed: $e');
