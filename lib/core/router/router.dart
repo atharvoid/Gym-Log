@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../shared/widgets/app_shell.dart';
 import '../../features/auth/presentation/screens/splash_screen.dart';
@@ -48,6 +49,7 @@ final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
     initialLocation: '/splash',
     refreshListenable: refreshStream,
+    observers: [SentryNavigatorObserver()],
     redirect: (context, state) {
       final location = state.matchedLocation;
 

@@ -54,6 +54,7 @@ dependencies:
     sdk: flutter
   path: ^1.9.1
   flutter_cache_manager: ^3.4.1
+  sentry_flutter: ^8.14.0
 
 dev_dependencies:
   flutter_test:
@@ -67,6 +68,7 @@ dev_dependencies:
   flutter_lints: ^4.0.0
   custom_lint: ^0.6.0
   riverpod_lint: ^2.3.0
+  sentry_dart_plugin: ^3.4.0
 
 flutter:
   uses-material-design: true
@@ -76,6 +78,14 @@ flutter:
     # Bundling it would ship the raw file inside every APK/IPA and break
     # clean-checkout builds when the gitignored file is absent.
     - assets/db/exercises.json
-    # Note: exercises.db is intentionally excluded — it is a runtime artifact
     # generated/copied to the app's documents directory at first launch, not
     # a bundled asset. Bundling it would waste ~870 KB in every APK build.
+
+sentry:
+  upload_debug_symbols: true
+  upload_source_maps: true
+  upload_sources: true
+  project: gymlog
+  org: your-org-slug
+  auth_token: env.SENTRY_AUTH_TOKEN
+

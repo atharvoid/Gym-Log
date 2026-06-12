@@ -5,6 +5,7 @@ plugins {
     id("com.android.application")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
+    id("io.sentry.android.gradle")
 }
 
 // ── Release signing ──────────────────────────────────────────────────────────
@@ -37,7 +38,7 @@ android {
         // Play requires new submissions/updates to target API 35+.
         // Manual QA note: API 35 enforces edge-to-edge — verify system bars
         // over the OLED-black UI on an Android 15 device before release.
-        targetSdk = 35
+        targetSdk = 36
         versionCode = flutter.versionCode
         versionName = flutter.versionName
     }
@@ -86,4 +87,14 @@ kotlin {
 
 flutter {
     source = "../.."
+}
+
+sentry {
+    org.set("your-org-slug")
+    projectName.set("gymlog")
+    authToken.set(System.getenv("SENTRY_AUTH_TOKEN"))
+    
+    // Only upload on release builds
+    autoUploadProguardMapping.set(true)
+    uploadNativeSymbols.set(false) // Flutter handles native symbols
 }
