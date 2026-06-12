@@ -20,6 +20,12 @@
       "languageVersion": "3.0"
     },
     {
+      "name": "ansicolor",
+      "rootUri": "file:///C:/Users/Atharva%20Patil/AppData/Local/Pub/Cache/hosted/pub.dev/ansicolor-2.0.3",
+      "packageUri": "lib/",
+      "languageVersion": "3.0"
+    },
+    {
       "name": "app_links",
       "rootUri": "file:///C:/Users/Atharva%20Patil/AppData/Local/Pub/Cache/hosted/pub.dev/app_links-7.1.1",
       "packageUri": "lib/",
@@ -188,6 +194,12 @@
       "languageVersion": "3.4"
     },
     {
+      "name": "cross_file",
+      "rootUri": "file:///C:/Users/Atharva%20Patil/AppData/Local/Pub/Cache/hosted/pub.dev/cross_file-0.3.5+2",
+      "packageUri": "lib/",
+      "languageVersion": "3.8"
+    },
+    {
       "name": "crypto",
       "rootUri": "file:///C:/Users/Atharva%20Patil/AppData/Local/Pub/Cache/hosted/pub.dev/crypto-3.0.7",
       "packageUri": "lib/",
@@ -282,12 +294,6 @@
       "rootUri": "file:///C:/Users/Atharva%20Patil/AppData/Local/Pub/Cache/hosted/pub.dev/flutter_cache_manager-3.4.1",
       "packageUri": "lib/",
       "languageVersion": "3.0"
-    },
-    {
-      "name": "flutter_dotenv",
-      "rootUri": "file:///C:/Users/Atharva%20Patil/AppData/Local/Pub/Cache/hosted/pub.dev/flutter_dotenv-6.0.1",
-      "packageUri": "lib/",
-      "languageVersion": "2.12"
     },
     {
       "name": "flutter_lints",
@@ -386,6 +392,12 @@
       "languageVersion": "3.3"
     },
     {
+      "name": "globbing",
+      "rootUri": "file:///C:/Users/Atharva%20Patil/AppData/Local/Pub/Cache/hosted/pub.dev/globbing-1.0.0",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
       "name": "go_router",
       "rootUri": "file:///C:/Users/Atharva%20Patil/AppData/Local/Pub/Cache/hosted/pub.dev/go_router-14.8.1",
       "packageUri": "lib/",
@@ -480,6 +492,12 @@
       "rootUri": "file:///C:/Users/Atharva%20Patil/AppData/Local/Pub/Cache/hosted/pub.dev/http_parser-4.1.2",
       "packageUri": "lib/",
       "languageVersion": "3.4"
+    },
+    {
+      "name": "injector",
+      "rootUri": "file:///C:/Users/Atharva%20Patil/AppData/Local/Pub/Cache/hosted/pub.dev/injector-3.0.0",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
     },
     {
       "name": "intl",
@@ -602,6 +620,18 @@
       "languageVersion": "3.4"
     },
     {
+      "name": "package_info_plus",
+      "rootUri": "file:///C:/Users/Atharva%20Patil/AppData/Local/Pub/Cache/hosted/pub.dev/package_info_plus-9.0.1",
+      "packageUri": "lib/",
+      "languageVersion": "3.3"
+    },
+    {
+      "name": "package_info_plus_platform_interface",
+      "rootUri": "file:///C:/Users/Atharva%20Patil/AppData/Local/Pub/Cache/hosted/pub.dev/package_info_plus_platform_interface-3.2.1",
+      "packageUri": "lib/",
+      "languageVersion": "2.18"
+    },
+    {
       "name": "path",
       "rootUri": "file:///C:/Users/Atharva%20Patil/AppData/Local/Pub/Cache/hosted/pub.dev/path-1.9.1",
       "packageUri": "lib/",
@@ -674,6 +704,18 @@
       "languageVersion": "3.3"
     },
     {
+      "name": "process",
+      "rootUri": "file:///C:/Users/Atharva%20Patil/AppData/Local/Pub/Cache/hosted/pub.dev/process-5.0.5",
+      "packageUri": "lib/",
+      "languageVersion": "3.5"
+    },
+    {
+      "name": "properties",
+      "rootUri": "file:///C:/Users/Atharva%20Patil/AppData/Local/Pub/Cache/hosted/pub.dev/properties-2.1.1",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
       "name": "pub_semver",
       "rootUri": "file:///C:/Users/Atharva%20Patil/AppData/Local/Pub/Cache/hosted/pub.dev/pub_semver-2.2.0",
       "packageUri": "lib/",
@@ -684,6 +726,12 @@
       "rootUri": "file:///C:/Users/Atharva%20Patil/AppData/Local/Pub/Cache/hosted/pub.dev/pubspec_parse-1.5.0",
       "packageUri": "lib/",
       "languageVersion": "3.6"
+    },
+    {
+      "name": "purchases_flutter",
+      "rootUri": "file:///C:/Users/Atharva%20Patil/AppData/Local/Pub/Cache/hosted/pub.dev/purchases_flutter-8.11.0",
+      "packageUri": "lib/",
+      "languageVersion": "2.18"
     },
     {
       "name": "realtime_client",
@@ -744,6 +792,36 @@
       "rootUri": "file:///C:/Users/Atharva%20Patil/AppData/Local/Pub/Cache/hosted/pub.dev/rxdart-0.27.7",
       "packageUri": "lib/",
       "languageVersion": "2.12"
+    },
+    {
+      "name": "sentry",
+      "rootUri": "file:///C:/Users/Atharva%20Patil/AppData/Local/Pub/Cache/hosted/pub.dev/sentry-8.14.2",
+      "packageUri": "lib/",
+      "languageVersion": "2.17"
+    },
+    {
+      "name": "sentry_dart_plugin",
+      "rootUri": "file:///C:/Users/Atharva%20Patil/AppData/Local/Pub/Cache/hosted/pub.dev/sentry_dart_plugin-3.4.0",
+      "packageUri": "lib/",
+      "languageVersion": "2.17"
+    },
+    {
+      "name": "sentry_flutter",
+      "rootUri": "file:///C:/Users/Atharva%20Patil/AppData/Local/Pub/Cache/hosted/pub.dev/sentry_flutter-8.14.2",
+      "packageUri": "lib/",
+      "languageVersion": "2.17"
+    },
+    {
+      "name": "share_plus",
+      "rootUri": "file:///C:/Users/Atharva%20Patil/AppData/Local/Pub/Cache/hosted/pub.dev/share_plus-12.0.2",
+      "packageUri": "lib/",
+      "languageVersion": "3.4"
+    },
+    {
+      "name": "share_plus_platform_interface",
+      "rootUri": "file:///C:/Users/Atharva%20Patil/AppData/Local/Pub/Cache/hosted/pub.dev/share_plus_platform_interface-6.1.0",
+      "packageUri": "lib/",
+      "languageVersion": "2.18"
     },
     {
       "name": "shared_preferences",
@@ -924,6 +1002,12 @@
       "rootUri": "file:///C:/Users/Atharva%20Patil/AppData/Local/Pub/Cache/hosted/pub.dev/synchronized-3.4.1",
       "packageUri": "lib/",
       "languageVersion": "3.12"
+    },
+    {
+      "name": "system_info2",
+      "rootUri": "file:///C:/Users/Atharva%20Patil/AppData/Local/Pub/Cache/hosted/pub.dev/system_info2-4.1.0",
+      "packageUri": "lib/",
+      "languageVersion": "2.19"
     },
     {
       "name": "term_glyph",

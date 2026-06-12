@@ -48,12 +48,19 @@ flutter analyze
 # Test
 flutter test
 
-# Run (debug, with auth + purchases enabled)
+### Debug
 flutter run --dart-define-from-file=.env
 
-# Build release APK (Play-signed when android/key.properties exists —
-# see android/key.properties.example; debug-signed fallback otherwise)
-flutter build apk --release --dart-define-from-file=.env
+### Release (with Sentry symbol upload)
+# 1. Set env vars for Sentry Android plugin
+$env:SENTRY_AUTH_TOKEN="..."
+$env:SENTRY_ORG="..."
+
+# 2. Build
+flutter build appbundle --release --obfuscate --split-debug-info=build/app/outputs/symbols --dart-define-from-file=.env
+
+# 3. Upload Dart symbols (if sentry_dart_plugin doesn't auto-upload)
+flutter pub run sentry_dart_plugin
 ```
 
 ---
@@ -88,8 +95,8 @@ Project conventions are documented in detail under `docs/CONVENTIONS.md`. Key po
 
 ## Environment & Secrets
 
-- `.env` is **gitignored** but loaded as a Flutter asset
-- Supabase credentials and OAuth config live in `.env`
+- `.env` is **gitignored** and injected at compile time via `--dart-define-from-file=.env`
+- Supabase credentials, OAuth config, RevenueCat keys, and Sentry DSN live in `.env`
 - Do not commit `.env`
 
 ---

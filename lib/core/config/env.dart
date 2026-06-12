@@ -17,6 +17,7 @@
 ///
 ///   SUPABASE_URL / SUPABASE_ANON_KEY            → Google sign-in (auth only)
 ///   REVENUECAT_ANDROID_KEY / REVENUECAT_IOS_KEY → premium entitlements
+///   SENTRY_DSN                                  → crash/error reporting
 ///
 /// Overridable public identifiers (safe, non-secret defaults baked in —
 /// OAuth client IDs and public storage URLs are visible in any shipped
@@ -54,6 +55,17 @@ abstract final class Env {
       String.fromEnvironment('REVENUECAT_ANDROID_KEY');
   static const revenueCatIosKey = String.fromEnvironment('REVENUECAT_IOS_KEY');
 
+  /// Sentry DSN for crash/error reporting. Absent → Sentry is initialized but
+  /// silently drops events (the SDK requires a non-empty DSN to send).
+  static const sentryDsn = String.fromEnvironment('SENTRY_DSN');
+
+  static const String sentryAuthToken = String.fromEnvironment('SENTRY_AUTH_TOKEN');
+  static const String sentryOrg = String.fromEnvironment('SENTRY_ORG');
+  static const String sentryProject = String.fromEnvironment('SENTRY_PROJECT');
+
   /// True when the build carries enough config for Supabase auth.
   static const hasSupabaseConfig = supabaseUrl != '' && supabaseAnonKey != '';
+
+  /// True when the build carries a Sentry DSN.
+  static const hasSentryConfig = sentryDsn != '';
 }
