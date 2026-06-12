@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gymlog/core/database/daos/routines_dao.dart';
 import 'package:gymlog/core/database/daos/workouts_dao.dart';
@@ -40,31 +39,27 @@ DateTime? _sinceForRange(String range) {
 
 /// Reactive daily volume history for a routine, filterable by time range.
 /// Key: (routineId, selectedRange) — e.g. ('uuid', '3M') or ('uuid', 'All Time').
-final routineDailyVolumeProvider = StreamProvider.family<List<DailyVolumeSample>, (
-  String,
-  String
-)>((ref, args) {
+final routineDailyVolumeProvider =
+    StreamProvider.family<List<DailyVolumeSample>, (String, String)>(
+        (ref, args) {
   final (routineId, selectedRange) = args;
   final db = ref.watch(databaseProvider);
   return db.workoutsDao.watchDailyVolumeForRoutine(
     routineId,
     since: _sinceForRange(selectedRange),
-  ).map((list) {
-    debugPrint('vol: routine=$routineId since=${_sinceForRange(selectedRange)} rows=${list.length}');
-    return list;
-  });
+  );
 });
 
-/// Fetches the last logged session sets for every exercise in a routine.
-/// Returns a map keyed by exerciseId (string). Fulfills the single-query
-/// rule — one SQL statement hits the DB, not N+1.
+/// Live last-session sets for every exercise in a routine, keyed by
+/// exerciseId (string). One SQL statement, and it re-emits after every
+/// workout — the set tables can never go stale.
 final routineLastSetsProvider =
-    FutureProvider.family<Map<String, List<LastSessionSetData>>, String>(
-        (ref, routineId) async {
-  final db = ref.read(databaseProvider);
-  final user = ref.read(authProvider);
-  if (user == null) return {};
-  return db.workoutsDao.getLastSessionSetsForRoutine(
+    StreamProvider.family<Map<String, List<LastSessionSetData>>, String>(
+        (ref, routineId) {
+  final db = ref.watch(databaseProvider);
+  final user = ref.watch(authProvider);
+  if (user == null) return Stream.value(const {});
+  return db.workoutsDao.watchLastSessionSetsForRoutine(
     routineId: routineId,
     userId: user.id,
   );

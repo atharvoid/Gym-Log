@@ -6,8 +6,8 @@ import 'package:intl/intl.dart';
 import 'package:gymlog/core/database/daos/workouts_dao.dart';
 import 'package:gymlog/core/theme/app_colors.dart';
 import 'package:gymlog/core/utils/formatters.dart';
+import 'package:gymlog/features/routines/presentation/widgets/routine_detail_styles.dart';
 import 'package:gymlog/shared/providers/gif_last_frame_provider.dart';
-import 'package:gymlog/shared/widgets/ui/tracker_card.dart';
 
 /// [workout_history_card.dart]
 /// Purpose: Data-dense workout history card for the HomeScreen feed.
@@ -37,88 +37,99 @@ class WorkoutHistoryCard extends StatelessWidget {
     final durationStr =
         formatWorkoutDuration(session.startedAt, session.endedAt);
 
-    return TrackerCard(
-      padding: EdgeInsets.zero,
-      onTap: () => context.push('/workout/detail/${session.id}'),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // ── Row 1: Column(Name, Date) + Three-dots icon ─────────────────
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.center,
+    return Container(
+      decoration: BoxDecoration(
+        gradient: RDStyles.cardGradient,
+        borderRadius: BorderRadius.circular(18),
+        border: RDStyles.hairlineBorder,
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () => context.push('/workout/detail/${session.id}'),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(15, 14, 15, 13),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        name,
-                        style: GoogleFonts.inter(
-                          color: AppColors.textPrimary,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
-                        ),
-                        overflow: TextOverflow.ellipsis,
+                // ── Row 1: Column(Name, Date) + Three-dots icon ─────────────────
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            name,
+                            style: GoogleFonts.inter(
+                              color: AppColors.textPrimary,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            dateStr,
+                            style: GoogleFonts.inter(
+                              color: AppColors.textSecondary,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
                       ),
-                      const SizedBox(height: 2),
-                      Text(
-                        dateStr,
-                        style: GoogleFonts.inter(
+                    ),
+                    if (onMenuPressed != null)
+                      IconButton(
+                        tooltip: 'Workout options',
+                        icon: const Icon(
+                          Icons.more_horiz,
+                          size: 20,
                           color: AppColors.textSecondary,
-                          fontSize: 12,
                         ),
+                        constraints: const BoxConstraints(
+                          minWidth: 48,
+                          minHeight: 48,
+                        ),
+                        padding: EdgeInsets.zero,
+                        onPressed: onMenuPressed,
                       ),
-                    ],
-                  ),
+                  ],
                 ),
-                if (onMenuPressed != null)
-                  IconButton(
-                    icon: const Icon(
-                      Icons.more_horiz,
-                      size: 20,
-                      color: AppColors.textSecondary,
+
+                // ── Exercise preview rows ────────────────────────────────────────
+                if (preview.topExercises.isNotEmpty) ...[
+                  const SizedBox(height: 12),
+                  ...preview.topExercises.map(
+                    (item) => Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: _ExerciseRow(item: item),
                     ),
-                    constraints: const BoxConstraints(
-                      minWidth: 32,
-                      minHeight: 32,
-                    ),
-                    padding: EdgeInsets.zero,
-                    onPressed: onMenuPressed,
                   ),
+                  if (preview.totalExerciseCount > 2)
+                    Text(
+                      '+ ${preview.totalExerciseCount - 2} more '
+                      'exercise${preview.totalExerciseCount - 2 > 1 ? 's' : ''}',
+                      style: GoogleFonts.inter(
+                        color: AppColors.textSecondary,
+                        fontSize: 12,
+                      ),
+                    ),
+                ],
+
+                const SizedBox(height: 11),
+                Container(height: 1, color: RDStyles.hairline),
+                const SizedBox(height: 11),
+
+                // ── Stats row ────────────────────────────────────────────────────
+                _StatsRow(preview: preview, durationStr: durationStr),
               ],
             ),
-
-            // ── Exercise preview rows ────────────────────────────────────────
-            if (preview.topExercises.isNotEmpty) ...[
-              const SizedBox(height: 12),
-              ...preview.topExercises.map(
-                (item) => Padding(
-                  padding: const EdgeInsets.only(bottom: 8),
-                  child: _ExerciseRow(item: item),
-                ),
-              ),
-              if (preview.totalExerciseCount > 2)
-                Text(
-                  '+ ${preview.totalExerciseCount - 2} more '
-                  'exercise${preview.totalExerciseCount - 2 > 1 ? 's' : ''}',
-                  style: GoogleFonts.inter(
-                    color: AppColors.textSecondary,
-                    fontSize: 12,
-                  ),
-                ),
-            ],
-
-            const SizedBox(height: 12),
-            const Divider(color: AppColors.borderSubtle, height: 1),
-            const SizedBox(height: 12),
-
-            // ── Stats row ────────────────────────────────────────────────────
-            _StatsRow(preview: preview, durationStr: durationStr),
-          ],
+          ),
         ),
       ),
     );
@@ -174,7 +185,7 @@ class _ExerciseRow extends ConsumerWidget {
     // AsyncValue handles loading / error / data states cleanly.
     final frameAsync = ref.watch(gifLastFrameProvider(url));
 
-    return frameAsync.when(
+    return _wrapBoundary(frameAsync.when(
       // ── Loading: subtle shimmer container while the codec runs ────────────
       loading: () => Container(
         width: 52,
@@ -202,8 +213,11 @@ class _ExerciseRow extends ConsumerWidget {
           ),
         );
       },
-    );
+    ));
   }
+
+  /// Isolates thumbnail repaints from the scrolling list layer.
+  Widget _wrapBoundary(Widget child) => RepaintBoundary(child: child);
 
   Widget _iconFallback() {
     return Container(
@@ -304,7 +318,8 @@ class _StatChip extends StatelessWidget {
           style: GoogleFonts.inter(
             color: color,
             fontSize: 13,
-            fontWeight: FontWeight.w500,
+            fontWeight: FontWeight.w600,
+            fontFeatures: const [FontFeature.tabularFigures()],
           ),
         ),
       ],

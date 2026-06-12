@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_colors.dart';
 
 /// [toggle_pill.dart]
 /// Purpose: TogglePill - Pill-shaped toggle, active=purple bg, inactive=dark grey
-/// Dependencies: flutter/material.dart, google_fonts, app_colors.dart
-/// Last modified: High-Density Tracker Overhaul
+/// Selection fires a light impact, per the app-wide haptic map.
 
 class TogglePill extends StatelessWidget {
   final String label;
@@ -22,7 +22,12 @@ class TogglePill extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: onTap,
+      onTap: onTap == null
+          ? null
+          : () {
+              HapticFeedback.lightImpact();
+              onTap!();
+            },
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),

@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/providers/database_provider.dart';
 import '../../../../shared/widgets/ui/action_bottom_sheet.dart';
+import '../../../../shared/widgets/ui/app_dialog.dart';
 import 'routine_detail_styles.dart';
 
 /// Premium routine card for the Routines list.
@@ -28,6 +30,17 @@ class RoutineCard extends ConsumerWidget {
     this.muscleTags = const [],
     this.lastTrained,
   });
+
+  /// Stable accent derived from the routine's primary muscle group, so
+  /// "Push Day" and "Leg Day" are tinted differently forever.
+  Color get _glyphColor {
+    if (muscleTags.isEmpty) return const Color(0xFFB98CFF);
+    final index =
+        muscleTags.first.hashCode.abs() % AppColors.muscleSplitPalette.length;
+    final base = AppColors.muscleSplitPalette[index];
+    // Lighten dark palette entries for legibility on near-black.
+    return Color.lerp(base, Colors.white, 0.35)!;
+  }
 
   String _relative(DateTime d) {
     final diff = DateTime.now().difference(d);
@@ -92,19 +105,26 @@ class RoutineCard extends ConsumerWidget {
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // Differentiated glyph: routine initial tinted by its
+                    // primary muscle group — every card identifiable at a
+                    // glance, no generic dumbbell noise.
                     Container(
                       width: 44,
                       height: 44,
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
-                        color: AppColors.surfaceRaised,
+                        color: _glyphColor.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(12),
-                        border: RDStyles.hairlineBorder,
                       ),
-                      child: const Icon(
-                        Icons.fitness_center_rounded,
-                        size: 21,
-                        color: Color(0xFFB98CFF),
+                      child: Text(
+                        routineName.isNotEmpty
+                            ? routineName[0].toUpperCase()
+                            : 'R',
+                        style: GoogleFonts.inter(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                          color: _glyphColor,
+                        ),
                       ),
                     ),
                     const SizedBox(width: 13),
@@ -140,9 +160,10 @@ class RoutineCard extends ConsumerWidget {
                       ),
                     ),
                     IconButton(
+                      tooltip: 'Routine options',
                       padding: EdgeInsets.zero,
                       constraints:
-                          const BoxConstraints(minWidth: 44, minHeight: 44),
+                          const BoxConstraints(minWidth: 48, minHeight: 48),
                       iconSize: 20,
                       splashRadius: 22,
                       icon: const Icon(Icons.more_horiz,
@@ -213,7 +234,8 @@ class RoutineCard extends ConsumerWidget {
           title: 'Edit Routine',
           onTap: (sheetContext) {
             Navigator.of(sheetContext).pop();
-            _renameRoutine(context, ref);
+            HapticFeedback.selectionClick();
+            context.push('/routines/edit?id=$routineId');
           },
         ),
         ActionSheetItem(
@@ -233,135 +255,18 @@ class RoutineCard extends ConsumerWidget {
     );
   }
 
-  void _renameRoutine(BuildContext context, WidgetRef ref) {
-    final controller = TextEditingController(text: routineName);
-    showDialog<void>(
+  Future<void> _confirmDelete(BuildContext context, WidgetRef ref) async {
+    final confirmed = await showAppConfirmDialog(
       context: context,
-      useRootNavigator: true,
-      builder: (dialogCtx) => AlertDialog(
-        backgroundColor: const Color(0xFF121212),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text(
-          'Rename Routine',
-          style: GoogleFonts.inter(
-            fontWeight: FontWeight.w700,
-            fontSize: 18,
-            color: AppColors.textPrimary,
-          ),
-        ),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          textCapitalization: TextCapitalization.words,
-          cursorColor: AppColors.accentPrimary,
-          style: GoogleFonts.inter(color: AppColors.textPrimary, fontSize: 16),
-          decoration: InputDecoration(
-            hintText: 'Routine name',
-            hintStyle: GoogleFonts.inter(color: AppColors.textSecondary),
-            filled: true,
-            fillColor: AppColors.surfaceRaised,
-            contentPadding:
-                const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide.none,
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide:
-                  const BorderSide(color: AppColors.accentPrimary, width: 1.5),
-            ),
-          ),
-          onSubmitted: (_) {
-            final name = controller.text.trim();
-            if (name.isEmpty) return;
-            Navigator.of(dialogCtx).pop();
-            ref.read(databaseProvider).routinesDao.renameRoutine(routineId, name);
-          },
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogCtx).pop(),
-            child: Text(
-              'Cancel',
-              style: GoogleFonts.inter(
-                color: AppColors.textSecondary,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ),
-          TextButton(
-            onPressed: () {
-              final name = controller.text.trim();
-              if (name.isEmpty) return;
-              Navigator.of(dialogCtx).pop();
-              ref
-                  .read(databaseProvider)
-                  .routinesDao
-                  .renameRoutine(routineId, name);
-            },
-            child: Text(
-              'Save',
-              style: GoogleFonts.inter(
-                color: AppColors.accentPrimary,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ),
-        ],
-      ),
+      title: 'Delete Routine?',
+      message:
+          'This routine will be permanently deleted. Your workout history stays.',
+      confirmLabel: 'Delete',
+      isDestructive: true,
     );
-  }
-
-  void _confirmDelete(BuildContext context, WidgetRef ref) {
-    showDialog<void>(
-      context: context,
-      useRootNavigator: true,
-      builder: (dialogCtx) => AlertDialog(
-        backgroundColor: const Color(0xFF121212),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text(
-          'Delete Routine?',
-          style: GoogleFonts.inter(
-            fontWeight: FontWeight.w700,
-            fontSize: 18,
-            color: AppColors.textPrimary,
-          ),
-        ),
-        content: Text(
-          'This routine will be permanently deleted.',
-          style: GoogleFonts.inter(
-            fontSize: 15,
-            color: AppColors.textSecondary,
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogCtx).pop(),
-            child: Text(
-              'Cancel',
-              style: GoogleFonts.inter(
-                color: AppColors.textSecondary,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ),
-          TextButton(
-            onPressed: () async {
-              Navigator.of(dialogCtx).pop();
-              await ref.read(databaseProvider).routinesDao.deleteRoutine(routineId);
-            },
-            child: Text(
-              'Delete',
-              style: GoogleFonts.inter(
-                color: AppColors.error,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
+    if (confirmed) {
+      await ref.read(databaseProvider).routinesDao.deleteRoutine(routineId);
+    }
   }
 }
 
@@ -382,7 +287,8 @@ class _StartPill extends StatelessWidget {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.play_arrow_rounded, size: 16, color: Colors.white),
+              const Icon(Icons.play_arrow_rounded,
+                  size: 16, color: Colors.white),
               const SizedBox(width: 5),
               Text(
                 'Start',

@@ -6,6 +6,10 @@ part 'exercises_provider.g.dart';
 
 @riverpod
 class ExerciseList extends _$ExerciseList {
+  /// Monotonic counter that drops stale async search results — fast typing
+  /// must never let an older (slower) query overwrite a newer one.
+  int _searchEpoch = 0;
+
   @override
   Future<List<Exercise>> build() async {
     final db = ref.watch(databaseProvider);
@@ -13,12 +17,12 @@ class ExerciseList extends _$ExerciseList {
   }
 
   Future<void> search(String query) async {
-    if (query.isEmpty) {
-      final db = ref.read(databaseProvider);
-      state = AsyncData(await db.exercisesDao.getAllExercises());
-      return;
-    }
+    final epoch = ++_searchEpoch;
     final db = ref.read(databaseProvider);
-    state = AsyncData(await db.exercisesDao.searchExercises(query));
+    final results = query.isEmpty
+        ? await db.exercisesDao.getAllExercises()
+        : await db.exercisesDao.searchExercises(query);
+    if (epoch != _searchEpoch) return; // stale — a newer search superseded us
+    state = AsyncData(results);
   }
 }

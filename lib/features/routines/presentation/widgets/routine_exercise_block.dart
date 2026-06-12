@@ -51,22 +51,28 @@ class RoutineExerciseBlock extends StatelessWidget {
             borderRadius: BorderRadius.circular(12),
             child: Row(
               children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(13),
-                  child: Container(
-                    width: 52,
-                    height: 52,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(13),
-                      border: RDStyles.hairlineBorder,
-                    ),
-                    child: CachedNetworkImage(
-                      imageUrl: hydratedExercise.exercise.gifUrl ?? '',
-                      fit: BoxFit.cover,
-                      placeholder: (_, __) =>
-                          Container(color: const Color(0xFF1A1A1D)),
-                      errorWidget: (_, __, ___) =>
-                          Container(color: const Color(0xFF1A1A1D)),
+                RepaintBoundary(
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(13),
+                    child: Container(
+                      width: 52,
+                      height: 52,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(13),
+                        border: RDStyles.hairlineBorder,
+                      ),
+                      child: CachedNetworkImage(
+                        imageUrl: hydratedExercise.exercise.gifUrl ?? '',
+                        fit: BoxFit.cover,
+                        // List thumbnail: cap decode size — a 52dp cell must
+                        // not hold a full-resolution animated GIF in memory.
+                        memCacheWidth: 200,
+                        maxHeightDiskCache: 400,
+                        placeholder: (_, __) =>
+                            Container(color: const Color(0xFF1A1A1D)),
+                        errorWidget: (_, __, ___) =>
+                            Container(color: const Color(0xFF1A1A1D)),
+                      ),
                     ),
                   ),
                 ),
@@ -135,7 +141,8 @@ class _SetTable extends StatelessWidget {
           padding: const EdgeInsets.only(bottom: 10),
           child: Row(
             children: [
-              Expanded(flex: 5, child: Text('SET', style: RDStyles.tableHeader)),
+              Expanded(
+                  flex: 5, child: Text('SET', style: RDStyles.tableHeader)),
               Expanded(
                 flex: 3,
                 child: Padding(
@@ -160,8 +167,7 @@ class _SetTable extends StatelessWidget {
             decoration: BoxDecoration(
               border: i == 0
                   ? null
-                  : Border(
-                      top: BorderSide(color: RDStyles.hairline, width: 1)),
+                  : Border(top: BorderSide(color: RDStyles.hairline, width: 1)),
             ),
             padding: const EdgeInsets.symmetric(vertical: 11),
             child: Row(
@@ -172,8 +178,8 @@ class _SetTable extends StatelessWidget {
                     children: [
                       SizedBox(
                         width: 20,
-                        child: Text('${sets[i].setNumber}',
-                            style: RDStyles.setNo),
+                        child:
+                            Text('${sets[i].setNumber}', style: RDStyles.setNo),
                       ),
                       const SizedBox(width: 10),
                       if (_chipFor(sets[i].setType) != null)

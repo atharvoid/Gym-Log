@@ -14,6 +14,8 @@ import '../../features/profile/presentation/screens/profile_screen.dart';
 import '../../features/workout/presentation/screens/active_workout_screen.dart';
 import '../../features/exercises/presentation/screens/exercise_selection_screen.dart';
 import '../../features/exercises/presentation/screens/exercise_detail_screen.dart';
+import '../../features/profile/presentation/screens/settings_screen.dart';
+import '../../features/routines/presentation/screens/explore_routines_screen.dart';
 import '../../features/routines/presentation/screens/routine_editor_screen.dart';
 import '../../features/routines/presentation/screens/routine_detail_screen.dart';
 import '../../features/workout/presentation/screens/workout_detail_screen.dart';
@@ -80,6 +82,10 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (c, s) => const ExerciseSelectionScreen(),
       ),
       GoRoute(
+        path: '/exercises/library',
+        builder: (c, s) => const ExerciseSelectionScreen(browse: true),
+      ),
+      GoRoute(
         path: '/exercise/detail/:id',
         builder: (context, state) {
           final exercise = state.extra as Exercise?;
@@ -89,7 +95,16 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/routines/edit',
-        builder: (c, s) => const RoutineEditorScreen(),
+        builder: (c, s) =>
+            RoutineEditorScreen(routineId: s.uri.queryParameters['id']),
+      ),
+      GoRoute(
+        path: '/routines/explore',
+        builder: (c, s) => const ExploreRoutinesScreen(),
+      ),
+      GoRoute(
+        path: '/settings',
+        builder: (c, s) => const SettingsScreen(),
       ),
       GoRoute(
         path: '/routines/:id',

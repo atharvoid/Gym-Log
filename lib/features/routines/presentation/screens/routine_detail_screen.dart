@@ -9,10 +9,16 @@ import 'package:intl/intl.dart';
 import 'package:uuid/uuid.dart';
 import '../../../../core/database/daos/routines_dao.dart';
 import '../../../../core/database/daos/workouts_dao.dart';
+import '../../../../core/database/database.dart';
 import '../../../../core/providers/database_provider.dart';
+import '../../../../core/providers/premium_provider.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../features/exercises/presentation/screens/exercise_selection_screen.dart';
 import '../../../../features/workout/domain/active_workout_state.dart';
 import '../../../../features/workout/presentation/providers/active_workout_provider.dart';
+import '../../../../shared/widgets/premium_paywall.dart';
+import '../../../../shared/widgets/ui/app_dialog.dart';
+import '../../../../shared/widgets/ui/time_range_filter.dart';
 import '../providers/routines_provider.dart';
 import '../widgets/routine_detail_styles.dart';
 import '../widgets/routine_exercise_block.dart';
@@ -36,16 +42,16 @@ class RoutineDetailScreen extends ConsumerStatefulWidget {
 class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
     with TickerProviderStateMixin {
   String _selectedTimeRange = 'All Time';
-  static const _timeRangeOptions = ['1M', '3M', '6M', '1Y', 'All Time'];
 
   late final AnimationController _entryController;
 
   @override
   void initState() {
     super.initState();
+    // Responsive, not theatrical: 280ms total, stagger capped below.
     _entryController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 600),
+      duration: const Duration(milliseconds: 280),
     );
     _entryController.forward();
   }
@@ -100,82 +106,24 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
     context.pop();
   }
 
-  void _renameRoutine(String currentName) {
+  /// Opens the full routine editor (rename, add/remove/reorder exercises).
+  void _openEditor() {
     HapticFeedback.selectionClick();
-    final controller = TextEditingController(text: currentName);
-    showDialog<void>(
-      context: context,
-      useRootNavigator: true,
-      builder: (dialogCtx) => AlertDialog(
-        backgroundColor: const Color(0xFF121212),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text(
-          'Rename Routine',
-          style: GoogleFonts.inter(
-            fontWeight: FontWeight.w700,
-            fontSize: 18,
-            color: AppColors.textPrimary,
-          ),
-        ),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          textCapitalization: TextCapitalization.words,
-          cursorColor: AppColors.accentPrimary,
-          style: GoogleFonts.inter(color: AppColors.textPrimary, fontSize: 16),
-          decoration: InputDecoration(
-            hintText: 'Routine name',
-            hintStyle: GoogleFonts.inter(color: AppColors.textSecondary),
-            filled: true,
-            fillColor: AppColors.surfaceRaised,
-            contentPadding:
-                const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide.none,
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide:
-                  const BorderSide(color: AppColors.accentPrimary, width: 1.5),
-            ),
-          ),
-          onSubmitted: (_) => _submitRename(dialogCtx, controller.text),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogCtx).pop(),
-            child: Text(
-              'Cancel',
-              style: GoogleFonts.inter(
-                color: AppColors.textSecondary,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ),
-          TextButton(
-            onPressed: () => _submitRename(dialogCtx, controller.text),
-            child: Text(
-              'Save',
-              style: GoogleFonts.inter(
-                color: AppColors.accentPrimary,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
+    context.push('/routines/edit?id=${widget.routineId}');
   }
 
-  void _submitRename(BuildContext dialogCtx, String raw) {
-    final name = raw.trim();
-    if (name.isEmpty) return;
-    Navigator.of(dialogCtx).pop();
-    ref
+  /// Appends an exercise to this routine in place — no editor round-trip.
+  Future<void> _addExercise() async {
+    HapticFeedback.lightImpact();
+    final selected = await Navigator.push<Exercise>(
+      context,
+      MaterialPageRoute(builder: (_) => const ExerciseSelectionScreen()),
+    );
+    if (selected == null || !mounted) return;
+    await ref
         .read(databaseProvider)
         .routinesDao
-        .renameRoutine(widget.routineId, name);
+        .addExerciseToRoutine(widget.routineId, selected.id);
   }
 
   void _showActionsSheet(HydratedRoutineDetail routine) {
@@ -236,7 +184,7 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
                   title: 'Edit Routine',
                   onTap: () {
                     Navigator.of(sheetCtx).pop();
-                    _renameRoutine(routine.routine.name);
+                    _openEditor();
                   },
                 ),
                 const Divider(
@@ -267,57 +215,16 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
     );
   }
 
-  void _confirmDelete(BuildContext context, String routineId) {
-    showDialog<void>(
+  Future<void> _confirmDelete(BuildContext context, String routineId) async {
+    final confirmed = await showAppConfirmDialog(
       context: context,
-      useRootNavigator: true,
-      builder: (dialogCtx) => AlertDialog(
-        backgroundColor: const Color(0xFF121212),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
-        title: Text(
-          'Delete Routine?',
-          style: GoogleFonts.inter(
-            fontWeight: FontWeight.w700,
-            fontSize: 18,
-            color: AppColors.textPrimary,
-          ),
-        ),
-        content: Text(
-          'This routine will be permanently deleted.',
-          style: GoogleFonts.inter(
-            fontSize: 15,
-            color: const Color(0xFFB3B3B3),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogCtx).pop(),
-            child: Text(
-              'Cancel',
-              style: GoogleFonts.inter(
-                color: const Color(0xFFB3B3B3),
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.of(dialogCtx).pop();
-              _deleteRoutine(routineId);
-            },
-            child: Text(
-              'Delete',
-              style: GoogleFonts.inter(
-                color: AppColors.error,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ),
-        ],
-      ),
+      title: 'Delete Routine?',
+      message:
+          'This routine will be permanently deleted. Your workout history stays.',
+      confirmLabel: 'Delete',
+      isDestructive: true,
     );
+    if (confirmed) await _deleteRoutine(routineId);
   }
 
   Future<void> _onRefresh() async {
@@ -325,100 +232,6 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
     ref.invalidate(
         routineDailyVolumeProvider((widget.routineId, _selectedTimeRange)));
     ref.invalidate(routineLastSetsProvider(widget.routineId));
-  }
-
-  void _showTimeRangeSheet(BuildContext context) {
-    HapticFeedback.lightImpact();
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (sheetCtx) => Container(
-        decoration: BoxDecoration(
-          color: AppColors.bgSurface.withValues(alpha: 0.95),
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-        ),
-        child: ClipRRect(
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-            child: Padding(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Center(
-                    child: Container(
-                      width: 36,
-                      height: 4,
-                      decoration: BoxDecoration(
-                        color: AppColors.textSecondary.withValues(alpha: 0.2),
-                        borderRadius: BorderRadius.circular(2),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Time Range',
-                    style: GoogleFonts.inter(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.textPrimary,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  ..._timeRangeOptions.map((range) {
-                    final isSelected = range == _selectedTimeRange;
-                    return InkWell(
-                      onTap: () {
-                        HapticFeedback.selectionClick();
-                        setState(() => _selectedTimeRange = range);
-                        Navigator.of(sheetCtx).pop();
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        decoration: BoxDecoration(
-                          border: Border(
-                            bottom: BorderSide(
-                              color:
-                                  AppColors.textSecondary.withValues(alpha: 0.08),
-                              width: 1,
-                            ),
-                          ),
-                        ),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: Text(
-                                range,
-                                style: GoogleFonts.inter(
-                                  fontSize: 15,
-                                  fontWeight: isSelected
-                                      ? FontWeight.w600
-                                      : FontWeight.w400,
-                                  color: isSelected
-                                      ? AppColors.accentPrimary
-                                      : AppColors.textPrimary,
-                                ),
-                              ),
-                            ),
-                            if (isSelected)
-                              const Icon(
-                                Icons.check_rounded,
-                                size: 18,
-                                color: AppColors.accentPrimary,
-                              ),
-                          ],
-                        ),
-                      ),
-                    );
-                  }),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
   }
 
   @override
@@ -455,6 +268,7 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
     Map<String, List<LastSessionSetData>> lastSetsMap,
     bool isLoadingHistory,
   ) {
+    final isPremium = ref.watch(isPremiumProvider);
     final lastDate = volumeAsync.valueOrNull?.isNotEmpty == true
         ? volumeAsync.valueOrNull!.last.day
         : null;
@@ -494,6 +308,7 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
                 width: 48,
                 height: 48,
                 child: IconButton(
+                  tooltip: 'Back',
                   icon: const Icon(Icons.arrow_back_ios_new),
                   color: AppColors.textPrimary,
                   onPressed: () => context.pop(),
@@ -501,6 +316,7 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
               ),
               actions: [
                 IconButton(
+                  tooltip: 'Routine options',
                   icon: const Icon(Icons.more_vert_rounded, size: 24),
                   color: AppColors.textPrimary,
                   padding: EdgeInsets.zero,
@@ -530,35 +346,13 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
                         ),
                       ),
                       const SizedBox(height: 16),
+                      // Singular, dominant primary action — editing lives
+                      // in the three-dot sheet where it belongs.
                       Semantics(
                         button: true,
                         label: 'Start Routine',
                         child: _StartRoutineButton(
                           onTap: () => _startRoutine(routine),
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      Align(
-                        alignment: Alignment.centerRight,
-                        child: Material(
-                          color: AppColors.surfaceRaised,
-                          borderRadius: BorderRadius.circular(999),
-                          child: InkWell(
-                            borderRadius: BorderRadius.circular(999),
-                            hoverColor: const Color(0xFF1C1C1C),
-                            highlightColor: const Color(0xFF1C1C1C),
-                            onTap: () {
-                              HapticFeedback.lightImpact();
-                              _renameRoutine(routine.routine.name);
-                            },
-                            child: Container(
-                              height: 44,
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 24),
-                              alignment: Alignment.center,
-                              child: Text('Edit Routine', style: RDStyles.editBtn),
-                            ),
-                          ),
                         ),
                       ),
                       const SizedBox(height: 24),
@@ -587,13 +381,20 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
                                 style: RDStyles.sectionLabel),
                             TextSpan(text: '(kg)', style: RDStyles.sectionUnit),
                           ])),
-                          Semantics(
-                            label: 'Time range filter',
-                            button: true,
-                            child: _TimeFilterTapTarget(
-                              value: _selectedTimeRange,
-                              onTap: () => _showTimeRangeSheet(context),
-                            ),
+                          Row(
+                            children: [
+                              if (!isPremium &&
+                                  (volumeAsync.valueOrNull?.length ?? 0) > 3)
+                                const Padding(
+                                  padding: EdgeInsets.only(right: 10),
+                                  child: ProLockPill(label: 'FULL HISTORY'),
+                                ),
+                              TimeRangeFilter(
+                                value: _selectedTimeRange,
+                                onChanged: (range) =>
+                                    setState(() => _selectedTimeRange = range),
+                              ),
+                            ],
                           ),
                         ],
                       ),
@@ -613,16 +414,22 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
                           ),
                         ),
                         error: (_, __) => const RoutineVolumeGraph(data: []),
-                        data: (data) => AnimatedSwitcher(
-                          duration: const Duration(milliseconds: 300),
-                          child: RoutineVolumeGraph(
-                            key: ValueKey('$_selectedTimeRange${data.length}'),
-                            data: data,
-                          ),
-                        ),
+                        data: (data) {
+                          // Free tier: 3 most recent sessions as a teaser.
+                          final visible = gateChartSamples(data, isPremium);
+                          return AnimatedSwitcher(
+                            duration: const Duration(milliseconds: 300),
+                            child: RoutineVolumeGraph(
+                              key: ValueKey(
+                                  '$_selectedTimeRange${visible.length}'),
+                              data: visible,
+                            ),
+                          );
+                        },
                       ),
                       volumeAsync.maybeWhen(
-                        data: (data) => _RoutineProgressPill(samples: data),
+                        data: (data) => _RoutineProgressPill(
+                            samples: gateChartSamples(data, isPremium)),
                         orElse: () => const SizedBox.shrink(),
                       ),
                       const SizedBox(height: 28),
@@ -641,7 +448,9 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
                     final exercise = routine.exercises[index];
                     final exKey = exercise.exercise.id.toString();
                     final sets = lastSetsMap[exKey];
-                    final delay = index * 0.04;
+                    // Stagger only the first 3 items, capped — entry must
+                    // feel responsive, not theatrical.
+                    final delay = index.clamp(0, 3) * 0.05;
                     return _entryFade(
                       interval: Interval(
                         (0.35 + delay).clamp(0.0, 0.9),
@@ -651,6 +460,13 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
                       child: RoutineExerciseBlock(
                         hydratedExercise: exercise,
                         lastSets: sets,
+                        onTap: () {
+                          HapticFeedback.selectionClick();
+                          context.push(
+                            '/exercise/detail/${exercise.exercise.id}',
+                            extra: exercise.exercise,
+                          );
+                        },
                         isLoadingHistory: isLoadingHistory,
                         isLast: index == routine.exercises.length - 1,
                       ),
@@ -664,17 +480,13 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
             // ── Add Exercise ─────────────────────────────────────────────
             SliverToBoxAdapter(
               child: Padding(
-                padding:
-                    const EdgeInsets.fromLTRB(16, 20, 16, 0),
+                padding: const EdgeInsets.fromLTRB(16, 20, 16, 0),
                 child: Material(
                   color: AppColors.surfaceRaised,
                   borderRadius: BorderRadius.circular(14),
                   child: InkWell(
                     borderRadius: BorderRadius.circular(14),
-                    onTap: () {
-                      HapticFeedback.lightImpact();
-                      // TODO: Navigate to add exercise (route not implemented yet)
-                    },
+                    onTap: _addExercise,
                     child: Container(
                       height: 50,
                       alignment: Alignment.center,
@@ -891,42 +703,6 @@ class _StartRoutineButtonState extends State<_StartRoutineButton> {
               ),
             ),
           ),
-        ),
-      ),
-    );
-  }
-}
-
-class _TimeFilterTapTarget extends StatelessWidget {
-  final String value;
-  final VoidCallback onTap;
-
-  const _TimeFilterTapTarget({required this.value, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      behavior: HitTestBehavior.opaque,
-      child: Container(
-        constraints: const BoxConstraints(minHeight: 44),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          color: AppColors.surfaceRaised,
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(value, style: RDStyles.rangePill),
-            const SizedBox(width: 4),
-            const Icon(
-              Icons.keyboard_arrow_down_rounded,
-              size: 16,
-              color: Color(0xFF9CA3AF),
-            ),
-          ],
         ),
       ),
     );
