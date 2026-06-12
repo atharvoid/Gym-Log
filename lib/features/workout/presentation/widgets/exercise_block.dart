@@ -159,19 +159,36 @@ class ExerciseBlock extends StatelessWidget {
           ),
           const SizedBox(height: 8),
 
-          // ── Column labels ────────────────────────────────────────────
+          // ── Column labels — every caption sits over its own column ───
+          // Cell widths mirror SetRow EXACTLY (56 set · 78 weight ·
+          // 36 unit · 14 '×' · 8 gap · 62 reps · spacer · 48 check), so
+          // the captions stay aligned with the boxed inputs below them.
+          // A single left-aligned "WEIGHT × REPS" string left the reps
+          // box headerless and parked "REPS" over the unit zone.
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Row(
               children: [
                 SizedBox(
                     width: 56, child: Text('SET', style: RDStyles.tableHeader)),
-                Text('WEIGHT × REPS', style: RDStyles.tableHeader),
+                SizedBox(
+                  width: 78,
+                  child: Center(
+                      child: Text('WEIGHT', style: RDStyles.tableHeader)),
+                ),
+                const SizedBox(width: 36 + 14 + 8),
+                SizedBox(
+                  width: 62,
+                  child:
+                      Center(child: Text('REPS', style: RDStyles.tableHeader)),
+                ),
                 const Spacer(),
-                const Padding(
-                  padding: EdgeInsets.only(right: 14),
-                  child: Icon(Icons.check_rounded,
-                      size: 13, color: AppColors.chartAxisLabel),
+                const SizedBox(
+                  width: 48,
+                  child: Center(
+                    child: Icon(Icons.check_rounded,
+                        size: 13, color: AppColors.chartAxisLabel),
+                  ),
                 ),
               ],
             ),
