@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
@@ -25,6 +26,7 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
 
   void _startRoutine(HydratedRoutine routine) {
     if (routine.exerciseIds.isEmpty) return;
+    HapticFeedback.mediumImpact();
 
     final exercises = routine.exerciseIds.asMap().entries.map((e) {
       return WorkoutExerciseState(
@@ -61,17 +63,6 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
     return maxLast == null
         ? '$count $label'
         : '$count $label  ·  Last trained ${_relative(maxLast)}';
-  }
-
-  void _comingSoon() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Coming soon',
-            style: GoogleFonts.inter(color: AppColors.textPrimary)),
-        backgroundColor: AppColors.bgSurface,
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
   }
 
   @override
@@ -116,7 +107,7 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
               orElse: () => const SizedBox.shrink(),
             ),
 
-            // ── Action row: New (primary) + Explore (secondary) ──────────
+            // ── Action row: New (primary) + Explore (catalog) ────────────
             Row(
               children: [
                 Expanded(
@@ -124,7 +115,10 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
                     label: 'New Routine',
                     icon: Icons.add_rounded,
                     primary: true,
-                    onTap: () => context.push('/routines/edit'),
+                    onTap: () {
+                      HapticFeedback.lightImpact();
+                      context.push('/routines/edit');
+                    },
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -132,7 +126,10 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
                   child: _ActionButton(
                     label: 'Explore',
                     icon: Icons.explore_outlined,
-                    onTap: _comingSoon,
+                    onTap: () {
+                      HapticFeedback.lightImpact();
+                      context.push('/routines/explore');
+                    },
                   ),
                 ),
               ],
@@ -141,8 +138,10 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
 
             // ── Collapsible section header ───────────────────────────────
             GestureDetector(
-              onTap: () =>
-                  setState(() => _routinesExpanded = !_routinesExpanded),
+              onTap: () {
+                HapticFeedback.selectionClick();
+                setState(() => _routinesExpanded = !_routinesExpanded);
+              },
               behavior: HitTestBehavior.opaque,
               child: Padding(
                 padding: const EdgeInsets.symmetric(vertical: 6),

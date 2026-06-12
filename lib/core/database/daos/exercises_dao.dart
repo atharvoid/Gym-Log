@@ -28,8 +28,15 @@ class ExercisesDao extends DatabaseAccessor<AppDatabase>
   Future<Exercise> getExerciseById(int id) =>
       (select(exercises)..where((t) => t.id.equals(id))).getSingle();
 
-  Future<List<Exercise>> searchExercises(String query) =>
-      (select(exercises)..where((t) => t.name.like('%$query%'))).get();
+  Future<List<Exercise>> searchExercises(String query) {
+    // Neutralize LIKE wildcards — exercise names never contain % or _,
+    // so treating them as plain separators keeps search predictable.
+    final sanitized = query.replaceAll('%', ' ').replaceAll('_', ' ').trim();
+    return (select(exercises)
+          ..where((t) => t.name.like('%$sanitized%'))
+          ..orderBy([(t) => OrderingTerm.asc(t.name)]))
+        .get();
+  }
 
   Future<List<Exercise>> filterByBodyPart(String bodyPart) =>
       (select(exercises)..where((t) => t.bodyPart.equals(bodyPart))).get();
@@ -37,8 +44,12 @@ class ExercisesDao extends DatabaseAccessor<AppDatabase>
   Future<List<Exercise>> filterByEquipment(String equipment) =>
       (select(exercises)..where((t) => t.equipment.equals(equipment))).get();
 
-  Future<int> getExerciseCount() =>
-      select(exercises).get().then((rows) => rows.length);
+  /// COUNT(*) in SQL — the old version loaded all ~1,300 rows just to count.
+  Future<int> getExerciseCount() {
+    final count = exercises.id.count();
+    final query = selectOnly(exercises)..addColumns([count]);
+    return query.getSingle().then((row) => row.read(count) ?? 0);
+  }
 
   // ── Writes ─────────────────────────────────────────────────────────────────
 

@@ -36,4 +36,31 @@ class UserDao extends DatabaseAccessor<AppDatabase> with _$UserDaoMixin {
     return (select(userProfiles)..where((t) => t.id.equals(id)))
         .watchSingleOrNull();
   }
+
+  /// Targeted premium-entitlement write. Used by PremiumService to mirror
+  /// RevenueCat customer info into the local offline cache.
+  Future<void> setPremiumStatus(
+    String id, {
+    required bool isPremium,
+    DateTime? premiumExpiry,
+  }) {
+    return (update(userProfiles)..where((t) => t.id.equals(id)))
+        .write(UserProfilesCompanion(
+      isPremium: Value(isPremium),
+      premiumExpiry: Value(premiumExpiry),
+    ));
+  }
+
+  /// Global weight-unit preference ('kg' | 'lbs'). Display-only — stored
+  /// workout data remains kilograms forever.
+  Future<void> setWeightUnit(String id, String unit) {
+    return (update(userProfiles)..where((t) => t.id.equals(id)))
+        .write(UserProfilesCompanion(weightUnit: Value(unit)));
+  }
+
+  /// Default rest-timer duration between sets.
+  Future<void> setDefaultRestSeconds(String id, int seconds) {
+    return (update(userProfiles)..where((t) => t.id.equals(id)))
+        .write(UserProfilesCompanion(defaultRestSeconds: Value(seconds)));
+  }
 }

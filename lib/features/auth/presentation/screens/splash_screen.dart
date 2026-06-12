@@ -25,7 +25,9 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
   }
 
   Future<void> _resolveInitialRoute() async {
-    await Future.delayed(const Duration(seconds: 2));
+    // Brand pause, not a toll booth — long enough to register, short
+    // enough to never feel like loading.
+    await Future.delayed(const Duration(milliseconds: 900));
     if (!mounted) return;
 
     final user = ref.read(authProvider);
