@@ -224,6 +224,7 @@ class _ExploreRoutinesScreenState extends ConsumerState<ExploreRoutinesScreen> {
       appBar: AppBar(
         backgroundColor: AppColors.bgBase,
         scrolledUnderElevation: 0,
+        titleSpacing: 0, // title hugs the back button on every sub-screen
         leading: IconButton(
           tooltip: 'Back',
           icon: const Icon(Icons.arrow_back_ios_new,

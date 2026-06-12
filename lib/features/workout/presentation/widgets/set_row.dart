@@ -351,11 +351,18 @@ class _SetRowState extends State<SetRow> {
             ),
           ),
 
-          Text(
-            '×',
-            style: GoogleFonts.inter(
-              color: AppColors.textSecondary.withValues(alpha: 0.7),
-              fontSize: 15,
+          // Fixed 14px cell (not intrinsic text width) so the column
+          // header in ExerciseBlock can mirror these metrics exactly.
+          SizedBox(
+            width: 14,
+            child: Center(
+              child: Text(
+                '×',
+                style: GoogleFonts.inter(
+                  color: AppColors.textSecondary.withValues(alpha: 0.7),
+                  fontSize: 15,
+                ),
+              ),
             ),
           ),
           const SizedBox(width: 8),

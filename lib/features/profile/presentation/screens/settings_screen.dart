@@ -133,6 +133,9 @@ class SettingsScreen extends ConsumerWidget {
       appBar: AppBar(
         backgroundColor: AppColors.bgBase,
         scrolledUnderElevation: 0,
+        // One title geometry on every sub-screen: the title hugs the back
+        // button (Routine Detail pattern), no stray Material default gap.
+        titleSpacing: 0,
         leading: IconButton(
           tooltip: 'Back',
           icon: const Icon(Icons.arrow_back_ios_new,
