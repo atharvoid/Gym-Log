@@ -9,6 +9,7 @@ import 'package:gymlog/core/database/daos/workouts_dao.dart';
 import 'package:gymlog/core/database/database.dart';
 import 'package:gymlog/core/providers/database_provider.dart';
 import 'package:gymlog/shared/widgets/exercise_gif_widget.dart';
+import 'package:gymlog/features/routines/presentation/widgets/routine_detail_styles.dart';
 import 'package:gymlog/shared/widgets/ui/action_bottom_sheet.dart';
 import 'package:gymlog/shared/widgets/ui/app_dialog.dart';
 import '../providers/workout_detail_provider.dart';
@@ -714,9 +715,12 @@ class _DetailExerciseCard extends StatelessWidget {
       child: Container(
         margin: const EdgeInsets.fromLTRB(16, 0, 16, 12),
         decoration: BoxDecoration(
-          color: AppColors.bgSurface,
-          borderRadius: BorderRadius.circular(12),
+          // North-star surface: gradient + hairline, matching Routine cards.
+          gradient: RDStyles.cardGradient,
+          borderRadius: BorderRadius.circular(18),
+          border: RDStyles.hairlineBorder,
         ),
+        clipBehavior: Clip.antiAlias,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

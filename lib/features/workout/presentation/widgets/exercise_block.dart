@@ -20,10 +20,12 @@ class ExerciseBlock extends StatelessWidget {
   final WorkoutExerciseState exercise;
   final Exercise? driftExercise;
   final String unit;
+
+  /// The drag handle index for the enclosing ReorderableListView. When
+  /// non-null, a long-press grip appears and the card becomes draggable.
+  final int? reorderIndex;
   final VoidCallback onRemove;
   final VoidCallback onReplace;
-  final VoidCallback? onMoveUp;
-  final VoidCallback? onMoveDown;
   final VoidCallback? onUnitTap;
   final VoidCallback onAddSet;
   final void Function(int setIndex) onRemoveSet;
@@ -36,10 +38,9 @@ class ExerciseBlock extends StatelessWidget {
     required this.exercise,
     this.driftExercise,
     this.unit = 'kg',
+    this.reorderIndex,
     required this.onRemove,
     required this.onReplace,
-    this.onMoveUp,
-    this.onMoveDown,
     this.onUnitTap,
     required this.onAddSet,
     required this.onRemoveSet,
@@ -52,30 +53,6 @@ class ExerciseBlock extends StatelessWidget {
       context: context,
       title: exercise.name,
       items: [
-        if (onMoveUp != null)
-          ActionSheetItem(
-            icon: Icons.arrow_upward_rounded,
-            iconColor: AppColors.textSecondary,
-            iconBackground: AppColors.bgBase,
-            title: 'Move Up',
-            onTap: (sheetContext) {
-              Navigator.pop(sheetContext);
-              HapticFeedback.selectionClick();
-              onMoveUp!();
-            },
-          ),
-        if (onMoveDown != null)
-          ActionSheetItem(
-            icon: Icons.arrow_downward_rounded,
-            iconColor: AppColors.textSecondary,
-            iconBackground: AppColors.bgBase,
-            title: 'Move Down',
-            onTap: (sheetContext) {
-              Navigator.pop(sheetContext);
-              HapticFeedback.selectionClick();
-              onMoveDown!();
-            },
-          ),
         ActionSheetItem(
           icon: Icons.swap_horiz_rounded,
           iconColor: AppColors.textSecondary,
@@ -155,6 +132,21 @@ class ExerciseBlock extends StatelessWidget {
                     ),
                   ),
                 ),
+                // Long-press drag grip — reorder exercises within the session.
+                if (reorderIndex != null)
+                  ReorderableDelayedDragStartListener(
+                    index: reorderIndex!,
+                    child: Container(
+                      width: 40,
+                      height: 48,
+                      alignment: Alignment.center,
+                      child: Icon(
+                        Icons.drag_indicator_rounded,
+                        size: 20,
+                        color: Colors.white.withValues(alpha: 0.30),
+                      ),
+                    ),
+                  ),
                 IconButton(
                   tooltip: 'Exercise options',
                   constraints:
@@ -190,10 +182,28 @@ class ExerciseBlock extends StatelessWidget {
           ),
           const SizedBox(height: 4),
 
-          // ── Sets — swipe left to delete ──────────────────────────────
+          // ── Sets — swipe left to delete (locked once completed) ──────
           ...exercise.sets.asMap().entries.map((entry) {
             final setIndex = entry.key;
             final setData = entry.value;
+            final row = SetRow(
+              key: ValueKey(setData.id),
+              setIndex: setIndex,
+              setData: setData,
+              previousWeight: null,
+              previousReps: null,
+              equipment: de?.equipment,
+              unit: unit,
+              onUnitTap: onUnitTap,
+              onChanged: onSetChanged,
+              onToggleComplete: () => onToggleSetCompletion(setIndex),
+            );
+            // A completed set is a committed record — no accidental
+            // swipe-away. Uncheck it first to delete or edit.
+            if (setData.isCompleted) {
+              return KeyedSubtree(
+                  key: ValueKey('locked_${setData.id}'), child: row);
+            }
             return Dismissible(
               key: ValueKey('dismiss_${setData.id}'),
               direction: DismissDirection.endToStart,
@@ -209,18 +219,7 @@ class ExerciseBlock extends StatelessWidget {
                 child: const Icon(Icons.delete_outline_rounded,
                     color: Colors.white, size: 20),
               ),
-              child: SetRow(
-                key: ValueKey(setData.id),
-                setIndex: setIndex,
-                setData: setData,
-                previousWeight: null,
-                previousReps: null,
-                equipment: de?.equipment,
-                unit: unit,
-                onUnitTap: onUnitTap,
-                onChanged: onSetChanged,
-                onToggleComplete: () => onToggleSetCompletion(setIndex),
-              ),
+              child: row,
             );
           }),
 

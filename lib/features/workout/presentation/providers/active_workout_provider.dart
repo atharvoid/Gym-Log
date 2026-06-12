@@ -306,13 +306,15 @@ class ActiveWorkoutNotifier extends StateNotifier<ActiveWorkoutState?> {
     state = state!.copyWith(exercises: exercises);
   }
 
-  /// Moves an exercise up (-1) or down (+1) in the session order.
-  void moveExercise(int exerciseIndex, int direction) {
+  /// Reorders an exercise from [oldIndex] to [newIndex] (drag-to-reorder).
+  /// Uses ReorderableListView.onReorderItem semantics — [newIndex] is
+  /// already adjusted for the removed item, so no manual decrement.
+  void reorderExercise(int oldIndex, int newIndex) {
     if (state == null) return;
-    final target = exerciseIndex + direction;
     final exercises = [...state!.exercises];
-    if (target < 0 || target >= exercises.length) return;
-    final item = exercises.removeAt(exerciseIndex);
+    if (oldIndex < 0 || oldIndex >= exercises.length) return;
+    final target = newIndex.clamp(0, exercises.length - 1);
+    final item = exercises.removeAt(oldIndex);
     exercises.insert(target, item);
     state = state!.copyWith(exercises: exercises);
   }

@@ -215,64 +215,76 @@ Future<T?> showBrandedPickerSheet<T>({
                 ),
               ),
               const SizedBox(height: 12),
-              ...options.map((opt) {
-                final isSelected = selected != null && opt.value == selected;
-                return Material(
-                  color: Colors.transparent,
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(12),
-                    onTap: () {
-                      HapticFeedback.selectionClick();
-                      Navigator.of(sheetCtx).pop(opt.value);
-                    },
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 4, vertical: 13),
-                      child: Row(
-                        children: [
-                          Container(
-                            width: 36,
-                            height: 36,
-                            alignment: Alignment.center,
-                            decoration: BoxDecoration(
-                              color: opt.color.withValues(alpha: 0.14),
-                              borderRadius: BorderRadius.circular(11),
-                            ),
-                            child: Icon(opt.icon, size: 18, color: opt.color),
-                          ),
-                          const SizedBox(width: 14),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
+              // Flexible + scroll so long option lists (e.g. 7 rest
+              // durations) never overflow on short screens.
+              Flexible(
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: options.map((opt) {
+                      final isSelected =
+                          selected != null && opt.value == selected;
+                      return Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(12),
+                          onTap: () {
+                            HapticFeedback.selectionClick();
+                            Navigator.of(sheetCtx).pop(opt.value);
+                          },
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 4, vertical: 13),
+                            child: Row(
                               children: [
-                                Text(
-                                  opt.label,
-                                  style: GoogleFonts.inter(
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.w600,
-                                    color: AppColors.textPrimary,
+                                Container(
+                                  width: 36,
+                                  height: 36,
+                                  alignment: Alignment.center,
+                                  decoration: BoxDecoration(
+                                    color: opt.color.withValues(alpha: 0.14),
+                                    borderRadius: BorderRadius.circular(11),
+                                  ),
+                                  child: Icon(opt.icon,
+                                      size: 18, color: opt.color),
+                                ),
+                                const SizedBox(width: 14),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        opt.label,
+                                        style: GoogleFonts.inter(
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.w600,
+                                          color: AppColors.textPrimary,
+                                        ),
+                                      ),
+                                      if (opt.subtitle != null)
+                                        Text(
+                                          opt.subtitle!,
+                                          style: GoogleFonts.inter(
+                                            fontSize: 12,
+                                            color: AppColors.textSecondary,
+                                          ),
+                                        ),
+                                    ],
                                   ),
                                 ),
-                                if (opt.subtitle != null)
-                                  Text(
-                                    opt.subtitle!,
-                                    style: GoogleFonts.inter(
-                                      fontSize: 12,
-                                      color: AppColors.textSecondary,
-                                    ),
-                                  ),
+                                if (isSelected)
+                                  const Icon(Icons.check_rounded,
+                                      size: 18, color: AppColors.accentPrimary),
                               ],
                             ),
                           ),
-                          if (isSelected)
-                            const Icon(Icons.check_rounded,
-                                size: 18, color: AppColors.accentPrimary),
-                        ],
-                      ),
-                    ),
+                        ),
+                      );
+                    }).toList(),
                   ),
-                );
-              }),
+                ),
+              ),
             ],
           ),
         ),

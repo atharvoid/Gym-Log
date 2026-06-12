@@ -19,23 +19,32 @@ final _recentExerciseIdsProvider = StreamProvider.autoDispose<List<int>>((ref) {
 });
 
 /// Muscle-group buckets → exercise.bodyPart values.
+///
+/// Keys MUST map to bodyPart values that actually exist in the bundled
+/// dataset (verified against assets/db/exercises.json): upper legs, back,
+/// arms, chest, core, shoulders, lower legs, forearms. An earlier mapping
+/// used 'upper arms'/'lower arms'/'waist' — none of which exist — so the
+/// Arms and Core filters silently returned nothing.
 const _muscleGroups = <String, List<String>>{
   'Chest': ['chest'],
   'Back': ['back'],
-  'Legs': ['upper legs', 'lower legs'],
   'Shoulders': ['shoulders'],
-  'Arms': ['upper arms', 'lower arms'],
-  'Core': ['waist'],
+  'Arms': ['arms', 'forearms'],
+  'Legs': ['upper legs', 'lower legs'],
+  'Core': ['core'],
 };
 
 /// Equipment buckets → matcher over exercise.equipment.
+/// Dataset equipment values: body weight, barbell, dumbbell, cable,
+/// leverage machine, smith machine, kettlebell, weighted, ez barbell,
+/// sled machine, olympic barbell, trap bar.
 final _equipmentGroups = <String, bool Function(String)>{
   'Barbell': (e) => e.contains('barbell') || e.contains('trap bar'),
   'Dumbbell': (e) => e.contains('dumbbell'),
   'Machine': (e) => e.contains('machine'),
   'Cable': (e) => e.contains('cable'),
-  'Body Weight': (e) =>
-      e.contains('body weight') || e.contains('assisted') || e == 'weighted',
+  'Kettlebell': (e) => e.contains('kettlebell'),
+  'Body Weight': (e) => e.contains('body weight') || e == 'weighted',
 };
 
 /// Exercise list with live search, Recent section, and combinable

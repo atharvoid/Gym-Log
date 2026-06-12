@@ -276,23 +276,31 @@ class _SetRowState extends State<SetRow> {
       child: Row(
         children: [
           // ── Set identifier → explicit type picker ──────────────────────
+          // Locked once completed (uncheck to edit). FittedBox guarantees
+          // the Warm/Drop/Fail chip can never overflow the 56px column.
           SizedBox(
             width: 56,
             child: Semantics(
-              button: true,
+              button: !isCompleted,
               label: 'Set type',
               child: GestureDetector(
-                onTap: () {
-                  HapticFeedback.selectionClick();
-                  _pickSetType();
-                },
+                onTap: isCompleted
+                    ? null
+                    : () {
+                        HapticFeedback.selectionClick();
+                        _pickSetType();
+                      },
                 behavior: HitTestBehavior.opaque,
                 child: ConstrainedBox(
                   constraints:
                       const BoxConstraints(minWidth: 48, minHeight: 48),
                   child: Align(
                     alignment: Alignment.centerLeft,
-                    child: _setTypeIndicator(),
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerLeft,
+                      child: _setTypeIndicator(),
+                    ),
                   ),
                 ),
               ),
@@ -319,11 +327,12 @@ class _SetRowState extends State<SetRow> {
           ),
 
           // Unit label — tappable, switches kg/lbs for this exercise.
+          // Locked while the set is completed.
           Semantics(
-            button: true,
+            button: !isCompleted,
             label: 'Weight unit ${widget.unit}, tap to change',
             child: GestureDetector(
-              onTap: widget.onUnitTap,
+              onTap: isCompleted ? null : widget.onUnitTap,
               behavior: HitTestBehavior.opaque,
               child: SizedBox(
                 width: 36,

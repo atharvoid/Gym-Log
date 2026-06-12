@@ -1,5 +1,3 @@
-import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -20,6 +18,7 @@ import 'package:gymlog/features/exercises/presentation/screens/exercise_selectio
 import 'package:gymlog/features/exercises/presentation/providers/exercises_provider.dart';
 import '../widgets/exercise_block.dart';
 import '../widgets/pr_celebration_overlay.dart';
+import '../widgets/rest_timer_bar.dart';
 
 class ActiveWorkoutScreen extends ConsumerStatefulWidget {
   const ActiveWorkoutScreen({super.key});
@@ -221,39 +220,51 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
             ),
           ),
 
-          // ── Body ──────────────────────────────────────────────────────
+          // ── Body — long-press an exercise to drag-reorder ─────────────
           Expanded(
             child: workout == null
                 ? const SizedBox.shrink()
-                : ListView.builder(
+                : ReorderableListView.builder(
                     padding: const EdgeInsets.only(top: 8, bottom: 140.0),
-                    itemCount: workout.exercises.length + 1,
-                    itemBuilder: (context, index) {
-                      if (index == workout.exercises.length) {
-                        // Footer
-                        return Padding(
-                          key: const ValueKey('footer'),
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 8),
-                          child: SecondaryButton(
-                            label: '+ Add Exercise',
-                            onPressed: () async {
-                              final selected = await Navigator.push<Exercise>(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) =>
-                                      const ExerciseSelectionScreen(),
-                                ),
-                              );
-                              if (selected != null && mounted) {
-                                notifier.addExercise(
-                                    selected.id, selected.name);
-                              }
-                            },
+                    buildDefaultDragHandles: false,
+                    onReorderStart: (_) => HapticFeedback.heavyImpact(),
+                    onReorderEnd: (_) => HapticFeedback.mediumImpact(),
+                    proxyDecorator: (child, index, animation) =>
+                        AnimatedBuilder(
+                      animation: animation,
+                      builder: (context, _) {
+                        final t = Curves.easeInOut.transform(animation.value);
+                        return Transform.scale(
+                          scale: 1 + 0.02 * t,
+                          child: Material(
+                            color: Colors.transparent,
+                            child: child,
                           ),
                         );
-                      }
-
+                      },
+                    ),
+                    onReorderItem: notifier.reorderExercise,
+                    footer: Padding(
+                      key: const ValueKey('footer'),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 8),
+                      child: SecondaryButton(
+                        label: '+ Add Exercise',
+                        onPressed: () async {
+                          final selected = await Navigator.push<Exercise>(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const ExerciseSelectionScreen(),
+                            ),
+                          );
+                          if (selected != null && mounted) {
+                            notifier.addExercise(selected.id, selected.name);
+                          }
+                        },
+                      ),
+                    ),
+                    itemCount: workout.exercises.length,
+                    itemBuilder: (context, index) {
                       final exercise = workout.exercises[index];
                       final driftEx = exercisesAsync.maybeWhen(
                         data: (list) => list
@@ -267,16 +278,11 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
                       return ExerciseBlock(
                         key: ValueKey(exercise.id),
                         exerciseIndex: index,
+                        reorderIndex: index,
                         exercise: exercise,
                         driftExercise: driftEx,
                         unit: unit,
                         onRemove: () => notifier.removeExercise(index),
-                        onMoveUp: index > 0
-                            ? () => notifier.moveExercise(index, -1)
-                            : null,
-                        onMoveDown: index < workout.exercises.length - 1
-                            ? () => notifier.moveExercise(index, 1)
-                            : null,
                         onUnitTap: () => _pickUnit(exercise.exerciseId),
                         onReplace: () async {
                           final selected = await Navigator.push<Exercise>(
@@ -332,179 +338,8 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
         ),
         child: restTimer == null
             ? const SizedBox.shrink(key: ValueKey('noRest'))
-            : _RestTimerBar(key: const ValueKey('rest'), state: restTimer),
+            : RestTimerBar(key: const ValueKey('rest'), state: restTimer),
       ),
     );
   }
-}
-
-// ── Rest timer bar ────────────────────────────────────────────────────────────
-
-class _RestTimerBar extends ConsumerWidget {
-  final RestTimerState state;
-
-  const _RestTimerBar({super.key, required this.state});
-
-  String get _label {
-    final m = state.remainingSeconds ~/ 60;
-    final s = state.remainingSeconds % 60;
-    return '$m:${s.toString().padLeft(2, '0')}';
-  }
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final notifier = ref.read(restTimerProvider.notifier);
-
-    return SafeArea(
-      top: false,
-      child: Container(
-        margin: const EdgeInsets.fromLTRB(16, 8, 16, 10),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [Color(0xFF15101D), Color(0xFF0B0B0D)],
-          ),
-          borderRadius: BorderRadius.circular(18),
-          border: Border.all(
-            color: AppColors.accentPrimary.withValues(alpha: 0.30),
-          ),
-        ),
-        child: Row(
-          children: [
-            SizedBox(
-              width: 34,
-              height: 34,
-              child: CustomPaint(
-                painter: _RestRingPainter(progress: state.progress),
-                child: const Center(
-                  child: Icon(Icons.timer_outlined,
-                      size: 14, color: Color(0xFFCBB2FF)),
-                ),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'REST',
-                  style: GoogleFonts.inter(
-                    fontSize: 9.5,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 1.0,
-                    color: AppColors.textSecondary,
-                  ),
-                ),
-                Text(
-                  _label,
-                  style: GoogleFonts.inter(
-                    fontSize: 19,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.textPrimary,
-                    fontFeatures: const [FontFeature.tabularFigures()],
-                  ),
-                ),
-              ],
-            ),
-            const Spacer(),
-            _RestAction(
-              label: '+15s',
-              onTap: () {
-                HapticFeedback.selectionClick();
-                notifier.addSeconds(15);
-              },
-            ),
-            const SizedBox(width: 8),
-            _RestAction(
-              label: 'Skip',
-              emphasized: true,
-              onTap: () {
-                HapticFeedback.lightImpact();
-                notifier.skip();
-              },
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _RestAction extends StatelessWidget {
-  final String label;
-  final bool emphasized;
-  final VoidCallback onTap;
-
-  const _RestAction({
-    required this.label,
-    this.emphasized = false,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: emphasized
-          ? AppColors.accentPrimary.withValues(alpha: 0.16)
-          : Colors.white.withValues(alpha: 0.06),
-      borderRadius: BorderRadius.circular(999),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(999),
-        onTap: onTap,
-        child: Container(
-          constraints: const BoxConstraints(minHeight: 40),
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          alignment: Alignment.center,
-          child: Text(
-            label,
-            style: GoogleFonts.inter(
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-              color:
-                  emphasized ? const Color(0xFFCBB2FF) : AppColors.textPrimary,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _RestRingPainter extends CustomPainter {
-  final double progress;
-  _RestRingPainter({required this.progress});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final center = Offset(size.width / 2, size.height / 2);
-    final radius = size.width / 2 - 2;
-
-    canvas.drawCircle(
-      center,
-      radius,
-      Paint()
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 3
-        ..color = Colors.white.withValues(alpha: 0.10),
-    );
-    if (progress > 0) {
-      canvas.drawArc(
-        Rect.fromCircle(center: center, radius: radius),
-        -math.pi / 2,
-        2 * math.pi * progress,
-        false,
-        Paint()
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 3
-          ..strokeCap = StrokeCap.round
-          ..color = AppColors.accentPrimary,
-      );
-    }
-  }
-
-  @override
-  bool shouldRepaint(_RestRingPainter oldDelegate) =>
-      oldDelegate.progress != progress;
 }

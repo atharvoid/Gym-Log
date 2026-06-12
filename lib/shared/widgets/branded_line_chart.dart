@@ -99,6 +99,10 @@ class _BrandedLineChartState extends State<BrandedLineChart> {
     // Intentional X-label density: first, last, and ~2 between.
     final labelStep = n <= 4 ? 1 : (n / 4).ceil();
 
+    // Average reference line — only meaningful with 3+ points.
+    final double? avg =
+        n >= 3 ? data.map((s) => s.value).reduce((a, b) => a + b) / n : null;
+
     return Container(
       padding: const EdgeInsets.fromLTRB(14, 16, 14, 8),
       decoration: BoxDecoration(
@@ -232,11 +236,14 @@ class _BrandedLineChartState extends State<BrandedLineChart> {
                     dotData: FlDotData(
                       show: true,
                       getDotPainter: (spot, pct, bar, i) {
-                        final last = i == spots.length - 1;
+                        // Only the SELECTED point (defaults to latest, moves
+                        // on tap) gets the emphasized ringed dot — no
+                        // permanent white ring decorating the last point.
+                        final isSelected = i == selIndex;
                         return FlDotCirclePainter(
-                          radius: last ? 5.5 : 3.5,
+                          radius: isSelected ? 5.5 : 3,
                           color: AppColors.accentPrimary,
-                          strokeWidth: last ? 2.5 : 0,
+                          strokeWidth: isSelected ? 2.5 : 0,
                           strokeColor: Colors.white,
                         );
                       },
@@ -254,6 +261,29 @@ class _BrandedLineChartState extends State<BrandedLineChart> {
                     ),
                   ),
                 ],
+                // Dashed average line — a quiet reference the eye can read
+                // each point against. Hidden for trivial 1-2 point series.
+                extraLinesData: ExtraLinesData(
+                  horizontalLines: avg == null
+                      ? const []
+                      : [
+                          HorizontalLine(
+                            y: avg,
+                            color:
+                                AppColors.textSecondary.withValues(alpha: 0.30),
+                            strokeWidth: 1,
+                            dashArray: const [4, 4],
+                            label: HorizontalLineLabel(
+                              show: true,
+                              alignment: Alignment.topRight,
+                              padding:
+                                  const EdgeInsets.only(right: 4, bottom: 2),
+                              style: RDStyles.axis,
+                              labelResolver: (_) => 'avg',
+                            ),
+                          ),
+                        ],
+                ),
               ),
             ),
           ),
