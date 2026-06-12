@@ -8,17 +8,32 @@ import 'workouts_dao.dart';
 
 part 'routines_dao.g.dart';
 
-/// Hydrated representation of a Routine with fully resolved exercise names/IDs.
-/// Used by the UI instead of raw relational rows.
+/// Title-cases a lowercase body-part string ("upper legs" -> "Upper Legs").
+String _titleCase(String s) => s
+    .split(' ')
+    .map((w) => w.isEmpty ? w : '${w[0].toUpperCase()}${w.substring(1)}')
+    .join(' ');
+
+/// Hydrated representation of a Routine with fully resolved exercise names/IDs,
+/// plus list-card metadata (distinct muscle groups + last-trained date).
 class HydratedRoutine {
   final Routine routine;
   final List<String> exerciseNames;
   final List<int> exerciseIds;
 
+  /// Distinct body parts across the routine's exercises, Title-Cased,
+  /// in first-seen order (e.g. ["Chest", "Shoulders", "Triceps"]).
+  final List<String> muscleTags;
+
+  /// Most recent COMPLETED session date for this routine, or null if never done.
+  final DateTime? lastTrained;
+
   const HydratedRoutine({
     required this.routine,
     required this.exerciseNames,
     required this.exerciseIds,
+    this.muscleTags = const [],
+    this.lastTrained,
   });
 }
 
@@ -93,7 +108,8 @@ class RoutinesDao extends DatabaseAccessor<AppDatabase>
     });
   }
 
-  Future<HydratedRoutineDetail?> getHydratedRoutineDetail(String routineId) async {
+  Future<HydratedRoutineDetail?> getHydratedRoutineDetail(
+      String routineId) async {
     final routine = await (select(routines)
           ..where((t) => t.id.equals(routineId)))
         .getSingleOrNull();
@@ -123,18 +139,29 @@ class RoutinesDao extends DatabaseAccessor<AppDatabase>
     final days = await getDaysForRoutine(routine.id);
     final names = <String>[];
     final ids = <int>[];
+    final tags = <String>{}; // LinkedHashSet — preserves first-seen order
     for (final day in days) {
       final routineExercises = await getExercisesForDay(day.id);
       for (final re in routineExercises) {
         final exercise = await db.exercisesDao.getExerciseById(re.exerciseId);
         names.add(exercise.name);
         ids.add(exercise.id);
+        if (exercise.bodyPart.isNotEmpty) {
+          tags.add(_titleCase(exercise.bodyPart));
+        }
       }
     }
+
+    // Latest completed session date for the "Last trained …" label.
+    final lastTrained =
+        await db.workoutsDao.lastTrainedForRoutine(routine.id);
+
     return HydratedRoutine(
       routine: routine,
       exerciseNames: names,
       exerciseIds: ids,
+      muscleTags: tags.toList(),
+      lastTrained: lastTrained,
     );
   }
 
@@ -146,6 +173,15 @@ class RoutinesDao extends DatabaseAccessor<AppDatabase>
 
   Future<void> updateRoutine(RoutinesCompanion routine) =>
       update(routines).replace(routine);
+
+  /// Renames a routine (targeted update — preserves all other columns + FKs).
+  Future<void> renameRoutine(String id, String name) {
+    return (update(routines)..where((t) => t.id.equals(id)))
+        .write(RoutinesCompanion(
+      name: Value(name),
+      updatedAt: Value(DateTime.now()),
+    ));
+  }
 
   Future<void> deleteRoutine(String id) =>
       (delete(routines)..where((t) => t.id.equals(id))).go();
@@ -176,7 +212,8 @@ class RoutinesDao extends DatabaseAccessor<AppDatabase>
   Future<void> deleteRoutineExercise(String id) =>
       (delete(routineExercises)..where((t) => t.id.equals(id))).go();
 
-  Future<void> saveWorkoutAsRoutine(String userId, String routineName, List<HydratedWorkoutExercise> exercises) async {
+  Future<void> saveWorkoutAsRoutine(String userId, String routineName,
+      List<HydratedWorkoutExercise> exercises) async {
     return transaction(() async {
       final routineId = const Uuid().v4();
       final now = DateTime.now();
@@ -201,7 +238,7 @@ class RoutinesDao extends DatabaseAccessor<AppDatabase>
         final setsCount = ex.sets.length;
         int? defaultReps;
         double? defaultWeightKg;
-        
+
         if (setsCount > 0) {
           defaultReps = ex.sets.first.reps;
           defaultWeightKg = ex.sets.first.weightKg;

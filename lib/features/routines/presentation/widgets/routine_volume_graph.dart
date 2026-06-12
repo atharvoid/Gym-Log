@@ -5,6 +5,9 @@ import 'package:gymlog/core/theme/app_colors.dart';
 import 'package:gymlog/core/database/daos/workouts_dao.dart';
 import 'routine_detail_styles.dart';
 
+/// Hevy-style volume chart. Dumb widget — renders only from [data].
+/// The screen owns the section header, range dropdown, and delta pill.
+/// Holds just the touched-point selection so the value header can update.
 class RoutineVolumeGraph extends StatefulWidget {
   final List<DailyVolumeSample> data;
   const RoutineVolumeGraph({super.key, required this.data});
@@ -27,7 +30,8 @@ class _RoutineVolumeGraphState extends State<RoutineVolumeGraph> {
     final data = widget.data;
     if (data.isEmpty) return _empty();
 
-    final maxV = data.map((s) => s.volume).fold<double>(0, (a, b) => a > b ? a : b);
+    final maxV =
+        data.map((s) => s.volume).fold<double>(0, (a, b) => a > b ? a : b);
     final maxY = _niceMaxY(maxV);
     final step = _step(maxV);
     final spots = [
@@ -49,6 +53,7 @@ class _RoutineVolumeGraphState extends State<RoutineVolumeGraph> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Hevy-style value header — updates on tap.
           Padding(
             padding: const EdgeInsets.only(left: 6, bottom: 12),
             child: Row(
@@ -76,10 +81,8 @@ class _RoutineVolumeGraphState extends State<RoutineVolumeGraph> {
                   show: true,
                   drawVerticalLine: false,
                   horizontalInterval: step,
-                  getDrawingHorizontalLine: (v) => FlLine(
-                    color: RDStyles.hairline,
-                    strokeWidth: 1,
-                  ),
+                  getDrawingHorizontalLine: (v) =>
+                      FlLine(color: RDStyles.hairline, strokeWidth: 1),
                 ),
                 borderData: FlBorderData(show: false),
                 titlesData: FlTitlesData(
@@ -92,15 +95,14 @@ class _RoutineVolumeGraphState extends State<RoutineVolumeGraph> {
                       showTitles: true,
                       reservedSize: 40,
                       interval: step,
-                      getTitlesWidget: (v, m) =>
-                          (v < 0 || v > maxY)
-                              ? const SizedBox.shrink()
-                              : SideTitleWidget(
-                                  axisSide: m.axisSide,
-                                  space: 8,
-                                  child: Text(v.toInt().toString(),
-                                      style: RDStyles.axis),
-                                ),
+                      getTitlesWidget: (v, m) => (v < 0 || v > maxY)
+                          ? const SizedBox.shrink()
+                          : SideTitleWidget(
+                              axisSide: m.axisSide,
+                              space: 8,
+                              child: Text(v.toInt().toString(),
+                                  style: RDStyles.axis),
+                            ),
                     ),
                   ),
                   bottomTitles: AxisTitles(
@@ -117,10 +119,8 @@ class _RoutineVolumeGraphState extends State<RoutineVolumeGraph> {
                         return SideTitleWidget(
                           axisSide: m.axisSide,
                           space: 8,
-                          child: Text(
-                            DateFormat('MMM d').format(data[i].day),
-                            style: RDStyles.axis,
-                          ),
+                          child: Text(DateFormat('MMM d').format(data[i].day),
+                              style: RDStyles.axis),
                         );
                       },
                     ),
