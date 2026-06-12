@@ -145,7 +145,7 @@ class RoutineCard extends ConsumerWidget {
                       tooltip: 'Routine options',
                       padding: EdgeInsets.zero,
                       constraints:
-                          const BoxConstraints(minWidth: 44, minHeight: 44),
+                          const BoxConstraints(minWidth: 48, minHeight: 48),
                       iconSize: 20,
                       splashRadius: 22,
                       icon: const Icon(Icons.more_horiz,

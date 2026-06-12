@@ -84,8 +84,8 @@ class WorkoutHistoryCard extends StatelessWidget {
                       color: AppColors.textSecondary,
                     ),
                     constraints: const BoxConstraints(
-                      minWidth: 44,
-                      minHeight: 44,
+                      minWidth: 48,
+                      minHeight: 48,
                     ),
                     padding: EdgeInsets.zero,
                     onPressed: onMenuPressed,

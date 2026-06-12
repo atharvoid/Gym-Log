@@ -154,7 +154,8 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
                   return Column(
                     children: [
                       _buildGraphSection(visible,
-                          showProPill: !isPremium && history.length > 3),
+                          showProPill: !isPremium && history.length > 3,
+                          isPremium: isPremium),
                       const SizedBox(height: 24),
                       _buildStatToggles(),
                       if (history.isNotEmpty) ...[
@@ -174,8 +175,11 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
     );
   }
 
+  /// Ranges deeper than 6 months are a Pro feature.
+  static const _proRanges = {'1Y', 'All Time'};
+
   Widget _buildGraphSection(List<ExerciseHistoryData> history,
-      {bool showProPill = false}) {
+      {bool showProPill = false, bool isPremium = false}) {
     final spots = history.asMap().entries.map((entry) {
       final i = entry.key;
       final e = entry.value;
@@ -208,22 +212,44 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
                 borderRadius: BorderRadius.circular(12),
               ),
               onSelected: (val) {
+                if (!isPremium && _proRanges.contains(val)) {
+                  showPremiumPaywall(context);
+                  return;
+                }
                 HapticFeedback.lightImpact();
                 setState(() => _selectedTimeRange = val);
               },
               itemBuilder: (context) => _timeRangeOptions.map((opt) {
+                final isLocked = !isPremium && _proRanges.contains(opt);
                 return PopupMenuItem(
                   value: opt,
-                  child: Text(
-                    opt,
-                    style: GoogleFonts.inter(
-                      color: _selectedTimeRange == opt
-                          ? AppColors.accentPrimary
-                          : AppColors.textPrimary,
-                      fontWeight: _selectedTimeRange == opt
-                          ? FontWeight.w700
-                          : FontWeight.w400,
-                    ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          opt,
+                          style: GoogleFonts.inter(
+                            color: _selectedTimeRange == opt
+                                ? AppColors.accentPrimary
+                                : isLocked
+                                    ? AppColors.textSecondary
+                                    : AppColors.textPrimary,
+                            fontWeight: _selectedTimeRange == opt
+                                ? FontWeight.w700
+                                : FontWeight.w400,
+                          ),
+                        ),
+                      ),
+                      if (isLocked)
+                        const Padding(
+                          padding: EdgeInsets.only(left: 12),
+                          child: Icon(
+                            Icons.lock_rounded,
+                            size: 13,
+                            color: Color(0xFFCBB2FF),
+                          ),
+                        ),
+                    ],
                   ),
                 );
               }).toList(),

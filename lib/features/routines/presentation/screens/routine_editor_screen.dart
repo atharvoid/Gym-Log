@@ -533,7 +533,7 @@ class _EditorExerciseCard extends StatelessWidget {
           ),
           IconButton(
             tooltip: 'Remove ${exercise.name}',
-            constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
+            constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
             icon: Icon(Icons.close_rounded,
                 size: 18, color: Colors.white.withValues(alpha: 0.4)),
             onPressed: onRemove,
@@ -571,7 +571,7 @@ class _StepperButton extends StatelessWidget {
             : null,
         behavior: HitTestBehavior.opaque,
         child: SizedBox(
-          width: 40,
+          width: 44,
           height: 48,
           child: Center(
             child: Container(

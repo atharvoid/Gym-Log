@@ -234,8 +234,13 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
     ref.invalidate(routineLastSetsProvider(widget.routineId));
   }
 
+  /// Ranges deeper than 6 months are a Pro feature — free users get a
+  /// subtle lock on the option itself, which opens the paywall.
+  static const _proRanges = {'1Y', 'All Time'};
+
   void _showTimeRangeSheet(BuildContext context) {
     HapticFeedback.lightImpact();
+    final isPremium = ref.read(isPremiumProvider);
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
@@ -275,11 +280,17 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
                   const SizedBox(height: 16),
                   ..._timeRangeOptions.map((range) {
                     final isSelected = range == _selectedTimeRange;
+                    final isLocked =
+                        !isPremium && _proRanges.contains(range);
                     return InkWell(
                       onTap: () {
+                        Navigator.of(sheetCtx).pop();
+                        if (isLocked) {
+                          showPremiumPaywall(context);
+                          return;
+                        }
                         HapticFeedback.selectionClick();
                         setState(() => _selectedTimeRange = range);
-                        Navigator.of(sheetCtx).pop();
                       },
                       child: Container(
                         padding: const EdgeInsets.symmetric(vertical: 14),
@@ -304,11 +315,19 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
                                       : FontWeight.w400,
                                   color: isSelected
                                       ? AppColors.accentPrimary
-                                      : AppColors.textPrimary,
+                                      : isLocked
+                                          ? AppColors.textSecondary
+                                          : AppColors.textPrimary,
                                 ),
                               ),
                             ),
-                            if (isSelected)
+                            if (isLocked)
+                              const Icon(
+                                Icons.lock_rounded,
+                                size: 14,
+                                color: Color(0xFFCBB2FF),
+                              )
+                            else if (isSelected)
                               const Icon(
                                 Icons.check_rounded,
                                 size: 18,
