@@ -3,6 +3,7 @@ import 'package:drift/drift.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../config/env.dart';
 import '../database.dart';
 import '../tables/exercises_table.dart';
 
@@ -12,9 +13,9 @@ part 'exercises_dao.g.dart';
 /// Incrementing forces all existing installs to re-run hydration on next launch.
 const _kHydrationKey = 'exercises_hydrated_v2';
 
-/// Base URL of the public Supabase storage bucket that hosts exercise GIFs.
-const _kGifBase =
-    'https://otcfigaprxfknickyrdh.supabase.co/storage/v1/object/public/excercises';
+/// Base URL of the public storage bucket that hosts exercise GIFs.
+/// Centralized in [Env] (overridable via --dart-define GIF_BUCKET_BASE).
+const _kGifBase = Env.gifBucketBase;
 
 @DriftAccessor(tables: [Exercises])
 class ExercisesDao extends DatabaseAccessor<AppDatabase>

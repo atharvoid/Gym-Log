@@ -2,11 +2,11 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'app.dart';
+import 'core/config/env.dart';
 import 'core/database/database.dart';
 import 'core/providers/database_provider.dart';
 import 'core/providers/premium_provider.dart';
@@ -27,18 +27,18 @@ void main() async {
   // 3. Set URL strategy for web (use path-based routing, not hash)
   usePathUrlStrategy();
 
-  // 4. Load environment variables. A missing .env (fresh clone, CI) must
-  //    not crash the app — auth degrades, local workout data still works.
-  try {
-    await dotenv.load(fileName: '.env');
-  } catch (e) {
-    debugPrint('[main] .env not found — Supabase auth will be unavailable.');
+  // 4. Initialize Supabase (auth only — workout data never leaves device).
+  //    Config arrives at compile time via --dart-define-from-file=.env; a
+  //    build without it (fresh clone, CI) must not crash — auth degrades,
+  //    local workout data still works.
+  if (!Env.hasSupabaseConfig) {
+    debugPrint(
+        '[main] No Supabase config in this build — auth will be unavailable. '
+        'Build with --dart-define-from-file=.env to enable sign-in.');
   }
-
-  // 5. Initialize Supabase (auth only — workout data never leaves device)
   await Supabase.initialize(
-    url: dotenv.env['SUPABASE_URL'] ?? '',
-    publishableKey: dotenv.env['SUPABASE_ANON_KEY'] ?? '',
+    url: Env.supabaseUrl,
+    publishableKey: Env.supabaseAnonKey,
   );
 
   // 6. Pre-initialize database

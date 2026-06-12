@@ -131,15 +131,18 @@ class TimeRangeFilter extends ConsumerWidget {
                             Expanded(
                               child: Text(
                                 range,
+                                // A locked row must never read as "active" —
+                                // showing the accent color AND a lock on the
+                                // same row is a contradictory affordance.
                                 style: GoogleFonts.inter(
                                   fontSize: 15,
-                                  fontWeight: isSelected
+                                  fontWeight: isSelected && !isLocked
                                       ? FontWeight.w600
                                       : FontWeight.w400,
-                                  color: isSelected
-                                      ? AppColors.accentPrimary
-                                      : isLocked
-                                          ? AppColors.textSecondary
+                                  color: isLocked
+                                      ? AppColors.textSecondary
+                                      : isSelected
+                                          ? AppColors.accentPrimary
                                           : AppColors.textPrimary,
                                 ),
                               ),

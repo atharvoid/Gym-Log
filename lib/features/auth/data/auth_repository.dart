@@ -2,6 +2,8 @@ import 'package:flutter/foundation.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../../core/config/env.dart';
+
 class AuthRepository {
   final SupabaseClient _client;
 
@@ -17,9 +19,10 @@ class AuthRepository {
       return;
     }
 
-    // Use native Google Sign-In for mobile platforms
+    // Use native Google Sign-In for mobile platforms. The server client id
+    // is a public OAuth identifier, centralized + overridable in Env.
     final GoogleSignIn googleSignIn = GoogleSignIn(
-      serverClientId: '90567853200-0o67mbmlv5qluq95q1courn77lddhcui.apps.googleusercontent.com',
+      serverClientId: Env.googleServerClientId,
     );
 
     final googleUser = await googleSignIn.signIn();
@@ -32,7 +35,10 @@ class AuthRepository {
     final accessToken = googleAuth.accessToken;
 
     if (idToken == null) {
-      debugPrint('DEBUG [GoogleSignIn]: ID Token is null. Account details: email=${googleUser.email}, displayName=${googleUser.displayName}, id=${googleUser.id}, serverAuthCode=${googleUser.serverAuthCode}');
+      // Never log account details (email/name/id are PII). The actionable
+      // signal is the misconfiguration itself.
+      debugPrint('[GoogleSignIn] No ID token returned — check that '
+          'GOOGLE_SERVER_CLIENT_ID matches the Google Cloud OAuth client.');
       throw Exception('No ID Token found');
     }
 

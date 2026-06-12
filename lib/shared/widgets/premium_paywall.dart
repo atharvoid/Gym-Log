@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:purchases_flutter/purchases_flutter.dart'
-    show Offerings, Package, PackageType;
+    show IntroductoryPrice, Offerings, Package, PackageType, PeriodUnit;
 
 import '../../core/providers/premium_provider.dart';
 import '../../core/theme/app_colors.dart';
@@ -84,12 +84,14 @@ class _PaywallSheetState extends ConsumerState<_PaywallSheet> {
   bool _purchasing = false;
   Package? _selected;
 
+  // HONESTY RULE: this list may only name things that exist in the app
+  // today. Advertising unbuilt features in a paid subscription is a
+  // Play/App Store rejection risk and a user-trust killer. The first row
+  // deliberately reaffirms what stays free.
   static const _features = [
-    (Icons.all_inclusive_rounded, 'Unlimited workouts', 'Log forever, free'),
-    (Icons.insights_rounded, 'Full analytics', 'Every chart, all of history'),
-    (Icons.ios_share_rounded, 'Export data', 'Your training, portable'),
-    (Icons.timer_outlined, 'Rest timer', 'Dialed-in recovery'),
-    (Icons.straighten_rounded, 'Body measurements', 'Track the full picture'),
+    (Icons.all_inclusive_rounded, 'Unlimited workouts', 'Free, forever'),
+    (Icons.insights_rounded, 'Full analytics history', 'Every chart, all of it'),
+    (Icons.date_range_rounded, 'All time ranges', '1Y and All Time unlocked'),
   ];
 
   @override
@@ -117,6 +119,37 @@ class _PaywallSheetState extends ConsumerState<_PaywallSheet> {
       .firstOrNull;
 
   bool get _storeReady => _monthly != null || _annual != null;
+
+  /// Free-trial intro offer on the selected package, or null. A paid intro
+  /// price (e.g. discounted first month) is NOT a free trial — claiming
+  /// "free" for it would be a store-policy violation.
+  IntroductoryPrice? get _freeTrial {
+    final intro = _selected?.storeProduct.introductoryPrice;
+    if (intro == null || intro.price > 0) return null;
+    return intro;
+  }
+
+  /// CTA + caption derive from the live offering — never hardcode trial
+  /// terms the store may not actually grant.
+  String get _ctaLabel =>
+      _freeTrial != null ? 'Start Free Trial' : 'Upgrade to Pro';
+
+  String get _ctaCaption {
+    final trial = _freeTrial;
+    if (trial == null) return 'Cancel anytime.';
+    return '${_trialLength(trial)} free, cancel anytime.';
+  }
+
+  static String _trialLength(IntroductoryPrice intro) {
+    final n = intro.periodNumberOfUnits;
+    return switch (intro.periodUnit) {
+      PeriodUnit.day => n == 1 ? '1 day' : '$n days',
+      PeriodUnit.week => '${n * 7} days',
+      PeriodUnit.month => n == 1 ? '1 month' : '$n months',
+      PeriodUnit.year => n == 1 ? '1 year' : '$n years',
+      _ => '$n days',
+    };
+  }
 
   Future<void> _purchase() async {
     final package = _selected;
@@ -311,7 +344,7 @@ class _PaywallSheetState extends ConsumerState<_PaywallSheet> {
                                 color: Colors.white, strokeWidth: 2),
                           )
                         : Text(
-                            'Start Free Trial',
+                            _ctaLabel,
                             style: GoogleFonts.inter(
                               fontSize: 16,
                               fontWeight: FontWeight.w700,
@@ -322,7 +355,7 @@ class _PaywallSheetState extends ConsumerState<_PaywallSheet> {
                 const SizedBox(height: 6),
                 Center(
                   child: Text(
-                    '7 days free, cancel anytime.',
+                    _ctaCaption,
                     style: GoogleFonts.inter(
                       fontSize: 12,
                       color: AppColors.textSecondary,
