@@ -141,7 +141,8 @@ class _SetTable extends StatelessWidget {
           padding: const EdgeInsets.only(bottom: 10),
           child: Row(
             children: [
-              Expanded(flex: 5, child: Text('SET', style: RDStyles.tableHeader)),
+              Expanded(
+                  flex: 5, child: Text('SET', style: RDStyles.tableHeader)),
               Expanded(
                 flex: 3,
                 child: Padding(
@@ -166,8 +167,7 @@ class _SetTable extends StatelessWidget {
             decoration: BoxDecoration(
               border: i == 0
                   ? null
-                  : Border(
-                      top: BorderSide(color: RDStyles.hairline, width: 1)),
+                  : Border(top: BorderSide(color: RDStyles.hairline, width: 1)),
             ),
             padding: const EdgeInsets.symmetric(vertical: 11),
             child: Row(
@@ -178,8 +178,8 @@ class _SetTable extends StatelessWidget {
                     children: [
                       SizedBox(
                         width: 20,
-                        child: Text('${sets[i].setNumber}',
-                            style: RDStyles.setNo),
+                        child:
+                            Text('${sets[i].setNumber}', style: RDStyles.setNo),
                       ),
                       const SizedBox(width: 10),
                       if (_chipFor(sets[i].setType) != null)

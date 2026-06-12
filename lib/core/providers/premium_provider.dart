@@ -1,6 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:purchases_flutter/purchases_flutter.dart'
-    show CustomerInfo;
+import 'package:purchases_flutter/purchases_flutter.dart' show CustomerInfo;
 import 'package:gymlog/core/services/premium_service.dart';
 import 'package:gymlog/features/profile/presentation/providers/profile_provider.dart';
 

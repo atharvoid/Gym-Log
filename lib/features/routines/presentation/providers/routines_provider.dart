@@ -39,10 +39,9 @@ DateTime? _sinceForRange(String range) {
 
 /// Reactive daily volume history for a routine, filterable by time range.
 /// Key: (routineId, selectedRange) — e.g. ('uuid', '3M') or ('uuid', 'All Time').
-final routineDailyVolumeProvider = StreamProvider.family<List<DailyVolumeSample>, (
-  String,
-  String
-)>((ref, args) {
+final routineDailyVolumeProvider =
+    StreamProvider.family<List<DailyVolumeSample>, (String, String)>(
+        (ref, args) {
   final (routineId, selectedRange) = args;
   final db = ref.watch(databaseProvider);
   return db.workoutsDao.watchDailyVolumeForRoutine(

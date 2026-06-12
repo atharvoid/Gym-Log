@@ -50,4 +50,17 @@ class UserDao extends DatabaseAccessor<AppDatabase> with _$UserDaoMixin {
       premiumExpiry: Value(premiumExpiry),
     ));
   }
+
+  /// Global weight-unit preference ('kg' | 'lbs'). Display-only — stored
+  /// workout data remains kilograms forever.
+  Future<void> setWeightUnit(String id, String unit) {
+    return (update(userProfiles)..where((t) => t.id.equals(id)))
+        .write(UserProfilesCompanion(weightUnit: Value(unit)));
+  }
+
+  /// Default rest-timer duration between sets.
+  Future<void> setDefaultRestSeconds(String id, int seconds) {
+    return (update(userProfiles)..where((t) => t.id.equals(id)))
+        .write(UserProfilesCompanion(defaultRestSeconds: Value(seconds)));
+  }
 }

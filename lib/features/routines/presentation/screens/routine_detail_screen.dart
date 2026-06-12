@@ -18,6 +18,7 @@ import '../../../../features/workout/domain/active_workout_state.dart';
 import '../../../../features/workout/presentation/providers/active_workout_provider.dart';
 import '../../../../shared/widgets/premium_paywall.dart';
 import '../../../../shared/widgets/ui/app_dialog.dart';
+import '../../../../shared/widgets/ui/time_range_filter.dart';
 import '../providers/routines_provider.dart';
 import '../widgets/routine_detail_styles.dart';
 import '../widgets/routine_exercise_block.dart';
@@ -41,7 +42,6 @@ class RoutineDetailScreen extends ConsumerStatefulWidget {
 class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
     with TickerProviderStateMixin {
   String _selectedTimeRange = 'All Time';
-  static const _timeRangeOptions = ['1M', '3M', '6M', '1Y', 'All Time'];
 
   late final AnimationController _entryController;
 
@@ -234,119 +234,6 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
     ref.invalidate(routineLastSetsProvider(widget.routineId));
   }
 
-  /// Ranges deeper than 6 months are a Pro feature — free users get a
-  /// subtle lock on the option itself, which opens the paywall.
-  static const _proRanges = {'1Y', 'All Time'};
-
-  void _showTimeRangeSheet(BuildContext context) {
-    HapticFeedback.lightImpact();
-    final isPremium = ref.read(isPremiumProvider);
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (sheetCtx) => Container(
-        decoration: BoxDecoration(
-          color: AppColors.bgSurface.withValues(alpha: 0.95),
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-        ),
-        child: ClipRRect(
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-            child: Padding(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Center(
-                    child: Container(
-                      width: 36,
-                      height: 4,
-                      decoration: BoxDecoration(
-                        color: AppColors.textSecondary.withValues(alpha: 0.2),
-                        borderRadius: BorderRadius.circular(2),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Time Range',
-                    style: GoogleFonts.inter(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.textPrimary,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  ..._timeRangeOptions.map((range) {
-                    final isSelected = range == _selectedTimeRange;
-                    final isLocked =
-                        !isPremium && _proRanges.contains(range);
-                    return InkWell(
-                      onTap: () {
-                        Navigator.of(sheetCtx).pop();
-                        if (isLocked) {
-                          showPremiumPaywall(context);
-                          return;
-                        }
-                        HapticFeedback.selectionClick();
-                        setState(() => _selectedTimeRange = range);
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        decoration: BoxDecoration(
-                          border: Border(
-                            bottom: BorderSide(
-                              color:
-                                  AppColors.textSecondary.withValues(alpha: 0.08),
-                              width: 1,
-                            ),
-                          ),
-                        ),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: Text(
-                                range,
-                                style: GoogleFonts.inter(
-                                  fontSize: 15,
-                                  fontWeight: isSelected
-                                      ? FontWeight.w600
-                                      : FontWeight.w400,
-                                  color: isSelected
-                                      ? AppColors.accentPrimary
-                                      : isLocked
-                                          ? AppColors.textSecondary
-                                          : AppColors.textPrimary,
-                                ),
-                              ),
-                            ),
-                            if (isLocked)
-                              const Icon(
-                                Icons.lock_rounded,
-                                size: 14,
-                                color: Color(0xFFCBB2FF),
-                              )
-                            else if (isSelected)
-                              const Icon(
-                                Icons.check_rounded,
-                                size: 18,
-                                color: AppColors.accentPrimary,
-                              ),
-                          ],
-                        ),
-                      ),
-                    );
-                  }),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final routineAsync = ref.watch(routineDetailProvider(widget.routineId));
@@ -459,32 +346,13 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
                         ),
                       ),
                       const SizedBox(height: 16),
+                      // Singular, dominant primary action — editing lives
+                      // in the three-dot sheet where it belongs.
                       Semantics(
                         button: true,
                         label: 'Start Routine',
                         child: _StartRoutineButton(
                           onTap: () => _startRoutine(routine),
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      Align(
-                        alignment: Alignment.centerRight,
-                        child: Material(
-                          color: AppColors.surfaceRaised,
-                          borderRadius: BorderRadius.circular(999),
-                          child: InkWell(
-                            borderRadius: BorderRadius.circular(999),
-                            hoverColor: const Color(0xFF1C1C1C),
-                            highlightColor: const Color(0xFF1C1C1C),
-                            onTap: _openEditor,
-                            child: Container(
-                              height: 44,
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 24),
-                              alignment: Alignment.center,
-                              child: Text('Edit Routine', style: RDStyles.editBtn),
-                            ),
-                          ),
                         ),
                       ),
                       const SizedBox(height: 24),
@@ -521,13 +389,10 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
                                   padding: EdgeInsets.only(right: 10),
                                   child: ProLockPill(label: 'FULL HISTORY'),
                                 ),
-                              Semantics(
-                                label: 'Time range filter',
-                                button: true,
-                                child: _TimeFilterTapTarget(
-                                  value: _selectedTimeRange,
-                                  onTap: () => _showTimeRangeSheet(context),
-                                ),
+                              TimeRangeFilter(
+                                value: _selectedTimeRange,
+                                onChanged: (range) =>
+                                    setState(() => _selectedTimeRange = range),
                               ),
                             ],
                           ),
@@ -595,6 +460,13 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
                       child: RoutineExerciseBlock(
                         hydratedExercise: exercise,
                         lastSets: sets,
+                        onTap: () {
+                          HapticFeedback.selectionClick();
+                          context.push(
+                            '/exercise/detail/${exercise.exercise.id}',
+                            extra: exercise.exercise,
+                          );
+                        },
                         isLoadingHistory: isLoadingHistory,
                         isLast: index == routine.exercises.length - 1,
                       ),
@@ -608,8 +480,7 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
             // ── Add Exercise ─────────────────────────────────────────────
             SliverToBoxAdapter(
               child: Padding(
-                padding:
-                    const EdgeInsets.fromLTRB(16, 20, 16, 0),
+                padding: const EdgeInsets.fromLTRB(16, 20, 16, 0),
                 child: Material(
                   color: AppColors.surfaceRaised,
                   borderRadius: BorderRadius.circular(14),
@@ -832,42 +703,6 @@ class _StartRoutineButtonState extends State<_StartRoutineButton> {
               ),
             ),
           ),
-        ),
-      ),
-    );
-  }
-}
-
-class _TimeFilterTapTarget extends StatelessWidget {
-  final String value;
-  final VoidCallback onTap;
-
-  const _TimeFilterTapTarget({required this.value, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      behavior: HitTestBehavior.opaque,
-      child: Container(
-        constraints: const BoxConstraints(minHeight: 44),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          color: AppColors.surfaceRaised,
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(value, style: RDStyles.rangePill),
-            const SizedBox(width: 4),
-            const Icon(
-              Icons.keyboard_arrow_down_rounded,
-              size: 16,
-              color: Color(0xFF9CA3AF),
-            ),
-          ],
         ),
       ),
     );

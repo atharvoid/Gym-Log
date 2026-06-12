@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:gymlog/core/theme/app_colors.dart';
+import 'package:gymlog/features/routines/presentation/widgets/routine_detail_styles.dart';
 import 'package:gymlog/shared/widgets/ui/tracker_card.dart';
 import 'package:gymlog/shared/widgets/ui/primary_button.dart';
 import 'package:gymlog/shared/widgets/ui/action_bottom_sheet.dart';
@@ -52,8 +53,8 @@ class HomeScreen extends ConsumerWidget {
       );
     }
 
-    // itemCount: [QuickStart] + [WeekStrip] + [Header] + [N cards] + [footer]
-    final itemCount = 3 + totalItems + 1;
+    // itemCount: [QuickStart] + [Header+WeekStrip] + [N cards] + [footer]
+    final itemCount = 2 + totalItems + 1;
 
     return Scaffold(
       backgroundColor: AppColors.bgBase,
@@ -65,8 +66,14 @@ class HomeScreen extends ConsumerWidget {
           // ── 0: Quick Start card ──────────────────────────────────────────
           if (index == 0) {
             return Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: TrackerCard(
+              padding: const EdgeInsets.only(bottom: 20),
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  gradient: RDStyles.cardGradient,
+                  borderRadius: BorderRadius.circular(18),
+                  border: RDStyles.hairlineBorder,
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -93,27 +100,30 @@ class HomeScreen extends ConsumerWidget {
             );
           }
 
-          // ── 1: Streak / weekly strip ─────────────────────────────────────
+          // ── 1: Section header + week-at-a-glance ─────────────────────────
           if (index == 1) {
-            return const _WeekStrip();
-          }
-
-          // ── 2: Section header ────────────────────────────────────────────
-          if (index == 2) {
             return Padding(
               padding: const EdgeInsets.only(bottom: 12),
-              child: Text(
-                'Workout History',
-                style: GoogleFonts.inter(
-                  color: AppColors.textPrimary,
-                  fontSize: 20,
-                  fontWeight: FontWeight.w700,
-                ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Expanded(
+                    child: Text(
+                      'Workout History',
+                      style: GoogleFonts.inter(
+                        color: AppColors.textPrimary,
+                        fontSize: 20,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                  const _WeekStrip(),
+                ],
               ),
             );
           }
 
-          final historyIndex = index - 3;
+          final historyIndex = index - 2;
 
           // ── 3..N+2: History cards ────────────────────────────────────────
           if (historyIndex < totalItems) {
@@ -219,7 +229,8 @@ class HomeScreen extends ConsumerWidget {
           onTap: (sheetContext) async {
             Navigator.of(sheetContext).pop();
             final db = ref.read(databaseProvider);
-            final hydrated = await db.workoutsDao.getHydratedWorkout(session.id);
+            final hydrated =
+                await db.workoutsDao.getHydratedWorkout(session.id);
             if (hydrated == null) return;
             if (!context.mounted) return;
             HapticFeedback.selectionClick();
@@ -257,9 +268,8 @@ class HomeScreen extends ConsumerWidget {
   }
 }
 
-/// Slim streak + weekly-goal line between Quick Start and the feed.
-/// Renders nothing until there is at least one completed workout —
-/// no dead gray blocks for brand-new users.
+/// Week-at-a-glance chip living inside the Workout History header — clear
+/// hierarchy, no orphaned strips. Hidden until the first completed workout.
 class _WeekStrip extends ConsumerWidget {
   const _WeekStrip();
 
@@ -269,48 +279,49 @@ class _WeekStrip extends ConsumerWidget {
     final goal = ref.watch(weeklyGoalProvider);
 
     if (streak.currentStreak == 0 && streak.workoutsThisWeek == 0) {
-      return const SizedBox(height: 8);
+      return const SizedBox.shrink();
     }
 
     final goalMet = streak.workoutsThisWeek >= goal;
 
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 20, left: 4, right: 4, top: 2),
-      child: Row(
-        children: [
-          if (streak.currentStreak > 0) ...[
-            const Icon(Icons.local_fire_department_rounded,
-                size: 15, color: Color(0xFFFF9F0A)),
-            const SizedBox(width: 5),
-            Text(
-              '${streak.currentStreak}-day streak',
-              style: GoogleFonts.inter(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                color: AppColors.textPrimary,
-              ),
-            ),
-            Text(
-              '  ·  ',
-              style: GoogleFonts.inter(
-                  fontSize: 13, color: AppColors.textSecondary),
-            ),
-          ],
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (streak.currentStreak > 0) ...[
+          const Icon(Icons.local_fire_department_rounded,
+              size: 14, color: Color(0xFFFF9F0A)),
+          const SizedBox(width: 3),
           Text(
-            '${streak.workoutsThisWeek}/$goal this week',
+            '${streak.currentStreak}',
             style: GoogleFonts.inter(
               fontSize: 13,
-              fontWeight: goalMet ? FontWeight.w600 : FontWeight.w400,
-              color: goalMet ? AppColors.success : AppColors.textSecondary,
+              fontWeight: FontWeight.w700,
+              color: AppColors.textPrimary,
+              fontFeatures: const [FontFeature.tabularFigures()],
             ),
           ),
-          if (goalMet) ...[
-            const SizedBox(width: 4),
-            const Icon(Icons.check_circle_rounded,
-                size: 14, color: AppColors.success),
-          ],
+          Text(
+            '  ·  ',
+            style:
+                GoogleFonts.inter(fontSize: 12, color: AppColors.textSecondary),
+          ),
         ],
-      ),
+        Icon(
+          goalMet ? Icons.check_circle_rounded : Icons.flag_rounded,
+          size: 13,
+          color: goalMet ? AppColors.success : AppColors.textSecondary,
+        ),
+        const SizedBox(width: 4),
+        Text(
+          '${streak.workoutsThisWeek}/$goal',
+          style: GoogleFonts.inter(
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+            color: goalMet ? AppColors.success : AppColors.textSecondary,
+            fontFeatures: const [FontFeature.tabularFigures()],
+          ),
+        ),
+      ],
     );
   }
 }

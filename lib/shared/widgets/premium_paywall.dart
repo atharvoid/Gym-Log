@@ -128,8 +128,7 @@ class _PaywallSheetState extends ConsumerState<_PaywallSheet> {
       final info =
           await ref.read(premiumServiceProvider).purchasePackage(package);
       if (!mounted) return;
-      if (info != null &&
-          info.entitlements.active.isNotEmpty) {
+      if (info != null && info.entitlements.active.isNotEmpty) {
         HapticFeedback.heavyImpact();
         Navigator.of(context).pop();
         _snack('Welcome to GymLog Pro — everything is unlocked.');
@@ -160,8 +159,8 @@ class _PaywallSheetState extends ConsumerState<_PaywallSheet> {
 
   void _snack(String message) {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text(message,
-          style: GoogleFonts.inter(color: AppColors.textPrimary)),
+      content:
+          Text(message, style: GoogleFonts.inter(color: AppColors.textPrimary)),
       backgroundColor: AppColors.bgSurface,
       behavior: SnackBarBehavior.floating,
     ));

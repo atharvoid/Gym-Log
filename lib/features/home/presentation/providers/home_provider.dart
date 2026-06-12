@@ -85,7 +85,8 @@ class WorkoutHistoryNotifier extends StateNotifier<WorkoutHistoryState> {
     if (user == null) return;
 
     // Refresh at least one page, but keep everything already on screen.
-    final target = state.items.length < _pageSize ? _pageSize : state.items.length;
+    final target =
+        state.items.length < _pageSize ? _pageSize : state.items.length;
 
     try {
       final db = _ref.read(databaseProvider);

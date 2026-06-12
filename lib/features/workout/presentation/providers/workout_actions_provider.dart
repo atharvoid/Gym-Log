@@ -20,11 +20,13 @@ class WorkoutActionsNotifier extends StateNotifier<AsyncValue<void>> {
     }
   }
 
-  Future<void> saveWorkoutAsRoutine(HydratedWorkout workout, String routineName) async {
+  Future<void> saveWorkoutAsRoutine(
+      HydratedWorkout workout, String routineName) async {
     state = const AsyncValue.loading();
     try {
       final db = _ref.read(databaseProvider);
-      await db.routinesDao.saveWorkoutAsRoutine(workout.session.userId, routineName, workout.exercises);
+      await db.routinesDao.saveWorkoutAsRoutine(
+          workout.session.userId, routineName, workout.exercises);
       state = const AsyncValue.data(null);
     } catch (e, st) {
       state = AsyncValue.error(e, st);

@@ -1,14 +1,21 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
+import 'package:gymlog/core/providers/settings_provider.dart';
 import 'package:gymlog/core/theme/app_colors.dart';
+import 'package:gymlog/core/utils/units.dart';
 import 'package:gymlog/features/workout/presentation/providers/active_workout_provider.dart';
+import 'package:gymlog/features/workout/presentation/providers/rest_timer_provider.dart';
 import 'package:gymlog/features/workout/presentation/providers/workout_timer_provider.dart';
 import 'package:gymlog/shared/widgets/ui/primary_button.dart';
 import 'package:gymlog/core/database/database.dart';
-import 'package:gymlog/shared/widgets/ui/secondary_button.dart';
 import 'package:gymlog/shared/widgets/ui/app_dialog.dart';
+import 'package:gymlog/shared/widgets/ui/secondary_button.dart';
+import 'package:gymlog/shared/widgets/ui/time_range_filter.dart';
 import 'package:gymlog/features/exercises/presentation/screens/exercise_selection_screen.dart';
 import 'package:gymlog/features/exercises/presentation/providers/exercises_provider.dart';
 import '../widgets/exercise_block.dart';
@@ -32,6 +39,7 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
       isDestructive: true,
     );
     if (confirmed && mounted) {
+      ref.read(restTimerProvider.notifier).skip();
       ref.read(activeWorkoutProvider.notifier).discardWorkout();
       Navigator.pop(context);
     }
@@ -62,6 +70,7 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
       if (!confirmed) return;
     }
 
+    ref.read(restTimerProvider.notifier).skip();
     final prs = await ref.read(activeWorkoutProvider.notifier).finishWorkout();
     if (!mounted) return;
 
@@ -79,69 +88,131 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
     if (mounted) context.go('/');
   }
 
+  /// Toggle completion; when a set flips TO complete in a live session,
+  /// auto-start the rest countdown.
+  void _toggleSet(int exerciseIndex, int setIndex, {required bool isEditing}) {
+    final workout = ref.read(activeWorkoutProvider);
+    if (workout == null) return;
+    final wasCompleted =
+        workout.exercises[exerciseIndex].sets[setIndex].isCompleted;
+
+    ref
+        .read(activeWorkoutProvider.notifier)
+        .toggleSetCompletion(exerciseIndex, setIndex);
+
+    if (!wasCompleted && !isEditing) {
+      final seconds = ref.read(defaultRestSecondsProvider);
+      if (seconds > 0) {
+        ref.read(restTimerProvider.notifier).start(seconds);
+      }
+    }
+  }
+
+  Future<void> _pickUnit(int exerciseId) async {
+    final globalUnit = ref.read(weightUnitProvider);
+    final current = ref.read(exerciseUnitProvider(exerciseId));
+    final selected = await showBrandedPickerSheet<String>(
+      context: context,
+      title: 'Weight Unit',
+      selected: current,
+      options: [
+        const PickerOption(
+          value: 'kg',
+          label: 'Kilograms',
+          subtitle: 'kg',
+          icon: Icons.fitness_center_rounded,
+          color: AppColors.textPrimary,
+        ),
+        const PickerOption(
+          value: 'lbs',
+          label: 'Pounds',
+          subtitle: 'lbs',
+          icon: Icons.fitness_center_rounded,
+          color: Color(0xFFB98CFF),
+        ),
+        PickerOption(
+          value: '_default',
+          label: 'Use app default',
+          subtitle: 'Currently $globalUnit — change in Settings',
+          icon: Icons.settings_backup_restore_rounded,
+          color: AppColors.textSecondary,
+        ),
+      ],
+    );
+    if (selected == null) return;
+    await ref
+        .read(unitOverridesProvider.notifier)
+        .setOverride(exerciseId, selected == '_default' ? null : selected);
+  }
+
   @override
   Widget build(BuildContext context) {
     final workout = ref.watch(activeWorkoutProvider);
     final notifier = ref.read(activeWorkoutProvider.notifier);
     final timer = ref.watch(workoutTimerProvider);
     final exercisesAsync = ref.watch(exerciseListProvider);
+    final restTimer = ref.watch(restTimerProvider);
+    final globalUnit = ref.watch(weightUnitProvider);
     final isEditing = workout?.originalSessionId != null;
+
+    // Live investment readout — the session gets visibly more valuable
+    // with every completed set.
+    final (volumeKg, completedSets) = notifier.sessionTotals;
 
     return Scaffold(
       backgroundColor: AppColors.bgBase,
       body: Column(
         children: [
-          // Header
+          // ── Header ────────────────────────────────────────────────────
           Container(
-            color: AppColors.bgSurface,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: const BoxDecoration(
+              color: AppColors.bgBase,
+              border: Border(
+                bottom: BorderSide(color: AppColors.borderSubtle, width: 0.5),
+              ),
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
             child: SafeArea(
               bottom: false,
               child: Row(
                 children: [
-                  // Discard
                   IconButton(
                     tooltip: 'Discard workout',
                     icon: const Icon(Icons.close, color: AppColors.textPrimary),
                     onPressed: _confirmDiscard,
                   ),
                   const Spacer(),
-                  // Timer / Edit Title
-                  if (isEditing)
-                    Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          'Edit Workout',
-                          style: GoogleFonts.inter(
-                            color: AppColors.textPrimary,
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                          ),
+                  Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        isEditing ? 'Edit Workout' : timer,
+                        style: GoogleFonts.inter(
+                          color: AppColors.textPrimary,
+                          fontSize: isEditing ? 16 : 19,
+                          fontWeight: FontWeight.w700,
+                          fontFeatures: const [FontFeature.tabularFigures()],
                         ),
-                        Text(
-                          timer,
-                          style: GoogleFonts.inter(
-                            color: AppColors.textSecondary,
-                            fontSize: 13,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
-                    )
-                  else
-                    Text(
-                      timer,
-                      style: GoogleFonts.inter(
-                        color: AppColors.textPrimary,
-                        fontSize: 20,
-                        fontWeight: FontWeight.w700,
                       ),
-                    ),
+                      const SizedBox(height: 1),
+                      Text(
+                        isEditing
+                            ? timer
+                            : completedSets == 0
+                                ? 'Log your first set'
+                                : '${groupThousands(kgToDisplay(volumeKg, globalUnit))} $globalUnit · $completedSets set${completedSets != 1 ? 's' : ''}',
+                        style: GoogleFonts.inter(
+                          color: AppColors.textSecondary,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                          fontFeatures: const [FontFeature.tabularFigures()],
+                        ),
+                      ),
+                    ],
+                  ),
                   const Spacer(),
-                  // Finish / Save Changes
                   PrimaryButton(
-                    label: isEditing ? 'Save Changes' : 'Finish',
+                    label: isEditing ? 'Save' : 'Finish',
                     onPressed: isEditing ? _saveChanges : _finish,
                     isFullWidth: false,
                   ),
@@ -150,12 +221,12 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
             ),
           ),
 
-          // Body
+          // ── Body ──────────────────────────────────────────────────────
           Expanded(
             child: workout == null
-                ? const Center(child: SizedBox.shrink())
+                ? const SizedBox.shrink()
                 : ListView.builder(
-                    padding: const EdgeInsets.only(top: 8, bottom: 120.0),
+                    padding: const EdgeInsets.only(top: 8, bottom: 140.0),
                     itemCount: workout.exercises.length + 1,
                     itemBuilder: (context, index) {
                       if (index == workout.exercises.length) {
@@ -167,8 +238,7 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
                           child: SecondaryButton(
                             label: '+ Add Exercise',
                             onPressed: () async {
-                              final selected =
-                                  await Navigator.push<Exercise>(
+                              final selected = await Navigator.push<Exercise>(
                                 context,
                                 MaterialPageRoute(
                                   builder: (_) =>
@@ -177,9 +247,7 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
                               );
                               if (selected != null && mounted) {
                                 notifier.addExercise(
-                                  selected.id,
-                                  selected.name,
-                                );
+                                    selected.id, selected.name);
                               }
                             },
                           ),
@@ -188,52 +256,46 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
 
                       final exercise = workout.exercises[index];
                       final driftEx = exercisesAsync.maybeWhen(
-                        data: (list) => list.firstWhere(
-                          (e) => e.id == exercise.exerciseId,
-                          orElse: () => Exercise(
-                            id: exercise.exerciseId,
-                            name: exercise.name,
-                            bodyPart: '',
-                            equipment: '',
-                            target: '',
-                            isCustom: false,
-                          ),
-                        ),
-                        orElse: () => Exercise(
-                          id: exercise.exerciseId,
-                          name: exercise.name,
-                          bodyPart: '',
-                          equipment: '',
-                          target: '',
-                          isCustom: false,
-                        ),
+                        data: (list) => list
+                            .where((e) => e.id == exercise.exerciseId)
+                            .firstOrNull,
+                        orElse: () => null,
                       );
+                      final unit =
+                          ref.watch(exerciseUnitProvider(exercise.exerciseId));
+
                       return ExerciseBlock(
                         key: ValueKey(exercise.id),
                         exerciseIndex: index,
                         exercise: exercise,
                         driftExercise: driftEx,
+                        unit: unit,
                         onRemove: () => notifier.removeExercise(index),
+                        onMoveUp: index > 0
+                            ? () => notifier.moveExercise(index, -1)
+                            : null,
+                        onMoveDown: index < workout.exercises.length - 1
+                            ? () => notifier.moveExercise(index, 1)
+                            : null,
+                        onUnitTap: () => _pickUnit(exercise.exerciseId),
                         onReplace: () async {
                           final selected = await Navigator.push<Exercise>(
                             context,
                             MaterialPageRoute(
-                              builder: (_) =>
-                                  const ExerciseSelectionScreen(),
+                              builder: (_) => const ExerciseSelectionScreen(),
                             ),
                           );
                           if (selected != null && mounted) {
                             notifier.replaceExercise(
-                              index,
-                              selected.id,
-                              selected.name,
-                            );
+                                index, selected.id, selected.name);
                           }
                         },
                         onAddSet: () => notifier.addSet(index),
+                        onRemoveSet: (setIdx) =>
+                            notifier.removeSet(index, setIdx),
                         onSetChanged: (updatedSet) {
-                          final setIdx =
-                              exercise.sets.indexWhere((s) => s.id == updatedSet.id);
+                          final setIdx = exercise.sets
+                              .indexWhere((s) => s.id == updatedSet.id);
                           if (setIdx != -1) {
                             notifier.updateSet(
                               index,
@@ -245,13 +307,204 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
                           }
                         },
                         onToggleSetCompletion: (setIdx) =>
-                            notifier.toggleSetCompletion(index, setIdx),
+                            _toggleSet(index, setIdx, isEditing: isEditing),
                       );
                     },
                   ),
           ),
         ],
       ),
+
+      // ── Rest timer — the 90-second heartbeat of the session ───────────
+      bottomNavigationBar: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 240),
+        switchInCurve: Curves.easeOutCubic,
+        switchOutCurve: Curves.easeInCubic,
+        transitionBuilder: (child, animation) => SizeTransition(
+          sizeFactor: animation,
+          child: SlideTransition(
+            position: Tween<Offset>(
+              begin: const Offset(0, 1),
+              end: Offset.zero,
+            ).animate(animation),
+            child: child,
+          ),
+        ),
+        child: restTimer == null
+            ? const SizedBox.shrink(key: ValueKey('noRest'))
+            : _RestTimerBar(key: const ValueKey('rest'), state: restTimer),
+      ),
     );
   }
+}
+
+// ── Rest timer bar ────────────────────────────────────────────────────────────
+
+class _RestTimerBar extends ConsumerWidget {
+  final RestTimerState state;
+
+  const _RestTimerBar({super.key, required this.state});
+
+  String get _label {
+    final m = state.remainingSeconds ~/ 60;
+    final s = state.remainingSeconds % 60;
+    return '$m:${s.toString().padLeft(2, '0')}';
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final notifier = ref.read(restTimerProvider.notifier);
+
+    return SafeArea(
+      top: false,
+      child: Container(
+        margin: const EdgeInsets.fromLTRB(16, 8, 16, 10),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Color(0xFF15101D), Color(0xFF0B0B0D)],
+          ),
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(
+            color: AppColors.accentPrimary.withValues(alpha: 0.30),
+          ),
+        ),
+        child: Row(
+          children: [
+            SizedBox(
+              width: 34,
+              height: 34,
+              child: CustomPaint(
+                painter: _RestRingPainter(progress: state.progress),
+                child: const Center(
+                  child: Icon(Icons.timer_outlined,
+                      size: 14, color: Color(0xFFCBB2FF)),
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'REST',
+                  style: GoogleFonts.inter(
+                    fontSize: 9.5,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 1.0,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+                Text(
+                  _label,
+                  style: GoogleFonts.inter(
+                    fontSize: 19,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.textPrimary,
+                    fontFeatures: const [FontFeature.tabularFigures()],
+                  ),
+                ),
+              ],
+            ),
+            const Spacer(),
+            _RestAction(
+              label: '+15s',
+              onTap: () {
+                HapticFeedback.selectionClick();
+                notifier.addSeconds(15);
+              },
+            ),
+            const SizedBox(width: 8),
+            _RestAction(
+              label: 'Skip',
+              emphasized: true,
+              onTap: () {
+                HapticFeedback.lightImpact();
+                notifier.skip();
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _RestAction extends StatelessWidget {
+  final String label;
+  final bool emphasized;
+  final VoidCallback onTap;
+
+  const _RestAction({
+    required this.label,
+    this.emphasized = false,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: emphasized
+          ? AppColors.accentPrimary.withValues(alpha: 0.16)
+          : Colors.white.withValues(alpha: 0.06),
+      borderRadius: BorderRadius.circular(999),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(999),
+        onTap: onTap,
+        child: Container(
+          constraints: const BoxConstraints(minHeight: 40),
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          alignment: Alignment.center,
+          child: Text(
+            label,
+            style: GoogleFonts.inter(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color:
+                  emphasized ? const Color(0xFFCBB2FF) : AppColors.textPrimary,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _RestRingPainter extends CustomPainter {
+  final double progress;
+  _RestRingPainter({required this.progress});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width / 2, size.height / 2);
+    final radius = size.width / 2 - 2;
+
+    canvas.drawCircle(
+      center,
+      radius,
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 3
+        ..color = Colors.white.withValues(alpha: 0.10),
+    );
+    if (progress > 0) {
+      canvas.drawArc(
+        Rect.fromCircle(center: center, radius: radius),
+        -math.pi / 2,
+        2 * math.pi * progress,
+        false,
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 3
+          ..strokeCap = StrokeCap.round
+          ..color = AppColors.accentPrimary,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(_RestRingPainter oldDelegate) =>
+      oldDelegate.progress != progress;
 }

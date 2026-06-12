@@ -226,10 +226,28 @@ class WorkoutsDao extends DatabaseAccessor<AppDatabase>
       ..where(workoutSessions.userId.equals(userId) &
           workoutSessions.endedAt.isNotNull())
       ..orderBy([OrderingTerm.desc(workoutSessions.startedAt)]);
-    return query
+    return query.watch().map(
+        (rows) => rows.map((r) => r.read(workoutSessions.startedAt)!).toList());
+  }
+
+  /// Most recently trained exercise ids, newest first — powers the
+  /// "Recent" section at the top of the exercise library.
+  Stream<List<int>> watchRecentExerciseIds(String userId, {int limit = 8}) {
+    return customSelect(
+      '''
+      SELECT we.exercise_id, MAX(s.started_at) AS last_used
+      FROM workout_exercises we
+      JOIN workout_sessions s ON s.id = we.session_id
+      WHERE s.user_id = ? AND s.ended_at IS NOT NULL
+      GROUP BY we.exercise_id
+      ORDER BY last_used DESC
+      LIMIT ?
+      ''',
+      variables: [Variable.withString(userId), Variable.withInt(limit)],
+      readsFrom: {workoutSessions, workoutExercises},
+    )
         .watch()
-        .map((rows) =>
-            rows.map((r) => r.read(workoutSessions.startedAt)!).toList());
+        .map((rows) => rows.map((r) => r.read<int>('exercise_id')).toList());
   }
 
   /// Per-session (date, duration, volume, reps) for the Profile chart.
@@ -340,7 +358,7 @@ class WorkoutsDao extends DatabaseAccessor<AppDatabase>
       SELECT cur.ex_id AS for_exercise,
              ws.id, ws.workout_exercise_id, ws.exercise_id, ws.order_index,
              ws.set_type, ws.weight_kg, ws.reps, ws.rpe, ws.is_pr,
-             ws.estimated_1rm, ws.completed_at
+             ws.estimated1rm, ws.completed_at
       FROM (SELECT DISTINCT exercise_id AS ex_id FROM workout_exercises
             WHERE exercise_id IN ($placeholders)) AS cur
       JOIN workout_exercises we
@@ -376,7 +394,9 @@ class WorkoutsDao extends DatabaseAccessor<AppDatabase>
             reps: r.read<int>('reps'),
             rpe: r.read<double?>('rpe'),
             isPr: r.read<bool>('is_pr'),
-            estimated1rm: r.read<double?>('estimated_1rm'),
+            // NB: drift's snake_case mapping does NOT split before digits —
+            // the generated column is `estimated1rm`, not `estimated_1rm`.
+            estimated1rm: r.read<double?>('estimated1rm'),
             completedAt: r.read<DateTime?>('completed_at'),
           ));
     }
@@ -877,8 +897,7 @@ class WorkoutsDao extends DatabaseAccessor<AppDatabase>
   /// "Last trained …" label on the routines list. Null if never completed.
   Future<DateTime?> lastTrainedForRoutine(String routineId) async {
     final session = await (select(workoutSessions)
-          ..where(
-              (t) => t.routineId.equals(routineId) & t.endedAt.isNotNull())
+          ..where((t) => t.routineId.equals(routineId) & t.endedAt.isNotNull())
           ..orderBy([(t) => OrderingTerm.desc(t.startedAt)])
           ..limit(1))
         .getSingleOrNull();

@@ -67,8 +67,9 @@ class _PrCelebrationState extends State<_PrCelebration>
     super.dispose();
   }
 
-  String _fmtKg(double kg) =>
-      kg == kg.truncateToDouble() ? kg.toInt().toString() : kg.toStringAsFixed(1);
+  String _fmtKg(double kg) => kg == kg.truncateToDouble()
+      ? kg.toInt().toString()
+      : kg.toStringAsFixed(1);
 
   @override
   Widget build(BuildContext context) {
@@ -130,8 +131,7 @@ class _PrCelebrationState extends State<_PrCelebration>
                         shape: BoxShape.circle,
                         color: AppColors.accentPrimary.withValues(alpha: 0.16),
                         border: Border.all(
-                          color:
-                              AppColors.accentPrimary.withValues(alpha: 0.4),
+                          color: AppColors.accentPrimary.withValues(alpha: 0.4),
                         ),
                       ),
                       child: const Icon(
@@ -174,8 +174,7 @@ class _PrCelebrationState extends State<_PrCelebration>
                                   padding: const EdgeInsets.symmetric(
                                       horizontal: 14, vertical: 12),
                                   decoration: BoxDecoration(
-                                    color:
-                                        Colors.white.withValues(alpha: 0.04),
+                                    color: Colors.white.withValues(alpha: 0.04),
                                     borderRadius: BorderRadius.circular(14),
                                   ),
                                   child: Row(
@@ -200,8 +199,7 @@ class _PrCelebrationState extends State<_PrCelebration>
                                               '${_fmtKg(pr.weightKg)} kg × ${pr.reps} reps',
                                               style: GoogleFonts.inter(
                                                 fontSize: 12.5,
-                                                color:
-                                                    AppColors.textSecondary,
+                                                color: AppColors.textSecondary,
                                               ),
                                             ),
                                           ],

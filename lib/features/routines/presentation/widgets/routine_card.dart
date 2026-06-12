@@ -31,6 +31,17 @@ class RoutineCard extends ConsumerWidget {
     this.lastTrained,
   });
 
+  /// Stable accent derived from the routine's primary muscle group, so
+  /// "Push Day" and "Leg Day" are tinted differently forever.
+  Color get _glyphColor {
+    if (muscleTags.isEmpty) return const Color(0xFFB98CFF);
+    final index =
+        muscleTags.first.hashCode.abs() % AppColors.muscleSplitPalette.length;
+    final base = AppColors.muscleSplitPalette[index];
+    // Lighten dark palette entries for legibility on near-black.
+    return Color.lerp(base, Colors.white, 0.35)!;
+  }
+
   String _relative(DateTime d) {
     final diff = DateTime.now().difference(d);
     if (diff.inDays < 1) return 'today';
@@ -94,19 +105,26 @@ class RoutineCard extends ConsumerWidget {
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // Differentiated glyph: routine initial tinted by its
+                    // primary muscle group — every card identifiable at a
+                    // glance, no generic dumbbell noise.
                     Container(
                       width: 44,
                       height: 44,
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
-                        color: AppColors.surfaceRaised,
+                        color: _glyphColor.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(12),
-                        border: RDStyles.hairlineBorder,
                       ),
-                      child: const Icon(
-                        Icons.fitness_center_rounded,
-                        size: 21,
-                        color: Color(0xFFB98CFF),
+                      child: Text(
+                        routineName.isNotEmpty
+                            ? routineName[0].toUpperCase()
+                            : 'R',
+                        style: GoogleFonts.inter(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                          color: _glyphColor,
+                        ),
                       ),
                     ),
                     const SizedBox(width: 13),
@@ -269,7 +287,8 @@ class _StartPill extends StatelessWidget {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.play_arrow_rounded, size: 16, color: Colors.white),
+              const Icon(Icons.play_arrow_rounded,
+                  size: 16, color: Colors.white),
               const SizedBox(width: 5),
               Text(
                 'Start',

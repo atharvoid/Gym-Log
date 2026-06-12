@@ -9,7 +9,6 @@ import 'package:gymlog/core/database/daos/workouts_dao.dart';
 import 'package:gymlog/core/database/database.dart';
 import 'package:gymlog/core/providers/database_provider.dart';
 import 'package:gymlog/shared/widgets/exercise_gif_widget.dart';
-import 'package:gymlog/shared/widgets/ui/tracker_card.dart';
 import 'package:gymlog/shared/widgets/ui/action_bottom_sheet.dart';
 import 'package:gymlog/shared/widgets/ui/app_dialog.dart';
 import '../providers/workout_detail_provider.dart';
@@ -38,8 +37,8 @@ class WorkoutDetailScreen extends ConsumerWidget {
       backgroundColor: AppColors.bgBase,
       body: workoutAsync.when(
         loading: _buildLoading,
-        error:   (e, _) => _buildError(e),
-        data:    (workout) {
+        error: (e, _) => _buildError(context, ref),
+        data: (workout) {
           if (workout == null) return _buildNotFound();
           return _buildScrollView(context, ref, workout);
         },
@@ -50,36 +49,94 @@ class WorkoutDetailScreen extends ConsumerWidget {
   // ── State shells ─────────────────────────────────────────────────────────────
 
   Widget _buildLoading() => const Scaffold(
-    backgroundColor: AppColors.bgBase,
-    body: Center(
-      child: CircularProgressIndicator(
-        color: AppColors.accentPrimary,
-        strokeWidth: 2,
-      ),
-    ),
-  );
-
-  Widget _buildError(Object e) => Scaffold(
-    backgroundColor: AppColors.bgBase,
-    body: Center(
-      child: TrackerCard(
-        child: Text(
-          'Could not load workout.',
-          style: GoogleFonts.inter(color: AppColors.error, fontSize: 14),
+        backgroundColor: AppColors.bgBase,
+        body: Center(
+          child: CircularProgressIndicator(
+            color: AppColors.accentPrimary,
+            strokeWidth: 2,
+          ),
         ),
-      ),
-    ),
-  );
+      );
+
+  Widget _buildError(BuildContext context, WidgetRef ref) => Scaffold(
+        backgroundColor: AppColors.bgBase,
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 52,
+                  height: 52,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: AppColors.accentPrimary.withValues(alpha: 0.14),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: const Icon(Icons.cloud_off_rounded,
+                      color: Color(0xFFB98CFF), size: 24),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  "Couldn't load this workout",
+                  style: GoogleFonts.inter(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  'Your data is safe on this device. Give it another try.',
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.inter(
+                    fontSize: 13.5,
+                    height: 1.5,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Material(
+                  color: AppColors.accentPrimary,
+                  borderRadius: BorderRadius.circular(999),
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(999),
+                    onTap: () {
+                      HapticFeedback.lightImpact();
+                      ref.invalidate(workoutDetailProvider(sessionId));
+                    },
+                    child: Container(
+                      height: 44,
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      alignment: Alignment.center,
+                      child: Text(
+                        'Retry',
+                        style: GoogleFonts.inter(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
 
   Widget _buildNotFound() => Scaffold(
-    backgroundColor: AppColors.bgBase,
-    body: Center(
-      child: Text(
-        'Workout not found',
-        style: GoogleFonts.inter(color: AppColors.textSecondary, fontSize: 15),
-      ),
-    ),
-  );
+        backgroundColor: AppColors.bgBase,
+        body: Center(
+          child: Text(
+            'Workout not found',
+            style:
+                GoogleFonts.inter(color: AppColors.textSecondary, fontSize: 15),
+          ),
+        ),
+      );
 
   // ── Main scroll view ─────────────────────────────────────────────────────────
 
@@ -88,24 +145,39 @@ class WorkoutDetailScreen extends ConsumerWidget {
     WidgetRef ref,
     HydratedWorkout workout,
   ) {
-    final session     = workout.session;
-    final name        = getWorkoutNameFallback(session.startedAt, session.name);
-    final durationStr = formatWorkoutDuration(session.startedAt, session.endedAt);
-    final totalSets   = workout.exercises.fold<int>(0, (s, e) => s + e.sets.length);
-    final volumeStr   = _formatVolume(session.totalVolumeKg);
+    final session = workout.session;
+    final name = getWorkoutNameFallback(session.startedAt, session.name);
+    final durationStr =
+        formatWorkoutDuration(session.startedAt, session.endedAt);
+    final totalSets =
+        workout.exercises.fold<int>(0, (s, e) => s + e.sets.length);
+    final volumeStr = _formatVolume(session.totalVolumeKg);
 
     // Format date string: "Mon, 5 Jun 2026"
     final dt = session.startedAt;
     const weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-    const months   = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-    final dateStr  = '${weekdays[dt.weekday - 1]}, ${dt.day} ${months[dt.month - 1]} ${dt.year}';
+    const months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec'
+    ];
+    final dateStr =
+        '${weekdays[dt.weekday - 1]}, ${dt.day} ${months[dt.month - 1]} ${dt.year}';
 
     // Muscle split — sets-per-target share, sums to 100%
     final muscleSetCounts = <String, int>{};
     for (final ex in workout.exercises) {
       final target = ex.exerciseMetadata.target;
-      muscleSetCounts[target] =
-          (muscleSetCounts[target] ?? 0) + ex.sets.length;
+      muscleSetCounts[target] = (muscleSetCounts[target] ?? 0) + ex.sets.length;
     }
 
     return CustomScrollView(
@@ -166,7 +238,9 @@ class WorkoutDetailScreen extends ConsumerWidget {
     HydratedWorkout workout,
   ) async {
     final defaultName = '${workout.session.name ?? 'Custom'} Routine';
-    await ref.read(workoutActionsProvider.notifier).saveWorkoutAsRoutine(workout, defaultName);
+    await ref
+        .read(workoutActionsProvider.notifier)
+        .saveWorkoutAsRoutine(workout, defaultName);
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -215,7 +289,8 @@ class WorkoutDetailScreen extends ConsumerWidget {
           onTap: (sheetContext) async {
             Navigator.of(sheetContext).pop();
             final db = ref.read(databaseProvider);
-            final hydrated = await db.workoutsDao.getHydratedWorkout(workout.session.id);
+            final hydrated =
+                await db.workoutsDao.getHydratedWorkout(workout.session.id);
             if (hydrated == null) return;
             if (!context.mounted) return;
             HapticFeedback.lightImpact();
@@ -362,7 +437,8 @@ class _HeroSliver extends StatelessWidget {
                             width: 36,
                             height: 36,
                             decoration: BoxDecoration(
-                              color: AppColors.accentPrimary.withValues(alpha: 0.15),
+                              color: AppColors.accentPrimary
+                                  .withValues(alpha: 0.15),
                               shape: BoxShape.circle,
                             ),
                             child: Center(
@@ -424,7 +500,8 @@ class _HeroSliver extends StatelessWidget {
                       Row(
                         children: [
                           Flexible(
-                            child: _HeroPip(value: durationStr, label: 'DURATION'),
+                            child:
+                                _HeroPip(value: durationStr, label: 'DURATION'),
                           ),
                           _HeroPip.dot,
                           Flexible(
@@ -447,8 +524,6 @@ class _HeroSliver extends StatelessWidget {
     );
   }
 }
-
-
 
 /// A single value + label pip used in the expanded hero background.
 class _HeroPip extends StatelessWidget {
@@ -550,16 +625,18 @@ class _MuscleSplitSection extends StatelessWidget {
             spacing: 12,
             runSpacing: 4,
             children: sorted.asMap().entries.map((entry) {
-              final rank  = entry.key;
-              final name  = entry.value.key;
+              final rank = entry.key;
+              final name = entry.value.key;
               final count = entry.value.value;
-              final pct   = ((count / totalSets) * 100).round();
-              final color = AppColors.muscleSplitPalette[rank.clamp(0, AppColors.muscleSplitPalette.length - 1)];
+              final pct = ((count / totalSets) * 100).round();
+              final color = AppColors.muscleSplitPalette[
+                  rank.clamp(0, AppColors.muscleSplitPalette.length - 1)];
               return Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Container(
-                    width: 8, height: 8,
+                    width: 8,
+                    height: 8,
                     decoration: BoxDecoration(
                       color: color,
                       borderRadius: BorderRadius.circular(2),
@@ -588,9 +665,10 @@ class _MuscleSplitSection extends StatelessWidget {
               height: 8,
               child: Row(
                 children: sorted.asMap().entries.map((entry) {
-                  final rank  = entry.key;
+                  final rank = entry.key;
                   final count = entry.value.value;
-                  final color = AppColors.muscleSplitPalette[rank.clamp(0, AppColors.muscleSplitPalette.length - 1)];
+                  final color = AppColors.muscleSplitPalette[
+                      rank.clamp(0, AppColors.muscleSplitPalette.length - 1)];
                   return Expanded(
                     flex: count,
                     child: Container(
@@ -622,8 +700,8 @@ class _DetailExerciseCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final exercise     = hydratedExercise.exerciseMetadata;
-    final sets         = hydratedExercise.sets;
+    final exercise = hydratedExercise.exerciseMetadata;
+    final sets = hydratedExercise.sets;
     final previousSets = hydratedExercise.previousSets;
 
     // Show VS PREV column only when this exercise has been logged before.
@@ -631,7 +709,8 @@ class _DetailExerciseCard extends StatelessWidget {
     final hasPrevHistory = previousSets.isNotEmpty;
 
     return GestureDetector(
-      onTap: () => context.push('/exercise/detail/${exercise.id}', extra: exercise),
+      onTap: () =>
+          context.push('/exercise/detail/${exercise.id}', extra: exercise),
       child: Container(
         margin: const EdgeInsets.fromLTRB(16, 0, 16, 12),
         decoration: BoxDecoration(
@@ -805,7 +884,7 @@ class _DetailSetRow extends StatelessWidget {
 
   Widget _buildSetTypeIndicator() {
     final setType = set.setType.toLowerCase();
-    
+
     switch (setType) {
       case 'warmup':
         return _buildPill(
@@ -973,10 +1052,11 @@ class _DeltaChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isPositive = delta > 0;
-    final color      = isPositive ? _kAccentPos : AppColors.textSecondary;
-    final sign       = isPositive ? '+' : '';
-    final abs        = delta.abs();
-    final label      = '$sign${abs == abs.truncateToDouble() ? abs.toInt() : abs.toStringAsFixed(1)} kg';
+    final color = isPositive ? _kAccentPos : AppColors.textSecondary;
+    final sign = isPositive ? '+' : '';
+    final abs = delta.abs();
+    final label =
+        '$sign${abs == abs.truncateToDouble() ? abs.toInt() : abs.toStringAsFixed(1)} kg';
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
@@ -1011,7 +1091,8 @@ class _PrBadge extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.emoji_events_rounded, size: 11, color: AppColors.warning),
+          const Icon(Icons.emoji_events_rounded,
+              size: 11, color: AppColors.warning),
           const SizedBox(width: 3),
           Text(
             'PR',
@@ -1027,5 +1108,3 @@ class _PrBadge extends StatelessWidget {
     );
   }
 }
-
-

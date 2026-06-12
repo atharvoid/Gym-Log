@@ -1,5 +1,3 @@
-
-
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:gymlog/core/theme/app_colors.dart';
@@ -46,7 +44,9 @@ class RDStyles {
   static TextStyle chartValue = GoogleFonts.inter(
       fontSize: 22, fontWeight: FontWeight.w700, color: Colors.white);
   static TextStyle chartDate = GoogleFonts.inter(
-      fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.accentPrimary);
+      fontSize: 15,
+      fontWeight: FontWeight.w600,
+      color: AppColors.accentPrimary);
   static TextStyle axis = GoogleFonts.inter(
       fontSize: 10,
       fontWeight: FontWeight.w500,

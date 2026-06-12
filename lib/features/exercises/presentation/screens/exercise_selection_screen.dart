@@ -3,15 +3,46 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:gymlog/core/providers/database_provider.dart';
 import 'package:gymlog/core/theme/app_colors.dart';
+import 'package:gymlog/core/database/database.dart';
+import 'package:gymlog/features/auth/presentation/providers/auth_provider.dart';
 import 'package:gymlog/shared/widgets/exercise_gif_widget.dart';
 import '../providers/exercises_provider.dart';
 
-/// Exercise list with live search.
+/// Live recent-exercise ids from workout history.
+final _recentExerciseIdsProvider = StreamProvider.autoDispose<List<int>>((ref) {
+  final user = ref.watch(authProvider);
+  if (user == null) return Stream.value(const []);
+  final db = ref.watch(databaseProvider);
+  return db.workoutsDao.watchRecentExerciseIds(user.id);
+});
+
+/// Muscle-group buckets → exercise.bodyPart values.
+const _muscleGroups = <String, List<String>>{
+  'Chest': ['chest'],
+  'Back': ['back'],
+  'Legs': ['upper legs', 'lower legs'],
+  'Shoulders': ['shoulders'],
+  'Arms': ['upper arms', 'lower arms'],
+  'Core': ['waist'],
+};
+
+/// Equipment buckets → matcher over exercise.equipment.
+final _equipmentGroups = <String, bool Function(String)>{
+  'Barbell': (e) => e.contains('barbell') || e.contains('trap bar'),
+  'Dumbbell': (e) => e.contains('dumbbell'),
+  'Machine': (e) => e.contains('machine'),
+  'Cable': (e) => e.contains('cable'),
+  'Body Weight': (e) =>
+      e.contains('body weight') || e.contains('assisted') || e == 'weighted',
+};
+
+/// Exercise list with live search, Recent section, and combinable
+/// Muscle / Equipment filters.
 ///
 /// Two modes, one screen:
-///  * Selection (default): tapping pops with the chosen [Exercise] —
-///    used by Active Workout and the Routine editor.
+///  * Selection (default): tapping pops with the chosen [Exercise].
 ///  * Browse (`browse: true`, route `/exercises/library`): tapping opens
 ///    the exercise detail with charts, records and form instructions.
 class ExerciseSelectionScreen extends ConsumerStatefulWidget {
@@ -27,6 +58,8 @@ class ExerciseSelectionScreen extends ConsumerStatefulWidget {
 class _ExerciseSelectionScreenState
     extends ConsumerState<ExerciseSelectionScreen> {
   final _searchController = TextEditingController();
+  String? _muscleFilter;
+  String? _equipmentFilter;
 
   @override
   void dispose() {
@@ -34,9 +67,118 @@ class _ExerciseSelectionScreenState
     super.dispose();
   }
 
+  bool _matchesFilters(Exercise e) {
+    if (_muscleFilter != null &&
+        !_muscleGroups[_muscleFilter]!.contains(e.bodyPart)) {
+      return false;
+    }
+    if (_equipmentFilter != null &&
+        !_equipmentGroups[_equipmentFilter]!(e.equipment.toLowerCase())) {
+      return false;
+    }
+    return true;
+  }
+
+  Future<void> _pickFilter({
+    required String title,
+    required List<String> options,
+    required String? current,
+    required ValueChanged<String?> onSelected,
+  }) async {
+    HapticFeedback.lightImpact();
+    final result = await showModalBottomSheet<String?>(
+      context: context,
+      useRootNavigator: true,
+      backgroundColor: Colors.transparent,
+      builder: (sheetCtx) => Container(
+        decoration: const BoxDecoration(
+          color: Color(0xFF121212),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        child: SafeArea(
+          top: false,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 36,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF6A6A6A),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                const SizedBox(height: 18),
+                Text(
+                  title,
+                  style: GoogleFonts.inter(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                for (final option in ['All', ...options])
+                  InkWell(
+                    onTap: () {
+                      HapticFeedback.selectionClick();
+                      Navigator.of(sheetCtx)
+                          .pop(option == 'All' ? '__all__' : option);
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 13),
+                      decoration: BoxDecoration(
+                        border: Border(
+                          bottom: BorderSide(
+                            color:
+                                AppColors.textSecondary.withValues(alpha: 0.08),
+                          ),
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              option,
+                              style: GoogleFonts.inter(
+                                fontSize: 15,
+                                fontWeight: (option == current ||
+                                        (option == 'All' && current == null))
+                                    ? FontWeight.w600
+                                    : FontWeight.w400,
+                                color: (option == current ||
+                                        (option == 'All' && current == null))
+                                    ? AppColors.accentPrimary
+                                    : AppColors.textPrimary,
+                              ),
+                            ),
+                          ),
+                          if (option == current ||
+                              (option == 'All' && current == null))
+                            const Icon(Icons.check_rounded,
+                                size: 18, color: AppColors.accentPrimary),
+                        ],
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+    if (result != null) {
+      onSelected(result == '__all__' ? null : result);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final exercisesAsync = ref.watch(exerciseListProvider);
+    final recentIds = ref.watch(_recentExerciseIdsProvider).valueOrNull ?? [];
+    final isSearching = _searchController.text.trim().isNotEmpty;
 
     return Scaffold(
       backgroundColor: AppColors.bgBase,
@@ -54,9 +196,9 @@ class _ExerciseSelectionScreenState
       ),
       body: Column(
         children: [
-          // Search Bar
+          // ── Search ─────────────────────────────────────────────────────
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 10),
             child: TextField(
               controller: _searchController,
               style: GoogleFonts.inter(color: AppColors.textPrimary),
@@ -74,16 +216,66 @@ class _ExerciseSelectionScreenState
                 contentPadding: const EdgeInsets.symmetric(horizontal: 16),
               ),
               onChanged: (query) {
+                setState(() {}); // refresh isSearching
                 ref.read(exerciseListProvider.notifier).search(query);
               },
             ),
           ),
 
-          // Exercise List
+          // ── Filters ────────────────────────────────────────────────────
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
+            child: Row(
+              children: [
+                _FilterChipButton(
+                  label: _muscleFilter ?? 'Muscle',
+                  active: _muscleFilter != null,
+                  onTap: () => _pickFilter(
+                    title: 'Muscle Group',
+                    options: _muscleGroups.keys.toList(),
+                    current: _muscleFilter,
+                    onSelected: (v) => setState(() => _muscleFilter = v),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                _FilterChipButton(
+                  label: _equipmentFilter ?? 'Equipment',
+                  active: _equipmentFilter != null,
+                  onTap: () => _pickFilter(
+                    title: 'Equipment',
+                    options: _equipmentGroups.keys.toList(),
+                    current: _equipmentFilter,
+                    onSelected: (v) => setState(() => _equipmentFilter = v),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // ── List ───────────────────────────────────────────────────────
           Expanded(
             child: exercisesAsync.when(
               data: (exercises) {
-                if (exercises.isEmpty) {
+                final filtered = exercises.where(_matchesFilters).toList();
+
+                // Recent section: only without an active search; respects
+                // filters; excluded from the alphabetical catalog below.
+                final recent = <Exercise>[];
+                if (!isSearching && recentIds.isNotEmpty) {
+                  final byId = {for (final e in filtered) e.id: e};
+                  for (final id in recentIds) {
+                    final e = byId[id];
+                    if (e != null) recent.add(e);
+                  }
+                }
+                final recentIdSet = {for (final e in recent) e.id};
+                final catalog = filtered
+                    .where((e) => !recentIdSet.contains(e.id))
+                    .toList()
+                  ..sort((a, b) =>
+                      a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+
+                if (recent.isEmpty && catalog.isEmpty) {
                   return Center(
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
@@ -93,23 +285,58 @@ class _ExerciseSelectionScreenState
                             color: Colors.white.withValues(alpha: 0.25)),
                         const SizedBox(height: 10),
                         Text(
-                          'No exercises found',
+                          'No exercises match',
+                          style: GoogleFonts.inter(
+                            color: AppColors.textPrimary,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 3),
+                        Text(
+                          'Try clearing a filter or changing the search.',
                           style: GoogleFonts.inter(
                             color: AppColors.textSecondary,
-                            fontSize: 14,
+                            fontSize: 12.5,
                           ),
                         ),
                       ],
                     ),
                   );
                 }
+
+                final items = <_ListItem>[
+                  if (recent.isNotEmpty) ...[
+                    const _ListItem.header('RECENT'),
+                    ...recent.map(_ListItem.exercise),
+                    const _ListItem.header('ALL EXERCISES'),
+                  ],
+                  ...catalog.map(_ListItem.exercise),
+                ];
+
                 return ListView.builder(
                   padding: const EdgeInsets.only(bottom: 32),
-                  itemCount: exercises.length,
+                  itemCount: items.length,
                   itemBuilder: (context, index) {
-                    final exercise = exercises[index];
+                    final item = items[index];
+                    if (item.headerLabel != null) {
+                      return Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 14, 16, 6),
+                        child: Text(
+                          item.headerLabel!,
+                          style: GoogleFonts.inter(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            letterSpacing: 0.8,
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                      );
+                    }
+                    final exercise = item.exerciseValue!;
                     return ListTile(
-                      key: ValueKey(exercise.id),
+                      key:
+                          ValueKey('${item.headerLabel}_${exercise.id}_$index'),
                       leading: RepaintBoundary(
                         child: ExerciseGifWidget(
                           gifUrl: exercise.gifUrl,
@@ -171,6 +398,73 @@ class _ExerciseSelectionScreenState
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _ListItem {
+  final String? headerLabel;
+  final Exercise? exerciseValue;
+
+  const _ListItem.header(this.headerLabel) : exerciseValue = null;
+  const _ListItem.exercise(this.exerciseValue) : headerLabel = null;
+}
+
+class _FilterChipButton extends StatelessWidget {
+  final String label;
+  final bool active;
+  final VoidCallback onTap;
+
+  const _FilterChipButton({
+    required this.label,
+    required this.active,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      button: true,
+      label: '$label filter${active ? ', active' : ''}',
+      child: GestureDetector(
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 150),
+          constraints: const BoxConstraints(minHeight: 38),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+          decoration: BoxDecoration(
+            color: active
+                ? AppColors.accentPrimary.withValues(alpha: 0.14)
+                : AppColors.surfaceRaised,
+            borderRadius: BorderRadius.circular(999),
+            border: active
+                ? Border.all(
+                    color: AppColors.accentPrimary.withValues(alpha: 0.45))
+                : null,
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                label,
+                style: GoogleFonts.inter(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color:
+                      active ? const Color(0xFFCBB2FF) : AppColors.textPrimary,
+                ),
+              ),
+              const SizedBox(width: 4),
+              Icon(
+                Icons.keyboard_arrow_down_rounded,
+                size: 16,
+                color:
+                    active ? const Color(0xFFCBB2FF) : AppColors.textSecondary,
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

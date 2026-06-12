@@ -222,8 +222,7 @@ class _RoutineEditorScreenState extends ConsumerState<RoutineEditorScreen> {
                           fontWeight: FontWeight.w700,
                           color: _canSave
                               ? AppColors.accentPrimary
-                              : AppColors.textSecondary
-                                  .withValues(alpha: 0.5),
+                              : AppColors.textSecondary.withValues(alpha: 0.5),
                         ),
                       ),
               ),
@@ -269,8 +268,7 @@ class _RoutineEditorScreenState extends ConsumerState<RoutineEditorScreen> {
                     child: _exercises.isEmpty
                         ? _EmptyEditorState(onAdd: _addExercises)
                         : ReorderableListView.builder(
-                            padding:
-                                const EdgeInsets.fromLTRB(16, 8, 16, 120),
+                            padding: const EdgeInsets.fromLTRB(16, 8, 16, 120),
                             itemCount: _exercises.length,
                             proxyDecorator: (child, _, animation) =>
                                 AnimatedBuilder(

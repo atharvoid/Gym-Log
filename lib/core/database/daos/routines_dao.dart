@@ -126,8 +126,7 @@ class RoutinesDao extends DatabaseAccessor<AppDatabase>
     final exerciseRows = await _exercisesForRoutines(ids);
 
     // Batch 2: last-trained per routine.
-    final lastTrainedById =
-        await db.workoutsDao.lastTrainedForRoutines(ids);
+    final lastTrainedById = await db.workoutsDao.lastTrainedForRoutines(ids);
 
     return [
       for (final routine in routineList)
@@ -169,10 +168,10 @@ class RoutinesDao extends DatabaseAccessor<AppDatabase>
       List<String> routineIds) async {
     if (routineIds.isEmpty) return {};
     final rows = await (select(routineExercises).join([
-      innerJoin(routineDays,
-          routineDays.id.equalsExp(routineExercises.routineDayId)),
-      innerJoin(db.exercises,
-          db.exercises.id.equalsExp(routineExercises.exerciseId)),
+      innerJoin(
+          routineDays, routineDays.id.equalsExp(routineExercises.routineDayId)),
+      innerJoin(
+          db.exercises, db.exercises.id.equalsExp(routineExercises.exerciseId)),
     ])
           ..where(routineDays.routineId.isIn(routineIds))
           ..orderBy([
@@ -210,8 +209,7 @@ class RoutinesDao extends DatabaseAccessor<AppDatabase>
           .getSingleOrNull();
       if (routine == null) return null;
       final exercises = await _exercisesForRoutines([routineId]);
-      final lastTrained =
-          await db.workoutsDao.lastTrainedForRoutine(routineId);
+      final lastTrained = await db.workoutsDao.lastTrainedForRoutine(routineId);
       return _assembleHydratedRoutine(
         routine,
         exercises[routineId] ?? const [],
@@ -434,8 +432,7 @@ class RoutinesDao extends DatabaseAccessor<AppDatabase>
             exerciseId: ex.exerciseMetadata.id,
             defaultSets: ex.sets.isNotEmpty ? ex.sets.length : 3,
             defaultReps: ex.sets.isNotEmpty ? ex.sets.first.reps : null,
-            defaultWeightKg:
-                ex.sets.isNotEmpty ? ex.sets.first.weightKg : null,
+            defaultWeightKg: ex.sets.isNotEmpty ? ex.sets.first.weightKg : null,
           ),
       ],
     ).then((_) {});

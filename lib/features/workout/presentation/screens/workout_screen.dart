@@ -107,15 +107,32 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
               orElse: () => const SizedBox.shrink(),
             ),
 
-            // ── Primary action ───────────────────────────────────────────
-            _ActionButton(
-              label: 'New Routine',
-              icon: Icons.add_rounded,
-              primary: true,
-              onTap: () {
-                HapticFeedback.lightImpact();
-                context.push('/routines/edit');
-              },
+            // ── Action row: New (primary) + Explore (catalog) ────────────
+            Row(
+              children: [
+                Expanded(
+                  child: _ActionButton(
+                    label: 'New Routine',
+                    icon: Icons.add_rounded,
+                    primary: true,
+                    onTap: () {
+                      HapticFeedback.lightImpact();
+                      context.push('/routines/edit');
+                    },
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _ActionButton(
+                    label: 'Explore',
+                    icon: Icons.explore_outlined,
+                    onTap: () {
+                      HapticFeedback.lightImpact();
+                      context.push('/routines/explore');
+                    },
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 22),
 

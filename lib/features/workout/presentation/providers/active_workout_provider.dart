@@ -293,6 +293,46 @@ class ActiveWorkoutNotifier extends StateNotifier<ActiveWorkoutState?> {
     exercises.removeAt(exerciseIndex);
     state = state!.copyWith(exercises: exercises);
   }
+
+  /// Removes a single set (swipe-to-delete). Keeps at least the list valid —
+  /// an exercise with zero sets simply shows its "+ Add Set" footer.
+  void removeSet(int exerciseIndex, int setIndex) {
+    if (state == null) return;
+    final exercises = [...state!.exercises];
+    final exercise = exercises[exerciseIndex];
+    if (setIndex < 0 || setIndex >= exercise.sets.length) return;
+    final sets = [...exercise.sets]..removeAt(setIndex);
+    exercises[exerciseIndex] = exercise.copyWith(sets: sets);
+    state = state!.copyWith(exercises: exercises);
+  }
+
+  /// Moves an exercise up (-1) or down (+1) in the session order.
+  void moveExercise(int exerciseIndex, int direction) {
+    if (state == null) return;
+    final target = exerciseIndex + direction;
+    final exercises = [...state!.exercises];
+    if (target < 0 || target >= exercises.length) return;
+    final item = exercises.removeAt(exerciseIndex);
+    exercises.insert(target, item);
+    state = state!.copyWith(exercises: exercises);
+  }
+
+  /// Live investment readout for the header: (volumeKg, completedSets).
+  (double, int) get sessionTotals {
+    final current = state;
+    if (current == null) return (0, 0);
+    double volume = 0;
+    var sets = 0;
+    for (final ex in current.exercises) {
+      for (final set in ex.sets) {
+        if (set.isCompleted) {
+          volume += set.weightKg * set.reps;
+          sets++;
+        }
+      }
+    }
+    return (volume, sets);
+  }
 }
 
 final activeWorkoutProvider =
