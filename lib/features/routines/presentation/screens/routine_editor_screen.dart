@@ -482,11 +482,16 @@ class _EditorExerciseCard extends StatelessWidget {
               children: [
                 Text(
                   exercise.name,
-                  maxLines: 1,
+                  // Two lines before truncating — the trailing stepper + remove
+                  // controls squeeze this column hard, and "Barbell Ben…" at
+                  // ~12 chars made rows ambiguous (three barbell presses in a
+                  // row were indistinguishable).
+                  maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: GoogleFonts.inter(
                     fontSize: 14.5,
                     fontWeight: FontWeight.w600,
+                    height: 1.2,
                     color: AppColors.textPrimary,
                   ),
                 ),

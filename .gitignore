@@ -42,5 +42,12 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 
-
+# Secrets — injected at build time via --dart-define-from-file=.env.
+# NEVER commit, NEVER list as a flutter asset.
 .env
+
+# Local agent/dev tooling — must not ship in the repo
+node_modules/
+package.json
+package-lock.json
+android_backup/

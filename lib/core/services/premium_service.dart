@@ -3,9 +3,9 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart' show PlatformException;
 import 'package:flutter/widgets.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
 
+import '../config/env.dart';
 import '../database/database.dart';
 
 /// Thin, crash-proof wrapper around RevenueCat.
@@ -19,7 +19,8 @@ import '../database/database.dart';
 ///   * No RC types leak into widgets except through [customerInfoStream]
 ///     and the paywall (which needs Offerings/Package for live pricing).
 ///
-/// Expected .env keys (never hardcoded, never committed):
+/// Expected compile-time config (via --dart-define-from-file=.env,
+/// never hardcoded, never committed — see lib/core/config/env.dart):
 ///   REVENUECAT_ANDROID_KEY / REVENUECAT_IOS_KEY
 ///
 /// Expected dashboard setup (manual):
@@ -50,8 +51,8 @@ class PremiumService with WidgetsBindingObserver {
           defaultTargetPlatform == TargetPlatform.iOS);
 
   String? get _apiKey => defaultTargetPlatform == TargetPlatform.android
-      ? dotenv.env['REVENUECAT_ANDROID_KEY']
-      : dotenv.env['REVENUECAT_IOS_KEY'];
+      ? Env.revenueCatAndroidKey
+      : Env.revenueCatIosKey;
 
   /// Configures the SDK. Safe to call on any platform — degrades to a no-op
   /// when unsupported or when API keys are absent.

@@ -32,6 +32,10 @@ final appTheme = ThemeData(
   appBarTheme: AppBarTheme(
     backgroundColor: AppColors.bgBase,
     elevation: 0,
+    // Kill M3's scroll-under tint: on OLED black it renders as a faint
+    // purple-grey band behind the title the moment content scrolls under.
+    scrolledUnderElevation: 0,
+    surfaceTintColor: Colors.transparent,
     centerTitle: false,
     iconTheme: const IconThemeData(color: AppColors.textPrimary),
     titleTextStyle: GoogleFonts.inter(

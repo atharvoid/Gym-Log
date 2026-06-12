@@ -22,37 +22,54 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 /// Why flutter_cache_manager?
 ///   It shares the same on-disk cache as CachedNetworkImage (both use
 ///   DefaultCacheManager), so the GIF bytes are never re-downloaded.
+///
+/// Resource discipline:
+///   * Frames are decoded at a bounded [_kMaxDecodeWidth] — the static branch
+///     only ever renders list thumbnails (≤64dp), so decoding a source GIF at
+///     full resolution wastes CPU and native memory for zero visual gain.
+///   * Every intermediate [ui.Image] and the [ui.Codec] are disposed on ALL
+///     paths (success, early-return, exception) via try/finally. Undisposed
+///     codecs pin native buffers until a GC finalizer eventually runs.
+
+/// Upper bound for decoded frame width. 360 physical px covers a 120dp
+/// thumbnail at 3x — comfortably above anything the static branch renders.
+const _kMaxDecodeWidth = 360;
 
 final gifLastFrameProvider =
     FutureProvider.family<MemoryImage?, String>((ref, gifUrl) async {
+  ui.Codec? codec;
+  ui.Image? lastFrame;
   try {
-    // ── 1. Pull bytes from the shared on-disk cache ───────────────────────────
+    // ── 1. Pull bytes from the shared on-disk cache ───────────────────────
     // getSingleFile returns the cached file if available, otherwise downloads.
     final file = await DefaultCacheManager().getSingleFile(gifUrl);
     final Uint8List bytes = await file.readAsBytes();
 
-    // ── 2. Decode with dart:ui codec ─────────────────────────────────────────
+    // ── 2. Decode with dart:ui codec, capped at thumbnail scale ───────────
     // instantiateImageCodec understands GIF animation natively and exposes
     // frameCount so we can seek precisely to the last frame.
-    final ui.Codec codec = await ui.instantiateImageCodec(bytes);
+    codec = await ui.instantiateImageCodec(
+      bytes,
+      targetWidth: _kMaxDecodeWidth,
+      allowUpscaling: false, // small sources decode at native size
+    );
 
     if (codec.frameCount == 0) return null;
 
-    // ── 3. Advance to the last frame ──────────────────────────────────────────
-    ui.FrameInfo frameInfo = await codec.getNextFrame();
-    for (int i = 1; i < codec.frameCount; i++) {
-      frameInfo = await codec.getNextFrame();
+    // ── 3. Advance to the last frame, releasing every frame we skip ───────
+    for (int i = 0; i < codec.frameCount; i++) {
+      lastFrame?.dispose();
+      final ui.FrameInfo frameInfo = await codec.getNextFrame();
+      lastFrame = frameInfo.image;
     }
 
-    // ── 4. Encode last frame → PNG bytes → MemoryImage ────────────────────────
-    // toByteData with PNG format gives us a self-contained, lossless snapshot
-    // of the last frame that Image.memory can display without a codec.
-    final ByteData? byteData = await frameInfo.image
-        .toByteData(format: ui.ImageByteFormat.png);
+    // ── 4. Encode last frame → PNG bytes → MemoryImage ────────────────────
+    // PNG gives a self-contained, lossless snapshot Image.memory can display
+    // without holding a codec, and keeps the Riverpod cache entry compact.
+    final ByteData? byteData =
+        await lastFrame!.toByteData(format: ui.ImageByteFormat.png);
 
     if (byteData == null) return null;
-
-    codec.dispose();
 
     return MemoryImage(byteData.buffer.asUint8List());
   } catch (e, st) {
@@ -62,5 +79,8 @@ final gifLastFrameProvider =
       '  Error: $e\n$st',
     );
     return null;
+  } finally {
+    lastFrame?.dispose();
+    codec?.dispose();
   }
 });

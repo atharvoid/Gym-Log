@@ -1,12 +1,27 @@
+import java.io.FileInputStream
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
 }
 
+// ── Release signing ──────────────────────────────────────────────────────────
+// Real keystore credentials live in android/key.properties (gitignored — see
+// android/key.properties.example). When the file is absent the release build
+// falls back to debug signing so `flutter run --release` keeps working on dev
+// machines, but such an APK/AAB must NEVER be uploaded to Play.
+val keystoreProperties = Properties()
+val keystorePropertiesFile = rootProject.file("key.properties")
+val hasReleaseKeystore = keystorePropertiesFile.exists()
+if (hasReleaseKeystore) {
+    keystoreProperties.load(FileInputStream(keystorePropertiesFile))
+}
+
 android {
     namespace = "com.drifs.gymlog"
-    compileSdk = 36 // <-- FORCED TO 34 (Required for modern plugins)
+    compileSdk = 36
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
@@ -15,13 +30,27 @@ android {
     }
 
     defaultConfig {
-        // This MUST match exactly what you put in Google Cloud Console
-        applicationId = "com.drifs.gymlog" 
-        
-        minSdk = flutter.minSdkVersion // <-- HARDCODED TO 23
-        targetSdk = 34 // <-- FORCED TO 34
+        // Must match the OAuth configuration in Google Cloud Console.
+        applicationId = "com.drifs.gymlog"
+
+        minSdk = flutter.minSdkVersion
+        // Play requires new submissions/updates to target API 35+.
+        // Manual QA note: API 35 enforces edge-to-edge — verify system bars
+        // over the OLED-black UI on an Android 15 device before release.
+        targetSdk = 35
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+    }
+
+    signingConfigs {
+        if (hasReleaseKeystore) {
+            create("release") {
+                keyAlias = keystoreProperties["keyAlias"] as String
+                keyPassword = keystoreProperties["keyPassword"] as String
+                storeFile = file(keystoreProperties["storeFile"] as String)
+                storePassword = keystoreProperties["storePassword"] as String
+            }
+        }
     }
 
     buildTypes {
@@ -36,8 +65,15 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = if (hasReleaseKeystore) {
+                signingConfigs.getByName("release")
+            } else {
+                logger.warn(
+                    "WARNING: android/key.properties not found — release build " +
+                        "is DEBUG-SIGNED and must not be published."
+                )
+                signingConfigs.getByName("debug")
+            }
         }
     }
 }

@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:gymlog/core/providers/database_provider.dart';
 import 'package:gymlog/core/providers/premium_provider.dart';
 import 'package:gymlog/core/providers/settings_provider.dart';
+import 'package:gymlog/core/services/workout_export_service.dart';
 import 'package:gymlog/core/theme/app_colors.dart';
 import 'package:gymlog/features/auth/presentation/providers/auth_provider.dart';
 import 'package:gymlog/features/profile/presentation/providers/profile_provider.dart';
@@ -12,9 +14,17 @@ import 'package:gymlog/features/routines/presentation/widgets/routine_detail_sty
 import 'package:gymlog/shared/widgets/premium_paywall.dart';
 import 'package:gymlog/shared/widgets/ui/app_dialog.dart';
 import 'package:gymlog/shared/widgets/ui/time_range_filter.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 /// App version shown in Settings — bumped with each release.
 const kAppVersion = '1.0.0';
+
+/// Legal documents — hosted in the repo so they version with the app.
+const kPrivacyPolicyUrl =
+    'https://github.com/atharvoid/Gym-Log/blob/main/docs/legal/PRIVACY_POLICY.md';
+const kTermsOfServiceUrl =
+    'https://github.com/atharvoid/Gym-Log/blob/main/docs/legal/TERMS_OF_SERVICE.md';
 
 /// Weekly-goal picker, shared by Settings and the Profile goal ring.
 Future<void> showWeeklyGoalSheet(BuildContext context, WidgetRef ref) async {
@@ -273,6 +283,25 @@ class SettingsScreen extends ConsumerWidget {
                 );
               },
             ),
+            if (profile != null)
+              _Row(
+                icon: Icons.ios_share_rounded,
+                title: 'Export workouts',
+                subtitle: 'CSV of every set — yours to keep',
+                onTap: () => _exportWorkouts(context, ref, profile.id),
+              ),
+            _Row(
+              icon: Icons.privacy_tip_outlined,
+              title: 'Privacy Policy',
+              subtitle: 'Local-first. No tracking.',
+              onTap: () => _openExternalUrl(context, kPrivacyPolicyUrl),
+            ),
+            _Row(
+              icon: Icons.gavel_rounded,
+              title: 'Terms of Service',
+              subtitle: 'The short, readable kind',
+              onTap: () => _openExternalUrl(context, kTermsOfServiceUrl),
+            ),
             const _Row(
               icon: Icons.info_outline_rounded,
               title: 'Version',
@@ -321,6 +350,50 @@ class SettingsScreen extends ConsumerWidget {
         ],
       ),
     );
+  }
+}
+
+/// Builds the CSV in a temp file and hands it to the platform share sheet.
+/// Failures surface as a snackbar — never silently swallowed.
+Future<void> _exportWorkouts(
+    BuildContext context, WidgetRef ref, String userId) async {
+  HapticFeedback.lightImpact();
+  final messenger = ScaffoldMessenger.of(context);
+  try {
+    final service = WorkoutExportService(ref.read(databaseProvider));
+    final file = await service.writeCsvFile(userId);
+    await SharePlus.instance.share(ShareParams(
+      files: [XFile(file.path, mimeType: 'text/csv')],
+      subject: 'GymLog workout export',
+    ));
+  } catch (e) {
+    messenger.showSnackBar(SnackBar(
+      content: Text(
+        'Export failed. Please try again.',
+        style: GoogleFonts.inter(color: AppColors.textPrimary),
+      ),
+      backgroundColor: AppColors.bgSurface,
+      behavior: SnackBarBehavior.floating,
+    ));
+  }
+}
+
+Future<void> _openExternalUrl(BuildContext context, String url) async {
+  HapticFeedback.lightImpact();
+  final messenger = ScaffoldMessenger.of(context);
+  final ok = await launchUrl(
+    Uri.parse(url),
+    mode: LaunchMode.externalApplication,
+  );
+  if (!ok) {
+    messenger.showSnackBar(SnackBar(
+      content: Text(
+        'Could not open link.',
+        style: GoogleFonts.inter(color: AppColors.textPrimary),
+      ),
+      backgroundColor: AppColors.bgSurface,
+      behavior: SnackBarBehavior.floating,
+    ));
   }
 }
 

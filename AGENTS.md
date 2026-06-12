@@ -27,6 +27,14 @@
 
 ## Build & Run
 
+> **Config model:** secrets/keys are injected at **compile time** via
+> `--dart-define-from-file=.env` (see `lib/core/config/env.dart`). The
+> gitignored `.env` file in the repo root keeps the same KEY=value entries as
+> before (`SUPABASE_URL`, `SUPABASE_ANON_KEY`, `REVENUECAT_ANDROID_KEY`,
+> `REVENUECAT_IOS_KEY`) — it is **no longer a flutter asset** and is never
+> bundled into the binary. Builds without the flag work fine: auth and
+> purchases degrade gracefully, local logging is fully functional.
+
 ```bash
 # Install dependencies
 flutter pub get
@@ -37,11 +45,15 @@ flutter pub run build_runner build --delete-conflicting-outputs
 # Analyze
 flutter analyze
 
-# Run (debug)
-flutter run
+# Test
+flutter test
 
-# Build release APK
-flutter build apk
+# Run (debug, with auth + purchases enabled)
+flutter run --dart-define-from-file=.env
+
+# Build release APK (Play-signed when android/key.properties exists —
+# see android/key.properties.example; debug-signed fallback otherwise)
+flutter build apk --release --dart-define-from-file=.env
 ```
 
 ---
