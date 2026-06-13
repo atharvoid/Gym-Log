@@ -9,7 +9,23 @@ class AuthRepository {
 
   AuthRepository(this._client);
 
-  Future<void> signInWithGoogle() async {
+  /// Tracks an in-flight Google sign-in. The `google_sign_in` plugin keeps a
+  /// single global pending operation and throws
+  /// `IllegalStateException: Concurrent operations detected: signIn, signIn`
+  /// if `signIn()` is called again before the first resolves (e.g. a double
+  /// tap while the account picker is open). Coalescing onto one future makes
+  /// any extra call a no-op until the current attempt finishes.
+  Future<void>? _googleSignInInFlight;
+
+  /// Returns when sign-in has either completed or been dismissed by the user.
+  /// User cancellation is NOT an error — it resolves normally so the UI can
+  /// simply re-enable the button without showing a failure message.
+  Future<void> signInWithGoogle() {
+    return _googleSignInInFlight ??=
+        _performGoogleSignIn().whenComplete(() => _googleSignInInFlight = null);
+  }
+
+  Future<void> _performGoogleSignIn() async {
     // Use web OAuth for web platform
     if (kIsWeb) {
       await _client.auth.signInWithOAuth(
@@ -27,7 +43,8 @@ class AuthRepository {
 
     final googleUser = await googleSignIn.signIn();
     if (googleUser == null) {
-      throw Exception('Google Sign-In was cancelled');
+      // User dismissed the picker — a deliberate choice, not a failure.
+      return;
     }
 
     final googleAuth = await googleUser.authentication;
