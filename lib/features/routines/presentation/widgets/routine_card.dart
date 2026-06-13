@@ -73,9 +73,14 @@ class RoutineCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final count = exerciseNames.length;
     final exLabel = count == 1 ? 'exercise' : 'exercises';
+    // Compact meta — "4 exercises · 5 days ago". The verbose
+    // "Last trained …" prefix truncated mid-word next to the card menu on
+    // 360dp screens ("Last trained 5 days a…"); under a routine name the
+    // bare relative date is self-evident. The list header keeps the long
+    // form where there is room for it.
     final meta = lastTrained == null
         ? '$count $exLabel'
-        : '$count $exLabel  ·  Last trained ${_relative(lastTrained!)}';
+        : '$count $exLabel · ${_relative(lastTrained!)}';
 
     final preview = exerciseNames.isEmpty
         ? 'No exercises yet'

@@ -190,6 +190,7 @@ class _RoutineEditorScreenState extends ConsumerState<RoutineEditorScreen> {
           backgroundColor: AppColors.bgBase,
           scrolledUnderElevation: 0,
           elevation: 0,
+          titleSpacing: 0, // title hugs the close button on every sub-screen
           leading: IconButton(
             tooltip: 'Close',
             icon: const Icon(Icons.close, color: AppColors.textPrimary),
