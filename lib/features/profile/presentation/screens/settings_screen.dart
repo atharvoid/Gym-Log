@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:gymlog/core/providers/database_provider.dart';
 import 'package:gymlog/core/providers/premium_provider.dart';
@@ -271,6 +272,28 @@ class SettingsScreen extends ConsumerWidget {
           // connectivity returns). No "Sync Now" button: the user should
           // never have to think about backups.
 
+          const _GroupHeader('DATA'),
+          _Group(children: [
+            _Row(
+              icon: Icons.download_rounded,
+              title: 'Import workouts',
+              subtitle: 'From Hevy or Strong (CSV)',
+              onTap: () {
+                HapticFeedback.lightImpact();
+                context.push('/settings/import');
+              },
+            ),
+            if (profile != null)
+              _Row(
+                icon: Icons.ios_share_rounded,
+                title: 'Export workouts',
+                subtitle: 'CSV of every set — yours to keep',
+                onTap: () => _exportWorkouts(
+                    context, ref, profile.id, profile.displayName),
+              ),
+          ]),
+          const SizedBox(height: 22),
+
           const _GroupHeader('HELP'),
           _Group(children: [
             _Row(
@@ -293,14 +316,6 @@ class SettingsScreen extends ConsumerWidget {
                 );
               },
             ),
-            if (profile != null)
-              _Row(
-                icon: Icons.ios_share_rounded,
-                title: 'Export workouts',
-                subtitle: 'CSV of every set — yours to keep',
-                onTap: () => _exportWorkouts(
-                    context, ref, profile.id, profile.displayName),
-              ),
             _Row(
               icon: Icons.privacy_tip_outlined,
               title: 'Privacy Policy',
