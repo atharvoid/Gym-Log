@@ -291,7 +291,8 @@ class SettingsScreen extends ConsumerWidget {
                 icon: Icons.ios_share_rounded,
                 title: 'Export workouts',
                 subtitle: 'CSV of every set — yours to keep',
-                onTap: () => _exportWorkouts(context, ref, profile.id),
+                onTap: () => _exportWorkouts(
+                    context, ref, profile.id, profile.displayName),
               ),
             _Row(
               icon: Icons.privacy_tip_outlined,
@@ -358,16 +359,19 @@ class SettingsScreen extends ConsumerWidget {
 
 /// Builds the CSV in a temp file and hands it to the platform share sheet.
 /// Failures surface as a snackbar — never silently swallowed.
-Future<void> _exportWorkouts(
-    BuildContext context, WidgetRef ref, String userId) async {
+Future<void> _exportWorkouts(BuildContext context, WidgetRef ref, String userId,
+    String displayName) async {
   HapticFeedback.lightImpact();
   final messenger = ScaffoldMessenger.of(context);
   try {
     final service = WorkoutExportService(ref.read(databaseProvider));
     final file = await service.writeCsvFile(userId);
+    // Surface the athlete's name on the shared artifact.
+    final who = displayName.trim().isEmpty ? '' : ' — ${displayName.trim()}';
     await SharePlus.instance.share(ShareParams(
       files: [XFile(file.path, mimeType: 'text/csv')],
-      subject: 'GymLog workout export',
+      subject: 'GymLog workout export$who',
+      text: 'GymLog training history$who',
     ));
   } catch (e) {
     messenger.showSnackBar(SnackBar(

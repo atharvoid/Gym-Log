@@ -2,15 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:gymlog/core/database/database.dart';
-import 'package:gymlog/core/providers/database_provider.dart';
+import 'package:gymlog/core/services/profile_sync_service.dart';
 import 'package:gymlog/core/theme/app_colors.dart';
 import 'package:gymlog/features/auth/presentation/providers/auth_provider.dart';
 import 'package:gymlog/shared/widgets/ui/primary_button.dart';
 
 /// [onboarding_screen.dart]
-/// Purpose: First-launch name capture — saves displayName to local user_profiles.
-/// Shown once, immediately after a user's first successful Google sign-in.
+/// Purpose: First-launch welcome — captures the display name and persists it
+/// locally + to the backend (queued/retried if offline). Shown once, right
+/// after a user's first-ever Google sign-in. Dismissible only via a valid
+/// submission — no back-button escape without a name.
 
 class OnboardingScreen extends ConsumerStatefulWidget {
   const OnboardingScreen({super.key});
@@ -24,17 +25,23 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   final _focusNode = FocusNode();
   bool _isLoading = false;
 
+  bool get _isValid => _nameController.text.trim().isNotEmpty;
+
   @override
   void initState() {
     super.initState();
-    // Pre-fill with Google display name if available
+    // Pre-fill from the Google account (full_name, then name) if available.
     final user = ref.read(authProvider);
-    final googleName = user?.userMetadata?['full_name'] as String?;
-    if (googleName != null && googleName.isNotEmpty) {
-      _nameController.text = googleName;
+    final meta = user?.userMetadata;
+    final googleName = (meta?['full_name'] ?? meta?['name']) as String?;
+    if (googleName != null && googleName.trim().isNotEmpty) {
+      _nameController.text = googleName.trim();
     }
-    // Auto-focus the field
-    WidgetsBinding.instance.addPostFrameCallback((_) => _focusNode.requestFocus());
+    // Live-update the primary button's enabled state as they type.
+    _nameController.addListener(() => setState(() {}));
+    // Auto-focus the field.
+    WidgetsBinding.instance
+        .addPostFrameCallback((_) => _focusNode.requestFocus());
   }
 
   @override
@@ -54,15 +61,13 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     setState(() => _isLoading = true);
 
     try {
-      final db = ref.read(databaseProvider);
-      await db.userDao.insertUser(
-        UserProfilesCompanion.insert(
-          id: user.id,
-          email: user.email ?? '',
-          displayName: name,
-          createdAt: DateTime.now(),
-        ),
-      );
+      // Local write is instant; the remote push is queued + retried and never
+      // blocks entry into the app.
+      await ref.read(profileSyncProvider).submitDisplayName(
+            userId: user.id,
+            email: user.email ?? '',
+            name: name,
+          );
       if (mounted) context.go('/');
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -71,61 +76,83 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.bgBase,
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Spacer(),
-              Text(
-                'What should we\ncall you?',
-                style: GoogleFonts.inter(
-                  color: AppColors.textPrimary,
-                  fontSize: 32,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: -0.5,
-                  height: 1.1,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'This shows on your profile.',
-                style: GoogleFonts.inter(
-                  color: AppColors.textSecondary,
-                  fontSize: 16,
-                ),
-              ),
-              const SizedBox(height: 32),
-              TextField(
-                controller: _nameController,
-                focusNode: _focusNode,
-                style: GoogleFonts.inter(
-                  color: AppColors.textPrimary,
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                ),
-                textCapitalization: TextCapitalization.words,
-                textInputAction: TextInputAction.done,
-                onSubmitted: (_) => _submit(),
-                decoration: InputDecoration(
-                  hintText: 'Your name',
-                  hintStyle: GoogleFonts.inter(
-                    color: AppColors.textSecondary,
-                    fontSize: 18,
+    // A welcome, not a toll booth — but there's no escape without a name.
+    // canPop:false blocks the system back gesture until they submit.
+    return PopScope(
+      canPop: false,
+      child: Scaffold(
+        backgroundColor: AppColors.bgBase,
+        body: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Spacer(),
+                Text(
+                  'Welcome to GymLog',
+                  style: GoogleFonts.inter(
+                    color: AppColors.accentPrimary,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.2,
                   ),
                 ),
-              ),
-              const Spacer(),
-              PrimaryButton(
-                label: _isLoading ? 'Saving...' : 'Get Started',
-                onPressed: _isLoading ? null : _submit,
-                icon: Icons.arrow_forward_rounded,
-              ),
-              const SizedBox(height: 16),
-            ],
+                const SizedBox(height: 10),
+                Text(
+                  'What should we\ncall you?',
+                  style: GoogleFonts.inter(
+                    color: AppColors.textPrimary,
+                    fontSize: 32,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: -0.5,
+                    height: 1.1,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'This is how you\'ll show up across GymLog — and it '
+                  'follows you to every device.',
+                  style: GoogleFonts.inter(
+                    color: AppColors.textSecondary,
+                    fontSize: 15,
+                    height: 1.4,
+                  ),
+                ),
+                const SizedBox(height: 32),
+                TextField(
+                  controller: _nameController,
+                  focusNode: _focusNode,
+                  maxLength: 40,
+                  cursorColor: AppColors.accentPrimary,
+                  style: GoogleFonts.inter(
+                    color: AppColors.textPrimary,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  textCapitalization: TextCapitalization.words,
+                  textInputAction: TextInputAction.done,
+                  onSubmitted: (_) => _submit(),
+                  decoration: InputDecoration(
+                    hintText: 'Your name',
+                    counterText: '',
+                    hintStyle: GoogleFonts.inter(
+                      color: AppColors.textSecondary,
+                      fontSize: 18,
+                    ),
+                  ),
+                ),
+                const Spacer(),
+                PrimaryButton(
+                  label: 'Get Started',
+                  // Enabled only on valid input; spinner while saving.
+                  onPressed: _isValid && !_isLoading ? _submit : null,
+                  isLoading: _isLoading,
+                  icon: Icons.arrow_forward_rounded,
+                ),
+                const SizedBox(height: 16),
+              ],
+            ),
           ),
         ),
       ),

@@ -24,6 +24,33 @@ class UserDao extends DatabaseAccessor<AppDatabase> with _$UserDaoMixin {
     return (delete(userProfiles)..where((t) => t.id.equals(id))).go();
   }
 
+  /// Inserts the profile if absent, otherwise updates ONLY identity fields
+  /// (displayName, email) — preferences like weightUnit, rest timer and
+  /// premium status are preserved. This is the local mirror of the remote
+  /// profile, written on onboarding and on every login-time hydration.
+  Future<void> upsertProfile({
+    required String id,
+    required String email,
+    required String displayName,
+  }) async {
+    final existing = await getUserOrNull(id);
+    if (existing == null) {
+      await into(userProfiles).insert(UserProfilesCompanion.insert(
+        id: id,
+        email: email,
+        displayName: displayName,
+        createdAt: DateTime.now(),
+      ));
+    } else {
+      await (update(userProfiles)..where((t) => t.id.equals(id))).write(
+        UserProfilesCompanion(
+          displayName: Value(displayName),
+          email: Value(email),
+        ),
+      );
+    }
+  }
+
   /// Returns null instead of throwing when user has no local profile yet.
   Future<UserProfile?> getUserOrNull(String id) async {
     final results =
