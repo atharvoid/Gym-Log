@@ -41,11 +41,16 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
       return;
     }
 
-    // Restore cloud data in the background (e.g. after a reinstall) — pulls
-    // the user's synced workout history and rehydrates local storage. Fully
-    // non-blocking: navigation never waits on the network.
-    unawaited(ref.read(syncEngineProvider).pull(user.id));
-    unawaited(ref.read(syncEngineProvider).loadLastSynced());
+    // Start the sync engine for this session: auto-debounce on any queued
+    // write, and an immediate sync when connectivity returns. Then restore
+    // cloud data (reinstall path) and snapshot preferences — all non-blocking,
+    // navigation never waits on the network.
+    final engine = ref.read(syncEngineProvider);
+    engine.startAutoSync(user.id);
+    engine.startConnectivityWatch(user.id);
+    unawaited(engine.pull(user.id));
+    unawaited(engine.loadLastSynced());
+    unawaited(engine.enqueuePreferences(user.id));
 
     // Logged in → make the backend authoritative: fetch the stored profile
     // and hydrate local, or fall back to local if offline. First-ever users

@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -56,13 +57,20 @@ class SyncEngine {
   final ValueNotifier<SyncStatus> status =
       ValueNotifier(const SyncStatus(SyncPhase.idle));
 
+  // SharedPreferences keys mirrored to the cloud as part of 'preferences'.
+  static const _kWeeklyGoal = 'weekly_goal_days';
+  static const _kUnitOverrides = 'exercise_unit_overrides';
+
   Timer? _debounceTimer;
   bool _running = false;
+  StreamSubscription<int>? _outboxSub;
+  StreamSubscription<List<ConnectivityResult>>? _connSub;
+  int _lastPending = 0;
 
   // ── Enqueue (called right after a local commit) ────────────────────────────
 
-  /// Snapshot a finished session into the outbox and arm the debounce. The
-  /// network is never touched here — the local write already succeeded.
+  /// Snapshot a finished session into the outbox. The auto-sync watcher arms
+  /// the debounce; the network is never touched here.
   Future<void> enqueueSession(String userId, String sessionId) async {
     final data = await _db.workoutsDao.exportSessionJson(sessionId);
     if (data == null) return;
@@ -73,6 +81,38 @@ class SyncEngine {
       payload: SyncCodec.encode(data),
     );
     scheduleSync(userId);
+  }
+
+  /// Snapshot the user's preferences (DB prefs + SharedPreferences) so a
+  /// reinstall restores weight unit, rest timer, weekly goal and per-exercise
+  /// unit overrides. Called on app background / Sync Now / login.
+  Future<void> enqueuePreferences(String userId) async {
+    final profile = await _db.userDao.getUserOrNull(userId);
+    final prefs = await _prefs();
+    final data = <String, dynamic>{
+      'weightUnit': profile?.weightUnit,
+      'defaultRestSeconds': profile?.defaultRestSeconds,
+      'weeklyGoalDays': prefs.getInt(_kWeeklyGoal),
+      'exerciseUnitOverrides': prefs.getString(_kUnitOverrides),
+    };
+    await _db.syncOutboxDao.enqueue(
+      entityType: 'preferences',
+      entityId: userId,
+      userId: userId,
+      payload: SyncCodec.encode(data),
+    );
+  }
+
+  Future<void> _applyPreferences(String userId, Map<String, dynamic> d) async {
+    final weightUnit = d['weightUnit'] as String?;
+    final rest = d['defaultRestSeconds'] as int?;
+    if (weightUnit != null) await _db.userDao.setWeightUnit(userId, weightUnit);
+    if (rest != null) await _db.userDao.setDefaultRestSeconds(userId, rest);
+    final prefs = await _prefs();
+    final goal = d['weeklyGoalDays'] as int?;
+    if (goal != null) await prefs.setInt(_kWeeklyGoal, goal);
+    final overrides = d['exerciseUnitOverrides'] as String?;
+    if (overrides != null) await prefs.setString(_kUnitOverrides, overrides);
   }
 
   // ── Triggers ───────────────────────────────────────────────────────────────
@@ -134,9 +174,22 @@ class SyncEngine {
       final objects = await _remote.pull(userId).timeout(_netTimeout);
       for (final o in objects) {
         if (o.deleted || o.payload.isEmpty) continue;
-        if (o.entityType == 'session') {
-          await _db.workoutsDao.importSessionJson(SyncCodec.decode(o.payload));
-        }
+        // Per-object isolation: one bad/locked row never aborts the restore;
+        // it simply retries on the next pull.
+        try {
+          final data = SyncCodec.decode(o.payload);
+          switch (o.entityType) {
+            case 'session':
+              await _db.workoutsDao.importSessionJson(data);
+              break;
+            case 'routine':
+              await _db.routinesDao.importRoutineJson(data);
+              break;
+            case 'preferences':
+              await _applyPreferences(userId, data);
+              break;
+          }
+        } catch (_) {/* skip this object, restore the rest */}
       }
     } catch (_) {
       // Offline / not provisioned — nothing to restore right now.
@@ -157,8 +210,35 @@ class SyncEngine {
     await prefs.setInt(_lastSyncedKey, when.millisecondsSinceEpoch);
   }
 
+  // ── Background watchers (started once after login) ─────────────────────────
+
+  /// Watches the outbox: whenever new work is queued (from ANY source — the
+  /// session enqueue, the routine DAO enqueue, preferences) the debounce arms
+  /// itself. This is why no UI call site needs to remember to trigger a sync.
+  void startAutoSync(String userId) {
+    _outboxSub?.cancel();
+    _lastPending = 0;
+    _outboxSub = _db.syncOutboxDao.watchPendingCount(userId).listen((count) {
+      if (count > _lastPending) scheduleSync(userId);
+      _lastPending = count;
+    });
+  }
+
+  /// Syncs the moment connectivity is restored (the brief's explicit
+  /// requirement). connectivity_plus emits on every transition; we fire only
+  /// when at least one real transport is back.
+  void startConnectivityWatch(String userId) {
+    _connSub?.cancel();
+    _connSub = Connectivity().onConnectivityChanged.listen((results) {
+      final online = results.any((r) => r != ConnectivityResult.none);
+      if (online) syncNow(userId, reason: 'connectivity');
+    });
+  }
+
   void dispose() {
     _debounceTimer?.cancel();
+    _outboxSub?.cancel();
+    _connSub?.cancel();
     status.dispose();
   }
 }
