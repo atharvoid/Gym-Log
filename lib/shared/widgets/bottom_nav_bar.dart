@@ -7,7 +7,13 @@ import '../../core/theme/app_colors.dart';
 /// [bottom_nav_bar.dart]
 /// Purpose: High-Density Tracker - 3-tab navigation (Home, Workout, Profile)
 /// Dependencies: flutter/material.dart, go_router, google_fonts, app_colors.dart
-/// Last modified: High-Density Tracker Overhaul
+///
+/// Active-tab indicator: a small accent underline drawn INSIDE each tab
+/// cell, directly under its label. Per-cell rendering means the indicator
+/// is centered under the active tab by construction — there is no
+/// cross-bar alignment math that can drift. (A previous experiment with a
+/// bar-wide animated indicator produced an underline that was visibly
+/// off-center under Home/Routines; do not reintroduce one.)
 
 class BottomNavBar extends StatelessWidget {
   const BottomNavBar({super.key});
@@ -31,16 +37,19 @@ class BottomNavBar extends StatelessWidget {
         child: SizedBox(
           height: 72,
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: _tabs.map((tab) {
               final isActive = location == tab.path;
-              return _NavButton(
-                item: tab,
-                isActive: isActive,
-                onTap: () {
-                  HapticFeedback.selectionClick();
-                  context.go(tab.path);
-                },
+              // Expanded cells: three equal thirds, edge-to-edge tap
+              // targets (full cell height — comfortably ≥48dp).
+              return Expanded(
+                child: _NavButton(
+                  item: tab,
+                  isActive: isActive,
+                  onTap: () {
+                    HapticFeedback.selectionClick();
+                    context.go(tab.path);
+                  },
+                ),
               );
             }).toList(),
           ),
@@ -70,26 +79,44 @@ class _NavButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      behavior: HitTestBehavior.opaque,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+    return Semantics(
+      selected: isActive,
+      button: true,
+      child: GestureDetector(
+        onTap: onTap,
+        behavior: HitTestBehavior.opaque,
         child: Column(
-          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
               item.icon,
-              color: isActive ? AppColors.accentPrimary : AppColors.textSecondary,
+              color:
+                  isActive ? AppColors.accentPrimary : AppColors.textSecondary,
               size: 26,
             ),
             const SizedBox(height: 2),
             Text(
               item.label,
               style: GoogleFonts.inter(
-                color: isActive ? AppColors.accentPrimary : AppColors.textSecondary,
+                color: isActive
+                    ? AppColors.accentPrimary
+                    : AppColors.textSecondary,
                 fontWeight: FontWeight.w500,
                 fontSize: 11,
+              ),
+            ),
+            const SizedBox(height: 3),
+            // Reward-moment underline — grows in under the active label,
+            // collapses to nothing when inactive. Centered by the Column,
+            // never positioned by hand.
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              curve: Curves.easeOutCubic,
+              height: 2,
+              width: isActive ? 16 : 0,
+              decoration: BoxDecoration(
+                color: AppColors.accentPrimary,
+                borderRadius: BorderRadius.circular(1),
               ),
             ),
           ],
@@ -98,4 +125,3 @@ class _NavButton extends StatelessWidget {
     );
   }
 }
-

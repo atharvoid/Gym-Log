@@ -45,12 +45,20 @@ class BrandedLineChart extends StatefulWidget {
     this.emptyTitle = 'No data yet',
     this.emptySubtitle = 'Finish a workout to see your trend',
     this.height = 180,
-  })  : axisFormatter = axisFormatter ?? _defaultAxisFormat,
+  })  : axisFormatter = axisFormatter ?? defaultAxisFormat,
         dateFormatter = dateFormatter ?? ((d) => DateFormat('MMM d').format(d));
 
-  static String _defaultAxisFormat(double v) {
-    if (v >= 10000) return '${(v / 1000).toStringAsFixed(0)}k';
-    if (v >= 1000) return '${(v / 1000).toStringAsFixed(1)}k';
+  /// Compact axis labels with no float noise: 850 → "850", 3000 → "3k",
+  /// 9000 → "9k" (never "9.0k"), 12500 → "12.5k". One rule for every
+  /// chart in the app — axis language must not differ between screens.
+  /// Public (not underscored) so the regression test can pin the contract.
+  static String defaultAxisFormat(double v) {
+    if (v >= 1000) {
+      final k = v / 1000;
+      return k == k.truncateToDouble()
+          ? '${k.toInt()}k'
+          : '${k.toStringAsFixed(1)}k';
+    }
     return v.toInt().toString();
   }
 
@@ -99,9 +107,17 @@ class _BrandedLineChartState extends State<BrandedLineChart> {
     // Intentional X-label density: first, last, and ~2 between.
     final labelStep = n <= 4 ? 1 : (n / 4).ceil();
 
-    // Average reference line — only meaningful with 3+ points.
-    final double? avg =
-        n >= 3 ? data.map((s) => s.value).reduce((a, b) => a + b) / n : null;
+    // Average reference line — only meaningful with 3+ points AND visible
+    // spread. On a flat series avg == every value, so the dashed line would
+    // draw directly on top of the data line and trail past the last point
+    // with a stray "avg" caption crowding the selected dot.
+    final minV = data
+        .map((s) => s.value)
+        .fold<double>(double.infinity, (a, b) => a < b ? a : b);
+    final bool hasSpread = (maxV - minV) > 0.001;
+    final double? avg = (n >= 3 && hasSpread)
+        ? data.map((s) => s.value).reduce((a, b) => a + b) / n
+        : null;
 
     return Container(
       padding: const EdgeInsets.fromLTRB(14, 16, 14, 8),

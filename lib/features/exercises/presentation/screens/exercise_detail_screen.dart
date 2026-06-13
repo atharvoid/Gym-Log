@@ -96,6 +96,7 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
             ),
             backgroundColor: AppColors.bgBase,
             scrolledUnderElevation: 0,
+            titleSpacing: 0, // title hugs the back button on every sub-screen
             iconTheme: const IconThemeData(color: AppColors.textPrimary),
           ),
           body: ListView(
