@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
@@ -5,6 +7,7 @@ import 'package:drift/drift.dart';
 import '../../../../core/database/database.dart';
 import '../../../../core/database/daos/workouts_dao.dart';
 import '../../../../core/providers/database_provider.dart';
+import '../../../../core/services/sync_engine.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../domain/active_workout_state.dart';
 
@@ -169,6 +172,16 @@ class ActiveWorkoutNotifier extends StateNotifier<ActiveWorkoutState?> {
       });
 
       state = null;
+
+      // Local commit is done — now mirror to the cloud. Queue a compressed
+      // snapshot and fire an immediate post-workout sync (explicit trigger).
+      // Entirely non-blocking: a failure just leaves the row queued.
+      if (userId.isNotEmpty) {
+        final engine = _ref.read(syncEngineProvider);
+        await engine.enqueueSession(userId, sessionId);
+        unawaited(engine.syncNow(userId, reason: 'post_workout'));
+      }
+
       return prs;
     } catch (e) {
       debugPrint('[finishWorkout] transaction failed: $e');
