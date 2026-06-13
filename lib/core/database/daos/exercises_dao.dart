@@ -60,6 +60,29 @@ class ExercisesDao extends DatabaseAccessor<AppDatabase>
   Future<void> insertExercises(List<ExercisesCompanion> list) => batch(
       (b) => b.insertAll(exercises, list, mode: InsertMode.insertOrIgnore));
 
+  /// Creates a user-defined exercise and returns its new row id.
+  ///
+  /// Used by CSV import when an incoming exercise name has no match in the
+  /// bundled catalog — keeping the import lossless. [exerciseDbId] stays null
+  /// (no GIF), [isCustom] is set, and [createdBy] records the owner.
+  Future<int> createCustomExercise(
+    String name, {
+    required String userId,
+    String bodyPart = 'other',
+    String equipment = 'other',
+    String target = 'other',
+  }) {
+    return into(exercises).insert(ExercisesCompanion.insert(
+      name: name,
+      bodyPart: bodyPart,
+      equipment: equipment,
+      target: target,
+      isCustom: const Value(true),
+      createdBy: Value(userId),
+      seededAt: Value(DateTime.now()),
+    ));
+  }
+
   // ── Hydration Engine ───────────────────────────────────────────────────────
 
   /// One-time bulk seed from the bundled `assets/db/exercises.json`.
