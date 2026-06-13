@@ -100,7 +100,7 @@
 "parent": "Chest",
 "secondaryMuscles": [
 "Triceps",
-"Shoulders"
+"Front Delts"
 ],
 "instructions": [
 "Adjust the machine to your desired height and secure your knees on the pad.",
@@ -289,8 +289,7 @@
 "parent": "Chest",
 "secondaryMuscles": [
 "Triceps",
-"Front Delts",
-"Shoulders"
+"Front Delts"
 ],
 "instructions": [
 "Position yourself on parallel bars with your arms fully extended and your body straight.",
@@ -380,8 +379,7 @@
 "target": "Lower Chest",
 "parent": "Chest",
 "secondaryMuscles": [
-"Triceps",
-"Shoulders"
+"Triceps"
 ],
 "instructions": [
 "Lie on a decline bench with your feet secured and your head lower than your hips.",
@@ -416,11 +414,10 @@
 "name": "Decline Bench Press (Smith Machine)",
 "bodyPart": "chest",
 "equipment": "Smith Machine",
-"target": "Chest",
+"target": "Lower Chest",
 "parent": "Chest",
 "secondaryMuscles": [
-"Triceps",
-"Shoulders"
+"Triceps"
 ],
 "instructions": [
 "Adjust the decline bench to the desired angle.",
@@ -688,8 +685,7 @@
 "target": "Chest",
 "parent": "Chest",
 "secondaryMuscles": [
-"Front Delts",
-"Shoulders"
+"Front Delts"
 ],
 "instructions": [
 "Lie flat on a bench with a dumbbell in each hand, palms facing each other.",
@@ -845,8 +841,7 @@
 "parent": "Chest",
 "secondaryMuscles": [
 "Front Delts",
-"Triceps",
-"Shoulders"
+"Triceps"
 ],
 "instructions": [
 "Set up an incline bench at a 45-degree angle.",
@@ -887,8 +882,7 @@
 "parent": "Chest",
 "secondaryMuscles": [
 "Front Delts",
-"Triceps",
-"Shoulders"
+"Triceps"
 ],
 "instructions": [
 "Adjust the bench to a 30-45 degree incline.",
@@ -939,8 +933,7 @@
 "parent": "Chest",
 "secondaryMuscles": [
 "Front Delts",
-"Triceps",
-"Shoulders"
+"Triceps"
 ],
 "instructions": [
 "Adjust the seat and backrest of the leverage machine to a comfortable position.",
@@ -964,8 +957,7 @@
 "target": "Upper Chest",
 "parent": "Chest",
 "secondaryMuscles": [
-"Front Delts",
-"Shoulders"
+"Front Delts"
 ],
 "instructions": [
 "Set an incline bench to a 45-degree angle.",
@@ -986,11 +978,10 @@
 "name": "Incline Fly (Cable)",
 "bodyPart": "chest",
 "equipment": "Cable",
-"target": "Chest",
+"target": "Upper Chest",
 "parent": "Chest",
 "secondaryMuscles": [
-"Shoulders",
-"Triceps"
+"Front Delts"
 ],
 "instructions": [
 "Adjust the cable machine to a low position and attach the handles.",
@@ -1352,9 +1343,7 @@
 "Triceps",
 "Lats",
 "Shoulders",
-"Core",
-"Biceps",
-"Forearms"
+"Core"
 ],
 "instructions": [
 "Start by hanging from a pull-up bar with your palms facing away from you and your arms fully extended.",
@@ -1905,8 +1894,7 @@
 "secondaryMuscles": [
 "Biceps",
 "Rear Delts",
-"Upper Back",
-"Forearms"
+"Upper Back"
 ],
 "instructions": [
 "Adjust the leverage machine to your desired resistance level.",
@@ -1933,8 +1921,7 @@
 "secondaryMuscles": [
 "Biceps",
 "Rear Delts",
-"Upper Back",
-"Forearms"
+"Upper Back"
 ],
 "instructions": [
 "Adjust the machine to your desired weight and height settings.",
@@ -2148,9 +2135,7 @@
 "secondaryMuscles": [
 "Lats",
 "Biceps",
-"Rear Delts",
-"Core",
-"Forearms"
+"Rear Delts"
 ],
 "instructions": [
 "Stand with your feet shoulder-width apart and knees slightly bent.",
@@ -2177,9 +2162,7 @@
 "secondaryMuscles": [
 "Lats",
 "Biceps",
-"Rear Delts",
-"Core",
-"Forearms"
+"Rear Delts"
 ],
 "instructions": [
 "Stand with your feet shoulder-width apart, knees slightly bent, and hold a dumbbell in each hand with your palms facing your body.",
@@ -2203,8 +2186,9 @@
 "target": "Upper Back",
 "parent": "Back",
 "secondaryMuscles": [
+"Lats",
 "Biceps",
-"Forearms"
+"Rear Delts"
 ],
 "instructions": [
 "Set up the smith machine with the bar at hip height.",
@@ -2372,9 +2356,7 @@
 "secondaryMuscles": [
 "Biceps",
 "Rear Delts",
-"Upper Back",
-"Core",
-"Forearms"
+"Upper Back"
 ],
 "instructions": [
 "Hang from a pull-up bar with your palms facing towards you and your hands shoulder-width apart.",
@@ -2441,8 +2423,7 @@
 "Glutes",
 "Hamstrings",
 "Core",
-"Traps",
-"Lower Back"
+"Traps"
 ],
 "instructions": [
 "Stand with your feet shoulder-width apart and the barbell on the ground in front of you.",
@@ -2457,6 +2438,91 @@
 "Barbell Deadlift"
 ],
 "inHevyStrong": true
+},
+{
+"id": "0157",
+"name": "Deadlift (Cable)",
+"bodyPart": "back",
+"equipment": "Cable",
+"target": "Back",
+"parent": "Back",
+"secondaryMuscles": [
+"Legs",
+"Glutes",
+"Hamstrings",
+"Core",
+"Traps"
+],
+"instructions": [
+"Stand facing the cable machine with your feet shoulder-width apart.",
+"Bend at the hips and knees, lowering your torso until your back is parallel to the ground.",
+"Grasp the cable handles with an overhand grip, keeping your arms straight and your shoulders back.",
+"Engage your glutes and hamstrings to lift the cable handles, extending your hips and standing up straight.",
+"Pause for a moment at the top, then slowly lower the cable handles back down to the starting position.",
+"Repeat for the desired number of repetitions."
+],
+"gif": true,
+"aliases": [
+"Cable Deadlift"
+],
+"inHevyStrong": false
+},
+{
+"id": "0300",
+"name": "Deadlift (Dumbbell)",
+"bodyPart": "back",
+"equipment": "Dumbbell",
+"target": "Back",
+"parent": "Back",
+"secondaryMuscles": [
+"Legs",
+"Glutes",
+"Hamstrings",
+"Core",
+"Traps"
+],
+"instructions": [
+"Stand with your feet shoulder-width apart, toes pointing forward.",
+"Hold a dumbbell in each hand, palms facing your body, arms extended downwards.",
+"Bend at your hips and knees, lowering the dumbbells towards the ground while keeping your back straight.",
+"Push through your heels and extend your hips and knees, lifting the dumbbells back up to the starting position.",
+"Repeat for the desired number of repetitions."
+],
+"gif": true,
+"aliases": [
+"Dumbbell Deadlift"
+],
+"inHevyStrong": false
+},
+{
+"id": "0578",
+"name": "Deadlift (Machine)",
+"bodyPart": "back",
+"equipment": "Machine",
+"target": "Back",
+"parent": "Back",
+"secondaryMuscles": [
+"Legs",
+"Glutes",
+"Hamstrings",
+"Core",
+"Traps"
+],
+"instructions": [
+"Adjust the seat height and foot platform to your desired position.",
+"Sit on the machine with your back against the pad and your feet flat on the foot platform.",
+"Grasp the handles or the sides of the seat for stability.",
+"Engage your glutes and hamstrings, and push through your heels to lift the weight up.",
+"Keep your back straight and avoid rounding your shoulders.",
+"Extend your hips fully at the top of the movement, squeezing your glutes.",
+"Lower the weight back down in a controlled manner, keeping tension on your glutes and hamstrings.",
+"Repeat for the desired number of repetitions."
+],
+"gif": true,
+"aliases": [
+"Lever Deadlift"
+],
+"inHevyStrong": false
 },
 {
 "id": "0034",
@@ -2603,10 +2669,10 @@
 "name": "Dumbbell Row",
 "bodyPart": "back",
 "equipment": "Dumbbell",
-"target": "Lats",
+"target": "Upper Back",
 "parent": "Back",
 "secondaryMuscles": [
-"Upper Back",
+"Lats",
 "Biceps",
 "Rear Delts",
 "Core"
@@ -3010,8 +3076,7 @@
 "secondaryMuscles": [
 "Lats",
 "Biceps",
-"Rear Delts",
-"Forearms"
+"Rear Delts"
 ],
 "instructions": [
 "Set up a bar at waist height or use a suspension trainer.",
@@ -3110,6 +3175,7 @@
 "secondaryMuscles": [
 "Lats",
 "Biceps",
+"Rear Delts",
 "Core"
 ],
 "instructions": [],
@@ -3329,7 +3395,8 @@
 "secondaryMuscles": [
 "Lats",
 "Biceps",
-"Rear Delts"
+"Rear Delts",
+"Core"
 ],
 "instructions": [],
 "gif": false,
@@ -3764,8 +3831,7 @@
 "Lats",
 "Biceps",
 "Rear Delts",
-"Core",
-"Forearms"
+"Core"
 ],
 "instructions": [
 "Stand with your feet shoulder-width apart and your knees slightly bent.",
@@ -3791,9 +3857,7 @@
 "secondaryMuscles": [
 "Biceps",
 "Rear Delts",
-"Upper Back",
-"Core",
-"Forearms"
+"Upper Back"
 ],
 "instructions": [
 "Hang from a pull-up bar with your palms facing away from you and your arms fully extended.",
@@ -3912,8 +3976,7 @@
 "secondaryMuscles": [
 "Chest",
 "Triceps",
-"Core",
-"Shoulders"
+"Core"
 ],
 "instructions": [
 "Adjust the seat and handles of the leverage machine to a comfortable position.",
@@ -3965,8 +4028,7 @@
 "Traps",
 "Glutes",
 "Hamstrings",
-"Forearms",
-"Lower Back"
+"Forearms"
 ],
 "instructions": [
 "Set up a barbell on a rack at knee height.",
@@ -4341,8 +4403,7 @@
 "secondaryMuscles": [
 "Lats",
 "Biceps",
-"Rear Delts",
-"Forearms"
+"Rear Delts"
 ],
 "instructions": [
 "Sit on the cable row machine with your feet flat on the footrests and your knees slightly bent.",
@@ -4403,8 +4464,7 @@
 "secondaryMuscles": [
 "Lats",
 "Biceps",
-"Rear Delts",
-"Forearms"
+"Rear Delts"
 ],
 "instructions": [
 "Sit on the cable row machine with your feet flat on the footrests and your knees slightly bent.",
@@ -4432,8 +4492,7 @@
 "secondaryMuscles": [
 "Lats",
 "Biceps",
-"Rear Delts",
-"Forearms"
+"Rear Delts"
 ],
 "instructions": [
 "Adjust the seat height and footrests to a comfortable position.",
@@ -4460,8 +4519,7 @@
 "parent": "Back",
 "secondaryMuscles": [
 "Forearms",
-"Grip",
-"Shoulders"
+"Grip"
 ],
 "instructions": [
 "Stand with your feet shoulder-width apart and hold a barbell in front of you with an overhand grip.",
@@ -4484,7 +4542,8 @@
 "target": "Traps",
 "parent": "Back",
 "secondaryMuscles": [
-"Shoulders"
+"Forearms",
+"Grip"
 ],
 "instructions": [
 "Stand facing the cable machine with your feet shoulder-width apart.",
@@ -4508,8 +4567,7 @@
 "parent": "Back",
 "secondaryMuscles": [
 "Forearms",
-"Grip",
-"Shoulders"
+"Grip"
 ],
 "instructions": [
 "Stand with your feet shoulder-width apart and hold a dumbbell in each hand with your palms facing your body.",
@@ -4533,8 +4591,7 @@
 "parent": "Back",
 "secondaryMuscles": [
 "Forearms",
-"Grip",
-"Shoulders"
+"Grip"
 ],
 "instructions": [
 "Adjust the seat height and position yourself on the leverage machine with your back against the pad.",
@@ -4559,8 +4616,7 @@
 "parent": "Back",
 "secondaryMuscles": [
 "Forearms",
-"Grip",
-"Shoulders"
+"Grip"
 ],
 "instructions": [
 "Stand with your feet shoulder-width apart and your knees slightly bent.",
@@ -4679,9 +4735,7 @@
 "Glutes",
 "Hamstrings",
 "Core",
-"Traps",
-"Quadriceps",
-"Lower Back"
+"Traps"
 ],
 "instructions": [
 "Set up the smith machine with the bar at hip height.",
@@ -4896,8 +4950,10 @@
 "target": "Upper Back",
 "parent": "Back",
 "secondaryMuscles": [
+"Lats",
 "Biceps",
-"Forearms"
+"Rear Delts",
+"Core"
 ],
 "instructions": [
 "Adjust the seat height and footplate position to ensure proper alignment.",
@@ -5013,8 +5069,7 @@
 "Glutes",
 "Hamstrings",
 "Core",
-"Quadriceps",
-"Lower Back"
+"Traps"
 ],
 "instructions": [
 "Stand with your feet shoulder-width apart and the trap bar on the ground in front of you.",
@@ -5201,8 +5256,7 @@
 "secondaryMuscles": [
 "Biceps",
 "Rear Delts",
-"Upper Back",
-"Forearms"
+"Upper Back"
 ],
 "instructions": [
 "Hang from a pull-up bar with your palms facing away from you and your hands wider than shoulder-width apart.",
@@ -5265,7 +5319,7 @@
 "parent": "Shoulders",
 "secondaryMuscles": [
 "Triceps",
-"Upper Back"
+"Upper Chest"
 ],
 "instructions": [
 "Stand with your feet shoulder-width apart, holding a kettlebell in each hand at shoulder height with your palms facing towards you.",
@@ -5371,9 +5425,7 @@
 "parent": "Shoulders",
 "secondaryMuscles": [
 "Rotator Cuff",
-"Side Delts",
-"Triceps",
-"Upper Back"
+"Side Delts"
 ],
 "instructions": [
 "Stand with your feet shoulder-width apart, holding a dumbbell in each hand at shoulder height with your palms facing down.",
@@ -5521,9 +5573,7 @@
 "parent": "Shoulders",
 "secondaryMuscles": [
 "Side Delts",
-"Upper Chest",
-"Biceps",
-"Triceps"
+"Upper Chest"
 ],
 "instructions": [
 "Stand with your feet shoulder-width apart and hold a barbell in front of your thighs with an overhand grip.",
@@ -5546,9 +5596,7 @@
 "parent": "Shoulders",
 "secondaryMuscles": [
 "Side Delts",
-"Upper Chest",
-"Triceps",
-"Forearms"
+"Upper Chest"
 ],
 "instructions": [
 "Stand with your feet shoulder-width apart and grasp the cable handle with an overhand grip.",
@@ -5573,9 +5621,7 @@
 "parent": "Shoulders",
 "secondaryMuscles": [
 "Side Delts",
-"Upper Chest",
-"Biceps",
-"Traps"
+"Upper Chest"
 ],
 "instructions": [
 "Stand with your feet shoulder-width apart, holding a dumbbell in each hand with your palms facing your thighs.",
@@ -5594,11 +5640,11 @@
 "name": "Front Raise (Weighted)",
 "bodyPart": "shoulders",
 "equipment": "Bodyweight",
-"target": "Shoulders",
+"target": "Front Delts",
 "parent": "Shoulders",
 "secondaryMuscles": [
-"Biceps",
-"Forearms"
+"Side Delts",
+"Upper Chest"
 ],
 "instructions": [
 "Stand with your feet shoulder-width apart, holding a dumbbell in each hand with your palms facing your thighs.",
@@ -5714,9 +5760,7 @@
 "target": "Side Delts",
 "parent": "Shoulders",
 "secondaryMuscles": [
-"Front Delts",
-"Traps",
-"Upper Back"
+"Front Delts"
 ],
 "instructions": [
 "Stand with your feet shoulder-width apart and knees slightly bent.",
@@ -5754,8 +5798,7 @@
 "parent": "Shoulders",
 "secondaryMuscles": [
 "Front Delts",
-"Traps",
-"Triceps"
+"Traps"
 ],
 "instructions": [
 "Stand with your feet shoulder-width apart and grasp the cable handles with an overhand grip.",
@@ -5795,8 +5838,7 @@
 "parent": "Shoulders",
 "secondaryMuscles": [
 "Front Delts",
-"Traps",
-"Upper Back"
+"Traps"
 ],
 "instructions": [
 "Adjust the seat height and position yourself on the machine with your back against the pad.",
@@ -6133,8 +6175,7 @@
 "target": "Rear Delts",
 "parent": "Shoulders",
 "secondaryMuscles": [
-"Upper Back",
-"Traps"
+"Upper Back"
 ],
 "instructions": [
 "Stand with your feet shoulder-width apart and hold a dumbbell in each hand.",
@@ -6319,7 +6360,7 @@
 "parent": "Shoulders",
 "secondaryMuscles": [
 "Triceps",
-"Upper Back"
+"Upper Chest"
 ],
 "instructions": [
 "Adjust the seat height so that the handles are at shoulder level.",
@@ -6369,7 +6410,7 @@
 "parent": "Shoulders",
 "secondaryMuscles": [
 "Triceps",
-"Upper Back"
+"Core"
 ],
 "instructions": [
 "Adjust the cable machine so that the handles are at shoulder height.",
@@ -6394,7 +6435,7 @@
 "parent": "Shoulders",
 "secondaryMuscles": [
 "Triceps",
-"Upper Chest"
+"Core"
 ],
 "instructions": [],
 "gif": false,
@@ -6410,7 +6451,7 @@
 "parent": "Shoulders",
 "secondaryMuscles": [
 "Triceps",
-"Chest"
+"Core"
 ],
 "instructions": [
 "Adjust the seat height and position yourself on the machine with your back against the backrest.",
@@ -6434,7 +6475,7 @@
 "parent": "Shoulders",
 "secondaryMuscles": [
 "Triceps",
-"Upper Back"
+"Core"
 ],
 "instructions": [
 "Adjust the seat height and position yourself on the smith machine with your feet shoulder-width apart.",
@@ -6762,11 +6803,12 @@
 "name": "Upright Row (Smith Machine)",
 "bodyPart": "shoulders",
 "equipment": "Smith Machine",
-"target": "Shoulders",
+"target": "Side Delts",
 "parent": "Shoulders",
 "secondaryMuscles": [
 "Traps",
-"Biceps"
+"Biceps",
+"Forearms"
 ],
 "instructions": [
 "Stand with your feet shoulder-width apart, facing the smith machine.",
@@ -7305,7 +7347,8 @@
 "target": "Biceps",
 "parent": "Biceps",
 "secondaryMuscles": [
-"Forearms"
+"Forearms",
+"Brachialis"
 ],
 "instructions": [
 "Stand up straight with your feet shoulder-width apart and hold a barbell with an underhand grip, palms facing forward.",
@@ -7329,7 +7372,8 @@
 "target": "Biceps",
 "parent": "Biceps",
 "secondaryMuscles": [
-"Forearms"
+"Forearms",
+"Brachialis"
 ],
 "instructions": [
 "Stand facing the cable machine with your feet shoulder-width apart.",
@@ -7354,7 +7398,8 @@
 "target": "Biceps",
 "parent": "Biceps",
 "secondaryMuscles": [
-"Forearms"
+"Forearms",
+"Brachialis"
 ],
 "instructions": [
 "Stand up straight with your feet shoulder-width apart and hold the ez barbell with an underhand grip, palms facing up.",
@@ -7427,7 +7472,8 @@
 "target": "Biceps",
 "parent": "Biceps",
 "secondaryMuscles": [
-"Forearms"
+"Forearms",
+"Brachialis"
 ],
 "instructions": [
 "Stand facing a cable machine with your feet shoulder-width apart.",
@@ -7467,6 +7513,7 @@
 "target": "Biceps",
 "parent": "Biceps",
 "secondaryMuscles": [
+"Brachialis",
 "Forearms"
 ],
 "instructions": [
@@ -7774,7 +7821,8 @@
 "target": "Biceps",
 "parent": "Biceps",
 "secondaryMuscles": [
-"Forearms"
+"Forearms",
+"Brachialis"
 ],
 "instructions": [
 "Adjust the height of the smith machine bar to be at waist level.",
@@ -7824,8 +7872,7 @@
 "parent": "Biceps",
 "secondaryMuscles": [
 "Forearms",
-"Brachialis",
-"Shoulders"
+"Brachialis"
 ],
 "instructions": [
 "Attach a straight bar to a high pulley cable machine.",
@@ -7876,7 +7923,8 @@
 "target": "Biceps",
 "parent": "Biceps",
 "secondaryMuscles": [
-"Forearms"
+"Forearms",
+"Brachialis"
 ],
 "instructions": [
 "Adjust the cable machine so that the preacher curl pad is at chest height.",
@@ -8265,7 +8313,8 @@
 "target": "Biceps",
 "parent": "Biceps",
 "secondaryMuscles": [
-"Forearms"
+"Forearms",
+"Brachialis"
 ],
 "instructions": [
 "Stand with your feet shoulder-width apart and hold the ez barbell with an underhand grip, palms facing up.",
@@ -8425,8 +8474,7 @@
 "parent": "Triceps",
 "secondaryMuscles": [
 "Lats",
-"Core",
-"Shoulders"
+"Core"
 ],
 "instructions": [
 "Lie flat on a bench with your feet flat on the ground and your head at the end of the bench.",
@@ -8464,8 +8512,7 @@
 "parent": "Triceps",
 "secondaryMuscles": [
 "Chest",
-"Front Delts",
-"Shoulders"
+"Front Delts"
 ],
 "instructions": [
 "Sit on a bench with your hands gripping the edge, fingers pointing forward.",
@@ -8488,9 +8535,7 @@
 "target": "Triceps",
 "parent": "Triceps",
 "secondaryMuscles": [
-"Chest",
-"Front Delts",
-"Shoulders"
+"Chest"
 ],
 "instructions": [
 "Lie flat on a bench with your feet flat on the ground and your back pressed against the bench.",
@@ -8553,8 +8598,7 @@
 "target": "Triceps",
 "parent": "Triceps",
 "secondaryMuscles": [
-"Chest",
-"Shoulders"
+"Chest"
 ],
 "instructions": [
 "Adjust the seat height and position yourself on the bench with your feet flat on the ground.",
@@ -8745,8 +8789,7 @@
 "target": "Triceps",
 "parent": "Triceps",
 "secondaryMuscles": [
-"Chest",
-"Shoulders"
+"Chest"
 ],
 "instructions": [
 "Lie flat on a bench with your feet flat on the ground and your back pressed against the bench.",
@@ -8839,7 +8882,8 @@
 "target": "Triceps",
 "parent": "Triceps",
 "secondaryMuscles": [
-"Shoulders"
+"Lats",
+"Core"
 ],
 "instructions": [
 "Adjust the cable machine to a low pulley position.",
@@ -8865,7 +8909,8 @@
 "target": "Triceps",
 "parent": "Triceps",
 "secondaryMuscles": [
-"Shoulders"
+"Lats",
+"Core"
 ],
 "instructions": [
 "Set up an incline bench at a 45-degree angle.",
@@ -9123,7 +9168,8 @@
 "target": "Triceps",
 "parent": "Triceps",
 "secondaryMuscles": [
-"Shoulders"
+"Lats",
+"Core"
 ],
 "instructions": [
 "Adjust the seat of the smith machine so that the bar is at shoulder height.",
@@ -9702,8 +9748,7 @@
 "parent": "Triceps",
 "secondaryMuscles": [
 "Chest",
-"Front Delts",
-"Shoulders"
+"Front Delts"
 ],
 "instructions": [
 "Sit on a flat bench with a dumbbell in each hand, palms facing each other.",
@@ -9862,9 +9907,8 @@
 "target": "Triceps",
 "parent": "Triceps",
 "secondaryMuscles": [
-"Lats",
-"Core",
-"Shoulders"
+"Chest",
+"Core"
 ],
 "instructions": [
 "Start by standing with your feet shoulder-width apart and holding the barbell with an overhand grip.",
@@ -9887,7 +9931,7 @@
 "target": "Triceps",
 "parent": "Triceps",
 "secondaryMuscles": [
-"Lats",
+"Chest",
 "Core"
 ],
 "instructions": [],
@@ -9903,7 +9947,7 @@
 "target": "Triceps",
 "parent": "Triceps",
 "secondaryMuscles": [
-"Lats",
+"Chest",
 "Core"
 ],
 "instructions": [],
@@ -9919,7 +9963,7 @@
 "target": "Triceps",
 "parent": "Triceps",
 "secondaryMuscles": [
-"Lats",
+"Chest",
 "Core"
 ],
 "instructions": [],
@@ -9935,9 +9979,8 @@
 "target": "Triceps",
 "parent": "Triceps",
 "secondaryMuscles": [
-"Lats",
-"Core",
-"Shoulders"
+"Chest",
+"Core"
 ],
 "instructions": [
 "Adjust the seat height and position yourself on the machine with your back against the pad.",
@@ -9961,8 +10004,7 @@
 "parent": "Triceps",
 "secondaryMuscles": [
 "Chest",
-"Front Delts",
-"Forearms"
+"Front Delts"
 ],
 "instructions": [
 "Attach a v-bar attachment to the cable machine at the highest setting.",
@@ -10101,8 +10143,7 @@
 "Grip",
 "Traps",
 "Core",
-"Legs",
-"Calves"
+"Legs"
 ],
 "instructions": [
 "Stand up straight with a dumbbell in each hand, palms facing your sides.",
@@ -10589,9 +10630,7 @@
 "target": "Forearm Flexors",
 "parent": "Forearms",
 "secondaryMuscles": [
-"Grip",
-"Biceps",
-"Brachialis"
+"Grip"
 ],
 "instructions": [
 "Sit on a bench with your feet flat on the ground and your forearms resting on your thighs, holding a barbell with an underhand grip.",
@@ -10611,11 +10650,10 @@
 "name": "Wrist Curl (Cable)",
 "bodyPart": "forearms",
 "equipment": "Cable",
-"target": "Forearms",
+"target": "Forearm Flexors",
 "parent": "Forearms",
 "secondaryMuscles": [
-"Biceps",
-"Brachialis"
+"Grip"
 ],
 "instructions": [
 "Attach a straight bar to a low pulley cable machine.",
@@ -10776,8 +10814,7 @@
 "secondaryMuscles": [
 "Glutes",
 "Hamstrings",
-"Core",
-"Calves"
+"Core"
 ],
 "instructions": [
 "Start by standing with your feet shoulder-width apart and your toes slightly turned out.",
@@ -10936,7 +10973,7 @@
 "secondaryMuscles": [
 "Glutes",
 "Hamstrings",
-"Calves"
+"Core"
 ],
 "instructions": [
 "Adjust the height of the smith machine bar to a comfortable position.",
@@ -11056,9 +11093,7 @@
 "Glutes",
 "Core",
 "Upper Back",
-"Hamstrings",
-"Biceps",
-"Calves"
+"Hamstrings"
 ],
 "instructions": [
 "Start by standing with your feet shoulder-width apart, toes slightly turned out.",
@@ -11104,8 +11139,7 @@
 "Glutes",
 "Core",
 "Upper Back",
-"Hamstrings",
-"Calves"
+"Hamstrings"
 ],
 "instructions": [
 "Stand with your feet shoulder-width apart, toes slightly turned out.",
@@ -11132,8 +11166,7 @@
 "Glutes",
 "Core",
 "Upper Back",
-"Hamstrings",
-"Calves"
+"Hamstrings"
 ],
 "instructions": [
 "Stand with your feet shoulder-width apart, holding a dumbbell vertically against your chest with both hands.",
@@ -11149,6 +11182,32 @@
 "inHevyStrong": true
 },
 {
+"id": "0534",
+"name": "Goblet Squat (Kettlebell)",
+"bodyPart": "legs",
+"equipment": "Kettlebell",
+"target": "Quadriceps",
+"parent": "Quadriceps",
+"secondaryMuscles": [
+"Glutes",
+"Core",
+"Upper Back",
+"Hamstrings"
+],
+"instructions": [
+"Stand with your feet shoulder-width apart, holding a kettlebell close to your chest with both hands.",
+"Keeping your chest up and core engaged, lower your body down into a squat position by bending at the knees and hips.",
+"Continue lowering until your thighs are parallel to the ground, or as low as you can comfortably go.",
+"Pause for a moment at the bottom, then push through your heels to return to the starting position.",
+"Repeat for the desired number of repetitions."
+],
+"gif": true,
+"aliases": [
+"Kettlebell Goblet Squat"
+],
+"inHevyStrong": false
+},
+{
 "id": "0743",
 "name": "Hack Squat (Machine)",
 "bodyPart": "legs",
@@ -11158,8 +11217,7 @@
 "secondaryMuscles": [
 "Glutes",
 "Hamstrings",
-"Core",
-"Calves"
+"Core"
 ],
 "instructions": [
 "Adjust the sled machine to a comfortable position for your height.",
@@ -11175,6 +11233,36 @@
 "Sled Hack Squat"
 ],
 "inHevyStrong": true
+},
+{
+"id": "0755",
+"name": "Hack Squat (Smith Machine)",
+"bodyPart": "legs",
+"equipment": "Smith Machine",
+"target": "Quadriceps",
+"parent": "Quadriceps",
+"secondaryMuscles": [
+"Glutes",
+"Hamstrings",
+"Core"
+],
+"instructions": [
+"Adjust the barbell on the smith machine to an appropriate height for your body.",
+"Stand with your feet shoulder-width apart, toes slightly pointed outwards.",
+"Position yourself under the barbell, resting it on your upper traps and shoulders.",
+"Grasp the barbell with an overhand grip, slightly wider than shoulder-width apart.",
+"Engage your core and keep your chest up as you unrack the barbell.",
+"Take a step back and position your feet slightly wider than shoulder-width apart.",
+"Bend your knees and lower your body down, keeping your chest up and back straight.",
+"Continue descending until your thighs are parallel to the ground or slightly below.",
+"Pause for a moment at the bottom, then push through your heels to return to the starting position.",
+"Repeat for the desired number of repetitions."
+],
+"gif": true,
+"aliases": [
+"Smith Hack Squat"
+],
+"inHevyStrong": false
 },
 {
 "id": "g0115",
@@ -11235,9 +11323,7 @@
 "equipment": "Machine",
 "target": "Quadriceps",
 "parent": "Quadriceps",
-"secondaryMuscles": [
-"Hamstrings"
-],
+"secondaryMuscles": [],
 "instructions": [
 "Adjust the seat height and backrest of the machine to fit your body.",
 "Sit on the machine with your back against the backrest and your feet on the footpad.",
@@ -11268,6 +11354,33 @@
 "gif": false,
 "aliases": [],
 "inHevyStrong": true
+},
+{
+"id": "0760",
+"name": "Leg Press (Smith Machine)",
+"bodyPart": "legs",
+"equipment": "Smith Machine",
+"target": "Quadriceps",
+"parent": "Quadriceps",
+"secondaryMuscles": [
+"Glutes",
+"Hamstrings",
+"Core"
+],
+"instructions": [
+"Adjust the seat and footplate of the smith machine to a comfortable position.",
+"Sit on the machine with your back against the backrest and your feet shoulder-width apart on the footplate.",
+"Grasp the handles or sides of the machine for stability.",
+"Push the footplate away from you by extending your legs, keeping your back against the backrest.",
+"Pause for a moment at the fully extended position.",
+"Slowly bend your knees and lower the footplate back towards you, returning to the starting position.",
+"Repeat for the desired number of repetitions."
+],
+"gif": true,
+"aliases": [
+"Smith Leg Press"
+],
+"inHevyStrong": false
 },
 {
 "id": "g0119",
@@ -11476,6 +11589,32 @@
 "Assisted Pistol Squats"
 ],
 "inHevyStrong": true
+},
+{
+"id": "0544",
+"name": "Pistol Squat (Kettlebell)",
+"bodyPart": "legs",
+"equipment": "Kettlebell",
+"target": "Quadriceps",
+"parent": "Quadriceps",
+"secondaryMuscles": [
+"Glutes",
+"Hamstrings",
+"Core",
+"Calves"
+],
+"instructions": [
+"Stand with your feet shoulder-width apart, holding a kettlebell in front of your chest with both hands.",
+"Lift your left foot off the ground and extend it forward, keeping it parallel to the ground.",
+"Slowly lower your body down into a squat position, keeping your right foot flat on the ground and your left leg extended.",
+"Pause for a moment at the bottom of the squat, then push through your right heel to return to the starting position.",
+"Repeat for the desired number of repetitions, then switch legs."
+],
+"gif": true,
+"aliases": [
+"Kettlebell Pistol Squat"
+],
+"inHevyStrong": false
 },
 {
 "id": "g0143",
@@ -11896,8 +12035,7 @@
 "Glutes",
 "Hamstrings",
 "Core",
-"Lower Back",
-"Calves"
+"Lower Back"
 ],
 "instructions": [
 "Start by kneeling on the ground with your knees hip-width apart and your toes pointing forward.",
@@ -11924,8 +12062,7 @@
 "Glutes",
 "Hamstrings",
 "Core",
-"Lower Back",
-"Calves"
+"Lower Back"
 ],
 "instructions": [
 "Stand with your feet shoulder-width apart, holding a dumbbell in each hand at your sides.",
@@ -11950,7 +12087,8 @@
 "secondaryMuscles": [
 "Glutes",
 "Hamstrings",
-"Core"
+"Core",
+"Lower Back"
 ],
 "instructions": [],
 "gif": false,
@@ -11968,8 +12106,7 @@
 "Glutes",
 "Hamstrings",
 "Core",
-"Lower Back",
-"Calves"
+"Lower Back"
 ],
 "instructions": [
 "Set up the smith machine with the barbell at an appropriate height for your squat.",
@@ -11988,6 +12125,33 @@
 "Smith Squat"
 ],
 "inHevyStrong": true
+},
+{
+"id": "0852",
+"name": "Squat (Weighted)",
+"bodyPart": "legs",
+"equipment": "Bodyweight",
+"target": "Quadriceps",
+"parent": "Quadriceps",
+"secondaryMuscles": [
+"Glutes",
+"Hamstrings",
+"Core",
+"Lower Back"
+],
+"instructions": [
+"Stand with your feet shoulder-width apart, toes pointing slightly outward.",
+"Hold a weight in front of your chest or on your shoulders.",
+"Engage your core and keep your chest up as you lower your hips down and back, as if sitting into a chair.",
+"Lower until your thighs are parallel to the ground, or as low as you can comfortably go.",
+"Push through your heels to stand back up, squeezing your glutes at the top.",
+"Repeat for the desired number of repetitions."
+],
+"gif": true,
+"aliases": [
+"Weighted Squat"
+],
+"inHevyStrong": false
 },
 {
 "id": "0786",
@@ -12247,6 +12411,31 @@
 "inHevyStrong": true
 },
 {
+"id": "1460",
+"name": "Walking Lunge",
+"bodyPart": "legs",
+"equipment": "Bodyweight",
+"target": "Quadriceps",
+"parent": "Quadriceps",
+"secondaryMuscles": [
+"Glutes",
+"Hamstrings",
+"Core",
+"Calves"
+],
+"instructions": [
+"Stand with your feet shoulder-width apart.",
+"Take a step forward with your right leg, lowering your body into a lunge position.",
+"Keep your torso upright and your front knee aligned with your ankle.",
+"Push off with your right foot and bring your left foot forward, stepping into a lunge position with your left leg.",
+"Continue alternating legs and walking forward, maintaining a controlled and steady pace.",
+"Repeat for the desired number of repetitions."
+],
+"gif": true,
+"aliases": [],
+"inHevyStrong": false
+},
+{
 "id": "g0137",
 "name": "Walking Lunge (Barbell)",
 "bodyPart": "legs",
@@ -12411,7 +12600,8 @@
 "parent": "Hamstrings",
 "secondaryMuscles": [
 "Glutes",
-"Lower Back"
+"Calves",
+"Core"
 ],
 "instructions": [
 "Adjust the glute-ham raise machine to fit your body.",
@@ -12469,32 +12659,6 @@
 "inHevyStrong": true
 },
 {
-"id": "0535",
-"name": "Hang Clean (Kettlebell)",
-"bodyPart": "legs",
-"equipment": "Kettlebell",
-"target": "Hamstrings",
-"parent": "Hamstrings",
-"secondaryMuscles": [
-"Glutes",
-"Quadriceps",
-"Calves"
-],
-"instructions": [
-"Stand with your feet shoulder-width apart, holding a kettlebell in front of your thighs.",
-"Bend your knees slightly and hinge forward at the hips, keeping your back straight.",
-"Lower the kettlebell towards the ground, allowing it to swing between your legs.",
-"Quickly extend your hips and knees, using the momentum to swing the kettlebell up to shoulder height.",
-"As the kettlebell reaches shoulder height, rotate your wrists and catch the kettlebell in the rack position, with your elbow tucked in and the kettlebell resting on your forearm.",
-"Lower the kettlebell back down to the starting position between your legs, and repeat for the desired number of repetitions."
-],
-"gif": true,
-"aliases": [
-"Kettlebell Hang Clean"
-],
-"inHevyStrong": false
-},
-{
 "id": "0555",
 "name": "Kick Out Sit",
 "bodyPart": "legs",
@@ -12549,8 +12713,8 @@
 "target": "Hamstrings",
 "parent": "Hamstrings",
 "secondaryMuscles": [
-"Calves",
-"Glutes"
+"Glutes",
+"Calves"
 ],
 "instructions": [],
 "gif": false,
@@ -12704,7 +12868,8 @@
 "secondaryMuscles": [
 "Glutes",
 "Back",
-"Forearms"
+"Forearms",
+"Core"
 ],
 "instructions": [],
 "gif": false,
@@ -13178,33 +13343,6 @@
 "inHevyStrong": true
 },
 {
-"id": "0295",
-"name": "Clean (Dumbbell)",
-"bodyPart": "legs",
-"equipment": "Dumbbell",
-"target": "Glutes",
-"parent": "Glutes",
-"secondaryMuscles": [
-"Hamstrings",
-"Quadriceps",
-"Calves"
-],
-"instructions": [
-"Stand with your feet shoulder-width apart, holding a dumbbell in each hand with an overhand grip.",
-"Bend your knees and lower your hips into a squat position, keeping your back straight and chest up.",
-"Explosively extend your hips and knees, driving through your heels to jump off the ground.",
-"As you jump, shrug your shoulders and pull the dumbbells up towards your shoulders, keeping them close to your body.",
-"Catch the dumbbells at shoulder height, with your elbows pointing forward and your palms facing up.",
-"Lower the dumbbells back down to the starting position by reversing the movement.",
-"Repeat for the desired number of repetitions."
-],
-"gif": true,
-"aliases": [
-"Dumbbell Clean"
-],
-"inHevyStrong": false
-},
-{
 "id": "0741",
 "name": "Closer Hack Squat (Machine)",
 "bodyPart": "legs",
@@ -13253,83 +13391,6 @@
 ],
 "gif": true,
 "aliases": [],
-"inHevyStrong": false
-},
-{
-"id": "0157",
-"name": "Deadlift (Cable)",
-"bodyPart": "legs",
-"equipment": "Cable",
-"target": "Glutes",
-"parent": "Glutes",
-"secondaryMuscles": [
-"Hamstrings",
-"Quadriceps",
-"Lower Back"
-],
-"instructions": [
-"Stand facing the cable machine with your feet shoulder-width apart.",
-"Bend at the hips and knees, lowering your torso until your back is parallel to the ground.",
-"Grasp the cable handles with an overhand grip, keeping your arms straight and your shoulders back.",
-"Engage your glutes and hamstrings to lift the cable handles, extending your hips and standing up straight.",
-"Pause for a moment at the top, then slowly lower the cable handles back down to the starting position.",
-"Repeat for the desired number of repetitions."
-],
-"gif": true,
-"aliases": [
-"Cable Deadlift"
-],
-"inHevyStrong": false
-},
-{
-"id": "0300",
-"name": "Deadlift (Dumbbell)",
-"bodyPart": "legs",
-"equipment": "Dumbbell",
-"target": "Glutes",
-"parent": "Glutes",
-"secondaryMuscles": [
-"Hamstrings",
-"Lower Back"
-],
-"instructions": [
-"Stand with your feet shoulder-width apart, toes pointing forward.",
-"Hold a dumbbell in each hand, palms facing your body, arms extended downwards.",
-"Bend at your hips and knees, lowering the dumbbells towards the ground while keeping your back straight.",
-"Push through your heels and extend your hips and knees, lifting the dumbbells back up to the starting position.",
-"Repeat for the desired number of repetitions."
-],
-"gif": true,
-"aliases": [
-"Dumbbell Deadlift"
-],
-"inHevyStrong": false
-},
-{
-"id": "0578",
-"name": "Deadlift (Machine)",
-"bodyPart": "legs",
-"equipment": "Machine",
-"target": "Glutes",
-"parent": "Glutes",
-"secondaryMuscles": [
-"Hamstrings",
-"Quadriceps"
-],
-"instructions": [
-"Adjust the seat height and foot platform to your desired position.",
-"Sit on the machine with your back against the pad and your feet flat on the foot platform.",
-"Grasp the handles or the sides of the seat for stability.",
-"Engage your glutes and hamstrings, and push through your heels to lift the weight up.",
-"Keep your back straight and avoid rounding your shoulders.",
-"Extend your hips fully at the top of the movement, squeezing your glutes.",
-"Lower the weight back down in a controlled manner, keeping tension on your glutes and hamstrings.",
-"Repeat for the desired number of repetitions."
-],
-"gif": true,
-"aliases": [
-"Lever Deadlift"
-],
 "inHevyStrong": false
 },
 {
@@ -13535,61 +13596,6 @@
 ],
 "gif": true,
 "aliases": [],
-"inHevyStrong": false
-},
-{
-"id": "0534",
-"name": "Goblet Squat (Kettlebell)",
-"bodyPart": "legs",
-"equipment": "Kettlebell",
-"target": "Glutes",
-"parent": "Glutes",
-"secondaryMuscles": [
-"Quadriceps",
-"Hamstrings",
-"Calves"
-],
-"instructions": [
-"Stand with your feet shoulder-width apart, holding a kettlebell close to your chest with both hands.",
-"Keeping your chest up and core engaged, lower your body down into a squat position by bending at the knees and hips.",
-"Continue lowering until your thighs are parallel to the ground, or as low as you can comfortably go.",
-"Pause for a moment at the bottom, then push through your heels to return to the starting position.",
-"Repeat for the desired number of repetitions."
-],
-"gif": true,
-"aliases": [
-"Kettlebell Goblet Squat"
-],
-"inHevyStrong": false
-},
-{
-"id": "0755",
-"name": "Hack Squat (Smith Machine)",
-"bodyPart": "legs",
-"equipment": "Smith Machine",
-"target": "Glutes",
-"parent": "Glutes",
-"secondaryMuscles": [
-"Quadriceps",
-"Hamstrings",
-"Calves"
-],
-"instructions": [
-"Adjust the barbell on the smith machine to an appropriate height for your body.",
-"Stand with your feet shoulder-width apart, toes slightly pointed outwards.",
-"Position yourself under the barbell, resting it on your upper traps and shoulders.",
-"Grasp the barbell with an overhand grip, slightly wider than shoulder-width apart.",
-"Engage your core and keep your chest up as you unrack the barbell.",
-"Take a step back and position your feet slightly wider than shoulder-width apart.",
-"Bend your knees and lower your body down, keeping your chest up and back straight.",
-"Continue descending until your thighs are parallel to the ground or slightly below.",
-"Pause for a moment at the bottom, then push through your heels to return to the starting position.",
-"Repeat for the desired number of repetitions."
-],
-"gif": true,
-"aliases": [
-"Smith Hack Squat"
-],
 "inHevyStrong": false
 },
 {
@@ -13835,8 +13841,7 @@
 "secondaryMuscles": [
 "Hamstrings",
 "Shoulders",
-"Core",
-"Obliques"
+"Core"
 ],
 "instructions": [
 "Stand with your feet shoulder-width apart, holding a kettlebell in your right hand overhead.",
@@ -13889,33 +13894,6 @@
 "gif": false,
 "aliases": [],
 "inHevyStrong": true
-},
-{
-"id": "0760",
-"name": "Leg Press (Smith Machine)",
-"bodyPart": "legs",
-"equipment": "Smith Machine",
-"target": "Glutes",
-"parent": "Glutes",
-"secondaryMuscles": [
-"Quadriceps",
-"Hamstrings",
-"Calves"
-],
-"instructions": [
-"Adjust the seat and footplate of the smith machine to a comfortable position.",
-"Sit on the machine with your back against the backrest and your feet shoulder-width apart on the footplate.",
-"Grasp the handles or sides of the machine for stability.",
-"Push the footplate away from you by extending your legs, keeping your back against the backrest.",
-"Pause for a moment at the fully extended position.",
-"Slowly bend your knees and lower the footplate back towards you, returning to the starting position.",
-"Repeat for the desired number of repetitions."
-],
-"gif": true,
-"aliases": [
-"Smith Leg Press"
-],
-"inHevyStrong": false
 },
 {
 "id": "1434",
@@ -14173,31 +14151,6 @@
 "inHevyStrong": true
 },
 {
-"id": "0544",
-"name": "Pistol Squat (Kettlebell)",
-"bodyPart": "legs",
-"equipment": "Kettlebell",
-"target": "Glutes",
-"parent": "Glutes",
-"secondaryMuscles": [
-"Quadriceps",
-"Hamstrings",
-"Calves"
-],
-"instructions": [
-"Stand with your feet shoulder-width apart, holding a kettlebell in front of your chest with both hands.",
-"Lift your left foot off the ground and extend it forward, keeping it parallel to the ground.",
-"Slowly lower your body down into a squat position, keeping your right foot flat on the ground and your left leg extended.",
-"Pause for a moment at the bottom of the squat, then push through your right heel to return to the starting position.",
-"Repeat for the desired number of repetitions, then switch legs."
-],
-"gif": true,
-"aliases": [
-"Kettlebell Pistol Squat"
-],
-"inHevyStrong": false
-},
-{
 "id": "0371",
 "name": "Plyo Squat (Dumbbell)",
 "bodyPart": "legs",
@@ -14394,32 +14347,6 @@
 "inHevyStrong": false
 },
 {
-"id": "0852",
-"name": "Squat (Weighted)",
-"bodyPart": "legs",
-"equipment": "Bodyweight",
-"target": "Glutes",
-"parent": "Glutes",
-"secondaryMuscles": [
-"Quadriceps",
-"Hamstrings",
-"Calves"
-],
-"instructions": [
-"Stand with your feet shoulder-width apart, toes pointing slightly outward.",
-"Hold a weight in front of your chest or on your shoulders.",
-"Engage your core and keep your chest up as you lower your hips down and back, as if sitting into a chair.",
-"Lower until your thighs are parallel to the ground, or as low as you can comfortably go.",
-"Push through your heels to stand back up, squeezing your glutes at the top.",
-"Repeat for the desired number of repetitions."
-],
-"gif": true,
-"aliases": [
-"Weighted Squat"
-],
-"inHevyStrong": false
-},
-{
 "id": "g0175",
 "name": "Standing Glute Kickback in Machine",
 "bodyPart": "legs",
@@ -14590,30 +14517,6 @@
 "While keeping your hips lifted, twist your lower body to the right side, bringing your knees towards the ground.",
 "Return to the starting position and repeat the twist to the left side.",
 "Continue alternating twists for the desired number of repetitions."
-],
-"gif": true,
-"aliases": [],
-"inHevyStrong": false
-},
-{
-"id": "1460",
-"name": "Walking Lunge",
-"bodyPart": "legs",
-"equipment": "Bodyweight",
-"target": "Glutes",
-"parent": "Glutes",
-"secondaryMuscles": [
-"Quadriceps",
-"Hamstrings",
-"Calves"
-],
-"instructions": [
-"Stand with your feet shoulder-width apart.",
-"Take a step forward with your right leg, lowering your body into a lunge position.",
-"Keep your torso upright and your front knee aligned with your ankle.",
-"Push off with your right foot and bring your left foot forward, stepping into a lunge position with your left leg.",
-"Continue alternating legs and walking forward, maintaining a controlled and steady pace.",
-"Repeat for the desired number of repetitions."
 ],
 "gif": true,
 "aliases": [],
@@ -14799,10 +14702,7 @@
 "equipment": "Machine",
 "target": "Calves",
 "parent": "Calves",
-"secondaryMuscles": [
-"Hamstrings",
-"Glutes"
-],
+"secondaryMuscles": [],
 "instructions": [
 "Adjust the leverage machine to the appropriate height for your body.",
 "Position yourself facing the machine, with your toes on the foot platform and your heels hanging off the edge.",
@@ -14825,10 +14725,7 @@
 "equipment": "Bodyweight",
 "target": "Calves",
 "parent": "Calves",
-"secondaryMuscles": [
-"Hamstrings",
-"Glutes"
-],
+"secondaryMuscles": [],
 "instructions": [
 "Stand with your toes on an elevated surface, such as a step or block.",
 "Place your hands on a stable support, such as a wall or railing, for balance.",
@@ -15152,10 +15049,7 @@
 "equipment": "Barbell",
 "target": "Calves",
 "parent": "Calves",
-"secondaryMuscles": [
-"Hamstrings",
-"Quadriceps"
-],
+"secondaryMuscles": [],
 "instructions": [
 "Sit on a bench with your feet flat on the floor and a barbell resting on your thighs.",
 "Place the balls of your feet on a raised platform, such as a block or step.",
@@ -15177,9 +15071,7 @@
 "equipment": "Dumbbell",
 "target": "Calves",
 "parent": "Calves",
-"secondaryMuscles": [
-"Hamstrings"
-],
+"secondaryMuscles": [],
 "instructions": [
 "Sit on a bench or chair with your feet flat on the ground and a dumbbell resting on your thighs.",
 "Place the balls of your feet on a raised surface such as a step or block, with your heels hanging off the edge.",
@@ -15271,10 +15163,7 @@
 "equipment": "Barbell",
 "target": "Calves",
 "parent": "Calves",
-"secondaryMuscles": [
-"Hamstrings",
-"Glutes"
-],
+"secondaryMuscles": [],
 "instructions": [
 "Stand with your feet shoulder-width apart and place a barbell across your upper back.",
 "Raise your heels off the ground as high as possible, using only your toes.",
@@ -15294,10 +15183,7 @@
 "equipment": "Cable",
 "target": "Calves",
 "parent": "Calves",
-"secondaryMuscles": [
-"Hamstrings",
-"Glutes"
-],
+"secondaryMuscles": [],
 "instructions": [
 "Stand facing a cable machine with your feet shoulder-width apart.",
 "Hold onto the cable machine handles or attach a cable ankle strap to your ankles.",
@@ -15776,7 +15662,8 @@
 "target": "Abdominals",
 "parent": "Core",
 "secondaryMuscles": [
-"Hip Flexors"
+"Hip Flexors",
+"Obliques"
 ],
 "instructions": [],
 "gif": false,
@@ -15793,7 +15680,8 @@
 "target": "Abdominals",
 "parent": "Core",
 "secondaryMuscles": [
-"Hip Flexors"
+"Hip Flexors",
+"Obliques"
 ],
 "instructions": [],
 "gif": false,
@@ -16207,8 +16095,7 @@
 "secondaryMuscles": [
 "Hip Flexors",
 "Lower Back",
-"Shoulders",
-"Grip"
+"Shoulders"
 ],
 "instructions": [],
 "gif": false,
@@ -16902,8 +16789,7 @@
 "parent": "Core",
 "secondaryMuscles": [
 "Abdominals",
-"Hip Flexors",
-"Lower Back"
+"Hip Flexors"
 ],
 "instructions": [
 "Sit on the ground with your knees bent and your feet flat on the floor.",
@@ -17496,6 +17382,34 @@
 "inHevyStrong": true
 },
 {
+"id": "0295",
+"name": "Clean (Dumbbell)",
+"bodyPart": "full body",
+"equipment": "Dumbbell",
+"target": "Full Body",
+"parent": "Full Body",
+"secondaryMuscles": [
+"Legs",
+"Back",
+"Shoulders",
+"Traps"
+],
+"instructions": [
+"Stand with your feet shoulder-width apart, holding a dumbbell in each hand with an overhand grip.",
+"Bend your knees and lower your hips into a squat position, keeping your back straight and chest up.",
+"Explosively extend your hips and knees, driving through your heels to jump off the ground.",
+"As you jump, shrug your shoulders and pull the dumbbells up towards your shoulders, keeping them close to your body.",
+"Catch the dumbbells at shoulder height, with your elbows pointing forward and your palms facing up.",
+"Lower the dumbbells back down to the starting position by reversing the movement.",
+"Repeat for the desired number of repetitions."
+],
+"gif": true,
+"aliases": [
+"Dumbbell Clean"
+],
+"inHevyStrong": false
+},
+{
 "id": "g0247",
 "name": "Clean and Jerk (Barbell)",
 "bodyPart": "full body",
@@ -17543,6 +17457,33 @@
 "gif": false,
 "aliases": [],
 "inHevyStrong": true
+},
+{
+"id": "0535",
+"name": "Hang Clean (Kettlebell)",
+"bodyPart": "full body",
+"equipment": "Kettlebell",
+"target": "Full Body",
+"parent": "Full Body",
+"secondaryMuscles": [
+"Legs",
+"Back",
+"Shoulders",
+"Traps"
+],
+"instructions": [
+"Stand with your feet shoulder-width apart, holding a kettlebell in front of your thighs.",
+"Bend your knees slightly and hinge forward at the hips, keeping your back straight.",
+"Lower the kettlebell towards the ground, allowing it to swing between your legs.",
+"Quickly extend your hips and knees, using the momentum to swing the kettlebell up to shoulder height.",
+"As the kettlebell reaches shoulder height, rotate your wrists and catch the kettlebell in the rack position, with your elbow tucked in and the kettlebell resting on your forearm.",
+"Lower the kettlebell back down to the starting position between your legs, and repeat for the desired number of repetitions."
+],
+"gif": true,
+"aliases": [
+"Kettlebell Hang Clean"
+],
+"inHevyStrong": false
 },
 {
 "id": "g0250",
@@ -17603,11 +17544,12 @@
 "name": "Kettlebell Clean",
 "bodyPart": "full body",
 "equipment": "Kettlebell",
-"target": "Posterior Chain",
+"target": "Full Body",
 "parent": "Full Body",
 "secondaryMuscles": [
+"Legs",
+"Back",
 "Shoulders",
-"Core",
 "Traps"
 ],
 "instructions": [],
@@ -17681,8 +17623,7 @@
 "secondaryMuscles": [
 "Core",
 "Shoulders",
-"Glutes",
-"Hamstrings"
+"Glutes"
 ],
 "instructions": [
 "Stand with your feet shoulder-width apart, toes pointed slightly outward.",
@@ -17737,10 +17678,7 @@
 "Legs",
 "Back",
 "Shoulders",
-"Traps",
-"Glutes",
-"Quadriceps",
-"Calves"
+"Traps"
 ],
 "instructions": [
 "Start with the barbell on the ground in front of you, with your feet shoulder-width apart.",
@@ -17783,12 +17721,7 @@
 "equipment": "Barbell",
 "target": "Full Body",
 "parent": "Full Body",
-"secondaryMuscles": [
-"Legs",
-"Back",
-"Shoulders",
-"Traps"
-],
+"secondaryMuscles": [],
 "instructions": [],
 "gif": false,
 "aliases": [],
