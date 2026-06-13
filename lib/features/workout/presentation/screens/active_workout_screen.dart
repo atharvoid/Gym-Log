@@ -90,17 +90,26 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
     if (name == null || !mounted) return; // cancelled → stay in the session
 
     ref.read(restTimerProvider.notifier).skip();
+
+    // The root navigator outlives this screen, so the PR celebration can land
+    // over Home rather than over the active-workout screen — which is about to
+    // be torn down (finishing nulls the session, blanking this screen).
+    final rootNavigator = Navigator.of(context, rootNavigator: true);
+
     final prs =
         await ref.read(activeWorkoutProvider.notifier).finishWorkout(name: name);
     if (!mounted) return;
 
-    // Celebrate before navigating — the dopamine hit lands while the
-    // accomplishment is still on screen.
-    if (prs.isNotEmpty) {
-      await showPrCelebration(context, prs);
-      if (!mounted) return;
-    }
+    // Leave the workout screen FIRST. Showing the celebration here previously
+    // rendered it over a blanked-out active screen and, on dismiss, flashed
+    // that dead screen / jumped back. Navigate to Home, then celebrate over it
+    // on the next frame using the root navigator — no z-order glitch, no jump.
     context.go('/');
+    if (prs.isNotEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        showPrCelebration(rootNavigator.context, prs);
+      });
+    }
   }
 
   Future<void> _saveChanges() async {
