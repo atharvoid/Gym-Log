@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:gymlog/core/theme/app_colors.dart';
+import 'package:gymlog/core/exercises/muscle_taxonomy.dart';
 import 'package:gymlog/core/database/database.dart';
 import 'package:gymlog/core/database/daos/workouts_dao.dart';
 import 'package:gymlog/core/providers/premium_provider.dart';
@@ -125,12 +126,67 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
               ),
               const SizedBox(height: 8),
               Text(
-                '${exercise.target} • ${exercise.equipment}',
+                () {
+                  final parent = MuscleTaxonomy.parentOf(exercise.target);
+                  return parent == exercise.target || parent == 'Other'
+                      ? exercise.equipment
+                      : '$parent  •  ${exercise.equipment}';
+                }(),
                 style: GoogleFonts.inter(
                   color: AppColors.textSecondary,
                   fontSize: 14,
                   fontWeight: FontWeight.w400,
                 ),
+              ),
+              const SizedBox(height: 14),
+              // Worked muscles: primary (accent) + secondary (muted) chips.
+              Builder(
+                builder: (_) {
+                  final chips = <(String, bool)>[(exercise.target, true)];
+                  try {
+                    final sec = (jsonDecode(exercise.secondaryMuscles ?? '[]')
+                            as List)
+                        .cast<String>();
+                    for (final m in sec) {
+                      if (m.trim().isNotEmpty) chips.add((m, false));
+                    }
+                  } catch (_) {/* malformed JSON — show primary only */}
+                  return Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      for (final (label, primary) in chips)
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 11, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: primary
+                                ? AppColors.accentPrimary.withValues(alpha: 0.14)
+                                : Colors.white.withValues(alpha: 0.05),
+                            borderRadius: BorderRadius.circular(999),
+                            border: Border.all(
+                              color: primary
+                                  ? AppColors.accentPrimary
+                                      .withValues(alpha: 0.34)
+                                  : Colors.white.withValues(alpha: 0.08),
+                              width: 1,
+                            ),
+                          ),
+                          child: Text(
+                            label,
+                            style: GoogleFonts.inter(
+                              fontSize: 12.5,
+                              fontWeight:
+                                  primary ? FontWeight.w600 : FontWeight.w500,
+                              color: primary
+                                  ? const Color(0xFFCBB2FF)
+                                  : AppColors.textSecondary,
+                            ),
+                          ),
+                        ),
+                    ],
+                  );
+                },
               ),
 
               const SizedBox(height: 24),

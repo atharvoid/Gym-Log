@@ -11,7 +11,10 @@ part 'exercises_dao.g.dart';
 
 /// Bump this key whenever the JSON asset or URL format changes.
 /// Incrementing forces all existing installs to re-run hydration on next launch.
-const _kHydrationKey = 'exercises_hydrated_v2';
+/// v3: unified catalog (standard Hevy/Strong names + parent→child muscles),
+/// upsert-by-exerciseDbId so existing rows are renamed/re-muscled in place and
+/// GIF links are refreshed, with null gifUrl for exercises that have no GIF yet.
+const _kHydrationKey = 'exercises_hydrated_v3';
 
 /// Base URL of the public storage bucket that hosts exercise GIFs.
 /// Centralized in [Env] (overridable via --dart-define GIF_BUCKET_BASE).
@@ -85,13 +88,13 @@ class ExercisesDao extends DatabaseAccessor<AppDatabase>
 
   // ── Hydration Engine ───────────────────────────────────────────────────────
 
-  /// One-time bulk seed from the bundled `assets/db/exercises.json`.
+  /// One-time bulk seed/refresh from the bundled `assets/db/exercises.json`.
   ///
-  /// Two-phase approach:
-  ///   1. UPDATE — patches gifUrl on any existing JSON-sourced rows.
-  ///      Handles re-runs after a URL format change without touching row IDs
-  ///      (preserves all FK references in workout_exercises / workout_sets).
-  ///   2. INSERT OR IGNORE — adds any rows that don't exist yet.
+  /// Upserts every catalog entry keyed by `exerciseDbId`: existing rows are
+  /// updated in place (standard name, parent→child muscles, refreshed GIF)
+  /// while their integer id — and therefore every workout FK — is preserved;
+  /// missing rows are inserted. Entries without a GIF yet get a null gifUrl.
+  /// User-created custom exercises (null exerciseDbId) are never touched.
   ///
   /// Guarded by a SharedPreferences key. Bump [_kHydrationKey] to force
   /// re-execution on all existing installs.
@@ -103,44 +106,46 @@ class ExercisesDao extends DatabaseAccessor<AppDatabase>
       final jsonString =
           await rootBundle.loadString('assets/db/exercises.json');
       final root = jsonDecode(jsonString) as Map<String, dynamic>;
-      final list = root['exercises'] as List<dynamic>;
+      final list = (root['exercises'] as List).cast<Map<String, dynamic>>();
 
-      // ── Phase 1: Fix any stale gifUrls in-place ──────────────────────────
-      // A single SQL UPDATE touches only JSON-sourced rows (exerciseDbId NOT
-      // NULL) and rewrites their gifUrl to the canonical Supabase format.
-      // Running before INSERT ensures even rows that survive insertOrIgnore
-      // end up with the correct URL.
-      await customStatement('''
-        UPDATE exercises
-        SET gif_url = '$_kGifBase/' || exercise_db_id || '.gif'
-        WHERE exercise_db_id IS NOT NULL
-      ''');
-      debugPrint('[ExercisesDao] Phase 1: gifUrl patch applied.');
-
-      // ── Phase 2: Insert exercises that don't exist yet ───────────────────
-      final companions = list.map((e) {
-        final id = e['id'] as String;
-        return ExercisesCompanion.insert(
-          exerciseDbId: Value(id),
-          name: e['name'] as String,
-          bodyPart: (e['bodyPart'] as String).toLowerCase(),
-          equipment: (e['equipment'] as String).toLowerCase(),
-          target: (e['target'] as String).toLowerCase(),
-          gifUrl: Value('$_kGifBase/$id.gif'),
-          secondaryMuscles: Value(jsonEncode(e['secondaryMuscles'])),
-          instructions: Value(jsonEncode(e['instructions'])),
-        );
-      }).toList();
-
-      const chunkSize = 100;
-      for (int i = 0; i < companions.length; i += chunkSize) {
-        final end = (i + chunkSize).clamp(0, companions.length);
-        await insertExercises(companions.sublist(i, end));
-      }
+      // Upsert keyed by exerciseDbId. Existing catalog rows are UPDATED in
+      // place — renamed to the standard name, re-muscled, and GIF refreshed —
+      // while their integer id is preserved, so every workout_exercises /
+      // workout_sets foreign key stays valid. New exercises are inserted.
+      // User-created custom exercises (exerciseDbId IS NULL) never collide and
+      // are left untouched. gifUrl is null for exercises that have no GIF yet,
+      // so the UI shows a clean fallback instead of a broken image.
+      await transaction(() async {
+        for (final e in list) {
+          final id = e['id'] as String;
+          final hasGif = e['gif'] == true;
+          final companion = ExercisesCompanion.insert(
+            exerciseDbId: Value(id),
+            name: e['name'] as String,
+            bodyPart: e['bodyPart'] as String,
+            equipment: e['equipment'] as String,
+            target: e['target'] as String,
+            secondaryMuscles:
+                Value(jsonEncode(e['secondaryMuscles'] ?? const <String>[])),
+            instructions:
+                Value(jsonEncode(e['instructions'] ?? const <String>[])),
+            gifUrl: hasGif ? Value('$_kGifBase/$id.gif') : const Value(null),
+          );
+          await into(exercises).insert(
+            companion,
+            onConflict: DoUpdate(
+              (_) => companion,
+              target: [exercises.exerciseDbId],
+            ),
+          );
+        }
+      });
 
       await prefs.setBool(_kHydrationKey, true);
+      await prefs.remove('exercises_hydrated_v2');
+      await prefs.remove('exercises_hydrated_v1');
       debugPrint(
-          '[ExercisesDao] Hydration complete: ${companions.length} exercises.');
+          '[ExercisesDao] Hydration v3 complete: ${list.length} exercises.');
     } catch (e, st) {
       debugPrint('[ExercisesDao] hydrateFromJson failed: $e\n$st');
       await seedDefaultExercises();
@@ -155,7 +160,8 @@ class ExercisesDao extends DatabaseAccessor<AppDatabase>
   Future<void> resetHydration() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_kHydrationKey);
-    // Also clear the old v1 key if it is present
+    // Also clear older keys if present
+    await prefs.remove('exercises_hydrated_v2');
     await prefs.remove('exercises_hydrated_v1');
     debugPrint(
         '[ExercisesDao] Hydration flag cleared — will re-run on next launch.');

@@ -18,33 +18,34 @@ final _recentExerciseIdsProvider = StreamProvider.autoDispose<List<int>>((ref) {
   return db.workoutsDao.watchRecentExerciseIds(user.id);
 });
 
-/// Muscle-group buckets → exercise.bodyPart values.
+/// Muscle-group buckets → exercise.bodyPart (region) values.
 ///
-/// Keys MUST map to bodyPart values that actually exist in the bundled
-/// dataset (verified against assets/db/exercises.json): upper legs, back,
-/// arms, chest, core, shoulders, lower legs, forearms. An earlier mapping
-/// used 'upper arms'/'lower arms'/'waist' — none of which exist — so the
-/// Arms and Core filters silently returned nothing.
+/// Keys map to the coarse regions stored in the unified catalog
+/// (assets/db/exercises.json): chest, back, shoulders, arms, forearms, legs,
+/// core, neck, full body. Arms folds in forearms; Legs covers quads/hams/
+/// glutes/calves/adductors. The richer parent→child muscle taxonomy lives in
+/// lib/core/exercises/muscle_taxonomy.dart.
 const _muscleGroups = <String, List<String>>{
   'Chest': ['chest'],
   'Back': ['back'],
   'Shoulders': ['shoulders'],
   'Arms': ['arms', 'forearms'],
-  'Legs': ['upper legs', 'lower legs'],
+  'Legs': ['legs'],
   'Core': ['core'],
 };
 
-/// Equipment buckets → matcher over exercise.equipment.
-/// Dataset equipment values: body weight, barbell, dumbbell, cable,
-/// leverage machine, smith machine, kettlebell, weighted, ez barbell,
-/// sled machine, olympic barbell, trap bar.
+/// Equipment buckets → matcher over exercise.equipment (lower-cased).
+/// Catalog equipment values: Barbell, Dumbbell, Cable, Machine, Smith Machine,
+/// Bodyweight, Kettlebell, Resistance Band, EZ Bar, Trap Bar, Weight Plate, etc.
 final _equipmentGroups = <String, bool Function(String)>{
-  'Barbell': (e) => e.contains('barbell') || e.contains('trap bar'),
+  'Barbell': (e) =>
+      e.contains('barbell') || e.contains('ez bar') || e.contains('trap bar'),
   'Dumbbell': (e) => e.contains('dumbbell'),
-  'Machine': (e) => e.contains('machine'),
+  'Machine': (e) => e.contains('machine'), // matches 'machine' + 'smith machine'
   'Cable': (e) => e.contains('cable'),
+  'Bodyweight': (e) => e.contains('bodyweight') || e.contains('body weight'),
   'Kettlebell': (e) => e.contains('kettlebell'),
-  'Body Weight': (e) => e.contains('body weight') || e == 'weighted',
+  'Band': (e) => e.contains('band'),
 };
 
 /// Exercise list with live search, Recent section, and combinable
