@@ -162,6 +162,131 @@ class WorkoutsDao extends DatabaseAccessor<AppDatabase>
       (select(workoutSessions)..where((t) => t.id.equals(id)))
           .getSingleOrNull();
 
+  // ── Sync serialization ─────────────────────────────────────────────────────
+
+  /// A self-contained JSON snapshot of a session and ALL its children
+  /// (exercises + sets) for cloud sync. Dates are epoch millis. Returns null
+  /// if the session no longer exists. No exercise metadata is included — the
+  /// catalog is bundled with the app, so only the user's logged data travels.
+  Future<Map<String, dynamic>?> exportSessionJson(String sessionId) async {
+    final s = await getSessionOrNull(sessionId);
+    if (s == null) return null;
+    final exs = await (select(workoutExercises)
+          ..where((t) => t.sessionId.equals(sessionId))
+          ..orderBy([(t) => OrderingTerm.asc(t.orderIndex)]))
+        .get();
+    final exIds = exs.map((e) => e.id).toList();
+    final sets = exIds.isEmpty
+        ? <WorkoutSet>[]
+        : await (select(workoutSets)
+              ..where((t) => t.workoutExerciseId.isIn(exIds)))
+            .get();
+    return {
+      'session': {
+        'id': s.id,
+        'userId': s.userId,
+        'routineId': s.routineId,
+        'name': s.name,
+        'startedAt': s.startedAt.millisecondsSinceEpoch,
+        'endedAt': s.endedAt?.millisecondsSinceEpoch,
+        'notes': s.notes,
+        'totalVolumeKg': s.totalVolumeKg,
+      },
+      'exercises': [
+        for (final e in exs)
+          {
+            'id': e.id,
+            'sessionId': e.sessionId,
+            'exerciseId': e.exerciseId,
+            'orderIndex': e.orderIndex,
+            'notes': e.notes,
+          }
+      ],
+      'sets': [
+        for (final st in sets)
+          {
+            'id': st.id,
+            'workoutExerciseId': st.workoutExerciseId,
+            'exerciseId': st.exerciseId,
+            'orderIndex': st.orderIndex,
+            'setType': st.setType,
+            'weightKg': st.weightKg,
+            'reps': st.reps,
+            'rpe': st.rpe,
+            'isPr': st.isPr,
+            'estimated1rm': st.estimated1rm,
+            'completedAt': st.completedAt?.millisecondsSinceEpoch,
+          }
+      ],
+    };
+  }
+
+  /// Rehydrate a session snapshot into local storage (used when restoring
+  /// from the cloud — e.g. after a reinstall). Idempotent and replace-based:
+  /// the session row is upserted and its children are rebuilt, so re-pulling
+  /// the same payload is safe.
+  Future<void> importSessionJson(Map<String, dynamic> data) async {
+    final sj = data['session'] as Map<String, dynamic>;
+    final sessionId = sj['id'] as String;
+    DateTime? ms(dynamic v) =>
+        v == null ? null : DateTime.fromMillisecondsSinceEpoch(v as int);
+
+    await transaction(() async {
+      await into(workoutSessions).insertOnConflictUpdate(
+        WorkoutSessionsCompanion.insert(
+          id: Value(sessionId),
+          userId: sj['userId'] as String,
+          routineId: Value(sj['routineId'] as String?),
+          name: Value(sj['name'] as String?),
+          startedAt: ms(sj['startedAt'])!,
+          endedAt: Value(ms(sj['endedAt'])),
+          notes: Value(sj['notes'] as String? ?? ''),
+          totalVolumeKg: Value((sj['totalVolumeKg'] as num?)?.toDouble() ?? 0),
+          synced: const Value(true),
+        ),
+      );
+
+      // Rebuild children deterministically.
+      final existing = await (select(workoutExercises)
+            ..where((t) => t.sessionId.equals(sessionId)))
+          .get();
+      final existingIds = existing.map((e) => e.id).toList();
+      if (existingIds.isNotEmpty) {
+        await (delete(workoutSets)
+              ..where((t) => t.workoutExerciseId.isIn(existingIds)))
+            .go();
+      }
+      await (delete(workoutExercises)
+            ..where((t) => t.sessionId.equals(sessionId)))
+          .go();
+
+      for (final e in (data['exercises'] as List).cast<Map<String, dynamic>>()) {
+        await into(workoutExercises).insert(WorkoutExercisesCompanion.insert(
+          id: Value(e['id'] as String),
+          sessionId: e['sessionId'] as String,
+          exerciseId: e['exerciseId'] as int,
+          orderIndex: e['orderIndex'] as int,
+          notes: Value(e['notes'] as String?),
+        ));
+      }
+      for (final st in (data['sets'] as List).cast<Map<String, dynamic>>()) {
+        await into(workoutSets).insert(WorkoutSetsCompanion.insert(
+          id: Value(st['id'] as String),
+          workoutExerciseId: st['workoutExerciseId'] as String,
+          exerciseId: st['exerciseId'] as int,
+          orderIndex: st['orderIndex'] as int,
+          setType: Value(st['setType'] as String? ?? 'normal'),
+          weightKg: (st['weightKg'] as num).toDouble(),
+          reps: st['reps'] as int,
+          rpe: Value((st['rpe'] as num?)?.toDouble()),
+          isPr: Value(st['isPr'] as bool? ?? false),
+          estimated1rm: Value((st['estimated1rm'] as num?)?.toDouble()),
+          completedAt: Value(ms(st['completedAt'])),
+        ));
+      }
+    });
+  }
+
   Future<List<WorkoutSession>> getSessionsForUser(String userId) =>
       (select(workoutSessions)..where((t) => t.userId.equals(userId))).get();
 

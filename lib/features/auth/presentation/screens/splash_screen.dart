@@ -1,9 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/theme/app_colors.dart';
-import '../../../../core/providers/database_provider.dart';
+import '../../../../core/services/profile_sync_service.dart';
+import '../../../../core/services/sync_engine.dart';
 import '../providers/auth_provider.dart';
 
 /// [splash_screen.dart]
@@ -38,14 +41,24 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
       return;
     }
 
-    // Logged in → check if local profile exists
-    final db = ref.read(databaseProvider);
-    final profile = await db.userDao.getUserOrNull(user.id);
+    // Restore cloud data in the background (e.g. after a reinstall) — pulls
+    // the user's synced workout history and rehydrates local storage. Fully
+    // non-blocking: navigation never waits on the network.
+    unawaited(ref.read(syncEngineProvider).pull(user.id));
+    unawaited(ref.read(syncEngineProvider).loadLastSynced());
+
+    // Logged in → make the backend authoritative: fetch the stored profile
+    // and hydrate local, or fall back to local if offline. First-ever users
+    // with no name anywhere are sent to the welcome. Never blocks (timed out
+    // internally), retries any queued write along the way.
+    final resolution = await ref.read(profileSyncProvider).resolveOnLogin(
+          userId: user.id,
+          email: user.email ?? '',
+        );
 
     if (!mounted) return;
 
-    if (profile == null) {
-      // First-time user: capture name before entering the app
+    if (resolution == ProfileResolution.needsOnboarding) {
       context.go('/onboarding');
     } else {
       context.go('/');
