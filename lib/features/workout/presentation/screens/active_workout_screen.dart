@@ -7,6 +7,7 @@ import 'package:gymlog/core/providers/settings_provider.dart';
 import 'package:gymlog/core/theme/app_colors.dart';
 import 'package:gymlog/core/utils/units.dart';
 import 'package:gymlog/features/workout/presentation/providers/active_workout_provider.dart';
+import 'package:gymlog/features/workout/presentation/providers/previous_session_provider.dart';
 import 'package:gymlog/features/workout/presentation/providers/rest_timer_provider.dart';
 import 'package:gymlog/features/workout/presentation/providers/workout_timer_provider.dart';
 import 'package:gymlog/shared/widgets/ui/primary_button.dart';
@@ -411,6 +412,12 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
                       );
                       final unit =
                           ref.watch(exerciseUnitProvider(exercise.exerciseId));
+                      // Read-only last-session sets for the PREVIOUS column.
+                      final previousSets = ref
+                          .watch(previousSessionSetsProvider(
+                              exercise.exerciseId))
+                          .valueOrNull ??
+                          const [];
 
                       return ExerciseBlock(
                         key: ValueKey(exercise.id),
@@ -418,6 +425,7 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
                         exercise: exercise,
                         driftExercise: driftEx,
                         unit: unit,
+                        previousSets: previousSets,
                         onReorderExercises: workout.exercises.length > 1
                             ? _showReorderSheet
                             : null,

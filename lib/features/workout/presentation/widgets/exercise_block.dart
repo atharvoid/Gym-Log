@@ -21,11 +21,18 @@ class ExerciseBlock extends StatelessWidget {
   final Exercise? driftExercise;
   final String unit;
 
+  /// Previous-session sets for this exercise, ordered by set index. Drives
+  /// the PREVIOUS column. Empty when the exercise has no prior history.
+  final List<WorkoutSet> previousSets;
+
   /// Opens the focus-safe reorder sheet. Null when there's only one
   /// exercise (nothing to reorder).
   final VoidCallback? onReorderExercises;
   final VoidCallback onRemove;
   final VoidCallback onReplace;
+
+  /// Toggles kg/lbs for this exercise — invoked from the tappable unit in
+  /// the column header (Hevy puts the unit in the header, not inline).
   final VoidCallback? onUnitTap;
   final VoidCallback onAddSet;
   final void Function(int setIndex) onRemoveSet;
@@ -38,6 +45,7 @@ class ExerciseBlock extends StatelessWidget {
     required this.exercise,
     this.driftExercise,
     this.unit = 'kg',
+    this.previousSets = const [],
     this.onReorderExercises,
     required this.onRemove,
     required this.onReplace,
@@ -159,32 +167,56 @@ class ExerciseBlock extends StatelessWidget {
           ),
           const SizedBox(height: 8),
 
-          // ── Column labels — every caption sits over its own column ───
-          // Cell widths mirror SetRow EXACTLY (56 set · 78 weight ·
-          // 36 unit · 14 '×' · 8 gap · 62 reps · spacer · 48 check), so
-          // the captions stay aligned with the boxed inputs below them.
-          // A single left-aligned "WEIGHT × REPS" string left the reps
-          // box headerless and parked "REPS" over the unit zone.
+          // ── Column labels — share SetRow's exact column geometry ─────
+          // SET · PREVIOUS · KG · REPS · ✓. The unit lives HERE (Hevy
+          // pattern), and the KG/LBS caption is the tappable per-exercise
+          // unit toggle — there is no inline unit on the rows anymore.
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Row(
               children: [
                 SizedBox(
-                    width: 56, child: Text('SET', style: RDStyles.tableHeader)),
-                SizedBox(
-                  width: 78,
-                  child: Center(
-                      child: Text('WEIGHT', style: RDStyles.tableHeader)),
+                    width: kSetColW,
+                    child: Text('SET', style: RDStyles.tableHeader)),
+                Expanded(
+                  flex: kPrevFlex,
+                  child: Text('PREVIOUS', style: RDStyles.tableHeader),
                 ),
-                const SizedBox(width: 36 + 14 + 8),
-                SizedBox(
-                  width: 62,
+                Expanded(
+                  flex: kWeightFlex,
+                  child: Center(
+                    child: Semantics(
+                      button: onUnitTap != null,
+                      label: 'Weight unit ${unit.toUpperCase()}, tap to change',
+                      child: GestureDetector(
+                        onTap: onUnitTap == null
+                            ? null
+                            : () {
+                                HapticFeedback.selectionClick();
+                                onUnitTap!();
+                              },
+                        behavior: HitTestBehavior.opaque,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.fitness_center_rounded,
+                                size: 11, color: AppColors.chartAxisLabel),
+                            const SizedBox(width: 3),
+                            Text(unit.toUpperCase(),
+                                style: RDStyles.tableHeader),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                Expanded(
+                  flex: kRepsFlex,
                   child:
                       Center(child: Text('REPS', style: RDStyles.tableHeader)),
                 ),
-                const Spacer(),
                 const SizedBox(
-                  width: 48,
+                  width: kCheckColW,
                   child: Center(
                     child: Icon(Icons.check_rounded,
                         size: 13, color: AppColors.chartAxisLabel),
@@ -199,15 +231,16 @@ class ExerciseBlock extends StatelessWidget {
           ...exercise.sets.asMap().entries.map((entry) {
             final setIndex = entry.key;
             final setData = entry.value;
+            // Previous-session baseline for this exact set index (if any).
+            final prevSet =
+                setIndex < previousSets.length ? previousSets[setIndex] : null;
             final row = SetRow(
               key: ValueKey(setData.id),
               setIndex: setIndex,
               setData: setData,
-              previousWeight: null,
-              previousReps: null,
-              equipment: de?.equipment,
+              previousWeight: prevSet?.weightKg,
+              previousReps: prevSet?.reps,
               unit: unit,
-              onUnitTap: onUnitTap,
               onChanged: onSetChanged,
               onToggleComplete: () => onToggleSetCompletion(setIndex),
             );
