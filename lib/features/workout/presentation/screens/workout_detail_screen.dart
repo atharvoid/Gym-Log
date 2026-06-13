@@ -573,19 +573,14 @@ class _HeroPip extends StatelessWidget {
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
-// 2. Muscle Split Section — Segmented proportional bar
+// 2. Muscle Split Section — premium per-muscle distribution card
 // ══════════════════════════════════════════════════════════════════════════════
 //
-// Logic:
-//   muscleSetCounts  map of target → number of sets in this session
-//   Each segment's flex = its set count (Row distributes width proportionally)
-//   → always sums to 100% of available width, regardless of muscle count.
-//
-// Visual:
-//   Primary muscle  → accentPrimary at full opacity
-//   2nd muscle      → accentPrimary at 0.65 opacity
-//   3rd muscle      → accentPrimary at 0.40 opacity
-//   4th+ muscles    → accentPrimary at 0.20 opacity (all share same shade)
+// Redesigned to sit on the app's signature "felt" surface (cardGradient +
+// hairline) like every other premium card, instead of a flat stacked bar
+// floating on pure black. Each target muscle gets its own tight row: name,
+// a slim animated progress track (purple from muscleSplitPalette by rank),
+// and its share of total sets. The dominant muscle reads brightest.
 // ══════════════════════════════════════════════════════════════════════════════
 
 class _MuscleSplitSection extends StatelessWidget {
@@ -594,98 +589,160 @@ class _MuscleSplitSection extends StatelessWidget {
 
   const _MuscleSplitSection({required this.muscleSetCounts});
 
+  static String _cap(String s) => s
+      .split(' ')
+      .map((w) => w.isEmpty ? w : '${w[0].toUpperCase()}${w.substring(1)}')
+      .join(' ');
+
   @override
   Widget build(BuildContext context) {
     if (muscleSetCounts.isEmpty) return const SizedBox.shrink();
 
-    // Sort descending by set count so the dominant muscle is always leftmost.
+    // Sort descending by set count so the dominant muscle is first.
     final sorted = muscleSetCounts.entries.toList()
       ..sort((a, b) => b.value.compareTo(a.value));
-
     final totalSets = sorted.fold<int>(0, (s, e) => s + e.value);
+    final maxCount = sorted.first.value; // normalize bar fill to the leader
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 20, 16, 0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // ── Section label ─────────────────────────────────────────────────
-          Text(
-            'MUSCLE SPLIT',
-            style: GoogleFonts.inter(
-              color: AppColors.textSecondary,
-              fontSize: 11,
-              fontWeight: FontWeight.w600,
-              letterSpacing: 0.8,
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: RDStyles.cardGradient,
+          borderRadius: BorderRadius.circular(18),
+          border: RDStyles.hairlineBorder,
+        ),
+        padding: const EdgeInsets.fromLTRB(16, 15, 16, 16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Text(
+                  'MUSCLE SPLIT',
+                  style: GoogleFonts.inter(
+                    color: AppColors.textSecondary,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.8,
+                  ),
+                ),
+                const Spacer(),
+                Text(
+                  '$totalSets ${totalSets == 1 ? 'set' : 'sets'}',
+                  style: GoogleFonts.inter(
+                    color: AppColors.textSecondary,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
             ),
-          ),
-          const SizedBox(height: 8),
-
-          // ── Percentage labels (Wrap — never overflows) ────────────────────
-          Wrap(
-            spacing: 12,
-            runSpacing: 4,
-            children: sorted.asMap().entries.map((entry) {
-              final rank = entry.key;
-              final name = entry.value.key;
-              final count = entry.value.value;
-              final pct = ((count / totalSets) * 100).round();
-              final color = AppColors.muscleSplitPalette[
-                  rank.clamp(0, AppColors.muscleSplitPalette.length - 1)];
-              return Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    width: 8,
-                    height: 8,
-                    decoration: BoxDecoration(
-                      color: color,
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                  ),
-                  const SizedBox(width: 5),
-                  Text(
-                    '$name  $pct%',
-                    style: GoogleFonts.inter(
-                      color: AppColors.textSecondary,
-                      fontSize: 11,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
-              );
-            }).toList(),
-          ),
-          const SizedBox(height: 8),
-
-          // ── Segmented bar ─────────────────────────────────────────────────
-          // ClipRRect clips the entire Row so segment edges are rounded.
-          ClipRRect(
-            borderRadius: BorderRadius.circular(4),
-            child: SizedBox(
-              height: 8,
-              child: Row(
-                children: sorted.asMap().entries.map((entry) {
-                  final rank = entry.key;
-                  final count = entry.value.value;
-                  final color = AppColors.muscleSplitPalette[
-                      rank.clamp(0, AppColors.muscleSplitPalette.length - 1)];
-                  return Expanded(
-                    flex: count,
-                    child: Container(
-                      // Hairline gap between segments for visual separation.
-                      margin: rank < sorted.length - 1
-                          ? const EdgeInsets.only(right: 1)
-                          : EdgeInsets.zero,
-                      color: color,
-                    ),
-                  );
-                }).toList(),
+            const SizedBox(height: 16),
+            for (var i = 0; i < sorted.length; i++) ...[
+              _MuscleRow(
+                name: _cap(sorted[i].key),
+                pctOfTotal: sorted[i].value / totalSets,
+                fillFactor: sorted[i].value / maxCount,
+                color: AppColors.muscleSplitPalette[
+                    i.clamp(0, AppColors.muscleSplitPalette.length - 1)],
+                isTop: i == 0,
               ),
+              if (i < sorted.length - 1) const SizedBox(height: 13),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// One muscle row: name · animated track · percentage of total sets.
+class _MuscleRow extends StatelessWidget {
+  final String name;
+  final double pctOfTotal; // share of all sets → shown as the % label
+  final double fillFactor; // bar length relative to the leader (0..1)
+  final Color color;
+  final bool isTop;
+
+  const _MuscleRow({
+    required this.name,
+    required this.pctOfTotal,
+    required this.fillFactor,
+    required this.color,
+    required this.isTop,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final percent = (pctOfTotal * 100).round();
+    return Row(
+      children: [
+        SizedBox(
+          width: 92,
+          child: Text(
+            name,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: GoogleFonts.inter(
+              color: isTop
+                  ? AppColors.textPrimary
+                  : AppColors.textPrimary.withValues(alpha: 0.82),
+              fontSize: 13,
+              fontWeight: isTop ? FontWeight.w600 : FontWeight.w500,
+              letterSpacing: -0.1,
             ),
           ),
-        ],
-      ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(3),
+            child: Stack(
+              children: [
+                Container(
+                  height: 6,
+                  width: double.infinity,
+                  color: Colors.white.withValues(alpha: 0.06), // track
+                ),
+                TweenAnimationBuilder<double>(
+                  tween: Tween(begin: 0, end: fillFactor.clamp(0.0, 1.0)),
+                  duration: const Duration(milliseconds: 450),
+                  curve: Curves.easeOutCubic,
+                  builder: (_, v, __) => FractionallySizedBox(
+                    widthFactor: v,
+                    child: Container(
+                      height: 6,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [color.withValues(alpha: 0.85), color],
+                        ),
+                        borderRadius: BorderRadius.circular(3),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(width: 12),
+        SizedBox(
+          width: 36,
+          child: Text(
+            '$percent%',
+            textAlign: TextAlign.right,
+            style: GoogleFonts.inter(
+              color: isTop
+                  ? AppColors.textPrimary
+                  : AppColors.textSecondary,
+              fontSize: 12.5,
+              fontWeight: isTop ? FontWeight.w700 : FontWeight.w600,
+              fontFeatures: const [FontFeature.tabularFigures()],
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
