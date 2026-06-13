@@ -270,8 +270,11 @@ class _SetRowState extends State<SetRow> {
     return AnimatedContainer(
       duration: const Duration(milliseconds: 200),
       curve: Curves.easeInOut,
+      // Completion reads as green success — the row carries a whisper of the
+      // same green the check fills with, so the cue is cohesive, not a green
+      // tick floating on a differently-tinted row.
       color: isCompleted
-          ? AppColors.accentPrimary.withValues(alpha: 0.06)
+          ? AppColors.success.withValues(alpha: 0.07)
           : Colors.transparent,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
       child: SizedBox(
@@ -389,21 +392,28 @@ class _SetRowState extends State<SetRow> {
                         height: 32,
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(4),
+                          // Three states: done = solid green, ready = green
+                          // outline (invites the tap), idle = faint gray outline.
                           color: isCompleted
-                              ? const Color(0xFF2C2C2E) // muted gray surface
+                              ? AppColors.success
                               : Colors.transparent,
                           border: isCompleted
                               ? null
                               : Border.all(
-                                  color:
-                                      AppColors.textPrimary.withValues(alpha: 0.15),
+                                  color: _canComplete
+                                      ? AppColors.success.withValues(alpha: 0.55)
+                                      : AppColors.textPrimary
+                                          .withValues(alpha: 0.15),
                                 ),
                         ),
                         child: Icon(
                           Icons.check_rounded,
                           color: isCompleted
-                              ? AppColors.textPrimary.withValues(alpha: 0.8)
-                              : AppColors.textPrimary.withValues(alpha: 0.10),
+                              ? Colors.white
+                              : _canComplete
+                                  ? AppColors.success.withValues(alpha: 0.7)
+                                  : AppColors.textPrimary
+                                      .withValues(alpha: 0.10),
                           size: 18,
                         ),
                       ),
