@@ -23,6 +23,7 @@ abstract final class WorkoutCsvParser {
   // 'd' (not 'dd') so single-digit days like "5 Jun 2025" parse too.
   static final DateFormat _hevyDate = DateFormat('d MMM yyyy, HH:mm');
   static final DateFormat _strongDate = DateFormat('yyyy-MM-dd HH:mm:ss');
+  static final DateFormat _gymlogDate = DateFormat('yyyy-MM-dd HH:mm');
 
   /// Identifies the source app from the header cells, or null if unknown.
   static ImportSource? detectSource(List<String> header) {
@@ -32,6 +33,12 @@ abstract final class WorkoutCsvParser {
     }
     if (h.contains('exercise name') && h.contains('set order')) {
       return ImportSource.strong;
+    }
+    // GymLog's own export (enables backup / new-device round-trips).
+    if (h.contains('set_number') &&
+        h.contains('weight_kg') &&
+        h.contains('exercise')) {
+      return ImportSource.gymlog;
     }
     return null;
   }
@@ -59,9 +66,14 @@ abstract final class WorkoutCsvParser {
     }
 
     final dataRows = rows.skip(1).toList();
-    return source == ImportSource.hevy
-        ? _parseHevy(header, dataRows)
-        : _parseStrong(header, dataRows, _normUnit(assumedStrongUnit));
+    switch (source) {
+      case ImportSource.hevy:
+        return _parseHevy(header, dataRows);
+      case ImportSource.strong:
+        return _parseStrong(header, dataRows, _normUnit(assumedStrongUnit));
+      case ImportSource.gymlog:
+        return _parseGymlog(header, dataRows);
+    }
   }
 
   // ── Hevy ───────────────────────────────────────────────────────────────────
@@ -184,6 +196,58 @@ abstract final class WorkoutCsvParser {
       ],
       weightUnitAssumed: !hasUnitCol,
       assumedUnit: assumedUnit,
+      skippedRows: skipped,
+    );
+  }
+
+  // ── GymLog (own export — round-trip) ────────────────────────────────────────
+
+  static ImportParseResult _parseGymlog(
+      List<String> header, List<List<String>> rows) {
+    final idx = _indexMap(header);
+    final builder = _SessionBuilder();
+    var skipped = 0;
+
+    for (final r in rows) {
+      String cell(String key) => _cell(r, idx, key);
+
+      final workout = cell('workout');
+      final dateStr = cell('date');
+      final exName = cell('exercise');
+      if (dateStr.isEmpty || exName.isEmpty) {
+        skipped++;
+        continue;
+      }
+      final start = _tryStrongDate(dateStr) ?? _tryDate(_gymlogDate, dateStr);
+      final reps = int.tryParse(cell('reps'));
+      final weight = _num(cell('weight_kg')); // already kilograms
+      if (start == null || reps == null || weight == null) {
+        skipped++;
+        continue;
+      }
+      builder.add(
+        sessionName: workout.isEmpty ? 'Workout' : workout,
+        startedAt: start,
+        endedAt: null,
+        sessionNotes: '',
+        exerciseName: exName,
+        exerciseNotes: null,
+        setType: _normalizeHevySetType(cell('set_type')),
+        weightKg: weight,
+        reps: reps,
+        rpe: _num(cell('rpe')),
+      );
+    }
+
+    return ImportParseResult(
+      source: ImportSource.gymlog,
+      sessions: builder.sessions,
+      warnings: [
+        if (skipped > 0)
+          '$skipped row${skipped == 1 ? '' : 's'} skipped (missing weight, reps, or date).',
+      ],
+      weightUnitAssumed: false,
+      assumedUnit: 'kg',
       skippedRows: skipped,
     );
   }

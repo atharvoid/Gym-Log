@@ -5,10 +5,12 @@
 /// [WorkoutImportService] maps them onto the local database.
 library;
 
-/// Which competitor app a CSV was exported from.
+/// Which app a CSV was exported from. `gymlog` enables export→import
+/// round-trips (backup / new-device restore from GymLog's own export).
 enum ImportSource {
   hevy('Hevy'),
-  strong('Strong');
+  strong('Strong'),
+  gymlog('GymLog');
 
   const ImportSource(this.label);
 

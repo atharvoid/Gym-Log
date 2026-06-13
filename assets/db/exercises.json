@@ -136,7 +136,7 @@
 "target": "Chest",
 "parent": "Chest",
 "secondaryMuscles": [
-"Deltoids",
+"Shoulders",
 "Triceps"
 ],
 "instructions": [
@@ -182,8 +182,8 @@
 "target": "Serratus Anterior",
 "parent": "Chest",
 "secondaryMuscles": [
-"Deltoids",
-"Trapezius"
+"Shoulders",
+"Traps"
 ],
 "instructions": [
 "Set up an incline bench at a 45-degree angle.",
@@ -449,7 +449,7 @@
 "target": "Chest",
 "parent": "Chest",
 "secondaryMuscles": [
-"Deltoids",
+"Shoulders",
 "Triceps"
 ],
 "instructions": [
@@ -472,7 +472,7 @@
 "target": "Chest",
 "parent": "Chest",
 "secondaryMuscles": [
-"Deltoids",
+"Shoulders",
 "Triceps"
 ],
 "instructions": [
@@ -496,7 +496,7 @@
 "target": "Chest",
 "parent": "Chest",
 "secondaryMuscles": [
-"Deltoids",
+"Shoulders",
 "Triceps"
 ],
 "instructions": [
@@ -518,7 +518,7 @@
 "target": "Chest",
 "parent": "Chest",
 "secondaryMuscles": [
-"Deltoids",
+"Shoulders",
 "Triceps"
 ],
 "instructions": [
@@ -565,7 +565,7 @@
 "target": "Chest",
 "parent": "Chest",
 "secondaryMuscles": [
-"Deltoids",
+"Shoulders",
 "Triceps"
 ],
 "instructions": [
@@ -792,7 +792,7 @@
 "parent": "Chest",
 "secondaryMuscles": [
 "Triceps",
-"Latissimus Dorsi"
+"Lats"
 ],
 "instructions": [
 "Lie flat on a bench with your head at one end and your feet firmly on the ground.",
@@ -880,8 +880,8 @@
 "target": "Serratus Anterior",
 "parent": "Chest",
 "secondaryMuscles": [
-"Deltoids",
-"Trapezius"
+"Shoulders",
+"Traps"
 ],
 "instructions": [
 "Set an incline bench to a 45-degree angle and sit on it with a dumbbell in each hand, palms facing down.",
@@ -903,7 +903,7 @@
 "target": "Chest",
 "parent": "Chest",
 "secondaryMuscles": [
-"Deltoids",
+"Shoulders",
 "Triceps"
 ],
 "instructions": [
@@ -1314,8 +1314,8 @@
 "target": "Chest",
 "parent": "Chest",
 "secondaryMuscles": [
-"Deltoids",
-"Trapezius"
+"Shoulders",
+"Traps"
 ],
 "instructions": [
 "Adjust the seat height and position yourself on the machine with your back against the pad.",
@@ -1470,8 +1470,7 @@
 "secondaryMuscles": [
 "Triceps",
 "Shoulders",
-"Core",
-"Deltoids"
+"Core"
 ],
 "instructions": [
 "Stand facing a wall, about arm's length away.",
@@ -1611,8 +1610,8 @@
 "target": "Serratus Anterior",
 "parent": "Chest",
 "secondaryMuscles": [
-"Deltoids",
-"Trapezius"
+"Shoulders",
+"Traps"
 ],
 "instructions": [
 "Adjust the smith machine to an incline position.",
@@ -1744,7 +1743,7 @@
 "parent": "Back",
 "secondaryMuscles": [
 "Biceps",
-"Rhomboids"
+"Upper Back"
 ],
 "instructions": [
 "Sit on the cable machine with your back straight and feet flat on the ground.",
@@ -2233,8 +2232,8 @@
 "parent": "Back",
 "secondaryMuscles": [
 "Biceps",
-"Rhomboids",
-"Rear Deltoids"
+"Upper Back",
+"Rear Delts"
 ],
 "instructions": [
 "Adjust the cable pulley to a high position and attach a straight bar.",
@@ -2281,7 +2280,7 @@
 "parent": "Back",
 "secondaryMuscles": [
 "Biceps",
-"Rear Deltoids"
+"Rear Delts"
 ],
 "instructions": [
 "Set up an incline bench at a 45-degree angle and attach a cable handle to the low pulley.",
@@ -2427,8 +2426,8 @@
 "parent": "Back",
 "secondaryMuscles": [
 "Biceps",
-"Rhomboids",
-"Rear Deltoids"
+"Upper Back",
+"Rear Delts"
 ],
 "instructions": [
 "Adjust the cable machine so that the pulley is at the highest position.",
@@ -2519,8 +2518,8 @@
 "parent": "Back",
 "secondaryMuscles": [
 "Biceps",
-"Rhomboids",
-"Rear Deltoids"
+"Upper Back",
+"Rear Delts"
 ],
 "instructions": [
 "Attach a cable handle to a low pulley and sit facing the machine with your feet flat on the floor.",
@@ -2790,7 +2789,7 @@
 "parent": "Back",
 "secondaryMuscles": [
 "Shoulders",
-"Rhomboids"
+"Upper Back"
 ],
 "instructions": [
 "Set up a decline bench at a 45-degree angle.",
@@ -2813,7 +2812,7 @@
 "parent": "Back",
 "secondaryMuscles": [
 "Shoulders",
-"Rhomboids"
+"Upper Back"
 ],
 "instructions": [
 "Set up a decline bench at a 45-degree angle.",
@@ -2880,7 +2879,7 @@
 "parent": "Back",
 "secondaryMuscles": [
 "Shoulders",
-"Rear Deltoids"
+"Rear Delts"
 ],
 "instructions": [
 "Set an incline bench to a 45-degree angle and sit on it with a dumbbell in each hand, palms facing inwards.",
@@ -3084,7 +3083,7 @@
 "parent": "Back",
 "secondaryMuscles": [
 "Shoulders",
-"Trapezius"
+"Traps"
 ],
 "instructions": [
 "Stand with your feet shoulder-width apart and your knees slightly bent.",
@@ -3554,8 +3553,8 @@
 "parent": "Back",
 "secondaryMuscles": [
 "Biceps",
-"Rhomboids",
-"Rear Deltoids"
+"Upper Back",
+"Rear Delts"
 ],
 "instructions": [
 "Adjust the seat height and position yourself on the machine with your knees under the pads and your feet flat on the ground.",
@@ -3622,7 +3621,7 @@
 "parent": "Back",
 "secondaryMuscles": [
 "Biceps",
-"Rear Deltoids"
+"Rear Delts"
 ],
 "instructions": [
 "Adjust the seat height and foot platform to a comfortable position.",
@@ -3695,8 +3694,8 @@
 "parent": "Back",
 "secondaryMuscles": [
 "Biceps",
-"Rhomboids",
-"Rear Deltoids"
+"Upper Back",
+"Rear Delts"
 ],
 "instructions": [
 "Adjust the seat height and position yourself on the machine with your chest against the pad and your feet flat on the floor.",
@@ -4061,8 +4060,7 @@
 "secondaryMuscles": [
 "Chest",
 "Triceps",
-"Core",
-"Latissimus Dorsi"
+"Core"
 ],
 "instructions": [
 "Lie flat on a bench with your head at one end and your feet on the floor.",
@@ -4298,8 +4296,8 @@
 "target": "Traps",
 "parent": "Back",
 "secondaryMuscles": [
-"Rhomboids",
-"Deltoids"
+"Upper Back",
+"Shoulders"
 ],
 "instructions": [
 "Start by standing with your feet shoulder-width apart and your arms extended in front of you.",
@@ -4321,8 +4319,8 @@
 "parent": "Back",
 "secondaryMuscles": [
 "Biceps",
-"Rhomboids",
-"Rear Deltoids"
+"Upper Back",
+"Rear Delts"
 ],
 "instructions": [
 "Start by hanging from a pull-up bar with your palms facing away from you and your arms fully extended.",
@@ -4743,7 +4741,7 @@
 "parent": "Back",
 "secondaryMuscles": [
 "Biceps",
-"Rear Deltoids"
+"Rear Delts"
 ],
 "instructions": [
 "Adjust the seat height and position yourself on the machine with your feet flat on the floor.",
@@ -5128,7 +5126,7 @@
 "parent": "Shoulders",
 "secondaryMuscles": [
 "Traps",
-"Rhomboids"
+"Upper Back"
 ],
 "instructions": [
 "Stand with your feet shoulder-width apart and hold a barbell with an overhand grip, palms facing down.",
@@ -5149,8 +5147,8 @@
 "target": "Shoulders",
 "parent": "Shoulders",
 "secondaryMuscles": [
-"Trapezius",
-"Rhomboids",
+"Traps",
+"Upper Back",
 "Biceps"
 ],
 "instructions": [
@@ -5263,8 +5261,8 @@
 "target": "Shoulders",
 "parent": "Shoulders",
 "secondaryMuscles": [
-"Rhomboids",
-"Trapezius"
+"Upper Back",
+"Traps"
 ],
 "instructions": [
 "Attach a D-handle to each low pulley cable and stand in the middle of the cable crossover machine.",
@@ -5308,7 +5306,7 @@
 "target": "Shoulders",
 "parent": "Shoulders",
 "secondaryMuscles": [
-"Trapezius",
+"Traps",
 "Biceps"
 ],
 "instructions": [
@@ -5354,8 +5352,8 @@
 "target": "Shoulders",
 "parent": "Shoulders",
 "secondaryMuscles": [
-"Trapezius",
-"Rhomboids"
+"Traps",
+"Upper Back"
 ],
 "instructions": [
 "Attach a D-handle to a low pulley cable machine and lie face down on a flat bench.",
@@ -5445,7 +5443,7 @@
 "parent": "Shoulders",
 "secondaryMuscles": [
 "Traps",
-"Rhomboids"
+"Upper Back"
 ],
 "instructions": [
 "Stand with your feet shoulder-width apart and hold a dumbbell in each hand, palms facing your body.",
@@ -5466,8 +5464,8 @@
 "target": "Shoulders",
 "parent": "Shoulders",
 "secondaryMuscles": [
-"Trapezius",
-"Rhomboids"
+"Traps",
+"Upper Back"
 ],
 "instructions": [
 "Stand with your feet shoulder-width apart and hold a dumbbell in each hand.",
@@ -5657,7 +5655,7 @@
 "Side Delts",
 "Upper Chest",
 "Biceps",
-"Trapezius"
+"Traps"
 ],
 "instructions": [
 "Stand with your feet shoulder-width apart, holding a dumbbell in each hand with your palms facing your thighs.",
@@ -5755,7 +5753,7 @@
 "target": "Shoulders",
 "parent": "Shoulders",
 "secondaryMuscles": [
-"Trapezius",
+"Traps",
 "Forearms",
 "Core"
 ],
@@ -6058,8 +6056,8 @@
 "target": "Shoulders",
 "parent": "Shoulders",
 "secondaryMuscles": [
-"Trapezius",
-"Rhomboids"
+"Traps",
+"Upper Back"
 ],
 "instructions": [
 "Adjust the seat height and position yourself on the machine with your chest against the pad and your feet flat on the floor.",
@@ -6213,8 +6211,7 @@
 "parent": "Shoulders",
 "secondaryMuscles": [
 "Upper Back",
-"Trapezius",
-"Rhomboids"
+"Traps"
 ],
 "instructions": [
 "Stand with your feet shoulder-width apart and hold a dumbbell in each hand.",
@@ -6358,8 +6355,8 @@
 "target": "Shoulders",
 "parent": "Shoulders",
 "secondaryMuscles": [
-"Trapezius",
-"Rhomboids",
+"Traps",
+"Upper Back",
 "Biceps"
 ],
 "instructions": [
@@ -6610,7 +6607,7 @@
 "target": "Rear Delts",
 "parent": "Shoulders",
 "secondaryMuscles": [
-"Lower Traps",
+"Traps",
 "Rotator Cuff"
 ],
 "instructions": [],
@@ -9757,9 +9754,7 @@
 "equipment": "Cable",
 "target": "Forearms",
 "parent": "Forearms",
-"secondaryMuscles": [
-"Wrists"
-],
+"secondaryMuscles": [],
 "instructions": [
 "Attach a cable to a low pulley and sit on a bench facing the cable machine.",
 "Grasp the cable handle with an overhand grip, palms facing down.",
@@ -9826,10 +9821,7 @@
 "equipment": "Dumbbell",
 "target": "Forearms",
 "parent": "Forearms",
-"secondaryMuscles": [
-"Wrist Flexors",
-"Wrist Extensors"
-],
+"secondaryMuscles": [],
 "instructions": [
 "Sit on a bench or chair with your feet flat on the ground and your back straight.",
 "Hold a dumbbell in one hand with an underhand grip, resting your forearm on your thigh, palm facing up.",
@@ -9980,8 +9972,7 @@
 "target": "Forearms",
 "parent": "Forearms",
 "secondaryMuscles": [
-"Wrist Flexors",
-"Grip Muscles"
+"Grip"
 ],
 "instructions": [
 "Sit on a bench with your feet flat on the ground and hold a barbell with an underhand grip, palms facing up.",
@@ -11207,7 +11198,6 @@
 "target": "Quadriceps",
 "parent": "Quadriceps",
 "secondaryMuscles": [
-"VMO",
 "Glutes",
 "Hamstrings",
 "Calves"
@@ -12545,7 +12535,7 @@
 "parent": "Glutes",
 "secondaryMuscles": [
 "Gluteus Minimus",
-"TFL"
+"Abductors"
 ],
 "instructions": [],
 "gif": false,
@@ -12722,7 +12712,7 @@
 "parent": "Glutes",
 "secondaryMuscles": [
 "Gluteus Minimus",
-"TFL"
+"Abductors"
 ],
 "instructions": [],
 "gif": false,
@@ -12787,7 +12777,7 @@
 "parent": "Glutes",
 "secondaryMuscles": [
 "Gluteus Minimus",
-"TFL"
+"Abductors"
 ],
 "instructions": [],
 "gif": false,
@@ -13050,7 +13040,7 @@
 "parent": "Glutes",
 "secondaryMuscles": [
 "Gluteus Minimus",
-"TFL"
+"Abductors"
 ],
 "instructions": [],
 "gif": false,
@@ -13066,7 +13056,7 @@
 "parent": "Glutes",
 "secondaryMuscles": [
 "Hip Flexors",
-"Lower Abs"
+"Abdominals"
 ],
 "instructions": [
 "Lie flat on your back with your legs extended and your hands by your sides.",
@@ -13165,7 +13155,7 @@
 "parent": "Glutes",
 "secondaryMuscles": [
 "Gluteus Minimus",
-"TFL"
+"Abductors"
 ],
 "instructions": [],
 "gif": false,
@@ -13181,7 +13171,7 @@
 "parent": "Glutes",
 "secondaryMuscles": [
 "Gluteus Minimus",
-"TFL"
+"Abductors"
 ],
 "instructions": [],
 "gif": false,
@@ -13443,7 +13433,7 @@
 "parent": "Glutes",
 "secondaryMuscles": [
 "Gluteus Minimus",
-"TFL"
+"Abductors"
 ],
 "instructions": [],
 "gif": false,
@@ -14003,7 +13993,7 @@
 "parent": "Glutes",
 "secondaryMuscles": [
 "Gluteus Minimus",
-"TFL"
+"Abductors"
 ],
 "instructions": [],
 "gif": false,
@@ -14111,10 +14101,7 @@
 "equipment": "Cable",
 "target": "Adductors",
 "parent": "Adductors",
-"secondaryMuscles": [
-"Gracilis",
-"Pectineus"
-],
+"secondaryMuscles": [],
 "instructions": [],
 "gif": false,
 "aliases": [],
@@ -14144,10 +14131,7 @@
 "equipment": "Resistance Band",
 "target": "Adductors",
 "parent": "Adductors",
-"secondaryMuscles": [
-"Gracilis",
-"Pectineus"
-],
+"secondaryMuscles": [],
 "instructions": [],
 "gif": false,
 "aliases": [],
@@ -14160,10 +14144,7 @@
 "equipment": "Machine",
 "target": "Adductors",
 "parent": "Adductors",
-"secondaryMuscles": [
-"Gracilis",
-"Pectineus"
-],
+"secondaryMuscles": [],
 "instructions": [],
 "gif": false,
 "aliases": [],
@@ -14176,10 +14157,7 @@
 "equipment": "Machine",
 "target": "Adductors",
 "parent": "Adductors",
-"secondaryMuscles": [
-"Gracilis",
-"Pectineus"
-],
+"secondaryMuscles": [],
 "instructions": [],
 "gif": false,
 "aliases": [],
@@ -14235,10 +14213,7 @@
 "equipment": "Bodyweight",
 "target": "Calves",
 "parent": "Calves",
-"secondaryMuscles": [
-"Ankles",
-"Feet"
-],
+"secondaryMuscles": [],
 "instructions": [
 "Stand with your feet shoulder-width apart, toes pointing forward.",
 "Place your hands on a wall or stable surface for balance.",
@@ -14279,10 +14254,7 @@
 "equipment": "Cable",
 "target": "Calves",
 "parent": "Calves",
-"secondaryMuscles": [
-"Ankles",
-"Feet"
-],
+"secondaryMuscles": [],
 "instructions": [
 "Stand facing a cable machine with your feet shoulder-width apart.",
 "Hold onto the cable machine for support.",
@@ -14310,7 +14282,7 @@
 },
 {
 "id": "1253",
-"name": "Donkey Calf Raise",
+"name": "Donkey Calf Raise (Machine)",
 "bodyPart": "legs",
 "equipment": "Machine",
 "target": "Calves",
@@ -14335,7 +14307,7 @@
 },
 {
 "id": "0284",
-"name": "Donkey Calf Raise",
+"name": "Donkey Calf Raise (Bodyweight)",
 "bodyPart": "legs",
 "equipment": "Bodyweight",
 "target": "Calves",
@@ -14409,10 +14381,7 @@
 "equipment": "Dumbbell",
 "target": "Calves",
 "parent": "Calves",
-"secondaryMuscles": [
-"Ankles",
-"Feet"
-],
+"secondaryMuscles": [],
 "instructions": [
 "Stand on the edge of a step or platform with your heels hanging off and your toes on the step.",
 "Hold a dumbbell in one hand and place your other hand on a wall or railing for support.",
@@ -14546,10 +14515,7 @@
 "equipment": "Machine",
 "target": "Calves",
 "parent": "Calves",
-"secondaryMuscles": [
-"Soleus",
-"Ankle Stabilizers"
-],
+"secondaryMuscles": [],
 "instructions": [
 "Adjust the seat height so that your knees are slightly bent and your feet are flat on the footplate.",
 "Place your toes on the footplate, with your heels hanging off the edge.",
@@ -14570,7 +14536,6 @@
 "target": "Calves",
 "parent": "Calves",
 "secondaryMuscles": [
-"Soleus",
 "Hamstrings"
 ],
 "instructions": [
@@ -14615,10 +14580,7 @@
 "equipment": "Bodyweight",
 "target": "Calves",
 "parent": "Calves",
-"secondaryMuscles": [
-"Ankles",
-"Feet"
-],
+"secondaryMuscles": [],
 "instructions": [
 "Stand with your feet hip-width apart and place your hands on a wall or sturdy object for balance.",
 "Lift one foot off the ground and balance on the other foot.",
@@ -14662,10 +14624,7 @@
 "equipment": "Machine",
 "target": "Calves",
 "parent": "Calves",
-"secondaryMuscles": [
-"Soleus",
-"Ankle Stabilizers"
-],
+"secondaryMuscles": [],
 "instructions": [
 "Adjust the seat height so that your knees are slightly bent and your feet are flat on the footplate.",
 "Place your toes on the footplate with your heels hanging off the edge.",
@@ -14847,8 +14806,7 @@
 "target": "Calves",
 "parent": "Calves",
 "secondaryMuscles": [
-"Ankles",
-"Shins"
+"Tibialis Anterior"
 ],
 "instructions": [
 "Adjust the smith machine bar to a height that allows you to comfortably stand with your feet flat on the ground.",
@@ -14894,9 +14852,7 @@
 "equipment": "Dumbbell",
 "target": "Calves",
 "parent": "Calves",
-"secondaryMuscles": [
-"Ankles"
-],
+"secondaryMuscles": [],
 "instructions": [
 "Stand with your feet shoulder-width apart, holding a dumbbell in each hand.",
 "Raise your heels off the ground as high as possible, using your calves.",
@@ -15870,7 +15826,7 @@
 "parent": "Core",
 "secondaryMuscles": [
 "Hip Flexors",
-"Inner Thighs"
+"Adductors"
 ],
 "instructions": [
 "Lie flat on your back with your knees bent and feet flat on the ground.",
@@ -17114,7 +17070,6 @@
 "target": "Posterior Chain",
 "parent": "Full Body",
 "secondaryMuscles": [
-"Cardio",
 "Core",
 "Shoulders",
 "Glutes",
@@ -17153,7 +17108,6 @@
 "target": "Posterior Chain",
 "parent": "Full Body",
 "secondaryMuscles": [
-"Cardio",
 "Core",
 "Shoulders",
 "Glutes"
