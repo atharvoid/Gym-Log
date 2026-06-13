@@ -25,6 +25,7 @@ Future<void> main() async {
       // Auto-infers release from pubspec.yaml — do NOT hardcode
       options.environment = kReleaseMode ? 'production' : 'development';
       options.tracesSampleRate = kReleaseMode ? 0.1 : 1.0;
+      // ignore: experimental_member_use
       options.profilesSampleRate = kReleaseMode ? 0.1 : 1.0;
       options.attachScreenshot = false; // Enable only if you want UX replay
       options.enableAppHangTracking = true; // iOS ANR-like detection

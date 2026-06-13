@@ -237,7 +237,7 @@ class ExerciseBlock extends StatelessWidget {
           }),
 
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 6, 16, 14),
+            padding: const EdgeInsets.fromLTRB(16, 4, 16, 14),
             child: SecondaryButton(
               label: '+ Add Set',
               onPressed: () {
