@@ -60,8 +60,7 @@ class _SetRowState extends State<SetRow> {
     final text = display == display.truncateToDouble()
         ? display.toInt().toString()
         : display.toStringAsFixed(1);
-    final isBw = widget.equipment?.toLowerCase() == 'body weight';
-    return isBw ? '+$text' : text;
+    return text;
   }
 
   @override
@@ -152,22 +151,29 @@ class _SetRowState extends State<SetRow> {
   }
 
   Widget _setTypeIndicator() {
-    Widget pill(IconData icon, String label, Color color) => Container(
-          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+    Widget pill(String code, Color color) => Container(
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
           decoration: BoxDecoration(
             color: color.withValues(alpha: 0.15),
-            borderRadius: BorderRadius.circular(7),
+            borderRadius: BorderRadius.circular(6),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(icon, size: 12, color: color),
+              Container(
+                width: 6,
+                height: 6,
+                decoration: BoxDecoration(
+                  color: color,
+                  shape: BoxShape.circle,
+                ),
+              ),
               const SizedBox(width: 4),
               Text(
-                label,
+                code,
                 style: GoogleFonts.inter(
-                  fontSize: 10,
-                  fontWeight: FontWeight.w600,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
                   color: color,
                 ),
               ),
@@ -177,21 +183,18 @@ class _SetRowState extends State<SetRow> {
 
     switch (widget.setData.setType) {
       case 'warmup':
-        return pill(Icons.local_fire_department_rounded, 'Warm',
-            const Color(0xFFE0A422));
+        return pill('W', const Color(0xFFE0A422));
       case 'dropset':
-        return pill(
-            Icons.trending_down_rounded, 'Drop', const Color(0xFFB98CFF));
+        return pill('D', const Color(0xFFB98CFF));
       case 'failure':
-        return pill(
-            Icons.warning_amber_rounded, 'Fail', const Color(0xFFFF6B70));
+        return pill('F', const Color(0xFFFF6B70));
       default:
         return Text(
           '${widget.setIndex + 1}',
           style: GoogleFonts.inter(
             color: widget.setData.isCompleted
                 ? AppColors.textSecondary
-                : AppColors.textPrimary,
+                : AppColors.textSecondary.withValues(alpha: 0.7),
             fontSize: 15,
             fontWeight: FontWeight.w700,
             fontFeatures: const [FontFeature.tabularFigures()],
@@ -203,28 +206,27 @@ class _SetRowState extends State<SetRow> {
   Widget _numberBox({
     required TextEditingController controller,
     required FocusNode focusNode,
-    required double width,
     required String hint,
     required bool isDecimal,
     required ValueChanged<String> onChanged,
+    TextAlign textAlign = TextAlign.center,
     TextInputAction action = TextInputAction.next,
   }) {
     final completed = widget.setData.isCompleted;
     return Container(
-      width: width,
-      height: 42,
+      height: 32,
       decoration: BoxDecoration(
         color: completed
-            ? Colors.white.withValues(alpha: 0.04)
-            : AppColors.surfaceRaised,
-        borderRadius: BorderRadius.circular(10),
+            ? Colors.transparent
+            : Colors.white.withValues(alpha: 0.03),
+        borderRadius: completed ? null : BorderRadius.circular(4),
       ),
       child: Center(
         child: TextField(
           controller: controller,
           focusNode: focusNode,
           readOnly: completed,
-          textAlign: TextAlign.center,
+          textAlign: textAlign,
           textAlignVertical: TextAlignVertical.center,
           textInputAction: action,
           keyboardType: TextInputType.numberWithOptions(decimal: isDecimal),
@@ -236,7 +238,9 @@ class _SetRowState extends State<SetRow> {
             LengthLimitingTextInputFormatter(isDecimal ? 7 : 3),
           ],
           style: GoogleFonts.inter(
-            color: completed ? AppColors.textSecondary : AppColors.textPrimary,
+            color: completed
+                ? AppColors.textPrimary.withValues(alpha: 0.7)
+                : AppColors.textPrimary,
             fontSize: 17,
             fontWeight: FontWeight.w700,
             fontFeatures: const [FontFeature.tabularFigures()],
@@ -244,11 +248,13 @@ class _SetRowState extends State<SetRow> {
           decoration: InputDecoration(
             hintText: hint,
             hintStyle: GoogleFonts.inter(
-              color: AppColors.textSecondary.withValues(alpha: 0.6),
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
+              color: AppColors.textSecondary.withValues(alpha: 0.2),
+              fontSize: 17,
+              fontWeight: FontWeight.w700,
             ),
             border: InputBorder.none,
+            focusedBorder: InputBorder.none,
+            enabledBorder: InputBorder.none,
             filled: false,
             isDense: true,
             contentPadding: EdgeInsets.zero,
@@ -270,16 +276,16 @@ class _SetRowState extends State<SetRow> {
       duration: const Duration(milliseconds: 200),
       curve: Curves.easeInOut,
       color: isCompleted
-          ? AppColors.accentPrimary.withValues(alpha: 0.10)
+          ? AppColors.accentPrimary.withValues(alpha: 0.06)
           : Colors.transparent,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 7),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
       child: Row(
         children: [
           // ── Set identifier → explicit type picker ──────────────────────
           // Locked once completed (uncheck to edit). FittedBox guarantees
-          // the Warm/Drop/Fail chip can never overflow the 56px column.
+          // the Warm/Drop/Fail chip can never overflow the 48px column.
           SizedBox(
-            width: 56,
+            width: 48,
             child: Semantics(
               button: !isCompleted,
               label: 'Set type',
@@ -293,7 +299,7 @@ class _SetRowState extends State<SetRow> {
                 behavior: HitTestBehavior.opaque,
                 child: ConstrainedBox(
                   constraints:
-                      const BoxConstraints(minWidth: 48, minHeight: 48),
+                      const BoxConstraints(minWidth: 48, minHeight: 32),
                   child: Align(
                     alignment: Alignment.centerLeft,
                     child: FittedBox(
@@ -307,127 +313,154 @@ class _SetRowState extends State<SetRow> {
             ),
           ),
 
-          // ── Weight ──────────────────────────────────────────────────────
-          _numberBox(
-            controller: _weightController,
-            focusNode: _weightFocus,
-            width: 78,
-            hint: widget.previousWeight != null
-                ? formatWeight(widget.previousWeight!, widget.unit)
-                : '—',
-            isDecimal: true,
-            onChanged: (val) {
-              final clean = val.replaceFirst('+', '');
-              final parsed = double.tryParse(clean);
-              if (parsed != null) {
-                final kg = displayToKg(parsed, widget.unit).clamp(0.0, 999.5);
-                widget.onChanged(widget.setData.copyWith(weightKg: kg));
-              }
-            },
-          ),
-
-          // Unit label — tappable, switches kg/lbs for this exercise.
-          // Locked while the set is completed.
-          Semantics(
-            button: !isCompleted,
-            label: 'Weight unit ${widget.unit}, tap to change',
-            child: GestureDetector(
-              onTap: isCompleted ? null : widget.onUnitTap,
-              behavior: HitTestBehavior.opaque,
-              child: SizedBox(
-                width: 36,
-                height: 48,
-                child: Center(
-                  child: Text(
-                    widget.unit,
-                    style: GoogleFonts.inter(
-                      color: AppColors.textSecondary,
-                      fontSize: 11.5,
-                      fontWeight: FontWeight.w600,
+          // ── Weight column (with inline unit) ─────────────────────────
+          Expanded(
+            flex: 5,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Flexible(
+                  child: _numberBox(
+                    controller: _weightController,
+                    focusNode: _weightFocus,
+                    hint: widget.previousWeight != null
+                        ? formatWeight(widget.previousWeight!, widget.unit)
+                        : '–',
+                    isDecimal: true,
+                    textAlign: TextAlign.center,
+                    onChanged: (val) {
+                      final clean = val.replaceFirst('+', '');
+                      final parsed = double.tryParse(clean);
+                      if (parsed != null) {
+                        final kg =
+                            displayToKg(parsed, widget.unit).clamp(0.0, 999.5);
+                        widget.onChanged(
+                            widget.setData.copyWith(weightKg: kg));
+                      }
+                    },
+                  ),
+                ),
+                const SizedBox(width: 2),
+                // Unit label — tappable, switches kg/lbs for this exercise.
+                // Locked while the set is completed.
+                Semantics(
+                  button: !isCompleted,
+                  label: 'Weight unit ${widget.unit}, tap to change',
+                  child: GestureDetector(
+                    onTap: isCompleted ? null : widget.onUnitTap,
+                    behavior: HitTestBehavior.opaque,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      child: Text(
+                        widget.unit,
+                        style: GoogleFonts.inter(
+                          color: AppColors.textSecondary.withValues(alpha: 0.5),
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
                     ),
                   ),
                 ),
-              ),
+              ],
             ),
           ),
 
-          // Fixed 14px cell (not intrinsic text width) so the column
-          // header in ExerciseBlock can mirror these metrics exactly.
+          // ── × separator ──────────────────────────────────────────────
           SizedBox(
-            width: 14,
+            width: 20,
             child: Center(
               child: Text(
                 '×',
                 style: GoogleFonts.inter(
-                  color: AppColors.textSecondary.withValues(alpha: 0.7),
-                  fontSize: 15,
+                  color: AppColors.textSecondary.withValues(alpha: 0.4),
+                  fontSize: 13,
                 ),
               ),
             ),
           ),
-          const SizedBox(width: 8),
 
-          // ── Reps ────────────────────────────────────────────────────────
-          _numberBox(
-            controller: _repsController,
-            focusNode: _repsFocus,
-            width: 62,
-            hint: widget.previousReps?.toString() ?? '—',
-            isDecimal: false,
-            action: TextInputAction.done,
-            onChanged: (val) {
-              final parsed = int.tryParse(val);
-              if (parsed != null) {
-                widget.onChanged(
-                    widget.setData.copyWith(reps: parsed.clamp(0, 999)));
-              }
-            },
+          // ── Reps column ──────────────────────────────────────────────
+          Expanded(
+            flex: 4,
+            child: _numberBox(
+              controller: _repsController,
+              focusNode: _repsFocus,
+              hint: widget.previousReps?.toString() ?? '–',
+              isDecimal: false,
+              action: TextInputAction.done,
+              onChanged: (val) {
+                final parsed = int.tryParse(val);
+                if (parsed != null) {
+                  widget.onChanged(
+                      widget.setData.copyWith(reps: parsed.clamp(0, 999)));
+                }
+              },
+            ),
           ),
 
-          const Spacer(),
-
-          // ── Completion check — the small victory ────────────────────────
-          Semantics(
-            button: true,
-            label: isCompleted ? 'Mark set incomplete' : 'Complete set',
-            child: GestureDetector(
-              onTap: isCompleted || _canComplete
-                  ? () {
-                      if (!isCompleted) HapticFeedback.mediumImpact();
-                      widget.onToggleComplete();
-                    }
-                  : null,
-              behavior: HitTestBehavior.opaque,
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
-                child: Center(
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 180),
-                    curve: Curves.easeOutBack,
-                    width: 32,
-                    height: 32,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(10),
-                      color: isCompleted
-                          ? AppColors.accentPrimary
-                          : AppColors.surfaceRaised,
-                      border: isCompleted
-                          ? null
-                          : Border.all(
-                              color: _canComplete
-                                  ? AppColors.accentPrimary
-                                      .withValues(alpha: 0.45)
-                                  : Colors.white.withValues(alpha: 0.08),
-                            ),
-                    ),
-                    child: Icon(
-                      Icons.check_rounded,
-                      color: isCompleted
-                          ? Colors.white
-                          : _canComplete
+          // ── Completion check — the small victory ────────────────────
+          SizedBox(
+            width: 48,
+            child: Semantics(
+              button: true,
+              label: isCompleted ? 'Mark set incomplete' : 'Complete set',
+              child: GestureDetector(
+                onTap: isCompleted || _canComplete
+                    ? () {
+                        if (!isCompleted) HapticFeedback.mediumImpact();
+                        widget.onToggleComplete();
+                      }
+                    : null,
+                behavior: HitTestBehavior.opaque,
+                child: ConstrainedBox(
+                  constraints:
+                      const BoxConstraints(minWidth: 48, minHeight: 48),
+                  child: Center(
+                    child: TweenAnimationBuilder<double>(
+                      tween: Tween<double>(
+                        begin: isCompleted ? 1.15 : 1.0,
+                        end: 1.0,
+                      ),
+                      duration: const Duration(milliseconds: 100),
+                      curve: Curves.easeOutBack,
+                      key: ValueKey(isCompleted),
+                      builder: (context, scale, child) {
+                        return Transform.scale(
+                          scale: scale,
+                          child: child,
+                        );
+                      },
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 180),
+                        curve: Curves.easeOutBack,
+                        width: 32,
+                        height: 32,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(10),
+                          color: isCompleted
                               ? AppColors.accentPrimary
-                              : AppColors.textSecondary.withValues(alpha: 0.35),
-                      size: 18,
+                              : Colors.white.withValues(alpha: 0.08),
+                          border: isCompleted
+                              ? null
+                              : _canComplete
+                                  ? Border.all(
+                                      color: AppColors.accentPrimary
+                                          .withValues(alpha: 0.3),
+                                    )
+                                  : null,
+                        ),
+                        child: Icon(
+                          Icons.check_rounded,
+                          color: isCompleted
+                              ? Colors.white
+                              : _canComplete
+                                  ? AppColors.accentPrimary
+                                      .withValues(alpha: 0.5)
+                                  : Colors.white.withValues(alpha: 0.15),
+                          size: 18,
+                        ),
+                      ),
                     ),
                   ),
                 ),
