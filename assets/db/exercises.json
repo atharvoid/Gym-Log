@@ -116,14 +116,14 @@
 {
 "id": "g0265",
 "name": "Banded Muscle-Up",
-"bodyPart": "chest",
+"bodyPart": "back",
 "equipment": "Resistance Band",
-"target": "Chest",
-"parent": "Chest",
+"target": "Lats",
+"parent": "Back",
 "secondaryMuscles": [
+"Chest",
+"Biceps",
 "Triceps",
-"Lats",
-"Shoulders",
 "Core"
 ],
 "instructions": [],
@@ -1167,14 +1167,14 @@
 {
 "id": "g0286",
 "name": "Jumping Muscle-Up",
-"bodyPart": "chest",
+"bodyPart": "back",
 "equipment": "Bodyweight",
-"target": "Chest",
-"parent": "Chest",
+"target": "Lats",
+"parent": "Back",
 "secondaryMuscles": [
+"Chest",
+"Biceps",
 "Triceps",
-"Lats",
-"Shoulders",
 "Core"
 ],
 "instructions": [],
@@ -1335,14 +1335,14 @@
 {
 "id": "0631",
 "name": "Muscle-Up (Bar)",
-"bodyPart": "chest",
+"bodyPart": "back",
 "equipment": "Bodyweight",
-"target": "Chest",
-"parent": "Chest",
+"target": "Lats",
+"parent": "Back",
 "secondaryMuscles": [
+"Chest",
+"Biceps",
 "Triceps",
-"Lats",
-"Shoulders",
 "Core"
 ],
 "instructions": [
@@ -1364,14 +1364,14 @@
 {
 "id": "g0293",
 "name": "Muscle-Up (Rings)",
-"bodyPart": "chest",
+"bodyPart": "back",
 "equipment": "Gymnastic Rings",
-"target": "Chest",
-"parent": "Chest",
+"target": "Lats",
+"parent": "Back",
 "secondaryMuscles": [
+"Chest",
+"Biceps",
 "Triceps",
-"Lats",
-"Shoulders",
 "Core"
 ],
 "instructions": [],

@@ -87,6 +87,11 @@ void main() {
     expect(byName('Incline Pushdown (Cable)')['target'], 'Triceps');
     expect(byName('Biceps Pull-Up')['target'], 'Lats');
     expect(byName('Gripper')['target'], 'Forearms');
+    // Muscle-ups are a pulling movement → Back, not Chest.
+    for (final mu in const ['Muscle-Up (Bar)', 'Muscle-Up (Rings)',
+        'Banded Muscle-Up', 'Jumping Muscle-Up']) {
+      expect(byName(mu)['parent'], 'Back', reason: '$mu should be a Back movement');
+    }
     // The whole catalog: every primary muscle maps to a real parent group.
     for (final e in ex) {
       expect(MuscleTaxonomy.parentOf(e['target'] as String), isNot('Other'),
