@@ -12,6 +12,7 @@ import 'package:gymlog/features/exercises/presentation/screens/exercise_selectio
 import 'package:gymlog/shared/widgets/exercise_gif_widget.dart';
 import 'package:gymlog/shared/widgets/ui/app_dialog.dart';
 import 'package:gymlog/features/routines/presentation/widgets/routine_detail_styles.dart';
+import 'package:uuid/uuid.dart';
 
 /// Real routine builder — replaces the old "Coming Soon" stub.
 ///
@@ -31,6 +32,15 @@ class RoutineEditorScreen extends ConsumerStatefulWidget {
 }
 
 class _EditorExercise {
+  /// Stable, guaranteed-unique identity for the reorderable list key.
+  ///
+  /// The same exercise can legitimately appear twice in a routine, so
+  /// `exerciseId` is NOT unique. The previous key blended in
+  /// `identityHashCode`, which is neither guaranteed-unique nor a documented
+  /// stable key — exactly the "keyed list rebuild" fragility that breaks
+  /// `ReorderableListView` mid-drag. A per-instance UUID is unambiguous.
+  final String uid = const Uuid().v4();
+
   final int exerciseId;
   final String name;
   final String? gifUrl;
@@ -271,21 +281,41 @@ class _RoutineEditorScreenState extends ConsumerState<RoutineEditorScreen> {
                         : ReorderableListView.builder(
                             padding: const EdgeInsets.fromLTRB(16, 8, 16, 120),
                             itemCount: _exercises.length,
-                            proxyDecorator: (child, _, animation) =>
+                            // The card supplies its own drag handle
+                            // (ReorderableDragStartListener). Leaving the
+                            // default handles on too gives every item TWO
+                            // competing drag listeners — the source of the
+                            // mid-drag index confusion. Exactly one handle.
+                            buildDefaultDragHandles: false,
+                            onReorderStart: (_) =>
+                                HapticFeedback.selectionClick(),
+                            proxyDecorator: (child, index, animation) =>
                                 AnimatedBuilder(
                               animation: animation,
-                              builder: (_, __) => Material(
-                                color: Colors.transparent,
-                                elevation: 4,
-                                borderRadius: BorderRadius.circular(16),
-                                child: child,
-                              ),
+                              child: child,
+                              builder: (context, child) {
+                                // Lift the dragged card: subtle scale + shadow
+                                // so it visibly detaches from the list.
+                                final t =
+                                    Curves.easeInOut.transform(animation.value);
+                                return Transform.scale(
+                                  scale: 1.0 + 0.03 * t,
+                                  child: Material(
+                                    color: Colors.transparent,
+                                    elevation: 10 * t,
+                                    shadowColor:
+                                        Colors.black.withValues(alpha: 0.45),
+                                    borderRadius: BorderRadius.circular(16),
+                                    child: child,
+                                  ),
+                                );
+                              },
                             ),
                             // onReorderItem (Flutter 3.44+) pre-adjusts
                             // newIndex for the removed item — no manual
                             // decrement needed.
                             onReorderItem: (oldIndex, newIndex) {
-                              HapticFeedback.selectionClick();
+                              HapticFeedback.mediumImpact(); // satisfying drop
                               setState(() {
                                 _dirty = true;
                                 final item = _exercises.removeAt(oldIndex);
@@ -295,8 +325,7 @@ class _RoutineEditorScreenState extends ConsumerState<RoutineEditorScreen> {
                             itemBuilder: (context, index) {
                               final e = _exercises[index];
                               return Padding(
-                                key: ValueKey(
-                                    '${e.exerciseId}_${identityHashCode(e)}'),
+                                key: ValueKey(e.uid),
                                 padding: const EdgeInsets.only(bottom: 10),
                                 child: _EditorExerciseCard(
                                   exercise: e,
