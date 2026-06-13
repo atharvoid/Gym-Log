@@ -6,28 +6,41 @@ import 'package:gymlog/core/utils/units.dart';
 import 'package:gymlog/features/workout/domain/active_workout_state.dart';
 import 'package:gymlog/shared/widgets/ui/time_range_filter.dart';
 
+// ── Shared column geometry ──────────────────────────────────────────────────
+// The header row (ExerciseBlock) and every data row (SetRow) consume these
+// SAME constants so a caption can never drift from the column it labels.
+// Layout, left → right: SET · PREVIOUS · KG · REPS · ✓
+const double kSetColW = 44; // fixed — "1" / "W" / "D" / "F"
+const double kCheckColW = 44; // fixed — completion square
+const int kPrevFlex = 5; // "999kg x 99" — read-only reference, widest
+const int kWeightFlex = 4; // editable number
+const int kRepsFlex = 4; // editable number
+
 /// One set inside the active workout — the most-touched interaction in the
 /// entire app.
 ///
-/// Design language (north-star aligned):
-///   * Weight and reps live in clean boxed fields — large, centered,
-///     tabular digits. No hidden sliders, no cramped underline inputs.
-///   * Completion tints the row electric purple (never iOS green) and the
-///     check seats with a confident medium impact.
-///   * The set-type chip opens an explicit branded picker — no invisible
-///     tap-cycling.
-///   * The unit label is tappable to override kg/lbs per exercise.
-///     Storage stays kg; conversion happens at this boundary only.
+/// Hevy-inspired restraint (clean = fewer things drawn):
+///   * Weight and reps are PLAIN TEXT on the row surface — no boxes, borders,
+///     or fills. The number is the UI.
+///   * The unit lives in the column header (KG/LBS), not inline; there is no
+///     "×" divider between the two numbers.
+///   * The set TYPE replaces the set NUMBER in the SET column (W/D/F as plain
+///     coloured text) — one slot, no pill.
+///   * A dedicated PREVIOUS column shows last session's "15kg x 12".
+///   * Completion is a muted gray square, not a purple circle — purple stays
+///     reserved for the Finish button and primary actions.
 class SetRow extends StatefulWidget {
   final int setIndex;
   final WorkoutSetState setData;
+
+  /// Previous-session baseline for THIS set index (kg + reps), shown in the
+  /// PREVIOUS column. Null when this exercise has no prior history.
   final double? previousWeight;
   final int? previousReps;
-  final String? equipment;
 
-  /// Display/input unit for this exercise ('kg' | 'lbs').
+  /// Display/input unit for this exercise ('kg' | 'lbs'). Storage stays kg;
+  /// conversion happens at this boundary only.
   final String unit;
-  final VoidCallback? onUnitTap;
   final ValueChanged<WorkoutSetState> onChanged;
   final VoidCallback onToggleComplete;
 
@@ -37,9 +50,7 @@ class SetRow extends StatefulWidget {
     required this.setData,
     this.previousWeight,
     this.previousReps,
-    this.equipment,
     this.unit = 'kg',
-    this.onUnitTap,
     required this.onChanged,
     required this.onToggleComplete,
   });
@@ -109,6 +120,15 @@ class _SetRowState extends State<SetRow> {
   bool get _canComplete =>
       widget.setData.weightKg > 0 && widget.setData.reps > 0;
 
+  /// Last session's performance for this set index → "15kg x 12".
+  /// Null when there is no prior data (renders a ghosted dash).
+  String? get _previousLabel {
+    final w = widget.previousWeight;
+    final r = widget.previousReps;
+    if (w == null || r == null) return null;
+    return '${formatWeight(w, widget.unit)}${widget.unit} x $r';
+  }
+
   Future<void> _pickSetType() async {
     final selected = await showBrandedPickerSheet<String>(
       context: context,
@@ -150,127 +170,102 @@ class _SetRowState extends State<SetRow> {
     }
   }
 
+  /// SET column content: the type letter REPLACES the number (Hevy pattern).
+  /// Plain coloured text — never a pill or container. Normal → number.
   Widget _setTypeIndicator() {
-    Widget pill(String code, Color color) => Container(
-          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-          decoration: BoxDecoration(
-            color: color.withValues(alpha: 0.15),
-            borderRadius: BorderRadius.circular(6),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 6,
-                height: 6,
-                decoration: BoxDecoration(
-                  color: color,
-                  shape: BoxShape.circle,
-                ),
-              ),
-              const SizedBox(width: 4),
-              Text(
-                code,
-                style: GoogleFonts.inter(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w700,
-                  color: color,
-                ),
-              ),
-            ],
-          ),
-        );
-
+    String label;
+    Color color;
     switch (widget.setData.setType) {
       case 'warmup':
-        return pill('W', const Color(0xFFE0A422));
+        label = 'W';
+        color = const Color(0xFFE0A422); // amber
+        break;
       case 'dropset':
-        return pill('D', const Color(0xFFB98CFF));
+        label = 'D';
+        color = const Color(0xFFB98CFF); // purple
+        break;
       case 'failure':
-        return pill('F', const Color(0xFFFF6B70));
+        label = 'F';
+        color = const Color(0xFFFF6B70); // red
+        break;
       default:
-        return Text(
-          '${widget.setIndex + 1}',
-          style: GoogleFonts.inter(
-            color: widget.setData.isCompleted
-                ? AppColors.textSecondary
-                : AppColors.textSecondary.withValues(alpha: 0.7),
-            fontSize: 15,
-            fontWeight: FontWeight.w700,
-            fontFeatures: const [FontFeature.tabularFigures()],
-          ),
-        );
+        label = '${widget.setIndex + 1}';
+        color = widget.setData.isCompleted
+            ? AppColors.textPrimary
+            : AppColors.textSecondary;
     }
+    return Text(
+      label,
+      style: GoogleFonts.inter(
+        color: color,
+        fontSize: 15,
+        fontWeight: FontWeight.w700,
+        fontFeatures: const [FontFeature.tabularFigures()],
+      ),
+    );
   }
 
-  Widget _numberBox({
+  /// A bare value field — no box, border, fill, or radius (Change 1).
+  /// The number sits directly on the row surface; focus is signalled only
+  /// by the cursor and keyboard.
+  Widget _numberField({
     required TextEditingController controller,
     required FocusNode focusNode,
-    required String hint,
     required bool isDecimal,
     required ValueChanged<String> onChanged,
-    TextAlign textAlign = TextAlign.center,
     TextInputAction action = TextInputAction.next,
   }) {
     final completed = widget.setData.isCompleted;
-    return Container(
-      height: 32,
-      decoration: BoxDecoration(
-        color: completed
-            ? Colors.transparent
-            : Colors.white.withValues(alpha: 0.03),
-        borderRadius: completed ? null : BorderRadius.circular(4),
+    return TextField(
+      controller: controller,
+      focusNode: focusNode,
+      readOnly: completed,
+      textAlign: TextAlign.center,
+      textAlignVertical: TextAlignVertical.center,
+      textInputAction: action,
+      keyboardType: TextInputType.numberWithOptions(decimal: isDecimal),
+      cursorColor: AppColors.accentPrimary,
+      inputFormatters: [
+        if (isDecimal)
+          FilteringTextInputFormatter.allow(RegExp(r'[0-9.]'))
+        else
+          FilteringTextInputFormatter.digitsOnly,
+        LengthLimitingTextInputFormatter(isDecimal ? 6 : 3),
+      ],
+      style: GoogleFonts.inter(
+        // Completed values read at full opacity; in-progress at full white
+        // too — colour/size/weight are unchanged from the boxed version,
+        // only the container is gone.
+        color: AppColors.textPrimary,
+        fontSize: 17,
+        fontWeight: FontWeight.w700,
+        fontFeatures: const [FontFeature.tabularFigures()],
       ),
-      child: Center(
-        child: TextField(
-          controller: controller,
-          focusNode: focusNode,
-          readOnly: completed,
-          textAlign: textAlign,
-          textAlignVertical: TextAlignVertical.center,
-          textInputAction: action,
-          keyboardType: TextInputType.numberWithOptions(decimal: isDecimal),
-          inputFormatters: [
-            if (isDecimal)
-              FilteringTextInputFormatter.allow(RegExp(r'[0-9.+]'))
-            else
-              FilteringTextInputFormatter.digitsOnly,
-            LengthLimitingTextInputFormatter(isDecimal ? 7 : 3),
-          ],
-          style: GoogleFonts.inter(
-            color: completed
-                ? AppColors.textPrimary.withValues(alpha: 0.7)
-                : AppColors.textPrimary,
-            fontSize: 17,
-            fontWeight: FontWeight.w700,
-            fontFeatures: const [FontFeature.tabularFigures()],
-          ),
-          decoration: InputDecoration(
-            hintText: hint,
-            hintStyle: GoogleFonts.inter(
-              color: AppColors.textSecondary.withValues(alpha: 0.2),
-              fontSize: 17,
-              fontWeight: FontWeight.w700,
-            ),
-            border: InputBorder.none,
-            focusedBorder: InputBorder.none,
-            enabledBorder: InputBorder.none,
-            filled: false,
-            isDense: true,
-            contentPadding: EdgeInsets.zero,
-          ),
-          onChanged: onChanged,
-          onSubmitted: (_) => action == TextInputAction.next
-              ? FocusScope.of(context).nextFocus()
-              : FocusScope.of(context).unfocus(),
+      decoration: InputDecoration(
+        hintText: '–',
+        hintStyle: GoogleFonts.inter(
+          color: AppColors.textPrimary.withValues(alpha: 0.2),
+          fontSize: 17,
+          fontWeight: FontWeight.w700,
         ),
+        border: InputBorder.none,
+        focusedBorder: InputBorder.none,
+        enabledBorder: InputBorder.none,
+        filled: false,
+        isDense: true,
+        contentPadding: EdgeInsets.zero,
       ),
+      onChanged: onChanged,
+      onSubmitted: (_) => action == TextInputAction.next
+          ? FocusScope.of(context).nextFocus()
+          : FocusScope.of(context).unfocus(),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     final isCompleted = widget.setData.isCompleted;
+    final prev = _previousLabel;
 
     return AnimatedContainer(
       duration: const Duration(milliseconds: 200),
@@ -279,185 +274,136 @@ class _SetRowState extends State<SetRow> {
           ? AppColors.accentPrimary.withValues(alpha: 0.06)
           : Colors.transparent,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
-      child: Row(
-        children: [
-          // ── Set identifier → explicit type picker ──────────────────────
-          // Locked once completed (uncheck to edit). FittedBox guarantees
-          // the Warm/Drop/Fail chip can never overflow the 48px column.
-          SizedBox(
-            width: 48,
-            child: Semantics(
-              button: !isCompleted,
-              label: 'Set type',
-              child: GestureDetector(
-                onTap: isCompleted
-                    ? null
-                    : () {
-                        HapticFeedback.selectionClick();
-                        _pickSetType();
-                      },
-                behavior: HitTestBehavior.opaque,
-                child: ConstrainedBox(
-                  constraints:
-                      const BoxConstraints(minWidth: 48, minHeight: 32),
+      child: SizedBox(
+        height: 44,
+        child: Row(
+          children: [
+            // ── SET — type letter replaces number, opens the type picker ──
+            SizedBox(
+              width: kSetColW,
+              child: Semantics(
+                button: !isCompleted,
+                label: 'Set type',
+                child: GestureDetector(
+                  onTap: isCompleted
+                      ? null
+                      : () {
+                          HapticFeedback.selectionClick();
+                          _pickSetType();
+                        },
+                  behavior: HitTestBehavior.opaque,
                   child: Align(
                     alignment: Alignment.centerLeft,
-                    child: FittedBox(
-                      fit: BoxFit.scaleDown,
-                      alignment: Alignment.centerLeft,
-                      child: _setTypeIndicator(),
+                    child: _setTypeIndicator(),
+                  ),
+                ),
+              ),
+            ),
+
+            // ── PREVIOUS — read-only "15kg x 12" from the last session ────
+            Expanded(
+              flex: kPrevFlex,
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    prev ?? '—',
+                    style: GoogleFonts.inter(
+                      color: prev != null
+                          ? AppColors.textSecondary
+                          : AppColors.textSecondary.withValues(alpha: 0.35),
+                      fontSize: 15,
+                      fontWeight: FontWeight.w500,
+                      fontFeatures: const [FontFeature.tabularFigures()],
                     ),
                   ),
                 ),
               ),
             ),
-          ),
 
-          // ── Weight column (with inline unit) ─────────────────────────
-          Expanded(
-            flex: 5,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Flexible(
-                  child: _numberBox(
-                    controller: _weightController,
-                    focusNode: _weightFocus,
-                    hint: widget.previousWeight != null
-                        ? formatWeight(widget.previousWeight!, widget.unit)
-                        : '–',
-                    isDecimal: true,
-                    textAlign: TextAlign.center,
-                    onChanged: (val) {
-                      final clean = val.replaceFirst('+', '');
-                      final parsed = double.tryParse(clean);
-                      if (parsed != null) {
-                        final kg =
-                            displayToKg(parsed, widget.unit).clamp(0.0, 999.5);
-                        widget.onChanged(
-                            widget.setData.copyWith(weightKg: kg));
-                      }
-                    },
-                  ),
-                ),
-                const SizedBox(width: 2),
-                // Unit label — tappable, switches kg/lbs for this exercise.
-                // Locked while the set is completed.
-                Semantics(
-                  button: !isCompleted,
-                  label: 'Weight unit ${widget.unit}, tap to change',
-                  child: GestureDetector(
-                    onTap: isCompleted ? null : widget.onUnitTap,
-                    behavior: HitTestBehavior.opaque,
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      child: Text(
-                        widget.unit,
-                        style: GoogleFonts.inter(
-                          color: AppColors.textSecondary.withValues(alpha: 0.5),
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          // ── × separator ──────────────────────────────────────────────
-          SizedBox(
-            width: 20,
-            child: Center(
-              child: Text(
-                '×',
-                style: GoogleFonts.inter(
-                  color: AppColors.textSecondary.withValues(alpha: 0.4),
-                  fontSize: 13,
-                ),
+            // ── KG — bare number, unit lives in the header ────────────────
+            Expanded(
+              flex: kWeightFlex,
+              child: _numberField(
+                controller: _weightController,
+                focusNode: _weightFocus,
+                isDecimal: true,
+                onChanged: (val) {
+                  final parsed = double.tryParse(val);
+                  if (parsed != null) {
+                    final kg =
+                        displayToKg(parsed, widget.unit).clamp(0.0, 999.5);
+                    widget.onChanged(widget.setData.copyWith(weightKg: kg));
+                  }
+                },
               ),
             ),
-          ),
 
-          // ── Reps column ──────────────────────────────────────────────
-          Expanded(
-            flex: 4,
-            child: _numberBox(
-              controller: _repsController,
-              focusNode: _repsFocus,
-              hint: widget.previousReps?.toString() ?? '–',
-              isDecimal: false,
-              action: TextInputAction.done,
-              onChanged: (val) {
-                final parsed = int.tryParse(val);
-                if (parsed != null) {
-                  widget.onChanged(
-                      widget.setData.copyWith(reps: parsed.clamp(0, 999)));
-                }
-              },
+            // ── REPS — bare number (no "×" divider before it) ─────────────
+            Expanded(
+              flex: kRepsFlex,
+              child: _numberField(
+                controller: _repsController,
+                focusNode: _repsFocus,
+                isDecimal: false,
+                action: TextInputAction.done,
+                onChanged: (val) {
+                  final parsed = int.tryParse(val);
+                  if (parsed != null) {
+                    widget.onChanged(
+                        widget.setData.copyWith(reps: parsed.clamp(0, 999)));
+                  }
+                },
+              ),
             ),
-          ),
 
-          // ── Completion check — the small victory ────────────────────
-          SizedBox(
-            width: 48,
-            child: Semantics(
-              button: true,
-              label: isCompleted ? 'Mark set incomplete' : 'Complete set',
-              child: GestureDetector(
-                onTap: isCompleted || _canComplete
-                    ? () {
-                        if (!isCompleted) HapticFeedback.mediumImpact();
-                        widget.onToggleComplete();
-                      }
-                    : null,
-                behavior: HitTestBehavior.opaque,
-                child: ConstrainedBox(
-                  constraints:
-                      const BoxConstraints(minWidth: 48, minHeight: 48),
+            // ── Completion — muted gray square (no purple) ────────────────
+            SizedBox(
+              width: kCheckColW,
+              child: Semantics(
+                button: true,
+                label: isCompleted ? 'Mark set incomplete' : 'Complete set',
+                child: GestureDetector(
+                  onTap: isCompleted || _canComplete
+                      ? () {
+                          if (!isCompleted) HapticFeedback.mediumImpact();
+                          widget.onToggleComplete();
+                        }
+                      : null,
+                  behavior: HitTestBehavior.opaque,
                   child: Center(
                     child: TweenAnimationBuilder<double>(
+                      key: ValueKey(isCompleted),
                       tween: Tween<double>(
                         begin: isCompleted ? 1.15 : 1.0,
                         end: 1.0,
                       ),
                       duration: const Duration(milliseconds: 100),
                       curve: Curves.easeOutBack,
-                      key: ValueKey(isCompleted),
-                      builder: (context, scale, child) {
-                        return Transform.scale(
-                          scale: scale,
-                          child: child,
-                        );
-                      },
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 180),
-                        curve: Curves.easeOutBack,
+                      builder: (context, scale, child) =>
+                          Transform.scale(scale: scale, child: child),
+                      child: Container(
                         width: 32,
                         height: 32,
                         decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(10),
+                          borderRadius: BorderRadius.circular(4),
                           color: isCompleted
-                              ? AppColors.accentPrimary
-                              : Colors.white.withValues(alpha: 0.08),
+                              ? const Color(0xFF2C2C2E) // muted gray surface
+                              : Colors.transparent,
                           border: isCompleted
                               ? null
-                              : _canComplete
-                                  ? Border.all(
-                                      color: AppColors.accentPrimary
-                                          .withValues(alpha: 0.3),
-                                    )
-                                  : null,
+                              : Border.all(
+                                  color:
+                                      AppColors.textPrimary.withValues(alpha: 0.15),
+                                ),
                         ),
                         child: Icon(
                           Icons.check_rounded,
                           color: isCompleted
-                              ? Colors.white
-                              : _canComplete
-                                  ? AppColors.accentPrimary
-                                      .withValues(alpha: 0.5)
-                                  : Colors.white.withValues(alpha: 0.15),
+                              ? AppColors.textPrimary.withValues(alpha: 0.8)
+                              : AppColors.textPrimary.withValues(alpha: 0.10),
                           size: 18,
                         ),
                       ),
@@ -466,8 +412,8 @@ class _SetRowState extends State<SetRow> {
                 ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
