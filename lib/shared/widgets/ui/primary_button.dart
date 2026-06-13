@@ -13,21 +13,28 @@ class PrimaryButton extends StatelessWidget {
   final bool isFullWidth;
   final IconData? icon;
 
+  /// While true the button is disabled and shows a spinner — prevents the
+  /// double-fire that triggers "Concurrent operations" on async actions
+  /// (e.g. Google Sign-In, which only tolerates one pending call).
+  final bool isLoading;
+
   const PrimaryButton({
     super.key,
     required this.label,
     this.onPressed,
     this.isFullWidth = true,
     this.icon,
+    this.isLoading = false,
   });
 
   @override
   Widget build(BuildContext context) {
+    final disabled = isLoading || onPressed == null;
     final button = SizedBox(
       height: 48,
       width: isFullWidth ? double.infinity : null,
       child: ElevatedButton(
-        onPressed: onPressed == null
+        onPressed: disabled
             ? null
             : () {
                 HapticFeedback.mediumImpact();
@@ -36,6 +43,11 @@ class PrimaryButton extends StatelessWidget {
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.accentPrimary,
           foregroundColor: AppColors.textPrimary,
+          // Busy state stays on-brand (dimmed purple), not the default gray
+          // "disabled" look — it reads as "working", not "unavailable".
+          disabledBackgroundColor:
+              AppColors.accentPrimary.withValues(alpha: 0.6),
+          disabledForegroundColor: AppColors.textPrimary,
           elevation: 0,
           shadowColor: Colors.transparent,
           shape: const RoundedRectangleBorder(
@@ -43,7 +55,17 @@ class PrimaryButton extends StatelessWidget {
           ),
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
         ),
-        child: icon != null
+        child: isLoading
+            ? const SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  valueColor:
+                      AlwaysStoppedAnimation<Color>(AppColors.textPrimary),
+                ),
+              )
+            : icon != null
             ? Row(
                 mainAxisSize: MainAxisSize.min,
                 mainAxisAlignment: MainAxisAlignment.center,
