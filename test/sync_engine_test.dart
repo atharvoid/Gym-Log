@@ -11,6 +11,7 @@ import 'package:drift/drift.dart' hide isNull, isNotNull;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gymlog/core/database/database.dart';
+import 'package:gymlog/core/database/daos/routines_dao.dart';
 import 'package:gymlog/core/services/sync_codec.dart';
 import 'package:gymlog/core/services/sync_engine.dart';
 import 'package:gymlog/core/services/sync_remote.dart';
@@ -178,5 +179,82 @@ void main() {
     expect(await db.syncOutboxDao.pendingCount(userId), 0);
     expect(remote.pushedObjects, 250);
     expect(remote.pushBatches, greaterThanOrEqualTo(2));
+  });
+
+  group('routines', () {
+    test('creating a routine auto-enqueues it (DAO-level coverage)', () async {
+      final exId = await insertExercise('Squat');
+      await db.routinesDao.createRoutine(
+        userId: userId,
+        name: 'Leg Day',
+        exercises: [RoutineDraftExercise(exerciseId: exId, defaultSets: 4)],
+      );
+      // No explicit engine call — the DAO queued it on its own.
+      expect(await db.syncOutboxDao.pendingCount(userId), 1);
+    });
+
+    test('routine round-trip: push, wipe local, pull, rehydrate', () async {
+      final exId = await insertExercise('Bench');
+      final routineId = await db.routinesDao.createRoutine(
+        userId: userId,
+        name: 'Push Day',
+        exercises: [
+          RoutineDraftExercise(
+              exerciseId: exId, defaultSets: 4, defaultReps: 8),
+        ],
+      );
+      await engine.syncNow(userId);
+      expect(remote.store.containsKey('routine:$routineId'), isTrue);
+
+      // Simulate reinstall: delete the routine locally.
+      await db.routinesDao.deleteRoutine(routineId);
+      // deleteRoutine queued a tombstone — clear it so it doesn't fight pull.
+      await db.syncOutboxDao
+          .deleteByIds((await db.syncOutboxDao.nextBatch(userId)).map((r) => r.id).toList());
+      expect(await db.routinesDao.getHydratedRoutineDetail(routineId), isNull);
+
+      await engine.pull(userId);
+
+      final restored =
+          await db.routinesDao.getHydratedRoutineDetail(routineId);
+      expect(restored, isNotNull);
+      expect(restored!.routine.name, 'Push Day');
+      expect(restored.exercises.first.config.defaultReps, 8);
+    });
+
+    test('deleting a routine queues a tombstone', () async {
+      final exId = await insertExercise('Row');
+      final routineId = await db.routinesDao.createRoutine(
+          userId: userId, name: 'Pull', exercises: [
+        RoutineDraftExercise(exerciseId: exId)
+      ]);
+      await engine.syncNow(userId); // upload the create
+
+      await db.routinesDao.deleteRoutine(routineId);
+      final batch = await db.syncOutboxDao.nextBatch(userId);
+      expect(batch.single.op, 'delete');
+      expect(batch.single.entityId, routineId);
+    });
+  });
+
+  test('preferences round-trip restores weight unit + rest seconds', () async {
+    // Seed a profile + non-default prefs.
+    await db.userDao.upsertProfile(
+        id: userId, email: 'a@b.com', displayName: 'A');
+    await db.userDao.setWeightUnit(userId, 'lbs');
+    await db.userDao.setDefaultRestSeconds(userId, 120);
+
+    await engine.enqueuePreferences(userId);
+    await engine.syncNow(userId);
+    expect(remote.store.containsKey('preferences:$userId'), isTrue);
+
+    // Reset local prefs to defaults, then restore from cloud.
+    await db.userDao.setWeightUnit(userId, 'kg');
+    await db.userDao.setDefaultRestSeconds(userId, 90);
+    await engine.pull(userId);
+
+    final profile = await db.userDao.getUserOrNull(userId);
+    expect(profile!.weightUnit, 'lbs');
+    expect(profile.defaultRestSeconds, 120);
   });
 }

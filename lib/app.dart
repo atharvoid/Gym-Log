@@ -40,9 +40,13 @@ class _GymLogAppState extends ConsumerState<GymLogApp> {
 
   void _flush() {
     final id = _userId;
-    if (id != null) {
-      ref.read(syncEngineProvider).syncNow(id, reason: 'background');
-    }
+    if (id == null) return;
+    final engine = ref.read(syncEngineProvider);
+    // Snapshot the latest preferences, then flush the whole queue before the
+    // OS may suspend us.
+    engine
+        .enqueuePreferences(id)
+        .whenComplete(() => engine.syncNow(id, reason: 'background'));
   }
 
   void _onResume() {

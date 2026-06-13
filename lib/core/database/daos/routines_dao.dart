@@ -5,6 +5,7 @@ import '../tables/routines_table.dart';
 import '../tables/routine_days_table.dart';
 import '../tables/routine_exercises_table.dart';
 import 'workouts_dao.dart';
+import '../../services/sync_codec.dart';
 
 part 'routines_dao.g.dart';
 
@@ -250,6 +251,132 @@ class RoutinesDao extends DatabaseAccessor<AppDatabase>
   Future<Routine> getRoutine(String id) =>
       (select(routines)..where((t) => t.id.equals(id))).getSingle();
 
+  // ── Sync serialization ─────────────────────────────────────────────────────
+
+  /// Self-contained JSON snapshot of a routine and all its days + exercises,
+  /// for cloud sync. Dates are epoch millis. Null if the routine is gone.
+  Future<Map<String, dynamic>?> exportRoutineJson(String routineId) async {
+    final r = await (select(routines)..where((t) => t.id.equals(routineId)))
+        .getSingleOrNull();
+    if (r == null) return null;
+    final days = await getDaysForRoutine(routineId);
+    final daysJson = <Map<String, dynamic>>[];
+    for (final d in days) {
+      final exs = await getExercisesForDay(d.id);
+      daysJson.add({
+        'id': d.id,
+        'routineId': d.routineId,
+        'name': d.name,
+        'orderIndex': d.orderIndex,
+        'exercises': [
+          for (final e in exs)
+            {
+              'id': e.id,
+              'routineDayId': e.routineDayId,
+              'exerciseId': e.exerciseId,
+              'orderIndex': e.orderIndex,
+              'defaultSets': e.defaultSets,
+              'defaultReps': e.defaultReps,
+              'defaultWeightKg': e.defaultWeightKg,
+              'restSeconds': e.restSeconds,
+            }
+        ],
+      });
+    }
+    return {
+      'routine': {
+        'id': r.id,
+        'userId': r.userId,
+        'name': r.name,
+        'notes': r.notes,
+        'createdAt': r.createdAt.millisecondsSinceEpoch,
+        'updatedAt': r.updatedAt.millisecondsSinceEpoch,
+      },
+      'days': daysJson,
+    };
+  }
+
+  /// Rehydrate a routine snapshot into local storage (cloud restore).
+  /// Idempotent: the routine is upserted and its days/exercises rebuilt.
+  Future<void> importRoutineJson(Map<String, dynamic> data) async {
+    final rj = data['routine'] as Map<String, dynamic>;
+    final routineId = rj['id'] as String;
+    DateTime ms(dynamic v) => DateTime.fromMillisecondsSinceEpoch(v as int);
+
+    await transaction(() async {
+      await into(routines).insertOnConflictUpdate(RoutinesCompanion.insert(
+        id: Value(routineId),
+        userId: rj['userId'] as String,
+        name: rj['name'] as String,
+        notes: Value(rj['notes'] as String? ?? ''),
+        createdAt: ms(rj['createdAt']),
+        updatedAt: ms(rj['updatedAt']),
+      ));
+
+      // Rebuild children deterministically.
+      await customUpdate(
+        'DELETE FROM routine_exercises WHERE routine_day_id IN '
+        '(SELECT id FROM routine_days WHERE routine_id = ?)',
+        variables: [Variable.withString(routineId)],
+        updates: {routineExercises},
+        updateKind: UpdateKind.delete,
+      );
+      await (delete(routineDays)..where((t) => t.routineId.equals(routineId)))
+          .go();
+
+      for (final d in (data['days'] as List).cast<Map<String, dynamic>>()) {
+        await into(routineDays).insert(RoutineDaysCompanion.insert(
+          id: Value(d['id'] as String),
+          routineId: d['routineId'] as String,
+          name: d['name'] as String,
+          orderIndex: d['orderIndex'] as int,
+        ));
+        for (final e
+            in (d['exercises'] as List).cast<Map<String, dynamic>>()) {
+          await into(routineExercises).insert(RoutineExercisesCompanion.insert(
+            id: Value(e['id'] as String),
+            routineDayId: e['routineDayId'] as String,
+            exerciseId: e['exerciseId'] as int,
+            orderIndex: e['orderIndex'] as int,
+            defaultSets: Value(e['defaultSets'] as int? ?? 3),
+            defaultReps: Value(e['defaultReps'] as int?),
+            defaultWeightKg: Value((e['defaultWeightKg'] as num?)?.toDouble()),
+            restSeconds: Value(e['restSeconds'] as int?),
+          ));
+        }
+      }
+    });
+  }
+
+  /// Queues a routine's current state for cloud upload. Called from every
+  /// routine mutation below so coverage is guaranteed at the DAO layer — no
+  /// UI call site can forget to sync. Best-effort: a serialization hiccup
+  /// never breaks the local write that already succeeded.
+  Future<void> _enqueueRoutineUpsert(String routineId, String userId) async {
+    try {
+      final data = await exportRoutineJson(routineId);
+      if (data == null) return;
+      await db.syncOutboxDao.enqueue(
+        entityType: 'routine',
+        entityId: routineId,
+        userId: userId,
+        payload: SyncCodec.encode(data),
+      );
+    } catch (_) {/* never block a local write on sync bookkeeping */}
+  }
+
+  Future<void> _enqueueRoutineDelete(String routineId, String userId) async {
+    try {
+      await db.syncOutboxDao.enqueue(
+        entityType: 'routine',
+        entityId: routineId,
+        userId: userId,
+        op: 'delete',
+        payload: '',
+      );
+    } catch (_) {/* tombstone is best-effort */}
+  }
+
   Future<void> insertRoutine(RoutinesCompanion routine) =>
       into(routines).insert(routine);
 
@@ -257,19 +384,25 @@ class RoutinesDao extends DatabaseAccessor<AppDatabase>
       update(routines).replace(routine);
 
   /// Renames a routine (targeted update — preserves all other columns + FKs).
-  Future<void> renameRoutine(String id, String name) {
-    return (update(routines)..where((t) => t.id.equals(id)))
+  Future<void> renameRoutine(String id, String name) async {
+    await (update(routines)..where((t) => t.id.equals(id)))
         .write(RoutinesCompanion(
       name: Value(name),
       updatedAt: Value(DateTime.now()),
     ));
+    final r = await (select(routines)..where((t) => t.id.equals(id)))
+        .getSingleOrNull();
+    if (r != null) await _enqueueRoutineUpsert(id, r.userId);
   }
 
   /// Deletes a routine **and all of its children** atomically.
   /// Past workout sessions keep their routineId reference by design —
   /// history must survive routine deletion.
-  Future<void> deleteRoutine(String id) {
-    return transaction(() async {
+  Future<void> deleteRoutine(String id) async {
+    // Capture owner before deletion so we can enqueue a cloud tombstone.
+    final r =
+        await (select(routines)..where((t) => t.id.equals(id))).getSingleOrNull();
+    await transaction(() async {
       await customUpdate(
         'DELETE FROM routine_exercises WHERE routine_day_id IN '
         '(SELECT id FROM routine_days WHERE routine_id = ?)',
@@ -280,6 +413,7 @@ class RoutinesDao extends DatabaseAccessor<AppDatabase>
       await (delete(routineDays)..where((t) => t.routineId.equals(id))).go();
       await (delete(routines)..where((t) => t.id.equals(id))).go();
     });
+    if (r != null) await _enqueueRoutineDelete(id, r.userId);
   }
 
   // RoutineDays
@@ -330,8 +464,8 @@ class RoutinesDao extends DatabaseAccessor<AppDatabase>
     String routineId,
     int exerciseId, {
     int defaultSets = 3,
-  }) {
-    return transaction(() async {
+  }) async {
+    await transaction(() async {
       final day = await _ensureFirstDay(routineId);
       final existing = await getExercisesForDay(day.id);
       await insertRoutineExercise(RoutineExercisesCompanion.insert(
@@ -344,6 +478,9 @@ class RoutinesDao extends DatabaseAccessor<AppDatabase>
       await (update(routines)..where((t) => t.id.equals(routineId)))
           .write(RoutinesCompanion(updatedAt: Value(DateTime.now())));
     });
+    final r = await (select(routines)..where((t) => t.id.equals(routineId)))
+        .getSingleOrNull();
+    if (r != null) await _enqueueRoutineUpsert(routineId, r.userId);
   }
 
   /// Creates a brand-new routine from the editor's draft. Returns its id.
@@ -351,12 +488,12 @@ class RoutinesDao extends DatabaseAccessor<AppDatabase>
     required String userId,
     required String name,
     required List<RoutineDraftExercise> exercises,
-  }) {
-    return transaction(() async {
-      final routineId = const Uuid().v4();
+  }) async {
+    final routineId = await transaction(() async {
+      final id = const Uuid().v4();
       final now = DateTime.now();
       await insertRoutine(RoutinesCompanion.insert(
-        id: Value(routineId),
+        id: Value(id),
         userId: userId,
         name: name,
         createdAt: now,
@@ -365,13 +502,15 @@ class RoutinesDao extends DatabaseAccessor<AppDatabase>
       final dayId = const Uuid().v4();
       await insertDay(RoutineDaysCompanion.insert(
         id: Value(dayId),
-        routineId: routineId,
+        routineId: id,
         name: 'Day 1',
         orderIndex: 0,
       ));
       await _insertDraftExercises(dayId, exercises);
-      return routineId;
+      return id;
     });
+    await _enqueueRoutineUpsert(routineId, userId);
+    return routineId;
   }
 
   /// Replaces a routine's name + exercise list with the editor's draft.
@@ -380,8 +519,8 @@ class RoutinesDao extends DatabaseAccessor<AppDatabase>
     required String routineId,
     required String name,
     required List<RoutineDraftExercise> exercises,
-  }) {
-    return transaction(() async {
+  }) async {
+    await transaction(() async {
       await (update(routines)..where((t) => t.id.equals(routineId)))
           .write(RoutinesCompanion(
         name: Value(name),
@@ -401,6 +540,9 @@ class RoutinesDao extends DatabaseAccessor<AppDatabase>
 
       await _insertDraftExercises(day.id, exercises);
     });
+    final r = await (select(routines)..where((t) => t.id.equals(routineId)))
+        .getSingleOrNull();
+    if (r != null) await _enqueueRoutineUpsert(routineId, r.userId);
   }
 
   Future<void> _insertDraftExercises(
