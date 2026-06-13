@@ -8,6 +8,7 @@ import 'package:gymlog/core/theme/app_colors.dart';
 import 'package:gymlog/core/utils/formatters.dart';
 import 'package:gymlog/features/routines/presentation/widgets/routine_detail_styles.dart';
 import 'package:gymlog/shared/providers/gif_last_frame_provider.dart';
+import 'package:gymlog/shared/widgets/muscle_split_bar.dart';
 
 /// [workout_history_card.dart]
 /// Purpose: Data-dense workout history card for the HomeScreen feed.
@@ -119,6 +120,15 @@ class WorkoutHistoryCard extends StatelessWidget {
                         fontSize: 12,
                       ),
                     ),
+                ],
+
+                // ── Muscle split — slim bar + compact legend ─────────────────────
+                if (preview.muscleGroupSets.isNotEmpty) ...[
+                  const SizedBox(height: 12),
+                  MuscleSplitBar(
+                    setCountsByGroup: preview.muscleGroupSets,
+                    dense: true,
+                  ),
                 ],
 
                 const SizedBox(height: 11),
