@@ -1,7 +1,7 @@
 {
 "version": 3,
 "count": 822,
-"generatedFrom": "Strength Excel + ExerciseDB",
+"generatedFrom": "Strength Excel + ExerciseDB (QA-corrected)",
 "exercises": [
 {
 "id": "0519",
@@ -2945,12 +2945,11 @@
 {
 "id": "0172",
 "name": "Incline Pushdown (Cable)",
-"bodyPart": "back",
+"bodyPart": "arms",
 "equipment": "Cable",
-"target": "Lats",
-"parent": "Back",
+"target": "Triceps",
+"parent": "Triceps",
 "secondaryMuscles": [
-"Triceps",
 "Shoulders"
 ],
 "instructions": [
@@ -4636,10 +4635,10 @@
 {
 "id": "3664",
 "name": "Side Plank With Rear Fly (Dumbbell)",
-"bodyPart": "back",
+"bodyPart": "shoulders",
 "equipment": "Dumbbell",
-"target": "Upper Back",
-"parent": "Back",
+"target": "Rear Delts",
+"parent": "Shoulders",
 "secondaryMuscles": [
 "Shoulders",
 "Core"
@@ -5122,10 +5121,10 @@
 {
 "id": "0244",
 "name": "Twisting Pull (Cable)",
-"bodyPart": "back",
+"bodyPart": "core",
 "equipment": "Cable",
-"target": "Lats",
-"parent": "Back",
+"target": "Obliques",
+"parent": "Core",
 "secondaryMuscles": [
 "Shoulders",
 "Biceps"
@@ -7108,10 +7107,10 @@
 {
 "id": "0139",
 "name": "Biceps Narrow Pull-Ups",
-"bodyPart": "arms",
+"bodyPart": "back",
 "equipment": "Bodyweight",
-"target": "Biceps",
-"parent": "Biceps",
+"target": "Lats",
+"parent": "Back",
 "secondaryMuscles": [
 "Forearms",
 "Shoulders"
@@ -7129,10 +7128,10 @@
 {
 "id": "0140",
 "name": "Biceps Pull-Up",
-"bodyPart": "arms",
+"bodyPart": "back",
 "equipment": "Bodyweight",
-"target": "Biceps",
-"parent": "Biceps",
+"target": "Lats",
+"parent": "Back",
 "secondaryMuscles": [
 "Forearms",
 "Shoulders"
@@ -7186,10 +7185,10 @@
 {
 "id": "0525",
 "name": "Bottoms Up Clean From The Hang Position (Kettlebell)",
-"bodyPart": "arms",
+"bodyPart": "full body",
 "equipment": "Kettlebell",
-"target": "Biceps",
-"parent": "Biceps",
+"target": "Full Body",
+"parent": "Full Body",
 "secondaryMuscles": [
 "Forearms",
 "Shoulders"
@@ -7417,10 +7416,10 @@
 {
 "id": "0526",
 "name": "Double Alternating Hang Clean (Kettlebell)",
-"bodyPart": "arms",
+"bodyPart": "full body",
 "equipment": "Kettlebell",
-"target": "Biceps",
-"parent": "Biceps",
+"target": "Full Body",
+"parent": "Full Body",
 "secondaryMuscles": [
 "Forearms",
 "Shoulders"
@@ -10290,13 +10289,12 @@
 {
 "id": "1421",
 "name": "Modified Push Up To Lower Arms",
-"bodyPart": "forearms",
+"bodyPart": "chest",
 "equipment": "Bodyweight",
-"target": "Forearms",
-"parent": "Forearms",
+"target": "Chest",
+"parent": "Chest",
 "secondaryMuscles": [
 "Triceps",
-"Chest",
 "Shoulders"
 ],
 "instructions": [
@@ -13444,13 +13442,12 @@
 {
 "id": "0459",
 "name": "Flutter Kicks",
-"bodyPart": "legs",
+"bodyPart": "core",
 "equipment": "Bodyweight",
-"target": "Glutes",
-"parent": "Glutes",
+"target": "Abdominals",
+"parent": "Core",
 "secondaryMuscles": [
-"Hip Flexors",
-"Abdominals"
+"Hip Flexors"
 ],
 "instructions": [
 "Lie flat on your back with your legs extended and your hands by your sides.",
@@ -14502,12 +14499,11 @@
 {
 "id": "1466",
 "name": "Twist Hip Lift",
-"bodyPart": "legs",
+"bodyPart": "core",
 "equipment": "Bodyweight",
-"target": "Glutes",
-"parent": "Glutes",
+"target": "Obliques",
+"parent": "Core",
 "secondaryMuscles": [
-"Obliques",
 "Hamstrings"
 ],
 "instructions": [
@@ -16088,10 +16084,10 @@
 {
 "id": "g0197",
 "name": "Gripper",
-"bodyPart": "core",
+"bodyPart": "forearms",
 "equipment": "Ab Wheel",
-"target": "Abdominals",
-"parent": "Core",
+"target": "Forearms",
+"parent": "Forearms",
 "secondaryMuscles": [
 "Hip Flexors",
 "Lower Back",
