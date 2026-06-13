@@ -1048,7 +1048,9 @@ class _DetailSetRow extends StatelessWidget {
   }
 }
 
-/// Muted tinted chip: `+2.5 kg` in green, `–2.5 kg` in secondary grey.
+/// Muted tinted chip: `+2.5 kg` in green, `−2.5 kg` in secondary grey.
+/// The sign is ALWAYS rendered — an unsigned grey "8 kg" reads as an
+/// absolute value, not as the 8 kg regression it actually is.
 class _DeltaChip extends StatelessWidget {
   final double delta;
   const _DeltaChip({required this.delta});
@@ -1057,7 +1059,7 @@ class _DeltaChip extends StatelessWidget {
   Widget build(BuildContext context) {
     final isPositive = delta > 0;
     final color = isPositive ? _kAccentPos : AppColors.textSecondary;
-    final sign = isPositive ? '+' : '';
+    final sign = isPositive ? '+' : '−'; // U+2212, baseline-matched minus
     final abs = delta.abs();
     final label =
         '$sign${abs == abs.truncateToDouble() ? abs.toInt() : abs.toStringAsFixed(1)} kg';
