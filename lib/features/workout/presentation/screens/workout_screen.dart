@@ -7,6 +7,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/widgets/ui/tracker_card.dart';
 import '../../../routines/presentation/widgets/routine_card.dart';
 import '../../../routines/presentation/providers/routines_provider.dart';
+import 'package:uuid/uuid.dart';
 import '../../domain/active_workout_state.dart';
 import '../providers/active_workout_provider.dart';
 import 'package:gymlog/core/database/daos/routines_dao.dart';
@@ -30,6 +31,7 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
 
     final exercises = routine.exerciseIds.asMap().entries.map((e) {
       return WorkoutExerciseState(
+        id: const Uuid().v4(),
         exerciseId: e.value,
         name: routine.exerciseNames[e.key],
         sets: [WorkoutSetState.create()],
@@ -38,6 +40,7 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
 
     ref.read(activeWorkoutProvider.notifier).startWorkout(
           routineId: routine.routine.id,
+          name: routine.routine.name,
           initialExercises: exercises,
         );
     context.push('/workout/active');

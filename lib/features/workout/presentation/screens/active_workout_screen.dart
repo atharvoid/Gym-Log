@@ -13,6 +13,7 @@ import 'package:gymlog/features/workout/presentation/providers/rest_timer_provid
 import 'package:gymlog/features/workout/presentation/providers/workout_timer_provider.dart';
 import 'package:gymlog/shared/widgets/ui/primary_button.dart';
 import 'package:gymlog/core/database/database.dart';
+import 'package:gymlog/core/utils/formatters.dart';
 import 'package:gymlog/shared/widgets/ui/app_dialog.dart';
 import 'package:gymlog/shared/widgets/ui/secondary_button.dart';
 import 'package:gymlog/shared/widgets/ui/time_range_filter.dart';
@@ -70,9 +71,27 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
       );
       if (!confirmed) return;
     }
+    if (!mounted) return;
+
+    // Name the workout before saving. Pre-fill with the routine name (when
+    // started from one) so the user can tweak or extend it; otherwise a
+    // time-of-day default ("Evening Workout"). Cancelling backs out of
+    // finishing — nothing is saved.
+    final preFill = (workout.name != null && workout.name!.trim().isNotEmpty)
+        ? workout.name!.trim()
+        : getWorkoutNameFallback(workout.startTime, null);
+    final name = await showAppTextInputDialog(
+      context: context,
+      title: 'Save workout',
+      hint: 'Workout name',
+      initialValue: preFill,
+      confirmLabel: 'Finish',
+    );
+    if (name == null || !mounted) return; // cancelled → stay in the session
 
     ref.read(restTimerProvider.notifier).skip();
-    final prs = await ref.read(activeWorkoutProvider.notifier).finishWorkout();
+    final prs =
+        await ref.read(activeWorkoutProvider.notifier).finishWorkout(name: name);
     if (!mounted) return;
 
     // Celebrate before navigating — the dopamine hit lands while the
