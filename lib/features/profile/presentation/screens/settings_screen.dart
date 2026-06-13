@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:gymlog/core/providers/database_provider.dart';
 import 'package:gymlog/core/providers/premium_provider.dart';
 import 'package:gymlog/core/providers/settings_provider.dart';
+import 'package:gymlog/core/services/sync_engine.dart';
 import 'package:gymlog/core/services/workout_export_service.dart';
 import 'package:gymlog/core/theme/app_colors.dart';
 import 'package:gymlog/features/auth/presentation/providers/auth_provider.dart';
@@ -266,21 +267,31 @@ class SettingsScreen extends ConsumerWidget {
           ]),
           const SizedBox(height: 22),
 
+          if (profile != null) ...[
+            const _GroupHeader('SYNC'),
+            _Group(children: [
+              _SyncRow(userId: profile.id),
+            ]),
+            const SizedBox(height: 22),
+          ],
+
           const _GroupHeader('HELP'),
           _Group(children: [
             _Row(
               icon: Icons.shield_outlined,
               title: 'Your data',
-              subtitle: 'Workouts never leave this device',
+              subtitle: 'Stored on-device, backed up to your account',
               onTap: () {
                 HapticFeedback.lightImpact();
                 showAppConfirmDialog(
                   context: context,
-                  title: 'Local-first by design',
+                  title: 'Local-first, cloud-backed',
                   message:
-                      'Every workout, set and record is stored in a private '
-                      'database on this device. Your Google account is used '
-                      'for sign-in only — training data is never uploaded.',
+                      'Every workout is saved instantly to a private database '
+                      'on this device — the app works fully offline. A '
+                      'compressed copy is then mirrored to your private '
+                      'account so your history survives a reinstall or a new '
+                      'phone. Only you can read it.',
                   confirmLabel: 'Got it',
                   cancelLabel: 'Close',
                 );
@@ -401,6 +412,115 @@ Future<void> _openExternalUrl(BuildContext context, String url) async {
       backgroundColor: AppColors.bgSurface,
       behavior: SnackBarBehavior.floating,
     ));
+  }
+}
+
+/// "Sync Now" row with live status, pending-change count, and last-synced
+/// time. Tapping forces an immediate upload; visual feedback comes from the
+/// engine's status notifier + the reactive pending count.
+class _SyncRow extends ConsumerWidget {
+  final String userId;
+  const _SyncRow({required this.userId});
+
+  String _ago(DateTime t) {
+    final d = DateTime.now().difference(t);
+    if (d.inMinutes < 1) return 'just now';
+    if (d.inMinutes < 60) return '${d.inMinutes}m ago';
+    if (d.inHours < 24) return '${d.inHours}h ago';
+    return '${d.inDays}d ago';
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final engine = ref.watch(syncEngineProvider);
+    final pending = ref.watch(pendingSyncCountProvider(userId)).valueOrNull ?? 0;
+
+    return ValueListenableBuilder<SyncStatus>(
+      valueListenable: engine.status,
+      builder: (context, status, _) {
+        final syncing = status.phase == SyncPhase.syncing;
+
+        final String subtitle;
+        if (syncing) {
+          subtitle = 'Syncing…';
+        } else if (status.phase == SyncPhase.offline && pending > 0) {
+          subtitle = 'Offline — $pending waiting';
+        } else if (pending > 0) {
+          subtitle = '$pending change${pending == 1 ? '' : 's'} waiting';
+        } else if (status.lastSyncedAt != null) {
+          subtitle = 'Backed up · ${_ago(status.lastSyncedAt!)}';
+        } else {
+          subtitle = 'Up to date';
+        }
+
+        return Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: syncing
+                ? null
+                : () {
+                    HapticFeedback.lightImpact();
+                    engine.syncNow(userId, reason: 'manual');
+                  },
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
+              child: Row(
+                children: [
+                  SizedBox(
+                    width: 28,
+                    child: Icon(
+                      pending == 0 && !syncing
+                          ? Icons.cloud_done_outlined
+                          : Icons.cloud_sync_outlined,
+                      size: 20,
+                      color: pending == 0 && !syncing
+                          ? AppColors.success
+                          : AppColors.textSecondary,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Sync Now',
+                          style: GoogleFonts.inter(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.textPrimary,
+                          ),
+                        ),
+                        const SizedBox(height: 1),
+                        Text(
+                          subtitle,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.inter(
+                            fontSize: 12,
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  if (syncing)
+                    const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(
+                          strokeWidth: 2, color: AppColors.accentPrimary),
+                    )
+                  else
+                    Icon(Icons.refresh_rounded,
+                        size: 20, color: Colors.white.withValues(alpha: 0.25)),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
   }
 }
 

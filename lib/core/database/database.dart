@@ -10,10 +10,12 @@ import 'tables/routines_table.dart';
 import 'tables/routine_days_table.dart';
 import 'tables/routine_exercises_table.dart';
 import 'tables/workouts_table.dart';
+import 'tables/sync_outbox_table.dart';
 import 'daos/user_dao.dart';
 import 'daos/exercises_dao.dart';
 import 'daos/workouts_dao.dart';
 import 'daos/routines_dao.dart';
+import 'daos/sync_outbox_dao.dart';
 
 part 'database.g.dart';
 
@@ -27,8 +29,9 @@ part 'database.g.dart';
     WorkoutSessions,
     WorkoutExercises,
     WorkoutSets,
+    SyncOutbox,
   ],
-  daos: [UserDao, ExercisesDao, WorkoutsDao, RoutinesDao],
+  daos: [UserDao, ExercisesDao, WorkoutsDao, RoutinesDao, SyncOutboxDao],
 )
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
@@ -37,10 +40,18 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.executor);
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
+        onUpgrade: (m, from, to) async {
+          // v1 → v2: add the local sync queue. This ONLY creates a brand-new
+          // table — no existing table is altered, so user data is untouched
+          // and the upgrade is non-destructive.
+          if (from < 2) {
+            await m.createTable(syncOutbox);
+          }
+        },
         beforeOpen: (details) async {
           // Enforce referential integrity. SQLite ships with foreign keys
           // OFF; without this, child rows silently outlive their parents.
@@ -64,6 +75,9 @@ class AppDatabase extends _$AppDatabase {
               'CREATE INDEX IF NOT EXISTS idx_re_day ON routine_exercises (routine_day_id)');
           await customStatement(
               'CREATE INDEX IF NOT EXISTS idx_rd_routine ON routine_days (routine_id)');
+          // Sync queue drains FIFO per user.
+          await customStatement(
+              'CREATE INDEX IF NOT EXISTS idx_outbox_user_created ON sync_outbox (user_id, created_at_ms)');
         },
       );
 
