@@ -18,13 +18,24 @@ class ActiveWorkoutNotifier extends StateNotifier<ActiveWorkoutState?> {
 
   Future<void> startWorkout({
     String? routineId,
+    String? name,
     List<WorkoutExerciseState>? initialExercises,
   }) async {
+    // Safety net: every exercise MUST have a unique id — the active-workout
+    // list and the reorder sheet key on it. Callers that pass initialExercises
+    // sometimes omit it (it defaults to ''), which would collapse the list to
+    // a single row during reorder. Backfill any missing id here so no caller
+    // can reintroduce that bug.
+    final seeded = <WorkoutExerciseState>[
+      for (final e in (initialExercises ?? const <WorkoutExerciseState>[]))
+        e.id.isEmpty ? e.copyWith(id: const Uuid().v4()) : e,
+    ];
     state = ActiveWorkoutState(
       id: const Uuid().v4(),
       startTime: DateTime.now(),
       routineId: routineId,
-      exercises: initialExercises ?? [],
+      name: name,
+      exercises: seeded,
     );
 
     if (routineId != null && initialExercises == null) {
@@ -85,7 +96,7 @@ class ActiveWorkoutNotifier extends StateNotifier<ActiveWorkoutState?> {
   /// Persists the active workout and returns any personal records that
   /// were set — the screen turns them into a celebration moment.
   /// The HomeScreen feed reloads itself via its Drift revision stream.
-  Future<List<PrRecord>> finishWorkout() async {
+  Future<List<PrRecord>> finishWorkout({String? name}) async {
     if (state == null) return const [];
 
     final hasAnyCompletedSet =
@@ -111,6 +122,12 @@ class ActiveWorkoutNotifier extends StateNotifier<ActiveWorkoutState?> {
 
     final sessionId = const Uuid().v4();
 
+    // The name the user confirmed at finish wins; otherwise fall back to the
+    // in-progress name (the routine name, when started from one).
+    final workoutName = (name != null && name.trim().isNotEmpty)
+        ? name.trim()
+        : state!.name;
+
     try {
       final prs = await db.transaction<List<PrRecord>>(() async {
         await db.workoutsDao.insertSession(
@@ -118,7 +135,7 @@ class ActiveWorkoutNotifier extends StateNotifier<ActiveWorkoutState?> {
             id: Value(sessionId),
             userId: Value(userId),
             routineId: Value(state!.routineId),
-            name: Value(state!.name),
+            name: Value(workoutName),
             startedAt: Value(state!.startTime),
             endedAt: Value(DateTime.now()),
             totalVolumeKg: Value(totalVolume),

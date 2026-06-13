@@ -86,6 +86,7 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
         ),
       );
       return WorkoutExerciseState(
+        id: const Uuid().v4(),
         exerciseId: he.exercise.id,
         name: he.exercise.name,
         sets: sets.isEmpty ? [WorkoutSetState.create()] : sets,
@@ -94,6 +95,7 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
 
     ref.read(activeWorkoutProvider.notifier).startWorkout(
           routineId: routine.routine.id,
+          name: routine.routine.name,
           initialExercises: exercises,
         );
     context.push('/workout/active');
