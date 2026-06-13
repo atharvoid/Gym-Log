@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:gymlog/core/providers/settings_provider.dart';
 import 'package:gymlog/core/theme/app_colors.dart';
 import 'package:gymlog/core/utils/units.dart';
+import 'package:gymlog/features/workout/domain/active_workout_state.dart';
 import 'package:gymlog/features/workout/presentation/providers/active_workout_provider.dart';
 import 'package:gymlog/features/workout/presentation/providers/previous_session_provider.dart';
 import 'package:gymlog/features/workout/presentation/providers/rest_timer_provider.dart';
@@ -111,7 +112,15 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
   /// Focus-safe reorder: a dedicated sheet of plain exercise-name tiles.
   /// Because it contains NO text fields, ReorderableListView is safe here —
   /// dragging can't steal focus from a weight/reps input.
+  ///
+  /// The sheet renders from a LOCAL snapshot (not a watched provider) and uses
+  /// a fixed-height modal rather than DraggableScrollableSheet. That removes
+  /// the two glitch sources of the old version: (1) the watched list rebuilding
+  /// the ReorderableListView mid drop-animation, and (2) edge auto-scroll
+  /// fighting the draggable sheet over a shared ScrollController.
   void _showReorderSheet() {
+    final snapshot = ref.read(activeWorkoutProvider)?.exercises;
+    if (snapshot == null || snapshot.length < 2) return;
     HapticFeedback.lightImpact();
     showModalBottomSheet<void>(
       context: context,
@@ -119,134 +128,12 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
       useSafeArea: true,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (sheetCtx) {
-        return DraggableScrollableSheet(
-          initialChildSize: 0.6,
-          minChildSize: 0.4,
-          maxChildSize: 0.9,
-          expand: false,
-          builder: (context, scrollController) => Container(
-            decoration: const BoxDecoration(
-              color: Color(0xFF121212),
-              borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-            ),
-            child: Column(
-              children: [
-                const SizedBox(height: 12),
-                Container(
-                  width: 36,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF6A6A6A),
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  'Reorder Exercises',
-                  style: GoogleFonts.inter(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.textPrimary,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  'Drag to change the order',
-                  style: GoogleFonts.inter(
-                    fontSize: 13,
-                    color: AppColors.textSecondary,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Expanded(
-                  // Consumer so the list reflects live order as it changes.
-                  child: Consumer(
-                    builder: (context, ref, _) {
-                      final exercises =
-                          ref.watch(activeWorkoutProvider)?.exercises ??
-                              const [];
-                      return ReorderableListView.builder(
-                        scrollController: scrollController,
-                        padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
-                        buildDefaultDragHandles: false,
-                        onReorderStart: (_) => HapticFeedback.selectionClick(),
-                        onReorderItem: (oldIndex, newIndex) => ref
-                            .read(activeWorkoutProvider.notifier)
-                            .reorderExercise(oldIndex, newIndex),
-                        itemCount: exercises.length,
-                        itemBuilder: (context, index) {
-                          final ex = exercises[index];
-                          return Padding(
-                            key: ValueKey('reorder_${ex.id}'),
-                            padding: const EdgeInsets.only(bottom: 8),
-                            child: Container(
-                              decoration: BoxDecoration(
-                                color: AppColors.surfaceRaised,
-                                borderRadius: BorderRadius.circular(14),
-                              ),
-                              padding: const EdgeInsets.fromLTRB(16, 14, 8, 14),
-                              child: Row(
-                                children: [
-                                  Container(
-                                    width: 26,
-                                    height: 26,
-                                    alignment: Alignment.center,
-                                    decoration: BoxDecoration(
-                                      color: AppColors.accentPrimary
-                                          .withValues(alpha: 0.14),
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                    child: Text(
-                                      '${index + 1}',
-                                      style: GoogleFonts.inter(
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.w700,
-                                        color: const Color(0xFFCBB2FF),
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    child: Text(
-                                      ex.name,
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: GoogleFonts.inter(
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.w600,
-                                        color: AppColors.textPrimary,
-                                      ),
-                                    ),
-                                  ),
-                                  ReorderableDragStartListener(
-                                    index: index,
-                                    child: Container(
-                                      width: 44,
-                                      height: 44,
-                                      alignment: Alignment.center,
-                                      child: Icon(
-                                        Icons.drag_handle_rounded,
-                                        size: 22,
-                                        color:
-                                            Colors.white.withValues(alpha: 0.4),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          );
-                        },
-                      );
-                    },
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
+      builder: (sheetCtx) => _ReorderExercisesSheet(
+        initialExercises: snapshot,
+        onReorder: (oldIndex, newIndex) => ref
+            .read(activeWorkoutProvider.notifier)
+            .reorderExercise(oldIndex, newIndex),
+      ),
     );
   }
 
@@ -486,6 +373,156 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
         child: restTimer == null
             ? const SizedBox.shrink(key: ValueKey('noRest'))
             : RestTimerBar(key: const ValueKey('rest'), state: restTimer),
+      ),
+    );
+  }
+}
+
+/// The reorder sheet body. Owns a LOCAL, mutable copy of the exercise order so
+/// the ReorderableListView is never rebuilt by an external provider change
+/// while a drop animation is settling — the single biggest cause of the old
+/// reorder glitch. Each drop mutates the local list (smooth animation) and
+/// forwards the same move to the provider via [onReorder] to persist it.
+class _ReorderExercisesSheet extends StatefulWidget {
+  final List<WorkoutExerciseState> initialExercises;
+  final void Function(int oldIndex, int newIndex) onReorder;
+
+  const _ReorderExercisesSheet({
+    required this.initialExercises,
+    required this.onReorder,
+  });
+
+  @override
+  State<_ReorderExercisesSheet> createState() => _ReorderExercisesSheetState();
+}
+
+class _ReorderExercisesSheetState extends State<_ReorderExercisesSheet> {
+  late final List<WorkoutExerciseState> _items =
+      List<WorkoutExerciseState>.from(widget.initialExercises);
+
+  @override
+  Widget build(BuildContext context) {
+    // Cap the sheet height so a long list scrolls INSIDE the list (its own
+    // controller) instead of resizing the sheet — no controller tug-of-war.
+    final maxHeight = MediaQuery.of(context).size.height * 0.7;
+
+    return Container(
+      constraints: BoxConstraints(maxHeight: maxHeight),
+      decoration: const BoxDecoration(
+        color: Color(0xFF121212),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const SizedBox(height: 12),
+          Container(
+            width: 36,
+            height: 4,
+            decoration: BoxDecoration(
+              color: const Color(0xFF6A6A6A),
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'Reorder Exercises',
+            style: GoogleFonts.inter(
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+              color: AppColors.textPrimary,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Drag to change the order',
+            style: GoogleFonts.inter(
+              fontSize: 13,
+              color: AppColors.textSecondary,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Flexible(
+            child: ReorderableListView.builder(
+              shrinkWrap: true,
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+              buildDefaultDragHandles: false,
+              onReorderStart: (_) => HapticFeedback.selectionClick(),
+              onReorderItem: (oldIndex, newIndex) {
+                // Local mutation drives the smooth drop animation; the same
+                // move is forwarded to the provider to persist the order.
+                setState(() {
+                  final item = _items.removeAt(oldIndex);
+                  _items.insert(newIndex, item);
+                });
+                widget.onReorder(oldIndex, newIndex);
+              },
+              itemCount: _items.length,
+              itemBuilder: (context, index) {
+                final ex = _items[index];
+                return Padding(
+                  key: ValueKey('reorder_${ex.id}'),
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: AppColors.surfaceRaised,
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    padding: const EdgeInsets.fromLTRB(16, 14, 8, 14),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 26,
+                          height: 26,
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            color: AppColors.accentPrimary
+                                .withValues(alpha: 0.14),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            '${index + 1}',
+                            style: GoogleFonts.inter(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
+                              color: const Color(0xFFCBB2FF),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            ex.name,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: GoogleFonts.inter(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.textPrimary,
+                            ),
+                          ),
+                        ),
+                        ReorderableDragStartListener(
+                          index: index,
+                          child: Container(
+                            width: 44,
+                            height: 44,
+                            alignment: Alignment.center,
+                            child: Icon(
+                              Icons.drag_handle_rounded,
+                              size: 22,
+                              color: Colors.white.withValues(alpha: 0.4),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
       ),
     );
   }
