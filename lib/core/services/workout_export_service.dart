@@ -18,8 +18,11 @@ class WorkoutExportService {
 
   final AppDatabase _db;
 
-  static const csvHeader = 'date,workout,exercise,set_number,set_type,'
-      'weight_kg,reps,rpe,is_pr,estimated_1rm';
+  // Columns ordered for human readability AND a lossless re-import: ended_at
+  // and workout_notes let GymLog restore a full session from its own export
+  // (backup / new device). weight is always kilograms.
+  static const csvHeader = 'date,ended_at,workout,workout_notes,exercise,'
+      'set_number,set_type,weight_kg,reps,rpe,is_pr,estimated_1rm';
 
   /// Builds the full CSV string for [userId] (completed sessions only),
   /// ordered chronologically, then by exercise order, then set order.
@@ -52,7 +55,9 @@ class WorkoutExportService {
 
       buffer.writeln([
         dateFormat.format(session.startedAt),
+        session.endedAt == null ? '' : dateFormat.format(session.endedAt!),
         escapeCsvField(session.name ?? 'Workout'),
+        escapeCsvField(session.notes),
         escapeCsvField(exercise.name),
         '${set.orderIndex + 1}', // stored 0-based, exported human 1-based
         set.setType,

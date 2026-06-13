@@ -87,8 +87,8 @@ class WorkoutImportService {
     // custom we must create inherits the correct muscle split instead of
     // being tagged "other" — e.g. an unstocked "Incline Bench Press (Machine)"
     // borrows Chest/Triceps from the barbell/dumbbell incline-press family.
-    final muscleHint =
-        <String, ({String bodyPart, String target, String? secondary})>{};
+    final muscleHint = <String,
+        ({String bodyPart, String target, String? secondary, String equipment})>{};
     for (final e in all) {
       if (e.isCustom) continue;
       final k = ExerciseNaming.movementKey(e.name);
@@ -98,7 +98,8 @@ class WorkoutImportService {
             () => (
                   bodyPart: e.bodyPart,
                   target: e.target,
-                  secondary: e.secondaryMuscles
+                  secondary: e.secondaryMuscles,
+                  equipment: e.equipment,
                 ));
       }
     }
@@ -118,10 +119,12 @@ class WorkoutImportService {
         return hit;
       }
       final hint = muscleHint[ExerciseNaming.movementKey(name)];
+      var equipment = _equipmentFromName(name);
+      if (equipment == 'other' && hint != null) equipment = hint.equipment;
       final id = await _db.exercisesDao.createCustomExercise(
         name.trim(),
         userId: userId,
-        equipment: _equipmentFromName(name),
+        equipment: equipment,
         bodyPart: hint?.bodyPart ?? 'other',
         target: hint?.target ?? 'other',
         secondaryMusclesJson: hint?.secondary,

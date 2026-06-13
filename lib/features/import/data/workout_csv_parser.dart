@@ -225,11 +225,14 @@ abstract final class WorkoutCsvParser {
         skipped++;
         continue;
       }
+      final endStr = cell('ended_at');
       builder.add(
         sessionName: workout.isEmpty ? 'Workout' : workout,
         startedAt: start,
-        endedAt: null,
-        sessionNotes: '',
+        endedAt: endStr.isEmpty
+            ? null
+            : (_tryStrongDate(endStr) ?? _tryDate(_gymlogDate, endStr)),
+        sessionNotes: cell('workout_notes'),
         exerciseName: exName,
         exerciseNotes: null,
         setType: _normalizeHevySetType(cell('set_type')),
