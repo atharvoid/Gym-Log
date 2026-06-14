@@ -84,6 +84,17 @@ class RoutinesDao extends DatabaseAccessor<AppDatabase>
   Future<List<Routine>> getRoutinesForUser(String userId) =>
       (select(routines)..where((t) => t.userId.equals(userId))).get();
 
+  /// Number of routines a user owns — drives the free-tier routine cap
+  /// (see [kFreeRoutineLimit]). A single COUNT(*), no row hydration.
+  Future<int> countRoutinesForUser(String userId) async {
+    final c = routines.id.count();
+    final row = await (selectOnly(routines)
+          ..addColumns([c])
+          ..where(routines.userId.equals(userId)))
+        .getSingle();
+    return row.read(c) ?? 0;
+  }
+
   /// Reactive stream of raw routines for a user.
   Stream<List<Routine>> watchRoutinesForUser(String userId) {
     return (select(routines)

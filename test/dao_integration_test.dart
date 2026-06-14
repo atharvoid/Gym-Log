@@ -257,6 +257,29 @@ void main() {
     expect(prs2.first.estimated1rm, closeTo(102.0, 0.001));
   });
 
+  test('countRoutinesForUser + exerciseNameExists back the gates', () async {
+    final bench =
+        await insertExercise('Bench Press', 'chest', 'barbell', 'pectorals');
+
+    expect(await db.routinesDao.countRoutinesForUser(userId), 0);
+    for (var i = 0; i < 3; i++) {
+      await db.routinesDao.createRoutine(
+        userId: userId,
+        name: 'Routine $i',
+        exercises: [RoutineDraftExercise(exerciseId: bench, defaultSets: 3)],
+      );
+    }
+    expect(await db.routinesDao.countRoutinesForUser(userId), 3);
+    // The count is per-user — another user's routines never bleed in.
+    expect(await db.routinesDao.countRoutinesForUser('other-user'), 0);
+
+    // Name uniqueness is case-insensitive (guards the custom-exercise flow
+    // against shadowing a catalog entry).
+    expect(await db.exercisesDao.exerciseNameExists('bench press'), isTrue);
+    expect(await db.exercisesDao.exerciseNameExists('BENCH PRESS'), isTrue);
+    expect(await db.exercisesDao.exerciseNameExists('Incline Press'), isFalse);
+  });
+
   test('deleteSession cascades sets + exercises with FKs enforced', () async {
     final bench =
         await insertExercise('Bench Press', 'chest', 'barbell', 'pectorals');
