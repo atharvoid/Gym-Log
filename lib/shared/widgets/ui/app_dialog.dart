@@ -109,6 +109,9 @@ Future<String?> showAppTextInputDialog({
   HapticFeedback.selectionClick();
   final controller = TextEditingController(text: initialValue);
 
+  // Dispose the controller once the dialog closes — otherwise every rename /
+  // "save workout" invocation leaks a TextEditingController (and its focus
+  // node + listeners). whenComplete fires on both confirm and dismiss.
   return showDialog<String>(
     context: context,
     useRootNavigator: true,
@@ -202,5 +205,5 @@ Future<String?> showAppTextInputDialog({
         ),
       );
     },
-  );
+  ).whenComplete(controller.dispose);
 }

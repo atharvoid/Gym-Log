@@ -667,6 +667,20 @@ class WorkoutsDao extends DatabaseAccessor<AppDatabase>
     return weight * (1 + reps / 30);
   }
 
+  /// SQL mirror of [_epley] over the `workout_sets ws` alias. MUST stay in
+  /// sync with the Dart version.
+  ///
+  /// The `reps <= 1` guard is the whole point: a true 1-rep max IS the weight
+  /// lifted, but raw Epley returns `weight × 31/30` (~3.3% high) at 1 rep.
+  /// Without this guard the SQL inflated every single-rep set, so a genuine
+  /// 1-rep PR could read *lower* than the inflated historical max and never
+  /// fire — and the exercise-history "Best 1RM" was overstated. Used by PR
+  /// detection ([_getMaxEstimated1rmBefore]) and the strength-trend chart
+  /// ([_exerciseHistoryQuery]) so both agree with [_epley] to the decimal.
+  static const String _epleySqlWs =
+      'ws.weight_kg * (CASE WHEN ws.reps <= 1 THEN 1.0 '
+      'ELSE 1.0 + ws.reps / 30.0 END)';
+
   Future<List<ExerciseHistoryData>> getExerciseHistory(int exerciseId) =>
       _exerciseHistoryQuery(exerciseId, null).get().then(_mapHistoryRows);
 
@@ -692,6 +706,7 @@ class WorkoutsDao extends DatabaseAccessor<AppDatabase>
         COALESCE(s.ended_at, s.started_at) AS session_date,
         MAX(ws.weight_kg) AS max_weight,
         MAX(ws.reps) AS max_reps,
+        MAX($_epleySqlWs) AS best_e1rm,
         SUM(ws.weight_kg * ws.reps) AS total_volume
       FROM workout_sets ws
       JOIN workout_exercises we ON ws.workout_exercise_id = we.id
@@ -716,12 +731,18 @@ class WorkoutsDao extends DatabaseAccessor<AppDatabase>
       final weight = row.read<double>('max_weight');
       final reps = row.read<int>('max_reps');
       final volume = row.read<double>('total_volume');
+      // Best per-set Epley across the session — NOT _epley(maxWeight, maxReps).
+      // The two MAX() aggregates come from independent sets, so combining them
+      // overstated the 1RM (e.g. a heavy single + a light burnout set reported
+      // a 1RM ~50% too high). The SQL computes the max per-set estimate with
+      // the same reps<=1 guard as [_epley].
+      final best1rm = row.read<double>('best_e1rm');
 
       return ExerciseHistoryData(
         date: date,
         weight: weight,
         reps: reps,
-        estimated1RM: _epley(weight, reps),
+        estimated1RM: best1rm,
         volume: volume,
       );
     }).toList();
@@ -939,7 +960,7 @@ class WorkoutsDao extends DatabaseAccessor<AppDatabase>
       int exerciseId, DateTime before) async {
     final rows = await customSelect(
       '''
-      SELECT COALESCE(MAX(ws.weight_kg * (1.0 + ws.reps / 30.0)), 0) AS max_1rm
+      SELECT COALESCE(MAX($_epleySqlWs), 0) AS max_1rm
       FROM workout_sets ws
       JOIN workout_exercises we ON ws.workout_exercise_id = we.id
       JOIN workout_sessions s   ON we.session_id = s.id
