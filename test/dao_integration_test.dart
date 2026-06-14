@@ -280,6 +280,42 @@ void main() {
     expect(await db.exercisesDao.exerciseNameExists('Incline Press'), isFalse);
   });
 
+  test('wipeAllData empties every table (account deletion local wipe)',
+      () async {
+    final bench =
+        await insertExercise('Bench Press', 'chest', 'barbell', 'pectorals');
+    await db.routinesDao.createRoutine(
+      userId: userId,
+      name: 'Push',
+      exercises: [RoutineDraftExercise(exerciseId: bench, defaultSets: 3)],
+    );
+    await insertSession('s1', DateTime(2026, 6, 1, 10), sets: [(bench, 80, 8)]);
+
+    // Sanity: there is data to wipe.
+    expect((await db.exercisesDao.getAllExercises()).isNotEmpty, isTrue);
+
+    await db.wipeAllData();
+
+    Future<int> count(String table) async => (await db
+            .customSelect('SELECT COUNT(*) AS c FROM $table')
+            .getSingle())
+        .read<int>('c');
+
+    for (final t in [
+      'exercises',
+      'routines',
+      'routine_days',
+      'routine_exercises',
+      'workout_sessions',
+      'workout_exercises',
+      'workout_sets',
+      'sync_outbox',
+      'user_profiles',
+    ]) {
+      expect(await count(t), 0, reason: '$t must be empty after wipeAllData');
+    }
+  });
+
   test('deleteSession cascades sets + exercises with FKs enforced', () async {
     final bench =
         await insertExercise('Bench Press', 'chest', 'barbell', 'pectorals');

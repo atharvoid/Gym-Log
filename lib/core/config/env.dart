@@ -50,6 +50,16 @@ abstract final class Env {
         'https://otcfigaprxfknickyrdh.supabase.co/storage/v1/object/public/excercises',
   );
 
+  /// Public URL of the standalone web account-deletion page (Google Play
+  /// requires a deletion path reachable WITHOUT the app). Served from the
+  /// repo's `docs/legal/delete-account.html` via GitHub Pages by default;
+  /// override per environment. Documented in the privacy policy + Play Console.
+  static const accountDeletionUrl = String.fromEnvironment(
+    'ACCOUNT_DELETION_URL',
+    defaultValue:
+        'https://atharvoid.github.io/Gym-Log/legal/delete-account.html',
+  );
+
   /// RevenueCat public SDK keys. Absent → PremiumService runs in free mode.
   static const revenueCatAndroidKey =
       String.fromEnvironment('REVENUECAT_ANDROID_KEY');
