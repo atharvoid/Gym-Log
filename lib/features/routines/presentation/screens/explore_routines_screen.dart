@@ -4,9 +4,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:gymlog/core/database/database.dart';
 import 'package:gymlog/core/providers/database_provider.dart';
+import 'package:gymlog/core/providers/premium_provider.dart';
 import 'package:gymlog/core/theme/app_colors.dart';
 import 'package:gymlog/core/database/daos/routines_dao.dart';
 import 'package:gymlog/features/auth/presentation/providers/auth_provider.dart';
+import 'package:gymlog/shared/widgets/premium_paywall.dart';
 import '../widgets/routine_detail_styles.dart';
 
 /// One slot in a template. [name] is the EXACT canonical Exercise Library
@@ -397,6 +399,16 @@ class _ExploreRoutinesScreenState extends ConsumerState<ExploreRoutinesScreen> {
     final user = ref.read(authProvider);
     if (user == null || _importing.contains(template.name)) return;
 
+    // Free-tier routine cap — importing a template creates a routine, so it
+    // counts against the limit exactly like manual creation does.
+    final isPremium = ref.read(isPremiumProvider);
+    final count =
+        await ref.read(databaseProvider).routinesDao.countRoutinesForUser(user.id);
+    if (isAtFreeRoutineLimit(isPremium: isPremium, routineCount: count)) {
+      if (mounted) await showRoutineLimitUpsell(context);
+      return;
+    }
+
     HapticFeedback.mediumImpact();
     setState(() => _importing.add(template.name));
 
@@ -553,9 +565,11 @@ class _SectionHeader extends StatelessWidget {
           Text(
             '$count',
             style: GoogleFonts.inter(
-              fontSize: 11,
+              fontSize: 12,
               fontWeight: FontWeight.w600,
-              color: AppColors.textSecondary.withValues(alpha: 0.5),
+              // Was textSecondary @0.5α ≈ 2.3:1 — a hard WCAG AA fail. Full
+              // textSecondary at 12px clears 4.5:1.
+              color: AppColors.textSecondary,
             ),
           ),
         ],

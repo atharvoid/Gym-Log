@@ -20,6 +20,19 @@ abstract class AppColors {
   // Divider/Border
   static const borderSubtle   = Color(0xFF2C2C2E); // Internal card dividers
 
+  // Bottom-sheet / dialog background (was an inline 0xFF121212 in ~5 places)
+  static const bgSheet        = Color(0xFF121212);
+
+  // WCAG-safe accent text on pure black. accentPrimary (#8A2BE2) is only ~3.2:1
+  // on #000 and FAILS AA as small text; this lighter tint is ~5.9:1 and passes.
+  static const accentText     = Color(0xFFB98CFF);
+
+  // Genuinely disabled / decorative text ONLY. At ~3:1 on black this is BELOW
+  // the WCAG AA 4.5:1 floor for readable copy — never use it for error/empty
+  // body text (use textSecondary). Reserved for disabled controls, which are
+  // exempt from the contrast requirement.
+  static const textDisabled   = Color(0xFF6A6A6A);
+
   // Semantic (kept minimal)
   static const error          = Color(0xFFFF5449);
   static const success        = Color(0xFF34C759); // iOS green

@@ -50,6 +50,17 @@ class ExercisesDao extends DatabaseAccessor<AppDatabase>
         .get();
   }
 
+  /// Case-insensitive exact-name existence check — guards the manual
+  /// "Create custom exercise" flow against duplicating a catalog entry.
+  Future<bool> exerciseNameExists(String name) async {
+    final rows = await customSelect(
+      'SELECT 1 FROM exercises WHERE LOWER(name) = LOWER(?) LIMIT 1',
+      variables: [Variable.withString(name.trim())],
+      readsFrom: {exercises},
+    ).get();
+    return rows.isNotEmpty;
+  }
+
   Future<List<Exercise>> filterByBodyPart(String bodyPart) =>
       (select(exercises)..where((t) => t.bodyPart.equals(bodyPart))).get();
 
