@@ -8,13 +8,48 @@ import '../../../../core/database/database.dart';
 import '../../../../core/database/daos/workouts_dao.dart';
 import '../../../../core/providers/database_provider.dart';
 import '../../../../core/services/sync_engine.dart';
+import '../../../../core/services/workout_draft_store.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../domain/active_workout_state.dart';
 
 class ActiveWorkoutNotifier extends StateNotifier<ActiveWorkoutState?> {
   final Ref _ref;
+  Timer? _draftDebounce;
 
-  ActiveWorkoutNotifier(this._ref) : super(null);
+  ActiveWorkoutNotifier(this._ref) : super(null) {
+    // Crash/kill resilience: persist a debounced snapshot of the live session
+    // and drop it on finish/discard. This is a passive side-effect on state
+    // changes — it does NOT alter how sets are logged.
+    addListener(_persistDraftOnChange, fireImmediately: false);
+  }
+
+  void _persistDraftOnChange(ActiveWorkoutState? s) {
+    _draftDebounce?.cancel();
+    final store = _ref.read(workoutDraftStoreProvider);
+    if (s == null) {
+      // Finished or discarded — remove the draft immediately.
+      unawaited(store.clear());
+      return;
+    }
+    // Only NEW live sessions are resumable; editing history is not.
+    if (s.originalSessionId != null) return;
+    // updateSet fires per keystroke — debounce the encrypted write.
+    _draftDebounce = Timer(const Duration(milliseconds: 800), () {
+      unawaited(store.save(s));
+    });
+  }
+
+  /// Restores a persisted draft as the live session (used by the launch-time
+  /// "resume interrupted workout?" prompt).
+  void resumeDraft(ActiveWorkoutState draft) {
+    state = draft;
+  }
+
+  @override
+  void dispose() {
+    _draftDebounce?.cancel();
+    super.dispose();
+  }
 
   Future<void> startWorkout({
     String? routineId,

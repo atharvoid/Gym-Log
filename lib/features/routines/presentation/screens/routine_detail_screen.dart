@@ -46,6 +46,8 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
 
   late final AnimationController _entryController;
 
+  bool _entryStarted = false;
+
   @override
   void initState() {
     super.initState();
@@ -54,7 +56,20 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
       vsync: this,
       duration: const Duration(milliseconds: 280),
     );
-    _entryController.forward();
+    // Forward is armed in didChangeDependencies, where MediaQuery (and thus the
+    // reduce-motion flag) is safe to read.
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_entryStarted) return;
+    _entryStarted = true;
+    if (MediaQuery.disableAnimationsOf(context)) {
+      _entryController.value = 1.0; // reduce-motion: show final state instantly
+    } else {
+      _entryController.forward();
+    }
   }
 
   @override

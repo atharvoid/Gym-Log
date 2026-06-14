@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:gymlog/core/services/profile_sync_service.dart';
 import 'package:gymlog/core/theme/app_colors.dart';
 import 'package:gymlog/features/auth/presentation/providers/auth_provider.dart';
+import 'package:gymlog/shared/widgets/ui/app_dialog.dart';
 import 'package:gymlog/shared/widgets/ui/primary_button.dart';
 
 /// [onboarding_screen.dart]
@@ -51,6 +52,30 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     super.dispose();
   }
 
+  /// Visible escape hatch: signs the user out and returns to auth. Warns
+  /// (don't silently discard) if they had typed a name. The system back gesture
+  /// stays blocked (PopScope) so an accidental swipe can't lose the name — this
+  /// explicit Cancel is the deliberate way out.
+  Future<void> _cancel() async {
+    if (_isLoading) return;
+    if (_nameController.text.trim().isNotEmpty) {
+      final discard = await showAppConfirmDialog(
+        context: context,
+        title: 'Cancel setup?',
+        message: "The name you entered won't be saved. You'll be signed out "
+            'and returned to the start.',
+        confirmLabel: 'Sign Out',
+        cancelLabel: 'Keep Editing',
+        isDestructive: true,
+      );
+      if (!discard) return;
+    }
+    await ref.read(authRepositoryProvider).signOut();
+    // The redirect guard lets /onboarding run regardless of auth, so navigate
+    // explicitly — signing out alone won't move us off this screen.
+    if (mounted) context.go('/auth');
+  }
+
   Future<void> _submit() async {
     final name = _nameController.text.trim();
     if (name.isEmpty) return;
@@ -88,6 +113,33 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: TextButton(
+                    onPressed: _isLoading ? null : _cancel,
+                    style: TextButton.styleFrom(
+                      padding: EdgeInsets.zero,
+                      minimumSize: const Size(48, 44),
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.arrow_back_rounded,
+                            size: 18, color: AppColors.textSecondary),
+                        const SizedBox(width: 4),
+                        Text(
+                          'Cancel',
+                          style: GoogleFonts.inter(
+                            color: AppColors.textSecondary,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
                 const Spacer(),
                 Text(
                   'Welcome to GymLog',

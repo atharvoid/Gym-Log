@@ -192,3 +192,30 @@ final appTheme = ThemeData(
     ),
   ),
 );
+
+// ── High-contrast variant ───────────────────────────────────────────────────
+// Selected automatically by MaterialApp when the OS "increase contrast"
+// accessibility setting is on. Brightens secondary text toward WCAG AAA and
+// makes dividers/borders clearly visible against pure black.
+//
+// COVERAGE NOTE: this reaches theme-derived widgets (default Text via the text
+// theme, dividers, input borders, the color scheme). Screens that hardcode
+// `AppColors.textSecondary` / inline `GoogleFonts.inter(color: ...)` bypass the
+// theme and are NOT recolored by this — a full migration of those call sites is
+// the remaining work (see the PR notes).
+const _hcSecondary = Color(0xFFD2D2D7); // ~13:1 on black (AAA)
+const _hcBorder = Color(0xFF8A8A8E); // clearly visible divider/border
+
+final appHighContrastTheme = appTheme.copyWith(
+  dividerColor: _hcBorder,
+  colorScheme: appTheme.colorScheme.copyWith(
+    onSurfaceVariant: _hcSecondary,
+    outline: _hcBorder,
+  ),
+  textTheme: appTheme.textTheme.copyWith(
+    bodySmall: appTheme.textTheme.bodySmall?.copyWith(color: _hcSecondary),
+    labelLarge: appTheme.textTheme.labelLarge?.copyWith(color: _hcSecondary),
+    labelMedium: appTheme.textTheme.labelMedium?.copyWith(color: _hcSecondary),
+    labelSmall: appTheme.textTheme.labelSmall?.copyWith(color: _hcSecondary),
+  ),
+);

@@ -18,27 +18,35 @@ Future<void> showPrCelebration(
   if (prs.isEmpty) return Future.value();
   HapticFeedback.heavyImpact();
 
+  // Honor OS reduce-motion: no scale/fade entrance, no confetti.
+  final reduceMotion = MediaQuery.disableAnimationsOf(context);
+
   return showGeneralDialog<void>(
     context: context,
     barrierDismissible: true,
     barrierLabel: 'Personal record celebration',
     barrierColor: Colors.black.withValues(alpha: 0.82),
-    transitionDuration: const Duration(milliseconds: 260),
-    transitionBuilder: (_, animation, __, child) {
-      final curved =
-          CurvedAnimation(parent: animation, curve: Curves.easeOutBack);
-      return FadeTransition(
-        opacity: animation,
-        child: ScaleTransition(scale: curved, child: child),
-      );
-    },
-    pageBuilder: (dialogCtx, _, __) => _PrCelebration(prs: prs),
+    transitionDuration:
+        reduceMotion ? Duration.zero : const Duration(milliseconds: 260),
+    transitionBuilder: reduceMotion
+        ? (_, __, ___, child) => child
+        : (_, animation, __, child) {
+            final curved =
+                CurvedAnimation(parent: animation, curve: Curves.easeOutBack);
+            return FadeTransition(
+              opacity: animation,
+              child: ScaleTransition(scale: curved, child: child),
+            );
+          },
+    pageBuilder: (dialogCtx, _, __) =>
+        _PrCelebration(prs: prs, reduceMotion: reduceMotion),
   );
 }
 
 class _PrCelebration extends StatefulWidget {
   final List<PrRecord> prs;
-  const _PrCelebration({required this.prs});
+  final bool reduceMotion;
+  const _PrCelebration({required this.prs, this.reduceMotion = false});
 
   @override
   State<_PrCelebration> createState() => _PrCelebrationState();
@@ -49,11 +57,13 @@ class _PrCelebrationState extends State<_PrCelebration>
   late final AnimationController _confetti = AnimationController(
     vsync: this,
     duration: const Duration(milliseconds: 2600),
-  )..forward();
+  );
 
   @override
   void initState() {
     super.initState();
+    // Reduce-motion: skip the confetti animation entirely.
+    if (!widget.reduceMotion) _confetti.forward();
     // Double-pulse: the entry heavy impact is followed by a medium tap as
     // the card settles — the "rep lockout" feel.
     Future.delayed(const Duration(milliseconds: 240), () {
@@ -80,17 +90,18 @@ class _PrCelebrationState extends State<_PrCelebration>
 
     return Stack(
       children: [
-        // ── Confetti layer ────────────────────────────────────────────────
-        Positioned.fill(
-          child: IgnorePointer(
-            child: AnimatedBuilder(
-              animation: _confetti,
-              builder: (_, __) => CustomPaint(
-                painter: _ConfettiPainter(progress: _confetti.value),
+        // ── Confetti layer (skipped entirely under reduce-motion) ──────────
+        if (!widget.reduceMotion)
+          Positioned.fill(
+            child: IgnorePointer(
+              child: AnimatedBuilder(
+                animation: _confetti,
+                builder: (_, __) => CustomPaint(
+                  painter: _ConfettiPainter(progress: _confetti.value),
+                ),
               ),
             ),
           ),
-        ),
 
         // ── Card ──────────────────────────────────────────────────────────
         Center(
@@ -168,7 +179,13 @@ class _PrCelebrationState extends State<_PrCelebration>
                         child: Column(
                           children: [
                             for (final pr in prs)
-                              Padding(
+                              Semantics(
+                                label: '${pr.exerciseName}: '
+                                    '${_fmtKg(pr.weightKg)} kilograms for ${pr.reps} reps, '
+                                    'estimated one-rep max ${_fmtKg(pr.estimated1rm)} kilograms'
+                                    '${pr.previousBest1rm > 0 ? ', up from ${_fmtKg(pr.previousBest1rm)} kilograms' : ', first record'}',
+                                excludeSemantics: true,
+                                child: Padding(
                                 padding: const EdgeInsets.only(bottom: 10),
                                 child: Container(
                                   padding: const EdgeInsets.symmetric(
@@ -231,6 +248,7 @@ class _PrCelebrationState extends State<_PrCelebration>
                                     ],
                                   ),
                                 ),
+                              ),
                               ),
                           ],
                         ),
