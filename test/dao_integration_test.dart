@@ -214,6 +214,108 @@ void main() {
     expect(ranged.first.weight, 85);
   });
 
+  test('exercise history best-1RM uses per-set Epley, not MAX(w)×MAX(reps)',
+      () async {
+    // Regression: a heavy single + a light burnout set in the same session.
+    // The old query took MAX(weight)=100 and MAX(reps)=15 from DIFFERENT sets
+    // and fed both into Epley → 100×(1+15/30)=150kg, a 50% overstatement.
+    // The correct value is the best PER-SET estimate: max(epley(100,1)=100,
+    // epley(40,15)=60) = 100.
+    final bench =
+        await insertExercise('Bench Press', 'chest', 'barbell', 'pectorals');
+    await insertSession('mix', DateTime(2026, 6, 1, 10),
+        sets: [(bench, 100, 1), (bench, 40, 15)]);
+
+    final history = await db.workoutsDao.getExerciseHistory(bench);
+    expect(history.length, 1);
+    expect(history.first.estimated1RM, closeTo(100.0, 0.001),
+        reason: 'best per-set Epley, not epley(maxWeight, maxReps)=150');
+    expect(history.first.weight, 100); // heaviest weight that session
+    expect(history.first.volume, 100 * 1 + 40 * 15); // 700
+  });
+
+  test('detectAndMarkPrs fires for a genuine heavier single (1-rep guard)',
+      () async {
+    // Regression: the historical-max SQL used raw Epley (w×31/30 at 1 rep),
+    // inflating a prior 100kg×1 to 103.33, while the new set was scored with
+    // the guarded _epley (=102). 102 > 103.33 was false, so a real +2kg single
+    // PR was silently missed. Both sides must use the same reps<=1 guard.
+    final bench =
+        await insertExercise('Bench Press', 'chest', 'barbell', 'pectorals');
+
+    await insertSession('s1', DateTime(2026, 6, 1, 10), sets: [(bench, 100, 1)]);
+    final prs1 =
+        await db.workoutsDao.detectAndMarkPrs('s1', DateTime(2026, 6, 1, 10));
+    expect(prs1.length, 1);
+
+    await insertSession('s2', DateTime(2026, 6, 8, 10), sets: [(bench, 102, 1)]);
+    final prs2 =
+        await db.workoutsDao.detectAndMarkPrs('s2', DateTime(2026, 6, 8, 10));
+    expect(prs2.length, 1, reason: 'a +2kg single over a prior single is a PR');
+    expect(prs2.first.previousBest1rm, closeTo(100.0, 0.001),
+        reason: 'prior 1-rep max must be 100, not the inflated 103.33');
+    expect(prs2.first.estimated1rm, closeTo(102.0, 0.001));
+  });
+
+  test('countRoutinesForUser + exerciseNameExists back the gates', () async {
+    final bench =
+        await insertExercise('Bench Press', 'chest', 'barbell', 'pectorals');
+
+    expect(await db.routinesDao.countRoutinesForUser(userId), 0);
+    for (var i = 0; i < 3; i++) {
+      await db.routinesDao.createRoutine(
+        userId: userId,
+        name: 'Routine $i',
+        exercises: [RoutineDraftExercise(exerciseId: bench, defaultSets: 3)],
+      );
+    }
+    expect(await db.routinesDao.countRoutinesForUser(userId), 3);
+    // The count is per-user — another user's routines never bleed in.
+    expect(await db.routinesDao.countRoutinesForUser('other-user'), 0);
+
+    // Name uniqueness is case-insensitive (guards the custom-exercise flow
+    // against shadowing a catalog entry).
+    expect(await db.exercisesDao.exerciseNameExists('bench press'), isTrue);
+    expect(await db.exercisesDao.exerciseNameExists('BENCH PRESS'), isTrue);
+    expect(await db.exercisesDao.exerciseNameExists('Incline Press'), isFalse);
+  });
+
+  test('wipeAllData empties every table (account deletion local wipe)',
+      () async {
+    final bench =
+        await insertExercise('Bench Press', 'chest', 'barbell', 'pectorals');
+    await db.routinesDao.createRoutine(
+      userId: userId,
+      name: 'Push',
+      exercises: [RoutineDraftExercise(exerciseId: bench, defaultSets: 3)],
+    );
+    await insertSession('s1', DateTime(2026, 6, 1, 10), sets: [(bench, 80, 8)]);
+
+    // Sanity: there is data to wipe.
+    expect((await db.exercisesDao.getAllExercises()).isNotEmpty, isTrue);
+
+    await db.wipeAllData();
+
+    Future<int> count(String table) async => (await db
+            .customSelect('SELECT COUNT(*) AS c FROM $table')
+            .getSingle())
+        .read<int>('c');
+
+    for (final t in [
+      'exercises',
+      'routines',
+      'routine_days',
+      'routine_exercises',
+      'workout_sessions',
+      'workout_exercises',
+      'workout_sets',
+      'sync_outbox',
+      'user_profiles',
+    ]) {
+      expect(await count(t), 0, reason: '$t must be empty after wipeAllData');
+    }
+  });
+
   test('deleteSession cascades sets + exercises with FKs enforced', () async {
     final bench =
         await insertExercise('Bench Press', 'chest', 'barbell', 'pectorals');

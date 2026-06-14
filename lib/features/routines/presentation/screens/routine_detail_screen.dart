@@ -16,6 +16,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../features/exercises/presentation/screens/exercise_selection_screen.dart';
 import '../../../../features/workout/domain/active_workout_state.dart';
 import '../../../../features/workout/presentation/providers/active_workout_provider.dart';
+import '../../../../shared/widgets/async_error_state.dart';
 import '../../../../shared/widgets/premium_paywall.dart';
 import '../../../../shared/widgets/ui/app_dialog.dart';
 import '../../../../shared/widgets/ui/time_range_filter.dart';
@@ -576,43 +577,26 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
       _SkelBox(width: width, height: height, radius: radius);
 
   Widget _buildError() {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(Icons.error_outline, size: 48, color: AppColors.error),
-            const SizedBox(height: 16),
-            Text(
-              "Couldn't load routine",
-              style: GoogleFonts.inter(
-                fontSize: 18,
-                fontWeight: FontWeight.w700,
-                color: AppColors.textPrimary,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Pull down to retry',
-              style: GoogleFonts.inter(
-                fontSize: 14,
-                fontWeight: FontWeight.w400,
-                color: const Color(0xFF6A6A6A),
-              ),
-            ),
-          ],
-        ),
+    // A bare Center used to strand the user (no back button, "pull down to
+    // retry" where pull didn't work). Now: an app bar back + a real retry.
+    return Scaffold(
+      backgroundColor: AppColors.bgBase,
+      appBar: AppBar(
+        backgroundColor: AppColors.bgBase,
+        scrolledUnderElevation: 0,
+        leading: const BackButton(color: AppColors.textPrimary),
+      ),
+      body: AsyncErrorState(
+        message: "Couldn't load this routine.",
+        onRetry: _onRefresh,
       ),
     );
   }
 
   Widget _buildNotFound() {
-    return Center(
-      child: Text(
-        'Routine not found',
-        style: GoogleFonts.inter(color: const Color(0xFF6A6A6A)),
-      ),
+    return const AppNotFoundScreen(
+      title: 'Routine not found',
+      message: 'It may have been deleted.',
     );
   }
 }
@@ -687,12 +671,13 @@ class _StartRoutineButtonState extends State<_StartRoutineButton> {
           ),
           child: Material(
             color: Colors.transparent,
-            child: InkWell(
-              borderRadius: BorderRadius.circular(16),
-              highlightColor: Colors.transparent,
-              splashColor: Colors.white.withValues(alpha: 0.06),
-              onTap: _onTap,
-              child: Center(
+            // Tap is handled by the ancestor GestureDetector (which also drives
+            // the press-scale). This InkWell previously ALSO had onTap: _onTap,
+            // so a single tap fired the handler — and the haptic, and the
+            // navigation — twice. With no callbacks the tap falls through to
+            // the GestureDetector: exactly one fire. AnimatedScale is the press
+            // feedback, so losing the ripple is intentional.
+            child: Center(
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -706,7 +691,6 @@ class _StartRoutineButtonState extends State<_StartRoutineButton> {
             ),
           ),
         ),
-      ),
     );
   }
 }

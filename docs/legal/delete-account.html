@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Delete your GymLog account</title>
+<style>
+  :root{--bg:#000;--surface:#121214;--hair:rgba(255,255,255,.08);--txt:#fff;--txt2:#8E8E93;--accent:#8A2BE2;--accent-lt:#B98CFF;--err:#FF5449;--ok:#34C759}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--txt);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;line-height:1.55;-webkit-font-smoothing:antialiased;display:flex;min-height:100vh;align-items:center;justify-content:center;padding:24px}
+  .card{width:100%;max-width:480px;background:var(--surface);border:1px solid var(--hair);border-radius:20px;padding:28px}
+  h1{font-size:24px;font-weight:800;letter-spacing:-.5px}
+  p{color:var(--txt2);font-size:14.5px;margin-top:8px}
+  .icon{width:48px;height:48px;border-radius:14px;background:rgba(255,84,73,.12);display:flex;align-items:center;justify-content:center;font-size:24px;margin-bottom:14px}
+  .sec{margin-top:20px;border:1px solid var(--hair);border-radius:14px;padding:14px 16px}
+  .sec h2{font-size:14px;font-weight:700}
+  .sec.del h2{color:var(--err)} .sec.keep h2{color:var(--ok)}
+  .sec ul{margin:8px 0 0 18px} .sec li{color:var(--txt2);font-size:13px;margin:5px 0}
+  button{width:100%;height:52px;border:0;border-radius:14px;font-size:15.5px;font-weight:700;font-family:inherit;cursor:pointer;margin-top:18px;transition:opacity .15s}
+  button:disabled{opacity:.4;cursor:not-allowed}
+  .primary{background:var(--accent);color:#fff}
+  .danger{background:var(--err);color:#fff}
+  .muted{background:transparent;color:var(--txt2);height:auto;margin-top:10px;font-weight:500;text-decoration:underline}
+  .who{margin-top:16px;font-size:14px}
+  .who b{color:var(--txt)}
+  .status{margin-top:16px;font-size:14px;padding:12px 14px;border-radius:12px;display:none}
+  .status.show{display:block}
+  .status.ok{background:rgba(52,199,89,.12);color:#5fe588}
+  .status.bad{background:rgba(255,84,73,.12);color:#ff7a70}
+  label{display:block;font-size:12px;font-weight:700;letter-spacing:.6px;color:var(--txt2);margin-top:16px}
+  input{width:100%;margin-top:6px;background:#16161a;border:1px solid var(--hair);border-radius:12px;color:#fff;font:inherit;font-size:16px;padding:12px 14px;letter-spacing:1.5px}
+  .cfg{margin-top:18px;font-size:11.5px;color:#6a6a76}
+  a{color:var(--accent-lt)}
+  .hidden{display:none}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="icon">🗑️</div>
+  <h1>Delete your GymLog account</h1>
+  <p>This page permanently deletes your GymLog account and all associated data,
+     even if you no longer have the app installed. <b>This cannot be undone.</b></p>
+
+  <div class="sec del">
+    <h2>What will be permanently deleted</h2>
+    <ul>
+      <li>Your sign-in account and profile on our servers.</li>
+      <li>Any workout, routine, or preference data synced to the cloud.</li>
+      <li>Local data is removed automatically when you uninstall the app or use “Delete account” inside it.</li>
+    </ul>
+  </div>
+  <div class="sec keep">
+    <h2>What stays yours</h2>
+    <ul><li>CSV files you exported to your device are your property and are never touched.</li></ul>
+  </div>
+
+  <!-- Step 1: verify ownership by signing in -->
+  <div id="step-auth">
+    <button class="primary" id="signin">Sign in with Google to continue</button>
+    <p style="margin-top:12px;font-size:12.5px">We require sign-in so only the account owner can request deletion.</p>
+  </div>
+
+  <!-- Step 2: confirm + delete -->
+  <div id="step-delete" class="hidden">
+    <p class="who">Signed in as <b id="email"></b></p>
+    <label for="confirm">Type DELETE to confirm</label>
+    <input id="confirm" autocomplete="off" autocapitalize="characters" placeholder="DELETE" />
+    <button class="danger" id="delete" disabled>Delete my account permanently</button>
+    <button class="muted" id="signout">Cancel / sign out</button>
+  </div>
+
+  <div class="status" id="status"></div>
+
+  <p class="cfg">If the button does nothing, the deletion service may not be configured yet —
+     email <a href="mailto:support@gymlog.app">support@gymlog.app</a> from your registered address and we will remove your account within 30 days.</p>
+</div>
+
+<script type="module">
+  import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+
+  // ── CONFIG ────────────────────────────────────────────────────────────────
+  // SUPABASE_URL is this project's URL. SUPABASE_ANON_KEY is the PUBLIC anon
+  // key (safe to expose, protected by RLS) — paste it before deploying this
+  // page. Do NOT paste the service_role key here.
+  const SUPABASE_URL = "https://otcfigaprxfknickyrdh.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp1cHRsanpsd2dycGZneWR2anRoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkxMjg5NTEsImV4cCI6MjA5NDcwNDk1MX0.6S1e6nKjSSxOCdncpNpedVxzd9ryIgMqsqTZv68fbkM";
+
+  const supa = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  const $ = (id) => document.getElementById(id);
+  const status = (msg, ok) => { const e = $("status"); e.textContent = msg; e.className = "status show " + (ok ? "ok" : "bad"); };
+
+  async function refresh() {
+    const { data: { session } } = await supa.auth.getSession();
+    if (session) {
+      $("step-auth").classList.add("hidden");
+      $("step-delete").classList.remove("hidden");
+      $("email").textContent = session.user.email || session.user.id;
+    } else {
+      $("step-auth").classList.remove("hidden");
+      $("step-delete").classList.add("hidden");
+    }
+  }
+
+  $("signin").onclick = async () => {
+    await supa.auth.signInWithOAuth({
+      provider: "google",
+      options: { redirectTo: window.location.href },
+    });
+  };
+  $("signout").onclick = async () => { await supa.auth.signOut(); refresh(); status("", true); $("status").className = "status"; };
+  $("confirm").oninput = (e) => { $("delete").disabled = e.target.value.trim().toUpperCase() !== "DELETE"; };
+
+  $("delete").onclick = async () => {
+    $("delete").disabled = true;
+    status("Deleting your account…", true);
+    try {
+      const { data: { session } } = await supa.auth.getSession();
+      if (!session) { status("Your session expired — please sign in again.", false); refresh(); return; }
+      const res = await fetch(`${SUPABASE_URL}/functions/v1/delete-account`, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${session.access_token}`,
+          "apikey": SUPABASE_ANON_KEY,
+          "Content-Type": "application/json",
+        },
+      });
+      if (res.ok) {
+        await supa.auth.signOut();
+        $("step-delete").classList.add("hidden");
+        status("Your account and all associated data have been permanently deleted.", true);
+      } else {
+        const body = await res.json().catch(() => ({}));
+        status(`Deletion failed (${res.status}). ${body.error || "Please email support."}`, false);
+        $("delete").disabled = false;
+      }
+    } catch (err) {
+      status(`Couldn't reach the deletion service. ${err}. Please email support.`, false);
+      $("delete").disabled = false;
+    }
+  };
+
+  supa.auth.onAuthStateChange(() => refresh());
+  refresh();
+</script>
+</body>
+</html>

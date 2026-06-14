@@ -21,6 +21,14 @@ const _kHydrationKey = 'exercises_hydrated_v3';
 /// Centralized in [Env] (overridable via --dart-define GIF_BUCKET_BASE).
 const _kGifBase = Env.gifBucketBase;
 
+/// Top-level so it can run in a `compute()` isolate. Decodes the bundled
+/// exercise catalog JSON into a list of plain maps (primitives only, so the
+/// result is sendable back to the UI isolate).
+List<Map<String, dynamic>> _decodeExerciseCatalog(String jsonString) {
+  final root = jsonDecode(jsonString) as Map<String, dynamic>;
+  return (root['exercises'] as List).cast<Map<String, dynamic>>();
+}
+
 @DriftAccessor(tables: [Exercises])
 class ExercisesDao extends DatabaseAccessor<AppDatabase>
     with _$ExercisesDaoMixin {
@@ -41,6 +49,17 @@ class ExercisesDao extends DatabaseAccessor<AppDatabase>
           ..where((t) => t.name.like('%$sanitized%'))
           ..orderBy([(t) => OrderingTerm.asc(t.name)]))
         .get();
+  }
+
+  /// Case-insensitive exact-name existence check — guards the manual
+  /// "Create custom exercise" flow against duplicating a catalog entry.
+  Future<bool> exerciseNameExists(String name) async {
+    final rows = await customSelect(
+      'SELECT 1 FROM exercises WHERE LOWER(name) = LOWER(?) LIMIT 1',
+      variables: [Variable.withString(name.trim())],
+      readsFrom: {exercises},
+    ).get();
+    return rows.isNotEmpty;
   }
 
   Future<List<Exercise>> filterByBodyPart(String bodyPart) =>
@@ -192,8 +211,13 @@ class ExercisesDao extends DatabaseAccessor<AppDatabase>
     try {
       final jsonString =
           await rootBundle.loadString('assets/db/exercises.json');
-      final root = jsonDecode(jsonString) as Map<String, dynamic>;
-      final list = (root['exercises'] as List).cast<Map<String, dynamic>>();
+      // Parse the 822-entry catalog in a BACKGROUND isolate. jsonDecode of a
+      // ~470 KB string blocks the UI isolate long enough to drop frames on a
+      // first-launch scroll; compute() moves the parse off the main thread.
+      // The result is plain maps of primitives — cheap to ship across the
+      // isolate boundary. The Drift inserts below already run on Drift's own
+      // background executor (NativeDatabase.createInBackground).
+      final list = await compute(_decodeExerciseCatalog, jsonString);
 
       // Upsert keyed by exerciseDbId. Existing catalog rows are UPDATED in
       // place — renamed to the standard name, re-muscled, and GIF refreshed —
