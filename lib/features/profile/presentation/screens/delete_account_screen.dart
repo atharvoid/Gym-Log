@@ -119,11 +119,11 @@ class _DeleteAccountScreenState extends ConsumerState<DeleteAccountScreen> {
             ),
             const SizedBox(height: 24),
 
-            _SectionCard(
+            const _SectionCard(
               title: 'What will be permanently deleted',
               tone: AppColors.error,
               icon: Icons.remove_circle_outline_rounded,
-              lines: const [
+              lines: [
                 'Your sign-in account and profile on our servers.',
                 'Any workout, routine, or preference data synced to the cloud.',
                 'All workout history, routines, and custom exercises stored on '
@@ -131,11 +131,11 @@ class _DeleteAccountScreenState extends ConsumerState<DeleteAccountScreen> {
               ],
             ),
             const SizedBox(height: 14),
-            _SectionCard(
+            const _SectionCard(
               title: 'What stays yours',
               tone: AppColors.success,
               icon: Icons.check_circle_outline_rounded,
-              lines: const [
+              lines: [
                 'Any CSV files you exported to your phone (Downloads / Files) '
                     'are your property — they are never touched or removed.',
               ],
