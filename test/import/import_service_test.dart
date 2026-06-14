@@ -5,7 +5,7 @@
 import 'dart:ffi';
 import 'dart:io';
 
-import 'package:drift/drift.dart';
+
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gymlog/core/database/database.dart';
@@ -53,7 +53,7 @@ void main() {
 
   Future<double> totalStoredVolume() async {
     final sessions = await db.workoutsDao.getSessionsForUser(userId);
-    return sessions.fold(0.0, (s, x) => s + x.totalVolumeKg);
+    return sessions.fold<double>(0.0, (s, x) => s + x.totalVolumeKg);
   }
 
   test('imports the Hevy export into the local database', () async {

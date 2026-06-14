@@ -335,7 +335,7 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
             onTap: _confirmImport,
           )
         else
-          _Banner(
+          const _Banner(
             icon: Icons.task_alt_rounded,
             color: AppColors.success,
             text: 'Everything in this file is already in GymLog. Nothing to import.',

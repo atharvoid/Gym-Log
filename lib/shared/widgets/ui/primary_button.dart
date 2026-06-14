@@ -13,6 +13,11 @@ class PrimaryButton extends StatelessWidget {
   final bool isFullWidth;
   final IconData? icon;
 
+  /// Optional leading widget rendered before the label. Takes precedence over
+  /// [icon] when both are provided — useful for brand image assets such as the
+  /// Google "G" mark that cannot be expressed as an [IconData].
+  final Widget? leading;
+
   /// While true the button is disabled and shows a spinner — prevents the
   /// double-fire that triggers "Concurrent operations" on async actions
   /// (e.g. Google Sign-In, which only tolerates one pending call).
@@ -24,6 +29,7 @@ class PrimaryButton extends StatelessWidget {
     this.onPressed,
     this.isFullWidth = true,
     this.icon,
+    this.leading,
     this.isLoading = false,
   });
 
@@ -65,12 +71,15 @@ class PrimaryButton extends StatelessWidget {
                       AlwaysStoppedAnimation<Color>(AppColors.textPrimary),
                 ),
               )
-            : icon != null
+            : (leading != null || icon != null)
             ? Row(
                 mainAxisSize: MainAxisSize.min,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(icon, size: 20),
+                  if (leading != null)
+                    leading!
+                  else if (icon != null)
+                    Icon(icon, size: 20),
                   const SizedBox(width: 8),
                   Text(
                     label,

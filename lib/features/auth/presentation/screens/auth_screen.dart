@@ -92,14 +92,11 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                 label: _isSigningIn ? 'Signing in…' : 'Continue with Google',
                 isLoading: _isSigningIn,
                 onPressed: _signIn,
-                // COMPLIANCE NOTE: the generic lock glyph (Icons.login) was
-                // removed — pairing a non-Google icon with "Continue with
-                // Google" is off-brand. Full Google brand compliance requires
-                // the official multi-colour "G" mark shipped as an image asset
-                // (developers.google.com/identity/branding-guidelines); drop it
-                // in assets/ and render it as a leading widget here. A faithful
-                // fake is NOT shipped because an inaccurate mark is worse than
-                // none under the brand guidelines.
+                leading: Image.asset(
+                  'assets/images/google_g.png',
+                  width: 24,
+                  height: 24,
+                ),
               ),
               const SizedBox(height: 14),
               // Apple App Store (3.1.2 / 5.1.1) and Google Play require Terms &

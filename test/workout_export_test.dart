@@ -112,9 +112,9 @@ void main() {
     expect(lines.first, WorkoutExportService.csvHeader);
     expect(lines.length, 3, reason: 'header + 2 completed sets only');
     expect(lines[1],
-        '2026-06-01 08:30,Morning Workout,Barbell Bench Press,1,normal,80,8,,false,');
+        '2026-06-01 08:30,2026-06-01 09:15,Morning Workout,,Barbell Bench Press,1,normal,80,8,,false,');
     expect(lines[2],
-        '2026-06-01 08:30,Morning Workout,Barbell Bench Press,2,normal,82.5,6,,false,');
+        '2026-06-01 08:30,2026-06-01 09:15,Morning Workout,,Barbell Bench Press,2,normal,82.5,6,,false,');
     expect(csv, isNot(contains('Abandoned')));
   });
 

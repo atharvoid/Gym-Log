@@ -106,7 +106,7 @@ class MuscleSplitBar extends StatelessWidget {
       });
     if (entries.isEmpty) return const [];
 
-    final palette = AppColors.muscleSplitPalette;
+    const palette = AppColors.muscleSplitPalette;
     final maxNamed = dense ? 4 : palette.length; // leaves room for "Other"
 
     final slices = <_Slice>[];

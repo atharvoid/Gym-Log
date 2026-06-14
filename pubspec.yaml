@@ -82,6 +82,7 @@ flutter:
     # Bundling it would ship the raw file inside every APK/IPA and break
     # clean-checkout builds when the gitignored file is absent.
     - assets/db/exercises.json
+    - assets/images/
     # generated/copied to the app's documents directory at first launch, not
     # a bundled asset. Bundling it would waste ~870 KB in every APK build.
 
