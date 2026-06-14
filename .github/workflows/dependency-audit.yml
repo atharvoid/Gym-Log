@@ -1,0 +1,50 @@
+name: Dependency Audit
+
+# Weekly freshness + security advisory report. Non-blocking by design — it
+# produces a report for the weekly review ritual (see docs/CI_RUNBOOK.md), it
+# does NOT gate merges. Escalate per the criteria in the runbook.
+
+on:
+  schedule:
+    - cron: '0 9 * * 1' # Every Monday 09:00 UTC
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  outdated:
+    name: Outdated packages
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - name: Report outdated dependencies
+        run: |
+          {
+            echo '## Outdated packages';
+            echo '```';
+            flutter pub outdated || true;
+            echo '```';
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  security:
+    name: Security advisories (OSV)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      # OSV is the standard vulnerability database for pub.dev packages — Dart
+      # has no first-party `pub audit`. Scans pubspec.lock. If the tag below is
+      # stale, bump it from github.com/google/osv-scanner-action/releases; this
+      # job is non-blocking so a tag bump never blocks a merge.
+      - name: OSV-Scanner
+        continue-on-error: true
+        uses: google/osv-scanner-action@v1
+        with:
+          scan-args: "--lockfile=pubspec.lock"
