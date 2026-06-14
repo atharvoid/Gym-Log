@@ -15,7 +15,11 @@ part 'exercises_dao.g.dart';
 /// v3: unified catalog (standard Hevy/Strong names + parent→child muscles),
 /// upsert-by-exerciseDbId so existing rows are renamed/re-muscled in place and
 /// GIF links are refreshed, with null gifUrl for exercises that have no GIF yet.
-const _kHydrationKey = 'exercises_hydrated_v3';
+/// v4: improved import-name matching (rope/parallel-bars attachments stripped,
+/// "Crossovers" plural, added "Iso-Lateral Row"). Re-runs hydration AND
+/// reconcileCustomExercises so legacy "other"-tagged imports get merged into
+/// the catalog on the next launch.
+const _kHydrationKey = 'exercises_hydrated_v4';
 
 /// Base URL of the public storage bucket that hosts exercise GIFs.
 /// Centralized in [Env] (overridable via --dart-define GIF_BUCKET_BASE).
@@ -237,10 +241,11 @@ class ExercisesDao extends DatabaseAccessor<AppDatabase>
       }
 
       await prefs.setBool(_kHydrationKey, true);
+      await prefs.remove('exercises_hydrated_v3');
       await prefs.remove('exercises_hydrated_v2');
       await prefs.remove('exercises_hydrated_v1');
       debugPrint(
-          '[ExercisesDao] Hydration v3 complete: ${list.length} exercises.');
+          '[ExercisesDao] Hydration v4 complete: ${list.length} exercises.');
     } catch (e, st) {
       debugPrint('[ExercisesDao] hydrateFromJson failed: $e\n$st');
       await seedDefaultExercises();
@@ -256,6 +261,7 @@ class ExercisesDao extends DatabaseAccessor<AppDatabase>
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_kHydrationKey);
     // Also clear older keys if present
+    await prefs.remove('exercises_hydrated_v3');
     await prefs.remove('exercises_hydrated_v2');
     await prefs.remove('exercises_hydrated_v1');
     debugPrint(

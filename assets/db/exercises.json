@@ -1,6 +1,6 @@
 {
 "version": 3,
-"count": 822,
+"count": 823,
 "generatedFrom": "Strength Excel + ExerciseDB (QA-corrected)",
 "exercises": [
 {
@@ -17738,6 +17738,26 @@
 "instructions": [],
 "gif": false,
 "aliases": [],
+"inHevyStrong": true
+},
+{
+"id": "g0308",
+"name": "Iso-Lateral Row (Machine)",
+"bodyPart": "back",
+"equipment": "Machine",
+"target": "Upper Back",
+"parent": "Back",
+"secondaryMuscles": [
+"Lats",
+"Biceps",
+"Rear Delts",
+"Core"
+],
+"instructions": [],
+"gif": false,
+"aliases": [
+"Iso-Lateral Row"
+],
 "inHevyStrong": true
 }
 ]

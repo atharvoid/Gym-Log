@@ -14,6 +14,9 @@ abstract final class ExerciseNaming {
     'resistance', 'plate', 'gymnastic', 'rings', 'stability', 'medicine', 'ez',
     'assisted', 'trap', 'bar', 'ab', 'wheel', 'ball', 'hand', 'gripper', 'roller',
     'specialty', 'partner',
+    // Attachments / apparatus that are not part of the movement identity, so
+    // "Rope Face Pull" == "Face Pull" and "Leg Raise (Parallel Bars)" == "Leg Raise".
+    'rope', 'parallel', 'bars',
   };
 
   static const _phrase = <List<String>>[
@@ -30,7 +33,7 @@ abstract final class ExerciseNaming {
     'pushups': 'pushup', 'situps': 'situp', 'chinups': 'chinup', 'pullups': 'pullup',
     'kickbacks': 'kickback', 'pushdowns': 'pushdown', 'thrusts': 'thrust',
     'crunches': 'crunch', 'bicep': 'biceps', 'tricep': 'triceps', 'calf': 'calves',
-    'oh': 'overhead',
+    'oh': 'overhead', 'crossovers': 'crossover',
   };
 
   /// Sorted, equipment-stripped movement tokens joined by spaces.

@@ -72,6 +72,13 @@ void main() {
       // Strong word-order variants must also link to the same catalog.
       'Barbell Bench Press',
       'Dumbbell Shrug',
+      // Real Hevy names that previously fell through to "other" (attachments,
+      // plurals, machine variants) — must link after the matcher improvements.
+      'Cable Fly Crossovers',
+      'rope face pull',
+      'Leg Raise Parallel Bars',
+      'Iso-Lateral Row (Machine)',
+      'Lat Pulldown - Close Grip (Cable)',
     ];
 
     for (final n in sampleNames) {
