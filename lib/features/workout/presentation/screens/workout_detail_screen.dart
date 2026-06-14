@@ -8,6 +8,7 @@ import 'package:gymlog/core/utils/formatters.dart';
 import 'package:gymlog/core/database/daos/workouts_dao.dart';
 import 'package:gymlog/core/database/database.dart';
 import 'package:gymlog/core/providers/database_provider.dart';
+import 'package:gymlog/shared/widgets/async_error_state.dart';
 import 'package:gymlog/shared/widgets/exercise_gif_widget.dart';
 import 'package:gymlog/features/routines/presentation/widgets/routine_detail_styles.dart';
 import 'package:gymlog/shared/widgets/ui/action_bottom_sheet.dart';
@@ -61,6 +62,11 @@ class WorkoutDetailScreen extends ConsumerWidget {
 
   Widget _buildError(BuildContext context, WidgetRef ref) => Scaffold(
         backgroundColor: AppColors.bgBase,
+        appBar: AppBar(
+          backgroundColor: AppColors.bgBase,
+          scrolledUnderElevation: 0,
+          leading: const BackButton(color: AppColors.textPrimary),
+        ),
         body: Center(
           child: Padding(
             padding: const EdgeInsets.all(24),
@@ -128,15 +134,9 @@ class WorkoutDetailScreen extends ConsumerWidget {
         ),
       );
 
-  Widget _buildNotFound() => Scaffold(
-        backgroundColor: AppColors.bgBase,
-        body: Center(
-          child: Text(
-            'Workout not found',
-            style:
-                GoogleFonts.inter(color: AppColors.textSecondary, fontSize: 15),
-          ),
-        ),
+  Widget _buildNotFound() => const AppNotFoundScreen(
+        title: 'Workout not found',
+        message: 'It may have been deleted.',
       );
 
   // ── Main scroll view ─────────────────────────────────────────────────────────
@@ -382,9 +382,17 @@ class _HeroSliver extends StatelessWidget {
         ),
         onPressed: () => Navigator.of(context).maybePop(),
       ),
-      // Three-dots icon is placed INSIDE the background Row (see below) so it
-      // locks horizontally with the title text. actions is empty to avoid duplication.
-      actions: const [],
+      // Three-dots lives in actions: so it stays reachable when the bar
+      // COLLAPSES. It used to sit in the flexibleSpace background, which is
+      // clipped on scroll — making the overflow menu unreachable once pinned.
+      actions: [
+        IconButton(
+          tooltip: 'Workout options',
+          icon: const Icon(Icons.more_horiz,
+              size: 22, color: AppColors.textPrimary),
+          onPressed: onMoreTap,
+        ),
+      ],
       flexibleSpace: LayoutBuilder(
         builder: (BuildContext context, BoxConstraints constraints) {
           final top = constraints.maxHeight;
@@ -483,17 +491,6 @@ class _HeroSliver extends StatelessWidget {
                               ],
                             ),
                           ),
-                          // Three-dots icon — locked to the right edge,
-                          // horizontally aligned with the title text center.
-                          IconButton(
-                            tooltip: 'Workout options',
-                            icon: const Icon(
-                              Icons.more_horiz,
-                              size: 22,
-                              color: AppColors.textSecondary,
-                            ),
-                            onPressed: onMoreTap,
-                          ),
                         ],
                       ),
                       const SizedBox(height: 12),
@@ -506,7 +503,17 @@ class _HeroSliver extends StatelessWidget {
                           ),
                           _HeroPip.dot,
                           Flexible(
-                            child: _HeroPip(value: volumeStr, label: 'VOLUME'),
+                            // Disclosure: volume sums ALL completed sets,
+                            // warm-ups included. Tap to reveal (tooltip).
+                            child: Tooltip(
+                              triggerMode: TooltipTriggerMode.tap,
+                              showDuration: const Duration(seconds: 3),
+                              message:
+                                  'Volume = weight × reps across all completed '
+                                  'sets, warm-ups included.',
+                              child:
+                                  _HeroPip(value: volumeStr, label: 'VOLUME'),
+                            ),
                           ),
                           _HeroPip.dot,
                           Flexible(

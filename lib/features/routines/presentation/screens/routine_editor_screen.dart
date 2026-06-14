@@ -6,7 +6,9 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:gymlog/core/database/daos/routines_dao.dart';
 import 'package:gymlog/core/database/database.dart';
 import 'package:gymlog/core/providers/database_provider.dart';
+import 'package:gymlog/core/providers/premium_provider.dart';
 import 'package:gymlog/core/theme/app_colors.dart';
+import 'package:gymlog/shared/widgets/premium_paywall.dart';
 import 'package:gymlog/features/auth/presentation/providers/auth_provider.dart';
 import 'package:gymlog/features/exercises/presentation/screens/exercise_selection_screen.dart';
 import 'package:gymlog/shared/widgets/exercise_gif_widget.dart';
@@ -156,6 +158,17 @@ class _RoutineEditorScreenState extends ConsumerState<RoutineEditorScreen> {
       } else {
         final user = ref.read(authProvider);
         if (user == null) return;
+
+        // Free-tier routine cap. Editing an existing routine is never gated —
+        // only creating a NEW one past the limit. Free users keep every
+        // routine they already have (grandfathered); they just can't add more.
+        final isPremium = ref.read(isPremiumProvider);
+        final count = await dao.countRoutinesForUser(user.id);
+        if (isAtFreeRoutineLimit(isPremium: isPremium, routineCount: count)) {
+          if (mounted) await showRoutineLimitUpsell(context);
+          return; // draft stays on screen; nothing saved
+        }
+
         await dao.createRoutine(
           userId: user.id,
           name: _nameController.text.trim(),

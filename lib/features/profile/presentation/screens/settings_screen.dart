@@ -15,17 +15,15 @@ import 'package:gymlog/features/routines/presentation/widgets/routine_detail_sty
 import 'package:gymlog/shared/widgets/premium_paywall.dart';
 import 'package:gymlog/shared/widgets/ui/app_dialog.dart';
 import 'package:gymlog/shared/widgets/ui/time_range_filter.dart';
+import 'package:gymlog/core/config/legal_links.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 /// App version shown in Settings — bumped with each release.
 const kAppVersion = '1.0.0';
 
-/// Legal documents — hosted in the repo so they version with the app.
-const kPrivacyPolicyUrl =
-    'https://github.com/atharvoid/Gym-Log/blob/main/docs/legal/PRIVACY_POLICY.md';
-const kTermsOfServiceUrl =
-    'https://github.com/atharvoid/Gym-Log/blob/main/docs/legal/TERMS_OF_SERVICE.md';
+// kPrivacyPolicyUrl / kTermsOfServiceUrl now live in core/config/legal_links.dart
+// (shared with the pre-sign-in Auth screen).
 
 /// Weekly-goal picker, shared by Settings and the Profile goal ring.
 Future<void> showWeeklyGoalSheet(BuildContext context, WidgetRef ref) async {

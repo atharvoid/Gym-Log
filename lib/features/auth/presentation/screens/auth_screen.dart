@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:url_launcher/url_launcher.dart';
+import '../../../../core/config/legal_links.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/widgets/ui/primary_button.dart';
 import '../providers/auth_provider.dart';
@@ -27,23 +29,38 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
       // this screen is disposed, so no explicit navigation is needed here.
     } catch (_) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            "Couldn't sign in. Please try again.",
-            style: GoogleFonts.inter(color: AppColors.textPrimary),
-          ),
-          backgroundColor: AppColors.bgSurface,
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+      _snack("Couldn't sign in. Please try again.");
     } finally {
       if (mounted) setState(() => _isSigningIn = false);
     }
   }
 
+  void _snack(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content:
+            Text(message, style: GoogleFonts.inter(color: AppColors.textPrimary)),
+        backgroundColor: AppColors.bgSurface,
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
+  Future<void> _openUrl(String url) async {
+    final ok = await launchUrl(Uri.parse(url),
+        mode: LaunchMode.externalApplication);
+    if (!ok && mounted) _snack("Couldn't open the link.");
+  }
+
   @override
   Widget build(BuildContext context) {
+    final fine = GoogleFonts.inter(
+      color: AppColors.textSecondary,
+      fontSize: 12,
+      fontWeight: FontWeight.w400,
+      height: 1.4,
+    );
+
     return Scaffold(
       backgroundColor: AppColors.bgBase,
       body: SafeArea(
@@ -72,24 +89,74 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
               ),
               const Spacer(),
               PrimaryButton(
-                label:
-                    _isSigningIn ? 'Signing in…' : 'Continue with Google',
+                label: _isSigningIn ? 'Signing in…' : 'Continue with Google',
                 isLoading: _isSigningIn,
                 onPressed: _signIn,
-                icon: Icons.login,
+                // COMPLIANCE NOTE: the generic lock glyph (Icons.login) was
+                // removed — pairing a non-Google icon with "Continue with
+                // Google" is off-brand. Full Google brand compliance requires
+                // the official multi-colour "G" mark shipped as an image asset
+                // (developers.google.com/identity/branding-guidelines); drop it
+                // in assets/ and render it as a leading widget here. A faithful
+                // fake is NOT shipped because an inaccurate mark is worse than
+                // none under the brand guidelines.
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 14),
+              // Apple App Store (3.1.2 / 5.1.1) and Google Play require Terms &
+              // Privacy to be reachable BEFORE a data-collecting sign-in. This
+              // consent line ties the policies to the act of continuing.
+              Wrap(
+                alignment: WrapAlignment.center,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                children: [
+                  Text('By continuing you agree to our ', style: fine),
+                  _LegalLink(
+                      label: 'Terms',
+                      onTap: () => _openUrl(kTermsOfServiceUrl)),
+                  Text(' and ', style: fine),
+                  _LegalLink(
+                      label: 'Privacy Policy',
+                      onTap: () => _openUrl(kPrivacyPolicyUrl)),
+                  Text('.', style: fine),
+                ],
+              ),
+              const SizedBox(height: 10),
               Text(
-                'Free to use. No account required beyond Google login.',
-                style: GoogleFonts.inter(
-                  color: AppColors.textSecondary,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w400,
-                ),
+                'Free to use. Sign in with Google to sync across your devices.',
+                style: fine,
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 32),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Inline, AA-contrast, screen-reader-labelled legal link.
+class _LegalLink extends StatelessWidget {
+  final String label;
+  final VoidCallback onTap;
+  const _LegalLink({required this.label, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      link: true,
+      button: true,
+      label: label,
+      child: GestureDetector(
+        onTap: onTap,
+        child: Text(
+          label,
+          style: GoogleFonts.inter(
+            color: AppColors.accentText, // ~5.9:1 on black, passes AA
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+            decoration: TextDecoration.underline,
+            decorationColor: AppColors.accentText,
           ),
         ),
       ),
