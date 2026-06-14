@@ -371,6 +371,27 @@ class SettingsScreen extends ConsumerWidget {
               ),
             ),
           ),
+          const SizedBox(height: 10),
+
+          // ── Delete account — visible (not buried), Play/App Store policy ──
+          Center(
+            child: TextButton(
+              onPressed: () {
+                HapticFeedback.selectionClick();
+                context.push('/settings/delete-account');
+              },
+              child: Text(
+                'Delete account',
+                style: GoogleFonts.inter(
+                  fontSize: 13.5,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textSecondary,
+                  decoration: TextDecoration.underline,
+                  decorationColor: AppColors.textSecondary,
+                ),
+              ),
+            ),
+          ),
         ],
       ),
     );

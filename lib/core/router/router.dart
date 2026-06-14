@@ -16,6 +16,7 @@ import '../../features/workout/presentation/screens/active_workout_screen.dart';
 import '../../features/exercises/presentation/screens/exercise_selection_screen.dart';
 import '../../features/exercises/presentation/screens/exercise_detail_screen.dart';
 import '../../features/profile/presentation/screens/settings_screen.dart';
+import '../../features/profile/presentation/screens/delete_account_screen.dart';
 import '../../features/import/presentation/screens/import_screen.dart';
 import '../../features/routines/presentation/screens/explore_routines_screen.dart';
 import '../../features/routines/presentation/screens/routine_editor_screen.dart';
@@ -112,6 +113,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/settings/import',
         builder: (c, s) => const ImportScreen(),
+      ),
+      GoRoute(
+        path: '/settings/delete-account',
+        builder: (c, s) => const DeleteAccountScreen(),
       ),
       GoRoute(
         path: '/routines/:id',
