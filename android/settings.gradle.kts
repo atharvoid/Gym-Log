@@ -21,7 +21,9 @@ plugins {
     id("dev.flutter.flutter-plugin-loader") version "1.9.0"
     id("com.android.application") version "9.0.1" apply false
     id("org.jetbrains.kotlin.android") version "2.3.20" apply false
-    id("io.sentry.android.gradle") version "4.14.1" apply false
+    // NOTE: io.sentry.android.gradle is intentionally NOT declared here. It
+    // is re-enabled once a real SENTRY_AUTH_TOKEN / SENTRY_ORG are available;
+    // until then the Sentry Flutter SDK still reports Dart errors.
 }
 
 include(":app")

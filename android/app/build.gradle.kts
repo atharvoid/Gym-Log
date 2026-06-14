@@ -10,7 +10,6 @@ plugins {
     id("org.jetbrains.kotlin.android")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
-    id("io.sentry.android.gradle")
 }
 
 // ── Release signing ──────────────────────────────────────────────────────────
@@ -94,12 +93,7 @@ flutter {
     source = "../.."
 }
 
-sentry {
-    org.set("your-org-slug")
-    projectName.set("gymlog")
-    authToken.set(System.getenv("SENTRY_AUTH_TOKEN"))
-    
-    // Only upload on release builds
-    autoUploadProguardMapping.set(true)
-    uploadNativeSymbols.set(false) // Flutter handles native symbols
-}
+// NOTE: The Sentry Android Gradle plugin is not applied because
+// SENTRY_AUTH_TOKEN / SENTRY_ORG are not configured yet. The Sentry Flutter
+// SDK still captures Dart errors at runtime. Re-apply the plugin and
+// configure org/project/authToken once real Sentry credentials are available.

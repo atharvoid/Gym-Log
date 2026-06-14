@@ -87,9 +87,13 @@ flutter:
     # a bundled asset. Bundling it would waste ~870 KB in every APK build.
 
 sentry:
-  upload_debug_symbols: true
-  upload_source_maps: true
-  upload_sources: true
+  # Symbol/source-map upload is disabled until a real Sentry org/auth token is
+  # configured. This keeps release builds green in CI and on clean checkouts
+  # while crash reporting still initializes at runtime via the DSN.
+  upload_debug_symbols: false
+  upload_source_maps: false
+  upload_sources: false
+  commits: false
   project: gymlog
   org: your-org-slug
   auth_token: env.SENTRY_AUTH_TOKEN
