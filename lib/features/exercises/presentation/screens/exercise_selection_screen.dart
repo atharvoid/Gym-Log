@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -68,13 +70,26 @@ class ExerciseSelectionScreen extends ConsumerStatefulWidget {
 class _ExerciseSelectionScreenState
     extends ConsumerState<ExerciseSelectionScreen> {
   final _searchController = TextEditingController();
+  Timer? _searchDebounce;
   String? _muscleFilter;
   String? _equipmentFilter;
 
   @override
   void dispose() {
+    _searchDebounce?.cancel();
     _searchController.dispose();
     super.dispose();
+  }
+
+  /// Debounce the DB query by 150ms so a fast typist triggers one search after
+  /// they pause, not one per keystroke. The provider's epoch guard already
+  /// drops stale results; this also cuts redundant query + rebuild churn.
+  void _onSearchChanged(String query) {
+    setState(() {}); // refresh `isSearching` (Recent section) immediately
+    _searchDebounce?.cancel();
+    _searchDebounce = Timer(const Duration(milliseconds: 150), () {
+      ref.read(exerciseListProvider.notifier).search(query);
+    });
   }
 
   bool _matchesFilters(Exercise e) {
@@ -226,10 +241,7 @@ class _ExerciseSelectionScreenState
                 ),
                 contentPadding: const EdgeInsets.symmetric(horizontal: 16),
               ),
-              onChanged: (query) {
-                setState(() {}); // refresh isSearching
-                ref.read(exerciseListProvider.notifier).search(query);
-              },
+              onChanged: _onSearchChanged,
             ),
           ),
 
