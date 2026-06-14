@@ -26,8 +26,13 @@ class _SkeletonPulseState extends State<SkeletonPulse>
 
   @override
   Widget build(BuildContext context) {
+    // Higher floor (0.70, was 0.55) so bones stay visible at the pulse trough
+    // against pure-black OLED — they read as "content arriving", not blank.
+    // Reduce-motion: hold steady at full opacity instead of pulsing.
+    final reduceMotion = MediaQuery.disableAnimationsOf(context);
+    if (reduceMotion) return widget.child;
     return FadeTransition(
-      opacity: Tween<double>(begin: 0.55, end: 1.0).animate(
+      opacity: Tween<double>(begin: 0.70, end: 1.0).animate(
         CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
       ),
       child: widget.child,
@@ -53,7 +58,9 @@ class SkeletonBox extends StatelessWidget {
       width: width,
       height: height,
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.06),
+        // 0.11 (was 0.06) ≈ #1C1C1C on black — clearly a loading placeholder
+        // on OLED rather than near-invisible (#0F0F0F).
+        color: Colors.white.withValues(alpha: 0.11),
         borderRadius: BorderRadius.circular(radius),
       ),
     );

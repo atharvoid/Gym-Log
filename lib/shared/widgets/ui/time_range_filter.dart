@@ -105,7 +105,15 @@ class TimeRangeFilter extends ConsumerWidget {
                     final isSelected = range == value;
                     final isLocked =
                         !isPremium && kProTimeRanges.contains(range);
-                    return InkWell(
+                    return Semantics(
+                      button: true,
+                      selected: isSelected && !isLocked,
+                      label: isLocked
+                          ? '$range, premium, locked'
+                          : isSelected
+                              ? '$range, selected'
+                              : range,
+                      child: InkWell(
                       onTap: () {
                         Navigator.of(sheetCtx).pop();
                         if (isLocked) {
@@ -162,6 +170,7 @@ class TimeRangeFilter extends ConsumerWidget {
                           ],
                         ),
                       ),
+                    ),
                     );
                   }),
                 ],

@@ -660,7 +660,14 @@ class _MuscleSplitSection extends StatelessWidget {
           const SizedBox(height: 8),
 
           // ── Single-line segmented bar — widths ∝ logged set counts ─────────
-          ClipRRect(
+          // Color-only on screen → attach a spoken summary and hide the
+          // decorative segments from screen readers (the text legend above
+          // already carries the per-muscle breakdown visually).
+          Semantics(
+            label: 'Muscle split: '
+                '${sorted.map((e) => '${e.key} ${((e.value / totalSets) * 100).round()} percent').join(', ')}',
+            child: ExcludeSemantics(
+              child: ClipRRect(
             borderRadius: BorderRadius.circular(4),
             child: SizedBox(
               height: 8,
@@ -679,6 +686,8 @@ class _MuscleSplitSection extends StatelessWidget {
                     ),
                 ],
               ),
+            ),
+          ),
             ),
           ),
         ],
@@ -1055,24 +1064,41 @@ class _DeltaChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isPositive = delta > 0;
-    final color = isPositive ? _kAccentPos : AppColors.textSecondary;
-    final sign = isPositive ? '+' : '−'; // U+2212, baseline-matched minus
+    // Was grey-on-grey for negatives (~1.5:1, unreadable). Negative now uses
+    // the warning token (a drop isn't an "error" — could be a deload — so amber,
+    // not red); both states carry a directional arrow so the meaning survives
+    // for color-blind users and a screen-reader label is attached.
+    final color = isPositive ? _kAccentPos : AppColors.warning;
+    final icon =
+        isPositive ? Icons.arrow_upward_rounded : Icons.arrow_downward_rounded;
     final abs = delta.abs();
-    final label =
-        '$sign${abs == abs.truncateToDouble() ? abs.toInt() : abs.toStringAsFixed(1)} kg';
+    final num = abs == abs.truncateToDouble()
+        ? abs.toInt().toString()
+        : abs.toStringAsFixed(1);
 
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: isPositive ? 0.12 : 0.06),
-        borderRadius: BorderRadius.circular(4),
-      ),
-      child: Text(
-        label,
-        style: GoogleFonts.inter(
-          color: color,
-          fontSize: 11,
-          fontWeight: FontWeight.w600,
+    return Semantics(
+      label: '${isPositive ? 'Up' : 'Down'} $num kilograms from last time',
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.16),
+          borderRadius: BorderRadius.circular(4),
+          border: Border.all(color: color.withValues(alpha: 0.45)),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 11, color: color),
+            const SizedBox(width: 2),
+            Text(
+              '$num kg',
+              style: GoogleFonts.inter(
+                color: color,
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ],
         ),
       ),
     );

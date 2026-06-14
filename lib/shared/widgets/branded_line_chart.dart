@@ -146,7 +146,10 @@ class _BrandedLineChartState extends State<BrandedLineChart> {
           SizedBox(
             height: widget.height,
             child: LineChart(
-              duration: const Duration(milliseconds: 350),
+              // Reduce-motion: render the chart instantly, no entry tween.
+              duration: MediaQuery.disableAnimationsOf(context)
+                  ? Duration.zero
+                  : const Duration(milliseconds: 350),
               curve: Curves.easeOutCubic,
               LineChartData(
                 minY: 0,

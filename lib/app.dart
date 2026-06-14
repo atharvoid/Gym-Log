@@ -66,6 +66,10 @@ class _GymLogAppState extends ConsumerState<GymLogApp> {
     return MaterialApp.router(
       title: 'GymLog',
       theme: appTheme,
+      // Auto-applied by the framework when the OS "increase contrast" setting
+      // is on. Both slots point at the same variant since the app is dark-only.
+      highContrastTheme: appHighContrastTheme,
+      highContrastDarkTheme: appHighContrastTheme,
       routerConfig: router,
       debugShowCheckedModeBanner: false,
     );

@@ -41,6 +41,11 @@ class _GoRouterRefreshStream extends ChangeNotifier {
   }
 }
 
+/// Root navigator key. Lets dependency-light surfaces that may sit outside the
+/// normal screen tree — notably the global crash screen ([AppErrorScreen],
+/// wired via ErrorWidget.builder) — drive navigation to recover.
+final rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'rootNavigator');
+
 final routerProvider = Provider<GoRouter>((ref) {
   // Wire GoRouter to Supabase auth stream so redirects re-run on login/logout
   final refreshStream = _GoRouterRefreshStream(
@@ -49,6 +54,7 @@ final routerProvider = Provider<GoRouter>((ref) {
   ref.onDispose(refreshStream.dispose);
 
   return GoRouter(
+    navigatorKey: rootNavigatorKey,
     initialLocation: '/splash',
     refreshListenable: refreshStream,
     observers: [SentryNavigatorObserver()],

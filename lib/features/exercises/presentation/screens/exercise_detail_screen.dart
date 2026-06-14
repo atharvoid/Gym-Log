@@ -10,6 +10,7 @@ import 'package:gymlog/core/database/daos/workouts_dao.dart';
 import 'package:gymlog/core/providers/premium_provider.dart';
 import 'package:gymlog/core/utils/units.dart';
 import 'package:gymlog/features/routines/presentation/widgets/routine_detail_styles.dart';
+import 'package:gymlog/shared/widgets/async_error_state.dart';
 import 'package:gymlog/shared/widgets/branded_line_chart.dart';
 import 'package:gymlog/shared/widgets/exercise_gif_widget.dart';
 import 'package:gymlog/shared/widgets/premium_paywall.dart';
@@ -77,10 +78,18 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
               child:
                   CircularProgressIndicator(color: AppColors.accentPrimary))),
       error: (e, st) => Scaffold(
+        backgroundColor: AppColors.bgBase,
+        appBar: AppBar(
           backgroundColor: AppColors.bgBase,
-          body: Center(
-              child: Text('Error loading exercise',
-                  style: GoogleFonts.inter(color: AppColors.error)))),
+          scrolledUnderElevation: 0,
+          iconTheme: const IconThemeData(color: AppColors.textPrimary),
+        ),
+        body: AsyncErrorState(
+          message: "Couldn't load this exercise.",
+          onRetry: () =>
+              ref.invalidate(_exerciseFallbackProvider(widget.exerciseId)),
+        ),
+      ),
       data: (exercise) {
         return Scaffold(
           backgroundColor: AppColors.bgBase,
@@ -292,7 +301,10 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
           final isActive = entry.key == _activeToggleIndex;
           return Padding(
             padding: const EdgeInsets.only(right: 8),
-            child: GestureDetector(
+            child: Semantics(
+              button: true,
+              selected: isActive,
+              child: GestureDetector(
               onTap: () {
                 HapticFeedback.lightImpact();
                 setState(() => _activeToggleIndex = entry.key);
@@ -314,6 +326,7 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
                   ),
                 ),
               ),
+            ),
             ),
           );
         }).toList(),

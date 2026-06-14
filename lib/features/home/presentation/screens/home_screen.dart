@@ -284,9 +284,17 @@ class _WeekStrip extends ConsumerWidget {
 
     final goalMet = streak.workoutsThisWeek >= goal;
 
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
+    // Goal-met is shown on screen by icon COLOR alone; give screen readers a
+    // single spoken summary and hide the fragmented row pieces.
+    return Semantics(
+      container: true,
+      excludeSemantics: true,
+      label: 'This week: ${streak.workoutsThisWeek} of $goal workouts'
+          '${goalMet ? ', goal met' : ''}'
+          '${streak.currentStreak > 0 ? '. ${streak.currentStreak} day streak' : ''}',
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
         if (streak.currentStreak > 0) ...[
           const Icon(Icons.local_fire_department_rounded,
               size: 14, color: Color(0xFFFF9F0A)),
@@ -321,7 +329,8 @@ class _WeekStrip extends ConsumerWidget {
             fontFeatures: const [FontFeature.tabularFigures()],
           ),
         ),
-      ],
+        ],
+      ),
     );
   }
 }

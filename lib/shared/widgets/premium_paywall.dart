@@ -145,7 +145,7 @@ class ProLockPill extends StatelessWidget {
   Widget build(BuildContext context) {
     return Semantics(
       button: true,
-      label: 'Unlock full history with GymLog Pro',
+      label: 'Premium feature. Double tap to learn more.',
       child: GestureDetector(
         onTap: () => showPremiumPaywall(context),
         behavior: HitTestBehavior.opaque,

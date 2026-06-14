@@ -793,7 +793,16 @@ class _ImportPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
+    return Semantics(
+      button: true,
+      enabled: !imported && !importing,
+      label: importing
+          ? 'Adding routine'
+          : imported
+              ? 'Added to your routines'
+              : 'Add this routine',
+      excludeSemantics: true,
+      child: Material(
       color: imported
           ? AppColors.success.withValues(alpha: 0.14)
           : AppColors.accentPrimary,
@@ -832,6 +841,7 @@ class _ImportPill extends StatelessWidget {
                   ],
                 ),
         ),
+      ),
       ),
     );
   }
