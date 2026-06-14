@@ -3,6 +3,11 @@ import java.util.Properties
 
 plugins {
     id("com.android.application")
+    // Kotlin Android plugin — provides the `kotlin { compilerOptions { … } }`
+    // extension used below. Without it the Kotlin DSL can't generate the
+    // `kotlin {}` accessor and the build fails to compile this script.
+    // Version is managed centrally in android/settings.gradle.kts.
+    id("org.jetbrains.kotlin.android")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
     id("io.sentry.android.gradle")

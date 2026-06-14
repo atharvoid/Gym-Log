@@ -2,6 +2,7 @@ import 'package:drift/drift.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../../core/database/database.dart';
+import '../../../core/exercises/exercise_naming.dart';
 import '../domain/import_models.dart';
 import 'exercise_matcher.dart';
 import 'workout_csv_parser.dart';
@@ -78,7 +79,31 @@ class WorkoutImportService {
 
     // 1) Resolve every distinct exercise name to a catalog id, creating
     //    custom exercises (once each) for anything unmatched.
-    final matcher = await _buildMatcher();
+    final all = await _db.exercisesDao.getAllExercises();
+    final matcher =
+        ExerciseMatcher(all.map((e) => ExerciseRef(e.id, e.name)));
+
+    // Muscle hints keyed by movement family (catalog entries only), so a
+    // custom we must create inherits the correct muscle split instead of
+    // being tagged "other" — e.g. an unstocked "Incline Bench Press (Machine)"
+    // borrows Chest/Triceps from the barbell/dumbbell incline-press family.
+    final muscleHint = <String,
+        ({String bodyPart, String target, String? secondary, String equipment})>{};
+    for (final e in all) {
+      if (e.isCustom) continue;
+      final k = ExerciseNaming.movementKey(e.name);
+      if (k.isNotEmpty) {
+        muscleHint.putIfAbsent(
+            k,
+            () => (
+                  bodyPart: e.bodyPart,
+                  target: e.target,
+                  secondary: e.secondaryMuscles,
+                  equipment: e.equipment,
+                ));
+      }
+    }
+
     final resolved = <String, int>{}; // lower-cased name → exercise id
     final created = <String>[];
     var matched = 0;
@@ -93,10 +118,16 @@ class WorkoutImportService {
         matched++;
         return hit;
       }
+      final hint = muscleHint[ExerciseNaming.movementKey(name)];
+      var equipment = _equipmentFromName(name);
+      if (equipment == 'other' && hint != null) equipment = hint.equipment;
       final id = await _db.exercisesDao.createCustomExercise(
         name.trim(),
         userId: userId,
-        equipment: _equipmentFromName(name),
+        equipment: equipment,
+        bodyPart: hint?.bodyPart ?? 'other',
+        target: hint?.target ?? 'other',
+        secondaryMusclesJson: hint?.secondary,
       );
       resolved[key] = id;
       created.add(name.trim());

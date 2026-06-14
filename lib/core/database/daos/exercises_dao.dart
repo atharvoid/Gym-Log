@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../config/env.dart';
+import '../../exercises/exercise_naming.dart';
 import '../database.dart';
 import '../tables/exercises_table.dart';
 
@@ -67,23 +68,109 @@ class ExercisesDao extends DatabaseAccessor<AppDatabase>
   ///
   /// Used by CSV import when an incoming exercise name has no match in the
   /// bundled catalog — keeping the import lossless. [exerciseDbId] stays null
-  /// (no GIF), [isCustom] is set, and [createdBy] records the owner.
+  /// (no GIF), [isCustom] is set, and [createdBy] records the owner. Callers
+  /// pass an inferred muscle split when one is available (see import service)
+  /// so the exercise is never needlessly tagged "other".
   Future<int> createCustomExercise(
     String name, {
     required String userId,
     String bodyPart = 'other',
     String equipment = 'other',
     String target = 'other',
+    String? secondaryMusclesJson,
   }) {
     return into(exercises).insert(ExercisesCompanion.insert(
       name: name,
       bodyPart: bodyPart,
       equipment: equipment,
       target: target,
+      secondaryMuscles: Value(secondaryMusclesJson),
       isCustom: const Value(true),
       createdBy: Value(userId),
       seededAt: Value(DateTime.now()),
     ));
+  }
+
+  /// Reconciles user/import-created custom exercises against the canonical
+  /// catalog. Runs once after hydration. For each custom exercise:
+  ///
+  ///   • If a catalog entry now represents the same movement (exact name,
+  ///     movement+equipment, or an unambiguous movement match), the custom is
+  ///     MERGED: its workout history is re-pointed to the catalog exercise and
+  ///     the duplicate row is deleted. This removes the duplicates that earlier
+  ///     imports created before the catalog used standard names.
+  ///   • Otherwise, if the custom is still tagged "other", its muscle split is
+  ///     back-filled from the same movement family in the catalog.
+  ///
+  /// Integer ids are only ever merged toward catalog rows, so foreign keys in
+  /// workout_exercises / workout_sets stay valid throughout.
+  Future<({int merged, int retagged})> reconcileCustomExercises() async {
+    final customs =
+        await (select(exercises)..where((t) => t.isCustom.equals(true))).get();
+    if (customs.isEmpty) return (merged: 0, retagged: 0);
+
+    final catalog =
+        await (select(exercises)..where((t) => t.isCustom.equals(false))).get();
+
+    final byExact = <String, int>{};
+    final byMoveEquip = <String, int>{};
+    final byMove = <String, List<int>>{};
+    final hint = <String, Exercise>{};
+    for (final e in catalog) {
+      byExact.putIfAbsent(e.name.trim().toLowerCase(), () => e.id);
+      final mk = ExerciseNaming.movementKey(e.name);
+      if (mk.isEmpty) continue;
+      byMoveEquip.putIfAbsent(
+          '$mk|${ExerciseNaming.equipClassFromName(e.name)}', () => e.id);
+      (byMove[mk] ??= <int>[]).add(e.id);
+      hint.putIfAbsent(mk, () => e);
+    }
+
+    var merged = 0;
+    var retagged = 0;
+    await transaction(() async {
+      for (final c in customs) {
+        final mk = ExerciseNaming.movementKey(c.name);
+        int? canonical = byExact[c.name.trim().toLowerCase()] ??
+            byMoveEquip['$mk|${ExerciseNaming.equipClassFromName(c.name)}'];
+        if (canonical == null && mk.isNotEmpty) {
+          final list = byMove[mk];
+          if (list != null && list.length == 1) canonical = list.first;
+        }
+
+        if (canonical != null && canonical != c.id) {
+          // Merge: re-point history, then delete the duplicate custom row.
+          await customUpdate(
+            'UPDATE workout_exercises SET exercise_id = ? WHERE exercise_id = ?',
+            variables: [Variable.withInt(canonical), Variable.withInt(c.id)],
+            updates: {attachedDatabase.workoutExercises},
+            updateKind: UpdateKind.update,
+          );
+          await customUpdate(
+            'UPDATE workout_sets SET exercise_id = ? WHERE exercise_id = ?',
+            variables: [Variable.withInt(canonical), Variable.withInt(c.id)],
+            updates: {attachedDatabase.workoutSets},
+            updateKind: UpdateKind.update,
+          );
+          await (delete(exercises)..where((t) => t.id.equals(c.id))).go();
+          merged++;
+        } else if (c.target.trim().toLowerCase() == 'other' ||
+            c.target.trim().isEmpty) {
+          final h = hint[mk];
+          if (h != null) {
+            await (update(exercises)..where((t) => t.id.equals(c.id))).write(
+              ExercisesCompanion(
+                bodyPart: Value(h.bodyPart),
+                target: Value(h.target),
+                secondaryMuscles: Value(h.secondaryMuscles),
+              ),
+            );
+            retagged++;
+          }
+        }
+      }
+    });
+    return (merged: merged, retagged: retagged);
   }
 
   // ── Hydration Engine ───────────────────────────────────────────────────────
@@ -140,6 +227,14 @@ class ExercisesDao extends DatabaseAccessor<AppDatabase>
           );
         }
       });
+
+      // Merge any duplicate custom exercises that earlier imports created
+      // before the catalog used standard names, and back-fill "other" muscles.
+      final rec = await reconcileCustomExercises();
+      if (rec.merged > 0 || rec.retagged > 0) {
+        debugPrint('[ExercisesDao] Reconciled customs: '
+            '${rec.merged} merged, ${rec.retagged} re-tagged.');
+      }
 
       await prefs.setBool(_kHydrationKey, true);
       await prefs.remove('exercises_hydrated_v2');

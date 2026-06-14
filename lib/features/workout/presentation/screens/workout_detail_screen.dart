@@ -4,7 +4,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:gymlog/core/theme/app_colors.dart';
+import 'package:gymlog/core/exercises/muscle_split.dart';
 import 'package:gymlog/core/utils/formatters.dart';
+import 'package:gymlog/shared/widgets/muscle_split_bar.dart';
 import 'package:gymlog/core/database/daos/workouts_dao.dart';
 import 'package:gymlog/core/database/database.dart';
 import 'package:gymlog/core/providers/database_provider.dart';
@@ -174,12 +176,17 @@ class WorkoutDetailScreen extends ConsumerWidget {
     final dateStr =
         '${weekdays[dt.weekday - 1]}, ${dt.day} ${months[dt.month - 1]} ${dt.year}';
 
-    // Muscle split — sets-per-target share, sums to 100%
-    final muscleSetCounts = <String, int>{};
+    // Muscle split — sets per PARENT muscle group (Chest, Back, Quadriceps…),
+    // so specific tags ("Upper Chest", "Lats") roll up into one readable slice
+    // that matches the muscle taxonomy used across the app. Sums to 100%.
+    final setsBySpecific = <String, int>{};
     for (final ex in workout.exercises) {
-      final target = ex.exerciseMetadata.target;
-      muscleSetCounts[target] = (muscleSetCounts[target] ?? 0) + ex.sets.length;
+      final target = ex.exerciseMetadata.target.trim();
+      if (target.isEmpty) continue;
+      setsBySpecific[target] =
+          (setsBySpecific[target] ?? 0) + ex.sets.length;
     }
+    final muscleSetCounts = groupMuscleSetsByParent(setsBySpecific);
 
     return CustomScrollView(
       physics: const BouncingScrollPhysics(),
@@ -585,7 +592,7 @@ class _HeroPip extends StatelessWidget {
 // ══════════════════════════════════════════════════════════════════════════════
 
 class _MuscleSplitSection extends StatelessWidget {
-  /// Map of target muscle name → set count for this session.
+  /// Map of PARENT muscle group → set count for this session.
   final Map<String, int> muscleSetCounts;
 
   const _MuscleSplitSection({required this.muscleSetCounts});
@@ -594,21 +601,11 @@ class _MuscleSplitSection extends StatelessWidget {
   Widget build(BuildContext context) {
     if (muscleSetCounts.isEmpty) return const SizedBox.shrink();
 
-    // Dominant muscle leftmost.
-    final sorted = muscleSetCounts.entries.toList()
-      ..sort((a, b) => b.value.compareTo(a.value));
-    final totalSets = sorted.fold<int>(0, (s, e) => s + e.value);
-    if (totalSets == 0) return const SizedBox.shrink();
-
-    Color colorFor(int rank) => AppColors.muscleSplitPalette[
-        rank.clamp(0, AppColors.muscleSplitPalette.length - 1)];
-
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 20, 16, 0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // ── Section label ─────────────────────────────────────────────────
           Text(
             'MUSCLE SPLIT',
             style: GoogleFonts.inter(
@@ -618,62 +615,9 @@ class _MuscleSplitSection extends StatelessWidget {
               letterSpacing: 0.8,
             ),
           ),
-          const SizedBox(height: 8),
-
-          // ── Legend: dot · muscle · % of total sets (Wrap never overflows) ──
-          Wrap(
-            spacing: 12,
-            runSpacing: 4,
-            children: [
-              for (var i = 0; i < sorted.length; i++)
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(
-                      width: 8,
-                      height: 8,
-                      decoration: BoxDecoration(
-                        color: colorFor(i),
-                        borderRadius: BorderRadius.circular(2),
-                      ),
-                    ),
-                    const SizedBox(width: 5),
-                    Text(
-                      '${sorted[i].key}  ${((sorted[i].value / totalSets) * 100).round()}%',
-                      style: GoogleFonts.inter(
-                        color: AppColors.textSecondary,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-            ],
-          ),
-          const SizedBox(height: 8),
-
-          // ── Single-line segmented bar — widths ∝ logged set counts ─────────
-          ClipRRect(
-            borderRadius: BorderRadius.circular(4),
-            child: SizedBox(
-              height: 8,
-              child: Row(
-                children: [
-                  for (var i = 0; i < sorted.length; i++)
-                    Expanded(
-                      // flex must be ≥ 1; stored set counts always are.
-                      flex: sorted[i].value < 1 ? 1 : sorted[i].value,
-                      child: Container(
-                        margin: i < sorted.length - 1
-                            ? const EdgeInsets.only(right: 1)
-                            : EdgeInsets.zero,
-                        color: colorFor(i),
-                      ),
-                    ),
-                ],
-              ),
-            ),
-          ),
+          const SizedBox(height: 10),
+          // Shared widget keeps legend, bar, colours and % perfectly in sync.
+          MuscleSplitBar(setCountsByGroup: muscleSetCounts),
         ],
       ),
     );

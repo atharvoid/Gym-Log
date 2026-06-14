@@ -78,4 +78,24 @@ void main() {
       expect(matcher.match(n), isNotNull, reason: '"$n" should link, not duplicate');
     }
   });
+
+  test('QA-corrected muscle tags hold (regression guard)', () {
+    Map<String, dynamic> byName(String n) =>
+        ex.firstWhere((e) => e['name'] == n, orElse: () => {});
+    // Corrections applied by the muscle data-QA pass.
+    expect(byName('Flutter Kicks')['target'], 'Abdominals');
+    expect(byName('Incline Pushdown (Cable)')['target'], 'Triceps');
+    expect(byName('Biceps Pull-Up')['target'], 'Lats');
+    expect(byName('Gripper')['target'], 'Forearms');
+    // Muscle-ups are a pulling movement → Back, not Chest.
+    for (final mu in const ['Muscle-Up (Bar)', 'Muscle-Up (Rings)',
+        'Banded Muscle-Up', 'Jumping Muscle-Up']) {
+      expect(byName(mu)['parent'], 'Back', reason: '$mu should be a Back movement');
+    }
+    // The whole catalog: every primary muscle maps to a real parent group.
+    for (final e in ex) {
+      expect(MuscleTaxonomy.parentOf(e['target'] as String), isNot('Other'),
+          reason: '${e['name']} has unmapped target ${e['target']}');
+    }
+  });
 }

@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:uuid/uuid.dart';
 import '../database.dart';
 import '../tables/workouts_table.dart';
+import '../../exercises/muscle_split.dart';
 import '../../../features/workout/domain/active_workout_state.dart';
 
 part 'workouts_dao.g.dart';
@@ -92,6 +93,9 @@ class WorkoutSessionPreview {
   final List<ExercisePreviewItem> topExercises;
   final int totalExerciseCount;
 
+  /// Set counts per PARENT muscle group for the session's muscle-split bar.
+  final Map<String, int> muscleGroupSets;
+
   const WorkoutSessionPreview({
     required this.session,
     required this.duration,
@@ -99,6 +103,7 @@ class WorkoutSessionPreview {
     required this.prCount,
     required this.topExercises,
     required this.totalExerciseCount,
+    this.muscleGroupSets = const {},
   });
 }
 
@@ -843,6 +848,39 @@ class WorkoutsDao extends DatabaseAccessor<AppDatabase>
           ));
     }
 
+    // ── Batch 3: muscle split — set counts per primary muscle per session ──
+    // Grouped to parent muscle groups in Dart (the taxonomy isn't in SQL).
+    final muscleRows = await customSelect(
+      '''
+      SELECT we.session_id AS session_id, e.target AS target,
+        COUNT(ws.id) AS set_count
+      FROM workout_exercises we
+      JOIN exercises e ON e.id = we.exercise_id
+      LEFT JOIN workout_sets ws ON ws.workout_exercise_id = we.id
+      WHERE we.session_id IN ($placeholders)
+      GROUP BY we.session_id, e.target
+      ''',
+      variables: idVars,
+      readsFrom: {workoutExercises, workoutSets, db.exercises},
+    ).get();
+
+    final setsBySpecific = <String, Map<String, int>>{};
+    for (final r in muscleRows) {
+      final sid = r.read<String>('session_id');
+      final target = (r.read<String?>('target') ?? '').trim();
+      final count = r.read<int>('set_count');
+      if (target.isEmpty || count <= 0) continue;
+      (setsBySpecific[sid] ??= <String, int>{}).update(
+        target,
+        (v) => v + count,
+        ifAbsent: () => count,
+      );
+    }
+    final muscleBySession = <String, Map<String, int>>{
+      for (final entry in setsBySpecific.entries)
+        entry.key: groupMuscleSetsByParent(entry.value),
+    };
+
     return [
       for (final session in sessions)
         WorkoutSessionPreview(
@@ -852,6 +890,7 @@ class WorkoutsDao extends DatabaseAccessor<AppDatabase>
           prCount: statsBySession[session.id]?.$2 ?? 0,
           topExercises: topBySession[session.id] ?? const [],
           totalExerciseCount: statsBySession[session.id]?.$1 ?? 0,
+          muscleGroupSets: muscleBySession[session.id] ?? const {},
         ),
     ];
   }
