@@ -18,6 +18,17 @@ Future<void> main() async {
   // 1. Initialize Flutter bindings
   WidgetsFlutterBinding.ensureInitialized();
 
+  // 1b. Bound the in-memory image cache. GymLog streams animated exercise
+  //     GIFs (each frame is a separate decoded bitmap), so the framework
+  //     default (1000 entries / 100 MiB) can spike on a long library scroll.
+  //     These are deliberate guardrails to keep peak memory predictable;
+  //     the exact ceiling is worth tuning against a DevTools memory timeline
+  //     on a low-RAM device. List thumbnails already decode downsized via
+  //     `memCacheWidth`, so a tighter byte cap will not thrash them.
+  PaintingBinding.instance.imageCache
+    ..maximumSize = 256
+    ..maximumSizeBytes = 80 << 20; // 80 MiB
+
   // 2. Wrap the entire startup in Sentry so crashes during init are captured.
   await SentryFlutter.init(
     (options) async {

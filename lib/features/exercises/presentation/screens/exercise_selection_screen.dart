@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -9,6 +11,7 @@ import 'package:gymlog/core/database/database.dart';
 import 'package:gymlog/features/auth/presentation/providers/auth_provider.dart';
 import 'package:gymlog/shared/widgets/exercise_gif_widget.dart';
 import '../providers/exercises_provider.dart';
+import '../widgets/create_exercise_dialog.dart';
 
 /// Live recent-exercise ids from workout history.
 final _recentExerciseIdsProvider = StreamProvider.autoDispose<List<int>>((ref) {
@@ -68,13 +71,40 @@ class ExerciseSelectionScreen extends ConsumerStatefulWidget {
 class _ExerciseSelectionScreenState
     extends ConsumerState<ExerciseSelectionScreen> {
   final _searchController = TextEditingController();
+  Timer? _searchDebounce;
   String? _muscleFilter;
   String? _equipmentFilter;
 
   @override
   void dispose() {
+    _searchDebounce?.cancel();
     _searchController.dispose();
     super.dispose();
+  }
+
+  /// Debounce the DB query by 150ms so a fast typist triggers one search after
+  /// they pause, not one per keystroke. The provider's epoch guard already
+  /// drops stale results; this also cuts redundant query + rebuild churn.
+  void _onSearchChanged(String query) {
+    setState(() {}); // refresh `isSearching` (Recent section) immediately
+    _searchDebounce?.cancel();
+    _searchDebounce = Timer(const Duration(milliseconds: 150), () {
+      ref.read(exerciseListProvider.notifier).search(query);
+    });
+  }
+
+  /// Opens the manual "create custom exercise" flow. Pre-fills the name with
+  /// the current search so a no-results search converts straight into a new
+  /// exercise. In selection mode, picking succeeds by popping with the new
+  /// exercise; in browse mode the list just refreshes (handled by the dialog).
+  Future<void> _createCustom() async {
+    final seed = _searchController.text.trim();
+    final created = await showCreateExerciseDialog(
+      context: context,
+      initialName: seed.isEmpty ? null : seed,
+    );
+    if (created == null || !mounted) return;
+    if (!widget.browse) Navigator.pop(context, created);
   }
 
   bool _matchesFilters(Exercise e) {
@@ -204,6 +234,13 @@ class _ExerciseSelectionScreenState
         backgroundColor: AppColors.bgBase,
         scrolledUnderElevation: 0,
         titleSpacing: 0, // title hugs the back button on every sub-screen
+        actions: [
+          IconButton(
+            tooltip: 'Create custom exercise',
+            icon: const Icon(Icons.add_rounded, color: AppColors.textPrimary),
+            onPressed: () => _createCustom(),
+          ),
+        ],
       ),
       body: Column(
         children: [
@@ -226,10 +263,7 @@ class _ExerciseSelectionScreenState
                 ),
                 contentPadding: const EdgeInsets.symmetric(horizontal: 16),
               ),
-              onChanged: (query) {
-                setState(() {}); // refresh isSearching
-                ref.read(exerciseListProvider.notifier).search(query);
-              },
+              onChanged: _onSearchChanged,
             ),
           ),
 
@@ -305,10 +339,27 @@ class _ExerciseSelectionScreenState
                         ),
                         const SizedBox(height: 3),
                         Text(
-                          'Try clearing a filter or changing the search.',
+                          isSearching
+                              ? "Not in the library? Add it yourself."
+                              : 'Try clearing a filter or changing the search.',
+                          textAlign: TextAlign.center,
                           style: GoogleFonts.inter(
                             color: AppColors.textSecondary,
                             fontSize: 12.5,
+                          ),
+                        ),
+                        const SizedBox(height: 14),
+                        TextButton.icon(
+                          onPressed: _createCustom,
+                          icon: const Icon(Icons.add_rounded,
+                              size: 18, color: AppColors.accentText),
+                          label: Text(
+                            'Create custom exercise',
+                            style: GoogleFonts.inter(
+                              color: AppColors.accentText,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                         ),
                       ],

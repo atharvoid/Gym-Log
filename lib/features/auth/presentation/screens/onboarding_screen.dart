@@ -92,7 +92,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 Text(
                   'Welcome to GymLog',
                   style: GoogleFonts.inter(
-                    color: AppColors.accentPrimary,
+                    // accentPrimary (#8A2BE2) is only ~3.2:1 on black — fails
+                    // AA. accentText (#B98CFF) is ~5.9:1 and on-brand.
+                    color: AppColors.accentText,
                     fontSize: 14,
                     fontWeight: FontWeight.w700,
                     letterSpacing: 0.2,

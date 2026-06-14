@@ -81,6 +81,26 @@ class AppDatabase extends _$AppDatabase {
         },
       );
 
+  /// Irreversibly deletes EVERY row in EVERY table — used by the account
+  /// deletion flow. Ordered child→parent so it holds with `foreign_keys=ON`
+  /// (PRAGMA toggles are no-ops inside a transaction, so correct order is the
+  /// guarantee). The bundled exercise catalog is re-seeded by the caller
+  /// afterwards (it clears the hydration flag, then calls hydrateFromJson),
+  /// so the app stays usable if the user signs in again.
+  Future<void> wipeAllData() async {
+    await transaction(() async {
+      await delete(workoutSets).go();
+      await delete(workoutExercises).go();
+      await delete(workoutSessions).go();
+      await delete(routineExercises).go();
+      await delete(routineDays).go();
+      await delete(routines).go();
+      await delete(syncOutbox).go();
+      await delete(exercises).go(); // catalog + user customs
+      await delete(userProfiles).go();
+    });
+  }
+
   static QueryExecutor _openConnection() {
     return LazyDatabase(() async {
       final dbFolder = await getApplicationDocumentsDirectory();

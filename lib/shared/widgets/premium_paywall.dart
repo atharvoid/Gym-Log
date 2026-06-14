@@ -23,6 +23,117 @@ Future<void> showPremiumPaywall(BuildContext context) {
   );
 }
 
+/// Upsell shown when a free user hits the routine cap ([kFreeRoutineLimit]).
+/// States the limit honestly and routes straight to the paywall — one flow,
+/// shared tokens. Free users keep every routine they already have.
+Future<void> showRoutineLimitUpsell(BuildContext context) {
+  HapticFeedback.mediumImpact();
+  return showModalBottomSheet<void>(
+    context: context,
+    useRootNavigator: true,
+    useSafeArea: true,
+    backgroundColor: Colors.transparent,
+    builder: (sheetCtx) => Container(
+      decoration: const BoxDecoration(
+        color: AppColors.bgSheet,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      child: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(24, 12, 24, 18),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 36,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF6A6A6A),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 22),
+              Container(
+                width: 44,
+                height: 44,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: AppColors.accentPrimary.withValues(alpha: 0.14),
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: const Icon(Icons.workspace_premium_rounded,
+                    color: Color(0xFFCBB2FF), size: 24),
+              ),
+              const SizedBox(height: 14),
+              Text(
+                'Routine limit reached',
+                style: GoogleFonts.inter(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: -0.3,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                'The free plan includes up to $kFreeRoutineLimit routines — '
+                'enough for a Push / Pull / Legs / Full-Body split. Upgrade to '
+                'Pro for unlimited routines and full analytics history.',
+                style: GoogleFonts.inter(
+                  fontSize: 14,
+                  height: 1.5,
+                  color: AppColors.textSecondary,
+                ),
+              ),
+              const SizedBox(height: 20),
+              SizedBox(
+                width: double.infinity,
+                height: 52,
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.of(sheetCtx).pop();
+                    showPremiumPaywall(context);
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.accentPrimary,
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14)),
+                  ),
+                  child: Text(
+                    'Unlock Unlimited Routines',
+                    style: GoogleFonts.inter(
+                        fontSize: 16, fontWeight: FontWeight.w700),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 4),
+              Center(
+                child: TextButton(
+                  onPressed: () => Navigator.of(sheetCtx).pop(),
+                  child: Text(
+                    'Not now',
+                    style: GoogleFonts.inter(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    ),
+  );
+}
+
 /// Small "PRO" lock pill used next to gated features.
 /// Subtle by design — a hint, not a banner. Tapping opens the paywall.
 class ProLockPill extends StatelessWidget {
