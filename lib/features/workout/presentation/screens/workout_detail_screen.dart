@@ -81,7 +81,7 @@ class WorkoutDetailScreen extends ConsumerWidget {
                   alignment: Alignment.center,
                   decoration: BoxDecoration(
                     color: AppColors.accentPrimary.withValues(alpha: 0.14),
-                    borderRadius: BorderRadius.circular(6),
+                    borderRadius: BorderRadius.circular(8),
                   ),
                   child: const Icon(Icons.cloud_off_rounded,
                       color: AppColors.textSecondary, size: 24),
@@ -658,7 +658,7 @@ class _DetailExerciseCard extends StatelessWidget {
         decoration: BoxDecoration(
           // North-star surface: gradient + hairline, matching Routine cards.
           gradient: RDStyles.cardGradient,
-          borderRadius: BorderRadius.circular(6),
+          borderRadius: BorderRadius.circular(8),
           border: RDStyles.hairlineBorder,
         ),
         clipBehavior: Clip.antiAlias,
@@ -724,7 +724,7 @@ class _ExerciseCardHeader extends StatelessWidget {
             width: 52,
             height: 52,
             fit: BoxFit.cover,
-            borderRadius: const BorderRadius.all(Radius.circular(6)),
+            borderRadius: const BorderRadius.all(Radius.circular(8)),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -872,7 +872,7 @@ class _DetailSetRow extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.15),
-        borderRadius: BorderRadius.circular(6),
+        borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -1009,7 +1009,7 @@ class _DeltaChip extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
       decoration: BoxDecoration(
         color: color.withValues(alpha: isPositive ? 0.12 : 0.06),
-        borderRadius: BorderRadius.circular(6),
+        borderRadius: BorderRadius.circular(8),
       ),
       child: Text(
         label,
@@ -1033,7 +1033,7 @@ class _PrBadge extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
       decoration: BoxDecoration(
         color: AppColors.warning.withValues(alpha: 0.15),
-        borderRadius: BorderRadius.circular(6),
+        borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,

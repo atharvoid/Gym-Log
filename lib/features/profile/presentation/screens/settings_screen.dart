@@ -36,7 +36,7 @@ Future<void> showWeeklyGoalSheet(BuildContext context, WidgetRef ref) async {
     builder: (sheetCtx) => Container(
       decoration: const BoxDecoration(
         color: Color(0xFF121212),
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
       ),
       child: SafeArea(
         top: false,

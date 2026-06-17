@@ -72,7 +72,7 @@ class WorkoutHistoryCardSkeleton extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       decoration: const BoxDecoration(
         color: AppColors.bgSurface,
-        borderRadius: BorderRadius.zero,
+        borderRadius: BorderRadius.all(Radius.circular(8)), // card skeleton: 8
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

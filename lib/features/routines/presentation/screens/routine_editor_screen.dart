@@ -315,7 +315,7 @@ class _RoutineEditorScreenState extends ConsumerState<RoutineEditorScreen> {
                                   scale: 1.0 + 0.03 * t,
                                   child: Material(
                                     color: Colors.transparent,
-                                    borderRadius: BorderRadius.circular(6),
+                                    borderRadius: BorderRadius.circular(8),
                                     child: child,
                                   ),
                                 );
@@ -365,9 +365,9 @@ class _RoutineEditorScreenState extends ConsumerState<RoutineEditorScreen> {
                   padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
                   child: Material(
                     color: AppColors.surfaceRaised,
-                    borderRadius: BorderRadius.circular(6),
+                    borderRadius: BorderRadius.circular(8),
                     child: InkWell(
-                      borderRadius: BorderRadius.circular(6),
+                      borderRadius: BorderRadius.circular(8),
                       onTap: _addExercises,
                       child: Container(
                         height: 50,
@@ -482,7 +482,7 @@ class _EditorExerciseCard extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         gradient: RDStyles.cardGradient,
-        borderRadius: BorderRadius.circular(6),
+        borderRadius: BorderRadius.circular(8),
         border: RDStyles.hairlineBorder,
       ),
       padding: const EdgeInsets.fromLTRB(12, 12, 4, 12),
@@ -505,14 +505,14 @@ class _EditorExerciseCard extends StatelessWidget {
             ),
           ),
           ClipRRect(
-            borderRadius: BorderRadius.circular(6),
+            borderRadius: BorderRadius.circular(8),
             child: ExerciseGifWidget(
               gifUrl: exercise.gifUrl,
               width: 44,
               height: 44,
               fit: BoxFit.cover,
               animate: false,
-              borderRadius: BorderRadius.zero,
+              borderRadius: BorderRadius.circular(8), // thumbnail: match ClipRRect (8)
             ),
           ),
           const SizedBox(width: 12),
@@ -623,7 +623,7 @@ class _StepperButton extends StatelessWidget {
               alignment: Alignment.center,
               decoration: BoxDecoration(
                 color: AppColors.surfaceRaised,
-                borderRadius: BorderRadius.circular(6),
+                borderRadius: BorderRadius.circular(8),
               ),
               child: Icon(
                 icon,

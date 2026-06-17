@@ -391,7 +391,7 @@ class _SetRowState extends State<SetRow> {
                         width: 32,
                         height: 32,
                         decoration: BoxDecoration(
-                          borderRadius: BorderRadius.zero,
+                          borderRadius: BorderRadius.circular(8), // completion control: rounded square (8)
                           // Three states: done = solid green, ready = green
                           // outline (invites the tap), idle = faint gray outline.
                           color: isCompleted

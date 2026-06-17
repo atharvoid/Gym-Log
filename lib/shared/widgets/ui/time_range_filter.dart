@@ -70,10 +70,10 @@ class TimeRangeFilter extends ConsumerWidget {
       builder: (sheetCtx) => Container(
         decoration: BoxDecoration(
           color: AppColors.bgSurface.withValues(alpha: 0.95),
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
         ),
         child: ClipRRect(
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
           child: BackdropFilter(
             filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
             child: Padding(
@@ -191,7 +191,7 @@ Future<T?> showBrandedPickerSheet<T>({
     builder: (sheetCtx) => Container(
       decoration: const BoxDecoration(
         color: Color(0xFF121212),
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
       ),
       child: SafeArea(
         top: false,
