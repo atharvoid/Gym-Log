@@ -34,7 +34,7 @@ class SecondaryButton extends StatelessWidget {
           elevation: 0,
           shadowColor: Colors.transparent,
           shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.zero,
+            borderRadius: BorderRadius.all(Radius.circular(4)), // secondary button: 4
             side: BorderSide(color: AppColors.hairline),
           ),
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),

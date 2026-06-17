@@ -133,7 +133,7 @@ class _ExerciseSelectionScreenState
       builder: (sheetCtx) => Container(
         decoration: const BoxDecoration(
           color: Color(0xFF121212),
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
         ),
         child: SafeArea(
           top: false,
@@ -147,7 +147,7 @@ class _ExerciseSelectionScreenState
                   height: 4,
                   decoration: BoxDecoration(
                     color: const Color(0xFF6A6A6A),
-                    borderRadius: BorderRadius.circular(6),
+                    borderRadius: BorderRadius.circular(8),
                   ),
                 ),
                 const SizedBox(height: 18),
@@ -258,7 +258,7 @@ class _ExerciseSelectionScreenState
                 filled: true,
                 fillColor: AppColors.bgSurface,
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(6),
+                  borderRadius: BorderRadius.circular(8),
                   borderSide: BorderSide.none,
                 ),
                 contentPadding: const EdgeInsets.symmetric(horizontal: 16),
@@ -407,7 +407,7 @@ class _ExerciseSelectionScreenState
                           fit: BoxFit.cover,
                           animate: false,
                           borderRadius:
-                              const BorderRadius.all(Radius.circular(6)),
+                              const BorderRadius.all(Radius.circular(8)),
                         ),
                       ),
                       title: Text(

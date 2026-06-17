@@ -23,7 +23,7 @@ class TrackerCard extends StatelessWidget {
     final card = Container(
       decoration: const BoxDecoration(
         color: AppColors.bgSurface,
-        borderRadius: BorderRadius.all(Radius.circular(6)),
+        borderRadius: BorderRadius.all(Radius.circular(8)),
       ),
       padding: padding ?? const EdgeInsets.all(16),
       child: child,
@@ -34,7 +34,7 @@ class TrackerCard extends StatelessWidget {
         color: Colors.transparent,
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(6),
+          borderRadius: BorderRadius.circular(8),
           child: card,
         ),
       );

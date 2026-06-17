@@ -52,7 +52,7 @@ class RoutineCard extends ConsumerWidget {
         padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3),
         decoration: BoxDecoration(
           color: Colors.transparent,
-          borderRadius: BorderRadius.circular(6),
+          borderRadius: BorderRadius.circular(8),
           border: Border.all(color: AppColors.hairline),
         ),
         child: Text(
@@ -89,7 +89,7 @@ class RoutineCard extends ConsumerWidget {
     return Container(
       decoration: BoxDecoration(
         gradient: RDStyles.cardGradient,
-        borderRadius: BorderRadius.circular(6),
+        borderRadius: BorderRadius.circular(8),
         border: RDStyles.hairlineBorder,
       ),
       clipBehavior: Clip.antiAlias,
@@ -115,7 +115,7 @@ class RoutineCard extends ConsumerWidget {
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
                         color: _glyphColor.withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(6),
+                        borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
                         routineName.isNotEmpty

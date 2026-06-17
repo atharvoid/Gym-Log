@@ -58,7 +58,7 @@ class _ActionBottomSheetContent extends StatelessWidget {
     return Container(
       decoration: const BoxDecoration(
         color: AppColors.bgSurface,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
       ),
       child: SafeArea(
         top: false,

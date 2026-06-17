@@ -79,7 +79,7 @@ final appTheme = ThemeData(
     color: AppColors.bgSurface,
     shadowColor: Colors.transparent,
     shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.zero,
+      borderRadius: BorderRadius.all(Radius.circular(8)), // cards: 8
     ),
   ),
 
@@ -87,15 +87,15 @@ final appTheme = ThemeData(
     filled: true,
     fillColor: AppColors.bgSurface,
     border: const OutlineInputBorder(
-      borderRadius: BorderRadius.zero,
+      borderRadius: BorderRadius.all(Radius.circular(4)), // inputs: 4
       borderSide: BorderSide(color: AppColors.hairline),
     ),
     enabledBorder: const OutlineInputBorder(
-      borderRadius: BorderRadius.zero,
+      borderRadius: BorderRadius.all(Radius.circular(4)), // inputs: 4
       borderSide: BorderSide(color: AppColors.hairline),
     ),
     focusedBorder: const OutlineInputBorder(
-      borderRadius: BorderRadius.zero,
+      borderRadius: BorderRadius.all(Radius.circular(4)), // inputs: 4
       // Focused input is an active state (Context 2) → copper.
       borderSide: BorderSide(color: AppColors.accentPrimary, width: 2),
     ),
@@ -113,9 +113,7 @@ final appTheme = ThemeData(
       foregroundColor: AppColors.bgBase, // black on copper (see onPrimary note)
       elevation: 0,
       shadowColor: Colors.transparent,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.zero,
-      ),
+      shape: const StadiumBorder(), // primary CTA: pill
       padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
       textStyle: _ctext(
         fontWeight: FontWeight.w700,

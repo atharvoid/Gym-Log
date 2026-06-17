@@ -48,17 +48,17 @@ class RoutineExerciseBlock extends StatelessWidget {
         children: [
           InkWell(
             onTap: onTap,
-            borderRadius: BorderRadius.circular(6),
+            borderRadius: BorderRadius.circular(8),
             child: Row(
               children: [
                 RepaintBoundary(
                   child: ClipRRect(
-                    borderRadius: BorderRadius.circular(6),
+                    borderRadius: BorderRadius.circular(8),
                     child: Container(
                       width: 52,
                       height: 52,
                       decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(6),
+                        borderRadius: BorderRadius.circular(8),
                         border: RDStyles.hairlineBorder,
                       ),
                       child: CachedNetworkImage(
@@ -247,7 +247,7 @@ class _SetTypeChip extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3),
         decoration: BoxDecoration(
           color: fg.withValues(alpha: 0.14),
-          borderRadius: BorderRadius.circular(6),
+          borderRadius: BorderRadius.circular(8),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,

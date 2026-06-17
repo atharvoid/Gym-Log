@@ -142,7 +142,7 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
         child: Container(
           decoration: const BoxDecoration(
             color: Color(0xFF121212),
-            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+            borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
           ),
           child: SafeArea(
             top: false,
@@ -155,7 +155,7 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
                   height: 4,
                   decoration: BoxDecoration(
                     color: const Color(0xFF6A6A6A),
-                    borderRadius: BorderRadius.circular(6),
+                    borderRadius: BorderRadius.circular(8),
                   ),
                 ),
                 const SizedBox(height: 20),
@@ -407,7 +407,7 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
                           height: 198,
                           decoration: BoxDecoration(
                             gradient: RDStyles.cardGradient,
-                            borderRadius: BorderRadius.circular(6),
+                            borderRadius: BorderRadius.circular(8),
                             border: RDStyles.hairlineBorder,
                           ),
                           child: const Center(
@@ -486,9 +486,9 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
                 padding: const EdgeInsets.fromLTRB(16, 20, 16, 0),
                 child: Material(
                   color: AppColors.surfaceRaised,
-                  borderRadius: BorderRadius.circular(6),
+                  borderRadius: BorderRadius.circular(8),
                   child: InkWell(
-                    borderRadius: BorderRadius.circular(6),
+                    borderRadius: BorderRadius.circular(8),
                     onTap: _addExercise,
                     child: Container(
                       height: 50,
@@ -726,7 +726,7 @@ class _SheetActionRow extends StatelessWidget {
                   alignment: Alignment.center,
                   decoration: BoxDecoration(
                     color: iconBackground,
-                    borderRadius: BorderRadius.circular(6),
+                    borderRadius: BorderRadius.circular(8),
                   ),
                   child: Icon(icon, color: iconColor, size: 20),
                 ),

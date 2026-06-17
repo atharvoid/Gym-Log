@@ -486,7 +486,7 @@ class _Card extends StatelessWidget {
   Widget build(BuildContext context) => Container(
         decoration: BoxDecoration(
           gradient: RDStyles.cardGradient,
-          borderRadius: BorderRadius.circular(6),
+          borderRadius: BorderRadius.circular(8),
           border: RDStyles.hairlineBorder,
         ),
         clipBehavior: Clip.antiAlias,
@@ -539,9 +539,9 @@ class _PrimaryButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Material(
         color: AppColors.accentPrimary,
-        borderRadius: BorderRadius.circular(6),
+        borderRadius: BorderRadius.circular(8),
         child: InkWell(
-          borderRadius: BorderRadius.circular(6),
+          borderRadius: BorderRadius.circular(8),
           onTap: onTap,
           child: Container(
             height: 54,
@@ -572,7 +572,7 @@ class _Banner extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         decoration: BoxDecoration(
           color: color.withValues(alpha: 0.08),
-          borderRadius: BorderRadius.circular(6),
+          borderRadius: BorderRadius.circular(8),
           border: Border.all(color: color.withValues(alpha: 0.22), width: 1),
         ),
         child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -599,7 +599,7 @@ class _IconBadge extends StatelessWidget {
         height: 52,
         decoration: BoxDecoration(
           color: AppColors.accentPrimary.withValues(alpha: 0.12),
-          borderRadius: BorderRadius.circular(6),
+          borderRadius: BorderRadius.circular(8),
         ),
         child: Icon(icon, color: AppColors.textSecondary, size: 26),
       );
@@ -615,7 +615,7 @@ class _SourceChips extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
             decoration: BoxDecoration(
               gradient: RDStyles.cardGradient,
-              borderRadius: BorderRadius.circular(6),
+              borderRadius: BorderRadius.circular(8),
               border: RDStyles.hairlineBorder,
             ),
             child: Row(children: [
@@ -688,7 +688,7 @@ class _UnitChooser extends StatelessWidget {
             alignment: Alignment.center,
             decoration: BoxDecoration(
               color: active ? AppColors.accentPrimary : Colors.transparent,
-              borderRadius: BorderRadius.circular(6),
+              borderRadius: BorderRadius.circular(8),
             ),
             child: Text(label,
                 style: GoogleFonts.inter(
@@ -704,7 +704,7 @@ class _UnitChooser extends StatelessWidget {
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         gradient: RDStyles.cardGradient,
-        borderRadius: BorderRadius.circular(6),
+        borderRadius: BorderRadius.circular(8),
         border: RDStyles.hairlineBorder,
       ),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -718,7 +718,7 @@ class _UnitChooser extends StatelessWidget {
           padding: const EdgeInsets.all(3),
           decoration: BoxDecoration(
             color: Colors.black.withValues(alpha: 0.30),
-            borderRadius: BorderRadius.circular(6),
+            borderRadius: BorderRadius.circular(8),
           ),
           child: Row(children: [chip('kg', 'Kilograms'), chip('lbs', 'Pounds')]),
         ),
