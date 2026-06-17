@@ -148,7 +148,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 16),
             decoration: BoxDecoration(
               gradient: RDStyles.cardGradient,
-              borderRadius: BorderRadius.circular(18),
+              borderRadius: BorderRadius.circular(6),
               border: RDStyles.hairlineBorder,
             ),
             child: Row(
@@ -253,7 +253,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           Container(
             decoration: BoxDecoration(
               gradient: RDStyles.cardGradient,
-              borderRadius: BorderRadius.circular(18),
+              borderRadius: BorderRadius.circular(6),
               border: RDStyles.hairlineBorder,
             ),
             clipBehavior: Clip.antiAlias,

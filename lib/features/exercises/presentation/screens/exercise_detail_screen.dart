@@ -303,7 +303,7 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
                 decoration: BoxDecoration(
                   color:
                       isActive ? AppColors.accentPrimary : AppColors.bgSurface,
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(
                   entry.value,
@@ -356,7 +356,7 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
         Container(
           decoration: BoxDecoration(
             color: AppColors.bgSurface,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(6),
           ),
           child: Column(
             children: [
@@ -447,7 +447,7 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
         Container(
           decoration: BoxDecoration(
             color: AppColors.bgSurface,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(6),
           ),
           child: Column(
             children: steps.asMap().entries.map((entry) {

@@ -449,7 +449,7 @@ class _ReorderExercisesSheetState extends State<_ReorderExercisesSheet> {
             height: 4,
             decoration: BoxDecoration(
               color: const Color(0xFF6A6A6A),
-              borderRadius: BorderRadius.circular(2),
+              borderRadius: BorderRadius.circular(6),
             ),
           ),
           const SizedBox(height: 16),
@@ -494,7 +494,7 @@ class _ReorderExercisesSheetState extends State<_ReorderExercisesSheet> {
                   child: Container(
                     decoration: BoxDecoration(
                       color: AppColors.surfaceRaised,
-                      borderRadius: BorderRadius.circular(14),
+                      borderRadius: BorderRadius.circular(6),
                     ),
                     padding: const EdgeInsets.fromLTRB(16, 14, 8, 14),
                     child: Row(
@@ -506,7 +506,7 @@ class _ReorderExercisesSheetState extends State<_ReorderExercisesSheet> {
                           decoration: BoxDecoration(
                             color: AppColors.accentPrimary
                                 .withValues(alpha: 0.14),
-                            borderRadius: BorderRadius.circular(8),
+                            borderRadius: BorderRadius.circular(6),
                           ),
                           child: Text(
                             '${index + 1}',

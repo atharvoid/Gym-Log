@@ -29,7 +29,7 @@ class AppErrorScreen extends StatelessWidget {
                   alignment: Alignment.center,
                   decoration: BoxDecoration(
                     color: AppColors.accentPrimary.withValues(alpha: 0.14),
-                    borderRadius: BorderRadius.circular(18),
+                    borderRadius: BorderRadius.zero,
                   ),
                   child: const Icon(
                     Icons.fitness_center_rounded,

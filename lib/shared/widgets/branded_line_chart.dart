@@ -123,7 +123,7 @@ class _BrandedLineChartState extends State<BrandedLineChart> {
       padding: const EdgeInsets.fromLTRB(14, 16, 14, 8),
       decoration: BoxDecoration(
         gradient: RDStyles.cardGradient,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.zero,
         border: RDStyles.hairlineBorder,
       ),
       child: Column(
@@ -312,7 +312,7 @@ class _BrandedLineChartState extends State<BrandedLineChart> {
         height: 150,
         decoration: BoxDecoration(
           gradient: RDStyles.cardGradient,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.zero,
           border: RDStyles.hairlineBorder,
         ),
         child: Column(
@@ -330,7 +330,7 @@ class _BrandedLineChartState extends State<BrandedLineChart> {
                       height: 34 * h,
                       margin: const EdgeInsets.symmetric(horizontal: 2.5),
                       decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(3),
+                        borderRadius: BorderRadius.zero,
                         gradient: const LinearGradient(
                           begin: Alignment.topCenter,
                           end: Alignment.bottomCenter,

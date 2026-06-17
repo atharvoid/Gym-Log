@@ -600,7 +600,7 @@ class _TemplateCard extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         gradient: RDStyles.cardGradient,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(6),
         border: RDStyles.hairlineBorder,
       ),
       padding: const EdgeInsets.fromLTRB(15, 14, 15, 13),
@@ -616,7 +616,7 @@ class _TemplateCard extends StatelessWidget {
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
                   color: template.accent.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(
                   template.name[0],
@@ -731,7 +731,7 @@ class _LevelPill extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.transparent,
         border: Border.all(color: AppColors.hairline),
-        borderRadius: BorderRadius.circular(7),
+        borderRadius: BorderRadius.circular(6),
       ),
       child: Text(
         label,

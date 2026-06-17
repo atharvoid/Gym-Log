@@ -149,7 +149,7 @@ class _CreateExerciseDialogState extends ConsumerState<_CreateExerciseDialog> {
   Widget build(BuildContext context) {
     return Dialog(
       backgroundColor: AppColors.bgSheet,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.zero),
       insetPadding: const EdgeInsets.symmetric(horizontal: 28, vertical: 24),
       child: Padding(
         padding: const EdgeInsets.fromLTRB(22, 22, 22, 14),
@@ -279,11 +279,11 @@ class _CreateExerciseDialogState extends ConsumerState<_CreateExerciseDialog> {
         contentPadding:
             const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.zero,
           borderSide: BorderSide.none,
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.zero,
           borderSide:
               const BorderSide(color: AppColors.accentPrimary, width: 1.5),
         ),
@@ -304,14 +304,14 @@ class _Dropdown extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 14),
       decoration: BoxDecoration(
         color: AppColors.surfaceRaised,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.zero,
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<String>(
           value: value,
           isExpanded: true,
           dropdownColor: AppColors.surfaceRaised,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.zero,
           icon: const Icon(Icons.keyboard_arrow_down_rounded,
               color: AppColors.textSecondary),
           style:

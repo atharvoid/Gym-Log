@@ -147,7 +147,7 @@ class _ExerciseSelectionScreenState
                   height: 4,
                   decoration: BoxDecoration(
                     color: const Color(0xFF6A6A6A),
-                    borderRadius: BorderRadius.circular(2),
+                    borderRadius: BorderRadius.circular(6),
                   ),
                 ),
                 const SizedBox(height: 18),
@@ -258,7 +258,7 @@ class _ExerciseSelectionScreenState
                 filled: true,
                 fillColor: AppColors.bgSurface,
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(6),
                   borderSide: BorderSide.none,
                 ),
                 contentPadding: const EdgeInsets.symmetric(horizontal: 16),
@@ -407,7 +407,7 @@ class _ExerciseSelectionScreenState
                           fit: BoxFit.cover,
                           animate: false,
                           borderRadius:
-                              const BorderRadius.all(Radius.circular(10)),
+                              const BorderRadius.all(Radius.circular(6)),
                         ),
                       ),
                       title: Text(

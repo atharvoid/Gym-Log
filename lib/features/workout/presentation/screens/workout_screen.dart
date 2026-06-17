@@ -276,7 +276,7 @@ class _ActionButton extends StatelessWidget {
         color: primary
             ? AppColors.accentPrimary.withValues(alpha: 0.12)
             : AppColors.surfaceRaised,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(6),
         border: primary
             ? Border.all(
                 color: AppColors.accentPrimary.withValues(alpha: 0.45),

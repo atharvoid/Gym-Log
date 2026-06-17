@@ -40,7 +40,7 @@ class TimeRangeFilter extends ConsumerWidget {
           alignment: Alignment.center,
           decoration: BoxDecoration(
             color: AppColors.surfaceRaised,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(999),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
@@ -87,7 +87,7 @@ class TimeRangeFilter extends ConsumerWidget {
                       height: 4,
                       decoration: BoxDecoration(
                         color: AppColors.textSecondary.withValues(alpha: 0.2),
-                        borderRadius: BorderRadius.circular(2),
+                        borderRadius: BorderRadius.circular(999),
                       ),
                     ),
                   ),
@@ -205,7 +205,7 @@ Future<T?> showBrandedPickerSheet<T>({
                 height: 4,
                 decoration: BoxDecoration(
                   color: const Color(0xFF6A6A6A),
-                  borderRadius: BorderRadius.circular(2),
+                  borderRadius: BorderRadius.circular(999),
                 ),
               ),
               const SizedBox(height: 18),
@@ -230,7 +230,7 @@ Future<T?> showBrandedPickerSheet<T>({
                       return Material(
                         color: Colors.transparent,
                         child: InkWell(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(999),
                           onTap: () {
                             HapticFeedback.selectionClick();
                             Navigator.of(sheetCtx).pop(opt.value);
@@ -246,7 +246,7 @@ Future<T?> showBrandedPickerSheet<T>({
                                   alignment: Alignment.center,
                                   decoration: BoxDecoration(
                                     color: opt.color.withValues(alpha: 0.14),
-                                    borderRadius: BorderRadius.circular(11),
+                                    borderRadius: BorderRadius.circular(999),
                                   ),
                                   child: Icon(opt.icon,
                                       size: 18, color: opt.color),

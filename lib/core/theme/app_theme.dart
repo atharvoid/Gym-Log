@@ -79,7 +79,7 @@ final appTheme = ThemeData(
     color: AppColors.bgSurface,
     shadowColor: Colors.transparent,
     shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.all(Radius.circular(12)),
+      borderRadius: BorderRadius.zero,
     ),
   ),
 
@@ -87,15 +87,15 @@ final appTheme = ThemeData(
     filled: true,
     fillColor: AppColors.bgSurface,
     border: const OutlineInputBorder(
-      borderRadius: BorderRadius.all(Radius.circular(12)),
-      borderSide: BorderSide.none,
+      borderRadius: BorderRadius.zero,
+      borderSide: BorderSide(color: AppColors.hairline),
     ),
     enabledBorder: const OutlineInputBorder(
-      borderRadius: BorderRadius.all(Radius.circular(12)),
-      borderSide: BorderSide.none,
+      borderRadius: BorderRadius.zero,
+      borderSide: BorderSide(color: AppColors.hairline),
     ),
     focusedBorder: const OutlineInputBorder(
-      borderRadius: BorderRadius.all(Radius.circular(12)),
+      borderRadius: BorderRadius.zero,
       // Focused input is an active state (Context 2) → copper.
       borderSide: BorderSide(color: AppColors.accentPrimary, width: 2),
     ),
@@ -114,7 +114,7 @@ final appTheme = ThemeData(
       elevation: 0,
       shadowColor: Colors.transparent,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.all(Radius.circular(12)),
+        borderRadius: BorderRadius.zero,
       ),
       padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
       textStyle: _ctext(

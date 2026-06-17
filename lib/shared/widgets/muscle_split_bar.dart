@@ -54,7 +54,7 @@ class MuscleSplitBar extends StatelessWidget {
                       height: dotSize,
                       decoration: BoxDecoration(
                         color: slices[i].color,
-                        borderRadius: BorderRadius.circular(2),
+                        borderRadius: BorderRadius.zero,
                       ),
                     ),
                     const SizedBox(width: 5),
@@ -73,7 +73,7 @@ class MuscleSplitBar extends StatelessWidget {
           SizedBox(height: dense ? 7 : 8),
         ],
         ClipRRect(
-          borderRadius: BorderRadius.circular(4),
+          borderRadius: BorderRadius.zero,
           child: SizedBox(
             height: barHeight,
             child: Row(

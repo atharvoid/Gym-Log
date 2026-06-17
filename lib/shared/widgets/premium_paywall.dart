@@ -52,7 +52,7 @@ Future<void> showRoutineLimitUpsell(BuildContext context) {
                   height: 4,
                   decoration: BoxDecoration(
                     color: const Color(0xFF6A6A6A),
-                    borderRadius: BorderRadius.circular(2),
+                    borderRadius: BorderRadius.circular(6),
                   ),
                 ),
               ),
@@ -63,7 +63,7 @@ Future<void> showRoutineLimitUpsell(BuildContext context) {
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
                   color: AppColors.accentPrimary.withValues(alpha: 0.14),
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: BorderRadius.circular(6),
                 ),
                 child: const Icon(Icons.workspace_premium_rounded,
                     color: AppColors.textSecondary, size: 24),
@@ -103,7 +103,7 @@ Future<void> showRoutineLimitUpsell(BuildContext context) {
                     foregroundColor: Colors.white,
                     elevation: 0,
                     shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14)),
+                        borderRadius: BorderRadius.circular(6)),
                   ),
                   child: Text(
                     'Unlock Unlimited Routines',
@@ -331,7 +331,7 @@ class _PaywallSheetState extends ConsumerState<_PaywallSheet> {
                   height: 4,
                   decoration: BoxDecoration(
                     color: const Color(0xFF6A6A6A),
-                    borderRadius: BorderRadius.circular(2),
+                    borderRadius: BorderRadius.circular(6),
                   ),
                 ),
               ),
@@ -344,7 +344,7 @@ class _PaywallSheetState extends ConsumerState<_PaywallSheet> {
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
                   color: AppColors.accentPrimary.withValues(alpha: 0.14),
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: BorderRadius.circular(6),
                 ),
                 child: const Icon(Icons.workspace_premium_rounded,
                     color: AppColors.textSecondary, size: 24),
@@ -445,7 +445,7 @@ class _PaywallSheetState extends ConsumerState<_PaywallSheet> {
                       foregroundColor: Colors.white,
                       elevation: 0,
                       shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14)),
+                          borderRadius: BorderRadius.circular(6)),
                     ),
                     child: _purchasing
                         ? const SizedBox(
@@ -480,7 +480,7 @@ class _PaywallSheetState extends ConsumerState<_PaywallSheet> {
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
                     color: AppColors.surfaceRaised,
-                    borderRadius: BorderRadius.circular(14),
+                    borderRadius: BorderRadius.circular(6),
                   ),
                   child: Text(
                     'Pricing is unavailable right now. You are on the free '
@@ -573,7 +573,7 @@ class _PackageRow extends StatelessWidget {
             color: selected
                 ? AppColors.accentPrimary.withValues(alpha: 0.10)
                 : AppColors.surfaceRaised,
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(6),
             border: Border.all(
               color: selected
                   ? AppColors.accentPrimary.withValues(alpha: 0.55)

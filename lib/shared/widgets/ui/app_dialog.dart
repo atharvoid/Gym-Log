@@ -29,7 +29,7 @@ Future<bool> showAppConfirmDialog({
     useRootNavigator: true,
     builder: (dialogCtx) => Dialog(
       backgroundColor: const Color(0xFF121212),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.zero),
       child: Padding(
         padding: const EdgeInsets.fromLTRB(24, 24, 16, 12),
         child: Column(
@@ -124,7 +124,7 @@ Future<String?> showAppTextInputDialog({
 
       return Dialog(
         backgroundColor: const Color(0xFF121212),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.zero),
         child: Padding(
           padding: const EdgeInsets.fromLTRB(24, 24, 16, 12),
           child: Column(
@@ -161,11 +161,11 @@ Future<String?> showAppTextInputDialog({
                     contentPadding: const EdgeInsets.symmetric(
                         horizontal: 14, vertical: 12),
                     enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.zero,
                       borderSide: BorderSide.none,
                     ),
                     focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.zero,
                       borderSide: const BorderSide(
                           color: AppColors.accentPrimary, width: 1.5),
                     ),

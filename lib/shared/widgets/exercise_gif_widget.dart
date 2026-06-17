@@ -31,7 +31,7 @@ class ExerciseGifWidget extends StatelessWidget {
     this.width,
     this.height,
     this.fit = BoxFit.contain,
-    this.borderRadius = const BorderRadius.all(Radius.circular(12)),
+    this.borderRadius = const BorderRadius.all(Radius.circular(6)),
     this.animate = true,
   });
 

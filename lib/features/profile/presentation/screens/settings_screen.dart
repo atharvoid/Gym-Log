@@ -50,7 +50,7 @@ Future<void> showWeeklyGoalSheet(BuildContext context, WidgetRef ref) async {
                 height: 4,
                 decoration: BoxDecoration(
                   color: const Color(0xFF6A6A6A),
-                  borderRadius: BorderRadius.circular(2),
+                  borderRadius: BorderRadius.zero,
                 ),
               ),
               const SizedBox(height: 20),
@@ -90,7 +90,7 @@ Future<void> showWeeklyGoalSheet(BuildContext context, WidgetRef ref) async {
                           color: days == current
                               ? AppColors.accentPrimary
                               : AppColors.surfaceRaised,
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.zero,
                         ),
                         child: Text(
                           '$days',
@@ -339,7 +339,7 @@ class SettingsScreen extends ConsumerWidget {
           Material(
             color: Colors.transparent,
             child: InkWell(
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.zero,
               onTap: () async {
                 final confirmed = await showAppConfirmDialog(
                   context: context,
@@ -358,7 +358,7 @@ class SettingsScreen extends ConsumerWidget {
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
                   color: AppColors.error.withValues(alpha: 0.10),
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.zero,
                 ),
                 child: Text(
                   'Sign Out',
@@ -473,7 +473,7 @@ class _Group extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         gradient: RDStyles.cardGradient,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.zero,
         border: RDStyles.hairlineBorder,
       ),
       clipBehavior: Clip.antiAlias,

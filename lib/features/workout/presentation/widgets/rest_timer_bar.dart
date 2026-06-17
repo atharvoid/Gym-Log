@@ -42,7 +42,7 @@ class RestTimerBar extends ConsumerWidget {
                 end: Alignment.bottomCenter,
                 colors: [Color(0xFF15101D), Color(0xFF0B0B0D)],
               ),
-              borderRadius: BorderRadius.circular(18),
+              borderRadius: BorderRadius.circular(6),
               border: Border.all(
                 color: AppColors.accentPrimary.withValues(alpha: 0.30),
               ),

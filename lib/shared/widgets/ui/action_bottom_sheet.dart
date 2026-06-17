@@ -71,7 +71,7 @@ class _ActionBottomSheetContent extends StatelessWidget {
               height: 4,
               decoration: BoxDecoration(
                 color: AppColors.borderSubtle,
-                borderRadius: BorderRadius.circular(2),
+                borderRadius: BorderRadius.zero,
               ),
             ),
             const SizedBox(height: 20),
@@ -120,7 +120,7 @@ class _ActionSheetItemWidget extends StatelessWidget {
         color: Colors.transparent,
         child: InkWell(
           onTap: () => item.onTap(context),
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.zero,
           splashColor: AppColors.accentPrimary.withValues(alpha: 0.1),
           highlightColor: AppColors.accentPrimary.withValues(alpha: 0.04),
           child: SizedBox(
@@ -135,7 +135,7 @@ class _ActionSheetItemWidget extends StatelessWidget {
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
                       color: item.iconBackground,
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.zero,
                     ),
                     child: Icon(item.icon, color: item.iconColor, size: 20),
                   ),
