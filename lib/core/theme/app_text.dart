@@ -18,9 +18,8 @@ import 'app_colors.dart';
 /// same way elsewhere in this codebase, e.g. set_row.dart), so no `dart:ui`
 /// import is needed.
 abstract class AppText {
-  /// Inter numeric/character features — tabular figures + the alternate g.
-  static const List<FontFeature> kInterFeatures = <FontFeature>[
-    FontFeature.tabularFigures(),
+  static final List<FontFeature> kInterFeatures = <FontFeature>[
+    const FontFeature.tabularFigures(),
     FontFeature.stylisticSet(3), // ss03 — alternate single-story g
   ];
 
