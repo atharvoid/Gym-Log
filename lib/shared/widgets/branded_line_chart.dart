@@ -159,7 +159,7 @@ class _BrandedLineChartState extends State<BrandedLineChart> {
                   drawVerticalLine: false,
                   horizontalInterval: interval,
                   getDrawingHorizontalLine: (v) =>
-                      FlLine(color: RDStyles.hairline, strokeWidth: 1),
+                      FlLine(color: Colors.white.withValues(alpha: 0.15), strokeWidth: 1),
                 ),
                 borderData: FlBorderData(show: false),
                 titlesData: FlTitlesData(
@@ -211,26 +211,34 @@ class _BrandedLineChartState extends State<BrandedLineChart> {
                   enabled: true,
                   handleBuiltInTouches: true,
                   touchTooltipData: LineTouchTooltipData(
-                    getTooltipColor: (_) => Colors.transparent,
-                    tooltipPadding: EdgeInsets.zero,
-                    tooltipMargin: 0,
-                    getTooltipItems: (s) => s.map((_) => null).toList(),
+                    getTooltipColor: (_) => AppColors.bgSurface,
+                    tooltipRoundedRadius: 0,
+                    tooltipBorder: BorderSide(color: AppColors.hairline),
+                    tooltipPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    getTooltipItems: (s) => s.map((spot) => LineTooltipItem(
+                          widget.valueFormatter(spot.y),
+                          GoogleFonts.inter(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                            color: AppColors.textPrimary,
+                            fontFeatures: const [FontFeature.tabularFigures()],
+                          ),
+                        )).toList(),
                   ),
                   getTouchedSpotIndicator: (bar, idx) => idx
                       .map((i) => TouchedSpotIndicatorData(
-                            FlLine(
-                              color: AppColors.accentPrimary
-                                  .withValues(alpha: 0.25),
+                            const FlLine(
+                              color: AppColors.accentPrimary,
                               strokeWidth: 1,
                             ),
                             FlDotData(
                               show: true,
                               getDotPainter: (s, p, b, ix) =>
                                   FlDotCirclePainter(
-                                radius: 5.5,
+                                radius: 4,
                                 color: AppColors.accentPrimary,
-                                strokeWidth: 2.5,
-                                strokeColor: Colors.white,
+                                strokeWidth: 0,
+                                strokeColor: Colors.transparent,
                               ),
                             ),
                           ))
@@ -246,34 +254,23 @@ class _BrandedLineChartState extends State<BrandedLineChart> {
                   LineChartBarData(
                     spots: spots,
                     isCurved: false,
-                    color: AppColors.accentPrimary,
-                    barWidth: 2.5,
+                    color: Colors.white,
+                    barWidth: 2.0,
                     isStrokeCapRound: true,
                     dotData: FlDotData(
                       show: true,
                       getDotPainter: (spot, pct, bar, i) {
-                        // Only the SELECTED point (defaults to latest, moves
-                        // on tap) gets the emphasized ringed dot — no
-                        // permanent white ring decorating the last point.
                         final isSelected = i == selIndex;
                         return FlDotCirclePainter(
-                          radius: isSelected ? 5.5 : 3,
-                          color: AppColors.accentPrimary,
-                          strokeWidth: isSelected ? 2.5 : 0,
-                          strokeColor: Colors.white,
+                          radius: 4,
+                          color: isSelected ? AppColors.accentPrimary : Colors.transparent,
+                          strokeWidth: isSelected ? 0 : 1,
+                          strokeColor: isSelected ? Colors.transparent : Colors.white,
                         );
                       },
                     ),
                     belowBarData: BarAreaData(
-                      show: true,
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [
-                          AppColors.accentPrimary.withValues(alpha: 0.30),
-                          AppColors.accentPrimary.withValues(alpha: 0.02),
-                        ],
-                      ),
+                      show: false,
                     ),
                   ),
                 ],
