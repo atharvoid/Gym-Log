@@ -179,7 +179,7 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
                               fontWeight:
                                   primary ? FontWeight.w600 : FontWeight.w500,
                               color: primary
-                                  ? const Color(0xFFCBB2FF)
+                                  ? AppColors.textSecondary
                                   : AppColors.textSecondary,
                             ),
                           ),

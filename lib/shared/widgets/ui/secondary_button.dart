@@ -29,12 +29,13 @@ class SecondaryButton extends StatelessWidget {
       child: ElevatedButton(
         onPressed: onPressed,
         style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.bgSurface,
+          backgroundColor: Colors.transparent,
           foregroundColor: AppColors.textPrimary,
           elevation: 0,
           shadowColor: Colors.transparent,
           shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.all(Radius.circular(12)),
+            borderRadius: BorderRadius.zero,
+            side: BorderSide(color: AppColors.hairline),
           ),
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
         ),

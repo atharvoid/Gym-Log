@@ -71,11 +71,11 @@ abstract class AppColors {
   // PURPLE ON PURPOSE — recolored to white-at-varying-opacity in Commit 4.
   // Do NOT delete: the muscle-split bar references this and must keep compiling.
   static const muscleSplitPalette = [
-    Color(0xFF8A2BE2),
-    Color(0xFF7B68EE),
-    Color(0xFFB19CD9),
-    Color(0xFF4B0082),
-    Color(0xFF9932CC),
-    Color(0xFF5D3FD3),
+    Color(0xFFFFFFFF),
+    Color(0xB3FFFFFF),
+    Color(0x80FFFFFF),
+    Color(0x4DFFFFFF),
+    Color(0x26FFFFFF),
+    Color(0x0FFFFFFF),
   ];
 }

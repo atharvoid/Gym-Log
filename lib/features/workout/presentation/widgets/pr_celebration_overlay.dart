@@ -136,7 +136,7 @@ class _PrCelebrationState extends State<_PrCelebration>
                       ),
                       child: const Icon(
                         Icons.emoji_events_rounded,
-                        color: Color(0xFFCBB2FF),
+                        color: AppColors.copperLight,
                         size: 30,
                       ),
                     ),
@@ -214,7 +214,7 @@ class _PrCelebrationState extends State<_PrCelebration>
                                             style: GoogleFonts.inter(
                                               fontSize: 15,
                                               fontWeight: FontWeight.w700,
-                                              color: const Color(0xFFCBB2FF),
+                                              color: AppColors.copperLight,
                                             ),
                                           ),
                                           Text(
@@ -288,10 +288,10 @@ class _ConfettiPainter extends CustomPainter {
   static List<_Particle> _generate() {
     final rng = math.Random(7);
     const palette = [
-      Color(0xFF8A2BE2),
-      Color(0xFFB98CFF),
-      Color(0xFFCBB2FF),
-      Color(0xFF7B68EE),
+      AppColors.accentPrimary,
+      AppColors.copperLight,
+      AppColors.copperDark,
+      AppColors.accentPrimary,
       Color(0xFFFFFFFF),
       Color(0xFFFFCC00),
     ];

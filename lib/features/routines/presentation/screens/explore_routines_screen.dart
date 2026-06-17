@@ -69,11 +69,11 @@ class _RoutineTemplate {
 }
 
 // Category accents (kept inside the brand's purple family for cohesion).
-const _cPPL = Color(0xFF8A2BE2);
-const _cUL = Color(0xFF5D3FD3);
-const _cFull = Color(0xFFCBB2FF);
-const _cPower = Color(0xFF7B68EE);
-const _cBro = Color(0xFF9932CC);
+const _cPPL = AppColors.textPrimary;
+const _cUL = AppColors.textPrimary;
+const _cFull = AppColors.textPrimary;
+const _cPower = AppColors.textPrimary;
+const _cBro = AppColors.textPrimary;
 
 /// Display order for the grouped sections.
 const _categoryOrder = <String>[
@@ -729,27 +729,17 @@ class _LevelPill extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.14),
+        color: Colors.transparent,
+        border: Border.all(color: AppColors.hairline),
         borderRadius: BorderRadius.circular(7),
       ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: 6,
-            height: 6,
-            decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-          ),
-          const SizedBox(width: 5),
-          Text(
-            label,
-            style: GoogleFonts.inter(
-              fontSize: 11,
-              fontWeight: FontWeight.w600,
-              color: color,
-            ),
-          ),
-        ],
+      child: Text(
+        label,
+        style: GoogleFonts.inter(
+          fontSize: 11,
+          fontWeight: FontWeight.w600,
+          color: AppColors.textSecondary,
+        ),
       ),
     );
   }

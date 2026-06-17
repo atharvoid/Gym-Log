@@ -151,7 +151,7 @@ class TimeRangeFilter extends ConsumerWidget {
                               const Icon(
                                 Icons.lock_rounded,
                                 size: 14,
-                                color: Color(0xFFCBB2FF),
+                                color: AppColors.textSecondary,
                               )
                             else if (isSelected)
                               const Icon(

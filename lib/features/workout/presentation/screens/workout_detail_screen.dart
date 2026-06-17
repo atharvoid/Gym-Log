@@ -84,7 +84,7 @@ class WorkoutDetailScreen extends ConsumerWidget {
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: const Icon(Icons.cloud_off_rounded,
-                      color: Color(0xFFB98CFF), size: 24),
+                      color: AppColors.textSecondary, size: 24),
                 ),
                 const SizedBox(height: 16),
                 Text(

@@ -66,7 +66,7 @@ Future<void> showRoutineLimitUpsell(BuildContext context) {
                   borderRadius: BorderRadius.circular(14),
                 ),
                 child: const Icon(Icons.workspace_premium_rounded,
-                    color: Color(0xFFCBB2FF), size: 24),
+                    color: AppColors.textSecondary, size: 24),
               ),
               const SizedBox(height: 14),
               Text(
@@ -152,10 +152,10 @@ class ProLockPill extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
           decoration: BoxDecoration(
-            color: AppColors.accentPrimary.withValues(alpha: 0.14),
+            color: Colors.transparent,
             borderRadius: BorderRadius.circular(999),
             border: Border.all(
-              color: AppColors.accentPrimary.withValues(alpha: 0.30),
+              color: AppColors.hairline,
               width: 1,
             ),
           ),
@@ -163,7 +163,7 @@ class ProLockPill extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               const Icon(Icons.lock_rounded,
-                  size: 10, color: Color(0xFFCBB2FF)),
+                  size: 10, color: AppColors.textSecondary),
               const SizedBox(width: 4),
               Text(
                 label,
@@ -171,7 +171,7 @@ class ProLockPill extends StatelessWidget {
                   fontSize: 10,
                   fontWeight: FontWeight.w700,
                   letterSpacing: 0.6,
-                  color: const Color(0xFFCBB2FF),
+                  color: AppColors.textSecondary,
                 ),
               ),
             ],
@@ -347,7 +347,7 @@ class _PaywallSheetState extends ConsumerState<_PaywallSheet> {
                   borderRadius: BorderRadius.circular(14),
                 ),
                 child: const Icon(Icons.workspace_premium_rounded,
-                    color: Color(0xFFCBB2FF), size: 24),
+                    color: AppColors.textSecondary, size: 24),
               ),
               const SizedBox(height: 14),
               Text(
@@ -375,7 +375,7 @@ class _PaywallSheetState extends ConsumerState<_PaywallSheet> {
                   padding: const EdgeInsets.only(bottom: 14),
                   child: Row(
                     children: [
-                      Icon(icon, size: 19, color: const Color(0xFFB98CFF)),
+                      Icon(icon, size: 19, color: AppColors.textSecondary),
                       const SizedBox(width: 14),
                       Expanded(
                         child: Text(
@@ -607,7 +607,7 @@ class _PackageRow extends StatelessWidget {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
                   decoration: BoxDecoration(
-                    color: AppColors.accentPrimary.withValues(alpha: 0.16),
+                    color: AppColors.textPrimary.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(999),
                   ),
                   child: Text(
@@ -616,7 +616,7 @@ class _PackageRow extends StatelessWidget {
                       fontSize: 9.5,
                       fontWeight: FontWeight.w700,
                       letterSpacing: 0.5,
-                      color: const Color(0xFFCBB2FF),
+                      color: AppColors.textSecondary,
                     ),
                   ),
                 ),

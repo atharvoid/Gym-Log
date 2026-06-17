@@ -58,7 +58,7 @@ class RestTimerBar extends ConsumerWidget {
                       painter: _RestRingPainter(progress: state.progress),
                       child: const Center(
                         child: Icon(Icons.timer_outlined,
-                            size: 14, color: Color(0xFFCBB2FF)),
+                            size: 14, color: AppColors.textSecondary),
                       ),
                     ),
                   ),
@@ -145,7 +145,7 @@ class _RestAction extends StatelessWidget {
               fontSize: 13,
               fontWeight: FontWeight.w600,
               color:
-                  emphasized ? const Color(0xFFCBB2FF) : AppColors.textPrimary,
+                  emphasized ? AppColors.textSecondary : AppColors.textPrimary,
             ),
           ),
         ),

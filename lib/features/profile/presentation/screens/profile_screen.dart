@@ -83,7 +83,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 child: Text(
                   displayName.isNotEmpty ? displayName[0].toUpperCase() : 'A',
                   style: GoogleFonts.inter(
-                    color: const Color(0xFFB98CFF),
+                    color: AppColors.textSecondary,
                     fontSize: 20,
                     fontWeight: FontWeight.w700,
                   ),
@@ -135,7 +135,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       fontSize: 10.5,
                       fontWeight: FontWeight.w700,
                       letterSpacing: 0.6,
-                      color: const Color(0xFFCBB2FF),
+                      color: AppColors.textSecondary,
                     ),
                   ),
                 ),
@@ -198,7 +198,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     leading: const Icon(
                       Icons.fitness_center_rounded,
                       size: 16,
-                      color: Color(0xFFB98CFF),
+                      color: AppColors.textSecondary,
                     ),
                   ),
                 ),
@@ -261,7 +261,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               children: [
                 _ActionRow(
                   icon: Icons.workspace_premium_rounded,
-                  iconColor: const Color(0xFFCBB2FF),
+                  iconColor: AppColors.textSecondary,
                   title: isPremium ? 'GymLog Pro' : 'Upgrade to Pro',
                   subtitle: isPremium
                       ? 'Active — full history unlocked'

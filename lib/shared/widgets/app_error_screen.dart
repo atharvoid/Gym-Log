@@ -33,7 +33,7 @@ class AppErrorScreen extends StatelessWidget {
                   ),
                   child: const Icon(
                     Icons.fitness_center_rounded,
-                    color: Color(0xFFB98CFF),
+                    color: AppColors.textSecondary,
                     size: 26,
                   ),
                 ),
