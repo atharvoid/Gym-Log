@@ -315,9 +315,6 @@ class _RoutineEditorScreenState extends ConsumerState<RoutineEditorScreen> {
                                   scale: 1.0 + 0.03 * t,
                                   child: Material(
                                     color: Colors.transparent,
-                                    elevation: 10 * t,
-                                    shadowColor:
-                                        Colors.black.withValues(alpha: 0.45),
                                     borderRadius: BorderRadius.circular(6),
                                     child: child,
                                   ),

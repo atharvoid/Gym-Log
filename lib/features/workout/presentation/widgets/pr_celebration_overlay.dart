@@ -112,13 +112,6 @@ class _PrCelebrationState extends State<_PrCelebration>
                     color: AppColors.accentPrimary.withValues(alpha: 0.35),
                     width: 1,
                   ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppColors.accentPrimary.withValues(alpha: 0.25),
-                      blurRadius: 48,
-                      spreadRadius: -8,
-                    ),
-                  ],
                 ),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,

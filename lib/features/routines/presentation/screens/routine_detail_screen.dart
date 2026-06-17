@@ -659,15 +659,7 @@ class _StartRoutineButtonState extends State<_StartRoutineButton> {
           width: double.infinity,
           decoration: BoxDecoration(
             color: AppColors.accentPrimary,
-            borderRadius: BorderRadius.circular(6),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.accentPrimary.withValues(alpha: 0.35),
-                blurRadius: 24,
-                offset: const Offset(0, 8),
-                spreadRadius: -6,
-              ),
-            ],
+            borderRadius: BorderRadius.circular(999),
           ),
           child: Material(
             color: Colors.transparent,
