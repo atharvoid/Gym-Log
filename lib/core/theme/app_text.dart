@@ -74,6 +74,26 @@ abstract class AppText {
   /// Badge (PR): 11 / 600, amber.
   static TextStyle badge({Color color = AppColors.warning}) =>
       GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w600, color: color);
+
+  /// Card title (workout / routine card heading): 16 / 700.
+  static TextStyle cardTitle({Color color = AppColors.textPrimary}) =>
+      GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w700, color: color);
+
+  /// List-row label (exercise name inside a feed card): 14 / 600.
+  static TextStyle rowLabel({Color color = AppColors.textPrimary}) =>
+      GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600, color: color);
+
+  /// Compact stat value (history-card chips): 13 / 600, tabular.
+  static TextStyle statLabel({Color color = AppColors.textSecondary}) =>
+      GoogleFonts.inter(
+          fontSize: 13,
+          fontWeight: FontWeight.w600,
+          color: color,
+          fontFeatures: kTabular);
+
+  /// Secondary meta (counts like "3 sets"): 13 / 400.
+  static TextStyle meta({Color color = AppColors.textSecondary}) =>
+      GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w400, color: color);
 }
 
 /// Border-radius scale. Pill is deliberately NOT in the system — the largest
