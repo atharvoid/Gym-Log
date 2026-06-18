@@ -73,16 +73,17 @@ abstract class AppColors {
   // ── Charts ──────────────────────────────────────────────────────────────
   static const chartAxisLabel = Color(0x59FFFFFF); // == textTertiary
 
-  // Muscle-split data-viz palette. The DOMINANT muscle gets the single accent;
-  // the rest are descending white-opacity steps. One accent + neutral steps
-  // reads as clearly distinct categories AND stays on-brand — the old ramp of
-  // four near-identical violets (500/400/600/300) was a muddy smear.
+  // Muscle-split data-viz palette — an ORDERED violet ramp, light→dark. The
+  // dominant (largest) muscle is leftmost and lightest (most visible on the
+  // AMOLED card); each subsequent step darkens. Monotonic ordering is the fix:
+  // the old ramp was the same violets in a RANDOM order (500/400/600/300),
+  // which read as a muddy smear. Same hue family = on-brand single-accent.
   static const muscleSplitPalette = [
-    Color(0xFF7C3AED), // dominant — the one accent (violet 600)
-    Color(0xB3FFFFFF), // white 70%
-    Color(0x80FFFFFF), // white 50%
-    Color(0x59FFFFFF), // white 35%
-    Color(0x3DFFFFFF), // white 24%
-    Color(0x26FFFFFF), // white 15%
+    Color(0xFFC4B5FD), // violet 300 — dominant / largest share
+    Color(0xFFA78BFA), // violet 400
+    Color(0xFF8B5CF6), // violet 500
+    Color(0xFF7C3AED), // violet 600
+    Color(0xFF6D28D9), // violet 700
+    Color(0xFF5B21B6), // violet 800 — smallest share
   ];
 }
