@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'app_colors.dart';
 import 'app_text.dart';
@@ -50,6 +51,11 @@ final appTheme = ThemeData(
     scrolledUnderElevation: 0,
     surfaceTintColor: Colors.transparent,
     centerTitle: false,
+    // Explicit light status-bar icons on the AMOLED canvas + transparent bar
+    // for edge-to-edge (targetSdk 35). Don't leave this to AppBar brightness
+    // inference — screens without an AppBar would get no guarantee.
+    systemOverlayStyle:
+        SystemUiOverlayStyle.light.copyWith(statusBarColor: Colors.transparent),
     iconTheme: const IconThemeData(color: AppColors.textPrimary),
     titleTextStyle: _ct(
       fontSize: 20,

@@ -16,24 +16,34 @@ class WorkoutHistoryState {
   /// True only before the very first page resolves — drives the skeleton.
   final bool isInitialLoad;
 
+  /// Non-null when the last load/fetch threw. Drives the retry UI: a full
+  /// error state when [items] is empty, an inline footer otherwise.
+  final Object? error;
+
   const WorkoutHistoryState({
     this.items = const [],
     this.hasMore = true,
     this.isLoadingMore = true,
     this.isInitialLoad = true,
+    this.error,
   });
+
+  bool get hasError => error != null;
 
   WorkoutHistoryState copyWith({
     List<WorkoutSessionPreview>? items,
     bool? hasMore,
     bool? isLoadingMore,
     bool? isInitialLoad,
+    Object? error,
+    bool clearError = false,
   }) =>
       WorkoutHistoryState(
         items: items ?? this.items,
         hasMore: hasMore ?? this.hasMore,
         isLoadingMore: isLoadingMore ?? this.isLoadingMore,
         isInitialLoad: isInitialLoad ?? this.isInitialLoad,
+        error: clearError ? null : (error ?? this.error),
       );
 }
 
@@ -103,14 +113,29 @@ class WorkoutHistoryNotifier extends StateNotifier<WorkoutHistoryState> {
         hasMore: hasMore,
         isLoadingMore: false,
         isInitialLoad: false,
+        clearError: true,
       );
     } catch (e) {
       debugPrint('[WorkoutHistoryNotifier] reload failed: $e');
       if (mounted) {
-        state = state.copyWith(isLoadingMore: false, isInitialLoad: false);
+        state = state.copyWith(
+          isLoadingMore: false,
+          isInitialLoad: false,
+          error: e,
+        );
       }
     }
   }
+
+  /// Re-runs the load that failed. Empty feed → reload page 1; otherwise
+  /// retry the next page. Surfaced behind the footer/error "Retry" button.
+  Future<void> retry() {
+    return state.items.isEmpty ? _reloadVisibleWindow() : fetchNextPage();
+  }
+
+  /// Pull-to-refresh: re-pull the window the user has scrolled. The feed is
+  /// already reactive, so this is a manual escape hatch (and clears errors).
+  Future<void> refresh() => _reloadVisibleWindow();
 
   /// Appends the next page. No-ops if already loading or no more pages.
   Future<void> fetchNextPage() async {
@@ -118,7 +143,7 @@ class WorkoutHistoryNotifier extends StateNotifier<WorkoutHistoryState> {
     final user = _ref.read(authProvider);
     if (user == null) return;
 
-    state = state.copyWith(isLoadingMore: true);
+    state = state.copyWith(isLoadingMore: true, clearError: true);
     try {
       final db = _ref.read(databaseProvider);
       final fetched = await db.workoutsDao.getSessionPreviewsForUser(
@@ -136,10 +161,11 @@ class WorkoutHistoryNotifier extends StateNotifier<WorkoutHistoryState> {
         ],
         hasMore: hasMore,
         isLoadingMore: false,
+        clearError: true,
       );
     } catch (e) {
       debugPrint('[WorkoutHistoryNotifier] fetchNextPage failed: $e');
-      if (mounted) state = state.copyWith(isLoadingMore: false);
+      if (mounted) state = state.copyWith(isLoadingMore: false, error: e);
     }
   }
 }

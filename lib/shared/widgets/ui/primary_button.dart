@@ -4,8 +4,10 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_colors.dart';
 
 /// [primary_button.dart]
-/// Purpose: PrimaryButton - Electric purple, 48px height, 12px radius, bold text
-/// Every primary action fires a medium impact — consistent app-wide feel.
+/// Purpose: PrimaryButton — the app's primary CTA, on-spec with the design
+/// system: 52px height, 14px radius (AppRadius.buttonPrimary), indigo fill,
+/// w600 label. Every primary action fires a medium impact — consistent
+/// app-wide feel.
 
 class PrimaryButton extends StatelessWidget {
   final String label;
@@ -31,7 +33,7 @@ class PrimaryButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final disabled = isLoading || onPressed == null;
     final button = SizedBox(
-      height: 48,
+      height: 52,
       width: isFullWidth ? double.infinity : null,
       child: ElevatedButton(
         onPressed: disabled
@@ -51,7 +53,7 @@ class PrimaryButton extends StatelessWidget {
           elevation: 0,
           shadowColor: Colors.transparent,
           shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.all(Radius.circular(12)),
+            borderRadius: BorderRadius.all(Radius.circular(14)),
           ),
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
         ),
@@ -75,7 +77,7 @@ class PrimaryButton extends StatelessWidget {
                   Text(
                     label,
                     style: GoogleFonts.inter(
-                      fontWeight: FontWeight.w700,
+                      fontWeight: FontWeight.w600,
                       fontSize: 16,
                     ),
                   ),
