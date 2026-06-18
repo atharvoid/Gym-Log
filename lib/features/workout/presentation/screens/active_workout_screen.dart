@@ -185,7 +185,7 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
           label: 'Pounds',
           subtitle: 'lbs',
           icon: Icons.fitness_center_rounded,
-          color: Color(0xFF818CF8),
+          color: Color(0xFFA78BFA),
         ),
         PickerOption(
           value: '_default',
@@ -513,7 +513,7 @@ class _ReorderExercisesSheetState extends State<_ReorderExercisesSheet> {
                             style: GoogleFonts.inter(
                               fontSize: 13,
                               fontWeight: FontWeight.w700,
-                              color: const Color(0xFF818CF8),
+                              color: const Color(0xFFA78BFA),
                             ),
                           ),
                         ),
