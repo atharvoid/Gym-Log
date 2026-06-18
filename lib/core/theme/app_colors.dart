@@ -1,55 +1,71 @@
 import 'package:flutter/material.dart';
 
 /// [app_colors.dart]
-/// Purpose: High-Density Tracker - OLED-First Dark Mode
-/// Dependencies: flutter/material.dart
-/// Last modified: High-Density Tracker Overhaul
-
+/// GymLog Design System — AMOLED-first, indigo as the single source of energy.
+///
+/// TOKEN DISCIPLINE: this file is the single source of truth for color. Never
+/// hardcode a color anywhere else. Token NAMES are preserved from the previous
+/// (purple) system so no call site breaks; VALUES are re-pointed. Text and
+/// borders are WHITE AT OPACITY (expressed as const ARGB) so they darken
+/// consistently across surfaces — never hardcoded grey.
 abstract class AppColors {
-  // Base Layers (OLED-First)
-  static const bgBase         = Color(0xFF000000); // Pure Black
-  static const bgSurface      = Color(0xFF1C1C1E); // Dark Grey - cards, inputs, sheets
+  // ── Background & surface hierarchy (AMOLED, build upward in steps) ───────
+  static const bgBase    = Color(0xFF000000); // Background — pure void
+  static const bgSurface = Color(0xFF0D0D0D); // Surface 1 — default card (most used)
+  static const surface2  = Color(0xFF141414); // Surface 2 — elevated cards, charts, modals
+  static const surface3  = Color(0xFF1C1C1C); // Surface 3 — inputs, +Add Set, secondary buttons
+  static const surface4  = Color(0xFF242424); // Surface 4 — menus, action sheets, tooltips
 
-  // Primary Accent (Electric Purple - High Visibility)
-  static const accentPrimary  = Color(0xFF8A2BE2); // Electric Purple
+  // Legacy surface aliases re-pointed onto the hierarchy.
+  static const surfaceCard   = Color(0xFF0D0D0D); // == Surface 1
+  static const surfaceRaised = Color(0xFF141414); // == Surface 2
+  static const bgSheet       = Color(0xFF141414); // == Surface 2 (rest timer / dialog bg)
+  static const elevated      = Color(0xFF242424); // == Surface 4
 
-  // Text Hierarchy
-  static const textPrimary    = Color(0xFFFFFFFF); // Pure White
-  static const textSecondary  = Color(0xFF8E8E93); // Muted Grey - labels, timestamps
+  // ── Borders — white at low opacity (never solid/opaque), + indigo focus ──
+  static const borderSubtle   = Color(0x0FFFFFFF); // white 6% — default card border
+  static const borderDefault  = Color(0x1AFFFFFF); // white 10% — interactive element border
+  static const borderEmphasis = Color(0x2EFFFFFF); // white 18% — focused/selected
+  static const borderActive   = Color(0xFF6366F1); // indigo    — focused inputs, selected cards
+  static const thumbBorder    = Color(0x14FFFFFF); // white 8%  — exercise thumbnail frame
 
-  // Divider/Border
-  static const borderSubtle   = Color(0xFF2C2C2E); // Internal card dividers
+  // ── Indigo — the only accent for UI chrome ──────────────────────────────
+  static const indigo400 = Color(0xFF818CF8); // labels, secondary indigo text, chart line
+  static const indigo500 = Color(0xFF6366F1); // primary CTA, active states, selected
+  static const indigo600 = Color(0xFF4F46E5); // pressed/active state of indigo buttons
+  static const indigoTint = Color(0x1F6366F1); // indigo 12% — selected-row / active-tab bg
+  static const indigoTrack = Color(0x336366F1); // indigo 20% — rest-timer ring track
+  static const chartAreaFill = Color(0x146366F1); // indigo 8% — chart area fill (subtle)
 
-  // Bottom-sheet / dialog background (was an inline 0xFF121212 in ~5 places)
-  static const bgSheet        = Color(0xFF121212);
+  // Legacy accent aliases.
+  static const accentPrimary = Color(0xFF6366F1); // == indigo500
+  static const accentText    = Color(0xFF818CF8); // == indigo400 (accent text on black)
 
-  // WCAG-safe accent text on pure black. accentPrimary (#8A2BE2) is only ~3.2:1
-  // on #000 and FAILS AA as small text; this lighter tint is ~5.9:1 and passes.
-  static const accentText     = Color(0xFFB98CFF);
+  // ── Semantic — each has exactly one job ─────────────────────────────────
+  static const success = Color(0xFF10B981); // Completion green — completed-set check + left border ONLY
+  static const completionTint = Color(0x0F10B981); // green 6% — completed-set row bg
+  static const warning = Color(0xFFF59E0B); // Achievement amber — PR badges / trophy ONLY
+  static const prBadgeBg = Color(0x26F59E0B); // amber 15% — PR badge background
+  static const prBadgeBorder = Color(0x4DF59E0B); // amber 30% — PR badge border
+  static const error = Color(0xFFEF4444); // Destructive red — delete / errors ONLY
+  static const errorBorder = Color(0x99EF4444); // red 60% — destructive button border
 
-  // Genuinely disabled / decorative text ONLY. At ~3:1 on black this is BELOW
-  // the WCAG AA 4.5:1 floor for readable copy — never use it for error/empty
-  // body text (use textSecondary). Reserved for disabled controls, which are
-  // exempt from the contrast requirement.
-  static const textDisabled   = Color(0xFF6A6A6A);
+  // ── Text — white at controlled opacity (NOT hardcoded grey) ─────────────
+  static const textPrimary   = Color(0xFFFFFFFF); // headings, key numbers, exercise names
+  static const textSecondary = Color(0x99FFFFFF); // white 60% — dates, subtitles, secondary
+  static const textTertiary  = Color(0x59FFFFFF); // white 35% — placeholders, column headers
+  static const textDisabled  = Color(0x33FFFFFF); // white 20% — inactive states
 
-  // Semantic (kept minimal)
-  static const error          = Color(0xFFFF5449);
-  static const success        = Color(0xFF34C759); // iOS green
-  static const warning        = Color(0xFFFFCC00); // iOS yellow
+  // ── Charts ──────────────────────────────────────────────────────────────
+  static const chartAxisLabel = Color(0x59FFFFFF); // == textTertiary
 
-  // Surfaces
-  static const surfaceCard    = Color(0xFF0C0C0E);
-  static const surfaceRaised  = Color(0xFF141416);
-  static const chartAxisLabel = Color(0xFF5A5A5F);
-
-  // Charts
+  // Provisional indigo ramp (replaces the purple palette; revisit visually).
   static const muscleSplitPalette = [
-    Color(0xFF8A2BE2), // Electric Purple (primary)
-    Color(0xFF7B68EE), // Medium Slate Blue
-    Color(0xFFB19CD9), // Light Pastel Purple
-    Color(0xFF4B0082), // Indigo
-    Color(0xFF9932CC), // Dark Orchid
-    Color(0xFF5D3FD3), // Ultra Violet
+    Color(0xFF6366F1), // indigo 500
+    Color(0xFF818CF8), // indigo 400
+    Color(0xFF4F46E5), // indigo 600
+    Color(0xFFA5B4FC), // indigo 300
+    Color(0xFF3730A3), // indigo 800
+    Color(0x99FFFFFF), // white 60% (fallback)
   ];
 }
