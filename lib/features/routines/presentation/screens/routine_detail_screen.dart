@@ -830,7 +830,7 @@ class _RoutineProgressPill extends StatelessWidget {
               Icon(
                 isUp ? Icons.trending_up_rounded : Icons.trending_down_rounded,
                 size: 14,
-                color: const Color(0xFFCBB2FF),
+                color: const Color(0xFF818CF8),
               ),
               const SizedBox(width: 6),
               Text(

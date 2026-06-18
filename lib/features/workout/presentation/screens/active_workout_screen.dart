@@ -513,7 +513,7 @@ class _ReorderExercisesSheetState extends State<_ReorderExercisesSheet> {
                             style: GoogleFonts.inter(
                               fontSize: 13,
                               fontWeight: FontWeight.w700,
-                              color: const Color(0xFFCBB2FF),
+                              color: const Color(0xFF818CF8),
                             ),
                           ),
                         ),

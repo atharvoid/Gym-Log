@@ -147,7 +147,7 @@ class _PrCelebrationState extends State<_PrCelebration>
                       ),
                       child: const Icon(
                         Icons.emoji_events_rounded,
-                        color: Color(0xFFCBB2FF),
+                        color: Color(0xFF818CF8),
                         size: 30,
                       ),
                     ),
@@ -231,7 +231,7 @@ class _PrCelebrationState extends State<_PrCelebration>
                                             style: GoogleFonts.inter(
                                               fontSize: 15,
                                               fontWeight: FontWeight.w700,
-                                              color: const Color(0xFFCBB2FF),
+                                              color: const Color(0xFF818CF8),
                                             ),
                                           ),
                                           Text(
@@ -308,7 +308,7 @@ class _ConfettiPainter extends CustomPainter {
     const palette = [
       Color(0xFFF59E0B),
       Color(0xFFF59E0B),
-      Color(0xFFCBB2FF),
+      Color(0xFF818CF8),
       Color(0xFFF59E0B),
       Color(0xFFFFFFFF),
       Color(0xFFFFCC00),

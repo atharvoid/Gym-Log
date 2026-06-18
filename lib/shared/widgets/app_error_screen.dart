@@ -145,7 +145,7 @@ class _ErrorAction extends StatelessWidget {
             style: GoogleFonts.inter(
               fontSize: 15,
               fontWeight: FontWeight.w700,
-              color: primary ? Colors.white : const Color(0xFFCBB2FF),
+              color: primary ? Colors.white : const Color(0xFF818CF8),
               decoration: TextDecoration.none,
             ),
           ),
