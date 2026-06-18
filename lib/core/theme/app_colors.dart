@@ -22,6 +22,15 @@ abstract class AppColors {
   static const bgSheet       = Color(0xFF141414); // == Surface 2 (rest timer / dialog bg)
   static const elevated      = Color(0xFF242424); // == Surface 4
 
+  // ── Card surface gradient — the shipped "felt-not-seen" near-black fill ──
+  // Single source of truth for card chrome (see AppCard). Promoted here so no
+  // feature reaches into another feature's style class for a surface.
+  static const cardGradient = LinearGradient(
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+    colors: [Color(0xFF0E0E11), Color(0xFF09090B)],
+  );
+
   // ── Borders — white at low opacity (never solid/opaque), + indigo focus ──
   static const borderSubtle   = Color(0x0FFFFFFF); // white 6% — default card border
   static const borderDefault  = Color(0x1AFFFFFF); // white 10% — interactive element border

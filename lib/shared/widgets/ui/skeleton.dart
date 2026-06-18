@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
+import 'app_card.dart';
 
 /// Soft-pulsing skeleton bone. One shared animation phase per subtree via
 /// [SkeletonPulse] so bones breathe in unison instead of flickering apart.
@@ -77,10 +78,9 @@ class WorkoutHistoryCardSkeleton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(16),
-      decoration: const BoxDecoration(
-        color: AppColors.bgSurface,
-        borderRadius: BorderRadius.all(Radius.circular(12)),
-      ),
+      // Identical geometry to the real card (shared decoration) so the feed
+      // never reflows when content lands.
+      decoration: AppCard.decoration(),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -93,7 +93,7 @@ class WorkoutHistoryCardSkeleton extends StatelessWidget {
               padding: const EdgeInsets.only(bottom: 8),
               child: Row(
                 children: [
-                  const SkeletonBox(width: 52, height: 52, radius: 8),
+                  const SkeletonBox(width: 52, height: 52, radius: 14),
                   const SizedBox(width: 12),
                   Expanded(
                     child: SkeletonBox(height: 13, width: i == 0 ? 170 : 130),

@@ -5,7 +5,7 @@ import 'package:flutter/services.dart';
 import '../../core/theme/app_colors.dart';
 
 /// [bottom_nav_bar.dart]
-/// Purpose: High-Density Tracker - 3-tab navigation (Home, Workout, Profile)
+/// Purpose: High-Density Tracker - 3-tab navigation (Home, Routines, Profile)
 /// Dependencies: flutter/material.dart, go_router, google_fonts, app_colors.dart
 ///
 /// Active-tab indicator: a small accent underline drawn INSIDE each tab
@@ -91,7 +91,7 @@ class _NavButton extends StatelessWidget {
             Icon(
               item.icon,
               color:
-                  isActive ? AppColors.accentPrimary : AppColors.textSecondary,
+                  isActive ? AppColors.accentText : AppColors.textSecondary,
               size: 26,
             ),
             const SizedBox(height: 2),
@@ -99,9 +99,9 @@ class _NavButton extends StatelessWidget {
               item.label,
               style: GoogleFonts.inter(
                 color: isActive
-                    ? AppColors.accentPrimary
+                    ? AppColors.accentText
                     : AppColors.textSecondary,
-                fontWeight: FontWeight.w500,
+                fontWeight: FontWeight.w600,
                 fontSize: 11,
               ),
             ),
@@ -115,7 +115,7 @@ class _NavButton extends StatelessWidget {
               height: 2,
               width: isActive ? 16 : 0,
               decoration: BoxDecoration(
-                color: AppColors.accentPrimary,
+                color: AppColors.accentText,
                 borderRadius: BorderRadius.circular(6),
               ),
             ),
