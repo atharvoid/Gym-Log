@@ -52,11 +52,11 @@ class AppErrorScreen extends StatelessWidget {
                   alignment: Alignment.center,
                   decoration: BoxDecoration(
                     color: AppColors.accentPrimary.withValues(alpha: 0.14),
-                    borderRadius: BorderRadius.circular(18),
+                    borderRadius: BorderRadius.circular(16),
                   ),
                   child: const Icon(
                     Icons.fitness_center_rounded,
-                    color: Color(0xFFB98CFF),
+                    color: Color(0xFF818CF8),
                     size: 26,
                   ),
                 ),

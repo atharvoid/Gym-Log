@@ -287,7 +287,7 @@ class _SectionCard extends StatelessWidget {
                       height: 4,
                       decoration: BoxDecoration(
                         color: AppColors.textSecondary,
-                        borderRadius: BorderRadius.circular(2),
+                        borderRadius: BorderRadius.circular(6),
                       ),
                     ),
                   ),

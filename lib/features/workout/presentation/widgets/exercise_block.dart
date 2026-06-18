@@ -107,7 +107,7 @@ class ExerciseBlock extends StatelessWidget {
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 7),
       decoration: BoxDecoration(
         gradient: RDStyles.cardGradient,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(16),
         border: RDStyles.hairlineBorder,
       ),
       clipBehavior: Clip.antiAlias,

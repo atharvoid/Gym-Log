@@ -626,7 +626,7 @@ class _StepperButton extends StatelessWidget {
               alignment: Alignment.center,
               decoration: BoxDecoration(
                 color: AppColors.surfaceRaised,
-                borderRadius: BorderRadius.circular(9),
+                borderRadius: BorderRadius.circular(10),
               ),
               child: Icon(
                 icon,
