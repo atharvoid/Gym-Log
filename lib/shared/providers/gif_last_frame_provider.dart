@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
@@ -36,7 +37,18 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 const _kMaxDecodeWidth = 360;
 
 final gifLastFrameProvider =
-    FutureProvider.family<MemoryImage?, String>((ref, gifUrl) async {
+    FutureProvider.autoDispose.family<MemoryImage?, String>((ref, gifUrl) async {
+  // Bound memory: keep the decoded frame ~60s after the last watcher detaches
+  // (so a quick scroll-back doesn't re-decode), then release it. Re-decode
+  // from the shared on-disk cache is cheap. This replaces an unbounded
+  // per-URL PNG cache that grew with every distinct exercise a user logged.
+  final link = ref.keepAlive();
+  Timer? releaseTimer;
+  ref.onDispose(() => releaseTimer?.cancel());
+  ref.onCancel(
+      () => releaseTimer = Timer(const Duration(seconds: 60), link.close));
+  ref.onResume(() => releaseTimer?.cancel());
+
   ui.Codec? codec;
   ui.Image? lastFrame;
   try {

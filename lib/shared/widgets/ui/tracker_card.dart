@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
-import '../../../core/theme/app_colors.dart';
+import 'app_card.dart';
 
 /// [tracker_card.dart]
-/// Purpose: TrackerCard - Solid dark grey card, 12px radius, zero shadow/border
-/// Dependencies: flutter/material.dart, app_colors.dart
-/// Last modified: High-Density Tracker Overhaul
-
+/// Thin compatibility wrapper over [AppCard] — kept so existing call sites
+/// (empty states, etc.) don't churn. Surface/radius/border now come from the
+/// shared card token, so TrackerCard matches the rest of the app exactly.
 class TrackerCard extends StatelessWidget {
   final Widget child;
   final EdgeInsetsGeometry? padding;
@@ -20,26 +19,10 @@ class TrackerCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final card = Container(
-      decoration: const BoxDecoration(
-        color: AppColors.bgSurface,
-        borderRadius: BorderRadius.all(Radius.circular(12)),
-      ),
+    return AppCard(
+      onTap: onTap,
       padding: padding ?? const EdgeInsets.all(16),
       child: child,
     );
-
-    if (onTap != null) {
-      return Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(12),
-          child: card,
-        ),
-      );
-    }
-
-    return card;
   }
 }

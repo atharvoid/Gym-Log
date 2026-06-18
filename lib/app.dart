@@ -72,6 +72,17 @@ class _GymLogAppState extends ConsumerState<GymLogApp> {
       highContrastDarkTheme: appHighContrastTheme,
       routerConfig: router,
       debugShowCheckedModeBanner: false,
+      // Clamp Dynamic Type so extreme OS font scales can't clip CTAs or
+      // overflow dense stat rows; users below the cap are unaffected.
+      builder: (context, child) {
+        final mq = MediaQuery.of(context);
+        return MediaQuery(
+          data: mq.copyWith(
+            textScaler: mq.textScaler.clamp(maxScaleFactor: 1.4),
+          ),
+          child: child!,
+        );
+      },
     );
   }
 }
