@@ -38,6 +38,15 @@ abstract class AppText {
           color: color,
           fontFeatures: kTabular);
 
+  /// Hero metric value (collapsing workout-detail header): 22 / 700, tabular.
+  /// Smaller than [statNumber] (28) so three pips fit across a phone width.
+  static TextStyle heroStat({Color color = AppColors.textPrimary}) =>
+      GoogleFonts.inter(
+          fontSize: 22,
+          fontWeight: FontWeight.w700,
+          color: color,
+          fontFeatures: kTabular);
+
   /// Exercise name: 16 / 600.
   static TextStyle exerciseName({Color color = AppColors.textPrimary}) =>
       GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w600, color: color);
