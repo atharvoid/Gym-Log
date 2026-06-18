@@ -42,7 +42,7 @@ class RestTimerBar extends ConsumerWidget {
           container: true,
           label: 'Rest timer, $_label remaining',
           child: _AmbientPulse(
-            radius: BorderRadius.circular(18),
+            radius: BorderRadius.circular(16),
             child: SizedBox(
               height: kRestTileHeight,
               child: DecoratedBox(
@@ -52,7 +52,7 @@ class RestTimerBar extends ConsumerWidget {
                     end: Alignment.bottomCenter,
                     colors: [Color(0xFF1B1226), Color(0xFF0B0B0D)],
                   ),
-                  borderRadius: BorderRadius.circular(18),
+                  borderRadius: BorderRadius.circular(16),
                   border: Border.all(
                     color: AppColors.accentPrimary.withValues(alpha: 0.40),
                     width: 1.2,
@@ -69,7 +69,7 @@ class RestTimerBar extends ConsumerWidget {
                           painter: _RestRingPainter(progress: state.progress),
                           child: const Center(
                             child: Icon(Icons.timer_outlined,
-                                size: 18, color: Color(0xFFCBB2FF)),
+                                size: 18, color: Color(0xFFA78BFA)),
                           ),
                         ),
                       ),
@@ -160,7 +160,7 @@ class _RestAction extends StatelessWidget {
               fontSize: 13,
               fontWeight: FontWeight.w600,
               color:
-                  emphasized ? const Color(0xFFCBB2FF) : AppColors.textPrimary,
+                  emphasized ? const Color(0xFFA78BFA) : AppColors.textPrimary,
             ),
           ),
         ),

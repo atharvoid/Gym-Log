@@ -267,7 +267,7 @@ class _ActionButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final fg = primary
-        ? const Color(0xFFB98CFF)
+        ? const Color(0xFFA78BFA)
         : Colors.white.withValues(alpha: 0.86);
 
     return Container(

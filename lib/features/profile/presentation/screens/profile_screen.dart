@@ -12,7 +12,7 @@ import '../../../../core/utils/units.dart';
 import '../../../../features/routines/presentation/widgets/routine_detail_styles.dart';
 import '../../../../shared/widgets/branded_line_chart.dart';
 import '../../../../shared/widgets/premium_paywall.dart';
-import '../../../../shared/widgets/ui/toggle_pill.dart';
+import '../../../../shared/widgets/ui/segmented_control.dart';
 import '../providers/profile_provider.dart';
 import '../providers/profile_stats_provider.dart';
 import 'settings_screen.dart';
@@ -77,13 +77,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 height: 52,
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
-                  color: AppColors.accentPrimary.withValues(alpha: 0.15),
+                  color: AppColors.surface2, // neutral, not competing with the accent
                   shape: BoxShape.circle,
+                  border: Border.all(color: AppColors.borderSubtle),
                 ),
                 child: Text(
                   displayName.isNotEmpty ? displayName[0].toUpperCase() : 'A',
                   style: GoogleFonts.inter(
-                    color: const Color(0xFFB98CFF),
+                    color: AppColors.textSecondary, // white 60%
                     fontSize: 20,
                     fontWeight: FontWeight.w700,
                   ),
@@ -135,7 +136,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       fontSize: 10.5,
                       fontWeight: FontWeight.w700,
                       letterSpacing: 0.6,
-                      color: const Color(0xFFCBB2FF),
+                      color: AppColors.indigo400,
                     ),
                   ),
                 ),
@@ -148,23 +149,21 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 16),
             decoration: BoxDecoration(
               gradient: RDStyles.cardGradient,
-              borderRadius: BorderRadius.circular(18),
+              borderRadius: BorderRadius.circular(16),
               border: RDStyles.hairlineBorder,
             ),
             child: Row(
               children: [
                 Expanded(
                   child: _StatCell(
-                    value: streak.currentStreak > 0
-                        ? '${streak.currentStreak}'
-                        : '—',
+                    value: '${streak.currentStreak}', // 0, not "—" (reads as broken)
                     label: 'DAY STREAK',
                     leading: Icon(
                       Icons.local_fire_department_rounded,
                       size: 17,
                       color: streak.currentStreak > 0
-                          ? const Color(0xFFFF9F0A)
-                          : AppColors.textSecondary.withValues(alpha: 0.5),
+                          ? AppColors.warning
+                          : AppColors.textTertiary,
                     ),
                   ),
                 ),
@@ -198,7 +197,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     leading: const Icon(
                       Icons.fitness_center_rounded,
                       size: 16,
-                      color: Color(0xFFB98CFF),
+                      color: Color(0xFFA78BFA),
                     ),
                   ),
                 ),
@@ -235,17 +234,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           const SizedBox(height: 12),
           _WeeklyChart(metric: _selectedMetric, isPremium: isPremium),
           const SizedBox(height: 14),
-          Row(
-            children: [
-              for (final metric in const ['Volume', 'Duration', 'Reps']) ...[
-                TogglePill(
-                  label: metric,
-                  isActive: _selectedMetric == metric,
-                  onTap: () => setState(() => _selectedMetric = metric),
-                ),
-                const SizedBox(width: 8),
-              ],
-            ],
+          SegmentedControl(
+            segments: const ['Volume', 'Duration', 'Reps'],
+            selected: _selectedMetric,
+            onChanged: (m) => setState(() => _selectedMetric = m),
           ),
           const SizedBox(height: 28),
 
@@ -253,7 +245,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           Container(
             decoration: BoxDecoration(
               gradient: RDStyles.cardGradient,
-              borderRadius: BorderRadius.circular(18),
+              borderRadius: BorderRadius.circular(16),
               border: RDStyles.hairlineBorder,
             ),
             clipBehavior: Clip.antiAlias,
@@ -261,7 +253,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               children: [
                 _ActionRow(
                   icon: Icons.workspace_premium_rounded,
-                  iconColor: const Color(0xFFCBB2FF),
+                  iconColor: const Color(0xFFA78BFA),
                   title: isPremium ? 'GymLog Pro' : 'Upgrade to Pro',
                   subtitle: isPremium
                       ? 'Active — full history unlocked'

@@ -52,11 +52,11 @@ class AppErrorScreen extends StatelessWidget {
                   alignment: Alignment.center,
                   decoration: BoxDecoration(
                     color: AppColors.accentPrimary.withValues(alpha: 0.14),
-                    borderRadius: BorderRadius.circular(18),
+                    borderRadius: BorderRadius.circular(16),
                   ),
                   child: const Icon(
                     Icons.fitness_center_rounded,
-                    color: Color(0xFFB98CFF),
+                    color: Color(0xFFA78BFA),
                     size: 26,
                   ),
                 ),
@@ -145,7 +145,7 @@ class _ErrorAction extends StatelessWidget {
             style: GoogleFonts.inter(
               fontSize: 15,
               fontWeight: FontWeight.w700,
-              color: primary ? Colors.white : const Color(0xFFCBB2FF),
+              color: primary ? Colors.white : const Color(0xFFA78BFA),
               decoration: TextDecoration.none,
             ),
           ),

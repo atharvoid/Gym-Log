@@ -36,7 +36,7 @@ Future<void> showRoutineLimitUpsell(BuildContext context) {
     builder: (sheetCtx) => Container(
       decoration: const BoxDecoration(
         color: AppColors.bgSheet,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       child: SafeArea(
         top: false,
@@ -52,7 +52,7 @@ Future<void> showRoutineLimitUpsell(BuildContext context) {
                   height: 4,
                   decoration: BoxDecoration(
                     color: const Color(0xFF6A6A6A),
-                    borderRadius: BorderRadius.circular(2),
+                    borderRadius: BorderRadius.circular(6),
                   ),
                 ),
               ),
@@ -66,7 +66,7 @@ Future<void> showRoutineLimitUpsell(BuildContext context) {
                   borderRadius: BorderRadius.circular(14),
                 ),
                 child: const Icon(Icons.workspace_premium_rounded,
-                    color: Color(0xFFCBB2FF), size: 24),
+                    color: Color(0xFFA78BFA), size: 24),
               ),
               const SizedBox(height: 14),
               Text(
@@ -159,22 +159,16 @@ class ProLockPill extends StatelessWidget {
               width: 1,
             ),
           ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(Icons.lock_rounded,
-                  size: 10, color: Color(0xFFCBB2FF)),
-              const SizedBox(width: 4),
-              Text(
-                label,
-                style: GoogleFonts.inter(
-                  fontSize: 10,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: 0.6,
-                  color: const Color(0xFFCBB2FF),
-                ),
-              ),
-            ],
+          // No padlock — it communicates "you can't have this" while the user
+          // looks at their own data. Just the label; tap opens the paywall.
+          child: Text(
+            label,
+            style: GoogleFonts.inter(
+              fontSize: 10,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 0.6,
+              color: AppColors.indigo400,
+            ),
           ),
         ),
       ),
@@ -315,7 +309,7 @@ class _PaywallSheetState extends ConsumerState<_PaywallSheet> {
     return Container(
       decoration: const BoxDecoration(
         color: Color(0xFF121212),
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       child: SafeArea(
         top: false,
@@ -331,7 +325,7 @@ class _PaywallSheetState extends ConsumerState<_PaywallSheet> {
                   height: 4,
                   decoration: BoxDecoration(
                     color: const Color(0xFF6A6A6A),
-                    borderRadius: BorderRadius.circular(2),
+                    borderRadius: BorderRadius.circular(6),
                   ),
                 ),
               ),
@@ -347,7 +341,7 @@ class _PaywallSheetState extends ConsumerState<_PaywallSheet> {
                   borderRadius: BorderRadius.circular(14),
                 ),
                 child: const Icon(Icons.workspace_premium_rounded,
-                    color: Color(0xFFCBB2FF), size: 24),
+                    color: Color(0xFFA78BFA), size: 24),
               ),
               const SizedBox(height: 14),
               Text(
@@ -375,7 +369,7 @@ class _PaywallSheetState extends ConsumerState<_PaywallSheet> {
                   padding: const EdgeInsets.only(bottom: 14),
                   child: Row(
                     children: [
-                      Icon(icon, size: 19, color: const Color(0xFFB98CFF)),
+                      Icon(icon, size: 19, color: const Color(0xFFA78BFA)),
                       const SizedBox(width: 14),
                       Expanded(
                         child: Text(
@@ -616,7 +610,7 @@ class _PackageRow extends StatelessWidget {
                       fontSize: 9.5,
                       fontWeight: FontWeight.w700,
                       letterSpacing: 0.5,
-                      color: const Color(0xFFCBB2FF),
+                      color: const Color(0xFFA78BFA),
                     ),
                   ),
                 ),

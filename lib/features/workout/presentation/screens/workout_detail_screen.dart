@@ -82,7 +82,7 @@ class WorkoutDetailScreen extends ConsumerWidget {
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: const Icon(Icons.cloud_off_rounded,
-                      color: Color(0xFFB98CFF), size: 24),
+                      color: Color(0xFFA78BFA), size: 24),
                 ),
                 const SizedBox(height: 16),
                 Text(
@@ -641,7 +641,7 @@ class _MuscleSplitSection extends StatelessWidget {
                       height: 8,
                       decoration: BoxDecoration(
                         color: colorFor(i),
-                        borderRadius: BorderRadius.circular(2),
+                        borderRadius: BorderRadius.circular(6),
                       ),
                     ),
                     const SizedBox(width: 5),
@@ -668,7 +668,7 @@ class _MuscleSplitSection extends StatelessWidget {
                 '${sorted.map((e) => '${e.key} ${((e.value / totalSets) * 100).round()} percent').join(', ')}',
             child: ExcludeSemantics(
               child: ClipRRect(
-            borderRadius: BorderRadius.circular(4),
+            borderRadius: BorderRadius.circular(6),
             child: SizedBox(
               height: 8,
               child: Row(
@@ -723,7 +723,7 @@ class _DetailExerciseCard extends StatelessWidget {
         decoration: BoxDecoration(
           // North-star surface: gradient + hairline, matching Routine cards.
           gradient: RDStyles.cardGradient,
-          borderRadius: BorderRadius.circular(18),
+          borderRadius: BorderRadius.circular(16),
           border: RDStyles.hairlineBorder,
         ),
         clipBehavior: Clip.antiAlias,
@@ -789,7 +789,7 @@ class _ExerciseCardHeader extends StatelessWidget {
             width: 52,
             height: 52,
             fit: BoxFit.cover,
-            borderRadius: const BorderRadius.all(Radius.circular(8)),
+            borderRadius: const BorderRadius.all(Radius.circular(10)),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -937,7 +937,7 @@ class _DetailSetRow extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.15),
-        borderRadius: BorderRadius.circular(4),
+        borderRadius: BorderRadius.circular(6),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -1082,7 +1082,7 @@ class _DeltaChip extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
         decoration: BoxDecoration(
           color: color.withValues(alpha: 0.16),
-          borderRadius: BorderRadius.circular(4),
+          borderRadius: BorderRadius.circular(6),
           border: Border.all(color: color.withValues(alpha: 0.45)),
         ),
         child: Row(
@@ -1115,7 +1115,7 @@ class _PrBadge extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
       decoration: BoxDecoration(
         color: AppColors.warning.withValues(alpha: 0.15),
-        borderRadius: BorderRadius.circular(4),
+        borderRadius: BorderRadius.circular(6),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,

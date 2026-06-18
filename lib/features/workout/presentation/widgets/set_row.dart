@@ -154,7 +154,7 @@ class _SetRowState extends State<SetRow> {
           label: 'Drop Set',
           subtitle: 'Reduced weight, no rest',
           icon: Icons.trending_down_rounded,
-          color: Color(0xFFB98CFF),
+          color: Color(0xFFA78BFA),
         ),
         PickerOption(
           value: 'failure',
@@ -182,7 +182,7 @@ class _SetRowState extends State<SetRow> {
         break;
       case 'dropset':
         label = 'D';
-        color = const Color(0xFFB98CFF); // purple
+        color = const Color(0xFFA78BFA); // purple
         break;
       case 'failure':
         label = 'F';
@@ -270,12 +270,15 @@ class _SetRowState extends State<SetRow> {
     return AnimatedContainer(
       duration: const Duration(milliseconds: 200),
       curve: Curves.easeInOut,
-      // Completion reads as green success — the row carries a whisper of the
-      // same green the check fills with, so the cue is cohesive, not a green
-      // tick floating on a differently-tinted row.
-      color: isCompleted
-          ? AppColors.success.withValues(alpha: 0.07)
-          : Colors.transparent,
+      // Completed row = 3px green left border + 6% green tint (NOT a full fill,
+      // which reads like a spreadsheet). The check fills with the same green.
+      decoration: BoxDecoration(
+        color: isCompleted ? AppColors.completionTint : Colors.transparent,
+        border: isCompleted
+            ? const Border(
+                left: BorderSide(color: AppColors.success, width: 3))
+            : null,
+      ),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
       child: SizedBox(
         height: 44,
@@ -391,7 +394,7 @@ class _SetRowState extends State<SetRow> {
                         width: 32,
                         height: 32,
                         decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(4),
+                          borderRadius: BorderRadius.circular(6),
                           // Three states: done = solid green, ready = green
                           // outline (invites the tap), idle = faint gray outline.
                           color: isCompleted

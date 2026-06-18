@@ -157,7 +157,7 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
         child: Container(
           decoration: const BoxDecoration(
             color: Color(0xFF121212),
-            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
           ),
           child: SafeArea(
             top: false,
@@ -170,7 +170,7 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
                   height: 4,
                   decoration: BoxDecoration(
                     color: const Color(0xFF6A6A6A),
-                    borderRadius: BorderRadius.circular(2),
+                    borderRadius: BorderRadius.circular(6),
                   ),
                 ),
                 const SizedBox(height: 20),
@@ -830,7 +830,7 @@ class _RoutineProgressPill extends StatelessWidget {
               Icon(
                 isUp ? Icons.trending_up_rounded : Icons.trending_down_rounded,
                 size: 14,
-                color: const Color(0xFFCBB2FF),
+                color: const Color(0xFFA78BFA),
               ),
               const SizedBox(width: 6),
               Text(

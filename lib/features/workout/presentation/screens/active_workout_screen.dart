@@ -185,7 +185,7 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
           label: 'Pounds',
           subtitle: 'lbs',
           icon: Icons.fitness_center_rounded,
-          color: Color(0xFFB98CFF),
+          color: Color(0xFFA78BFA),
         ),
         PickerOption(
           value: '_default',
@@ -438,7 +438,7 @@ class _ReorderExercisesSheetState extends State<_ReorderExercisesSheet> {
       constraints: BoxConstraints(maxHeight: maxHeight),
       decoration: const BoxDecoration(
         color: Color(0xFF121212),
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -449,7 +449,7 @@ class _ReorderExercisesSheetState extends State<_ReorderExercisesSheet> {
             height: 4,
             decoration: BoxDecoration(
               color: const Color(0xFF6A6A6A),
-              borderRadius: BorderRadius.circular(2),
+              borderRadius: BorderRadius.circular(6),
             ),
           ),
           const SizedBox(height: 16),
@@ -506,14 +506,14 @@ class _ReorderExercisesSheetState extends State<_ReorderExercisesSheet> {
                           decoration: BoxDecoration(
                             color: AppColors.accentPrimary
                                 .withValues(alpha: 0.14),
-                            borderRadius: BorderRadius.circular(8),
+                            borderRadius: BorderRadius.circular(10),
                           ),
                           child: Text(
                             '${index + 1}',
                             style: GoogleFonts.inter(
                               fontSize: 13,
                               fontWeight: FontWeight.w700,
-                              color: const Color(0xFFCBB2FF),
+                              color: const Color(0xFFA78BFA),
                             ),
                           ),
                         ),

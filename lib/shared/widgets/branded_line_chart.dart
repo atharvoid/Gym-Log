@@ -273,8 +273,8 @@ class _BrandedLineChartState extends State<BrandedLineChart> {
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
                         colors: [
-                          AppColors.accentPrimary.withValues(alpha: 0.30),
-                          AppColors.accentPrimary.withValues(alpha: 0.02),
+                          AppColors.accentPrimary.withValues(alpha: 0.08),
+                          AppColors.accentPrimary.withValues(alpha: 0.0),
                         ],
                       ),
                     ),
@@ -289,7 +289,7 @@ class _BrandedLineChartState extends State<BrandedLineChart> {
                           HorizontalLine(
                             y: avg,
                             color:
-                                AppColors.textSecondary.withValues(alpha: 0.30),
+                                AppColors.textSecondary.withValues(alpha: 0.20),
                             strokeWidth: 1,
                             dashArray: const [4, 4],
                             label: HorizontalLineLabel(
@@ -333,7 +333,7 @@ class _BrandedLineChartState extends State<BrandedLineChart> {
                       height: 34 * h,
                       margin: const EdgeInsets.symmetric(horizontal: 2.5),
                       decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(3),
+                        borderRadius: BorderRadius.circular(6),
                         gradient: const LinearGradient(
                           begin: Alignment.topCenter,
                           end: Alignment.bottomCenter,
