@@ -36,7 +36,7 @@ Future<void> showRoutineLimitUpsell(BuildContext context) {
     builder: (sheetCtx) => Container(
       decoration: const BoxDecoration(
         color: AppColors.bgSheet,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       child: SafeArea(
         top: false,
@@ -52,7 +52,7 @@ Future<void> showRoutineLimitUpsell(BuildContext context) {
                   height: 4,
                   decoration: BoxDecoration(
                     color: const Color(0xFF6A6A6A),
-                    borderRadius: BorderRadius.circular(2),
+                    borderRadius: BorderRadius.circular(6),
                   ),
                 ),
               ),
@@ -315,7 +315,7 @@ class _PaywallSheetState extends ConsumerState<_PaywallSheet> {
     return Container(
       decoration: const BoxDecoration(
         color: Color(0xFF121212),
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       child: SafeArea(
         top: false,
@@ -331,7 +331,7 @@ class _PaywallSheetState extends ConsumerState<_PaywallSheet> {
                   height: 4,
                   decoration: BoxDecoration(
                     color: const Color(0xFF6A6A6A),
-                    borderRadius: BorderRadius.circular(2),
+                    borderRadius: BorderRadius.circular(6),
                   ),
                 ),
               ),
@@ -375,7 +375,7 @@ class _PaywallSheetState extends ConsumerState<_PaywallSheet> {
                   padding: const EdgeInsets.only(bottom: 14),
                   child: Row(
                     children: [
-                      Icon(icon, size: 19, color: const Color(0xFFB98CFF)),
+                      Icon(icon, size: 19, color: const Color(0xFF818CF8)),
                       const SizedBox(width: 14),
                       Expanded(
                         child: Text(

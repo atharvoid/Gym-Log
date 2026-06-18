@@ -118,7 +118,7 @@ class _PrCelebrationState extends State<_PrCelebration>
                     end: Alignment.bottomCenter,
                     colors: [Color(0xFF15101D), Color(0xFF0B0B0D)],
                   ),
-                  borderRadius: BorderRadius.circular(24),
+                  borderRadius: BorderRadius.circular(20),
                   border: Border.all(
                     color: AppColors.accentPrimary.withValues(alpha: 0.35),
                     width: 1,
@@ -306,10 +306,10 @@ class _ConfettiPainter extends CustomPainter {
   static List<_Particle> _generate() {
     final rng = math.Random(7);
     const palette = [
-      Color(0xFF8A2BE2),
-      Color(0xFFB98CFF),
+      Color(0xFFF59E0B),
+      Color(0xFFF59E0B),
       Color(0xFFCBB2FF),
-      Color(0xFF7B68EE),
+      Color(0xFFF59E0B),
       Color(0xFFFFFFFF),
       Color(0xFFFFCC00),
     ];
