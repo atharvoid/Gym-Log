@@ -63,17 +63,17 @@ class _RoutineTemplate {
 
   Color get levelColor => switch (level) {
         _Level.beginner => const Color(0xFF34C759), // green
-        _Level.intermediate => const Color(0xFF818CF8), // lavender
+        _Level.intermediate => const Color(0xFFA78BFA), // lavender
         _Level.advanced => const Color(0xFFE0A422), // amber (intensity)
       };
 }
 
 // Category accents (kept inside the brand's purple family for cohesion).
-const _cPPL = Color(0xFF6366F1);
-const _cUL = Color(0xFF4F46E5);
-const _cFull = Color(0xFF818CF8);
-const _cPower = Color(0xFF6366F1);
-const _cBro = Color(0xFF6366F1);
+const _cPPL = Color(0xFF7C3AED);
+const _cUL = Color(0xFF6D28D9);
+const _cFull = Color(0xFFA78BFA);
+const _cPower = Color(0xFF7C3AED);
+const _cBro = Color(0xFF7C3AED);
 
 /// Display order for the grouped sections.
 const _categoryOrder = <String>[

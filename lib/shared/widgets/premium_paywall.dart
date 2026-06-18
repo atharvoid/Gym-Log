@@ -66,7 +66,7 @@ Future<void> showRoutineLimitUpsell(BuildContext context) {
                   borderRadius: BorderRadius.circular(14),
                 ),
                 child: const Icon(Icons.workspace_premium_rounded,
-                    color: Color(0xFF818CF8), size: 24),
+                    color: Color(0xFFA78BFA), size: 24),
               ),
               const SizedBox(height: 14),
               Text(
@@ -341,7 +341,7 @@ class _PaywallSheetState extends ConsumerState<_PaywallSheet> {
                   borderRadius: BorderRadius.circular(14),
                 ),
                 child: const Icon(Icons.workspace_premium_rounded,
-                    color: Color(0xFF818CF8), size: 24),
+                    color: Color(0xFFA78BFA), size: 24),
               ),
               const SizedBox(height: 14),
               Text(
@@ -369,7 +369,7 @@ class _PaywallSheetState extends ConsumerState<_PaywallSheet> {
                   padding: const EdgeInsets.only(bottom: 14),
                   child: Row(
                     children: [
-                      Icon(icon, size: 19, color: const Color(0xFF818CF8)),
+                      Icon(icon, size: 19, color: const Color(0xFFA78BFA)),
                       const SizedBox(width: 14),
                       Expanded(
                         child: Text(
@@ -610,7 +610,7 @@ class _PackageRow extends StatelessWidget {
                       fontSize: 9.5,
                       fontWeight: FontWeight.w700,
                       letterSpacing: 0.5,
-                      color: const Color(0xFF818CF8),
+                      color: const Color(0xFFA78BFA),
                     ),
                   ),
                 ),

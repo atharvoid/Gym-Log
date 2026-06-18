@@ -26,20 +26,20 @@ abstract class AppColors {
   static const borderSubtle   = Color(0x0FFFFFFF); // white 6% — default card border
   static const borderDefault  = Color(0x1AFFFFFF); // white 10% — interactive element border
   static const borderEmphasis = Color(0x2EFFFFFF); // white 18% — focused/selected
-  static const borderActive   = Color(0xFF6366F1); // indigo    — focused inputs, selected cards
+  static const borderActive   = Color(0xFF7C3AED); // indigo    — focused inputs, selected cards
   static const thumbBorder    = Color(0x14FFFFFF); // white 8%  — exercise thumbnail frame
 
   // ── Indigo — the only accent for UI chrome ──────────────────────────────
-  static const indigo400 = Color(0xFF818CF8); // labels, secondary indigo text, chart line
-  static const indigo500 = Color(0xFF6366F1); // primary CTA, active states, selected
-  static const indigo600 = Color(0xFF4F46E5); // pressed/active state of indigo buttons
-  static const indigoTint = Color(0x1F6366F1); // indigo 12% — selected-row / active-tab bg
-  static const indigoTrack = Color(0x336366F1); // indigo 20% — rest-timer ring track
-  static const chartAreaFill = Color(0x146366F1); // indigo 8% — chart area fill (subtle)
+  static const indigo400 = Color(0xFFA78BFA); // labels, secondary indigo text, chart line
+  static const indigo500 = Color(0xFF7C3AED); // primary CTA, active states, selected
+  static const indigo600 = Color(0xFF6D28D9); // pressed/active state of indigo buttons
+  static const indigoTint = Color(0x1F7C3AED); // indigo 12% — selected-row / active-tab bg
+  static const indigoTrack = Color(0x337C3AED); // indigo 20% — rest-timer ring track
+  static const chartAreaFill = Color(0x147C3AED); // indigo 8% — chart area fill (subtle)
 
   // Legacy accent aliases.
-  static const accentPrimary = Color(0xFF6366F1); // == indigo500
-  static const accentText    = Color(0xFF818CF8); // == indigo400 (accent text on black)
+  static const accentPrimary = Color(0xFF7C3AED); // == indigo500
+  static const accentText    = Color(0xFFA78BFA); // == indigo400 (accent text on black)
 
   // ── Semantic — each has exactly one job ─────────────────────────────────
   static const success = Color(0xFF10B981); // Completion green — completed-set check + left border ONLY
@@ -61,11 +61,11 @@ abstract class AppColors {
 
   // Provisional indigo ramp (replaces the purple palette; revisit visually).
   static const muscleSplitPalette = [
-    Color(0xFF6366F1), // indigo 500
-    Color(0xFF818CF8), // indigo 400
-    Color(0xFF4F46E5), // indigo 600
-    Color(0xFFA5B4FC), // indigo 300
-    Color(0xFF3730A3), // indigo 800
+    Color(0xFF7C3AED), // indigo 500
+    Color(0xFFA78BFA), // indigo 400
+    Color(0xFF6D28D9), // indigo 600
+    Color(0xFFC4B5FD), // indigo 300
+    Color(0xFF5B21B6), // indigo 800
     Color(0x99FFFFFF), // white 60% (fallback)
   ];
 }

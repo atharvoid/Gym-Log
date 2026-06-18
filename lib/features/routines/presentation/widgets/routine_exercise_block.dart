@@ -221,7 +221,7 @@ class _SetTable extends StatelessWidget {
       case 'drop':
         return const _SetTypeChip(
             label: 'Drop',
-            fg: Color(0xFF818CF8),
+            fg: Color(0xFFA78BFA),
             icon: Icons.trending_down_rounded);
       case 'failure':
         return const _SetTypeChip(

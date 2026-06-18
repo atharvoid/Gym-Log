@@ -313,7 +313,7 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
           const SizedBox(height: 16),
           _Banner(
             icon: Icons.add_circle_outline_rounded,
-            color: const Color(0xFF818CF8),
+            color: const Color(0xFFA78BFA),
             text: _newExercisesText(s.newExerciseNames),
           ),
         ],
@@ -601,7 +601,7 @@ class _IconBadge extends StatelessWidget {
           color: AppColors.accentPrimary.withValues(alpha: 0.12),
           borderRadius: BorderRadius.circular(14),
         ),
-        child: Icon(icon, color: const Color(0xFF818CF8), size: 26),
+        child: Icon(icon, color: const Color(0xFFA78BFA), size: 26),
       );
 }
 
@@ -654,7 +654,7 @@ class _DetectedPill extends StatelessWidget {
         ),
         child: Row(mainAxisSize: MainAxisSize.min, children: [
           const Icon(Icons.check_circle_rounded,
-              size: 15, color: Color(0xFF818CF8)),
+              size: 15, color: Color(0xFFA78BFA)),
           const SizedBox(width: 7),
           Text('Detected: ${source.label}',
               style: GoogleFonts.inter(

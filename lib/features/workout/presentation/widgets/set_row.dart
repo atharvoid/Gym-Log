@@ -154,7 +154,7 @@ class _SetRowState extends State<SetRow> {
           label: 'Drop Set',
           subtitle: 'Reduced weight, no rest',
           icon: Icons.trending_down_rounded,
-          color: Color(0xFF818CF8),
+          color: Color(0xFFA78BFA),
         ),
         PickerOption(
           value: 'failure',
@@ -182,7 +182,7 @@ class _SetRowState extends State<SetRow> {
         break;
       case 'dropset':
         label = 'D';
-        color = const Color(0xFF818CF8); // purple
+        color = const Color(0xFFA78BFA); // purple
         break;
       case 'failure':
         label = 'F';

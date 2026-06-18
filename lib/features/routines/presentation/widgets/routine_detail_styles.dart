@@ -55,7 +55,7 @@ class RDStyles {
   static TextStyle deltaPill = GoogleFonts.inter(
       fontSize: 12.5,
       fontWeight: FontWeight.w600,
-      color: const Color(0xFF818CF8));
+      color: const Color(0xFFA78BFA));
 
   // ── Exercise block ─────────────────────────────────────────────────────────
   static TextStyle exName = GoogleFonts.inter(

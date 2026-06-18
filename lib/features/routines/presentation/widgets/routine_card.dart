@@ -34,7 +34,7 @@ class RoutineCard extends ConsumerWidget {
   /// Stable accent derived from the routine's primary muscle group, so
   /// "Push Day" and "Leg Day" are tinted differently forever.
   Color get _glyphColor {
-    if (muscleTags.isEmpty) return const Color(0xFF818CF8);
+    if (muscleTags.isEmpty) return const Color(0xFFA78BFA);
     final index =
         muscleTags.first.hashCode.abs() % AppColors.muscleSplitPalette.length;
     final base = AppColors.muscleSplitPalette[index];

@@ -197,7 +197,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     leading: const Icon(
                       Icons.fitness_center_rounded,
                       size: 16,
-                      color: Color(0xFF818CF8),
+                      color: Color(0xFFA78BFA),
                     ),
                   ),
                 ),
@@ -253,7 +253,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               children: [
                 _ActionRow(
                   icon: Icons.workspace_premium_rounded,
-                  iconColor: const Color(0xFF818CF8),
+                  iconColor: const Color(0xFFA78BFA),
                   title: isPremium ? 'GymLog Pro' : 'Upgrade to Pro',
                   subtitle: isPremium
                       ? 'Active — full history unlocked'

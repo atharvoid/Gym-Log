@@ -164,7 +164,7 @@ class SettingsScreen extends ConsumerWidget {
             ),
             _Row(
               icon: Icons.workspace_premium_rounded,
-              iconColor: const Color(0xFF818CF8),
+              iconColor: const Color(0xFFA78BFA),
               title: isPremium ? 'GymLog Pro' : 'Upgrade to Pro',
               subtitle: isPremium
                   ? 'Active — full history unlocked'
@@ -212,7 +212,7 @@ class SettingsScreen extends ConsumerWidget {
                       label: 'Pounds',
                       subtitle: 'lbs',
                       icon: Icons.fitness_center_rounded,
-                      color: Color(0xFF818CF8),
+                      color: Color(0xFFA78BFA),
                     ),
                   ],
                 );
@@ -250,7 +250,7 @@ class SettingsScreen extends ConsumerWidget {
                             ? Icons.timer_off_outlined
                             : Icons.timer_outlined,
                         color: s == 90
-                            ? const Color(0xFF818CF8)
+                            ? const Color(0xFFA78BFA)
                             : AppColors.textSecondary,
                       ),
                   ],
