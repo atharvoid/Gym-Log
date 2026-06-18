@@ -329,7 +329,7 @@ class _WeekStrip extends ConsumerWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           if (streak.currentStreak > 0) ...[
-            Icon(
+            const Icon(
               Icons.local_fire_department_rounded,
               size: 14,
               color: AppColors.warning,
