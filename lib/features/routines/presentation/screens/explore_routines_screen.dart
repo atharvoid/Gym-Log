@@ -71,7 +71,7 @@ class _RoutineTemplate {
 // Category accents (kept inside the brand's purple family for cohesion).
 const _cPPL = Color(0xFF6366F1);
 const _cUL = Color(0xFF4F46E5);
-const _cFull = Color(0xFFCBB2FF);
+const _cFull = Color(0xFF818CF8);
 const _cPower = Color(0xFF6366F1);
 const _cBro = Color(0xFF6366F1);
 

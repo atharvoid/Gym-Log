@@ -283,7 +283,7 @@ class _StartPill extends StatelessWidget {
   Widget build(BuildContext context) {
     return Material(
       color: AppColors.accentPrimary,
-      borderRadius: BorderRadius.circular(999),
+      borderRadius: BorderRadius.circular(14), // primary CTA: 14px, NOT pill
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: onTap,

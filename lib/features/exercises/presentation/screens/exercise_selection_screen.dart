@@ -514,7 +514,7 @@ class _FilterChipButton extends StatelessWidget {
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
                   color:
-                      active ? const Color(0xFFCBB2FF) : AppColors.textPrimary,
+                      active ? const Color(0xFF818CF8) : AppColors.textPrimary,
                 ),
               ),
               const SizedBox(width: 4),
@@ -522,7 +522,7 @@ class _FilterChipButton extends StatelessWidget {
                 Icons.keyboard_arrow_down_rounded,
                 size: 16,
                 color:
-                    active ? const Color(0xFFCBB2FF) : AppColors.textSecondary,
+                    active ? const Color(0xFF818CF8) : AppColors.textSecondary,
               ),
             ],
           ),

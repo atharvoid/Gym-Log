@@ -164,7 +164,7 @@ class SettingsScreen extends ConsumerWidget {
             ),
             _Row(
               icon: Icons.workspace_premium_rounded,
-              iconColor: const Color(0xFFCBB2FF),
+              iconColor: const Color(0xFF818CF8),
               title: isPremium ? 'GymLog Pro' : 'Upgrade to Pro',
               subtitle: isPremium
                   ? 'Active — full history unlocked'
