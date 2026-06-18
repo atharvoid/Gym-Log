@@ -264,7 +264,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             final hydrated =
                 await db.workoutsDao.getHydratedWorkout(session.id);
             if (hydrated == null) return;
-            if (!context.mounted) return;
+            // State.context guarded by the State's own `mounted` (not
+            // context.mounted) — required by use_build_context_synchronously.
+            if (!mounted) return;
             HapticFeedback.selectionClick();
             ref.read(activeWorkoutProvider.notifier).loadForEdit(hydrated);
             context.push('/workout/active');

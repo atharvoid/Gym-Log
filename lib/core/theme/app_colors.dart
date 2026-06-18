@@ -37,6 +37,11 @@ abstract class AppColors {
   static const borderEmphasis = Color(0x2EFFFFFF); // white 18% — focused/selected
   static const borderActive   = Color(0xFF7C3AED); // indigo    — focused inputs, selected cards
   static const thumbBorder    = Color(0x14FFFFFF); // white 8%  — exercise thumbnail frame
+  // Light exercise-thumbnail tile (Hevy-style). Exercise GIFs are baked on
+  // white, so a uniform light tile keeps GIF + icon-fallback thumbnails
+  // consistent on the dark feed (instead of "white block vs dark block").
+  static const thumbTile      = Color(0xFFF5F5F5); // light tile background
+  static const thumbIcon      = Color(0xFF9E9E9E); // neutral icon on light tile
 
   // ── Indigo — the only accent for UI chrome ──────────────────────────────
   static const indigo400 = Color(0xFFA78BFA); // labels, secondary indigo text, chart line

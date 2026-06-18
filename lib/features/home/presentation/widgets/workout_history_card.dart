@@ -181,16 +181,15 @@ class _ExerciseRow extends ConsumerWidget {
     return RepaintBoundary(child: _frame(inner));
   }
 
-  /// 52×52 framed container: a subtle hairline + radius so the (white-bg)
-  /// exercise GIFs read as contained on the AMOLED card instead of punching
-  /// bright holes in it.
+  /// Uniform light tile (Hevy-style). Exercise GIFs are baked on white, so a
+  /// consistent light tile makes the GIF and icon-fallback thumbnails read as
+  /// one set on the dark feed — not "bright white block vs dark block".
   Widget _frame(Widget child) => Container(
         width: 52,
         height: 52,
-        decoration: BoxDecoration(
-          color: AppColors.surface3,
+        decoration: const BoxDecoration(
+          color: AppColors.thumbTile,
           borderRadius: AppRadius.thumbnailAll,
-          border: Border.all(color: AppColors.thumbBorder, width: 1),
         ),
         clipBehavior: Clip.antiAlias,
         child: child,
@@ -199,8 +198,8 @@ class _ExerciseRow extends ConsumerWidget {
   Widget _iconFallback() => const Center(
         child: Icon(
           Icons.fitness_center_rounded,
-          color: AppColors.textSecondary,
-          size: 20,
+          color: AppColors.thumbIcon,
+          size: 22,
         ),
       );
 }
@@ -249,22 +248,17 @@ class _StatsRow extends StatelessWidget {
 class _StatChip extends StatelessWidget {
   final IconData icon;
   final String label;
-  final Color color;
 
-  const _StatChip({
-    required this.icon,
-    required this.label,
-    this.color = AppColors.textSecondary,
-  });
+  const _StatChip({required this.icon, required this.label});
 
   @override
   Widget build(BuildContext context) {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, size: 14, color: color),
+        Icon(icon, size: 14, color: AppColors.textSecondary),
         const SizedBox(width: 5),
-        Text(label, style: AppText.statLabel(color: color)),
+        Text(label, style: AppText.statLabel()),
       ],
     );
   }
