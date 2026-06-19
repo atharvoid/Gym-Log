@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_text.dart';
+import '../../../../core/utils/tap_guard.dart';
 import '../../../../core/providers/database_provider.dart';
 import '../../../../shared/widgets/ui/action_bottom_sheet.dart';
 import '../../../../shared/widgets/ui/app_dialog.dart';
@@ -13,7 +14,8 @@ import 'routine_detail_styles.dart';
 /// Premium routine card for the Routines list.
 /// - Tapping the body opens the routine detail (`/routines/:id`).
 /// - The compact "Start" pill fires [onStartTap] (and won't trigger the body tap).
-/// - Renders muscle tags, exercise count, last-trained, and a 1-line preview.
+/// - Renders a muscle-group glyph, exercise count, last-trained, muscle tags,
+///   and a 1-line preview.
 class RoutineCard extends ConsumerWidget {
   final String routineId;
   final String routineName;
@@ -32,14 +34,13 @@ class RoutineCard extends ConsumerWidget {
     this.lastTrained,
   });
 
-  /// Stable accent derived from the routine's primary muscle group, so
-  /// "Push Day" and "Leg Day" are tinted differently forever.
+  /// Stable accent derived from the routine's dominant muscle group, so the
+  /// glyph square is tinted consistently per muscle.
   Color get _glyphColor {
-    if (muscleTags.isEmpty) return const Color(0xFFA78BFA);
+    if (muscleTags.isEmpty) return AppColors.accentText;
     final index =
         muscleTags.first.hashCode.abs() % AppColors.muscleSplitPalette.length;
     final base = AppColors.muscleSplitPalette[index];
-    // Lighten dark palette entries for legibility on near-black.
     return Color.lerp(base, Colors.white, 0.35)!;
   }
 
@@ -56,29 +57,17 @@ class RoutineCard extends ConsumerWidget {
 
   Widget _tag(String label) => Container(
         padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3),
-        decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.05),
-          borderRadius: BorderRadius.circular(6),
+        decoration: const BoxDecoration(
+          color: AppColors.surface3,
+          borderRadius: AppRadius.badgeAll,
         ),
-        child: Text(
-          label,
-          style: GoogleFonts.inter(
-            fontSize: 11,
-            fontWeight: FontWeight.w500,
-            color: const Color(0xFFB8B8BD),
-          ),
-        ),
+        child: Text(label, style: AppText.badge(color: AppColors.textSecondary)),
       );
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final count = exerciseNames.length;
     final exLabel = count == 1 ? 'exercise' : 'exercises';
-    // Compact meta — "4 exercises · 5 days ago". The verbose
-    // "Last trained …" prefix truncated mid-word next to the card menu on
-    // 360dp screens ("Last trained 5 days a…"); under a routine name the
-    // bare relative date is self-evident. The list header keeps the long
-    // form where there is room for it.
     final meta = lastTrained == null
         ? '$count $exLabel'
         : '$count $exLabel · ${_relative(lastTrained!)}';
@@ -94,27 +83,29 @@ class RoutineCard extends ConsumerWidget {
     return Container(
       decoration: BoxDecoration(
         gradient: RDStyles.cardGradient,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: AppRadius.cardAll,
         border: RDStyles.hairlineBorder,
       ),
       clipBehavior: Clip.antiAlias,
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          onTap: () => context.push('/routines/$routineId'),
+          onTap: () {
+            if (!tapGuard()) return;
+            HapticFeedback.selectionClick();
+            context.push('/routines/$routineId');
+          },
           child: Padding(
             padding: const EdgeInsets.fromLTRB(15, 14, 10, 13),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // ── Header: glyph + name/meta + menu ─────────────────────
+                // ── Header: muscle glyph + name/meta + menu ──────────────
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Muscle-group glyph for the routine's DOMINANT muscle
-                    // (muscleTags is ordered most-trained first). Decorative —
-                    // the routine name beside it carries the label. The square
-                    // is tinted by the same muscle so cards differ at a glance.
+                    // Muscle-group glyph for the dominant muscle, in a square
+                    // tinted by the same muscle. Decorative — name carries it.
                     ExcludeSemantics(
                       child: Container(
                         width: 44,
@@ -125,10 +116,9 @@ class RoutineCard extends ConsumerWidget {
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: MuscleGlyph(
-                          muscle: muscleTags.isNotEmpty
-                              ? muscleTags.first
-                              : 'fullbody',
-                          size: 24,
+                          muscle:
+                              muscleTags.isNotEmpty ? muscleTags.first : 'fullbody',
+                          size: 26,
                           color: _glyphColor,
                         ),
                       ),
@@ -144,22 +134,14 @@ class RoutineCard extends ConsumerWidget {
                               routineName,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
-                              style: GoogleFonts.inter(
-                                fontSize: 17,
-                                fontWeight: FontWeight.w600,
-                                color: AppColors.textPrimary,
-                                letterSpacing: -0.2,
-                              ),
+                              style: AppText.cardTitle(),
                             ),
                             const SizedBox(height: 3),
                             Text(
                               meta,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
-                              style: GoogleFonts.inter(
-                                fontSize: 12.5,
-                                color: AppColors.textSecondary,
-                              ),
+                              style: AppText.caption(),
                             ),
                           ],
                         ),
@@ -171,8 +153,7 @@ class RoutineCard extends ConsumerWidget {
                       constraints:
                           const BoxConstraints(minWidth: 48, minHeight: 48),
                       iconSize: 20,
-                      splashRadius: 22,
-                      icon: const Icon(Icons.more_horiz,
+                      icon: const Icon(Icons.more_horiz_rounded,
                           color: AppColors.textSecondary),
                       onPressed: () => _showOptions(context, ref),
                     ),
@@ -199,7 +180,7 @@ class RoutineCard extends ConsumerWidget {
                   child: Container(height: 1, color: RDStyles.hairline),
                 ),
 
-                // ── Footer: preview + compact Start pill ─────────────────
+                // ── Footer: preview + Start pill ─────────────────────────
                 Padding(
                   padding: const EdgeInsets.only(top: 12),
                   child: Row(
@@ -209,10 +190,7 @@ class RoutineCard extends ConsumerWidget {
                           preview,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: GoogleFonts.inter(
-                            fontSize: 12.5,
-                            color: AppColors.textSecondary,
-                          ),
+                          style: AppText.caption(),
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -262,6 +240,7 @@ class RoutineCard extends ConsumerWidget {
   }
 
   Future<void> _confirmDelete(BuildContext context, WidgetRef ref) async {
+    final actions = ref.read(databaseProvider).routinesDao;
     final confirmed = await showAppConfirmDialog(
       context: context,
       title: 'Delete Routine?',
@@ -271,7 +250,7 @@ class RoutineCard extends ConsumerWidget {
       isDestructive: true,
     );
     if (confirmed) {
-      await ref.read(databaseProvider).routinesDao.deleteRoutine(routineId);
+      await actions.deleteRoutine(routineId);
     }
   }
 }
@@ -284,27 +263,25 @@ class _StartPill extends StatelessWidget {
   Widget build(BuildContext context) {
     return Material(
       color: AppColors.accentPrimary,
-      borderRadius: BorderRadius.circular(14), // primary CTA: 14px, NOT pill
+      borderRadius: AppRadius.buttonPrimaryAll, // 14px CTA, NOT a pill
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 9),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(Icons.play_arrow_rounded,
-                  size: 16, color: Colors.white),
-              const SizedBox(width: 5),
-              Text(
-                'Start',
-                style: GoogleFonts.inter(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.white,
-                ),
-              ),
-            ],
+        child: ConstrainedBox(
+          // ≥48dp tappable height (was ~34dp).
+          constraints: const BoxConstraints(minHeight: 48, minWidth: 68),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.play_arrow_rounded,
+                    size: 18, color: AppColors.textPrimary),
+                const SizedBox(width: 5),
+                Text('Start',
+                    style: AppText.statLabel(color: AppColors.textPrimary)),
+              ],
+            ),
           ),
         ),
       ),
