@@ -236,6 +236,10 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
         routineDailyVolumeProvider((widget.routineId, _selectedTimeRange)));
     final lastSetsAsync = ref.watch(routineLastSetsProvider(widget.routineId));
     final isPremium = ref.watch(isPremiumProvider);
+    // TRUE per-session stats (not the day-grouped chart samples) — so two
+    // sessions on the same day count as two.
+    final sessionStats =
+        ref.watch(routineSessionStatsProvider(widget.routineId)).valueOrNull;
 
     final lastSetsMap = lastSetsAsync.valueOrNull ??
         const <String, List<LastSessionSetData>>{};
@@ -275,9 +279,9 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
                         '${lastDate != null ? ' · Last performed ${relativeDay(lastDate)}' : ''}',
                         style: AppText.meta(),
                       ),
-                      if (allSamples.isNotEmpty) ...[
+                      if (sessionStats != null && sessionStats.count > 0) ...[
                         const SizedBox(height: 16),
-                        _HeroStatStrip(samples: allSamples),
+                        _HeroStatStrip(stats: sessionStats),
                       ],
                       const SizedBox(height: 18),
                       Semantics(
@@ -572,27 +576,23 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
 /// Personal "scoreboard" for this routine — sessions, best and average volume.
 /// Aggregates (counts), distinct from the chart's per-session trend.
 class _HeroStatStrip extends StatelessWidget {
-  final List<DailyVolumeSample> samples;
-  const _HeroStatStrip({required this.samples});
+  final RoutineSessionStats stats;
+  const _HeroStatStrip({required this.stats});
 
   @override
   Widget build(BuildContext context) {
-    final n = samples.length;
-    final best =
-        samples.fold<double>(0, (m, s) => s.volume > m ? s.volume : m);
-    final avg = n == 0
-        ? 0.0
-        : samples.fold<double>(0, (a, s) => a + s.volume) / n;
-
     return Row(
       children: [
-        Expanded(child: _HeroStat(value: '$n', label: 'SESSIONS')),
+        Expanded(
+            child: _HeroStat(value: '${stats.count}', label: 'SESSIONS')),
         const _StatDivider(),
         Expanded(
-            child: _HeroStat(value: groupThousands(best), label: 'BEST KG')),
+            child: _HeroStat(
+                value: groupThousands(stats.bestVolumeKg), label: 'BEST KG')),
         const _StatDivider(),
         Expanded(
-            child: _HeroStat(value: groupThousands(avg), label: 'AVG KG')),
+            child: _HeroStat(
+                value: groupThousands(stats.avgVolumeKg), label: 'AVG KG')),
       ],
     );
   }

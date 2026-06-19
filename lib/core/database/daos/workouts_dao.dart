@@ -112,6 +112,23 @@ class DailyVolumeSample {
   });
 }
 
+/// Per-session aggregates for a routine — the TRUE session count (not
+/// day-grouped, so two sessions on the same day count as two) plus best and
+/// total session volume.
+class RoutineSessionStats {
+  final int count;
+  final double totalVolumeKg;
+  final double bestVolumeKg;
+
+  const RoutineSessionStats({
+    required this.count,
+    required this.totalVolumeKg,
+    required this.bestVolumeKg,
+  });
+
+  double get avgVolumeKg => count == 0 ? 0 : totalVolumeKg / count;
+}
+
 /// A personal record detected at workout finish.
 /// Returned by [WorkoutsDao.detectAndMarkPrs] so the UI can celebrate it.
 class PrRecord {
@@ -1037,6 +1054,30 @@ class WorkoutsDao extends DatabaseAccessor<AppDatabase>
               volume: (r.read(volSum) ?? 0).toDouble(),
             ))
         .toList());
+  }
+
+  /// TRUE per-session stats for a routine (count / total / best session
+  /// volume). Deliberately NOT day-grouped — [watchDailyVolumeForRoutine] groups
+  /// by day for the chart trend, but the header's "Sessions" count must reflect
+  /// every completed session, so two on the same day are counted as two.
+  Stream<RoutineSessionStats> watchRoutineSessionStats(String routineId) {
+    final countExpr = workoutSessions.id.count();
+    final sumExpr = workoutSessions.totalVolumeKg.sum();
+    final maxExpr = workoutSessions.totalVolumeKg.max();
+
+    final query = selectOnly(workoutSessions)
+      ..addColumns([countExpr, sumExpr, maxExpr])
+      ..where(workoutSessions.routineId.equals(routineId))
+      ..where(workoutSessions.endedAt.isNotNull());
+
+    return query.watch().map((rows) {
+      final r = rows.isNotEmpty ? rows.first : null;
+      return RoutineSessionStats(
+        count: r?.read(countExpr) ?? 0,
+        totalVolumeKg: r?.read(sumExpr) ?? 0.0,
+        bestVolumeKg: r?.read(maxExpr) ?? 0.0,
+      );
+    });
   }
 
   /// Most recent COMPLETED session date for a routine — powers the
