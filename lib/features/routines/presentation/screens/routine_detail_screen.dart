@@ -1,35 +1,41 @@
-import 'dart:ui' show ImageFilter;
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:uuid/uuid.dart';
-import '../../../../core/database/daos/routines_dao.dart';
-import '../../../../core/database/daos/workouts_dao.dart';
-import '../../../../core/database/database.dart';
-import '../../../../core/providers/database_provider.dart';
-import '../../../../core/providers/premium_provider.dart';
-import '../../../../core/theme/app_colors.dart';
-import '../../../../features/exercises/presentation/screens/exercise_selection_screen.dart';
-import '../../../../features/workout/domain/active_workout_state.dart';
-import '../../../../features/workout/presentation/providers/active_workout_provider.dart';
-import '../../../../shared/widgets/async_error_state.dart';
-import '../../../../shared/widgets/premium_paywall.dart';
-import '../../../../shared/widgets/ui/app_dialog.dart';
-import '../../../../shared/widgets/ui/time_range_filter.dart';
+
+import 'package:gymlog/core/database/daos/routines_dao.dart';
+import 'package:gymlog/core/database/daos/workouts_dao.dart';
+import 'package:gymlog/core/database/database.dart';
+import 'package:gymlog/core/providers/database_provider.dart';
+import 'package:gymlog/core/providers/premium_provider.dart';
+import 'package:gymlog/core/theme/app_colors.dart';
+import 'package:gymlog/core/theme/app_text.dart';
+import 'package:gymlog/core/utils/relative_time.dart';
+import 'package:gymlog/core/utils/tap_guard.dart';
+import 'package:gymlog/core/utils/units.dart';
+import 'package:gymlog/features/workout/domain/active_workout_state.dart';
+import 'package:gymlog/features/workout/presentation/providers/active_workout_provider.dart';
+import 'package:gymlog/shared/widgets/async_error_state.dart';
+import 'package:gymlog/shared/widgets/premium_paywall.dart';
+import 'package:gymlog/shared/widgets/ui/action_bottom_sheet.dart';
+import 'package:gymlog/shared/widgets/ui/app_card.dart';
+import 'package:gymlog/shared/widgets/ui/app_dialog.dart';
+import 'package:gymlog/shared/widgets/ui/secondary_button.dart';
+import 'package:gymlog/shared/widgets/ui/skeleton.dart';
+import 'package:gymlog/shared/widgets/ui/time_range_filter.dart';
 import '../providers/routines_provider.dart';
-import '../widgets/routine_detail_styles.dart';
 import '../widgets/routine_exercise_block.dart';
 import '../widgets/routine_volume_graph.dart';
 
-/// Premium RoutineDetailScreen — matches the approved mockup.
-///   - SliverAppBar, animated entry
-///   - Hevy-style volume chart (the graph owns its own gradient card)
-///   - Exercise blocks on pure black, no gray slab
-///   - Purple-tint progress pill
+/// Hoisted once — constructing a [DateFormat] parses its pattern, so it must not
+/// be rebuilt per frame.
+final DateFormat _monthDay = DateFormat('MMM d');
+
+/// RoutineDetailScreen — the launchpad for a saved routine: one dominant Start
+/// CTA, a personal stat line, a volume trend, and the exercise set tables.
 class RoutineDetailScreen extends ConsumerStatefulWidget {
   final String routineId;
 
@@ -41,23 +47,19 @@ class RoutineDetailScreen extends ConsumerStatefulWidget {
 }
 
 class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
-    with TickerProviderStateMixin {
+    with SingleTickerProviderStateMixin {
   String _selectedTimeRange = 'All Time';
 
   late final AnimationController _entryController;
-
   bool _entryStarted = false;
 
   @override
   void initState() {
     super.initState();
-    // Responsive, not theatrical: 280ms total, stagger capped below.
     _entryController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 280),
+      duration: const Duration(milliseconds: 320),
     );
-    // Forward is armed in didChangeDependencies, where MediaQuery (and thus the
-    // reduce-motion flag) is safe to read.
   }
 
   @override
@@ -66,7 +68,7 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
     if (_entryStarted) return;
     _entryStarted = true;
     if (MediaQuery.disableAnimationsOf(context)) {
-      _entryController.value = 1.0; // reduce-motion: show final state instantly
+      _entryController.value = 1.0;
     } else {
       _entryController.forward();
     }
@@ -78,19 +80,16 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
     super.dispose();
   }
 
-  String _relativeTime(DateTime date) {
-    final now = DateTime.now();
-    final diff = now.difference(date);
-    if (diff.inDays < 1) return 'today';
-    if (diff.inDays == 1) return 'yesterday';
-    if (diff.inDays < 7) return '${diff.inDays} days ago';
-    if (diff.inDays < 14) return '1 week ago';
-    if (diff.inDays < 30) return '${(diff.inDays / 7).floor()} weeks ago';
-    if (diff.inDays < 60) return '1 month ago';
-    return '${(diff.inDays / 30).floor()} months ago';
-  }
+  // ── Actions ────────────────────────────────────────────────────────────────
 
   void _startRoutine(HydratedRoutineDetail routine) {
+    if (!tapGuard()) return; // no double-push / double session reset
+    if (routine.exercises.isEmpty) {
+      // Empty routine: route to the editor to add exercises rather than start a
+      // contentless workout. Push directly — tapGuard was already consumed.
+      context.push('/routines/edit?id=${widget.routineId}');
+      return;
+    }
     final exercises = routine.exercises.map((he) {
       final config = he.config;
       final sets = List.generate(
@@ -124,19 +123,16 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
     context.pop();
   }
 
-  /// Opens the full routine editor (rename, add/remove/reorder exercises).
   void _openEditor() {
+    if (!tapGuard()) return;
     HapticFeedback.selectionClick();
     context.push('/routines/edit?id=${widget.routineId}');
   }
 
-  /// Appends an exercise to this routine in place — no editor round-trip.
   Future<void> _addExercise() async {
+    if (!tapGuard()) return;
     HapticFeedback.lightImpact();
-    final selected = await Navigator.push<Exercise>(
-      context,
-      MaterialPageRoute(builder: (_) => const ExerciseSelectionScreen()),
-    );
+    final selected = await context.push<Exercise>('/exercises/select');
     if (selected == null || !mounted) return;
     await ref
         .read(databaseProvider)
@@ -144,96 +140,66 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
         .addExerciseToRoutine(widget.routineId, selected.id);
   }
 
-  void _showActionsSheet(HydratedRoutineDetail routine) {
-    HapticFeedback.lightImpact();
-    showModalBottomSheet(
-      context: context,
-      useRootNavigator: true,
-      useSafeArea: true,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (sheetCtx) => BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-        child: Container(
-          decoration: const BoxDecoration(
-            color: Color(0xFF121212),
-            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-          ),
-          child: SafeArea(
-            top: false,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const SizedBox(height: 12),
-                Container(
-                  width: 36,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF6A6A6A),
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                ),
-                const SizedBox(height: 20),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      routine.routine.name,
-                      style: GoogleFonts.inter(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.textPrimary,
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 8),
-                const Divider(
-                  color: Color(0x0DFFFFFF),
-                  height: 1,
-                  indent: 24,
-                  endIndent: 24,
-                ),
-                _SheetActionRow(
-                  icon: Icons.edit_outlined,
-                  iconColor: const Color(0xFFB3B3B3),
-                  iconBackground: AppColors.bgBase,
-                  title: 'Edit Routine',
-                  onTap: () {
-                    Navigator.of(sheetCtx).pop();
-                    _openEditor();
-                  },
-                ),
-                const Divider(
-                  color: Color(0x0DFFFFFF),
-                  height: 1,
-                  indent: 80,
-                  endIndent: 24,
-                ),
-                _SheetActionRow(
-                  icon: Icons.delete_outline_rounded,
-                  iconColor: AppColors.error,
-                  iconBackground: AppColors.error.withValues(alpha: 0.12),
-                  title: 'Delete Routine',
-                  titleColor: AppColors.error,
-                  subtitle: 'This cannot be undone',
-                  subtitleColor: AppColors.error.withValues(alpha: 0.7),
-                  onTap: () {
-                    Navigator.of(sheetCtx).pop();
-                    _confirmDelete(context, routine.routine.id);
-                  },
-                ),
-                const SizedBox(height: 8),
-              ],
-            ),
-          ),
-        ),
-      ),
+  Future<void> _shareRoutine(HydratedRoutineDetail routine) async {
+    final b = StringBuffer()
+      ..writeln(routine.routine.name)
+      ..writeln();
+    for (final he in routine.exercises) {
+      final c = he.config;
+      final reps = c.defaultReps != null ? ' × ${c.defaultReps}' : '';
+      b.writeln('• ${he.exercise.name} — ${c.defaultSets} sets$reps');
+    }
+    b
+      ..writeln()
+      ..write('Shared from GymLog');
+    await SharePlus.instance.share(
+      ShareParams(text: b.toString(), subject: routine.routine.name),
     );
   }
 
-  Future<void> _confirmDelete(BuildContext context, String routineId) async {
+  void _showActions(HydratedRoutineDetail routine) {
+    showActionBottomSheet(
+      context: context,
+      title: routine.routine.name,
+      items: [
+        ActionSheetItem(
+          icon: Icons.edit_rounded,
+          iconColor: AppColors.textSecondary,
+          iconBackground: AppColors.bgBase,
+          title: 'Edit Routine',
+          onTap: (ctx) {
+            Navigator.of(ctx).pop();
+            _openEditor();
+          },
+        ),
+        ActionSheetItem(
+          icon: Icons.share_rounded,
+          iconColor: AppColors.textSecondary,
+          iconBackground: AppColors.bgBase,
+          title: 'Share Routine',
+          onTap: (ctx) {
+            Navigator.of(ctx).pop();
+            _shareRoutine(routine);
+          },
+        ),
+        ActionSheetItem(
+          icon: Icons.delete_outline_rounded,
+          iconColor: AppColors.error,
+          iconBackground: AppColors.error.withValues(alpha: 0.12),
+          title: 'Delete Routine',
+          titleColor: AppColors.error,
+          subtitle: 'This cannot be undone',
+          subtitleColor: AppColors.error.withValues(alpha: 0.7),
+          onTap: (ctx) {
+            Navigator.of(ctx).pop();
+            _confirmDelete(routine.routine.id);
+          },
+        ),
+      ],
+    );
+  }
+
+  Future<void> _confirmDelete(String routineId) async {
     final confirmed = await showAppConfirmDialog(
       context: context,
       title: 'Delete Routine?',
@@ -252,227 +218,115 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
     ref.invalidate(routineLastSetsProvider(widget.routineId));
   }
 
+  // ── Build ────────────────────────────────────────────────────────────────
+
   @override
   Widget build(BuildContext context) {
     final routineAsync = ref.watch(routineDetailProvider(widget.routineId));
-    final volumeAsync = ref.watch(
-      routineDailyVolumeProvider((widget.routineId, _selectedTimeRange)),
-    );
-    final lastSetsAsync = ref.watch(routineLastSetsProvider(widget.routineId));
-
-    return Scaffold(
-      backgroundColor: AppColors.bgBase,
-      body: routineAsync.when(
-        loading: () => _buildSkeleton(),
-        error: (_, __) => _buildError(),
-        data: (routine) {
-          if (routine == null) {
-            return _buildNotFound();
-          }
-          return _buildScrollView(
-            routine,
-            volumeAsync,
-            lastSetsAsync.valueOrNull ?? {},
-            lastSetsAsync.isLoading && lastSetsAsync.valueOrNull == null,
-          );
-        },
-      ),
+    return routineAsync.when(
+      loading: _buildSkeleton,
+      error: (_, __) => _buildError(),
+      data: (routine) =>
+          routine == null ? _buildNotFound() : _buildLoaded(routine),
     );
   }
 
-  Widget _buildScrollView(
-    HydratedRoutineDetail routine,
-    AsyncValue<List<DailyVolumeSample>> volumeAsync,
-    Map<String, List<LastSessionSetData>> lastSetsMap,
-    bool isLoadingHistory,
-  ) {
+  Widget _buildLoaded(HydratedRoutineDetail routine) {
+    final volumeAsync = ref.watch(
+        routineDailyVolumeProvider((widget.routineId, _selectedTimeRange)));
+    final lastSetsAsync = ref.watch(routineLastSetsProvider(widget.routineId));
     final isPremium = ref.watch(isPremiumProvider);
-    final lastDate = volumeAsync.valueOrNull?.isNotEmpty == true
-        ? volumeAsync.valueOrNull!.last.day
-        : null;
-    final exerciseCount = routine.exercises.length;
+    // TRUE per-session stats (not the day-grouped chart samples) — so two
+    // sessions on the same day count as two.
+    final sessionStats =
+        ref.watch(routineSessionStatsProvider(widget.routineId)).valueOrNull;
 
-    return NotificationListener<ScrollNotification>(
-      onNotification: (_) => false,
-      child: RefreshIndicator(
+    final lastSetsMap = lastSetsAsync.valueOrNull ??
+        const <String, List<LastSessionSetData>>{};
+    final isLoadingHistory =
+        lastSetsAsync.isLoading && lastSetsAsync.valueOrNull == null;
+
+    final allSamples = volumeAsync.valueOrNull ?? const <DailyVolumeSample>[];
+    final visible = gateChartSamples(allSamples, isPremium);
+    final exerciseCount = routine.exercises.length;
+    final lastDate = allSamples.isNotEmpty ? allSamples.last.day : null;
+    final hasTrend = allSamples.length >= 2;
+    final bottomInset = MediaQuery.viewPaddingOf(context).bottom;
+
+    return Scaffold(
+      backgroundColor: AppColors.bgBase,
+      body: RefreshIndicator(
         color: AppColors.accentPrimary,
-        backgroundColor: const Color(0xFF121212),
+        backgroundColor: AppColors.surface2,
         onRefresh: _onRefresh,
         child: CustomScrollView(
-          physics: const BouncingScrollPhysics(),
+          physics: const BouncingScrollPhysics(
+              parent: AlwaysScrollableScrollPhysics()),
           slivers: [
-            // ── SliverAppBar ─────────────────────────────────────────────
-            SliverAppBar(
-              pinned: true,
-              floating: false,
-              snap: false,
-              toolbarHeight: 56,
-              backgroundColor: AppColors.bgBase,
-              scrolledUnderElevation: 0,
-              elevation: 0,
-              automaticallyImplyLeading: false,
-              titleSpacing: 0,
-              centerTitle: false,
-              title: Text(
-                routine.routine.name,
-                style: GoogleFonts.inter(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.textPrimary,
-                  letterSpacing: -0.3,
-                ),
-              ),
-              leading: SizedBox(
-                width: 48,
-                height: 48,
-                child: IconButton(
-                  tooltip: 'Back',
-                  icon: const Icon(Icons.arrow_back_ios_new),
-                  color: AppColors.textPrimary,
-                  onPressed: () => context.pop(),
-                ),
-              ),
-              actions: [
-                IconButton(
-                  tooltip: 'Routine options',
-                  icon: const Icon(Icons.more_vert_rounded, size: 24),
-                  color: AppColors.textPrimary,
-                  padding: EdgeInsets.zero,
-                  constraints:
-                      const BoxConstraints(minWidth: 48, minHeight: 48),
-                  splashRadius: 24,
-                  onPressed: () => _showActionsSheet(routine),
-                ),
-              ],
-            ),
+            _appBar(routine),
 
-            // ── Attribution + CTA ────────────────────────────────────────
+            // Attribution + stat line + the one dominant CTA.
             SliverToBoxAdapter(
               child: _entryFade(
-                interval: const Interval(0.0, 0.3, curve: Curves.easeOutExpo),
+                interval: const Interval(0.0, 0.32, curve: Curves.easeOutExpo),
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+                  padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        '$exerciseCount exercise${exerciseCount != 1 ? 's' : ''}${lastDate != null ? ' · Last performed ${_relativeTime(lastDate)}' : ''}',
-                        style: GoogleFonts.inter(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w400,
-                          color: Colors.white.withValues(alpha: 0.6),
-                        ),
+                        '$exerciseCount exercise${exerciseCount != 1 ? 's' : ''}'
+                        '${lastDate != null ? ' · Last performed ${relativeDay(lastDate)}' : ''}',
+                        style: AppText.meta(),
                       ),
-                      const SizedBox(height: 16),
-                      // Singular, dominant primary action — editing lives
-                      // in the three-dot sheet where it belongs.
+                      if (sessionStats != null && sessionStats.count > 0) ...[
+                        const SizedBox(height: 16),
+                        _HeroStatStrip(stats: sessionStats),
+                      ],
+                      const SizedBox(height: 18),
                       Semantics(
                         button: true,
-                        label: 'Start Routine',
+                        label: routine.exercises.isEmpty
+                            ? 'Add an exercise to start'
+                            : 'Start Routine',
                         child: _StartRoutineButton(
+                          empty: routine.exercises.isEmpty,
                           onTap: () => _startRoutine(routine),
                         ),
                       ),
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 26),
                     ],
                   ),
                 ),
               ),
             ),
 
-            // ── Graph Section ────────────────────────────────────────────
+            // Volume trend.
             SliverToBoxAdapter(
               child: _entryFade(
-                interval: const Interval(0.2, 0.45, curve: Curves.easeOutExpo),
+                interval: const Interval(0.2, 0.5, curve: Curves.easeOutExpo),
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          Text.rich(TextSpan(children: [
-                            TextSpan(
-                                text: 'Total Volume ',
-                                style: RDStyles.sectionLabel),
-                            TextSpan(text: '(kg)', style: RDStyles.sectionUnit),
-                          ])),
-                          Row(
-                            children: [
-                              if (!isPremium &&
-                                  (volumeAsync.valueOrNull?.length ?? 0) > 3)
-                                const Padding(
-                                  padding: EdgeInsets.only(right: 10),
-                                  child: ProLockPill(label: 'FULL HISTORY'),
-                                ),
-                              TimeRangeFilter(
-                                value: _selectedTimeRange,
-                                onChanged: (range) =>
-                                    setState(() => _selectedTimeRange = range),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-                      volumeAsync.when(
-                        loading: () => Container(
-                          height: 198,
-                          decoration: BoxDecoration(
-                            gradient: RDStyles.cardGradient,
-                            borderRadius: BorderRadius.circular(20),
-                            border: RDStyles.hairlineBorder,
-                          ),
-                          child: const Center(
-                            child: CircularProgressIndicator(
-                              color: AppColors.accentPrimary,
-                            ),
-                          ),
-                        ),
-                        error: (_, __) => const RoutineVolumeGraph(data: []),
-                        data: (data) {
-                          // Free tier: 3 most recent sessions as a teaser.
-                          final visible = gateChartSamples(data, isPremium);
-                          return AnimatedSwitcher(
-                            duration: const Duration(milliseconds: 300),
-                            child: RoutineVolumeGraph(
-                              key: ValueKey(
-                                  '$_selectedTimeRange${visible.length}'),
-                              data: visible,
-                            ),
-                          );
-                        },
-                      ),
-                      volumeAsync.maybeWhen(
-                        data: (data) => _RoutineProgressPill(
-                            samples: gateChartSamples(data, isPremium)),
-                        orElse: () => const SizedBox.shrink(),
-                      ),
-                      const SizedBox(height: 28),
-                    ],
-                  ),
+                  child: _volumeSection(
+                      volumeAsync, visible, isPremium, allSamples.length,
+                      hasTrend: hasTrend),
                 ),
               ),
             ),
 
-            // ── Exercise List ────────────────────────────────────────────
+            // Exercises.
             SliverPadding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               sliver: SliverList(
                 delegate: SliverChildBuilderDelegate(
                   (context, index) {
                     final exercise = routine.exercises[index];
-                    final exKey = exercise.exercise.id.toString();
-                    final sets = lastSetsMap[exKey];
-                    // Stagger only the first 3 items, capped — entry must
-                    // feel responsive, not theatrical.
+                    final sets = lastSetsMap[exercise.exercise.id.toString()];
                     final delay = index.clamp(0, 3) * 0.05;
                     return _entryFade(
                       interval: Interval(
-                        (0.35 + delay).clamp(0.0, 0.9),
-                        (0.55 + delay).clamp(0.0, 1.0),
+                        (0.4 + delay).clamp(0.0, 0.9),
+                        (0.6 + delay).clamp(0.0, 1.0),
                         curve: Curves.easeOutExpo,
                       ),
                       child: RoutineExerciseBlock(
@@ -495,111 +349,210 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
               ),
             ),
 
-            // ── Add Exercise ─────────────────────────────────────────────
+            // Add exercise.
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(16, 20, 16, 0),
-                child: Material(
-                  color: AppColors.surfaceRaised,
-                  borderRadius: BorderRadius.circular(14),
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(14),
-                    onTap: _addExercise,
-                    child: Container(
-                      height: 50,
-                      alignment: Alignment.center,
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(Icons.add_rounded,
-                              color: Colors.white.withValues(alpha: 0.9),
-                              size: 16),
-                          const SizedBox(width: 9),
-                          Text('Add Exercise', style: RDStyles.addBtn),
-                        ],
-                      ),
-                    ),
-                  ),
+                child: SecondaryButton(
+                  label: 'Add Exercise',
+                  icon: Icons.add_rounded,
+                  onPressed: _addExercise,
                 ),
               ),
             ),
 
-            const SliverToBoxAdapter(child: SizedBox(height: 120)),
+            SliverToBoxAdapter(child: SizedBox(height: 24 + bottomInset)),
           ],
         ),
       ),
     );
   }
 
-  /// Shared fade+slide entry transition wrapper.
-  Widget _entryFade({required Interval interval, required Widget child}) {
-    final curved = CurvedAnimation(parent: _entryController, curve: interval);
-    return FadeTransition(
-      opacity: Tween<double>(begin: 0.0, end: 1.0).animate(curved),
-      child: SlideTransition(
-        position: Tween<Offset>(
-          begin: const Offset(0, 0.05),
-          end: Offset.zero,
-        ).animate(curved),
-        child: child,
+  Widget _appBar(HydratedRoutineDetail routine) {
+    return SliverAppBar(
+      pinned: true,
+      toolbarHeight: 56,
+      backgroundColor: AppColors.bgBase,
+      surfaceTintColor: Colors.transparent,
+      scrolledUnderElevation: 0,
+      elevation: 0,
+      automaticallyImplyLeading: false,
+      titleSpacing: 0,
+      centerTitle: false,
+      title: Text(
+        routine.routine.name,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: AppText.sectionHeading(),
       ),
-    );
-  }
-
-  Widget _buildSkeleton() {
-    return CustomScrollView(
-      physics: const NeverScrollableScrollPhysics(),
-      slivers: [
-        const SliverAppBar(
-          pinned: true,
-          toolbarHeight: 56,
-          backgroundColor: AppColors.bgBase,
-          scrolledUnderElevation: 0,
-          elevation: 0,
-          automaticallyImplyLeading: false,
-          titleSpacing: 0,
-          centerTitle: false,
-          title: SizedBox.shrink(),
-        ),
-        SliverToBoxAdapter(
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _skel(width: 200, height: 16, radius: 8),
-                const SizedBox(height: 16),
-                _skel(height: 56, radius: 16),
-                const SizedBox(height: 24),
-                _skel(height: 198, radius: 20),
-                const SizedBox(height: 24),
-                ...List.generate(
-                  3,
-                  (i) => const Padding(
-                    padding: EdgeInsets.only(bottom: 12),
-                    child: _SkelBox(height: 120, radius: 16),
-                  ),
-                ),
-              ],
-            ),
-          ),
+      leading: IconButton(
+        tooltip: 'Back',
+        icon: const Icon(Icons.arrow_back_rounded,
+            size: 24, color: AppColors.textPrimary),
+        onPressed: () => context.pop(),
+      ),
+      actions: [
+        IconButton(
+          tooltip: 'Routine options',
+          icon: const Icon(Icons.more_horiz_rounded,
+              size: 24, color: AppColors.textPrimary),
+          constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
+          onPressed: () => _showActions(routine),
         ),
       ],
     );
   }
 
-  Widget _skel({double? width, required double height, double radius = 12}) =>
-      _SkelBox(width: width, height: height, radius: radius);
+  Widget _volumeSection(
+    AsyncValue<List<DailyVolumeSample>> volumeAsync,
+    List<DailyVolumeSample> visible,
+    bool isPremium,
+    int totalSamples, {
+    required bool hasTrend,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Flexible(
+              child: Semantics(
+                header: true,
+                child: Text.rich(
+                  TextSpan(children: [
+                    TextSpan(text: 'Total Volume ', style: AppText.cardTitle()),
+                    TextSpan(text: '(kg)', style: AppText.meta()),
+                  ]),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ),
+            // Nothing to filter with fewer than two sessions — hide the
+            // dead control instead of offering a no-op.
+            if (hasTrend)
+              Row(
+                children: [
+                  if (!isPremium && totalSamples > 3)
+                    const Padding(
+                      padding: EdgeInsets.only(right: 10),
+                      child: ProLockPill(label: 'FULL HISTORY'),
+                    ),
+                  TimeRangeFilter(
+                    value: _selectedTimeRange,
+                    onChanged: (range) =>
+                        setState(() => _selectedTimeRange = range),
+                  ),
+                ],
+              ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        RepaintBoundary(
+          child: volumeAsync.when(
+            loading: () => Container(
+              height: 198,
+              decoration: AppCard.decoration(radius: 20),
+              child: const Center(
+                child:
+                    CircularProgressIndicator(color: AppColors.accentPrimary),
+              ),
+            ),
+            error: (_, __) => const RoutineVolumeGraph(data: []),
+            data: (_) => AnimatedSwitcher(
+              duration: const Duration(milliseconds: 300),
+              child: RoutineVolumeGraph(
+                key: ValueKey('$_selectedTimeRange${visible.length}'),
+                data: visible,
+              ),
+            ),
+          ),
+        ),
+        _RoutineProgressPill(samples: visible),
+        const SizedBox(height: 28),
+      ],
+    );
+  }
+
+  /// Shared fade + rise entry. Reads the controller directly (no per-build
+  /// `CurvedAnimation`/`Tween` allocations to leak).
+  Widget _entryFade({required Interval interval, required Widget child}) {
+    return AnimatedBuilder(
+      animation: _entryController,
+      child: child,
+      builder: (context, child) {
+        final t = interval.transform(_entryController.value.clamp(0.0, 1.0));
+        return Opacity(
+          opacity: t,
+          child: Transform.translate(offset: Offset(0, 10 * (1 - t)), child: child),
+        );
+      },
+    );
+  }
+
+  // ── Loading / error / not-found (each owns ONE Scaffold — no nesting) ──────
+
+  Widget _buildSkeleton() {
+    return Scaffold(
+      backgroundColor: AppColors.bgBase,
+      body: SkeletonPulse(
+        child: CustomScrollView(
+          physics: const NeverScrollableScrollPhysics(),
+          slivers: [
+            const SliverAppBar(
+              pinned: true,
+              toolbarHeight: 56,
+              backgroundColor: AppColors.bgBase,
+              surfaceTintColor: Colors.transparent,
+              scrolledUnderElevation: 0,
+              elevation: 0,
+              automaticallyImplyLeading: false,
+              titleSpacing: 0,
+              title: SizedBox.shrink(),
+            ),
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SkeletonBox(width: 200, height: 16),
+                    const SizedBox(height: 16),
+                    const SkeletonBox(height: 52, radius: 14),
+                    const SizedBox(height: 24),
+                    const SkeletonBox(height: 198, radius: 20),
+                    const SizedBox(height: 24),
+                    ...List.generate(
+                      3,
+                      (i) => const Padding(
+                        padding: EdgeInsets.only(bottom: 12),
+                        child: SkeletonBox(height: 120, radius: 16),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
   Widget _buildError() {
-    // A bare Center used to strand the user (no back button, "pull down to
-    // retry" where pull didn't work). Now: an app bar back + a real retry.
     return Scaffold(
       backgroundColor: AppColors.bgBase,
       appBar: AppBar(
         backgroundColor: AppColors.bgBase,
         scrolledUnderElevation: 0,
-        leading: const BackButton(color: AppColors.textPrimary),
+        leading: IconButton(
+          tooltip: 'Back',
+          icon: const Icon(Icons.arrow_back_rounded,
+              color: AppColors.textPrimary),
+          onPressed: () => context.pop(),
+        ),
       ),
       body: AsyncErrorState(
         message: "Couldn't load this routine.",
@@ -620,27 +573,68 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
 // Sub-widgets
 // ══════════════════════════════════════════════════════════════════════════════
 
-class _SkelBox extends StatelessWidget {
-  final double? width;
-  final double height;
-  final double radius;
-  const _SkelBox({this.width, required this.height, this.radius = 12});
+/// Personal "scoreboard" for this routine — sessions, best and average volume.
+/// Aggregates (counts), distinct from the chart's per-session trend.
+class _HeroStatStrip extends StatelessWidget {
+  final RoutineSessionStats stats;
+  const _HeroStatStrip({required this.stats});
 
   @override
-  Widget build(BuildContext context) => Container(
-        width: width,
-        height: height,
-        decoration: BoxDecoration(
-          color: const Color(0xFF121212),
-          borderRadius: BorderRadius.circular(radius),
-        ),
-      );
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+            child: _HeroStat(value: '${stats.count}', label: 'SESSIONS')),
+        const _StatDivider(),
+        Expanded(
+            child: _HeroStat(
+                value: groupThousands(stats.bestVolumeKg), label: 'BEST KG')),
+        const _StatDivider(),
+        Expanded(
+            child: _HeroStat(
+                value: groupThousands(stats.avgVolumeKg), label: 'AVG KG')),
+      ],
+    );
+  }
 }
 
+class _StatDivider extends StatelessWidget {
+  const _StatDivider();
+  @override
+  Widget build(BuildContext context) => Container(
+      width: 1, height: 26, color: AppColors.borderSubtle);
+}
+
+class _HeroStat extends StatelessWidget {
+  final String value;
+  final String label;
+  const _HeroStat({required this.value, required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        FittedBox(
+          fit: BoxFit.scaleDown,
+          alignment: Alignment.centerLeft,
+          child: Text(value, style: AppText.heroStat(), maxLines: 1),
+        ),
+        const SizedBox(height: 3),
+        Text(label, style: AppText.columnHeader(color: AppColors.textSecondary)),
+      ],
+    );
+  }
+}
+
+/// The single dominant CTA — bespoke for its signature glow + press-scale, but
+/// on-system (52dp, [AppRadius.buttonPrimary]). Falls back to "Add exercise"
+/// for an empty routine instead of starting a contentless workout.
 class _StartRoutineButton extends StatefulWidget {
   final VoidCallback onTap;
+  final bool empty;
 
-  const _StartRoutineButton({required this.onTap});
+  const _StartRoutineButton({required this.onTap, required this.empty});
 
   @override
   State<_StartRoutineButton> createState() => _StartRoutineButtonState();
@@ -654,12 +648,14 @@ class _StartRoutineButtonState extends State<_StartRoutineButton> {
   void _onTapCancel() => setState(() => _scale = 1.0);
 
   void _onTap() {
-    HapticFeedback.mediumImpact();
+    // Peak-intent moment — a heavier confirmation than a normal tap.
+    HapticFeedback.heavyImpact();
     widget.onTap();
   }
 
   @override
   Widget build(BuildContext context) {
+    final empty = widget.empty;
     return GestureDetector(
       onTapDown: _onTapDown,
       onTapUp: _onTapUp,
@@ -670,123 +666,36 @@ class _StartRoutineButtonState extends State<_StartRoutineButton> {
         duration: const Duration(milliseconds: 150),
         curve: Curves.easeOutQuint,
         child: Container(
-          height: 54,
+          height: 52,
           width: double.infinity,
           decoration: BoxDecoration(
-            color: AppColors.accentPrimary,
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.accentPrimary.withValues(alpha: 0.35),
-                blurRadius: 24,
-                offset: const Offset(0, 8),
-                spreadRadius: -6,
+            color: empty ? AppColors.surface3 : AppColors.accentPrimary,
+            borderRadius: AppRadius.buttonPrimaryAll,
+            boxShadow: empty
+                ? null
+                : [
+                    BoxShadow(
+                      color: AppColors.accentPrimary.withValues(alpha: 0.35),
+                      blurRadius: 24,
+                      offset: const Offset(0, 8),
+                      spreadRadius: -6,
+                    ),
+                  ],
+          ),
+          alignment: Alignment.center,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(empty ? Icons.add_rounded : Icons.play_arrow_rounded,
+                  color: empty ? AppColors.textSecondary : Colors.white,
+                  size: 22),
+              const SizedBox(width: 8),
+              Text(
+                empty ? 'Add an exercise' : 'Start Routine',
+                style: AppText.button(
+                    color: empty ? AppColors.textSecondary : Colors.white),
               ),
             ],
-          ),
-          child: Material(
-            color: Colors.transparent,
-            // Tap is handled by the ancestor GestureDetector (which also drives
-            // the press-scale). This InkWell previously ALSO had onTap: _onTap,
-            // so a single tap fired the handler — and the haptic, and the
-            // navigation — twice. With no callbacks the tap falls through to
-            // the GestureDetector: exactly one fire. AnimatedScale is the press
-            // feedback, so losing the ripple is intentional.
-            child: Center(
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(Icons.play_arrow_rounded,
-                        color: Colors.white, size: 22),
-                    const SizedBox(width: 8),
-                    Text('Start Routine', style: RDStyles.startBtn),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ),
-    );
-  }
-}
-
-class _SheetActionRow extends StatelessWidget {
-  final IconData icon;
-  final Color iconColor;
-  final Color iconBackground;
-  final String title;
-  final Color? titleColor;
-  final String? subtitle;
-  final Color? subtitleColor;
-  final VoidCallback onTap;
-
-  const _SheetActionRow({
-    required this.icon,
-    required this.iconColor,
-    required this.iconBackground,
-    required this.title,
-    this.titleColor,
-    this.subtitle,
-    this.subtitleColor,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      height: 56,
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onTap,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
-            child: Row(
-              children: [
-                Container(
-                  width: 40,
-                  height: 40,
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    color: iconBackground,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Icon(icon, color: iconColor, size: 20),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        title,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: GoogleFonts.inter(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500,
-                          color: titleColor ?? AppColors.textPrimary,
-                        ),
-                      ),
-                      if (subtitle != null) ...[
-                        const SizedBox(height: 2),
-                        Text(
-                          subtitle!,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: GoogleFonts.inter(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w400,
-                            color: subtitleColor ?? const Color(0xFF6A6A6A),
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
-              ],
-            ),
           ),
         ),
       ),
@@ -830,14 +739,14 @@ class _RoutineProgressPill extends StatelessWidget {
               Icon(
                 isUp ? Icons.trending_up_rounded : Icons.trending_down_rounded,
                 size: 14,
-                color: const Color(0xFFA78BFA),
+                color: AppColors.accentText,
               ),
               const SizedBox(width: 6),
               Text(
                 isUp
-                    ? 'Volume up $delta% since ${DateFormat('MMM d').format(samples.first.day)}'
-                    : 'Volume down ${-delta}% since ${DateFormat('MMM d').format(samples.first.day)}',
-                style: RDStyles.deltaPill,
+                    ? 'Volume up $delta% since ${_monthDay.format(samples.first.day)}'
+                    : 'Volume down ${-delta}% since ${_monthDay.format(samples.first.day)}',
+                style: AppText.statLabel(color: AppColors.accentText),
               ),
             ],
           ),

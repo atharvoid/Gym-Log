@@ -64,3 +64,12 @@ final routineLastSetsProvider =
     userId: user.id,
   );
 });
+
+/// True per-session stats (count / best / total volume) for the routine header.
+/// Separate from [routineDailyVolumeProvider] (which day-groups for the chart)
+/// so same-day sessions are never undercounted in the "Sessions" stat.
+final routineSessionStatsProvider =
+    StreamProvider.family<RoutineSessionStats, String>((ref, routineId) {
+  final db = ref.watch(databaseProvider);
+  return db.workoutsDao.watchRoutineSessionStats(routineId);
+});
