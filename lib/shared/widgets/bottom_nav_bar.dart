@@ -1,57 +1,53 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter/services.dart';
 import '../../core/theme/app_colors.dart';
 
 /// [bottom_nav_bar.dart]
-/// Purpose: High-Density Tracker - 3-tab navigation (Home, Routines, Profile)
-/// Dependencies: flutter/material.dart, go_router, google_fonts, app_colors.dart
+/// 3-tab navigation (Home, Routines, Profile). Driven by the parent
+/// StatefulNavigationShell: [currentIndex] is the active branch and
+/// [onTap] switches branches (which preserves each tab's state/scroll).
 ///
-/// Active-tab indicator: a small accent underline drawn INSIDE each tab
-/// cell, directly under its label. Per-cell rendering means the indicator
-/// is centered under the active tab by construction — there is no
-/// cross-bar alignment math that can drift. (A previous experiment with a
-/// bar-wide animated indicator produced an underline that was visibly
-/// off-center under Home/Routines; do not reintroduce one.)
-
+/// Active-tab indicator: a small accent underline drawn INSIDE each tab cell,
+/// directly under its label — centered by construction, no cross-bar math.
 class BottomNavBar extends StatelessWidget {
-  const BottomNavBar({super.key});
+  final int currentIndex;
+  final ValueChanged<int> onTap;
+
+  const BottomNavBar({
+    super.key,
+    required this.currentIndex,
+    required this.onTap,
+  });
 
   static const _tabs = [
-    _NavItem(icon: Icons.home_filled, label: 'Home', path: '/'),
-    _NavItem(icon: Icons.fitness_center, label: 'Routines', path: '/workout'),
-    _NavItem(icon: Icons.person, label: 'Profile', path: '/profile'),
+    _NavItem(icon: Icons.home_filled, label: 'Home'),
+    _NavItem(icon: Icons.fitness_center, label: 'Routines'),
+    _NavItem(icon: Icons.person, label: 'Profile'),
   ];
 
   @override
   Widget build(BuildContext context) {
-    final location = GoRouterState.of(context).matchedLocation;
-
     return Container(
-      decoration: const BoxDecoration(
-        color: AppColors.bgBase,
-      ),
+      decoration: const BoxDecoration(color: AppColors.bgBase),
       child: SafeArea(
         top: false,
         child: SizedBox(
           height: 72,
           child: Row(
-            children: _tabs.map((tab) {
-              final isActive = location == tab.path;
-              // Expanded cells: three equal thirds, edge-to-edge tap
-              // targets (full cell height — comfortably ≥48dp).
-              return Expanded(
-                child: _NavButton(
-                  item: tab,
-                  isActive: isActive,
-                  onTap: () {
-                    HapticFeedback.selectionClick();
-                    context.go(tab.path);
-                  },
+            children: [
+              for (var i = 0; i < _tabs.length; i++)
+                Expanded(
+                  child: _NavButton(
+                    item: _tabs[i],
+                    isActive: i == currentIndex,
+                    onTap: () {
+                      HapticFeedback.selectionClick();
+                      onTap(i);
+                    },
+                  ),
                 ),
-              );
-            }).toList(),
+            ],
           ),
         ),
       ),
@@ -62,8 +58,7 @@ class BottomNavBar extends StatelessWidget {
 class _NavItem {
   final IconData icon;
   final String label;
-  final String path;
-  const _NavItem({required this.icon, required this.label, required this.path});
+  const _NavItem({required this.icon, required this.label});
 }
 
 class _NavButton extends StatelessWidget {
@@ -79,6 +74,7 @@ class _NavButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final color = isActive ? AppColors.accentText : AppColors.textSecondary;
     return Semantics(
       selected: isActive,
       button: true,
@@ -88,27 +84,17 @@ class _NavButton extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              item.icon,
-              color:
-                  isActive ? AppColors.accentText : AppColors.textSecondary,
-              size: 26,
-            ),
+            Icon(item.icon, color: color, size: 26),
             const SizedBox(height: 2),
             Text(
               item.label,
               style: GoogleFonts.inter(
-                color: isActive
-                    ? AppColors.accentText
-                    : AppColors.textSecondary,
+                color: color,
                 fontWeight: FontWeight.w600,
                 fontSize: 11,
               ),
             ),
             const SizedBox(height: 3),
-            // Reward-moment underline — grows in under the active label,
-            // collapses to nothing when inactive. Centered by the Column,
-            // never positioned by hand.
             AnimatedContainer(
               duration: const Duration(milliseconds: 200),
               curve: Curves.easeOutCubic,
