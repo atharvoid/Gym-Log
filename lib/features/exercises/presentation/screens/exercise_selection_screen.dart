@@ -15,6 +15,11 @@ import 'package:gymlog/shared/widgets/ui/skeleton.dart';
 import '../providers/exercises_provider.dart';
 import '../widgets/create_exercise_dialog.dart';
 
+/// Fixed item heights — the alphabet scrubber computes scroll offsets from these,
+/// so headers and rows MUST render at exactly these heights.
+const double _kRowHeight = 64;
+const double _kHeaderHeight = 36;
+
 /// Live recent-exercise ids from workout history.
 final _recentExerciseIdsProvider = StreamProvider.autoDispose<List<int>>((ref) {
   final user = ref.watch(authProvider);
@@ -45,13 +50,13 @@ final _equipmentGroups = <String, bool Function(String)>{
   'Band': (e) => e.contains('band'),
 };
 
-/// Exercise list with live search, Recent section, and combinable
-/// Muscle / Equipment filters.
+/// Exercise list with live search, Recent section, combinable Muscle / Equipment
+/// filters, and an A–Z scrubber.
 ///
 /// Two modes, one screen:
 ///  * Selection (default): tapping pops with the chosen [Exercise].
 ///  * Browse (`browse: true`, route `/exercises/library`): tapping opens
-///    the exercise detail with charts, records and form instructions.
+///    the exercise detail.
 class ExerciseSelectionScreen extends ConsumerStatefulWidget {
   final bool browse;
 
@@ -65,6 +70,7 @@ class ExerciseSelectionScreen extends ConsumerStatefulWidget {
 class _ExerciseSelectionScreenState
     extends ConsumerState<ExerciseSelectionScreen> {
   final _searchController = TextEditingController();
+  final _scrollController = ScrollController();
   Timer? _searchDebounce;
   String? _muscleFilter;
   String? _equipmentFilter;
@@ -80,14 +86,13 @@ class _ExerciseSelectionScreenState
   void dispose() {
     _searchDebounce?.cancel();
     _searchController.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
-  /// Driven by the controller's listener so it fires on programmatic clears too.
-  /// `setState` runs ONLY when the empty↔non-empty boundary flips (which is all
-  /// the UI needs — Recent visibility + the clear button) instead of on every
-  /// keystroke, so a fast typist no longer re-filters + re-sorts the whole
-  /// catalog per character. The DB search itself is debounced 150ms.
+  /// `setState` runs ONLY on the empty↔non-empty boundary (Recent visibility +
+  /// clear button) — not per keystroke — so the catalog filter+sort doesn't
+  /// re-run on every character. The DB search is debounced 150ms.
   void _onQueryChanged() {
     final searching = _searchController.text.trim().isNotEmpty;
     if (searching != _isSearching) setState(() => _isSearching = searching);
@@ -118,6 +123,30 @@ class _ExerciseSelectionScreenState
       return false;
     }
     return true;
+  }
+
+  /// Bucket letter for the scrubber — A–Z, everything else to '#'.
+  static String _initial(String name) {
+    final t = name.trim().toUpperCase();
+    if (t.isEmpty) return '#';
+    final c = t[0];
+    return (c.compareTo('A') >= 0 && c.compareTo('Z') <= 0) ? c : '#';
+  }
+
+  void _jumpToLetter(
+      String letter, List<_ListItem> items, Map<String, int> letterIndex) {
+    final target = letterIndex[letter];
+    if (target == null || !_scrollController.hasClients) return;
+    var offset = 0.0;
+    for (var i = 0; i < target; i++) {
+      offset += items[i].isHeader ? _kHeaderHeight : _kRowHeight;
+    }
+    HapticFeedback.selectionClick();
+    _scrollController.animateTo(
+      offset.clamp(0.0, _scrollController.position.maxScrollExtent),
+      duration: const Duration(milliseconds: 240),
+      curve: Curves.easeOutCubic,
+    );
   }
 
   Future<void> _pickFilter({
@@ -180,6 +209,7 @@ class _ExerciseSelectionScreenState
   Widget build(BuildContext context) {
     final exercisesAsync = ref.watch(exerciseListProvider);
     final recentIds = ref.watch(_recentExerciseIdsProvider).valueOrNull ?? [];
+    final hasFilters = _muscleFilter != null || _equipmentFilter != null;
 
     return Scaffold(
       backgroundColor: AppColors.bgBase,
@@ -261,6 +291,17 @@ class _ExerciseSelectionScreenState
                     onSelected: (v) => setState(() => _equipmentFilter = v),
                   ),
                 ),
+                if (hasFilters) ...[
+                  const Spacer(),
+                  TextButton(
+                    onPressed: () => setState(() {
+                      _muscleFilter = null;
+                      _equipmentFilter = null;
+                    }),
+                    child: Text('Clear',
+                        style: AppText.statLabel(color: AppColors.accentText)),
+                  ),
+                ],
               ],
             ),
           ),
@@ -300,29 +341,50 @@ class _ExerciseSelectionScreenState
       return _EmptyState(isSearching: _isSearching, onCreate: _createCustom);
     }
 
-    final items = <_ListItem>[
-      if (recent.isNotEmpty) ...[
-        const _ListItem.header('RECENT'),
-        ...recent.map(_ListItem.exercise),
-        const _ListItem.header('ALL EXERCISES'),
-      ],
-      ...catalog.map(_ListItem.exercise),
-    ];
+    // Build the flat item list + a letter→firstItemIndex map for the scrubber.
+    final items = <_ListItem>[];
+    final letterIndex = <String, int>{};
+    if (recent.isNotEmpty) {
+      items.add(const _ListItem.header('RECENT'));
+      items.addAll(recent.map(_ListItem.exercise));
+      items.add(_ListItem.header('ALL EXERCISES · ${catalog.length}'));
+    } else {
+      items.add(_ListItem.header(_isSearching
+          ? '${catalog.length} result${catalog.length == 1 ? '' : 's'}'
+          : 'ALL EXERCISES · ${catalog.length}'));
+    }
+    for (final e in catalog) {
+      letterIndex.putIfAbsent(_initial(e.name), () => items.length);
+      items.add(_ListItem.exercise(e));
+    }
 
-    return ListView.builder(
-      padding: const EdgeInsets.only(bottom: 32),
+    final showRail = !_isSearching && catalog.length >= 15;
+
+    final list = ListView.builder(
+      controller: _scrollController,
+      padding: EdgeInsets.only(right: showRail ? 24 : 0, bottom: 32),
       itemCount: items.length,
       itemBuilder: (context, index) {
         final item = items[index];
         final header = item.headerLabel;
         if (header != null) {
-          return Padding(
+          return SizedBox(
             key: ValueKey('h_$header'),
-            padding: const EdgeInsets.fromLTRB(16, 14, 16, 6),
-            child: Semantics(
-              header: true,
-              child: Text(header,
-                  style: AppText.columnHeader(color: AppColors.textSecondary)),
+            height: _kHeaderHeight,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
+              child: Align(
+                alignment: Alignment.bottomLeft,
+                child: Padding(
+                  padding: const EdgeInsets.only(bottom: 6),
+                  child: Semantics(
+                    header: true,
+                    child: Text(header,
+                        style: AppText.columnHeader(
+                            color: AppColors.textSecondary)),
+                  ),
+                ),
+              ),
             ),
           );
         }
@@ -342,6 +404,23 @@ class _ExerciseSelectionScreenState
         );
       },
     );
+
+    if (!showRail) return list;
+
+    return Stack(
+      children: [
+        list,
+        Positioned(
+          top: 4,
+          bottom: 4,
+          right: 0,
+          child: _AlphabetRail(
+            present: letterIndex.keys.toSet(),
+            onLetter: (l) => _jumpToLetter(l, items, letterIndex),
+          ),
+        ),
+      ],
+    );
   }
 }
 
@@ -351,8 +430,12 @@ class _ListItem {
 
   const _ListItem.header(this.headerLabel) : exerciseValue = null;
   const _ListItem.exercise(this.exerciseValue) : headerLabel = null;
+
+  bool get isHeader => headerLabel != null;
 }
 
+/// Fixed-height (64) exercise row — replaces the stock ListTile so the A–Z
+/// scrubber can compute exact scroll offsets.
 class _ExerciseRow extends StatelessWidget {
   final Exercise exercise;
   final bool browse;
@@ -367,29 +450,117 @@ class _ExerciseRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListTile(
-      onTap: onTap,
-      leading: RepaintBoundary(
-        child: ExerciseThumbnail(gifUrl: exercise.gifUrl, size: 44),
+    return SizedBox(
+      height: _kRowHeight,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Row(
+              children: [
+                RepaintBoundary(
+                  child: ExerciseThumbnail(gifUrl: exercise.gifUrl, size: 44),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(exercise.name,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: AppText.exerciseName()),
+                      const SizedBox(height: 2),
+                      Text('${exercise.target} • ${exercise.equipment}',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: AppText.caption()),
+                    ],
+                  ),
+                ),
+                if (browse) ...[
+                  const SizedBox(width: 8),
+                  const ExcludeSemantics(
+                    child: Icon(Icons.chevron_right_rounded,
+                        size: 20, color: AppColors.textTertiary),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ),
       ),
-      title: Text(
-        exercise.name,
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-        style: AppText.exerciseName(),
-      ),
-      subtitle: Text(
-        '${exercise.target} • ${exercise.equipment}',
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-        style: AppText.caption(),
-      ),
-      trailing: browse
-          ? const ExcludeSemantics(
-              child: Icon(Icons.chevron_right_rounded,
-                  size: 20, color: AppColors.textTertiary),
-            )
-          : null,
+    );
+  }
+}
+
+/// A–Z scrubber rail (Hevy-style). Tap or drag to jump the list to a letter;
+/// present letters are accented, absent ones dimmed. One haptic per letter
+/// change (not per drag frame).
+class _AlphabetRail extends StatefulWidget {
+  final Set<String> present;
+  final ValueChanged<String> onLetter;
+  const _AlphabetRail({required this.present, required this.onLetter});
+
+  static const _letters = [
+    'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', //
+    'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
+  ];
+
+  @override
+  State<_AlphabetRail> createState() => _AlphabetRailState();
+}
+
+class _AlphabetRailState extends State<_AlphabetRail> {
+  String? _last;
+
+  void _handle(double dy, double height) {
+    if (height <= 0) return;
+    final i = (dy / height * _AlphabetRail._letters.length)
+        .floor()
+        .clamp(0, _AlphabetRail._letters.length - 1);
+    final letter = _AlphabetRail._letters[i];
+    if (letter == _last) return;
+    _last = letter;
+    if (widget.present.contains(letter)) widget.onLetter(letter);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final h = constraints.maxHeight;
+        return GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTapDown: (d) => _handle(d.localPosition.dy, h),
+          onVerticalDragStart: (d) => _handle(d.localPosition.dy, h),
+          onVerticalDragUpdate: (d) => _handle(d.localPosition.dy, h),
+          onVerticalDragEnd: (_) => _last = null,
+          child: Semantics(
+            label: 'Alphabet scrubber',
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 6),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  for (final l in _AlphabetRail._letters)
+                    Text(
+                      l,
+                      style: AppText.columnHeader(
+                        color: widget.present.contains(l)
+                            ? AppColors.accentText
+                            : AppColors.textTertiary,
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }
@@ -446,23 +617,27 @@ class _LoadingList extends StatelessWidget {
         physics: const NeverScrollableScrollPhysics(),
         padding: const EdgeInsets.symmetric(vertical: 8),
         itemCount: 9,
-        itemBuilder: (_, __) => const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          child: Row(
-            children: [
-              SkeletonBox(width: 44, height: 44, radius: 10),
-              SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    SkeletonBox(width: 160, height: 13),
-                    SizedBox(height: 7),
-                    SkeletonBox(width: 100, height: 11),
-                  ],
+        itemBuilder: (_, __) => const SizedBox(
+          height: _kRowHeight,
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16),
+            child: Row(
+              children: [
+                SkeletonBox(width: 44, height: 44, radius: 10),
+                SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SkeletonBox(width: 160, height: 13),
+                      SizedBox(height: 7),
+                      SkeletonBox(width: 100, height: 11),
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -490,9 +665,7 @@ class _FilterOptionRow extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 14),
           decoration: const BoxDecoration(
-            border: Border(
-              bottom: BorderSide(color: AppColors.borderSubtle),
-            ),
+            border: Border(bottom: BorderSide(color: AppColors.borderSubtle)),
           ),
           child: Row(
             children: [
@@ -560,7 +733,8 @@ class _FilterChipButton extends StatelessWidget {
                 const SizedBox(width: 4),
                 Icon(Icons.keyboard_arrow_down_rounded,
                     size: 16,
-                    color: active ? AppColors.accentText : AppColors.textSecondary),
+                    color:
+                        active ? AppColors.accentText : AppColors.textSecondary),
               ],
             ),
           ),
