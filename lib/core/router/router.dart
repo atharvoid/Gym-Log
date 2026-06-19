@@ -79,12 +79,29 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/splash', builder: (c, s) => const SplashScreen()),
       GoRoute(path: '/auth', builder: (c, s) => const AuthScreen()),
       GoRoute(path: '/onboarding', builder: (c, s) => const OnboardingScreen()),
-      ShellRoute(
-        builder: (context, state, child) => AppShell(child: child),
-        routes: [
-          GoRoute(path: '/', builder: (c, s) => const HomeScreen()),
-          GoRoute(path: '/workout', builder: (c, s) => const WorkoutScreen()),
-          GoRoute(path: '/profile', builder: (c, s) => const ProfileScreen()),
+      // Tabbed shell. StatefulShellRoute.indexedStack keeps each branch's
+      // navigator alive, so Home / Routines / Profile preserve scroll + state
+      // across tab switches. Detail/active routes stay top-level (below) so
+      // they push full-screen over the nav bar.
+      StatefulShellRoute.indexedStack(
+        builder: (context, state, navigationShell) =>
+            AppShell(navigationShell: navigationShell),
+        branches: [
+          StatefulShellBranch(
+            routes: [GoRoute(path: '/', builder: (c, s) => const HomeScreen())],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                  path: '/workout', builder: (c, s) => const WorkoutScreen()),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                  path: '/profile', builder: (c, s) => const ProfileScreen()),
+            ],
+          ),
         ],
       ),
       GoRoute(

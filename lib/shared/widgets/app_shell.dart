@@ -14,8 +14,10 @@ import 'bottom_nav_bar.dart';
 /// interrupted workout (a draft persisted by [WorkoutDraftStore]).
 
 class AppShell extends ConsumerStatefulWidget {
-  final Widget child;
-  const AppShell({required this.child, super.key});
+  /// Drives the tabbed branches. IndexedStack keeps every branch mounted, so
+  /// each tab preserves its own scroll position + state across switches.
+  final StatefulNavigationShell navigationShell;
+  const AppShell({required this.navigationShell, super.key});
 
   @override
   ConsumerState<AppShell> createState() => _AppShellState();
@@ -98,7 +100,7 @@ class _AppShellState extends ConsumerState<AppShell> {
         child: Center(
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 600),
-            child: widget.child,
+            child: widget.navigationShell,
           ),
         ),
       ),
@@ -126,7 +128,14 @@ class _AppShellState extends ConsumerState<AppShell> {
                 ? const ActiveWorkoutBar(key: ValueKey('activeBar'))
                 : const SizedBox.shrink(key: ValueKey('emptyBar')),
           ),
-          const BottomNavBar(),
+          BottomNavBar(
+            currentIndex: widget.navigationShell.currentIndex,
+            onTap: (index) => widget.navigationShell.goBranch(
+              index,
+              // Re-tapping the active tab pops it back to its branch root.
+              initialLocation: index == widget.navigationShell.currentIndex,
+            ),
+          ),
         ],
       ),
     );
