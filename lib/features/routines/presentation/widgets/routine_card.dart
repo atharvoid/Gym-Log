@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text.dart';
 import '../../../../core/utils/tap_guard.dart';
+import '../../../../core/utils/relative_time.dart';
 import '../../../../core/providers/database_provider.dart';
 import '../../../../shared/widgets/ui/action_bottom_sheet.dart';
 import '../../../../shared/widgets/ui/app_dialog.dart';
@@ -44,17 +45,6 @@ class RoutineCard extends ConsumerWidget {
     return Color.lerp(base, Colors.white, 0.35)!;
   }
 
-  String _relative(DateTime d) {
-    final diff = DateTime.now().difference(d);
-    if (diff.inDays < 1) return 'today';
-    if (diff.inDays == 1) return 'yesterday';
-    if (diff.inDays < 7) return '${diff.inDays} days ago';
-    if (diff.inDays < 14) return '1 week ago';
-    if (diff.inDays < 30) return '${(diff.inDays / 7).floor()} weeks ago';
-    if (diff.inDays < 60) return '1 month ago';
-    return '${(diff.inDays / 30).floor()} months ago';
-  }
-
   Widget _tag(String label) => Container(
         padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3),
         decoration: const BoxDecoration(
@@ -70,7 +60,7 @@ class RoutineCard extends ConsumerWidget {
     final exLabel = count == 1 ? 'exercise' : 'exercises';
     final meta = lastTrained == null
         ? '$count $exLabel'
-        : '$count $exLabel · ${_relative(lastTrained!)}';
+        : '$count $exLabel · ${relativeDay(lastTrained!)}';
 
     final preview = exerciseNames.isEmpty
         ? 'No exercises yet'
@@ -194,7 +184,28 @@ class RoutineCard extends ConsumerWidget {
                         ),
                       ),
                       const SizedBox(width: 12),
-                      _StartPill(onTap: onStartTap),
+                      _StartPill(
+                        enabled: exerciseNames.isNotEmpty,
+                        onTap: () {
+                          // 0-exercise routine: don't silently no-op — tell
+                          // the user why nothing happened.
+                          if (exerciseNames.isEmpty) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  'Add exercises to this routine first',
+                                  style: AppText.body(
+                                      color: AppColors.textPrimary),
+                                ),
+                                backgroundColor: AppColors.surface2,
+                                behavior: SnackBarBehavior.floating,
+                              ),
+                            );
+                            return;
+                          }
+                          onStartTap();
+                        },
+                      ),
                     ],
                   ),
                 ),
@@ -257,12 +268,17 @@ class RoutineCard extends ConsumerWidget {
 
 class _StartPill extends StatelessWidget {
   final VoidCallback onTap;
-  const _StartPill({required this.onTap});
+  final bool enabled;
+  const _StartPill({required this.onTap, this.enabled = true});
 
   @override
   Widget build(BuildContext context) {
+    // Disabled (0-exercise routine): muted surface + tertiary text so it
+    // visibly reads as not-startable; the tap still explains why.
+    final bg = enabled ? AppColors.accentPrimary : AppColors.surface3;
+    final fg = enabled ? AppColors.textPrimary : AppColors.textTertiary;
     return Material(
-      color: AppColors.accentPrimary,
+      color: bg,
       borderRadius: AppRadius.buttonPrimaryAll, // 14px CTA, NOT a pill
       clipBehavior: Clip.antiAlias,
       child: InkWell(
@@ -275,11 +291,9 @@ class _StartPill extends StatelessWidget {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.play_arrow_rounded,
-                    size: 18, color: AppColors.textPrimary),
+                Icon(Icons.play_arrow_rounded, size: 18, color: fg),
                 const SizedBox(width: 5),
-                Text('Start',
-                    style: AppText.statLabel(color: AppColors.textPrimary)),
+                Text('Start', style: AppText.statLabel(color: fg)),
               ],
             ),
           ),
