@@ -2,9 +2,9 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:gymlog/core/database/daos/workouts_dao.dart';
 import 'package:gymlog/core/theme/app_colors.dart';
+import 'package:gymlog/core/theme/app_text.dart';
 
 /// Full-screen celebration shown when a finished workout contains PRs.
 /// Turns a silent `is_pr = 1` database write into the app's best moment:
@@ -147,7 +147,7 @@ class _PrCelebrationState extends State<_PrCelebration>
                       ),
                       child: const Icon(
                         Icons.emoji_events_rounded,
-                        color: Color(0xFFA78BFA),
+                        color: AppColors.accentText,
                         size: 30,
                       ),
                     ),
@@ -155,20 +155,12 @@ class _PrCelebrationState extends State<_PrCelebration>
                     Text(
                       title,
                       textAlign: TextAlign.center,
-                      style: GoogleFonts.inter(
-                        fontSize: 21,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: -0.4,
-                        color: AppColors.textPrimary,
-                      ),
+                      style: AppText.sectionHeading(),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       'Stronger than every session before it.',
-                      style: GoogleFonts.inter(
-                        fontSize: 13,
-                        color: AppColors.textSecondary,
-                      ),
+                      style: AppText.meta(),
                     ),
                     const SizedBox(height: 20),
 
@@ -205,19 +197,12 @@ class _PrCelebrationState extends State<_PrCelebration>
                                               pr.exerciseName,
                                               maxLines: 1,
                                               overflow: TextOverflow.ellipsis,
-                                              style: GoogleFonts.inter(
-                                                fontSize: 14,
-                                                fontWeight: FontWeight.w600,
-                                                color: AppColors.textPrimary,
-                                              ),
+                                              style: AppText.rowLabel(),
                                             ),
                                             const SizedBox(height: 2),
                                             Text(
                                               '${_fmtKg(pr.weightKg)} kg × ${pr.reps} reps',
-                                              style: GoogleFonts.inter(
-                                                fontSize: 12.5,
-                                                color: AppColors.textSecondary,
-                                              ),
+                                              style: AppText.caption(),
                                             ),
                                           ],
                                         ),
@@ -228,20 +213,14 @@ class _PrCelebrationState extends State<_PrCelebration>
                                         children: [
                                           Text(
                                             '${_fmtKg(pr.estimated1rm)} kg',
-                                            style: GoogleFonts.inter(
-                                              fontSize: 15,
-                                              fontWeight: FontWeight.w700,
-                                              color: const Color(0xFFA78BFA),
-                                            ),
+                                            style: AppText.value(
+                                                color: AppColors.accentText),
                                           ),
                                           Text(
                                             pr.previousBest1rm > 0
                                                 ? 'prev ${_fmtKg(pr.previousBest1rm)} kg'
                                                 : 'first 1RM',
-                                            style: GoogleFonts.inter(
-                                              fontSize: 11,
-                                              color: AppColors.textSecondary,
-                                            ),
+                                            style: AppText.caption(),
                                           ),
                                         ],
                                       ),
@@ -274,10 +253,7 @@ class _PrCelebrationState extends State<_PrCelebration>
                         ),
                         child: Text(
                           'Keep Going',
-                          style: GoogleFonts.inter(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
-                          ),
+                          style: AppText.button(color: Colors.white),
                         ),
                       ),
                     ),
