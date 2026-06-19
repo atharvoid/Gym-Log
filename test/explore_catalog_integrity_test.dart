@@ -1,15 +1,16 @@
 // Guards the Explore catalog against broken exercise references.
 //
-// Every _TemplateSlot in explore_routines_screen.dart names an exact entry in
-// the bundled Exercise Library (assets/db/exercises.json). This test parses the
-// catalog's slot names straight from source and asserts each one exists — so a
-// future typo or rename can never silently ship a routine that imports with
-// missing exercises again.
+// Every TemplateSlot in explore_catalog.dart names an exact entry in the
+// bundled Exercise Library (assets/db/exercises.json). This test imports the
+// TYPED catalog (no longer regex-scraping widget source) and asserts each slot
+// name exists — so a future typo or rename can never silently ship a routine
+// that imports with missing exercises.
 
 import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:gymlog/features/routines/presentation/data/explore_catalog.dart';
 
 void main() {
   test('every Explore catalog exercise exists in the library', () {
@@ -21,22 +22,22 @@ void main() {
     expect(libraryNames.length, greaterThan(400),
         reason: 'exercise library failed to load');
 
-    final source = File(
-      'lib/features/routines/presentation/screens/explore_routines_screen.dart',
-    ).readAsStringSync();
-
-    // Matches _TemplateSlot('Exact Name', ...). Names carry no quotes, so a
-    // simple single-quote capture is exact.
-    final slotPattern = RegExp(r"_TemplateSlot\('([^']+)'");
     final names =
-        slotPattern.allMatches(source).map((m) => m.group(1)!).toList();
-
+        exploreTemplates.expand((t) => t.slots).map((s) => s.name).toList();
     expect(names.length, greaterThan(90),
-        reason: 'catalog parse found too few slots — regex likely broke');
+        reason: 'catalog has too few slots — did the data move?');
 
     final missing = names.where((n) => !libraryNames.contains(n)).toSet();
     expect(missing, isEmpty,
         reason: 'Explore references exercises absent from the library: '
             '${missing.join(", ")}');
+  });
+
+  test('every template is in a known category and is non-empty', () {
+    for (final t in exploreTemplates) {
+      expect(exploreCategoryOrder, contains(t.category),
+          reason: '"${t.name}" has uncategorized section "${t.category}"');
+      expect(t.slots, isNotEmpty, reason: '"${t.name}" has no exercises');
+    }
   });
 }
