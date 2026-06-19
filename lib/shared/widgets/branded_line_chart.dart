@@ -1,5 +1,6 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:gymlog/core/theme/app_colors.dart';
 import 'package:gymlog/features/routines/presentation/widgets/routine_detail_styles.dart';
@@ -88,6 +89,10 @@ class _BrandedLineChartState extends State<BrandedLineChart> {
   Widget build(BuildContext context) {
     final data = widget.data;
     if (data.isEmpty) return _empty();
+    // A line needs two points to be a line. With exactly one session a lone
+    // floating dot reads as "broken" — show the value as a confident single
+    // stat instead (the most common state for a new / just-imported routine).
+    if (data.length == 1) return _single(data.first);
 
     final maxV =
         data.map((s) => s.value).fold<double>(0, (a, b) => a > b ? a : b);
@@ -119,7 +124,7 @@ class _BrandedLineChartState extends State<BrandedLineChart> {
         ? data.map((s) => s.value).reduce((a, b) => a + b) / n
         : null;
 
-    return Container(
+    final Widget chart = Container(
       padding: const EdgeInsets.fromLTRB(14, 16, 14, 8),
       decoration: BoxDecoration(
         gradient: RDStyles.cardGradient,
@@ -136,8 +141,13 @@ class _BrandedLineChartState extends State<BrandedLineChart> {
               crossAxisAlignment: CrossAxisAlignment.baseline,
               textBaseline: TextBaseline.alphabetic,
               children: [
-                Text(widget.valueFormatter(sel.value),
-                    style: RDStyles.chartValue),
+                // liveRegion: scrubbing the chart updates this value, so a
+                // screen reader announces the newly selected point.
+                Semantics(
+                  liveRegion: true,
+                  child: Text(widget.valueFormatter(sel.value),
+                      style: RDStyles.chartValue),
+                ),
                 const SizedBox(width: 8),
                 Text(widget.dateFormatter(sel.date), style: RDStyles.chartDate),
               ],
@@ -239,9 +249,14 @@ class _BrandedLineChartState extends State<BrandedLineChart> {
                           ))
                       .toList(),
                   touchCallback: (e, resp) {
-                    if (resp?.lineBarSpots?.isNotEmpty ?? false) {
-                      setState(() =>
-                          _touchedIndex = resp!.lineBarSpots!.first.spotIndex);
+                    final i = (resp?.lineBarSpots?.isNotEmpty ?? false)
+                        ? resp!.lineBarSpots!.first.spotIndex
+                        : null;
+                    // Selecting a point is a discrete selection — buzz like
+                    // every other selection in the app, only when it changes.
+                    if (i != null && i != _touchedIndex) {
+                      HapticFeedback.selectionClick();
+                      setState(() => _touchedIndex = i);
                     }
                   },
                 ),
@@ -307,6 +322,61 @@ class _BrandedLineChartState extends State<BrandedLineChart> {
             ),
           ),
         ],
+      ),
+    );
+
+    return Semantics(
+      container: true,
+      label: 'Volume chart, ${data.length} sessions. '
+          'Selected ${widget.valueFormatter(sel.value)} '
+          'on ${widget.dateFormatter(sel.date)}.',
+      child: chart,
+    );
+  }
+
+  /// Single-session state — a confident stat, not a lonely dot.
+  Widget _single(ChartPoint p) {
+    return Semantics(
+      container: true,
+      label: 'Volume chart, one session: '
+          '${widget.valueFormatter(p.value)} on ${widget.dateFormatter(p.date)}.',
+      child: Container(
+        height: 150,
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          gradient: RDStyles.cardGradient,
+          borderRadius: BorderRadius.circular(20),
+          border: RDStyles.hairlineBorder,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.baseline,
+              textBaseline: TextBaseline.alphabetic,
+              children: [
+                Text(widget.valueFormatter(p.value), style: RDStyles.chartValue),
+                const SizedBox(width: 8),
+                Text(widget.dateFormatter(p.date), style: RDStyles.chartDate),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                const Icon(Icons.show_chart_rounded,
+                    size: 15, color: AppColors.accentText),
+                const SizedBox(width: 6),
+                Flexible(
+                  child: Text(
+                    'One session logged — finish another to chart your trend',
+                    style: RDStyles.emptySub,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
