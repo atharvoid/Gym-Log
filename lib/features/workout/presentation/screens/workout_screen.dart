@@ -145,7 +145,8 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
                 },
                 behavior: HitTestBehavior.opaque,
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  // ~48dp tap target for the disclosure control.
+                  padding: const EdgeInsets.symmetric(vertical: 14),
                   child: Row(
                     children: [
                       AnimatedRotation(
