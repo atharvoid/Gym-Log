@@ -1,388 +1,88 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:go_router/go_router.dart';
 import 'package:gymlog/core/database/database.dart';
+import 'package:gymlog/core/database/daos/routines_dao.dart';
 import 'package:gymlog/core/providers/database_provider.dart';
 import 'package:gymlog/core/providers/premium_provider.dart';
 import 'package:gymlog/core/theme/app_colors.dart';
-import 'package:gymlog/core/database/daos/routines_dao.dart';
+import 'package:gymlog/core/theme/app_text.dart';
 import 'package:gymlog/features/auth/presentation/providers/auth_provider.dart';
+import 'package:gymlog/features/routines/presentation/data/explore_catalog.dart';
+import 'package:gymlog/features/routines/presentation/providers/routines_provider.dart';
 import 'package:gymlog/shared/widgets/premium_paywall.dart';
-import '../widgets/routine_detail_styles.dart';
+import 'package:gymlog/shared/widgets/ui/app_card.dart';
+import 'package:gymlog/shared/widgets/ui/muscle_glyph.dart';
+import 'package:gymlog/shared/widgets/ui/primary_button.dart';
 
-/// One slot in a template. [name] is the EXACT canonical Exercise Library
-/// name (verified to exist), so it is both the display label and the import
-/// key — there is no fuzzy guessing and no mismatch between what the card
-/// shows and what gets added. [reps] seeds the routine's per-set target.
-class _TemplateSlot {
-  final String name;
-  final int sets;
-  final int reps;
-
-  const _TemplateSlot(this.name, {this.sets = 3, this.reps = 10});
+/// Dominant muscle token for a template's [RoutineTemplate.focus] — the first
+/// token that maps to a real muscle group (skipping qualifiers like "Strength"
+/// / "Total Body"), so the glyph is meaningful and not a fallback.
+String _dominantMuscle(String focus) {
+  final tokens = focus.split(' · ');
+  for (final t in tokens) {
+    if (MuscleGlyph.groupFor(t) != 'fullbody') return t;
+  }
+  return tokens.isNotEmpty ? tokens.first : 'fullbody';
 }
 
-/// Difficulty tiers — drive the colored pill on each card.
-enum _Level { beginner, intermediate, advanced }
+/// Stable per-muscle tint from the shared violet ramp — IDENTICAL derivation to
+/// the saved-routine card, so a chest template and a chest routine read the
+/// same.
+Color _glyphColor(String muscle) {
+  final i = muscle.hashCode.abs() % AppColors.muscleSplitPalette.length;
+  return Color.lerp(AppColors.muscleSplitPalette[i], Colors.white, 0.35)!;
+}
 
-class _RoutineTemplate {
-  final String name;
+/// Difficulty filter for the sticky goal chips.
+enum _LevelFilter {
+  all,
+  beginner,
+  intermediate,
+  advanced;
 
-  /// Programming family used to group the catalog (PPL, Upper/Lower, …).
-  final String category;
-  final _Level level;
-
-  /// Target muscle groups, human-readable and scannable.
-  final String focus;
-  final String description;
-  final Color accent;
-  final List<_TemplateSlot> slots;
-
-  const _RoutineTemplate({
-    required this.name,
-    required this.category,
-    required this.level,
-    required this.focus,
-    required this.description,
-    required this.accent,
-    required this.slots,
-  });
-
-  int get totalSets => slots.fold(0, (a, s) => a + s.sets);
-
-  /// Honest estimate: ~2.8 min per working set (work + rest) + warm-up,
-  /// rounded to the nearest 5 minutes.
-  int get estMinutes => (((totalSets * 2.8) + 8) / 5).round() * 5;
-
-  String get levelLabel => switch (level) {
-        _Level.beginner => 'Beginner',
-        _Level.intermediate => 'Intermediate',
-        _Level.advanced => 'Advanced',
+  String get label => switch (this) {
+        _LevelFilter.all => 'All',
+        _LevelFilter.beginner => 'Beginner',
+        _LevelFilter.intermediate => 'Intermediate',
+        _LevelFilter.advanced => 'Advanced',
       };
 
-  Color get levelColor => switch (level) {
-        _Level.beginner => const Color(0xFF34C759), // green
-        _Level.intermediate => const Color(0xFFA78BFA), // lavender
-        _Level.advanced => const Color(0xFFE0A422), // amber (intensity)
+  bool matches(TemplateLevel l) => switch (this) {
+        _LevelFilter.all => true,
+        _LevelFilter.beginner => l == TemplateLevel.beginner,
+        _LevelFilter.intermediate => l == TemplateLevel.intermediate,
+        _LevelFilter.advanced => l == TemplateLevel.advanced,
       };
 }
 
-// Category accents (kept inside the brand's purple family for cohesion).
-const _cPPL = Color(0xFF7C3AED);
-const _cUL = Color(0xFF6D28D9);
-const _cFull = Color(0xFFA78BFA);
-const _cPower = Color(0xFF7C3AED);
-const _cBro = Color(0xFF7C3AED);
+/// A flat content row (featured | section header | card) so the list can be a
+/// single virtualized [SliverList] while still driving the staggered entrance
+/// by row index.
+sealed class _Row {
+  const _Row();
+}
 
-/// Display order for the grouped sections.
-const _categoryOrder = <String>[
-  'Push · Pull · Legs',
-  'Upper · Lower',
-  'Powerbuilding',
-  'Bro Split',
-  'Full Body',
-];
+class _FeaturedRow extends _Row {
+  final RoutineTemplate template;
+  const _FeaturedRow(this.template);
+}
 
-/// The curated catalog. EVERY exercise name below is an exact entry in the
-/// bundled Exercise Library (assets/db/exercises.json), audited 2026-06-13 —
-/// no broken references, no fuzzy fallbacks resolving to the wrong movement.
-const _templates = <_RoutineTemplate>[
-  // ── Push / Pull / Legs ───────────────────────────────────────────────────
-  _RoutineTemplate(
-    name: 'Push Day',
-    category: 'Push · Pull · Legs',
-    level: _Level.intermediate,
-    focus: 'Chest · Shoulders · Triceps',
-    description: 'The classic pressing session — heavy bench first, then '
-        'shoulders and triceps to finish.',
-    accent: _cPPL,
-    slots: [
-      _TemplateSlot('Bench Press (Barbell)', sets: 4, reps: 6),
-      _TemplateSlot('Smith Standing Military Press', sets: 3, reps: 8),
-      _TemplateSlot('Incline Bench Press (Barbell)', sets: 3, reps: 10),
-      _TemplateSlot('Lateral Raise (Cable)', sets: 3, reps: 15),
-      _TemplateSlot('Chest Dip', sets: 3, reps: 10),
-      _TemplateSlot('Cable Pushdown', sets: 3, reps: 12),
-    ],
-  ),
-  _RoutineTemplate(
-    name: 'Pull Day',
-    category: 'Push · Pull · Legs',
-    level: _Level.intermediate,
-    focus: 'Back · Biceps · Rear Delts',
-    description: 'Width and thickness — pull from the floor, a vertical pull, '
-        'a row, then arms.',
-    accent: _cPPL,
-    slots: [
-      _TemplateSlot('Deadlift (Barbell)', sets: 3, reps: 5),
-      _TemplateSlot('Pull Up', sets: 4, reps: 8),
-      _TemplateSlot('Bent Over Row (Barbell)', sets: 3, reps: 8),
-      _TemplateSlot('Cable Pulldown', sets: 3, reps: 12),
-      _TemplateSlot('Reverse Fly (Dumbbell)', sets: 3, reps: 15),
-      _TemplateSlot('Barbell Curl', sets: 3, reps: 10),
-    ],
-  ),
-  _RoutineTemplate(
-    name: 'Leg Day',
-    category: 'Push · Pull · Legs',
-    level: _Level.intermediate,
-    focus: 'Quads · Hamstrings · Calves',
-    description: 'Squat-centric lower session with a hip-hinge for the '
-        'hamstrings and dedicated calf work.',
-    accent: _cPPL,
-    slots: [
-      _TemplateSlot('Barbell Full Squat', sets: 4, reps: 6),
-      _TemplateSlot('Barbell Straight Leg Deadlift', sets: 3, reps: 8),
-      _TemplateSlot('Sled 45° Leg Press', sets: 3, reps: 12),
-      _TemplateSlot('Lying Leg Curl', sets: 3, reps: 12),
-      _TemplateSlot('Standing Calf Raise (Barbell)', sets: 4, reps: 15),
-    ],
-  ),
-  _RoutineTemplate(
-    name: 'Push Day · Volume',
-    category: 'Push · Pull · Legs',
-    level: _Level.advanced,
-    focus: 'Chest · Shoulders · Triceps',
-    description: 'A higher-volume hypertrophy push — dumbbells and cables for '
-        'time under tension, lighter loads, tighter rest.',
-    accent: _cPPL,
-    slots: [
-      _TemplateSlot('Bench Press (Dumbbell)', sets: 4, reps: 10),
-      _TemplateSlot('Incline Bench Press (Barbell)', sets: 3, reps: 10),
-      _TemplateSlot('Lever Shoulder Press', sets: 3, reps: 10),
-      _TemplateSlot('Dumbbell Fly', sets: 3, reps: 12),
-      _TemplateSlot('Lateral Raise (Cable)', sets: 4, reps: 15),
-      _TemplateSlot('Barbell Lying Triceps Extension', sets: 3, reps: 12),
-      _TemplateSlot('Cable Pushdown', sets: 3, reps: 15),
-    ],
-  ),
-  _RoutineTemplate(
-    name: 'Pull Day · Volume',
-    category: 'Push · Pull · Legs',
-    level: _Level.advanced,
-    focus: 'Back · Biceps · Rear Delts',
-    description: 'Back-building volume — pulldowns and rows for the lats and '
-        'mid-back, then traps, rear delts and biceps.',
-    accent: _cPPL,
-    slots: [
-      _TemplateSlot('Cable Pulldown', sets: 4, reps: 12),
-      _TemplateSlot('Cable Low Seated Row', sets: 4, reps: 10),
-      _TemplateSlot('Bent Over Row (Dumbbell)', sets: 3, reps: 10),
-      _TemplateSlot('Shrug (Barbell)', sets: 3, reps: 12),
-      _TemplateSlot('Reverse Fly (Dumbbell)', sets: 3, reps: 15),
-      _TemplateSlot('Bicep Curl (Dumbbell)', sets: 3, reps: 12),
-      _TemplateSlot('Hammer Curl (Dumbbell)', sets: 3, reps: 12),
-    ],
-  ),
-  _RoutineTemplate(
-    name: 'Leg Day · Volume',
-    category: 'Push · Pull · Legs',
-    level: _Level.advanced,
-    focus: 'Quads · Hamstrings · Glutes',
-    description: 'Quad and glute hypertrophy — front squats, presses, '
-        'extensions and a rope pull-through for the hips.',
-    accent: _cPPL,
-    slots: [
-      _TemplateSlot('Front Squat (Barbell)', sets: 4, reps: 8),
-      _TemplateSlot('Sled 45° Leg Press', sets: 4, reps: 12),
-      _TemplateSlot('Leg Extension (Machine)', sets: 4, reps: 15),
-      _TemplateSlot('Seated Leg Curl (Machine)', sets: 4, reps: 12),
-      _TemplateSlot('Cable Pull Through', sets: 3, reps: 12),
-      _TemplateSlot('Seated Calf Raise (Machine)', sets: 4, reps: 20),
-    ],
-  ),
-  // ── Upper / Lower ─────────────────────────────────────────────────────────
-  _RoutineTemplate(
-    name: 'Upper Body',
-    category: 'Upper · Lower',
-    level: _Level.intermediate,
-    focus: 'Chest · Back · Shoulders · Arms',
-    description: 'Everything above the waist in one efficient session — '
-        'built for an upper/lower split.',
-    accent: _cUL,
-    slots: [
-      _TemplateSlot('Bench Press (Barbell)', sets: 4, reps: 6),
-      _TemplateSlot('Bent Over Row (Barbell)', sets: 4, reps: 8),
-      _TemplateSlot('Smith Standing Military Press', sets: 3, reps: 8),
-      _TemplateSlot('Cable Pulldown', sets: 3, reps: 10),
-      _TemplateSlot('Bicep Curl (Dumbbell)', sets: 3, reps: 12),
-      _TemplateSlot('Cable Pushdown', sets: 3, reps: 12),
-    ],
-  ),
-  _RoutineTemplate(
-    name: 'Lower Body',
-    category: 'Upper · Lower',
-    level: _Level.intermediate,
-    focus: 'Quads · Hamstrings · Calves',
-    description: 'The other half of the upper/lower split — squat, hinge and '
-        'single-leg work, capped with calves.',
-    accent: _cUL,
-    slots: [
-      _TemplateSlot('Barbell Full Squat', sets: 4, reps: 6),
-      _TemplateSlot('Barbell Straight Leg Deadlift', sets: 3, reps: 8),
-      _TemplateSlot('Lunge (Dumbbell)', sets: 3, reps: 10),
-      _TemplateSlot('Leg Extension (Machine)', sets: 3, reps: 15),
-      _TemplateSlot('Seated Calf Raise (Machine)', sets: 4, reps: 15),
-    ],
-  ),
-  // ── Powerbuilding ──────────────────────────────────────────────────────────
-  _RoutineTemplate(
-    name: 'Upper Power',
-    category: 'Powerbuilding',
-    level: _Level.advanced,
-    focus: 'Strength · Chest · Back · Shoulders',
-    description: 'Heavy upper-body strength — low-rep presses and rows for '
-        'force, a little hypertrophy work to finish.',
-    accent: _cPower,
-    slots: [
-      _TemplateSlot('Bench Press (Barbell)', sets: 5, reps: 5),
-      _TemplateSlot('Bent Over Row (Barbell)', sets: 5, reps: 5),
-      _TemplateSlot('Smith Standing Military Press', sets: 4, reps: 6),
-      _TemplateSlot('Pull Up', sets: 3, reps: 8),
-      _TemplateSlot('Barbell Curl', sets: 3, reps: 10),
-      _TemplateSlot('Tricep Pushdown With Bar', sets: 3, reps: 12),
-    ],
-  ),
-  _RoutineTemplate(
-    name: 'Lower Power',
-    category: 'Powerbuilding',
-    level: _Level.advanced,
-    focus: 'Strength · Quads · Posterior Chain',
-    description: 'Squat and deadlift strength work, then leg press and good '
-        'mornings to build the posterior chain.',
-    accent: _cPower,
-    slots: [
-      _TemplateSlot('Barbell Full Squat', sets: 5, reps: 5),
-      _TemplateSlot('Deadlift (Barbell)', sets: 3, reps: 5),
-      _TemplateSlot('Sled 45° Leg Press', sets: 3, reps: 10),
-      _TemplateSlot('Good Morning (Barbell)', sets: 3, reps: 10),
-      _TemplateSlot('Standing Calf Raise (Barbell)', sets: 4, reps: 12),
-    ],
-  ),
-  // ── Bro Split ────────────────────────────────────────────────────────────
-  _RoutineTemplate(
-    name: 'Chest & Triceps',
-    category: 'Bro Split',
-    level: _Level.intermediate,
-    focus: 'Chest · Triceps',
-    description: 'A dedicated chest day with triceps along for the ride — '
-        'press, incline, fly, then push the arms.',
-    accent: _cBro,
-    slots: [
-      _TemplateSlot('Bench Press (Barbell)', sets: 4, reps: 8),
-      _TemplateSlot('Incline Bench Press (Barbell)', sets: 3, reps: 10),
-      _TemplateSlot('Dumbbell Fly', sets: 3, reps: 12),
-      _TemplateSlot('Chest Dip', sets: 3, reps: 10),
-      _TemplateSlot('Barbell Lying Triceps Extension', sets: 3, reps: 12),
-      _TemplateSlot('Cable Pushdown', sets: 3, reps: 15),
-    ],
-  ),
-  _RoutineTemplate(
-    name: 'Back & Biceps',
-    category: 'Bro Split',
-    level: _Level.intermediate,
-    focus: 'Back · Biceps',
-    description: 'Pull-focused day — a heavy deadlift, vertical and horizontal '
-        'pulls, then curls to cap it.',
-    accent: _cBro,
-    slots: [
-      _TemplateSlot('Deadlift (Barbell)', sets: 3, reps: 5),
-      _TemplateSlot('Pull Up', sets: 4, reps: 8),
-      _TemplateSlot('Cable Low Seated Row', sets: 3, reps: 10),
-      _TemplateSlot('Cable Pulldown', sets: 3, reps: 12),
-      _TemplateSlot('Barbell Curl', sets: 3, reps: 10),
-      _TemplateSlot('Incline Dumbbell Curl', sets: 3, reps: 12),
-    ],
-  ),
-  _RoutineTemplate(
-    name: 'Shoulders & Core',
-    category: 'Bro Split',
-    level: _Level.intermediate,
-    focus: 'Shoulders · Core',
-    description: 'Build round delts from every angle, then brace the core '
-        'with hanging and anti-extension work.',
-    accent: _cBro,
-    slots: [
-      _TemplateSlot('Smith Standing Military Press', sets: 4, reps: 8),
-      _TemplateSlot('Dumbbell Push Press', sets: 3, reps: 8),
-      _TemplateSlot('Lateral Raise (Cable)', sets: 4, reps: 15),
-      _TemplateSlot('Reverse Fly (Dumbbell)', sets: 3, reps: 15),
-      _TemplateSlot('Upright Row (Barbell)', sets: 3, reps: 12),
-      _TemplateSlot('Hanging Pike', sets: 3, reps: 15),
-      _TemplateSlot('Weighted Front Plank', sets: 3, reps: 40),
-    ],
-  ),
-  _RoutineTemplate(
-    name: 'Arm Day',
-    category: 'Bro Split',
-    level: _Level.beginner,
-    focus: 'Biceps · Triceps',
-    description: 'Pure arms — supersets of curls and extensions for a serious '
-        'pump. Short, focused, effective.',
-    accent: _cBro,
-    slots: [
-      _TemplateSlot('Barbell Curl', sets: 4, reps: 10),
-      _TemplateSlot('Cable Pushdown', sets: 4, reps: 12),
-      _TemplateSlot('Hammer Curl (Dumbbell)', sets: 3, reps: 12),
-      _TemplateSlot('Barbell Lying Triceps Extension', sets: 3, reps: 12),
-      _TemplateSlot('Incline Dumbbell Curl', sets: 3, reps: 15),
-      _TemplateSlot('EZ Bar Standing French Press', sets: 3, reps: 12),
-    ],
-  ),
-  // ── Full Body ──────────────────────────────────────────────────────────────
-  _RoutineTemplate(
-    name: 'Full Body Express',
-    category: 'Full Body',
-    level: _Level.beginner,
-    focus: 'Total Body · 45 min',
-    description: 'Three big compounds and two finishers — for the days when '
-        'time is the limiting factor.',
-    accent: _cFull,
-    slots: [
-      _TemplateSlot('Barbell Full Squat', sets: 3, reps: 8),
-      _TemplateSlot('Bench Press (Barbell)', sets: 3, reps: 8),
-      _TemplateSlot('Bent Over Row (Barbell)', sets: 3, reps: 8),
-      _TemplateSlot('Weighted Front Plank', sets: 2, reps: 30),
-      _TemplateSlot('Bicep Curl (Dumbbell)', sets: 2, reps: 12),
-    ],
-  ),
-  _RoutineTemplate(
-    name: 'Beginner Full Body A',
-    category: 'Full Body',
-    level: _Level.beginner,
-    focus: 'Total Body · Foundations',
-    description: 'Day A of a simple 3×/week start — squat and bench focus, '
-        'one pull, a press, and a plank.',
-    accent: _cFull,
-    slots: [
-      _TemplateSlot('Barbell Full Squat', sets: 3, reps: 8),
-      _TemplateSlot('Bench Press (Barbell)', sets: 3, reps: 8),
-      _TemplateSlot('Cable Pulldown', sets: 3, reps: 10),
-      _TemplateSlot('Smith Standing Military Press', sets: 2, reps: 10),
-      _TemplateSlot('Weighted Front Plank', sets: 3, reps: 30),
-    ],
-  ),
-  _RoutineTemplate(
-    name: 'Beginner Full Body B',
-    category: 'Full Body',
-    level: _Level.beginner,
-    focus: 'Total Body · Foundations',
-    description: 'Day B of the 3×/week start — deadlift and dumbbell pressing '
-        'balanced with a row and goblet squat.',
-    accent: _cFull,
-    slots: [
-      _TemplateSlot('Deadlift (Barbell)', sets: 3, reps: 5),
-      _TemplateSlot('Bench Press (Dumbbell)', sets: 3, reps: 10),
-      _TemplateSlot('Cable Low Seated Row', sets: 3, reps: 10),
-      _TemplateSlot('Goblet Squat', sets: 3, reps: 12),
-      _TemplateSlot('Bicep Curl (Dumbbell)', sets: 2, reps: 12),
-    ],
-  ),
-];
+class _HeaderRow extends _Row {
+  final String label;
+  final int count;
+  const _HeaderRow(this.label, this.count);
+}
 
-/// Explore — a curated catalog of premade routines, importable into the
-/// user's library in one tap. Discovery and retention, not navigation.
+class _CardRow extends _Row {
+  final RoutineTemplate template;
+  const _CardRow(this.template);
+}
+
+/// Explore — a curated catalog of premade routines, importable into the user's
+/// library in one tap. Built as a first-impression: an ambient brand glow, a
+/// featured spotlight, goal filters, and a choreographed entrance.
 class ExploreRoutinesScreen extends ConsumerStatefulWidget {
   const ExploreRoutinesScreen({super.key});
 
@@ -391,34 +91,71 @@ class ExploreRoutinesScreen extends ConsumerStatefulWidget {
       _ExploreRoutinesScreenState();
 }
 
-class _ExploreRoutinesScreenState extends ConsumerState<ExploreRoutinesScreen> {
+class _ExploreRoutinesScreenState extends ConsumerState<ExploreRoutinesScreen>
+    with SingleTickerProviderStateMixin {
+  /// Templates whose import is in flight (shows the spinner).
   final Set<String> _importing = {};
+
+  /// Templates imported THIS session (optimistic), unioned with the DB-derived
+  /// set so "View" shows instantly and survives the rebuild without a flash.
   final Set<String> _imported = {};
 
-  Future<void> _import(_RoutineTemplate template) async {
-    final user = ref.read(authProvider);
-    if (user == null || _importing.contains(template.name)) return;
+  /// name → created routine id, for the "View" action on session imports.
+  final Map<String, String> _importedIds = {};
 
-    // Free-tier routine cap — importing a template creates a routine, so it
-    // counts against the limit exactly like manual creation does.
-    final isPremium = ref.read(isPremiumProvider);
-    final count =
-        await ref.read(databaseProvider).routinesDao.countRoutinesForUser(user.id);
-    if (isAtFreeRoutineLimit(isPremium: isPremium, routineCount: count)) {
-      if (mounted) await showRoutineLimitUpsell(context);
+  _LevelFilter _filter = _LevelFilter.all;
+
+  // Drives the one-shot staggered entrance (re-runs when a filter is picked).
+  late final AnimationController _reveal = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 640),
+  )..forward();
+
+  static final RoutineTemplate _featured = exploreTemplates.firstWhere(
+    (t) => t.featured,
+    orElse: () => exploreTemplates.first,
+  );
+
+  @override
+  void dispose() {
+    _reveal.dispose();
+    super.dispose();
+  }
+
+  void _setFilter(_LevelFilter f) {
+    if (f == _filter) return;
+    HapticFeedback.selectionClick();
+    setState(() => _filter = f);
+    _reveal.forward(from: 0); // re-reveal the new set
+  }
+
+  Future<void> _import(RoutineTemplate template) async {
+    final user = ref.read(authProvider);
+    if (user == null) return;
+    // Claim the in-flight lock SYNCHRONOUSLY, before any await — otherwise a
+    // double-tap during the count/resolve awaits slips through and imports
+    // twice.
+    if (_importing.contains(template.name) ||
+        _imported.contains(template.name)) {
       return;
     }
-
-    HapticFeedback.mediumImpact();
+    HapticFeedback.selectionClick(); // acknowledge EVERY accepted tap
     setState(() => _importing.add(template.name));
 
     try {
+      final isPremium = ref.read(isPremiumProvider);
       final db = ref.read(databaseProvider);
 
-      // Resolve each slot by EXACT canonical name first (the names are audited
-      // to exist), falling back to a substring match only for resilience
-      // against a differently-versioned library. This is what fixes the old
-      // bug where "pull-up" alphabetically resolved to "Assisted Pull-Up".
+      final count = await db.routinesDao.countRoutinesForUser(user.id);
+      if (!mounted) return;
+      if (isAtFreeRoutineLimit(isPremium: isPremium, routineCount: count)) {
+        await showRoutineLimitUpsell(context);
+        return;
+      }
+
+      // Resolve each slot by EXACT canonical name first (audited to exist),
+      // falling back to a substring match only for resilience against a
+      // differently-versioned library.
       final drafts = <RoutineDraftExercise>[];
       var missed = 0;
       for (final slot in template.slots) {
@@ -431,7 +168,6 @@ class _ExploreRoutinesScreenState extends ConsumerState<ExploreRoutinesScreen> {
           }
         }
         match ??= hits.isNotEmpty ? hits.first : null;
-
         if (match != null) {
           drafts.add(RoutineDraftExercise(
             exerciseId: match.id,
@@ -443,100 +179,412 @@ class _ExploreRoutinesScreenState extends ConsumerState<ExploreRoutinesScreen> {
         }
       }
 
+      if (!mounted) return;
       if (drafts.isEmpty) {
         _snack('Could not match these exercises in your library.');
         return;
       }
 
-      await db.routinesDao.createRoutine(
+      final id = await db.routinesDao.createRoutine(
         userId: user.id,
         name: template.name,
         exercises: drafts,
       );
-
       if (!mounted) return;
-      setState(() => _imported.add(template.name));
+
+      setState(() {
+        _imported.add(template.name);
+        _importedIds[template.name] = id;
+      });
       HapticFeedback.heavyImpact();
-      _snack(missed == 0
-          ? '"${template.name}" added to My Routines.'
-          : '"${template.name}" added — $missed exercise${missed > 1 ? 's' : ''} not in your library were skipped.');
+      _snackImported(template.name, id, missed);
     } finally {
       if (mounted) setState(() => _importing.remove(template.name));
     }
   }
 
   void _snack(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content:
-          Text(message, style: GoogleFonts.inter(color: AppColors.textPrimary)),
-      backgroundColor: AppColors.bgSurface,
-      behavior: SnackBarBehavior.floating,
-    ));
+    if (!mounted) return;
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(
+        content:
+            Text(message, style: AppText.meta(color: AppColors.textPrimary)),
+        backgroundColor: AppColors.surface3,
+        behavior: SnackBarBehavior.floating,
+      ));
+  }
+
+  /// Success snackbar with a one-tap route to the routine just created — a
+  /// creation action should lead somewhere, not dead-end.
+  void _snackImported(String name, String id, int missed) {
+    final msg = missed == 0
+        ? '"$name" added to My Routines.'
+        : '"$name" added — $missed exercise${missed > 1 ? 's' : ''} not in your library were skipped.';
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(
+        content: Text(msg, style: AppText.meta(color: AppColors.textPrimary)),
+        backgroundColor: AppColors.surface3,
+        behavior: SnackBarBehavior.floating,
+        action: SnackBarAction(
+          label: 'View',
+          textColor: AppColors.accentText,
+          onPressed: () => context.push('/routines/$id'),
+        ),
+      ));
+  }
+
+  void _showPreview(RoutineTemplate t,
+      {required bool imported, String? routineId}) {
+    showModalBottomSheet<void>(
+      context: context,
+      useRootNavigator: true,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (sheetCtx) => _PreviewSheet(
+        template: t,
+        imported: imported,
+        onAdd: () {
+          Navigator.of(sheetCtx).pop();
+          _import(t);
+        },
+        onView: routineId == null
+            ? null
+            : () {
+                Navigator.of(sheetCtx).pop();
+                context.push('/routines/$routineId');
+              },
+      ),
+    );
+  }
+
+  /// Filtered → grouped sections in the curated order. The unfiltered case
+  /// reuses the memoized [exploreSections] (minus the featured spotlight).
+  List<({String category, List<RoutineTemplate> items})> _sections(
+      {required RoutineTemplate? excluded}) {
+    final byCategory = <String, List<RoutineTemplate>>{};
+    for (final t in exploreTemplates) {
+      if (!_filter.matches(t.level)) continue;
+      if (identical(t, excluded)) continue;
+      byCategory.putIfAbsent(t.category, () => []).add(t);
+    }
+    return [
+      for (final c in exploreCategoryOrder)
+        if (byCategory[c] != null) (category: c, items: byCategory[c]!),
+    ];
   }
 
   @override
   Widget build(BuildContext context) {
-    // Group templates by category, preserving the curated section order.
-    final byCategory = <String, List<_RoutineTemplate>>{};
-    for (final t in _templates) {
-      byCategory.putIfAbsent(t.category, () => []).add(t);
-    }
-    final sections = [
-      for (final c in _categoryOrder)
-        if (byCategory[c] != null) (c, byCategory[c]!),
+    // "Added" state is DERIVED from the reactive routines stream (∪ the session
+    // set), so a template whose name already exists shows "View", never a
+    // second "Add" — which is what prevents the silent duplicate-import.
+    final existing = ref.watch(hydratedRoutinesProvider).valueOrNull ??
+        const <HydratedRoutine>[];
+    final existingIds = <String, String>{
+      for (final r in existing) r.routine.name: r.routine.id,
+    };
+
+    final showFeatured = _filter == _LevelFilter.all;
+    final sections = _sections(excluded: showFeatured ? _featured : null);
+
+    final rows = <_Row>[
+      if (showFeatured) _FeaturedRow(_featured),
+      for (final s in sections) ...[
+        _HeaderRow(s.category, s.items.length),
+        for (final t in s.items) _CardRow(t),
+      ],
     ];
+
+    final bottomInset = MediaQuery.viewPaddingOf(context).bottom;
 
     return Scaffold(
       backgroundColor: AppColors.bgBase,
-      appBar: AppBar(
-        backgroundColor: AppColors.bgBase,
-        scrolledUnderElevation: 0,
-        titleSpacing: 0, // title hugs the back button on every sub-screen
-        leading: IconButton(
-          tooltip: 'Back',
-          icon: const Icon(Icons.arrow_back_ios_new,
-              size: 18, color: AppColors.textPrimary),
-          onPressed: () => Navigator.of(context).maybePop(),
-        ),
-        title: Text(
-          'Explore',
-          style: GoogleFonts.inter(
-            fontWeight: FontWeight.w700,
-            fontSize: 20,
-            letterSpacing: -0.3,
-            color: AppColors.textPrimary,
+      body: CustomScrollView(
+        slivers: [
+          // ── Hero: ambient violet aura + collapsing large title ──────────
+          SliverAppBar(
+            pinned: true,
+            expandedHeight: 150,
+            backgroundColor: AppColors.bgBase,
+            surfaceTintColor: Colors.transparent,
+            scrolledUnderElevation: 0,
+            leading: IconButton(
+              tooltip: 'Back',
+              icon: const Icon(Icons.arrow_back_rounded,
+                  size: 24, color: AppColors.textPrimary),
+              onPressed: () {
+                if (context.canPop()) context.pop();
+              },
+            ),
+            flexibleSpace: const FlexibleSpaceBar(
+              titlePadding: EdgeInsetsDirectional.only(start: 56, bottom: 15),
+              expandedTitleScale: 1.6,
+              title: _HeroTitle(),
+              background: _HeroGlow(),
+            ),
           ),
-        ),
-      ),
-      body: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 4, 16, 48),
-        children: [
-          Padding(
-            padding: const EdgeInsets.only(left: 4, bottom: 4),
-            child: Text(
-              'Trainer-built programs, ready to train. Import one and make '
-              'it yours.',
-              style: GoogleFonts.inter(
-                fontSize: 13,
-                color: AppColors.textSecondary,
+
+          // ── Subtitle + credibility ──────────────────────────────────────
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(
+                  AppSpacing.screenH, 6, AppSpacing.screenH, 10),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Trainer-built programs, ready to train. Import one and '
+                    'make it yours.',
+                    style: AppText.body(),
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      _CredChip(
+                          icon: Icons.list_alt_rounded,
+                          label: '${exploreTemplates.length} programs'),
+                      const SizedBox(width: AppSpacing.x2),
+                      _CredChip(
+                          icon: Icons.category_rounded,
+                          label: '${exploreCategoryOrder.length} splits'),
+                    ],
+                  ),
+                ],
               ),
             ),
           ),
-          for (final (category, items) in sections) ...[
-            _SectionHeader(label: category, count: items.length),
-            for (final template in items)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: _TemplateCard(
-                  template: template,
-                  importing: _importing.contains(template.name),
-                  imported: _imported.contains(template.name),
-                  onImport: () => _import(template),
-                ),
+
+          // ── Sticky goal filters ─────────────────────────────────────────
+          SliverPersistentHeader(
+            pinned: true,
+            delegate: _FilterHeaderDelegate(
+                selected: _filter, onSelect: _setFilter),
+          ),
+
+          // ── Catalog (featured + sections), staggered entrance ───────────
+          SliverPadding(
+            padding: EdgeInsets.fromLTRB(
+                AppSpacing.screenH, 8, AppSpacing.screenH, 24 + bottomInset),
+            sliver: SliverList(
+              delegate: SliverChildBuilderDelegate(
+                (context, i) {
+                  final row = rows[i];
+                  final Widget child;
+                  switch (row) {
+                    case _FeaturedRow(:final template):
+                      final imported = _isImported(template, existingIds);
+                      final routineId = _routineId(template, existingIds);
+                      child = Padding(
+                        padding:
+                            const EdgeInsets.only(bottom: AppSpacing.x5),
+                        child: _FeaturedCard(
+                          template: template,
+                          importing: _importing.contains(template.name),
+                          imported: imported,
+                          onImport: () => _import(template),
+                          onView: routineId == null
+                              ? null
+                              : () => context.push('/routines/$routineId'),
+                          onPreview: () => _showPreview(template,
+                              imported: imported, routineId: routineId),
+                        ),
+                      );
+                    case _HeaderRow(:final label, :final count):
+                      child = _SectionHeader(label: label, count: count);
+                    case _CardRow(:final template):
+                      final imported = _isImported(template, existingIds);
+                      final routineId = _routineId(template, existingIds);
+                      child = Padding(
+                        padding: const EdgeInsets.only(
+                            bottom: AppSpacing.sectionGap),
+                        child: _TemplateCard(
+                          template: template,
+                          importing: _importing.contains(template.name),
+                          imported: imported,
+                          onImport: () => _import(template),
+                          onView: routineId == null
+                              ? null
+                              : () => context.push('/routines/$routineId'),
+                          onPreview: () => _showPreview(template,
+                              imported: imported, routineId: routineId),
+                        ),
+                      );
+                  }
+                  return _Reveal(index: i, controller: _reveal, child: child);
+                },
+                childCount: rows.length,
               ),
-          ],
+            ),
+          ),
         ],
       ),
+    );
+  }
+
+  bool _isImported(RoutineTemplate t, Map<String, String> existingIds) =>
+      _imported.contains(t.name) || existingIds.containsKey(t.name);
+
+  String? _routineId(RoutineTemplate t, Map<String, String> existingIds) =>
+      _importedIds[t.name] ?? existingIds[t.name];
+}
+
+/// The large "Explore" title that FlexibleSpaceBar scales between the expanded
+/// hero and the collapsed app bar.
+class _HeroTitle extends StatelessWidget {
+  const _HeroTitle();
+
+  @override
+  Widget build(BuildContext context) =>
+      Text('Explore', style: AppText.sectionHeading());
+}
+
+/// Ambient violet aura behind the hero — gives the AMOLED black depth and brand
+/// presence on first open. FlexibleSpaceBar fades it out as the bar collapses.
+class _HeroGlow extends StatelessWidget {
+  const _HeroGlow();
+
+  @override
+  Widget build(BuildContext context) {
+    return const DecoratedBox(
+      decoration: BoxDecoration(
+        gradient: RadialGradient(
+          center: Alignment(-0.35, -0.85),
+          radius: 1.15,
+          colors: [Color(0x3D7C3AED), Color(0x00000000)],
+          stops: [0.0, 0.72],
+        ),
+      ),
+    );
+  }
+}
+
+class _CredChip extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  const _CredChip({required this.icon, required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: AppColors.surface3,
+        borderRadius: AppRadius.badgeAll,
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 13, color: AppColors.accentText),
+          const SizedBox(width: 6),
+          Text(label, style: AppText.statLabel(color: AppColors.textSecondary)),
+        ],
+      ),
+    );
+  }
+}
+
+/// Sticky goal-filter bar. Tapping a chip filters the catalog and re-reveals it.
+class _FilterHeaderDelegate extends SliverPersistentHeaderDelegate {
+  final _LevelFilter selected;
+  final ValueChanged<_LevelFilter> onSelect;
+  _FilterHeaderDelegate({required this.selected, required this.onSelect});
+
+  @override
+  double get minExtent => 54;
+  @override
+  double get maxExtent => 54;
+
+  @override
+  Widget build(
+      BuildContext context, double shrinkOffset, bool overlapsContent) {
+    return Container(
+      color: AppColors.bgBase,
+      alignment: Alignment.centerLeft,
+      child: ListView(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.fromLTRB(
+            AppSpacing.screenH, 8, AppSpacing.screenH, 10),
+        children: [
+          for (final f in _LevelFilter.values)
+            Padding(
+              padding: const EdgeInsets.only(right: AppSpacing.x2),
+              child: _FilterChip(
+                label: f.label,
+                selected: f == selected,
+                onTap: () => onSelect(f),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  bool shouldRebuild(_FilterHeaderDelegate old) => old.selected != selected;
+}
+
+class _FilterChip extends StatelessWidget {
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+  const _FilterChip(
+      {required this.label, required this.selected, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      button: true,
+      selected: selected,
+      label: label,
+      excludeSemantics: true,
+      child: Material(
+        color: selected ? AppColors.accentPrimary : AppColors.surface3,
+        borderRadius: AppRadius.badgeAll,
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: onTap,
+          child: Container(
+            alignment: Alignment.center,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Text(
+              label,
+              style: AppText.statLabel(
+                  color: selected ? Colors.white : AppColors.textSecondary),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// One-shot fade + rise on first build / filter change. Off-screen rows (index
+/// past the first screenful) and reduce-motion render instantly — never blank.
+class _Reveal extends StatelessWidget {
+  final int index;
+  final AnimationController controller;
+  final Widget child;
+  const _Reveal(
+      {required this.index, required this.controller, required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    if (index >= 8 || MediaQuery.disableAnimationsOf(context)) return child;
+    final start = (index * 0.07).clamp(0.0, 0.55);
+    const span = 0.45;
+    return AnimatedBuilder(
+      animation: controller,
+      child: child,
+      builder: (context, child) {
+        final raw = ((controller.value - start) / span).clamp(0.0, 1.0);
+        final v = Curves.easeOutCubic.transform(raw);
+        return Opacity(
+          opacity: v,
+          child: Transform.translate(offset: Offset(0, 18 * (1 - v)), child: child),
+        );
+      },
     );
   }
 }
@@ -549,171 +597,337 @@ class _SectionHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(4, 20, 4, 10),
-      child: Row(
-        children: [
-          Text(
-            label.toUpperCase(),
-            style: GoogleFonts.inter(
-              fontSize: 11,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 0.8,
-              color: AppColors.textSecondary,
+      padding: const EdgeInsets.fromLTRB(0, 18, 0, 10),
+      child: Semantics(
+        header: true,
+        child: Row(
+          children: [
+            Text(label.toUpperCase(),
+                style: AppText.columnHeader(color: AppColors.textSecondary)),
+            const SizedBox(width: 8),
+            Text('$count', style: AppText.statLabel()),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// The editor's spotlight — a richer, violet-lit hero card the eye lands on
+/// first. Same import semantics as a normal card; bigger, glowing, full-width
+/// CTA.
+class _FeaturedCard extends StatelessWidget {
+  final RoutineTemplate template;
+  final bool importing;
+  final bool imported;
+  final VoidCallback onImport;
+  final VoidCallback? onView;
+  final VoidCallback onPreview;
+
+  const _FeaturedCard({
+    required this.template,
+    required this.importing,
+    required this.imported,
+    required this.onImport,
+    required this.onView,
+    required this.onPreview,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final muscle = _dominantMuscle(template.focus);
+    final glyphColor = _glyphColor(muscle);
+    final a11yLabel = 'Featured. ${template.name}. ${template.levelLabel}, '
+        'about ${template.estMinutes} minutes, ${template.slots.length} exercises. '
+        '${template.focus}. ${template.description}';
+
+    return Semantics(
+      container: true,
+      button: true,
+      label: a11yLabel,
+      hint: 'Opens program preview',
+      onTap: onPreview,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          borderRadius: AppRadius.cardAll,
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.accentPrimary.withValues(alpha: 0.22),
+              blurRadius: 26,
+              spreadRadius: -8,
+              offset: const Offset(0, 10),
+            ),
+          ],
+        ),
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [Color(0xFF1C1233), Color(0xFF0B0B0D)],
+            ),
+            borderRadius: AppRadius.cardAll,
+            border: Border.all(
+                color: AppColors.accentPrimary.withValues(alpha: 0.45)),
+          ),
+          clipBehavior: Clip.antiAlias,
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: onPreview,
+              excludeFromSemantics: true,
+              child: Padding(
+                padding: const EdgeInsets.all(AppSpacing.x4),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    ExcludeSemantics(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              const Icon(Icons.auto_awesome_rounded,
+                                  size: 13, color: AppColors.accentText),
+                              const SizedBox(width: 6),
+                              Text('FEATURED',
+                                  style: AppText.columnHeader(
+                                      color: AppColors.accentText)),
+                            ],
+                          ),
+                          const SizedBox(height: 14),
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Container(
+                                width: 56,
+                                height: 56,
+                                alignment: Alignment.center,
+                                decoration: BoxDecoration(
+                                  color: glyphColor.withValues(alpha: 0.16),
+                                  borderRadius: BorderRadius.circular(
+                                      AppRadius.thumbnail),
+                                ),
+                                child: MuscleGlyph(
+                                    muscle: muscle,
+                                    size: 32,
+                                    color: glyphColor),
+                              ),
+                              const SizedBox(width: 14),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.start,
+                                  children: [
+                                    Text(template.name,
+                                        style: AppText.sectionHeading()),
+                                    const SizedBox(height: 3),
+                                    Text(template.focus,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: AppText.meta()),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 14),
+                          Wrap(
+                            spacing: AppSpacing.x2,
+                            runSpacing: 6,
+                            crossAxisAlignment: WrapCrossAlignment.center,
+                            children: [
+                              _LevelPill(
+                                  label: template.levelLabel,
+                                  color: template.levelColor),
+                              _MetaChip(
+                                  icon: Icons.schedule_rounded,
+                                  label: '~${template.estMinutes} min'),
+                              _MetaChip(
+                                  icon: Icons.fitness_center_rounded,
+                                  label: '${template.slots.length} exercises'),
+                            ],
+                          ),
+                          const SizedBox(height: 12),
+                          Text(template.description,
+                              style: AppText.body().copyWith(height: 1.45)),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _ImportPill(
+                            importing: importing,
+                            imported: imported,
+                            onTap: importing
+                                ? null
+                                : (imported ? (onView ?? () {}) : onImport),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
             ),
           ),
-          const SizedBox(width: 8),
-          Text(
-            '$count',
-            style: GoogleFonts.inter(
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-              // Was textSecondary @0.5α ≈ 2.3:1 — a hard WCAG AA fail. Full
-              // textSecondary at 12px clears 4.5:1.
-              color: AppColors.textSecondary,
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
 }
 
 class _TemplateCard extends StatelessWidget {
-  final _RoutineTemplate template;
+  final RoutineTemplate template;
   final bool importing;
   final bool imported;
   final VoidCallback onImport;
+  final VoidCallback? onView;
+  final VoidCallback onPreview;
 
   const _TemplateCard({
     required this.template,
     required this.importing,
     required this.imported,
     required this.onImport,
+    required this.onView,
+    required this.onPreview,
   });
 
   @override
   Widget build(BuildContext context) {
-    // Preview the first three exercises by their REAL library names.
     final preview = template.slots.take(3).map((s) => s.name).join(', ');
     final extra = template.slots.length - 3;
+    final muscle = _dominantMuscle(template.focus);
+    final glyphColor = _glyphColor(muscle);
 
-    return Container(
-      decoration: BoxDecoration(
-        gradient: RDStyles.cardGradient,
-        borderRadius: BorderRadius.circular(16),
-        border: RDStyles.hairlineBorder,
-      ),
-      padding: const EdgeInsets.fromLTRB(15, 14, 15, 13),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                width: 44,
-                height: 44,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  color: template.accent.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Text(
-                  template.name[0],
-                  style: GoogleFonts.inter(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w700,
-                    color: template.accent,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 13),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      template.name,
-                      style: GoogleFonts.inter(
-                        fontSize: 17,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.textPrimary,
-                        letterSpacing: -0.2,
-                      ),
-                    ),
-                    const SizedBox(height: 3),
-                    Text(
-                      template.focus,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.inter(
-                        fontSize: 12.5,
-                        color: AppColors.textSecondary,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
+    // One screen-reader node for the whole card (a program), plus the pill's
+    // own button node — instead of ~8 disconnected fragments per card.
+    final a11yLabel = '${template.name}. ${template.levelLabel}, '
+        'about ${template.estMinutes} minutes, ${template.slots.length} exercises. '
+        '${template.focus}. ${template.description}';
 
-          // ── Scannable metadata: difficulty · duration · exercises ─────
-          // Wrap (not Row) so the chips reflow instead of overflowing on
-          // narrow screens or at large system text scales.
-          Wrap(
-            spacing: 8,
-            runSpacing: 6,
-            crossAxisAlignment: WrapCrossAlignment.center,
-            children: [
-              _LevelPill(label: template.levelLabel, color: template.levelColor),
-              _MetaChip(
-                  icon: Icons.schedule_rounded,
-                  label: '~${template.estMinutes} min'),
-              _MetaChip(
-                  icon: Icons.fitness_center_rounded,
-                  label: '${template.slots.length} exercises'),
-            ],
-          ),
-          const SizedBox(height: 11),
-
-          Text(
-            template.description,
-            style: GoogleFonts.inter(
-              fontSize: 12.5,
-              height: 1.45,
-              color: AppColors.textSecondary,
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.only(top: 13),
-            child: Container(height: 1, color: RDStyles.hairline),
-          ),
-          Padding(
-            padding: const EdgeInsets.only(top: 12),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    '$preview${extra > 0 ? '  +$extra' : ''}',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.inter(
-                      fontSize: 12.5,
-                      color: AppColors.textSecondary,
+    return Semantics(
+      container: true,
+      button: true,
+      label: a11yLabel,
+      hint: 'Opens program preview',
+      onTap: onPreview,
+      child: Container(
+        decoration: AppCard.decoration(),
+        clipBehavior: Clip.antiAlias,
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: onPreview,
+            excludeFromSemantics: true,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(
+                  AppSpacing.x4, AppSpacing.x4, AppSpacing.x4, AppSpacing.x3),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  ExcludeSemantics(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              width: 44,
+                              height: 44,
+                              alignment: Alignment.center,
+                              decoration: BoxDecoration(
+                                color: glyphColor.withValues(alpha: 0.15),
+                                borderRadius: BorderRadius.circular(
+                                    AppRadius.thumbnail),
+                              ),
+                              child: MuscleGlyph(
+                                  muscle: muscle, size: 26, color: glyphColor),
+                            ),
+                            const SizedBox(width: AppSpacing.x3),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(template.name,
+                                      style: AppText.cardTitle()),
+                                  const SizedBox(height: 3),
+                                  Text(template.focus,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: AppText.meta()),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: AppSpacing.x3),
+                        // Wrap (not Row) so chips reflow instead of overflowing
+                        // on narrow screens / large system text scales.
+                        Wrap(
+                          spacing: AppSpacing.x2,
+                          runSpacing: 6,
+                          crossAxisAlignment: WrapCrossAlignment.center,
+                          children: [
+                            _LevelPill(
+                                label: template.levelLabel,
+                                color: template.levelColor),
+                            _MetaChip(
+                                icon: Icons.schedule_rounded,
+                                label: '~${template.estMinutes} min'),
+                            _MetaChip(
+                                icon: Icons.fitness_center_rounded,
+                                label: '${template.slots.length} exercises'),
+                          ],
+                        ),
+                        const SizedBox(height: 11),
+                        Text(template.description,
+                            style: AppText.caption().copyWith(height: 1.45)),
+                        const Padding(
+                          padding: EdgeInsets.only(top: 13),
+                          child: Divider(
+                              height: 1,
+                              thickness: 1,
+                              color: AppColors.borderSubtle),
+                        ),
+                      ],
                     ),
                   ),
-                ),
-                const SizedBox(width: 12),
-                _ImportPill(
-                  importing: importing,
-                  imported: imported,
-                  onTap: onImport,
-                ),
-              ],
+                  Padding(
+                    padding: const EdgeInsets.only(top: 12),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: ExcludeSemantics(
+                            child: Text(
+                              '$preview${extra > 0 ? '  +$extra' : ''}',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: AppText.caption(
+                                  color: AppColors.textTertiary),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: AppSpacing.x3),
+                        _ImportPill(
+                          importing: importing,
+                          imported: imported,
+                          onTap: importing
+                              ? null
+                              : (imported ? (onView ?? () {}) : onImport),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
-        ],
+        ),
       ),
     );
   }
@@ -730,7 +944,7 @@ class _LevelPill extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.14),
-        borderRadius: BorderRadius.circular(6),
+        borderRadius: AppRadius.badgeAll,
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -741,14 +955,7 @@ class _LevelPill extends StatelessWidget {
             decoration: BoxDecoration(color: color, shape: BoxShape.circle),
           ),
           const SizedBox(width: 5),
-          Text(
-            label,
-            style: GoogleFonts.inter(
-              fontSize: 11,
-              fontWeight: FontWeight.w600,
-              color: color,
-            ),
-          ),
+          Text(label, style: AppText.badge(color: color)),
         ],
       ),
     );
@@ -767,23 +974,20 @@ class _MetaChip extends StatelessWidget {
       children: [
         Icon(icon, size: 13, color: AppColors.textSecondary),
         const SizedBox(width: 4),
-        Text(
-          label,
-          style: GoogleFonts.inter(
-            fontSize: 11.5,
-            fontWeight: FontWeight.w500,
-            color: AppColors.textSecondary,
-          ),
-        ),
+        Text(label, style: AppText.meta()),
       ],
     );
   }
 }
 
+/// Compact in-card CTA: Add → (spinner) → View. On-system radius (NOT a pill),
+/// a 48dp tap target, and a reduce-motion-gated swap animation so a successful
+/// import resolves with a satisfying check instead of snapping. Wrap in an
+/// [Expanded] to stretch it full-width (the featured hero does this).
 class _ImportPill extends StatelessWidget {
   final bool importing;
   final bool imported;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
 
   const _ImportPill({
     required this.importing,
@@ -793,55 +997,221 @@ class _ImportPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final reduceMotion = MediaQuery.disableAnimationsOf(context);
+    final fg = imported ? AppColors.success : Colors.white;
+
+    final Widget child = importing
+        ? const SizedBox(
+            key: ValueKey('spin'),
+            width: 16,
+            height: 16,
+            child:
+                CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+          )
+        : Row(
+            key: ValueKey(imported),
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(imported ? Icons.check_rounded : Icons.download_rounded,
+                  size: 16, color: fg),
+              const SizedBox(width: 6),
+              Text(imported ? 'View' : 'Add',
+                  style: AppText.statLabel(color: fg)),
+            ],
+          );
+
     return Semantics(
       button: true,
-      enabled: !imported && !importing,
+      enabled: !importing,
       label: importing
           ? 'Adding routine'
           : imported
-              ? 'Added to your routines'
+              ? 'Added — view routine'
               : 'Add this routine',
       excludeSemantics: true,
       child: Material(
-      color: imported
-          ? AppColors.success.withValues(alpha: 0.14)
-          : AppColors.accentPrimary,
-      borderRadius: BorderRadius.circular(999),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: imported || importing ? null : onTap,
-        child: Container(
-          constraints: const BoxConstraints(minHeight: 36),
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          alignment: Alignment.center,
-          child: importing
-              ? const SizedBox(
-                  width: 14,
-                  height: 14,
-                  child: CircularProgressIndicator(
-                      strokeWidth: 2, color: Colors.white),
-                )
-              : Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      imported ? Icons.check_rounded : Icons.download_rounded,
-                      size: 15,
-                      color: imported ? AppColors.success : Colors.white,
-                    ),
-                    const SizedBox(width: 5),
-                    Text(
-                      imported ? 'Added' : 'Add',
-                      style: GoogleFonts.inter(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                        color: imported ? AppColors.success : Colors.white,
-                      ),
-                    ),
-                  ],
-                ),
+        color: imported
+            ? AppColors.success.withValues(alpha: 0.14)
+            : AppColors.accentPrimary,
+        borderRadius: AppRadius.buttonSecondaryAll,
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: onTap,
+          child: Container(
+            constraints: const BoxConstraints(minHeight: 48, minWidth: 86),
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            alignment: Alignment.center,
+            child: AnimatedSwitcher(
+              duration: Duration(milliseconds: reduceMotion ? 0 : 200),
+              transitionBuilder: (c, anim) => FadeTransition(
+                  opacity: anim, child: ScaleTransition(scale: anim, child: c)),
+              child: child,
+            ),
+          ),
         ),
       ),
+    );
+  }
+}
+
+/// Full-template preview — every slot (name · sets×reps) so a user can evaluate
+/// a program before committing. Primary action mirrors the card: Add (or View
+/// if it's already in the library).
+class _PreviewSheet extends StatelessWidget {
+  final RoutineTemplate template;
+  final bool imported;
+  final VoidCallback onAdd;
+  final VoidCallback? onView;
+
+  const _PreviewSheet({
+    required this.template,
+    required this.imported,
+    required this.onAdd,
+    required this.onView,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final muscle = _dominantMuscle(template.focus);
+    final glyphColor = _glyphColor(muscle);
+
+    return DraggableScrollableSheet(
+      initialChildSize: 0.6,
+      minChildSize: 0.4,
+      maxChildSize: 0.92,
+      expand: false,
+      builder: (context, scrollController) => DecoratedBox(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [AppColors.surface2, AppColors.bgBase],
+          ),
+          borderRadius: AppRadius.sheetTop,
+          border: Border(top: BorderSide(color: AppColors.borderSubtle)),
+        ),
+        child: Column(
+          children: [
+            const SizedBox(height: 10),
+            Container(
+              width: 36,
+              height: 4,
+              decoration: BoxDecoration(
+                color: AppColors.borderEmphasis,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            Expanded(
+              child: ListView(
+                controller: scrollController,
+                padding: const EdgeInsets.fromLTRB(
+                    AppSpacing.x5, AppSpacing.x5, AppSpacing.x5, AppSpacing.x4),
+                children: [
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        width: 48,
+                        height: 48,
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          color: glyphColor.withValues(alpha: 0.15),
+                          borderRadius:
+                              BorderRadius.circular(AppRadius.thumbnail),
+                        ),
+                        child: MuscleGlyph(
+                            muscle: muscle, size: 28, color: glyphColor),
+                      ),
+                      const SizedBox(width: AppSpacing.x3),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(template.name,
+                                style: AppText.sectionHeading()),
+                            const SizedBox(height: 3),
+                            Text(template.focus, style: AppText.meta()),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: AppSpacing.x4),
+                  Wrap(
+                    spacing: AppSpacing.x2,
+                    runSpacing: 6,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    children: [
+                      _LevelPill(
+                          label: template.levelLabel,
+                          color: template.levelColor),
+                      _MetaChip(
+                          icon: Icons.schedule_rounded,
+                          label: '~${template.estMinutes} min'),
+                      _MetaChip(
+                          icon: Icons.fitness_center_rounded,
+                          label: '${template.slots.length} exercises'),
+                    ],
+                  ),
+                  const SizedBox(height: AppSpacing.x4),
+                  Text(template.description,
+                      style: AppText.body().copyWith(height: 1.45)),
+                  const SizedBox(height: AppSpacing.x5),
+                  Text('EXERCISES',
+                      style: AppText.columnHeader(
+                          color: AppColors.textSecondary)),
+                  const SizedBox(height: AppSpacing.x2),
+                  for (var i = 0; i < template.slots.length; i++)
+                    _PreviewSlotRow(index: i + 1, slot: template.slots[i]),
+                ],
+              ),
+            ),
+            SafeArea(
+              top: false,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(
+                    AppSpacing.x5, 0, AppSpacing.x5, AppSpacing.x3),
+                child: PrimaryButton(
+                  label:
+                      imported ? 'View in My Routines' : 'Add to My Routines',
+                  icon: imported ? Icons.check_rounded : Icons.download_rounded,
+                  onPressed: imported ? onView : onAdd,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _PreviewSlotRow extends StatelessWidget {
+  final int index;
+  final TemplateSlot slot;
+  const _PreviewSlotRow({required this.index, required this.slot});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 9),
+      child: Row(
+        children: [
+          SizedBox(
+            width: 22,
+            child: Text('$index', style: AppText.statLabel()),
+          ),
+          const SizedBox(width: AppSpacing.x2),
+          Expanded(
+            child: Text(slot.name,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: AppText.rowLabel()),
+          ),
+          const SizedBox(width: AppSpacing.x2),
+          Text('${slot.sets} × ${slot.reps}',
+              style: AppText.statLabel(color: AppColors.textSecondary)),
+        ],
       ),
     );
   }
