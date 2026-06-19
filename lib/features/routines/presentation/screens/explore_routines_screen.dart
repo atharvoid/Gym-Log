@@ -469,7 +469,7 @@ class _CredChip extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         color: AppColors.surface3,
         borderRadius: AppRadius.badgeAll,
       ),
