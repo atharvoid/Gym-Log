@@ -7,8 +7,10 @@ import 'package:gymlog/core/database/daos/routines_dao.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text.dart';
 import '../../../../core/utils/tap_guard.dart';
+import '../../../../core/utils/relative_time.dart';
 import '../../../../shared/widgets/async_error_state.dart';
 import '../../../../shared/widgets/ui/app_card.dart';
+import '../../../../shared/widgets/ui/secondary_button.dart';
 import '../../../../shared/widgets/ui/skeleton.dart';
 import '../../../routines/presentation/widgets/routine_card.dart';
 import '../../../routines/presentation/providers/routines_provider.dart';
@@ -16,8 +18,9 @@ import '../../domain/active_workout_state.dart';
 import '../providers/active_workout_provider.dart';
 
 /// [workout_screen.dart]
-/// Routines tab — premium list of the user's saved routines.
-/// State: hydratedRoutinesProvider (StreamProvider) — auto-refreshes on DB writes.
+/// Routines tab — the user's saved routines. Reactive via hydratedRoutinesProvider.
+/// CustomScrollView + SliverList virtualizes the routine list; the section
+/// collapses (animated chevron) while staying a single lazy scroll.
 class WorkoutScreen extends ConsumerStatefulWidget {
   const WorkoutScreen({super.key});
 
@@ -29,8 +32,8 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
   bool _routinesExpanded = true;
 
   void _startRoutine(HydratedRoutine routine) {
-    if (routine.exerciseIds.isEmpty) return;
-    if (!tapGuard()) return; // no double-start / double-push
+    if (routine.exerciseIds.isEmpty) return; // guarded again in the card (with feedback)
+    if (!tapGuard()) return;
     HapticFeedback.mediumImpact();
 
     final exercises = routine.exerciseIds.asMap().entries.map((e) {
@@ -56,15 +59,6 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
     context.push(path);
   }
 
-  String _relative(DateTime d) {
-    final diff = DateTime.now().difference(d);
-    if (diff.inDays < 1) return 'today';
-    if (diff.inDays == 1) return 'yesterday';
-    if (diff.inDays < 7) return '${diff.inDays} days ago';
-    if (diff.inDays < 30) return '${(diff.inDays / 7).floor()} weeks ago';
-    return '${(diff.inDays / 30).floor()} months ago';
-  }
-
   String _summaryLine(List<HydratedRoutine> routines) {
     final count = routines.length;
     final label = count == 1 ? 'routine' : 'routines';
@@ -75,7 +69,7 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
     }
     return maxLast == null
         ? '$count $label'
-        : '$count $label  ·  Last trained ${_relative(maxLast)}';
+        : '$count $label  ·  Last trained ${relativeDay(maxLast)}';
   }
 
   @override
@@ -94,173 +88,153 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
           child: Text('Routines', style: AppText.screenTitle()),
         ),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // ── Recency summary ──────────────────────────────────────────
-            routinesAsync.maybeWhen(
-              data: (routines) => routines.isEmpty
-                  ? const SizedBox.shrink()
-                  : Padding(
-                      padding: const EdgeInsets.only(bottom: 16),
-                      child: Text(_summaryLine(routines), style: AppText.meta()),
-                    ),
-              orElse: () => const SizedBox.shrink(),
-            ),
-
-            // ── Action row: New (primary) + Explore (catalog) ────────────
-            Row(
-              children: [
-                Expanded(
-                  child: _ActionButton(
-                    label: 'New Routine',
-                    icon: Icons.add_rounded,
-                    primary: true,
-                    onTap: () => _push('/routines/edit'),
+      body: CustomScrollView(
+        slivers: [
+          // ── Header block: summary + actions + collapsible toggle ───────
+          SliverPadding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+            sliver: SliverToBoxAdapter(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  routinesAsync.maybeWhen(
+                    data: (routines) => routines.isEmpty
+                        ? const SizedBox.shrink()
+                        : Padding(
+                            padding: const EdgeInsets.only(bottom: 16),
+                            child: Text(_summaryLine(routines),
+                                style: AppText.meta()),
+                          ),
+                    orElse: () => const SizedBox.shrink(),
                   ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _ActionButton(
-                    label: 'Explore',
-                    icon: Icons.explore_rounded,
-                    onTap: () => _push('/routines/explore'),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 22),
-
-            // ── Collapsible section header ───────────────────────────────
-            Semantics(
-              button: true,
-              expanded: _routinesExpanded,
-              label: 'My Routines',
-              child: GestureDetector(
-                onTap: () {
-                  HapticFeedback.selectionClick();
-                  setState(() => _routinesExpanded = !_routinesExpanded);
-                },
-                behavior: HitTestBehavior.opaque,
-                child: Padding(
-                  // ~48dp tap target for the disclosure control.
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  child: Row(
+                  Row(
                     children: [
-                      AnimatedRotation(
-                        turns: _routinesExpanded ? 0 : -0.25,
-                        duration: reduceMotion
-                            ? Duration.zero
-                            : const Duration(milliseconds: 200),
-                        child: const Icon(Icons.keyboard_arrow_down_rounded,
-                            color: AppColors.textSecondary, size: 20),
+                      Expanded(
+                        child: SecondaryButton(
+                          label: 'New Routine',
+                          icon: Icons.add_rounded,
+                          accent: true,
+                          onPressed: () => _push('/routines/edit'),
+                        ),
                       ),
-                      const SizedBox(width: 4),
-                      routinesAsync.maybeWhen(
-                        data: (r) => Text('My Routines (${r.length})',
-                            style: AppText.exerciseName()),
-                        orElse: () =>
-                            Text('My Routines', style: AppText.exerciseName()),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: SecondaryButton(
+                          label: 'Explore',
+                          icon: Icons.explore_rounded,
+                          onPressed: () => _push('/routines/explore'),
+                        ),
                       ),
                     ],
                   ),
-                ),
+                  const SizedBox(height: 22),
+                  _collapsibleHeader(routinesAsync, reduceMotion),
+                  const SizedBox(height: 10),
+                ],
               ),
             ),
-            const SizedBox(height: 10),
+          ),
 
-            // ── Routine list (animated collapse) ─────────────────────────
-            AnimatedSize(
-              duration:
-                  reduceMotion ? Duration.zero : const Duration(milliseconds: 220),
-              curve: Curves.easeInOut,
-              alignment: Alignment.topCenter,
-              child: !_routinesExpanded
-                  ? const SizedBox(width: double.infinity)
-                  : routinesAsync.when(
-                      loading: () => const _RoutinesLoading(),
-                      error: (e, _) => AsyncErrorState(
-                        message: "Couldn't load your routines.",
-                        onRetry: () =>
-                            ref.invalidate(hydratedRoutinesProvider),
-                      ),
-                      data: (routines) {
-                        if (routines.isEmpty) {
-                          return _EmptyRoutines(onNew: () => _push('/routines/edit'));
-                        }
-                        return Column(
-                          children: [
-                            for (final routine in routines)
-                              Padding(
-                                padding: const EdgeInsets.only(bottom: 12),
-                                child: RoutineCard(
-                                  routineId: routine.routine.id,
-                                  routineName: routine.routine.name,
-                                  exerciseNames: routine.exerciseNames,
-                                  muscleTags: routine.muscleTags,
-                                  lastTrained: routine.lastTrained,
-                                  onStartTap: () => _startRoutine(routine),
-                                ),
-                              ),
-                          ],
-                        );
-                      },
-                    ),
-            ),
-          ],
+          // ── Routine list (virtualized; hidden when collapsed) ──────────
+          if (_routinesExpanded) _listSliver(routinesAsync),
+
+          const SliverToBoxAdapter(child: SizedBox(height: 24)),
+        ],
+      ),
+    );
+  }
+
+  Widget _collapsibleHeader(
+    AsyncValue<List<HydratedRoutine>> routinesAsync,
+    bool reduceMotion,
+  ) {
+    return Semantics(
+      button: true,
+      expanded: _routinesExpanded,
+      label: 'My Routines',
+      child: GestureDetector(
+        onTap: () {
+          HapticFeedback.selectionClick();
+          setState(() => _routinesExpanded = !_routinesExpanded);
+        },
+        behavior: HitTestBehavior.opaque,
+        child: Padding(
+          // ~48dp tap target for the disclosure control.
+          padding: const EdgeInsets.symmetric(vertical: 14),
+          child: Row(
+            children: [
+              AnimatedRotation(
+                turns: _routinesExpanded ? 0 : -0.25,
+                duration: reduceMotion
+                    ? Duration.zero
+                    : const Duration(milliseconds: 200),
+                child: const Icon(Icons.keyboard_arrow_down_rounded,
+                    color: AppColors.textSecondary, size: 20),
+              ),
+              const SizedBox(width: 4),
+              routinesAsync.maybeWhen(
+                data: (r) => Text('My Routines (${r.length})',
+                    style: AppText.exerciseName()),
+                orElse: () =>
+                    Text('My Routines', style: AppText.exerciseName()),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
-}
 
-/// Top action button. `primary` = accent-outline (New Routine);
-/// otherwise a neutral raised surface (Explore).
-class _ActionButton extends StatelessWidget {
-  final String label;
-  final IconData icon;
-  final VoidCallback onTap;
-  final bool primary;
-
-  const _ActionButton({
-    required this.label,
-    required this.icon,
-    required this.onTap,
-    this.primary = false,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final fg = primary ? AppColors.accentText : AppColors.textPrimary;
-
-    return Container(
-      clipBehavior: Clip.antiAlias,
-      decoration: BoxDecoration(
-        color: primary ? AppColors.indigoTint : AppColors.surface2,
-        borderRadius: AppRadius.buttonSecondaryAll,
-        border: primary
-            ? Border.all(color: AppColors.accentPrimary.withValues(alpha: 0.45))
-            : null,
+  Widget _listSliver(AsyncValue<List<HydratedRoutine>> routinesAsync) {
+    return routinesAsync.when(
+      loading: () => const SliverToBoxAdapter(
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 16),
+          child: _RoutinesLoading(),
+        ),
       ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onTap,
-          child: SizedBox(
-            height: 48,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(icon, size: 18, color: fg),
-                const SizedBox(width: 8),
-                Text(label, style: AppText.button(color: fg)),
-              ],
+      error: (e, _) => SliverToBoxAdapter(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Semantics(
+            liveRegion: true,
+            child: AsyncErrorState(
+              message: "Couldn't load your routines.",
+              onRetry: () => ref.invalidate(hydratedRoutinesProvider),
             ),
           ),
         ),
       ),
+      data: (routines) {
+        if (routines.isEmpty) {
+          return SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: _EmptyRoutines(onNew: () => _push('/routines/edit')),
+            ),
+          );
+        }
+        return SliverPadding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          sliver: SliverList.builder(
+            itemCount: routines.length,
+            itemBuilder: (context, i) {
+              final routine = routines[i];
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: RoutineCard(
+                  routineId: routine.routine.id,
+                  routineName: routine.routine.name,
+                  exerciseNames: routine.exerciseNames,
+                  muscleTags: routine.muscleTags,
+                  lastTrained: routine.lastTrained,
+                  onStartTap: () => _startRoutine(routine),
+                ),
+              );
+            },
+          ),
+        );
+      },
     );
   }
 }
@@ -319,7 +293,7 @@ class _RoutineCardSkeleton extends StatelessWidget {
             children: [
               Expanded(child: SkeletonBox(height: 12)),
               SizedBox(width: 12),
-              SkeletonBox(width: 64, height: 32, radius: 14),
+              SkeletonBox(width: 68, height: 32, radius: 14),
             ],
           ),
         ],
@@ -351,8 +325,10 @@ class _EmptyRoutines extends StatelessWidget {
               minimumSize: const Size(0, 44),
               foregroundColor: AppColors.accentText,
             ),
-            icon: const Icon(Icons.add_rounded, size: 18, color: AppColors.accentText),
-            label: Text('New Routine', style: AppText.button(color: AppColors.accentText)),
+            icon: const Icon(Icons.add_rounded,
+                size: 18, color: AppColors.accentText),
+            label:
+                Text('New Routine', style: AppText.button(color: AppColors.accentText)),
           ),
         ],
       ),
