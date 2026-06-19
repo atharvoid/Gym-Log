@@ -29,16 +29,44 @@ String _dominantMuscle(String focus) {
 
 /// Stable per-muscle tint from the shared violet ramp — IDENTICAL derivation to
 /// the saved-routine card, so a chest template and a chest routine read the
-/// same. (Replaces the old hardcoded, all-the-same #7C3AED "category accent".)
+/// same.
 Color _glyphColor(String muscle) {
   final i = muscle.hashCode.abs() % AppColors.muscleSplitPalette.length;
   return Color.lerp(AppColors.muscleSplitPalette[i], Colors.white, 0.35)!;
 }
 
-/// A pre-built, flat row list (section headers + cards interleaved), built ONCE
-/// so the `ListView.builder` lazily materializes only the rows in view.
+/// Difficulty filter for the sticky goal chips.
+enum _LevelFilter {
+  all,
+  beginner,
+  intermediate,
+  advanced;
+
+  String get label => switch (this) {
+        _LevelFilter.all => 'All',
+        _LevelFilter.beginner => 'Beginner',
+        _LevelFilter.intermediate => 'Intermediate',
+        _LevelFilter.advanced => 'Advanced',
+      };
+
+  bool matches(TemplateLevel l) => switch (this) {
+        _LevelFilter.all => true,
+        _LevelFilter.beginner => l == TemplateLevel.beginner,
+        _LevelFilter.intermediate => l == TemplateLevel.intermediate,
+        _LevelFilter.advanced => l == TemplateLevel.advanced,
+      };
+}
+
+/// A flat content row (featured | section header | card) so the list can be a
+/// single virtualized [SliverList] while still driving the staggered entrance
+/// by row index.
 sealed class _Row {
   const _Row();
+}
+
+class _FeaturedRow extends _Row {
+  final RoutineTemplate template;
+  const _FeaturedRow(this.template);
 }
 
 class _HeaderRow extends _Row {
@@ -52,15 +80,9 @@ class _CardRow extends _Row {
   const _CardRow(this.template);
 }
 
-final List<_Row> _rows = [
-  for (final section in exploreSections) ...[
-    _HeaderRow(section.category, section.items.length),
-    for (final t in section.items) _CardRow(t),
-  ],
-];
-
 /// Explore — a curated catalog of premade routines, importable into the user's
-/// library in one tap. Discovery and retention, not navigation.
+/// library in one tap. Built as a first-impression: an ambient brand glow, a
+/// featured spotlight, goal filters, and a choreographed entrance.
 class ExploreRoutinesScreen extends ConsumerStatefulWidget {
   const ExploreRoutinesScreen({super.key});
 
@@ -69,24 +91,50 @@ class ExploreRoutinesScreen extends ConsumerStatefulWidget {
       _ExploreRoutinesScreenState();
 }
 
-class _ExploreRoutinesScreenState extends ConsumerState<ExploreRoutinesScreen> {
+class _ExploreRoutinesScreenState extends ConsumerState<ExploreRoutinesScreen>
+    with SingleTickerProviderStateMixin {
   /// Templates whose import is in flight (shows the spinner).
   final Set<String> _importing = {};
 
   /// Templates imported THIS session (optimistic), unioned with the DB-derived
-  /// set so the "View" state shows instantly and survives the rebuild without
-  /// a flash before the routines stream re-emits.
+  /// set so "View" shows instantly and survives the rebuild without a flash.
   final Set<String> _imported = {};
 
   /// name → created routine id, for the "View" action on session imports.
   final Map<String, String> _importedIds = {};
+
+  _LevelFilter _filter = _LevelFilter.all;
+
+  // Drives the one-shot staggered entrance (re-runs when a filter is picked).
+  late final AnimationController _reveal = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 640),
+  )..forward();
+
+  static final RoutineTemplate _featured = exploreTemplates.firstWhere(
+    (t) => t.featured,
+    orElse: () => exploreTemplates.first,
+  );
+
+  @override
+  void dispose() {
+    _reveal.dispose();
+    super.dispose();
+  }
+
+  void _setFilter(_LevelFilter f) {
+    if (f == _filter) return;
+    HapticFeedback.selectionClick();
+    setState(() => _filter = f);
+    _reveal.forward(from: 0); // re-reveal the new set
+  }
 
   Future<void> _import(RoutineTemplate template) async {
     final user = ref.read(authProvider);
     if (user == null) return;
     // Claim the in-flight lock SYNCHRONOUSLY, before any await — otherwise a
     // double-tap during the count/resolve awaits slips through and imports
-    // twice. (The pill also disables on `importing`, but only after this set.)
+    // twice.
     if (_importing.contains(template.name) ||
         _imported.contains(template.name)) {
       return;
@@ -98,8 +146,6 @@ class _ExploreRoutinesScreenState extends ConsumerState<ExploreRoutinesScreen> {
       final isPremium = ref.read(isPremiumProvider);
       final db = ref.read(databaseProvider);
 
-      // Free-tier routine cap — importing a template creates a routine, so it
-      // counts against the limit exactly like manual creation does.
       final count = await db.routinesDao.countRoutinesForUser(user.id);
       if (!mounted) return;
       if (isAtFreeRoutineLimit(isPremium: isPremium, routineCount: count)) {
@@ -107,10 +153,9 @@ class _ExploreRoutinesScreenState extends ConsumerState<ExploreRoutinesScreen> {
         return;
       }
 
-      // Resolve each slot by EXACT canonical name first (the names are audited
-      // to exist), falling back to a substring match only for resilience
-      // against a differently-versioned library. This is what fixes the old
-      // bug where "Pull Up" alphabetically resolved to "Assisted Pull-Up".
+      // Resolve each slot by EXACT canonical name first (audited to exist),
+      // falling back to a substring match only for resilience against a
+      // differently-versioned library.
       final drafts = <RoutineDraftExercise>[];
       var missed = 0;
       for (final slot in template.slots) {
@@ -163,7 +208,8 @@ class _ExploreRoutinesScreenState extends ConsumerState<ExploreRoutinesScreen> {
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
       ..showSnackBar(SnackBar(
-        content: Text(message, style: AppText.meta(color: AppColors.textPrimary)),
+        content:
+            Text(message, style: AppText.meta(color: AppColors.textPrimary)),
         backgroundColor: AppColors.surface3,
         behavior: SnackBarBehavior.floating,
       ));
@@ -213,76 +259,332 @@ class _ExploreRoutinesScreenState extends ConsumerState<ExploreRoutinesScreen> {
     );
   }
 
+  /// Filtered → grouped sections in the curated order. The unfiltered case
+  /// reuses the memoized [exploreSections] (minus the featured spotlight).
+  List<({String category, List<RoutineTemplate> items})> _sections(
+      {required RoutineTemplate? excluded}) {
+    final byCategory = <String, List<RoutineTemplate>>{};
+    for (final t in exploreTemplates) {
+      if (!_filter.matches(t.level)) continue;
+      if (identical(t, excluded)) continue;
+      byCategory.putIfAbsent(t.category, () => []).add(t);
+    }
+    return [
+      for (final c in exploreCategoryOrder)
+        if (byCategory[c] != null) (category: c, items: byCategory[c]!),
+    ];
+  }
+
   @override
   Widget build(BuildContext context) {
-    // "Added" state is DERIVED from the routines stream (reactive + persists
-    // across navigation), unioned with this session's optimistic set. A
-    // template whose name already exists shows "View", never a second "Add" —
-    // which is what prevents the silent duplicate-import.
+    // "Added" state is DERIVED from the reactive routines stream (∪ the session
+    // set), so a template whose name already exists shows "View", never a
+    // second "Add" — which is what prevents the silent duplicate-import.
     final existing = ref.watch(hydratedRoutinesProvider).valueOrNull ??
         const <HydratedRoutine>[];
     final existingIds = <String, String>{
       for (final r in existing) r.routine.name: r.routine.id,
     };
 
+    final showFeatured = _filter == _LevelFilter.all;
+    final sections = _sections(excluded: showFeatured ? _featured : null);
+
+    final rows = <_Row>[
+      if (showFeatured) _FeaturedRow(_featured),
+      for (final s in sections) ...[
+        _HeaderRow(s.category, s.items.length),
+        for (final t in s.items) _CardRow(t),
+      ],
+    ];
+
     final bottomInset = MediaQuery.viewPaddingOf(context).bottom;
 
     return Scaffold(
       backgroundColor: AppColors.bgBase,
-      appBar: AppBar(
-        backgroundColor: AppColors.bgBase,
-        scrolledUnderElevation: 0,
-        titleSpacing: 0,
-        leading: IconButton(
-          tooltip: 'Back',
-          icon: const Icon(Icons.arrow_back_rounded,
-              size: 24, color: AppColors.textPrimary),
-          onPressed: () => context.pop(),
-        ),
-        title: Text('Explore', style: AppText.sectionHeading()),
-      ),
-      body: ListView.builder(
-        padding: EdgeInsets.fromLTRB(
-            AppSpacing.screenH, 4, AppSpacing.screenH, 24 + bottomInset),
-        // +1 for the intro paragraph at index 0.
-        itemCount: _rows.length + 1,
-        itemBuilder: (context, index) {
-          if (index == 0) {
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 4),
-              child: Text(
-                'Trainer-built programs, ready to train. Import one and make '
-                'it yours.',
-                style: AppText.body(),
+      body: CustomScrollView(
+        slivers: [
+          // ── Hero: ambient violet aura + collapsing large title ──────────
+          SliverAppBar(
+            pinned: true,
+            expandedHeight: 150,
+            backgroundColor: AppColors.bgBase,
+            surfaceTintColor: Colors.transparent,
+            scrolledUnderElevation: 0,
+            leading: IconButton(
+              tooltip: 'Back',
+              icon: const Icon(Icons.arrow_back_rounded,
+                  size: 24, color: AppColors.textPrimary),
+              onPressed: () {
+                if (context.canPop()) context.pop();
+              },
+            ),
+            flexibleSpace: const FlexibleSpaceBar(
+              titlePadding: EdgeInsetsDirectional.only(start: 56, bottom: 15),
+              expandedTitleScale: 1.6,
+              title: _HeroTitle(),
+              background: _HeroGlow(),
+            ),
+          ),
+
+          // ── Subtitle + credibility ──────────────────────────────────────
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(
+                  AppSpacing.screenH, 6, AppSpacing.screenH, 10),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Trainer-built programs, ready to train. Import one and '
+                    'make it yours.',
+                    style: AppText.body(),
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      _CredChip(
+                          icon: Icons.list_alt_rounded,
+                          label: '${exploreTemplates.length} programs'),
+                      const SizedBox(width: AppSpacing.x2),
+                      _CredChip(
+                          icon: Icons.category_rounded,
+                          label: '${exploreCategoryOrder.length} splits'),
+                    ],
+                  ),
+                ],
               ),
-            );
-          }
-          final row = _rows[index - 1];
-          switch (row) {
-            case _HeaderRow(:final label, :final count):
-              return _SectionHeader(label: label, count: count);
-            case _CardRow(:final template):
-              final imported = _imported.contains(template.name) ||
-                  existingIds.containsKey(template.name);
-              final routineId =
-                  _importedIds[template.name] ?? existingIds[template.name];
-              return Padding(
-                padding: const EdgeInsets.only(bottom: AppSpacing.sectionGap),
-                child: _TemplateCard(
-                  template: template,
-                  importing: _importing.contains(template.name),
-                  imported: imported,
-                  onImport: () => _import(template),
-                  onView: routineId == null
-                      ? null
-                      : () => context.push('/routines/$routineId'),
-                  onPreview: () => _showPreview(template,
-                      imported: imported, routineId: routineId),
-                ),
-              );
-          }
-        },
+            ),
+          ),
+
+          // ── Sticky goal filters ─────────────────────────────────────────
+          SliverPersistentHeader(
+            pinned: true,
+            delegate: _FilterHeaderDelegate(
+                selected: _filter, onSelect: _setFilter),
+          ),
+
+          // ── Catalog (featured + sections), staggered entrance ───────────
+          SliverPadding(
+            padding: EdgeInsets.fromLTRB(
+                AppSpacing.screenH, 8, AppSpacing.screenH, 24 + bottomInset),
+            sliver: SliverList(
+              delegate: SliverChildBuilderDelegate(
+                (context, i) {
+                  final row = rows[i];
+                  final Widget child;
+                  switch (row) {
+                    case _FeaturedRow(:final template):
+                      final imported = _isImported(template, existingIds);
+                      final routineId = _routineId(template, existingIds);
+                      child = Padding(
+                        padding:
+                            const EdgeInsets.only(bottom: AppSpacing.x5),
+                        child: _FeaturedCard(
+                          template: template,
+                          importing: _importing.contains(template.name),
+                          imported: imported,
+                          onImport: () => _import(template),
+                          onView: routineId == null
+                              ? null
+                              : () => context.push('/routines/$routineId'),
+                          onPreview: () => _showPreview(template,
+                              imported: imported, routineId: routineId),
+                        ),
+                      );
+                    case _HeaderRow(:final label, :final count):
+                      child = _SectionHeader(label: label, count: count);
+                    case _CardRow(:final template):
+                      final imported = _isImported(template, existingIds);
+                      final routineId = _routineId(template, existingIds);
+                      child = Padding(
+                        padding: const EdgeInsets.only(
+                            bottom: AppSpacing.sectionGap),
+                        child: _TemplateCard(
+                          template: template,
+                          importing: _importing.contains(template.name),
+                          imported: imported,
+                          onImport: () => _import(template),
+                          onView: routineId == null
+                              ? null
+                              : () => context.push('/routines/$routineId'),
+                          onPreview: () => _showPreview(template,
+                              imported: imported, routineId: routineId),
+                        ),
+                      );
+                  }
+                  return _Reveal(index: i, controller: _reveal, child: child);
+                },
+                childCount: rows.length,
+              ),
+            ),
+          ),
+        ],
       ),
+    );
+  }
+
+  bool _isImported(RoutineTemplate t, Map<String, String> existingIds) =>
+      _imported.contains(t.name) || existingIds.containsKey(t.name);
+
+  String? _routineId(RoutineTemplate t, Map<String, String> existingIds) =>
+      _importedIds[t.name] ?? existingIds[t.name];
+}
+
+/// The large "Explore" title that FlexibleSpaceBar scales between the expanded
+/// hero and the collapsed app bar.
+class _HeroTitle extends StatelessWidget {
+  const _HeroTitle();
+
+  @override
+  Widget build(BuildContext context) =>
+      Text('Explore', style: AppText.sectionHeading());
+}
+
+/// Ambient violet aura behind the hero — gives the AMOLED black depth and brand
+/// presence on first open. FlexibleSpaceBar fades it out as the bar collapses.
+class _HeroGlow extends StatelessWidget {
+  const _HeroGlow();
+
+  @override
+  Widget build(BuildContext context) {
+    return const DecoratedBox(
+      decoration: BoxDecoration(
+        gradient: RadialGradient(
+          center: Alignment(-0.35, -0.85),
+          radius: 1.15,
+          colors: [Color(0x3D7C3AED), Color(0x00000000)],
+          stops: [0.0, 0.72],
+        ),
+      ),
+    );
+  }
+}
+
+class _CredChip extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  const _CredChip({required this.icon, required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: AppColors.surface3,
+        borderRadius: AppRadius.badgeAll,
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 13, color: AppColors.accentText),
+          const SizedBox(width: 6),
+          Text(label, style: AppText.statLabel(color: AppColors.textSecondary)),
+        ],
+      ),
+    );
+  }
+}
+
+/// Sticky goal-filter bar. Tapping a chip filters the catalog and re-reveals it.
+class _FilterHeaderDelegate extends SliverPersistentHeaderDelegate {
+  final _LevelFilter selected;
+  final ValueChanged<_LevelFilter> onSelect;
+  _FilterHeaderDelegate({required this.selected, required this.onSelect});
+
+  @override
+  double get minExtent => 54;
+  @override
+  double get maxExtent => 54;
+
+  @override
+  Widget build(
+      BuildContext context, double shrinkOffset, bool overlapsContent) {
+    return Container(
+      color: AppColors.bgBase,
+      alignment: Alignment.centerLeft,
+      child: ListView(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.fromLTRB(
+            AppSpacing.screenH, 8, AppSpacing.screenH, 10),
+        children: [
+          for (final f in _LevelFilter.values)
+            Padding(
+              padding: const EdgeInsets.only(right: AppSpacing.x2),
+              child: _FilterChip(
+                label: f.label,
+                selected: f == selected,
+                onTap: () => onSelect(f),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  bool shouldRebuild(_FilterHeaderDelegate old) => old.selected != selected;
+}
+
+class _FilterChip extends StatelessWidget {
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+  const _FilterChip(
+      {required this.label, required this.selected, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      button: true,
+      selected: selected,
+      label: label,
+      excludeSemantics: true,
+      child: Material(
+        color: selected ? AppColors.accentPrimary : AppColors.surface3,
+        borderRadius: AppRadius.badgeAll,
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: onTap,
+          child: Container(
+            alignment: Alignment.center,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Text(
+              label,
+              style: AppText.statLabel(
+                  color: selected ? Colors.white : AppColors.textSecondary),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// One-shot fade + rise on first build / filter change. Off-screen rows (index
+/// past the first screenful) and reduce-motion render instantly — never blank.
+class _Reveal extends StatelessWidget {
+  final int index;
+  final AnimationController controller;
+  final Widget child;
+  const _Reveal(
+      {required this.index, required this.controller, required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    if (index >= 8 || MediaQuery.disableAnimationsOf(context)) return child;
+    final start = (index * 0.07).clamp(0.0, 0.55);
+    const span = 0.45;
+    return AnimatedBuilder(
+      animation: controller,
+      child: child,
+      builder: (context, child) {
+        final raw = ((controller.value - start) / span).clamp(0.0, 1.0);
+        final v = Curves.easeOutCubic.transform(raw);
+        return Opacity(
+          opacity: v,
+          child: Transform.translate(offset: Offset(0, 18 * (1 - v)), child: child),
+        );
+      },
     );
   }
 }
@@ -295,7 +597,7 @@ class _SectionHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(0, 20, 0, 10),
+      padding: const EdgeInsets.fromLTRB(0, 18, 0, 10),
       child: Semantics(
         header: true,
         child: Row(
@@ -305,6 +607,172 @@ class _SectionHeader extends StatelessWidget {
             const SizedBox(width: 8),
             Text('$count', style: AppText.statLabel()),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+/// The editor's spotlight — a richer, violet-lit hero card the eye lands on
+/// first. Same import semantics as a normal card; bigger, glowing, full-width
+/// CTA.
+class _FeaturedCard extends StatelessWidget {
+  final RoutineTemplate template;
+  final bool importing;
+  final bool imported;
+  final VoidCallback onImport;
+  final VoidCallback? onView;
+  final VoidCallback onPreview;
+
+  const _FeaturedCard({
+    required this.template,
+    required this.importing,
+    required this.imported,
+    required this.onImport,
+    required this.onView,
+    required this.onPreview,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final muscle = _dominantMuscle(template.focus);
+    final glyphColor = _glyphColor(muscle);
+    final a11yLabel = 'Featured. ${template.name}. ${template.levelLabel}, '
+        'about ${template.estMinutes} minutes, ${template.slots.length} exercises. '
+        '${template.focus}. ${template.description}';
+
+    return Semantics(
+      container: true,
+      button: true,
+      label: a11yLabel,
+      hint: 'Opens program preview',
+      onTap: onPreview,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          borderRadius: AppRadius.cardAll,
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.accentPrimary.withValues(alpha: 0.22),
+              blurRadius: 26,
+              spreadRadius: -8,
+              offset: const Offset(0, 10),
+            ),
+          ],
+        ),
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [Color(0xFF1C1233), Color(0xFF0B0B0D)],
+            ),
+            borderRadius: AppRadius.cardAll,
+            border: Border.all(
+                color: AppColors.accentPrimary.withValues(alpha: 0.45)),
+          ),
+          clipBehavior: Clip.antiAlias,
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: onPreview,
+              excludeFromSemantics: true,
+              child: Padding(
+                padding: const EdgeInsets.all(AppSpacing.x4),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    ExcludeSemantics(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              const Icon(Icons.auto_awesome_rounded,
+                                  size: 13, color: AppColors.accentText),
+                              const SizedBox(width: 6),
+                              Text('FEATURED',
+                                  style: AppText.columnHeader(
+                                      color: AppColors.accentText)),
+                            ],
+                          ),
+                          const SizedBox(height: 14),
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Container(
+                                width: 56,
+                                height: 56,
+                                alignment: Alignment.center,
+                                decoration: BoxDecoration(
+                                  color: glyphColor.withValues(alpha: 0.16),
+                                  borderRadius: BorderRadius.circular(
+                                      AppRadius.thumbnail),
+                                ),
+                                child: MuscleGlyph(
+                                    muscle: muscle,
+                                    size: 32,
+                                    color: glyphColor),
+                              ),
+                              const SizedBox(width: 14),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.start,
+                                  children: [
+                                    Text(template.name,
+                                        style: AppText.sectionHeading()),
+                                    const SizedBox(height: 3),
+                                    Text(template.focus,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: AppText.meta()),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 14),
+                          Wrap(
+                            spacing: AppSpacing.x2,
+                            runSpacing: 6,
+                            crossAxisAlignment: WrapCrossAlignment.center,
+                            children: [
+                              _LevelPill(
+                                  label: template.levelLabel,
+                                  color: template.levelColor),
+                              _MetaChip(
+                                  icon: Icons.schedule_rounded,
+                                  label: '~${template.estMinutes} min'),
+                              _MetaChip(
+                                  icon: Icons.fitness_center_rounded,
+                                  label: '${template.slots.length} exercises'),
+                            ],
+                          ),
+                          const SizedBox(height: 12),
+                          Text(template.description,
+                              style: AppText.body().copyWith(height: 1.45)),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _ImportPill(
+                            importing: importing,
+                            imported: imported,
+                            onTap: importing
+                                ? null
+                                : (imported ? (onView ?? () {}) : onImport),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
         ),
       ),
     );
@@ -422,7 +890,9 @@ class _TemplateCard extends StatelessWidget {
                         const Padding(
                           padding: EdgeInsets.only(top: 13),
                           child: Divider(
-                              height: 1, thickness: 1, color: AppColors.borderSubtle),
+                              height: 1,
+                              thickness: 1,
+                              color: AppColors.borderSubtle),
                         ),
                       ],
                     ),
@@ -437,7 +907,8 @@ class _TemplateCard extends StatelessWidget {
                               '$preview${extra > 0 ? '  +$extra' : ''}',
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
-                              style: AppText.caption(color: AppColors.textTertiary),
+                              style: AppText.caption(
+                                  color: AppColors.textTertiary),
                             ),
                           ),
                         ),
@@ -511,7 +982,8 @@ class _MetaChip extends StatelessWidget {
 
 /// Compact in-card CTA: Add → (spinner) → View. On-system radius (NOT a pill),
 /// a 48dp tap target, and a reduce-motion-gated swap animation so a successful
-/// import resolves with a satisfying check instead of snapping.
+/// import resolves with a satisfying check instead of snapping. Wrap in an
+/// [Expanded] to stretch it full-width (the featured hero does this).
 class _ImportPill extends StatelessWidget {
   final bool importing;
   final bool imported;
@@ -533,7 +1005,8 @@ class _ImportPill extends StatelessWidget {
             key: ValueKey('spin'),
             width: 16,
             height: 16,
-            child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+            child:
+                CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
           )
         : Row(
             key: ValueKey(imported),
@@ -542,7 +1015,8 @@ class _ImportPill extends StatelessWidget {
               Icon(imported ? Icons.check_rounded : Icons.download_rounded,
                   size: 16, color: fg),
               const SizedBox(width: 6),
-              Text(imported ? 'View' : 'Add', style: AppText.statLabel(color: fg)),
+              Text(imported ? 'View' : 'Add',
+                  style: AppText.statLabel(color: fg)),
             ],
           );
 
@@ -568,10 +1042,9 @@ class _ImportPill extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 16),
             alignment: Alignment.center,
             child: AnimatedSwitcher(
-              duration:
-                  Duration(milliseconds: reduceMotion ? 0 : 200),
-              transitionBuilder: (c, anim) =>
-                  FadeTransition(opacity: anim, child: ScaleTransition(scale: anim, child: c)),
+              duration: Duration(milliseconds: reduceMotion ? 0 : 200),
+              transitionBuilder: (c, anim) => FadeTransition(
+                  opacity: anim, child: ScaleTransition(scale: anim, child: c)),
               child: child,
             ),
           ),
@@ -582,8 +1055,8 @@ class _ImportPill extends StatelessWidget {
 }
 
 /// Full-template preview — every slot (name · sets×reps) so a user can evaluate
-/// a program before committing to the import. Primary action mirrors the card:
-/// Add (or View if it's already in the library).
+/// a program before committing. Primary action mirrors the card: Add (or View
+/// if it's already in the library).
 class _PreviewSheet extends StatelessWidget {
   final RoutineTemplate template;
   final bool imported;
@@ -699,7 +1172,8 @@ class _PreviewSheet extends StatelessWidget {
                 padding: const EdgeInsets.fromLTRB(
                     AppSpacing.x5, 0, AppSpacing.x5, AppSpacing.x3),
                 child: PrimaryButton(
-                  label: imported ? 'View in My Routines' : 'Add to My Routines',
+                  label:
+                      imported ? 'View in My Routines' : 'Add to My Routines',
                   icon: imported ? Icons.check_rounded : Icons.download_rounded,
                   onPressed: imported ? onView : onAdd,
                 ),
