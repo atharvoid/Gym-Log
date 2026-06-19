@@ -157,19 +157,25 @@ class RoutinesDao extends DatabaseAccessor<AppDatabase>
   ) {
     final names = <String>[];
     final ids = <int>[];
-    final tags = <String>{}; // LinkedHashSet — preserves first-seen order
+    // Count body parts so muscleTags is ordered MOST-TRAINED first — the
+    // routine card keys its muscle glyph off muscleTags.first, and the tag
+    // chips read better leading with the dominant group.
+    final tagCounts = <String, int>{};
     for (final (exercise, _) in rows) {
       names.add(exercise.name);
       ids.add(exercise.id);
       if (exercise.bodyPart.isNotEmpty) {
-        tags.add(_titleCase(exercise.bodyPart));
+        final t = _titleCase(exercise.bodyPart);
+        tagCounts[t] = (tagCounts[t] ?? 0) + 1;
       }
     }
+    final orderedTags = tagCounts.keys.toList()
+      ..sort((a, b) => tagCounts[b]!.compareTo(tagCounts[a]!));
     return HydratedRoutine(
       routine: routine,
       exerciseNames: names,
       exerciseIds: ids,
-      muscleTags: tags.toList(),
+      muscleTags: orderedTags,
       lastTrained: lastTrained,
     );
   }
