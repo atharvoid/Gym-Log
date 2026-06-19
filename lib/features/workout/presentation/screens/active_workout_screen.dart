@@ -17,11 +17,14 @@ import 'package:gymlog/core/utils/formatters.dart';
 import 'package:gymlog/shared/widgets/ui/app_dialog.dart';
 import 'package:gymlog/shared/widgets/ui/secondary_button.dart';
 import 'package:gymlog/shared/widgets/ui/time_range_filter.dart';
+import 'package:gymlog/core/theme/app_text.dart';
+import 'package:gymlog/core/utils/tap_guard.dart';
 import 'package:gymlog/features/exercises/presentation/screens/exercise_selection_screen.dart';
 import 'package:gymlog/features/exercises/presentation/providers/exercises_provider.dart';
 import '../widgets/exercise_block.dart';
 import '../widgets/pr_celebration_overlay.dart';
 import '../widgets/rest_timer_bar.dart';
+import '../widgets/finish_summary_sheet.dart';
 
 class ActiveWorkoutScreen extends ConsumerStatefulWidget {
   const ActiveWorkoutScreen({super.key});
@@ -48,6 +51,7 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
   }
 
   Future<void> _finish() async {
+    if (!tapGuard()) return; // no double-tap → double sheet / double save
     final workout = ref.read(activeWorkoutProvider);
     if (workout == null) return;
 
@@ -73,42 +77,59 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
     }
     if (!mounted) return;
 
-    // Name the workout before saving. Pre-fill with the routine name (when
-    // started from one) so the user can tweak or extend it; otherwise a
-    // time-of-day default ("Evening Workout"). Cancelling backs out of
-    // finishing — nothing is saved.
+    // Pre-fill with the routine name (when started from one) or a time-of-day
+    // default. Cancelling the sheet backs out of finishing — nothing is saved.
     final preFill = (workout.name != null && workout.name!.trim().isNotEmpty)
         ? workout.name!.trim()
         : getWorkoutNameFallback(workout.startTime, null);
-    final name = await showAppTextInputDialog(
+    final (volumeKg, sets) =
+        ref.read(activeWorkoutProvider.notifier).sessionTotals;
+
+    // The session recap + name in one premium sheet (replaces the bare dialog):
+    // the user sees what they earned, names it, and confirms.
+    final name = await showFinishSummarySheet(
       context: context,
-      title: 'Save workout',
-      hint: 'Workout name',
-      initialValue: preFill,
-      confirmLabel: 'Finish',
+      duration: DateTime.now().difference(workout.startTime),
+      volumeKg: volumeKg,
+      sets: sets,
+      unit: ref.read(weightUnitProvider),
+      initialName: preFill,
     );
     if (name == null || !mounted) return; // cancelled → stay in the session
 
     ref.read(restTimerProvider.notifier).skip();
 
     // The root navigator outlives this screen, so the PR celebration can land
-    // over Home rather than over the active-workout screen — which is about to
-    // be torn down (finishing nulls the session, blanking this screen).
+    // over Home rather than over the (about-to-be-torn-down) active screen.
     final rootNavigator = Navigator.of(context, rootNavigator: true);
 
-    final prs =
-        await ref.read(activeWorkoutProvider.notifier).finishWorkout(name: name);
-    if (!mounted) return;
-
-    // Leave the workout screen FIRST. Showing the celebration here previously
-    // rendered it over a blanked-out active screen and, on dismiss, flashed
-    // that dead screen / jumped back. Navigate to Home, then celebrate over it
-    // on the next frame using the root navigator — no z-order glitch, no jump.
-    context.go('/');
-    if (prs.isNotEmpty) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        showPrCelebration(rootNavigator.context, prs);
-      });
+    try {
+      final prs = await ref
+          .read(activeWorkoutProvider.notifier)
+          .finishWorkout(name: name);
+      if (!mounted) return;
+      HapticFeedback.heavyImpact(); // saved — definitive success cue
+      // Leave the workout screen FIRST, then celebrate over Home next frame
+      // (no z-order glitch, no jump-back).
+      context.go('/');
+      if (prs.isNotEmpty) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          showPrCelebration(rootNavigator.context, prs);
+        });
+      }
+    } catch (e) {
+      // Save failed — keep the user IN the session (nothing lost) + tell them.
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            "Couldn't save the workout — your session is safe. Try again.",
+            style: AppText.body(color: AppColors.textPrimary),
+          ),
+          backgroundColor: AppColors.error.withValues(alpha: 0.92),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
     }
   }
 
@@ -244,12 +265,8 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
                     children: [
                       Text(
                         isEditing ? 'Edit Workout' : timer,
-                        style: GoogleFonts.inter(
-                          color: AppColors.textPrimary,
-                          fontSize: isEditing ? 16 : 19,
-                          fontWeight: FontWeight.w700,
-                          fontFeatures: const [FontFeature.tabularFigures()],
-                        ),
+                        style:
+                            isEditing ? AppText.cardTitle() : AppText.heroStat(),
                       ),
                       const SizedBox(height: 1),
                       Text(
@@ -258,12 +275,7 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
                             : completedSets == 0
                                 ? 'Log your first set'
                                 : '${groupThousands(kgToDisplay(volumeKg, globalUnit))} $globalUnit · $completedSets set${completedSets != 1 ? 's' : ''}',
-                        style: GoogleFonts.inter(
-                          color: AppColors.textSecondary,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                          fontFeatures: const [FontFeature.tabularFigures()],
-                        ),
+                        style: AppText.statLabel(),
                       ),
                     ],
                   ),
