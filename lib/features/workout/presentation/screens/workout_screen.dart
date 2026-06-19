@@ -18,9 +18,11 @@ import '../../domain/active_workout_state.dart';
 import '../providers/active_workout_provider.dart';
 
 /// [workout_screen.dart]
-/// Routines tab — the user's saved routines. Reactive via hydratedRoutinesProvider.
-/// CustomScrollView + SliverList virtualizes the routine list; the section
-/// collapses (animated chevron) while staying a single lazy scroll.
+/// Routines tab — the user's saved routines (reactive via hydratedRoutinesProvider).
+/// The list collapses with a smooth AnimatedSize height tween. Kept as a box
+/// list (not SliverList) on purpose: routines are bounded (free cap 4, realistic
+/// <30) so eager build is sub-ms, and a box list is what enables the buttery
+/// collapse — virtualization would only let the collapse snap.
 class WorkoutScreen extends ConsumerStatefulWidget {
   const WorkoutScreen({super.key});
 
@@ -88,58 +90,93 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
           child: Text('Routines', style: AppText.screenTitle()),
         ),
       ),
-      body: CustomScrollView(
-        slivers: [
-          // ── Header block: summary + actions + collapsible toggle ───────
-          SliverPadding(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-            sliver: SliverToBoxAdapter(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  routinesAsync.maybeWhen(
-                    data: (routines) => routines.isEmpty
-                        ? const SizedBox.shrink()
-                        : Padding(
-                            padding: const EdgeInsets.only(bottom: 16),
-                            child: Text(_summaryLine(routines),
-                                style: AppText.meta()),
-                          ),
-                    orElse: () => const SizedBox.shrink(),
-                  ),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: SecondaryButton(
-                          label: 'New Routine',
-                          icon: Icons.add_rounded,
-                          accent: true,
-                          onPressed: () => _push('/routines/edit'),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: SecondaryButton(
-                          label: 'Explore',
-                          icon: Icons.explore_rounded,
-                          onPressed: () => _push('/routines/explore'),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 22),
-                  _collapsibleHeader(routinesAsync, reduceMotion),
-                  const SizedBox(height: 10),
-                ],
-              ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // ── Recency summary ──────────────────────────────────────────
+            routinesAsync.maybeWhen(
+              data: (routines) => routines.isEmpty
+                  ? const SizedBox.shrink()
+                  : Padding(
+                      padding: const EdgeInsets.only(bottom: 16),
+                      child: Text(_summaryLine(routines), style: AppText.meta()),
+                    ),
+              orElse: () => const SizedBox.shrink(),
             ),
-          ),
 
-          // ── Routine list (virtualized; hidden when collapsed) ──────────
-          if (_routinesExpanded) _listSliver(routinesAsync),
+            // ── Action row: New (accent) + Explore (neutral) ─────────────
+            Row(
+              children: [
+                Expanded(
+                  child: SecondaryButton(
+                    label: 'New Routine',
+                    icon: Icons.add_rounded,
+                    accent: true,
+                    onPressed: () => _push('/routines/edit'),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: SecondaryButton(
+                    label: 'Explore',
+                    icon: Icons.explore_rounded,
+                    onPressed: () => _push('/routines/explore'),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 22),
 
-          const SliverToBoxAdapter(child: SizedBox(height: 24)),
-        ],
+            // ── Collapsible section header ───────────────────────────────
+            _collapsibleHeader(routinesAsync, reduceMotion),
+            const SizedBox(height: 10),
+
+            // ── Routine list — smooth height collapse ────────────────────
+            AnimatedSize(
+              duration:
+                  reduceMotion ? Duration.zero : const Duration(milliseconds: 220),
+              curve: Curves.easeInOut,
+              alignment: Alignment.topCenter,
+              child: !_routinesExpanded
+                  ? const SizedBox(width: double.infinity)
+                  : routinesAsync.when(
+                      loading: () => const _RoutinesLoading(),
+                      error: (e, _) => Semantics(
+                        liveRegion: true,
+                        child: AsyncErrorState(
+                          message: "Couldn't load your routines.",
+                          onRetry: () =>
+                              ref.invalidate(hydratedRoutinesProvider),
+                        ),
+                      ),
+                      data: (routines) {
+                        if (routines.isEmpty) {
+                          return _EmptyRoutines(
+                              onNew: () => _push('/routines/edit'));
+                        }
+                        return Column(
+                          children: [
+                            for (final routine in routines)
+                              Padding(
+                                padding: const EdgeInsets.only(bottom: 12),
+                                child: RoutineCard(
+                                  routineId: routine.routine.id,
+                                  routineName: routine.routine.name,
+                                  exerciseNames: routine.exerciseNames,
+                                  muscleTags: routine.muscleTags,
+                                  lastTrained: routine.lastTrained,
+                                  onStartTap: () => _startRoutine(routine),
+                                ),
+                              ),
+                          ],
+                        );
+                      },
+                    ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -182,59 +219,6 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
           ),
         ),
       ),
-    );
-  }
-
-  Widget _listSliver(AsyncValue<List<HydratedRoutine>> routinesAsync) {
-    return routinesAsync.when(
-      loading: () => const SliverToBoxAdapter(
-        child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16),
-          child: _RoutinesLoading(),
-        ),
-      ),
-      error: (e, _) => SliverToBoxAdapter(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Semantics(
-            liveRegion: true,
-            child: AsyncErrorState(
-              message: "Couldn't load your routines.",
-              onRetry: () => ref.invalidate(hydratedRoutinesProvider),
-            ),
-          ),
-        ),
-      ),
-      data: (routines) {
-        if (routines.isEmpty) {
-          return SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: _EmptyRoutines(onNew: () => _push('/routines/edit')),
-            ),
-          );
-        }
-        return SliverPadding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          sliver: SliverList.builder(
-            itemCount: routines.length,
-            itemBuilder: (context, i) {
-              final routine = routines[i];
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: RoutineCard(
-                  routineId: routine.routine.id,
-                  routineName: routine.routine.name,
-                  exerciseNames: routine.exerciseNames,
-                  muscleTags: routine.muscleTags,
-                  lastTrained: routine.lastTrained,
-                  onStartTap: () => _startRoutine(routine),
-                ),
-              );
-            },
-          ),
-        );
-      },
     );
   }
 }
@@ -327,8 +311,8 @@ class _EmptyRoutines extends StatelessWidget {
             ),
             icon: const Icon(Icons.add_rounded,
                 size: 18, color: AppColors.accentText),
-            label:
-                Text('New Routine', style: AppText.button(color: AppColors.accentText)),
+            label: Text('New Routine',
+                style: AppText.button(color: AppColors.accentText)),
           ),
         ],
       ),
