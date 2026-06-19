@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:gymlog/core/theme/app_colors.dart';
+import 'package:gymlog/core/theme/app_text.dart';
 import 'package:gymlog/features/workout/presentation/providers/rest_timer_provider.dart';
 
 /// Floating rest-timer tile shown in the Active Workout's
@@ -69,7 +70,7 @@ class RestTimerBar extends ConsumerWidget {
                           painter: _RestRingPainter(progress: state.progress),
                           child: const Center(
                             child: Icon(Icons.timer_outlined,
-                                size: 18, color: Color(0xFFA78BFA)),
+                                size: 18, color: AppColors.accentText),
                           ),
                         ),
                       ),
@@ -78,16 +79,13 @@ class RestTimerBar extends ConsumerWidget {
                         mainAxisSize: MainAxisSize.min,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            'REST',
-                            style: GoogleFonts.inter(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w700,
-                              letterSpacing: 1.2,
-                              color: AppColors.textSecondary,
-                            ),
-                          ),
-                          // Large + tabular so digits don't jitter as seconds tick.
+                          Text('REST',
+                              style: AppText.columnHeader(
+                                  color: AppColors.textSecondary)),
+                          // Deliberately large + tabular so a lifter can read
+                          // remaining rest from arm's length without focusing.
+                          // No AppText voice is this large by design; tabular
+                          // figures keep the digits from jittering each tick.
                           Text(
                             _label,
                             style: GoogleFonts.inter(
@@ -156,11 +154,8 @@ class _RestAction extends StatelessWidget {
           alignment: Alignment.center,
           child: Text(
             label,
-            style: GoogleFonts.inter(
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-              color:
-                  emphasized ? const Color(0xFFA78BFA) : AppColors.textPrimary,
+            style: AppText.statLabel(
+              color: emphasized ? AppColors.accentText : AppColors.textPrimary,
             ),
           ),
         ),

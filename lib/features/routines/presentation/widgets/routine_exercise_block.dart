@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:gymlog/core/theme/app_colors.dart';
+import 'package:gymlog/core/theme/app_text.dart';
+import 'package:gymlog/core/theme/set_type.dart';
 import 'package:gymlog/core/database/daos/routines_dao.dart';
 import 'package:gymlog/core/database/daos/workouts_dao.dart';
 import 'routine_detail_styles.dart';
@@ -182,8 +183,7 @@ class _SetTable extends StatelessWidget {
                             Text('${sets[i].setNumber}', style: RDStyles.setNo),
                       ),
                       const SizedBox(width: 10),
-                      if (_chipFor(sets[i].setType) != null)
-                        _chipFor(sets[i].setType)!,
+                      if (_chipFor(sets[i].setType) case final chip?) chip,
                     ],
                   ),
                 ),
@@ -210,53 +210,45 @@ class _SetTable extends StatelessWidget {
     );
   }
 
+  /// Set-type badge. Color + icon resolve through the shared [SetType] enum so
+  /// a warm-up / drop / failure set is IDENTICAL here, in the live logger, and
+  /// on the workout-history pill — the amber `#E0A422` / red `#FF6B70` this
+  /// file hardcoded before are gone. Normal sets show no badge (the set number
+  /// stands in), so we return null for them.
   Widget? _chipFor(String? type) {
-    switch (type) {
-      case 'warmup':
-        return const _SetTypeChip(
-            label: 'Warm',
-            fg: Color(0xFFE0A422),
-            icon: Icons.local_fire_department_rounded);
-      case 'dropset':
-      case 'drop':
-        return const _SetTypeChip(
-            label: 'Drop',
-            fg: Color(0xFFA78BFA),
-            icon: Icons.trending_down_rounded);
-      case 'failure':
-        return const _SetTypeChip(
-            label: 'Fail',
-            fg: Color(0xFFFF6B70),
-            icon: Icons.warning_amber_rounded);
-      default:
-        return null; // 'normal' / null → no chip
+    final t = SetType.of(type);
+    switch (t) {
+      case SetType.warmup:
+        return _SetTypeChip(type: t, label: 'Warm');
+      case SetType.dropset:
+        return _SetTypeChip(type: t, label: 'Drop');
+      case SetType.failure:
+        return _SetTypeChip(type: t, label: 'Fail');
+      case SetType.normal:
+        return null;
     }
   }
 }
 
 class _SetTypeChip extends StatelessWidget {
+  final SetType type;
   final String label;
-  final Color fg;
-  final IconData icon;
 
-  const _SetTypeChip(
-      {required this.label, required this.fg, required this.icon});
+  const _SetTypeChip({required this.type, required this.label});
 
   @override
   Widget build(BuildContext context) => Container(
-        padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3),
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
         decoration: BoxDecoration(
-          color: fg.withValues(alpha: 0.14),
-          borderRadius: BorderRadius.circular(10),
+          color: type.color.withValues(alpha: 0.15),
+          borderRadius: AppRadius.badgeAll,
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 11, color: fg),
-            const SizedBox(width: 5),
-            Text(label,
-                style: GoogleFonts.inter(
-                    fontSize: 11, fontWeight: FontWeight.w600, color: fg)),
+            Icon(type.icon, size: 12, color: type.color),
+            const SizedBox(width: 4),
+            Text(label, style: AppText.badge(color: type.color)),
           ],
         ),
       );

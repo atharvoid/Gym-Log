@@ -1,15 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_text.dart';
 
 /// Branded confirmation dialog — the single replacement for every stock
 /// `AlertDialog` confirm in the app, so destructive flows look and feel
-/// identical everywhere.
-///
-/// Destructive confirms fire a warning haptic BEFORE the dialog appears.
-///
-/// Returns true when the user confirms, false/null otherwise.
+/// identical everywhere. Destructive confirms fire a warning haptic BEFORE
+/// the dialog appears. Returns true when the user confirms.
 Future<bool> showAppConfirmDialog({
   required BuildContext context,
   required String title,
@@ -19,7 +16,7 @@ Future<bool> showAppConfirmDialog({
   bool isDestructive = false,
 }) async {
   if (isDestructive) {
-    HapticFeedback.heavyImpact(); // warning haptic before the dialog
+    HapticFeedback.heavyImpact();
   } else {
     HapticFeedback.lightImpact();
   }
@@ -28,33 +25,19 @@ Future<bool> showAppConfirmDialog({
     context: context,
     useRootNavigator: true,
     builder: (dialogCtx) => Dialog(
-      backgroundColor: const Color(0xFF121212),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      backgroundColor: AppColors.surface2,
+      shape: const RoundedRectangleBorder(borderRadius: AppRadius.sheetTop),
       child: Padding(
         padding: const EdgeInsets.fromLTRB(24, 24, 16, 12),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              title,
-              style: GoogleFonts.inter(
-                fontWeight: FontWeight.w700,
-                fontSize: 18,
-                color: AppColors.textPrimary,
-              ),
-            ),
+            Text(title, style: AppText.sectionHeading()),
             const SizedBox(height: 10),
             Padding(
               padding: const EdgeInsets.only(right: 8),
-              child: Text(
-                message,
-                style: GoogleFonts.inter(
-                  fontSize: 14.5,
-                  height: 1.45,
-                  color: AppColors.textSecondary,
-                ),
-              ),
+              child: Text(message, style: AppText.body()),
             ),
             const SizedBox(height: 18),
             Row(
@@ -62,13 +45,8 @@ Future<bool> showAppConfirmDialog({
               children: [
                 TextButton(
                   onPressed: () => Navigator.of(dialogCtx).pop(false),
-                  child: Text(
-                    cancelLabel,
-                    style: GoogleFonts.inter(
-                      color: AppColors.textSecondary,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
+                  child: Text(cancelLabel,
+                      style: AppText.button(color: AppColors.textSecondary)),
                 ),
                 const SizedBox(width: 4),
                 TextButton(
@@ -78,11 +56,11 @@ Future<bool> showAppConfirmDialog({
                   },
                   child: Text(
                     confirmLabel,
-                    style: GoogleFonts.inter(
-                      color: isDestructive
-                          ? AppColors.error
-                          : AppColors.accentPrimary,
-                      fontWeight: FontWeight.w700,
+                    style: AppText.button(
+                      // On-dark accent text uses the lighter tone (AA);
+                      // destructive stays red.
+                      color:
+                          isDestructive ? AppColors.error : AppColors.accentText,
                     ),
                   ),
                 ),
@@ -96,7 +74,7 @@ Future<bool> showAppConfirmDialog({
   return result ?? false;
 }
 
-/// Branded single-field text input dialog (rename routine, name workout…).
+/// Branded single-field text input dialog (rename routine, etc.).
 /// Returns the trimmed non-empty value, or null when cancelled.
 Future<String?> showAppTextInputDialog({
   required BuildContext context,
@@ -109,9 +87,8 @@ Future<String?> showAppTextInputDialog({
   HapticFeedback.selectionClick();
   final controller = TextEditingController(text: initialValue);
 
-  // Dispose the controller once the dialog closes — otherwise every rename /
-  // "save workout" invocation leaks a TextEditingController (and its focus
-  // node + listeners). whenComplete fires on both confirm and dismiss.
+  // Dispose the controller once the dialog closes (confirm OR dismiss) —
+  // otherwise every invocation leaks a TextEditingController + focus node.
   return showDialog<String>(
     context: context,
     useRootNavigator: true,
@@ -123,22 +100,15 @@ Future<String?> showAppTextInputDialog({
       }
 
       return Dialog(
-        backgroundColor: const Color(0xFF121212),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        backgroundColor: AppColors.surface2,
+        shape: const RoundedRectangleBorder(borderRadius: AppRadius.sheetTop),
         child: Padding(
           padding: const EdgeInsets.fromLTRB(24, 24, 16, 12),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                title,
-                style: GoogleFonts.inter(
-                  fontWeight: FontWeight.w700,
-                  fontSize: 18,
-                  color: AppColors.textPrimary,
-                ),
-              ),
+              Text(title, style: AppText.sectionHeading()),
               const SizedBox(height: 14),
               Padding(
                 padding: const EdgeInsets.only(right: 8),
@@ -148,26 +118,24 @@ Future<String?> showAppTextInputDialog({
                   maxLength: maxLength,
                   textCapitalization: TextCapitalization.words,
                   cursorColor: AppColors.accentPrimary,
-                  style: GoogleFonts.inter(
-                      color: AppColors.textPrimary, fontSize: 16),
+                  style: AppText.value(),
                   decoration: InputDecoration(
                     hintText: hint,
-                    hintStyle:
-                        GoogleFonts.inter(color: AppColors.textSecondary),
-                    counterStyle: GoogleFonts.inter(
-                        color: AppColors.textSecondary, fontSize: 11),
+                    hintStyle: AppText.body(color: AppColors.textTertiary),
+                    counterStyle:
+                        AppText.caption(color: AppColors.textTertiary),
                     filled: true,
-                    fillColor: AppColors.surfaceRaised,
+                    fillColor: AppColors.surface3,
                     contentPadding: const EdgeInsets.symmetric(
                         horizontal: 14, vertical: 12),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
+                    enabledBorder: const OutlineInputBorder(
+                      borderRadius: AppRadius.inputAll,
                       borderSide: BorderSide.none,
                     ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(
-                          color: AppColors.accentPrimary, width: 1.5),
+                    focusedBorder: const OutlineInputBorder(
+                      borderRadius: AppRadius.inputAll,
+                      borderSide:
+                          BorderSide(color: AppColors.borderActive, width: 1.5),
                     ),
                   ),
                   onSubmitted: (_) => submit(),
@@ -179,24 +147,14 @@ Future<String?> showAppTextInputDialog({
                 children: [
                   TextButton(
                     onPressed: () => Navigator.of(dialogCtx).pop(null),
-                    child: Text(
-                      'Cancel',
-                      style: GoogleFonts.inter(
-                        color: AppColors.textSecondary,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
+                    child: Text('Cancel',
+                        style: AppText.button(color: AppColors.textSecondary)),
                   ),
                   const SizedBox(width: 4),
                   TextButton(
                     onPressed: submit,
-                    child: Text(
-                      confirmLabel,
-                      style: GoogleFonts.inter(
-                        color: AppColors.accentPrimary,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
+                    child: Text(confirmLabel,
+                        style: AppText.button(color: AppColors.accentText)),
                   ),
                 ],
               ),

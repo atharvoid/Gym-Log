@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:gymlog/core/theme/app_colors.dart';
+import 'package:gymlog/core/theme/app_text.dart';
+import 'package:gymlog/core/theme/set_type.dart';
 import 'package:gymlog/core/utils/units.dart';
 import 'package:gymlog/features/workout/domain/active_workout_state.dart';
 import 'package:gymlog/shared/widgets/ui/time_range_filter.dart';
@@ -16,30 +17,22 @@ const int kPrevFlex = 5; // "999kg x 99" — read-only reference, widest
 const int kWeightFlex = 4; // editable number
 const int kRepsFlex = 4; // editable number
 
-/// One set inside the active workout — the most-touched interaction in the
-/// entire app.
+/// One set inside the active workout — the most-touched interaction in the app.
 ///
-/// Hevy-inspired restraint (clean = fewer things drawn):
-///   * Weight and reps are PLAIN TEXT on the row surface — no boxes, borders,
-///     or fills. The number is the UI.
-///   * The unit lives in the column header (KG/LBS), not inline; there is no
-///     "×" divider between the two numbers.
-///   * The set TYPE replaces the set NUMBER in the SET column (W/D/F as plain
-///     coloured text) — one slot, no pill.
-///   * A dedicated PREVIOUS column shows last session's "15kg x 12".
-///   * Completion is a muted gray square, not a purple circle — purple stays
-///     reserved for the Finish button and primary actions.
+/// Hevy-inspired restraint: weight/reps are plain numbers on the row surface
+/// (no boxes), the unit lives in the column header, and the set TYPE letter
+/// replaces the set NUMBER in the SET column. Set-type colors come from the
+/// shared [SetType] enum so they're identical to every other screen.
 class SetRow extends StatefulWidget {
   final int setIndex;
   final WorkoutSetState setData;
 
-  /// Previous-session baseline for THIS set index (kg + reps), shown in the
-  /// PREVIOUS column. Null when this exercise has no prior history.
+  /// Previous-session baseline for THIS set index. Null when no prior history.
   final double? previousWeight;
   final int? previousReps;
 
-  /// Display/input unit for this exercise ('kg' | 'lbs'). Storage stays kg;
-  /// conversion happens at this boundary only.
+  /// Display/input unit ('kg' | 'lbs'). Storage stays kg; conversion happens
+  /// at this boundary only.
   final String unit;
   final ValueChanged<WorkoutSetState> onChanged;
   final VoidCallback onToggleComplete;
@@ -68,10 +61,9 @@ class _SetRowState extends State<SetRow> {
   String _formatWeightField(double kg) {
     if (kg <= 0) return '';
     final display = kgToDisplay(kg, widget.unit);
-    final text = display == display.truncateToDouble()
+    return display == display.truncateToDouble()
         ? display.toInt().toString()
         : display.toStringAsFixed(1);
-    return text;
   }
 
   @override
@@ -121,7 +113,6 @@ class _SetRowState extends State<SetRow> {
       widget.setData.weightKg > 0 && widget.setData.reps > 0;
 
   /// Last session's performance for this set index → "15kg x 12".
-  /// Null when there is no prior data (renders a ghosted dash).
   String? get _previousLabel {
     final w = widget.previousWeight;
     final r = widget.previousReps;
@@ -134,35 +125,15 @@ class _SetRowState extends State<SetRow> {
       context: context,
       title: 'Set Type',
       selected: widget.setData.setType,
-      options: const [
-        PickerOption(
-          value: 'normal',
-          label: 'Normal',
-          subtitle: 'Working set',
-          icon: Icons.fitness_center_rounded,
-          color: AppColors.textPrimary,
-        ),
-        PickerOption(
-          value: 'warmup',
-          label: 'Warm-up',
-          subtitle: 'Lighter prep work',
-          icon: Icons.local_fire_department_rounded,
-          color: Color(0xFFE0A422),
-        ),
-        PickerOption(
-          value: 'dropset',
-          label: 'Drop Set',
-          subtitle: 'Reduced weight, no rest',
-          icon: Icons.trending_down_rounded,
-          color: Color(0xFFA78BFA),
-        ),
-        PickerOption(
-          value: 'failure',
-          label: 'Failure',
-          subtitle: 'Taken to the limit',
-          icon: Icons.warning_amber_rounded,
-          color: Color(0xFFFF6B70),
-        ),
+      options: [
+        for (final t in SetType.values)
+          PickerOption(
+            value: t.raw,
+            label: t.label,
+            subtitle: t.subtitle,
+            icon: t.icon,
+            color: t.color,
+          ),
       ],
     );
     if (selected != null && selected != widget.setData.setType) {
@@ -171,94 +142,64 @@ class _SetRowState extends State<SetRow> {
   }
 
   /// SET column content: the type letter REPLACES the number (Hevy pattern).
-  /// Plain coloured text — never a pill or container. Normal → number.
+  /// Normal → set number; W/D/F → coloured letter (colors from [SetType]).
   Widget _setTypeIndicator() {
-    String label;
-    Color color;
-    switch (widget.setData.setType) {
-      case 'warmup':
-        label = 'W';
-        color = const Color(0xFFE0A422); // amber
-        break;
-      case 'dropset':
-        label = 'D';
-        color = const Color(0xFFA78BFA); // purple
-        break;
-      case 'failure':
-        label = 'F';
-        color = const Color(0xFFFF6B70); // red
-        break;
-      default:
-        label = '${widget.setIndex + 1}';
-        color = widget.setData.isCompleted
+    final type = SetType.of(widget.setData.setType);
+    final isNormal = type == SetType.normal;
+    final label = isNormal ? '${widget.setIndex + 1}' : type.short;
+    final color = isNormal
+        ? (widget.setData.isCompleted
             ? AppColors.textPrimary
-            : AppColors.textSecondary;
-    }
-    return Text(
-      label,
-      style: GoogleFonts.inter(
-        color: color,
-        fontSize: 15,
-        fontWeight: FontWeight.w700,
-        fontFeatures: const [FontFeature.tabularFigures()],
-      ),
-    );
+            : AppColors.textSecondary)
+        : type.color;
+    return Text(label, style: AppText.value(color: color));
   }
 
-  /// A bare value field — no box, border, fill, or radius (Change 1).
-  /// The number sits directly on the row surface; focus is signalled only
-  /// by the cursor and keyboard.
+  /// A bare value field — no box, border, fill, or radius. The number sits
+  /// directly on the row surface; focus is signalled only by the cursor.
   Widget _numberField({
     required TextEditingController controller,
     required FocusNode focusNode,
     required bool isDecimal,
+    required String semanticLabel,
     required ValueChanged<String> onChanged,
     TextInputAction action = TextInputAction.next,
   }) {
     final completed = widget.setData.isCompleted;
-    return TextField(
-      controller: controller,
-      focusNode: focusNode,
-      readOnly: completed,
-      textAlign: TextAlign.center,
-      textAlignVertical: TextAlignVertical.center,
-      textInputAction: action,
-      keyboardType: TextInputType.numberWithOptions(decimal: isDecimal),
-      cursorColor: AppColors.accentPrimary,
-      inputFormatters: [
-        if (isDecimal)
-          FilteringTextInputFormatter.allow(RegExp(r'[0-9.]'))
-        else
-          FilteringTextInputFormatter.digitsOnly,
-        LengthLimitingTextInputFormatter(isDecimal ? 6 : 3),
-      ],
-      style: GoogleFonts.inter(
-        // Completed values read at full opacity; in-progress at full white
-        // too — colour/size/weight are unchanged from the boxed version,
-        // only the container is gone.
-        color: AppColors.textPrimary,
-        fontSize: 17,
-        fontWeight: FontWeight.w700,
-        fontFeatures: const [FontFeature.tabularFigures()],
-      ),
-      decoration: InputDecoration(
-        hintText: '–',
-        hintStyle: GoogleFonts.inter(
-          color: AppColors.textPrimary.withValues(alpha: 0.2),
-          fontSize: 17,
-          fontWeight: FontWeight.w700,
+    return Semantics(
+      label: semanticLabel,
+      child: TextField(
+        controller: controller,
+        focusNode: focusNode,
+        readOnly: completed,
+        textAlign: TextAlign.center,
+        textAlignVertical: TextAlignVertical.center,
+        textInputAction: action,
+        keyboardType: TextInputType.numberWithOptions(decimal: isDecimal),
+        cursorColor: AppColors.accentPrimary,
+        inputFormatters: [
+          if (isDecimal)
+            FilteringTextInputFormatter.allow(RegExp(r'[0-9.]'))
+          else
+            FilteringTextInputFormatter.digitsOnly,
+          LengthLimitingTextInputFormatter(isDecimal ? 6 : 3),
+        ],
+        style: AppText.value(),
+        decoration: InputDecoration(
+          hintText: '–',
+          hintStyle: AppText.value(color: AppColors.textDisabled),
+          border: InputBorder.none,
+          focusedBorder: InputBorder.none,
+          enabledBorder: InputBorder.none,
+          filled: false,
+          isDense: true,
+          contentPadding: EdgeInsets.zero,
         ),
-        border: InputBorder.none,
-        focusedBorder: InputBorder.none,
-        enabledBorder: InputBorder.none,
-        filled: false,
-        isDense: true,
-        contentPadding: EdgeInsets.zero,
+        onChanged: onChanged,
+        onSubmitted: (_) => action == TextInputAction.next
+            ? FocusScope.of(context).nextFocus()
+            : FocusScope.of(context).unfocus(),
       ),
-      onChanged: onChanged,
-      onSubmitted: (_) => action == TextInputAction.next
-          ? FocusScope.of(context).nextFocus()
-          : FocusScope.of(context).unfocus(),
     );
   }
 
@@ -270,13 +211,11 @@ class _SetRowState extends State<SetRow> {
     return AnimatedContainer(
       duration: const Duration(milliseconds: 200),
       curve: Curves.easeInOut,
-      // Completed row = 3px green left border + 6% green tint (NOT a full fill,
-      // which reads like a spreadsheet). The check fills with the same green.
+      // Completed row = 3px green left border + 6% green tint (not a full fill).
       decoration: BoxDecoration(
         color: isCompleted ? AppColors.completionTint : Colors.transparent,
         border: isCompleted
-            ? const Border(
-                left: BorderSide(color: AppColors.success, width: 3))
+            ? const Border(left: BorderSide(color: AppColors.success, width: 3))
             : null,
       ),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
@@ -289,7 +228,7 @@ class _SetRowState extends State<SetRow> {
               width: kSetColW,
               child: Semantics(
                 button: !isCompleted,
-                label: 'Set type',
+                label: 'Set type, ${SetType.of(widget.setData.setType).label}',
                 child: GestureDetector(
                   onTap: isCompleted
                       ? null
@@ -316,13 +255,10 @@ class _SetRowState extends State<SetRow> {
                   alignment: Alignment.centerLeft,
                   child: Text(
                     prev ?? '—',
-                    style: GoogleFonts.inter(
+                    style: AppText.statLabel(
                       color: prev != null
                           ? AppColors.textSecondary
-                          : AppColors.textSecondary.withValues(alpha: 0.35),
-                      fontSize: 15,
-                      fontWeight: FontWeight.w500,
-                      fontFeatures: const [FontFeature.tabularFigures()],
+                          : AppColors.textTertiary,
                     ),
                   ),
                 ),
@@ -336,6 +272,7 @@ class _SetRowState extends State<SetRow> {
                 controller: _weightController,
                 focusNode: _weightFocus,
                 isDecimal: true,
+                semanticLabel: 'Weight in ${widget.unit}',
                 onChanged: (val) {
                   final parsed = double.tryParse(val);
                   if (parsed != null) {
@@ -347,7 +284,7 @@ class _SetRowState extends State<SetRow> {
               ),
             ),
 
-            // ── REPS — bare number (no "×" divider before it) ─────────────
+            // ── REPS — bare number ────────────────────────────────────────
             Expanded(
               flex: kRepsFlex,
               child: _numberField(
@@ -355,6 +292,7 @@ class _SetRowState extends State<SetRow> {
                 focusNode: _repsFocus,
                 isDecimal: false,
                 action: TextInputAction.done,
+                semanticLabel: 'Reps',
                 onChanged: (val) {
                   final parsed = int.tryParse(val);
                   if (parsed != null) {
@@ -365,7 +303,7 @@ class _SetRowState extends State<SetRow> {
               ),
             ),
 
-            // ── Completion — muted gray square (no purple) ────────────────
+            // ── Completion — green square (done) / outline (ready/idle) ────
             SizedBox(
               width: kCheckColW,
               child: Semantics(
@@ -394,9 +332,7 @@ class _SetRowState extends State<SetRow> {
                         width: 32,
                         height: 32,
                         decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(6),
-                          // Three states: done = solid green, ready = green
-                          // outline (invites the tap), idle = faint gray outline.
+                          borderRadius: AppRadius.badgeAll,
                           color: isCompleted
                               ? AppColors.success
                               : Colors.transparent,

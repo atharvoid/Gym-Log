@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gymlog/core/providers/settings_provider.dart';
 import 'package:gymlog/core/theme/app_colors.dart';
@@ -17,11 +16,13 @@ import 'package:gymlog/core/utils/formatters.dart';
 import 'package:gymlog/shared/widgets/ui/app_dialog.dart';
 import 'package:gymlog/shared/widgets/ui/secondary_button.dart';
 import 'package:gymlog/shared/widgets/ui/time_range_filter.dart';
-import 'package:gymlog/features/exercises/presentation/screens/exercise_selection_screen.dart';
+import 'package:gymlog/core/theme/app_text.dart';
+import 'package:gymlog/core/utils/tap_guard.dart';
 import 'package:gymlog/features/exercises/presentation/providers/exercises_provider.dart';
 import '../widgets/exercise_block.dart';
 import '../widgets/pr_celebration_overlay.dart';
 import '../widgets/rest_timer_bar.dart';
+import '../widgets/finish_summary_sheet.dart';
 
 class ActiveWorkoutScreen extends ConsumerStatefulWidget {
   const ActiveWorkoutScreen({super.key});
@@ -48,6 +49,7 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
   }
 
   Future<void> _finish() async {
+    if (!tapGuard()) return; // no double-tap → double sheet / double save
     final workout = ref.read(activeWorkoutProvider);
     if (workout == null) return;
 
@@ -73,42 +75,59 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
     }
     if (!mounted) return;
 
-    // Name the workout before saving. Pre-fill with the routine name (when
-    // started from one) so the user can tweak or extend it; otherwise a
-    // time-of-day default ("Evening Workout"). Cancelling backs out of
-    // finishing — nothing is saved.
+    // Pre-fill with the routine name (when started from one) or a time-of-day
+    // default. Cancelling the sheet backs out of finishing — nothing is saved.
     final preFill = (workout.name != null && workout.name!.trim().isNotEmpty)
         ? workout.name!.trim()
         : getWorkoutNameFallback(workout.startTime, null);
-    final name = await showAppTextInputDialog(
+    final (volumeKg, sets) =
+        ref.read(activeWorkoutProvider.notifier).sessionTotals;
+
+    // The session recap + name in one premium sheet (replaces the bare dialog):
+    // the user sees what they earned, names it, and confirms.
+    final name = await showFinishSummarySheet(
       context: context,
-      title: 'Save workout',
-      hint: 'Workout name',
-      initialValue: preFill,
-      confirmLabel: 'Finish',
+      duration: DateTime.now().difference(workout.startTime),
+      volumeKg: volumeKg,
+      sets: sets,
+      unit: ref.read(weightUnitProvider),
+      initialName: preFill,
     );
     if (name == null || !mounted) return; // cancelled → stay in the session
 
     ref.read(restTimerProvider.notifier).skip();
 
     // The root navigator outlives this screen, so the PR celebration can land
-    // over Home rather than over the active-workout screen — which is about to
-    // be torn down (finishing nulls the session, blanking this screen).
+    // over Home rather than over the (about-to-be-torn-down) active screen.
     final rootNavigator = Navigator.of(context, rootNavigator: true);
 
-    final prs =
-        await ref.read(activeWorkoutProvider.notifier).finishWorkout(name: name);
-    if (!mounted) return;
-
-    // Leave the workout screen FIRST. Showing the celebration here previously
-    // rendered it over a blanked-out active screen and, on dismiss, flashed
-    // that dead screen / jumped back. Navigate to Home, then celebrate over it
-    // on the next frame using the root navigator — no z-order glitch, no jump.
-    context.go('/');
-    if (prs.isNotEmpty) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        showPrCelebration(rootNavigator.context, prs);
-      });
+    try {
+      final prs = await ref
+          .read(activeWorkoutProvider.notifier)
+          .finishWorkout(name: name);
+      if (!mounted) return;
+      HapticFeedback.heavyImpact(); // saved — definitive success cue
+      // Leave the workout screen FIRST, then celebrate over Home next frame
+      // (no z-order glitch, no jump-back).
+      context.go('/');
+      if (prs.isNotEmpty) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          showPrCelebration(rootNavigator.context, prs);
+        });
+      }
+    } catch (e) {
+      // Save failed — keep the user IN the session (nothing lost) + tell them.
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            "Couldn't save the workout — your session is safe. Try again.",
+            style: AppText.body(color: AppColors.textPrimary),
+          ),
+          backgroundColor: AppColors.error.withValues(alpha: 0.92),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
     }
   }
 
@@ -185,7 +204,7 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
           label: 'Pounds',
           subtitle: 'lbs',
           icon: Icons.fitness_center_rounded,
-          color: Color(0xFFA78BFA),
+          color: AppColors.accentText,
         ),
         PickerOption(
           value: '_default',
@@ -207,7 +226,13 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
     final workout = ref.watch(activeWorkoutProvider);
     final notifier = ref.read(activeWorkoutProvider.notifier);
     final timer = ref.watch(workoutTimerProvider);
-    final exercisesAsync = ref.watch(exerciseListProvider);
+    // O(1) id→Exercise lookup over the FULL catalog (not the picker's
+    // search-filtered list). The active list rebuilds on every keystroke; a
+    // linear `.where()` per visible row was wasted work, and binding to the
+    // filtered list would drop a logged exercise's thumbnail mid-search.
+    final catalogById =
+        ref.watch(exerciseCatalogByIdProvider).valueOrNull ??
+            const <int, Exercise>{};
     final restTimer = ref.watch(restTimerProvider);
     final globalUnit = ref.watch(weightUnitProvider);
     final isEditing = workout?.originalSessionId != null;
@@ -244,12 +269,8 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
                     children: [
                       Text(
                         isEditing ? 'Edit Workout' : timer,
-                        style: GoogleFonts.inter(
-                          color: AppColors.textPrimary,
-                          fontSize: isEditing ? 16 : 19,
-                          fontWeight: FontWeight.w700,
-                          fontFeatures: const [FontFeature.tabularFigures()],
-                        ),
+                        style:
+                            isEditing ? AppText.cardTitle() : AppText.heroStat(),
                       ),
                       const SizedBox(height: 1),
                       Text(
@@ -258,12 +279,7 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
                             : completedSets == 0
                                 ? 'Log your first set'
                                 : '${groupThousands(kgToDisplay(volumeKg, globalUnit))} $globalUnit · $completedSets set${completedSets != 1 ? 's' : ''}',
-                        style: GoogleFonts.inter(
-                          color: AppColors.textSecondary,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                          fontFeatures: const [FontFeature.tabularFigures()],
-                        ),
+                        style: AppText.statLabel(),
                       ),
                     ],
                   ),
@@ -302,13 +318,8 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
                           child: SecondaryButton(
                             label: '+ Add Exercise',
                             onPressed: () async {
-                              final selected = await Navigator.push<Exercise>(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) =>
-                                      const ExerciseSelectionScreen(),
-                                ),
-                              );
+                              final selected = await context
+                                  .push<Exercise>('/exercises/select');
                               if (selected != null && mounted) {
                                 notifier.addExercise(
                                     selected.id, selected.name);
@@ -319,12 +330,7 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
                       }
 
                       final exercise = workout.exercises[index];
-                      final driftEx = exercisesAsync.maybeWhen(
-                        data: (list) => list
-                            .where((e) => e.id == exercise.exerciseId)
-                            .firstOrNull,
-                        orElse: () => null,
-                      );
+                      final driftEx = catalogById[exercise.exerciseId];
                       final unit =
                           ref.watch(exerciseUnitProvider(exercise.exerciseId));
                       // Read-only last-session sets for the PREVIOUS column.
@@ -347,12 +353,8 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
                         onRemove: () => notifier.removeExercise(index),
                         onUnitTap: () => _pickUnit(exercise.exerciseId),
                         onReplace: () async {
-                          final selected = await Navigator.push<Exercise>(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => const ExerciseSelectionScreen(),
-                            ),
-                          );
+                          final selected =
+                              await context.push<Exercise>('/exercises/select');
                           if (selected != null && mounted) {
                             notifier.replaceExercise(
                                 index, selected.id, selected.name);
@@ -437,8 +439,8 @@ class _ReorderExercisesSheetState extends State<_ReorderExercisesSheet> {
     return Container(
       constraints: BoxConstraints(maxHeight: maxHeight),
       decoration: const BoxDecoration(
-        color: Color(0xFF121212),
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        color: AppColors.surface2,
+        borderRadius: AppRadius.sheetTop,
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -448,26 +450,19 @@ class _ReorderExercisesSheetState extends State<_ReorderExercisesSheet> {
             width: 36,
             height: 4,
             decoration: BoxDecoration(
-              color: const Color(0xFF6A6A6A),
-              borderRadius: BorderRadius.circular(6),
+              color: AppColors.borderEmphasis,
+              borderRadius: BorderRadius.circular(2),
             ),
           ),
           const SizedBox(height: 16),
           Text(
             'Reorder Exercises',
-            style: GoogleFonts.inter(
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
-              color: AppColors.textPrimary,
-            ),
+            style: AppText.cardTitle(),
           ),
           const SizedBox(height: 4),
           Text(
             'Drag to change the order',
-            style: GoogleFonts.inter(
-              fontSize: 13,
-              color: AppColors.textSecondary,
-            ),
+            style: AppText.meta(),
           ),
           const SizedBox(height: 12),
           Flexible(
@@ -493,7 +488,7 @@ class _ReorderExercisesSheetState extends State<_ReorderExercisesSheet> {
                   padding: const EdgeInsets.only(bottom: 8),
                   child: Container(
                     decoration: BoxDecoration(
-                      color: AppColors.surfaceRaised,
+                      color: AppColors.surface3,
                       borderRadius: BorderRadius.circular(14),
                     ),
                     padding: const EdgeInsets.fromLTRB(16, 14, 8, 14),
@@ -510,11 +505,8 @@ class _ReorderExercisesSheetState extends State<_ReorderExercisesSheet> {
                           ),
                           child: Text(
                             '${index + 1}',
-                            style: GoogleFonts.inter(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w700,
-                              color: const Color(0xFFA78BFA),
-                            ),
+                            style:
+                                AppText.statLabel(color: AppColors.accentText),
                           ),
                         ),
                         const SizedBox(width: 12),
@@ -523,11 +515,7 @@ class _ReorderExercisesSheetState extends State<_ReorderExercisesSheet> {
                             ex.name,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: GoogleFonts.inter(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.textPrimary,
-                            ),
+                            style: AppText.exerciseName(),
                           ),
                         ),
                         ReorderableDragStartListener(
