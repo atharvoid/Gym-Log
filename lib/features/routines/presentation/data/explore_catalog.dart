@@ -40,6 +40,10 @@ class RoutineTemplate {
   final String description;
   final List<TemplateSlot> slots;
 
+  /// Exactly one template is the editor's spotlight — promoted to the hero
+  /// "Featured" card at the top of the (unfiltered) Explore screen.
+  final bool featured;
+
   const RoutineTemplate({
     required this.name,
     required this.category,
@@ -47,6 +51,7 @@ class RoutineTemplate {
     required this.focus,
     required this.description,
     required this.slots,
+    this.featured = false,
   });
 
   int get totalSets => slots.fold(0, (a, s) => a + s.sets);
@@ -88,6 +93,7 @@ const exploreTemplates = <RoutineTemplate>[
     focus: 'Chest · Shoulders · Triceps',
     description: 'The classic pressing session — heavy bench first, then '
         'shoulders and triceps to finish.',
+    featured: true,
     slots: [
       TemplateSlot('Bench Press (Barbell)', sets: 4, reps: 6),
       TemplateSlot('Smith Standing Military Press', sets: 3, reps: 8),
