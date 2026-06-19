@@ -413,12 +413,18 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Semantics(
-              header: true,
-              child: Text.rich(TextSpan(children: [
-                TextSpan(text: 'Total Volume ', style: AppText.cardTitle()),
-                TextSpan(text: '(kg)', style: AppText.meta()),
-              ])),
+            Flexible(
+              child: Semantics(
+                header: true,
+                child: Text.rich(
+                  TextSpan(children: [
+                    TextSpan(text: 'Total Volume ', style: AppText.cardTitle()),
+                    TextSpan(text: '(kg)', style: AppText.meta()),
+                  ]),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
             ),
             // Nothing to filter with fewer than two sessions — hide the
             // dead control instead of offering a no-op.
