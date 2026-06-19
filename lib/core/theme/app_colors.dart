@@ -73,13 +73,17 @@ abstract class AppColors {
   // ── Charts ──────────────────────────────────────────────────────────────
   static const chartAxisLabel = Color(0x59FFFFFF); // == textTertiary
 
-  // Provisional indigo ramp (replaces the purple palette; revisit visually).
+  // Muscle-split data-viz palette — an ORDERED violet ramp, light→dark. The
+  // dominant (largest) muscle is leftmost and lightest (most visible on the
+  // AMOLED card); each subsequent step darkens. Monotonic ordering is the fix:
+  // the old ramp was the same violets in a RANDOM order (500/400/600/300),
+  // which read as a muddy smear. Same hue family = on-brand single-accent.
   static const muscleSplitPalette = [
-    Color(0xFF7C3AED), // indigo 500
-    Color(0xFFA78BFA), // indigo 400
-    Color(0xFF6D28D9), // indigo 600
-    Color(0xFFC4B5FD), // indigo 300
-    Color(0xFF5B21B6), // indigo 800
-    Color(0x99FFFFFF), // white 60% (fallback)
+    Color(0xFFC4B5FD), // violet 300 — dominant / largest share
+    Color(0xFFA78BFA), // violet 400
+    Color(0xFF8B5CF6), // violet 500
+    Color(0xFF7C3AED), // violet 600
+    Color(0xFF6D28D9), // violet 700
+    Color(0xFF5B21B6), // violet 800 — smallest share
   ];
 }
