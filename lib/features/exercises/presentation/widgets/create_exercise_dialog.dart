@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import 'package:gymlog/core/database/database.dart';
 import 'package:gymlog/core/exercises/muscle_taxonomy.dart';
 import 'package:gymlog/core/providers/database_provider.dart';
 import 'package:gymlog/core/theme/app_colors.dart';
+import 'package:gymlog/core/theme/app_text.dart';
 import 'package:gymlog/features/auth/presentation/providers/auth_provider.dart';
 import '../providers/exercises_provider.dart';
 
@@ -41,8 +41,7 @@ const _equipmentOptions = <String>[
 ];
 
 /// Maps a taxonomy parent muscle to the coarse `bodyPart` region the library
-/// filters on (chest / back / shoulders / arms / forearms / legs / core …),
-/// so a custom exercise lands under the right Muscle filter.
+/// filters on, so a custom exercise lands under the right Muscle filter.
 String _regionForMuscle(String muscle) {
   switch (muscle) {
     case 'Chest':
@@ -69,7 +68,6 @@ String _regionForMuscle(String muscle) {
     case 'Neck':
       return 'neck';
     default:
-      // Falls back to the taxonomy's own region map, then 'full body'.
       final r = MuscleTaxonomy.regionOf(muscle);
       return r == 'other' ? 'full body' : r;
   }
@@ -118,7 +116,6 @@ class _CreateExerciseDialogState extends ConsumerState<_CreateExerciseDialog> {
 
     final dao = ref.read(databaseProvider).exercisesDao;
 
-    // Uniqueness: never shadow a catalog entry (or an existing custom one).
     if (await dao.exerciseNameExists(name)) {
       if (!mounted) return;
       setState(() {
@@ -137,81 +134,109 @@ class _CreateExerciseDialogState extends ConsumerState<_CreateExerciseDialog> {
     );
     final created = await dao.getExerciseById(id);
 
-    // Refresh the library list so the new exercise appears immediately.
     ref.invalidate(exerciseListProvider);
-
     HapticFeedback.mediumImpact();
     if (!mounted) return;
     Navigator.of(context).pop(created);
   }
 
+  Future<void> _pick({
+    required String title,
+    required List<String> options,
+    required String current,
+    required ValueChanged<String> onSelected,
+  }) async {
+    final v = await _showOptionSheet(
+        context: context, title: title, options: options, current: current);
+    if (v != null && mounted) setState(() => onSelected(v));
+  }
+
   @override
   Widget build(BuildContext context) {
     return Dialog(
-      backgroundColor: AppColors.bgSheet,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      backgroundColor: AppColors.surface2,
+      shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppRadius.sheet)),
       insetPadding: const EdgeInsets.symmetric(horizontal: 28, vertical: 24),
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(22, 22, 22, 14),
+        padding: const EdgeInsets.fromLTRB(22, 20, 22, 14),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'New exercise',
-              style: GoogleFonts.inter(
-                fontSize: 18,
-                fontWeight: FontWeight.w700,
-                color: AppColors.textPrimary,
-              ),
-            ),
+            Text('New exercise', style: AppText.sectionHeading()),
             const SizedBox(height: 16),
             TextField(
               controller: _name,
               autofocus: true,
               textCapitalization: TextCapitalization.words,
+              textInputAction: TextInputAction.done,
               maxLength: 60,
               cursorColor: AppColors.accentPrimary,
-              style:
-                  GoogleFonts.inter(color: AppColors.textPrimary, fontSize: 16),
+              style: AppText.value(),
               onChanged: (_) {
                 if (_error != null) setState(() => _error = null);
               },
-              decoration: _inputDecoration('Exercise name'),
+              onSubmitted: (_) => _create(),
+              decoration: InputDecoration(
+                hintText: 'Exercise name',
+                hintStyle: AppText.body(color: AppColors.textTertiary),
+                counterStyle: AppText.caption(color: AppColors.textTertiary),
+                filled: true,
+                fillColor: AppColors.surface3,
+                contentPadding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                enabledBorder: const OutlineInputBorder(
+                  borderRadius: AppRadius.inputAll,
+                  borderSide: BorderSide.none,
+                ),
+                focusedBorder: const OutlineInputBorder(
+                  borderRadius: AppRadius.inputAll,
+                  borderSide:
+                      BorderSide(color: AppColors.borderActive, width: 1.5),
+                ),
+              ),
             ),
-            const SizedBox(height: 4),
             _label('PRIMARY MUSCLE'),
-            _Dropdown(
+            _SelectField(
               value: _muscle,
-              items: MuscleTaxonomy.parents,
-              onChanged: (v) => setState(() => _muscle = v),
+              onTap: () => _pick(
+                title: 'Primary Muscle',
+                options: MuscleTaxonomy.parents,
+                current: _muscle,
+                onSelected: (v) => _muscle = v,
+              ),
             ),
             const SizedBox(height: 14),
             _label('EQUIPMENT'),
-            _Dropdown(
+            _SelectField(
               value: _equipment,
-              items: _equipmentOptions,
-              onChanged: (v) => setState(() => _equipment = v),
+              onTap: () => _pick(
+                title: 'Equipment',
+                options: _equipmentOptions,
+                current: _equipment,
+                onSelected: (v) => _equipment = v,
+              ),
             ),
             const SizedBox(height: 12),
             Text(
               'An animated demo isn’t added for custom exercises yet — the rest '
               'tracks exactly like any other lift.',
-              style: GoogleFonts.inter(
-                fontSize: 11.5,
-                height: 1.4,
-                color: AppColors.textSecondary,
-              ),
+              style: AppText.caption(color: AppColors.textTertiary)
+                  .copyWith(height: 1.4),
             ),
             if (_error != null) ...[
               const SizedBox(height: 12),
-              Text(
-                _error!,
-                style: GoogleFonts.inter(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.error,
-                ),
+              Row(
+                children: [
+                  const Icon(Icons.error_outline_rounded,
+                      size: 15, color: AppColors.error),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(_error!,
+                        style: AppText.statLabel(color: AppColors.error)),
+                  ),
+                ],
               ),
             ],
             const SizedBox(height: 14),
@@ -219,15 +244,9 @@ class _CreateExerciseDialogState extends ConsumerState<_CreateExerciseDialog> {
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 TextButton(
-                  onPressed:
-                      _saving ? null : () => Navigator.of(context).pop(),
-                  child: Text(
-                    'Cancel',
-                    style: GoogleFonts.inter(
-                      color: AppColors.textSecondary,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
+                  onPressed: _saving ? null : () => Navigator.of(context).pop(),
+                  child: Text('Cancel',
+                      style: AppText.button(color: AppColors.textSecondary)),
                 ),
                 const SizedBox(width: 4),
                 TextButton(
@@ -237,16 +256,10 @@ class _CreateExerciseDialogState extends ConsumerState<_CreateExerciseDialog> {
                           width: 18,
                           height: 18,
                           child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: AppColors.accentPrimary),
+                              strokeWidth: 2, color: AppColors.accentPrimary),
                         )
-                      : Text(
-                          'Create',
-                          style: GoogleFonts.inter(
-                            color: AppColors.accentText,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
+                      : Text('Create',
+                          style: AppText.button(color: AppColors.accentText)),
                 ),
               ],
             ),
@@ -257,75 +270,142 @@ class _CreateExerciseDialogState extends ConsumerState<_CreateExerciseDialog> {
   }
 
   Widget _label(String text) => Padding(
-        padding: const EdgeInsets.only(bottom: 6, top: 4),
-        child: Text(
-          text,
-          style: GoogleFonts.inter(
-            fontSize: 11,
-            fontWeight: FontWeight.w700,
-            letterSpacing: 0.8,
-            color: AppColors.textSecondary,
-          ),
-        ),
-      );
-
-  InputDecoration _inputDecoration(String hint) => InputDecoration(
-        hintText: hint,
-        hintStyle: GoogleFonts.inter(color: AppColors.textSecondary),
-        counterStyle: GoogleFonts.inter(
-            color: AppColors.textSecondary, fontSize: 11),
-        filled: true,
-        fillColor: AppColors.surfaceRaised,
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide.none,
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide:
-              const BorderSide(color: AppColors.accentPrimary, width: 1.5),
-        ),
+        padding: const EdgeInsets.only(bottom: 8, top: 14),
+        child: Text(text,
+            style: AppText.columnHeader(color: AppColors.textSecondary)),
       );
 }
 
-/// Dark, on-brand dropdown used for the muscle + equipment selectors.
-class _Dropdown extends StatelessWidget {
+/// Tappable select field that opens a branded option sheet — the app's sheet
+/// language, not a stock Material dropdown overlay.
+class _SelectField extends StatelessWidget {
   final String value;
-  final List<String> items;
-  final ValueChanged<String> onChanged;
-  const _Dropdown(
-      {required this.value, required this.items, required this.onChanged});
+  final VoidCallback onTap;
+  const _SelectField({required this.value, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14),
-      decoration: BoxDecoration(
-        color: AppColors.surfaceRaised,
-        borderRadius: BorderRadius.circular(12),
+    return Semantics(
+      button: true,
+      label: value,
+      child: Material(
+        color: AppColors.surface3,
+        borderRadius: AppRadius.inputAll,
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: onTap,
+          child: Container(
+            height: 48,
+            padding: const EdgeInsets.symmetric(horizontal: 14),
+            child: Row(
+              children: [
+                Expanded(child: Text(value, style: AppText.value())),
+                const Icon(Icons.keyboard_arrow_down_rounded,
+                    color: AppColors.textSecondary),
+              ],
+            ),
+          ),
+        ),
       ),
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton<String>(
-          value: value,
-          isExpanded: true,
-          dropdownColor: AppColors.surfaceRaised,
-          borderRadius: BorderRadius.circular(12),
-          icon: const Icon(Icons.keyboard_arrow_down_rounded,
-              color: AppColors.textSecondary),
-          style:
-              GoogleFonts.inter(color: AppColors.textPrimary, fontSize: 15),
-          items: [
-            for (final item in items)
-              DropdownMenuItem(value: item, child: Text(item)),
-          ],
-          onChanged: (v) {
-            if (v != null) {
-              HapticFeedback.selectionClick();
-              onChanged(v);
-            }
-          },
+    );
+  }
+}
+
+/// Branded option picker (scrollable so long lists never overflow).
+Future<String?> _showOptionSheet({
+  required BuildContext context,
+  required String title,
+  required List<String> options,
+  required String current,
+}) {
+  HapticFeedback.lightImpact();
+  return showModalBottomSheet<String>(
+    context: context,
+    useRootNavigator: true,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    builder: (sheetCtx) => Container(
+      decoration: const BoxDecoration(
+        color: AppColors.surface2,
+        borderRadius: AppRadius.sheetTop,
+      ),
+      child: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 36,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: AppColors.borderEmphasis,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(height: 18),
+              Text(title, style: AppText.cardTitle()),
+              const SizedBox(height: 12),
+              Flexible(
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      for (final o in options)
+                        _OptionRow(
+                          label: o,
+                          selected: o == current,
+                          onTap: () {
+                            HapticFeedback.selectionClick();
+                            Navigator.of(sheetCtx).pop(o);
+                          },
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    ),
+  );
+}
+
+class _OptionRow extends StatelessWidget {
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+  const _OptionRow(
+      {required this.label, required this.selected, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      button: true,
+      selected: selected,
+      child: InkWell(
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 14),
+          decoration: const BoxDecoration(
+            border: Border(bottom: BorderSide(color: AppColors.borderSubtle)),
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(label,
+                    style: AppText.body(
+                        color: selected
+                            ? AppColors.accentPrimary
+                            : AppColors.textPrimary)),
+              ),
+              if (selected)
+                const Icon(Icons.check_rounded,
+                    size: 18, color: AppColors.accentPrimary),
+            ],
+          ),
         ),
       ),
     );

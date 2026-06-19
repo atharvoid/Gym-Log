@@ -21,7 +21,17 @@ class ExerciseThumbnail extends ConsumerWidget {
   final String? gifUrl;
   final double size;
 
-  const ExerciseThumbnail({super.key, required this.gifUrl, this.size = 52});
+  /// Decode only the GIF's first frame (cheaper) instead of walking to the
+  /// last frame — for long scrollable lists like the Exercise Library, where
+  /// ~400 full decodes stutter the scroll. First ≈ last for these GIFs.
+  final bool fastFrame;
+
+  const ExerciseThumbnail({
+    super.key,
+    required this.gifUrl,
+    this.size = 52,
+    this.fastFrame = false,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -31,7 +41,8 @@ class ExerciseThumbnail extends ConsumerWidget {
     if (url == null || url.isEmpty) {
       inner = _fallback();
     } else {
-      final frameAsync = ref.watch(gifLastFrameProvider(url));
+      final frameAsync = ref.watch(
+          fastFrame ? gifFirstFrameProvider(url) : gifLastFrameProvider(url));
       inner = frameAsync.when(
         loading: () => const SizedBox.shrink(),
         error: (_, __) => _fallback(),
