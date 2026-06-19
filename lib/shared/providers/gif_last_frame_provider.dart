@@ -96,3 +96,54 @@ final gifLastFrameProvider =
     codec?.dispose();
   }
 });
+
+/// Like [gifLastFrameProvider] but decodes ONLY the first frame.
+///
+/// The last-frame provider walks every frame of the GIF (delta-encoded, so the
+/// Nth frame needs all N decoded) — fine for a screen with a handful of GIFs,
+/// but the Exercise Library scrolls ~400 thumbnails, and kicking off 400
+/// full-animation decodes saturates the event loop and makes scrolling stutter.
+/// For exercise GIFs frame 0 ≈ the last frame (the rest/start position), so the
+/// still looks identical while skipping the per-frame work — the scrollable
+/// catalog uses this instead.
+final gifFirstFrameProvider =
+    FutureProvider.autoDispose.family<MemoryImage?, String>((ref, gifUrl) async {
+  final link = ref.keepAlive();
+  Timer? releaseTimer;
+  ref.onDispose(() => releaseTimer?.cancel());
+  ref.onCancel(
+      () => releaseTimer = Timer(const Duration(seconds: 60), link.close));
+  ref.onResume(() => releaseTimer?.cancel());
+
+  ui.Codec? codec;
+  ui.Image? frame;
+  try {
+    final file = await DefaultCacheManager().getSingleFile(gifUrl);
+    final Uint8List bytes = await file.readAsBytes();
+    codec = await ui.instantiateImageCodec(
+      bytes,
+      targetWidth: _kMaxDecodeWidth,
+      allowUpscaling: false,
+    );
+    if (codec.frameCount == 0) return null;
+
+    // Just the first frame — no loop through the animation.
+    final ui.FrameInfo frameInfo = await codec.getNextFrame();
+    frame = frameInfo.image;
+
+    final ByteData? byteData =
+        await frame.toByteData(format: ui.ImageByteFormat.png);
+    if (byteData == null) return null;
+    return MemoryImage(byteData.buffer.asUint8List());
+  } catch (e, st) {
+    debugPrint(
+      '[gifFirstFrameProvider] Failed to extract first frame.\n'
+      '  URL  : $gifUrl\n'
+      '  Error: $e\n$st',
+    );
+    return null;
+  } finally {
+    frame?.dispose();
+    codec?.dispose();
+  }
+});
