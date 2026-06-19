@@ -7,6 +7,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/providers/database_provider.dart';
 import '../../../../shared/widgets/ui/action_bottom_sheet.dart';
 import '../../../../shared/widgets/ui/app_dialog.dart';
+import '../../../../shared/widgets/ui/muscle_glyph.dart';
 import 'routine_detail_styles.dart';
 
 /// Premium routine card for the Routines list.
@@ -110,24 +111,24 @@ class RoutineCard extends ConsumerWidget {
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Differentiated glyph: routine initial tinted by its
-                    // primary muscle group — every card identifiable at a
-                    // glance, no generic dumbbell noise.
-                    Container(
-                      width: 44,
-                      height: 44,
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        color: _glyphColor.withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Text(
-                        routineName.isNotEmpty
-                            ? routineName[0].toUpperCase()
-                            : 'R',
-                        style: GoogleFonts.inter(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w700,
+                    // Muscle-group glyph for the routine's DOMINANT muscle
+                    // (muscleTags is ordered most-trained first). Decorative —
+                    // the routine name beside it carries the label. The square
+                    // is tinted by the same muscle so cards differ at a glance.
+                    ExcludeSemantics(
+                      child: Container(
+                        width: 44,
+                        height: 44,
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          color: _glyphColor.withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: MuscleGlyph(
+                          muscle: muscleTags.isNotEmpty
+                              ? muscleTags.first
+                              : 'fullbody',
+                          size: 24,
                           color: _glyphColor,
                         ),
                       ),
