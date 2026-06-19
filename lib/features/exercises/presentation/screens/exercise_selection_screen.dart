@@ -159,6 +159,7 @@ class _ExerciseSelectionScreenState
     final result = await showModalBottomSheet<String?>(
       context: context,
       useRootNavigator: true,
+      isScrollControlled: true, // size to content (+ scroll) — never overflow
       backgroundColor: Colors.transparent,
       builder: (sheetCtx) => Container(
         decoration: const BoxDecoration(
@@ -183,17 +184,28 @@ class _ExerciseSelectionScreenState
                 const SizedBox(height: 18),
                 Text(title, style: AppText.cardTitle()),
                 const SizedBox(height: 12),
-                for (final option in ['All', ...options])
-                  _FilterOptionRow(
-                    label: option,
-                    selected: option == current ||
-                        (option == 'All' && current == null),
-                    onTap: () {
-                      HapticFeedback.selectionClick();
-                      Navigator.of(sheetCtx)
-                          .pop(option == 'All' ? '__all__' : option);
-                    },
+                // Scrollable so a long option list (Equipment has 8) never
+                // overflows on short screens.
+                Flexible(
+                  child: SingleChildScrollView(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        for (final option in ['All', ...options])
+                          _FilterOptionRow(
+                            label: option,
+                            selected: option == current ||
+                                (option == 'All' && current == null),
+                            onTap: () {
+                              HapticFeedback.selectionClick();
+                              Navigator.of(sheetCtx)
+                                  .pop(option == 'All' ? '__all__' : option);
+                            },
+                          ),
+                      ],
+                    ),
                   ),
+                ),
               ],
             ),
           ),
@@ -460,9 +472,8 @@ class _ExerciseRow extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Row(
               children: [
-                RepaintBoundary(
-                  child: ExerciseThumbnail(gifUrl: exercise.gifUrl, size: 44),
-                ),
+                ExerciseThumbnail(
+                    gifUrl: exercise.gifUrl, size: 44, fastFrame: true),
                 const SizedBox(width: 14),
                 Expanded(
                   child: Column(
