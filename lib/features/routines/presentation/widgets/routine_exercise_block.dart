@@ -109,7 +109,7 @@ class RoutineExerciseBlock extends StatelessWidget {
                   width: 18,
                   child: CircularProgressIndicator(
                     strokeWidth: 2,
-                    color: AppColors.accentPrimary,
+                    color: AppColors.textSecondary,
                   ),
                 ),
               )
