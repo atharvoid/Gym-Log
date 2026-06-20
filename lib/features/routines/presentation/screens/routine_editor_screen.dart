@@ -10,7 +10,6 @@ import 'package:gymlog/core/providers/premium_provider.dart';
 import 'package:gymlog/core/theme/app_colors.dart';
 import 'package:gymlog/shared/widgets/premium_paywall.dart';
 import 'package:gymlog/features/auth/presentation/providers/auth_provider.dart';
-import 'package:gymlog/features/exercises/presentation/screens/exercise_selection_screen.dart';
 import 'package:gymlog/shared/widgets/exercise_gif_widget.dart';
 import 'package:gymlog/shared/widgets/ui/app_dialog.dart';
 import 'package:gymlog/features/routines/presentation/widgets/routine_detail_styles.dart';
@@ -116,10 +115,7 @@ class _RoutineEditorScreenState extends ConsumerState<RoutineEditorScreen> {
 
   Future<void> _addExercises() async {
     HapticFeedback.lightImpact();
-    final selected = await Navigator.push<Exercise>(
-      context,
-      MaterialPageRoute(builder: (_) => const ExerciseSelectionScreen()),
-    );
+    final selected = await context.push<Exercise>('/exercises/select');
     if (selected == null || !mounted) return;
     setState(() {
       _dirty = true;
