@@ -43,7 +43,7 @@ class RestTimerBar extends ConsumerWidget {
           container: true,
           label: 'Rest timer, $_label remaining',
           child: _AmbientPulse(
-            radius: BorderRadius.circular(16),
+            radius: const BorderRadius.all(Radius.circular(6)),
             child: SizedBox(
               height: kRestTileHeight,
               child: DecoratedBox(
@@ -53,7 +53,7 @@ class RestTimerBar extends ConsumerWidget {
                     end: Alignment.bottomCenter,
                     colors: [Color(0xFF1B1226), Color(0xFF0B0B0D)],
                   ),
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: const BorderRadius.all(Radius.circular(6)),
                   border: Border.all(
                     color: AppColors.accentPrimary.withValues(alpha: 0.40),
                     width: 1.2,

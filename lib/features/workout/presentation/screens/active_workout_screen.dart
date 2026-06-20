@@ -7,18 +7,15 @@ import 'package:gymlog/core/theme/app_colors.dart';
 import 'package:gymlog/core/utils/units.dart';
 import 'package:gymlog/features/workout/domain/active_workout_state.dart';
 import 'package:gymlog/features/workout/presentation/providers/active_workout_provider.dart';
-import 'package:gymlog/features/workout/presentation/providers/previous_session_provider.dart';
 import 'package:gymlog/features/workout/presentation/providers/rest_timer_provider.dart';
 import 'package:gymlog/features/workout/presentation/providers/workout_timer_provider.dart';
 import 'package:gymlog/shared/widgets/ui/primary_button.dart';
 import 'package:gymlog/core/database/database.dart';
 import 'package:gymlog/core/utils/formatters.dart';
 import 'package:gymlog/shared/widgets/ui/app_dialog.dart';
-import 'package:gymlog/shared/widgets/ui/secondary_button.dart';
 import 'package:gymlog/shared/widgets/ui/time_range_filter.dart';
 import 'package:gymlog/core/theme/app_text.dart';
 import 'package:gymlog/core/utils/tap_guard.dart';
-import 'package:gymlog/features/exercises/presentation/providers/exercises_provider.dart';
 import '../widgets/exercise_block.dart';
 import '../widgets/pr_celebration_overlay.dart';
 import '../widgets/rest_timer_bar.dart';
@@ -184,7 +181,10 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
     );
   }
 
-  Future<void> _pickUnit(int exerciseId) async {
+  Future<void> _pickUnit(int exerciseIndex) async {
+    final workout = ref.read(activeWorkoutProvider);
+    if (workout == null || exerciseIndex >= workout.exercises.length) return;
+    final exerciseId = workout.exercises[exerciseIndex].exerciseId;
     final globalUnit = ref.read(weightUnitProvider);
     final current = ref.read(exerciseUnitProvider(exerciseId));
     final selected = await showBrandedPickerSheet<String>(
@@ -223,25 +223,21 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final workout = ref.watch(activeWorkoutProvider);
+    final workoutExists = ref.watch(activeWorkoutProvider.select((state) => state != null));
     final notifier = ref.read(activeWorkoutProvider.notifier);
-    final timer = ref.watch(workoutTimerProvider);
-    // O(1) id→Exercise lookup over the FULL catalog (not the picker's
-    // search-filtered list). The active list rebuilds on every keystroke; a
-    // linear `.where()` per visible row was wasted work, and binding to the
-    // filtered list would drop a logged exercise's thumbnail mid-search.
-    final catalogById =
-        ref.watch(exerciseCatalogByIdProvider).valueOrNull ??
-            const <int, Exercise>{};
     final restTimer = ref.watch(restTimerProvider);
     final globalUnit = ref.watch(weightUnitProvider);
-    final isEditing = workout?.originalSessionId != null;
+    final isEditing = ref.watch(activeWorkoutProvider.select((state) => state?.originalSessionId != null));
 
-    // Live investment readout — the session gets visibly more valuable
-    // with every completed set.
-    final (volumeKg, completedSets) = notifier.sessionTotals;
+    final exerciseIds = ref.watch(activeWorkoutProvider.select((state) => state?.exercises.map((e) => e.id).toList() ?? const <String>[]));
 
-    return Scaffold(
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+        _confirmDiscard();
+      },
+      child: Scaffold(
       backgroundColor: AppColors.bgBase,
       body: Column(
         children: [
@@ -265,24 +261,45 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
                   ),
                   const Spacer(),
                   MergeSemantics(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          isEditing ? 'Edit Workout' : timer,
-                          style:
-                              isEditing ? AppText.cardTitle() : AppText.heroStat(),
-                        ),
-                        const SizedBox(height: 1),
-                        Text(
-                          isEditing
-                              ? timer
-                              : completedSets == 0
-                                  ? 'Log your first set'
-                                  : '${groupThousands(kgToDisplay(volumeKg, globalUnit))} $globalUnit · $completedSets set${completedSets != 1 ? 's' : ''}',
-                          style: AppText.statLabel(),
-                        ),
-                      ],
+                    child: Consumer(
+                      builder: (context, ref, child) {
+                        final timer = ref.watch(workoutTimerProvider);
+                        final totals = ref.watch(activeWorkoutProvider.select((state) {
+                          if (state == null) return (0.0, 0);
+                          double volume = 0;
+                          int completed = 0;
+                          for (final ex in state.exercises) {
+                            for (final set in ex.sets) {
+                              if (set.isCompleted) {
+                                volume += set.weightKg * set.reps;
+                                completed++;
+                              }
+                            }
+                          }
+                          return (volume, completed);
+                        }));
+                        final volumeKg = totals.$1;
+                        final completedSets = totals.$2;
+
+                        return Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              isEditing ? 'Edit Workout' : timer,
+                              style: isEditing ? AppText.cardTitle() : AppText.heroStat(),
+                            ),
+                            const SizedBox(height: 1),
+                            Text(
+                              isEditing
+                                  ? timer
+                                  : completedSets == 0
+                                      ? 'Log your first set'
+                                      : '${groupThousands(kgToDisplay(volumeKg, globalUnit))} $globalUnit · $completedSets set${completedSets != 1 ? 's' : ''}',
+                              style: AppText.statLabel(),
+                            ),
+                          ],
+                        );
+                      },
                     ),
                   ),
                   const Spacer(),
@@ -306,54 +323,23 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
           // FocusNode across rebuilds. Reordering moved to a focus-safe
           // sheet (no live text fields) — see _showReorderSheet.
           Expanded(
-            child: workout == null
+            child: !workoutExists
                 ? const SizedBox.shrink()
                 : ListView.builder(
-                    padding: const EdgeInsets.only(top: 8, bottom: 140.0),
-                    itemCount: workout.exercises.length + 1,
+                    padding: EdgeInsets.only(
+                      top: 8,
+                      bottom: MediaQuery.viewPaddingOf(context).bottom + 160.0,
+                    ),
+                    itemCount: exerciseIds.length,
                     itemBuilder: (context, index) {
-                      if (index == workout.exercises.length) {
-                        return Padding(
-                          key: const ValueKey('footer'),
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 8),
-                          child: SecondaryButton(
-                            label: '+ Add Exercise',
-                            onPressed: () async {
-                              final selected = await context
-                                  .push<Exercise>('/exercises/select');
-                              if (selected != null && mounted) {
-                                notifier.addExercise(
-                                    selected.id, selected.name);
-                              }
-                            },
-                          ),
-                        );
-                      }
-
-                      final exercise = workout.exercises[index];
-                      final driftEx = catalogById[exercise.exerciseId];
-                      final unit =
-                          ref.watch(exerciseUnitProvider(exercise.exerciseId));
-                      // Read-only last-session sets for the PREVIOUS column.
-                      final previousSets = ref
-                          .watch(previousSessionSetsProvider(
-                              exercise.exerciseId))
-                          .valueOrNull ??
-                          const [];
-
                       return ExerciseBlock(
-                        key: ValueKey(exercise.id),
+                        key: ValueKey(exerciseIds[index]),
                         exerciseIndex: index,
-                        exercise: exercise,
-                        driftExercise: driftEx,
-                        unit: unit,
-                        previousSets: previousSets,
-                        onReorderExercises: workout.exercises.length > 1
+                        onReorderExercises: exerciseIds.length > 1
                             ? _showReorderSheet
                             : null,
                         onRemove: () => notifier.removeExercise(index),
-                        onUnitTap: () => _pickUnit(exercise.exerciseId),
+                        onUnitTap: () => _pickUnit(index),
                         onReplace: () async {
                           final selected =
                               await context.push<Exercise>('/exercises/select');
@@ -366,6 +352,9 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
                         onRemoveSet: (setIdx) =>
                             notifier.removeSet(index, setIdx),
                         onSetChanged: (updatedSet) {
+                          final workout = ref.read(activeWorkoutProvider);
+                          if (workout == null || index >= workout.exercises.length) return;
+                          final exercise = workout.exercises[index];
                           final setIdx = exercise.sets
                               .indexWhere((s) => s.id == updatedSet.id);
                           if (setIdx != -1) {
@@ -383,9 +372,37 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
                       );
                     },
                   ),
-          ),
+                ),
         ],
       ),
+
+      // ── Floating Action Button (Sticky Add Exercise) ────────────────
+      // Ensures the button is always accessible without scrolling.
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      floatingActionButton: !workoutExists
+          ? null
+          : Padding(
+              padding: EdgeInsets.only(
+                bottom: restTimer != null ? 80.0 : 0.0,
+              ),
+              child: FloatingActionButton.extended(
+                onPressed: () async {
+                  final selected =
+                      await context.push<Exercise>('/exercises/select');
+                  if (selected != null && mounted) {
+                    notifier.addExercise(selected.id, selected.name);
+                  }
+                },
+                backgroundColor: AppColors.surface3,
+                elevation: 0,
+                highlightElevation: 0,
+                shape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.zero, // Three-radius law: 0px for secondary
+                  side: BorderSide(color: AppColors.borderSubtle),
+                ),
+                label: Text('+ Add Exercise', style: AppText.button(color: AppColors.textPrimary)),
+              ),
+            ),
 
       // ── Rest timer — the 90-second heartbeat of the session ───────────
       bottomNavigationBar: AnimatedSwitcher(
@@ -406,6 +423,7 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
             ? const SizedBox.shrink(key: ValueKey('noRest'))
             : RestTimerBar(key: const ValueKey('rest'), state: restTimer),
       ),
+    ),
     );
   }
 }
