@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gymlog/core/theme/app_colors.dart';
 import 'package:gymlog/core/theme/app_text.dart';
@@ -9,20 +10,17 @@ import 'package:gymlog/shared/widgets/ui/app_card.dart';
 import 'package:gymlog/shared/widgets/ui/exercise_thumbnail.dart';
 import 'package:gymlog/shared/widgets/ui/secondary_button.dart';
 import 'package:gymlog/shared/widgets/ui/action_bottom_sheet.dart';
+import 'package:gymlog/core/providers/settings_provider.dart';
+import 'package:gymlog/features/workout/presentation/providers/active_workout_provider.dart';
+import 'package:gymlog/features/workout/presentation/providers/previous_session_provider.dart';
+import 'package:gymlog/features/exercises/presentation/providers/exercises_provider.dart';
 import 'set_row.dart';
 
 /// One exercise inside the active workout. Shared card surface (gradient +
 /// hairline via AppCard), white heading (accent is for actions, not titles),
 /// swipe-to-delete sets, and the branded three-dot sheet.
-class ExerciseBlock extends StatelessWidget {
+class ExerciseBlock extends ConsumerWidget {
   final int exerciseIndex;
-  final WorkoutExerciseState exercise;
-  final Exercise? driftExercise;
-  final String unit;
-
-  /// Previous-session sets for this exercise, ordered by set index. Empty when
-  /// the exercise has no prior history.
-  final List<WorkoutSet> previousSets;
 
   /// Opens the focus-safe reorder sheet. Null when there's only one exercise.
   final VoidCallback? onReorderExercises;
@@ -39,10 +37,6 @@ class ExerciseBlock extends StatelessWidget {
   const ExerciseBlock({
     super.key,
     required this.exerciseIndex,
-    required this.exercise,
-    this.driftExercise,
-    this.unit = 'kg',
-    this.previousSets = const [],
     this.onReorderExercises,
     required this.onRemove,
     required this.onReplace,
@@ -53,10 +47,10 @@ class ExerciseBlock extends StatelessWidget {
     required this.onToggleSetCompletion,
   });
 
-  void _showMenu(BuildContext context) {
+  void _showMenu(BuildContext context, String exerciseName) {
     showActionBottomSheet(
       context: context,
-      title: exercise.name,
+      title: exerciseName,
       items: [
         ActionSheetItem(
           icon: Icons.swap_horiz_rounded,
@@ -96,8 +90,24 @@ class ExerciseBlock extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
-    final de = driftExercise;
+  Widget build(BuildContext context, WidgetRef ref) {
+    final exerciseMeta = ref.watch(activeWorkoutProvider.select((state) {
+      if (state == null || exerciseIndex >= state.exercises.length) return null;
+      final ex = state.exercises[exerciseIndex];
+      return (ex.exerciseId, ex.name, ex.sets.length);
+    }));
+
+    if (exerciseMeta == null) return const SizedBox.shrink();
+
+    final exerciseId = exerciseMeta.$1;
+    final exerciseName = exerciseMeta.$2;
+    final setsLength = exerciseMeta.$3;
+
+    final catalogById = ref.watch(exerciseCatalogByIdProvider).valueOrNull ?? const <int, Exercise>{};
+    final de = catalogById[exerciseId];
+
+    final unit = ref.watch(exerciseUnitProvider(exerciseId));
+    final previousSets = ref.watch(previousSessionSetsProvider(exerciseId)).valueOrNull ?? const [];
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 7),
@@ -120,7 +130,7 @@ class ExerciseBlock extends StatelessWidget {
                             context.push('/exercise/detail/${de.id}', extra: de)
                         : null,
                     child: Text(
-                      exercise.name,
+                      exerciseName,
                       style: AppText.cardTitle(),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -133,7 +143,7 @@ class ExerciseBlock extends StatelessWidget {
                       const BoxConstraints(minWidth: 48, minHeight: 48),
                   icon: const Icon(Icons.more_horiz_rounded,
                       color: AppColors.textSecondary, size: 20),
-                  onPressed: () => _showMenu(context),
+                  onPressed: () => _showMenu(context, exerciseName),
                 ),
               ],
             ),
@@ -207,42 +217,56 @@ class ExerciseBlock extends StatelessWidget {
           const SizedBox(height: 4),
 
           // ── Sets — swipe left to delete (locked once completed) ──────
-          ...exercise.sets.asMap().entries.map((entry) {
-            final setIndex = entry.key;
-            final setData = entry.value;
-            final prevSet =
-                setIndex < previousSets.length ? previousSets[setIndex] : null;
-            final row = SetRow(
-              key: ValueKey(setData.id),
-              setIndex: setIndex,
-              setData: setData,
-              previousWeight: prevSet?.weightKg,
-              previousReps: prevSet?.reps,
-              unit: unit,
-              onChanged: onSetChanged,
-              onToggleComplete: () => onToggleSetCompletion(setIndex),
-            );
-            // A completed set is a committed record — no accidental swipe-away.
-            if (setData.isCompleted) {
-              return KeyedSubtree(
-                  key: ValueKey('locked_${setData.id}'), child: row);
-            }
-            return Dismissible(
-              key: ValueKey('dismiss_${setData.id}'),
-              direction: DismissDirection.endToStart,
-              confirmDismiss: (_) async {
-                HapticFeedback.heavyImpact(); // feel the danger first
-                return true;
+          ...Iterable<int>.generate(setsLength).map((setIndex) {
+            return Consumer(
+              builder: (context, ref, child) {
+                final setData = ref.watch(activeWorkoutProvider.select((state) {
+                  if (state == null || exerciseIndex >= state.exercises.length) return null;
+                  final ex = state.exercises[exerciseIndex];
+                  if (setIndex >= ex.sets.length) return null;
+                  return ex.sets[setIndex];
+                }));
+                if (setData == null) return const SizedBox.shrink();
+
+                final prevSet =
+                    setIndex < previousSets.length ? previousSets[setIndex] : null;
+
+                final row = SetRow(
+                  key: ValueKey(setData.id),
+                  setIndex: setIndex,
+                  setData: setData,
+                  previousWeight: prevSet?.weightKg,
+                  previousReps: prevSet?.reps,
+                  unit: unit,
+                  onChanged: onSetChanged,
+                  onToggleComplete: () => onToggleSetCompletion(setIndex),
+                );
+
+                if (setData.isCompleted) {
+                  return KeyedSubtree(
+                    key: ValueKey('locked_${setData.id}'),
+                    child: row,
+                  );
+                }
+
+                return Dismissible(
+                  key: ValueKey('dismiss_${setData.id}'),
+                  direction: DismissDirection.endToStart,
+                  confirmDismiss: (_) async {
+                    HapticFeedback.heavyImpact(); // feel the danger first
+                    return true;
+                  },
+                  onDismissed: (_) => onRemoveSet(setIndex),
+                  background: Container(
+                    color: AppColors.error.withValues(alpha: 0.85),
+                    alignment: Alignment.centerRight,
+                    padding: const EdgeInsets.only(right: 22),
+                    child: const Icon(Icons.delete_outline_rounded,
+                        color: Colors.white, size: 20),
+                  ),
+                  child: row,
+                );
               },
-              onDismissed: (_) => onRemoveSet(setIndex),
-              background: Container(
-                color: AppColors.error.withValues(alpha: 0.85),
-                alignment: Alignment.centerRight,
-                padding: const EdgeInsets.only(right: 22),
-                child: const Icon(Icons.delete_outline_rounded,
-                    color: Colors.white, size: 20),
-              ),
-              child: row,
             );
           }),
 
