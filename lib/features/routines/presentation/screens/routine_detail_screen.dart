@@ -256,7 +256,7 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
     return Scaffold(
       backgroundColor: AppColors.bgBase,
       body: RefreshIndicator(
-        color: AppColors.accentPrimary,
+        color: AppColors.textPrimary,
         backgroundColor: AppColors.surface2,
         onRefresh: _onRefresh,
         child: CustomScrollView(
@@ -457,7 +457,7 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
               decoration: AppCard.decoration(radius: 20),
               child: const Center(
                 child:
-                    CircularProgressIndicator(color: AppColors.accentPrimary),
+                    CircularProgressIndicator(color: AppColors.textSecondary),
               ),
             ),
             error: (_, __) => const RoutineVolumeGraph(data: []),
@@ -520,15 +520,15 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
                   children: [
                     const SkeletonBox(width: 200, height: 16),
                     const SizedBox(height: 16),
-                    const SkeletonBox(height: 52, radius: 14),
+                    const SkeletonBox(height: 52, radius: 6),
                     const SizedBox(height: 24),
-                    const SkeletonBox(height: 198, radius: 20),
+                    const SkeletonBox(height: 198, radius: 6),
                     const SizedBox(height: 24),
                     ...List.generate(
                       3,
                       (i) => const Padding(
                         padding: EdgeInsets.only(bottom: 12),
-                        child: SkeletonBox(height: 120, radius: 16),
+                        child: SkeletonBox(height: 120, radius: 6),
                       ),
                     ),
                   ],
@@ -581,19 +581,21 @@ class _HeroStatStrip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Expanded(
-            child: _HeroStat(value: '${stats.count}', label: 'SESSIONS')),
-        const _StatDivider(),
-        Expanded(
-            child: _HeroStat(
-                value: groupThousands(stats.bestVolumeKg), label: 'BEST KG')),
-        const _StatDivider(),
-        Expanded(
-            child: _HeroStat(
-                value: groupThousands(stats.avgVolumeKg), label: 'AVG KG')),
-      ],
+    return MergeSemantics(
+      child: Row(
+        children: [
+          Expanded(
+              child: _HeroStat(value: '${stats.count}', label: 'SESSIONS')),
+          const _StatDivider(),
+          Expanded(
+              child: _HeroStat(
+                  value: groupThousands(stats.bestVolumeKg), label: 'BEST KG')),
+          const _StatDivider(),
+          Expanded(
+              child: _HeroStat(
+                  value: groupThousands(stats.avgVolumeKg), label: 'AVG KG')),
+        ],
+      ),
     );
   }
 }
@@ -671,16 +673,6 @@ class _StartRoutineButtonState extends State<_StartRoutineButton> {
           decoration: BoxDecoration(
             color: empty ? AppColors.surface3 : AppColors.accentPrimary,
             borderRadius: AppRadius.buttonPrimaryAll,
-            boxShadow: empty
-                ? null
-                : [
-                    BoxShadow(
-                      color: AppColors.accentPrimary.withValues(alpha: 0.35),
-                      blurRadius: 24,
-                      offset: const Offset(0, 8),
-                      spreadRadius: -6,
-                    ),
-                  ],
           ),
           alignment: Alignment.center,
           child: Row(
@@ -726,10 +718,10 @@ class _RoutineProgressPill extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 6),
           decoration: BoxDecoration(
-            color: AppColors.accentPrimary.withValues(alpha: 0.12),
+            color: AppColors.surface3,
             borderRadius: BorderRadius.circular(999),
             border: Border.all(
-              color: AppColors.accentPrimary.withValues(alpha: 0.25),
+              color: AppColors.borderSubtle,
               width: 1,
             ),
           ),
@@ -739,14 +731,14 @@ class _RoutineProgressPill extends StatelessWidget {
               Icon(
                 isUp ? Icons.trending_up_rounded : Icons.trending_down_rounded,
                 size: 14,
-                color: AppColors.accentText,
+                color: AppColors.textSecondary,
               ),
               const SizedBox(width: 6),
               Text(
                 isUp
                     ? 'Volume up $delta% since ${_monthDay.format(samples.first.day)}'
                     : 'Volume down ${-delta}% since ${_monthDay.format(samples.first.day)}',
-                style: AppText.statLabel(color: AppColors.accentText),
+                style: AppText.statLabel(color: AppColors.textSecondary),
               ),
             ],
           ),

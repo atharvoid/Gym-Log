@@ -72,7 +72,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             physics: const NeverScrollableScrollPhysics(),
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
             children: const [
-              SkeletonBox(height: 124, radius: AppRadius.card),
+              SkeletonBox(height: 124, radius: 6.0),
               SizedBox(height: 16),
               SkeletonBox(width: 150, height: 18),
               SizedBox(height: 12),
@@ -136,6 +136,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     return Padding(
       padding: const EdgeInsets.only(bottom: 20),
       child: AppCard(
+        radius: 6.0,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -216,6 +217,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         );
       }
       return AppCard(
+        radius: 6.0,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

@@ -275,7 +275,7 @@ class _DetailCardSkeleton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(16),
-      decoration: AppCard.decoration(),
+      decoration: AppCard.decoration(radius: 6.0),
       child: const Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

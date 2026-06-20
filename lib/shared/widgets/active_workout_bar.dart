@@ -4,7 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../core/theme/app_colors.dart';
 
 /// [active_workout_bar.dart]
-/// Purpose: High-Density Tracker - Active workout indicator (solid purple, no gradient)
+/// Purpose: High-Density Tracker - Active workout indicator (monochrome)
 /// Dependencies: flutter/material.dart, go_router, google_fonts, app_colors.dart
 /// Last modified: High-Density Tracker Overhaul
 
@@ -17,9 +17,10 @@ class ActiveWorkoutBar extends StatelessWidget {
       onTap: () => context.push('/workout/active'),
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        decoration: const BoxDecoration(
-          color: AppColors.accentPrimary,
-          borderRadius: BorderRadius.all(Radius.circular(12)),
+        decoration: BoxDecoration(
+          color: AppColors.surface2,
+          borderRadius: BorderRadius.circular(999),
+          border: Border.all(color: AppColors.borderSubtle, width: 1),
         ),
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
         child: Row(

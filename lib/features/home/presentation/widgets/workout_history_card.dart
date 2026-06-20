@@ -45,6 +45,7 @@ class WorkoutHistoryCard extends StatelessWidget {
 
     return AppCard(
       padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+      radius: 6.0,
       onTap: () {
         // Navigation/selection feedback — parity with every other tap.
         HapticFeedback.selectionClick();
@@ -217,19 +218,21 @@ class _StatsRow extends StatelessWidget {
     // Volume + duration are ALWAYS left-clustered at the same positions so the
     // eye holds a stable column across cards regardless of PR presence; the PR
     // badge (when present) is pushed to the trailing edge.
-    return Row(
-      children: [
-        _StatChip(
-          icon: Icons.inventory_2_outlined,
-          label: _formatVolume(preview.totalVolumeKg),
-        ),
-        const SizedBox(width: 20),
-        _StatChip(icon: Icons.timer_outlined, label: durationStr),
-        if (hasPrs) ...[
-          const Spacer(),
-          _PrBadge(count: preview.prCount),
+    return MergeSemantics(
+      child: Row(
+        children: [
+          _StatChip(
+            icon: Icons.inventory_2_outlined,
+            label: _formatVolume(preview.totalVolumeKg),
+          ),
+          const SizedBox(width: 20),
+          _StatChip(icon: Icons.timer_outlined, label: durationStr),
+          if (hasPrs) ...[
+            const Spacer(),
+            _PrBadge(count: preview.prCount),
+          ],
         ],
-      ],
+      ),
     );
   }
 

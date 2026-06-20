@@ -75,13 +75,60 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
     return Scaffold(
       backgroundColor: AppColors.bgBase,
       body: Center(
-        child: Text(
-          'GymLog',
-          style: GoogleFonts.inter(
-            color: AppColors.textPrimary,
-            fontSize: 32,
-            fontWeight: FontWeight.w800,
-            letterSpacing: -0.5,
+        child: TweenAnimationBuilder<double>(
+          tween: Tween<double>(begin: 0.0, end: 1.0),
+          duration: const Duration(milliseconds: 700),
+          curve: Curves.easeOut,
+          builder: (context, opacity, child) {
+            return Opacity(
+              opacity: opacity,
+              child: child,
+            );
+          },
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Semantics(
+                label: 'GymLog logo',
+                child: Container(
+                  width: 80,
+                  height: 80,
+                  decoration: BoxDecoration(
+                    color: AppColors.surface3,
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: const Center(
+                    child: Icon(
+                      Icons.fitness_center,
+                      size: 40,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 24),
+              Text(
+                'GymLog',
+                style: GoogleFonts.inter(
+                  color: AppColors.textPrimary,
+                  fontSize: 32,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: -0.5,
+                ),
+              ),
+              const SizedBox(height: 32),
+              Semantics(
+                label: 'Loading Gymlog...',
+                child: const SizedBox(
+                  width: 24,
+                  height: 24,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation<Color>(AppColors.textSecondary),
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ),

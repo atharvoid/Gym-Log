@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/config/legal_links.dart';
 import '../../../../core/theme/app_colors.dart';
-import '../../../../core/theme/app_text.dart';
 import '../../../../shared/widgets/ui/primary_button.dart';
 import '../providers/auth_provider.dart';
 
@@ -17,27 +17,25 @@ class AuthScreen extends ConsumerStatefulWidget {
 
 class _AuthScreenState extends ConsumerState<AuthScreen> {
   bool _isSigningIn = false;
+  bool _isLogin = true;
+
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
 
   @override
   void dispose() {
-    ScaffoldMessenger.of(context).clearSnackBars();
+    _emailController.dispose();
+    _passwordController.dispose();
     super.dispose();
   }
 
   Future<void> _signIn() async {
-    // Local guard so the button can't re-enter while awaiting; the repository
-    // also coalesces concurrent calls as a second line of defence against the
-    // google_sign_in "Concurrent operations detected" crash.
     if (_isSigningIn) return;
     setState(() => _isSigningIn = true);
     try {
       await ref.read(authRepositoryProvider).signInWithGoogle();
-      HapticFeedback.lightImpact();
-      // On success the auth-state stream drives the router redirect to Home;
-      // this screen is disposed, so no explicit navigation is needed here.
     } catch (_) {
       if (!mounted) return;
-      HapticFeedback.heavyImpact();
       _snack("Couldn't sign in. Please try again.");
     } finally {
       if (mounted) setState(() => _isSigningIn = false);
@@ -47,7 +45,8 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
   void _snack(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(message, style: AppText.body()),
+        content:
+            Text(message, style: GoogleFonts.inter(color: AppColors.textPrimary)),
         backgroundColor: AppColors.bgSurface,
         behavior: SnackBarBehavior.floating,
       ),
@@ -55,81 +54,186 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
   }
 
   Future<void> _openUrl(String url) async {
-    try {
-      final ok = await launchUrl(Uri.parse(url),
-          mode: LaunchMode.externalApplication);
-      if (!ok && mounted) _snack("Couldn't open the link.");
-    } catch (_) {
-      if (mounted) _snack("Couldn't open the link.");
-    }
+    final ok = await launchUrl(Uri.parse(url),
+        mode: LaunchMode.externalApplication);
+    if (!ok && mounted) _snack("Couldn't open the link.");
+  }
+
+  void _toggleForm() {
+    HapticFeedback.selectionClick();
+    setState(() => _isLogin = !_isLogin);
   }
 
   @override
   Widget build(BuildContext context) {
-    return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: SystemUiOverlayStyle.light,
-      child: Scaffold(
-        backgroundColor: AppColors.bgBase,
-        body: SafeArea(
-          child: CustomScrollView(
-            physics: const ClampingScrollPhysics(),
-            slivers: [
-              SliverFillRemaining(
-                hasScrollBody: false,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
-                  child: Column(
-                    children: [
-                      const Spacer(),
-                      Text(
-                        'GymLog',
-                        style: AppText.display(),
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Your gym. Your data.',
-                        style: AppText.body(color: AppColors.textSecondary),
-                        textAlign: TextAlign.center,
-                      ),
-                      const Spacer(),
-                      PrimaryButton(
-                        label: _isSigningIn ? 'Signing in…' : 'Continue with Google',
-                        isLoading: _isSigningIn,
-                        onPressed: _signIn,
-                        // COMPLIANCE NOTE: the generic lock glyph (Icons.login) was
-                        // removed — pairing a non-Google icon with "Continue with
-                        // Google" is off-brand. 
-                        icon: Icons.g_mobiledata_rounded,
-                      ),
-                      const SizedBox(height: 16),
-                      // Apple App Store (3.1.2 / 5.1.1) and Google Play require Terms &
-                      // Privacy to be reachable BEFORE a data-collecting sign-in.
-                      Wrap(
-                        alignment: WrapAlignment.center,
-                        crossAxisAlignment: WrapCrossAlignment.center,
-                        children: [
-                          Text('By continuing you agree to our ', style: AppText.caption()),
-                          _LegalLink(
-                              label: 'Terms',
-                              onTap: () => _openUrl(kTermsOfServiceUrl)),
-                          Text(' and ', style: AppText.caption()),
-                          _LegalLink(
-                              label: 'Privacy Policy',
-                              onTap: () => _openUrl(kPrivacyPolicyUrl)),
-                          Text('.', style: AppText.caption()),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-                      Text(
-                        'Free to use. Sign in with Google to sync across your devices.',
-                        style: AppText.caption(),
-                        textAlign: TextAlign.center,
-                      ),
-                    ],
+    final fine = GoogleFonts.inter(
+      color: AppColors.textSecondary,
+      fontSize: 12,
+      fontWeight: FontWeight.w400,
+      height: 1.4,
+    );
+
+    final inputDecoration = InputDecoration(
+      filled: false,
+      enabledBorder: const OutlineInputBorder(
+        borderRadius: BorderRadius.zero,
+        borderSide: BorderSide(color: AppColors.borderSubtle, width: 1),
+      ),
+      focusedBorder: const OutlineInputBorder(
+        borderRadius: BorderRadius.zero,
+        borderSide: BorderSide(color: AppColors.textPrimary, width: 1),
+      ),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+      hintStyle: GoogleFonts.inter(color: AppColors.textTertiary),
+    );
+
+    return Scaffold(
+      backgroundColor: AppColors.bgBase,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 48),
+          child: Column(
+            children: [
+              Text(
+                'GymLog',
+                style: GoogleFonts.inter(
+                  color: AppColors.textPrimary,
+                  fontSize: 32,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: -0.5,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Your gym. Your data.',
+                style: GoogleFonts.inter(
+                  color: AppColors.textSecondary,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w400,
+                ),
+              ),
+              const SizedBox(height: 48),
+              
+              AutofillGroup(
+                child: Column(
+                  children: [
+                    TextField(
+                      controller: _emailController,
+                      keyboardType: TextInputType.emailAddress,
+                      autofillHints: const [AutofillHints.email],
+                      style: GoogleFonts.inter(color: AppColors.textPrimary),
+                      decoration: inputDecoration.copyWith(hintText: 'Email'),
+                    ),
+                    const SizedBox(height: 16),
+                    TextField(
+                      controller: _passwordController,
+                      obscureText: true,
+                      autofillHints: const [AutofillHints.password],
+                      style: GoogleFonts.inter(color: AppColors.textPrimary),
+                      decoration: inputDecoration.copyWith(hintText: 'Password'),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 24),
+              
+              PrimaryButton(
+                label: _isSigningIn ? 'Signing in…' : (_isLogin ? 'Log in' : 'Sign up'),
+                isLoading: _isSigningIn,
+                onPressed: () {
+                  // Stub for email/password action
+                },
+              ),
+              const SizedBox(height: 16),
+              
+              GestureDetector(
+                onTap: _toggleForm,
+                child: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 200),
+                  child: Text(
+                    _isLogin ? "Don't have an account? Sign up" : "Already have an account? Log in",
+                    key: ValueKey(_isLogin),
+                    style: GoogleFonts.inter(
+                      color: AppColors.textPrimary,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      decoration: TextDecoration.underline,
+                    ),
                   ),
                 ),
               ),
+              const SizedBox(height: 32),
+
+              Row(
+                children: [
+                  const Expanded(child: Divider(color: AppColors.borderSubtle)),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Text('OR', style: GoogleFonts.inter(color: AppColors.textSecondary, fontSize: 12)),
+                  ),
+                  const Expanded(child: Divider(color: AppColors.borderSubtle)),
+                ],
+              ),
+              const SizedBox(height: 32),
+
+              SizedBox(
+                width: double.infinity,
+                height: 52,
+                child: OutlinedButton(
+                  onPressed: _signIn,
+                  style: OutlinedButton.styleFrom(
+                    backgroundColor: Colors.transparent,
+                    foregroundColor: AppColors.textPrimary,
+                    side: const BorderSide(color: AppColors.borderSubtle, width: 1),
+                    shape: const RoundedRectangleBorder(
+                      borderRadius: BorderRadius.zero,
+                    ),
+                  ),
+                  child: _isSigningIn
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(AppColors.textPrimary),
+                          ),
+                        )
+                      : Text(
+                          'Continue with Google',
+                          style: GoogleFonts.inter(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 16,
+                          ),
+                        ),
+                ),
+              ),
+              const SizedBox(height: 24),
+
+              Semantics(
+                button: true,
+                child: Wrap(
+                  alignment: WrapAlignment.center,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    Text('By continuing you agree to our ', style: fine),
+                    _LegalLink(
+                        label: 'Terms',
+                        onTap: () => _openUrl(kTermsOfServiceUrl)),
+                    Text(' and ', style: fine),
+                    _LegalLink(
+                        label: 'Privacy Policy',
+                        onTap: () => _openUrl(kPrivacyPolicyUrl)),
+                    Text('.', style: fine),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 10),
+              Text(
+                'Free to use. Sign in with Google to sync across your devices.',
+                style: fine,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 32),
             ],
           ),
         ),
@@ -152,15 +256,14 @@ class _LegalLink extends StatelessWidget {
       label: label,
       child: GestureDetector(
         onTap: onTap,
-        behavior: HitTestBehavior.opaque,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
-          child: Text(
-            label,
-            style: AppText.caption(color: AppColors.accentText).copyWith(
-              decoration: TextDecoration.underline,
-              decorationColor: AppColors.accentText,
-            ),
+        child: Text(
+          label,
+          style: GoogleFonts.inter(
+            color: AppColors.accentText, // ~5.9:1 on black, passes AA
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+            decoration: TextDecoration.underline,
+            decorationColor: AppColors.accentText,
           ),
         ),
       ),

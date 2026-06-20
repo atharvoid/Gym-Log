@@ -204,7 +204,7 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
           label: 'Pounds',
           subtitle: 'lbs',
           icon: Icons.fitness_center_rounded,
-          color: AppColors.accentText,
+          color: AppColors.textPrimary,
         ),
         PickerOption(
           value: '_default',
@@ -264,24 +264,26 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
                     onPressed: _confirmDiscard,
                   ),
                   const Spacer(),
-                  Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        isEditing ? 'Edit Workout' : timer,
-                        style:
-                            isEditing ? AppText.cardTitle() : AppText.heroStat(),
-                      ),
-                      const SizedBox(height: 1),
-                      Text(
-                        isEditing
-                            ? timer
-                            : completedSets == 0
-                                ? 'Log your first set'
-                                : '${groupThousands(kgToDisplay(volumeKg, globalUnit))} $globalUnit · $completedSets set${completedSets != 1 ? 's' : ''}',
-                        style: AppText.statLabel(),
-                      ),
-                    ],
+                  MergeSemantics(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          isEditing ? 'Edit Workout' : timer,
+                          style:
+                              isEditing ? AppText.cardTitle() : AppText.heroStat(),
+                        ),
+                        const SizedBox(height: 1),
+                        Text(
+                          isEditing
+                              ? timer
+                              : completedSets == 0
+                                  ? 'Log your first set'
+                                  : '${groupThousands(kgToDisplay(volumeKg, globalUnit))} $globalUnit · $completedSets set${completedSets != 1 ? 's' : ''}',
+                          style: AppText.statLabel(),
+                        ),
+                      ],
+                    ),
                   ),
                   const Spacer(),
                   PrimaryButton(
@@ -487,9 +489,9 @@ class _ReorderExercisesSheetState extends State<_ReorderExercisesSheet> {
                   key: ValueKey('reorder_${ex.id}'),
                   padding: const EdgeInsets.only(bottom: 8),
                   child: Container(
-                    decoration: BoxDecoration(
+                    decoration: const BoxDecoration(
                       color: AppColors.surface3,
-                      borderRadius: BorderRadius.circular(14),
+                      borderRadius: BorderRadius.zero,
                     ),
                     padding: const EdgeInsets.fromLTRB(16, 14, 8, 14),
                     child: Row(
@@ -498,15 +500,14 @@ class _ReorderExercisesSheetState extends State<_ReorderExercisesSheet> {
                           width: 26,
                           height: 26,
                           alignment: Alignment.center,
-                          decoration: BoxDecoration(
-                            color: AppColors.accentPrimary
-                                .withValues(alpha: 0.14),
-                            borderRadius: BorderRadius.circular(10),
+                          decoration: const BoxDecoration(
+                            color: AppColors.surface3,
+                            borderRadius: BorderRadius.zero,
                           ),
                           child: Text(
                             '${index + 1}',
                             style:
-                                AppText.statLabel(color: AppColors.accentText),
+                                AppText.statLabel(color: AppColors.textSecondary),
                           ),
                         ),
                         const SizedBox(width: 12),

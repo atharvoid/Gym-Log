@@ -118,6 +118,7 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
                 width: double.infinity,
                 height: 220,
                 fit: BoxFit.contain,
+                borderRadius: BorderRadius.circular(6),
               ),
 
               const SizedBox(height: 16),
@@ -164,32 +165,26 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
                     spacing: 8,
                     runSpacing: 8,
                     children: [
-                      for (final (label, primary) in chips)
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 11, vertical: 6),
-                          decoration: BoxDecoration(
-                            color: primary
-                                ? AppColors.accentPrimary.withValues(alpha: 0.14)
-                                : Colors.white.withValues(alpha: 0.05),
-                            borderRadius: BorderRadius.circular(999),
-                            border: Border.all(
-                              color: primary
-                                  ? AppColors.accentPrimary
-                                      .withValues(alpha: 0.34)
-                                  : Colors.white.withValues(alpha: 0.08),
-                              width: 1,
+                      for (final (label, _) in chips)
+                        MergeSemantics(
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 11, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: AppColors.surface3,
+                              borderRadius: BorderRadius.zero,
+                              border: Border.all(
+                                color: AppColors.borderSubtle,
+                                width: 1,
+                              ),
                             ),
-                          ),
-                          child: Text(
-                            label,
-                            style: GoogleFonts.inter(
-                              fontSize: 12.5,
-                              fontWeight:
-                                  primary ? FontWeight.w600 : FontWeight.w500,
-                              color: primary
-                                  ? const Color(0xFFA78BFA)
-                                  : AppColors.textSecondary,
+                            child: Text(
+                              label,
+                              style: GoogleFonts.inter(
+                                fontSize: 12.5,
+                                fontWeight: FontWeight.w500,
+                                color: AppColors.textPrimary,
+                              ),
                             ),
                           ),
                         ),
@@ -315,7 +310,7 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
                 decoration: BoxDecoration(
                   color:
                       isActive ? AppColors.accentPrimary : AppColors.bgSurface,
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.zero,
                 ),
                 child: Text(
                   entry.value,
@@ -367,9 +362,9 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
         ),
         const SizedBox(height: 12),
         Container(
-          decoration: BoxDecoration(
+          decoration: const BoxDecoration(
             color: AppColors.bgSurface,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.zero,
           ),
           child: Column(
             children: [
@@ -389,27 +384,29 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
   }
 
   Widget _prRow(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      child: Row(
-        children: [
-          Text(
-            label,
-            style: GoogleFonts.inter(
-              color: AppColors.textSecondary,
-              fontSize: 14,
+    return MergeSemantics(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        child: Row(
+          children: [
+            Text(
+              label,
+              style: GoogleFonts.inter(
+                color: AppColors.textSecondary,
+                fontSize: 14,
+              ),
             ),
-          ),
-          const Spacer(),
-          Text(
-            value,
-            style: GoogleFonts.inter(
-              color: AppColors.textPrimary,
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
+            const Spacer(),
+            Text(
+              value,
+              style: GoogleFonts.inter(
+                color: AppColors.textPrimary,
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -458,9 +455,9 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
         ),
         const SizedBox(height: 12),
         Container(
-          decoration: BoxDecoration(
+          decoration: const BoxDecoration(
             color: AppColors.bgSurface,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.zero,
           ),
           child: Column(
             children: steps.asMap().entries.map((entry) {

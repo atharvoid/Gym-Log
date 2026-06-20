@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -113,15 +114,22 @@ class _DeleteAccountScreenState extends ConsumerState<DeleteAccountScreen> {
                         color: AppColors.error, size: 26),
                   ),
                   const SizedBox(height: 16),
-                  Text(
-                    'This is permanent',
-                    style: AppText.sectionHeading(),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    'Deleting your account cannot be undone. Once you confirm, your '
-                    'data will be permanently deleted — there is no recovery.',
-                    style: AppText.body(),
+                  MergeSemantics(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'This is permanent',
+                          style: AppText.sectionHeading(),
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          'Deleting your account cannot be undone. Once you confirm, your '
+                          'data will be permanently deleted — there is no recovery.',
+                          style: AppText.body(),
+                        ),
+                      ],
+                    ),
                   ),
                   const SizedBox(height: 24),
 
@@ -176,13 +184,13 @@ class _DeleteAccountScreenState extends ConsumerState<DeleteAccountScreen> {
                       fillColor: AppColors.surfaceRaised,
                       contentPadding:
                           const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(AppRadius.input),
+                      enabledBorder: const OutlineInputBorder(
+                        borderRadius: BorderRadius.zero,
                         borderSide: BorderSide.none,
                       ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(AppRadius.input),
-                        borderSide: const BorderSide(
+                      focusedBorder: const OutlineInputBorder(
+                        borderRadius: BorderRadius.zero,
+                        borderSide: BorderSide(
                             color: AppColors.error, width: 1.5),
                       ),
                     ),
@@ -202,16 +210,10 @@ class _DeleteAccountScreenState extends ConsumerState<DeleteAccountScreen> {
                             Colors.white.withValues(alpha: 0.5),
                         elevation: 0,
                         shape: RoundedRectangleBorder(
-                            borderRadius:
-                                BorderRadius.circular(AppRadius.buttonPrimary)),
+                            borderRadius: BorderRadius.circular(999)),
                       ),
                       child: _deleting
-                          ? const SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(
-                                  color: Colors.white, strokeWidth: 2),
-                            )
+                          ? const CupertinoActivityIndicator(color: Colors.white)
                           : Text(
                               'Delete my account permanently',
                               style: AppText.button(),
@@ -257,7 +259,7 @@ class _SectionCard extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
       decoration: BoxDecoration(
         color: AppColors.surfaceRaised,
-        borderRadius: BorderRadius.circular(AppRadius.buttonSecondary),
+        borderRadius: BorderRadius.circular(6),
         border: Border.all(color: tone.withValues(alpha: 0.22)),
       ),
       child: Column(

@@ -186,6 +186,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                 _entrance(
                   index: 1,
                   child: AppCard(
+                    radius: 6.0,
                     padding: const EdgeInsets.symmetric(
                         horizontal: AppSpacing.x1, vertical: AppSpacing.x4),
                     child: _StatsStrip(
@@ -293,16 +294,18 @@ class _IdentityHeader extends StatelessWidget {
           ),
         ),
         if (isPremium)
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-            decoration: BoxDecoration(
-              color: AppColors.indigoTint,
-              borderRadius: BorderRadius.circular(AppRadius.badge),
-              border: Border.all(color: AppColors.indigoTrack),
-            ),
-            child: Text(
-              'PRO',
-              style: AppText.badge(color: AppColors.indigo400),
+          Semantics(
+            label: 'Pro status active',
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(AppRadius.badge),
+                border: Border.all(color: AppColors.borderSubtle),
+              ),
+              child: Text(
+                'PRO',
+                style: AppText.badge(color: AppColors.textSecondary),
+              ),
             ),
           ),
       ],
@@ -373,7 +376,7 @@ class _StatsStrip extends StatelessWidget {
             leading: const Icon(
               Icons.fitness_center_rounded,
               size: iconSize,
-              color: AppColors.indigo400,
+              color: AppColors.textSecondary,
             ),
           ),
         ),
@@ -571,6 +574,7 @@ class _QuickLinks extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AppCard(
+      radius: 6.0,
       padding: EdgeInsets.zero,
       child: Column(
         children: [
@@ -625,6 +629,7 @@ class _LoadingBody extends StatelessWidget {
           ),
           const SizedBox(height: 20),
           AppCard(
+            radius: 6.0,
             child: Row(
               children: [
                 for (var i = 0; i < 3; i++) ...[
@@ -644,6 +649,7 @@ class _LoadingBody extends StatelessWidget {
           ),
           const SizedBox(height: 28),
           const AppCard(
+            radius: 6.0,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -657,6 +663,7 @@ class _LoadingBody extends StatelessWidget {
           ),
           const SizedBox(height: 28),
           AppCard(
+            radius: 6.0,
             child: Column(
               children: [
                 for (var i = 0; i < 2; i++) ...[
@@ -684,6 +691,7 @@ class _ErrorBody extends StatelessWidget {
       padding: EdgeInsets.fromLTRB(16, 4, 16, bottomClearance),
       children: [
         AppCard(
+          radius: 6.0,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [

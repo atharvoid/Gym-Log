@@ -15,9 +15,9 @@ import 'package:gymlog/shared/widgets/ui/skeleton.dart';
 import '../providers/exercises_provider.dart';
 import '../widgets/create_exercise_dialog.dart';
 
-/// Fixed item heights — the alphabet scrubber computes scroll offsets from these,
-/// so headers and rows MUST render at exactly these heights.
-const double _kRowHeight = 64;
+/// Fixed header height — the alphabet scrubber computes scroll offsets from these.
+/// Exercise rows use an estimated height of 64 for scrolling calculations.
+const double _kEstimatedRowHeight = 64;
 const double _kHeaderHeight = 36;
 
 /// Live recent-exercise ids from workout history.
@@ -139,7 +139,7 @@ class _ExerciseSelectionScreenState
     if (target == null || !_scrollController.hasClients) return;
     var offset = 0.0;
     for (var i = 0; i < target; i++) {
-      offset += items[i].isHeader ? _kHeaderHeight : _kRowHeight;
+      offset += items[i].isHeader ? _kHeaderHeight : _kEstimatedRowHeight;
     }
     HapticFeedback.selectionClick();
     _scrollController.animateTo(
@@ -248,6 +248,7 @@ class _ExerciseSelectionScreenState
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 10),
             child: TextField(
               controller: _searchController,
+              autofocus: true,
               style: AppText.body(color: AppColors.textPrimary),
               cursorColor: AppColors.accentPrimary,
               textInputAction: TextInputAction.search,
@@ -268,8 +269,8 @@ class _ExerciseSelectionScreenState
                     : null,
                 filled: true,
                 fillColor: AppColors.bgSurface,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
+                border: const OutlineInputBorder(
+                  borderRadius: BorderRadius.zero,
                   borderSide: BorderSide.none,
                 ),
                 contentPadding: const EdgeInsets.symmetric(horizontal: 16),
@@ -462,49 +463,46 @@ class _ExerciseRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: _kRowHeight,
-      child: Material(
-        color: Colors.transparent,
+    return Material(
+      color: Colors.transparent,
         child: InkWell(
           onTap: onTap,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Row(
-              children: [
-                ExerciseThumbnail(
-                    gifUrl: exercise.gifUrl, size: 44, fastFrame: true),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(exercise.name,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: AppText.exerciseName()),
-                      const SizedBox(height: 2),
-                      Text('${exercise.target} • ${exercise.equipment}',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: AppText.caption()),
-                    ],
-                  ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          child: Row(
+            children: [
+              ExerciseThumbnail(
+                  gifUrl: exercise.gifUrl, size: 44, fastFrame: true),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(exercise.name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: AppText.exerciseName()),
+                    const SizedBox(height: 2),
+                    Text('${exercise.target} • ${exercise.equipment}',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: AppText.caption()),
+                  ],
                 ),
-                if (browse) ...[
-                  const SizedBox(width: 8),
-                  const ExcludeSemantics(
-                    child: Icon(Icons.chevron_right_rounded,
-                        size: 20, color: AppColors.textTertiary),
-                  ),
+              ),
+              if (browse) ...[
+                const SizedBox(width: 8),
+                const ExcludeSemantics(
+                  child: Icon(Icons.chevron_right_rounded,
+                      size: 20, color: AppColors.textTertiary),
+                ),
                 ],
               ],
             ),
           ),
         ),
-      ),
-    );
+      );
   }
 }
 
@@ -628,11 +626,9 @@ class _LoadingList extends StatelessWidget {
         physics: const NeverScrollableScrollPhysics(),
         padding: const EdgeInsets.symmetric(vertical: 8),
         itemCount: 9,
-        itemBuilder: (_, __) => const SizedBox(
-          height: _kRowHeight,
-          child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16),
-            child: Row(
+        itemBuilder: (_, __) => const Padding(
+          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          child: Row(
               children: [
                 SkeletonBox(width: 44, height: 44, radius: 10),
                 SizedBox(width: 14),
@@ -650,7 +646,6 @@ class _LoadingList extends StatelessWidget {
               ],
             ),
           ),
-        ),
       ),
     );
   }
@@ -722,7 +717,7 @@ class _FilterChipButton extends StatelessWidget {
         color: active
             ? AppColors.accentPrimary.withValues(alpha: 0.14)
             : AppColors.surface3,
-        borderRadius: AppRadius.badgeAll,
+        borderRadius: BorderRadius.zero,
         clipBehavior: Clip.antiAlias,
         child: InkWell(
           onTap: onTap,
@@ -731,7 +726,7 @@ class _FilterChipButton extends StatelessWidget {
             constraints: const BoxConstraints(minHeight: 44),
             padding: const EdgeInsets.symmetric(horizontal: 14),
             decoration: BoxDecoration(
-              borderRadius: AppRadius.badgeAll,
+              borderRadius: BorderRadius.zero,
               border: active
                   ? Border.all(
                       color: AppColors.accentPrimary.withValues(alpha: 0.45))
