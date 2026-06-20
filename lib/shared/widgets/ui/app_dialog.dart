@@ -26,7 +26,7 @@ Future<bool> showAppConfirmDialog({
     useRootNavigator: true,
     builder: (dialogCtx) => Dialog(
       backgroundColor: AppColors.surface2,
-      shape: const RoundedRectangleBorder(borderRadius: AppRadius.sheetTop),
+      shape: const RoundedRectangleBorder(borderRadius: AppRadius.cardAll),
       child: Padding(
         padding: const EdgeInsets.fromLTRB(24, 24, 16, 12),
         child: Column(
@@ -101,7 +101,7 @@ Future<String?> showAppTextInputDialog({
 
       return Dialog(
         backgroundColor: AppColors.surface2,
-        shape: const RoundedRectangleBorder(borderRadius: AppRadius.sheetTop),
+        shape: const RoundedRectangleBorder(borderRadius: AppRadius.cardAll),
         child: Padding(
           padding: const EdgeInsets.fromLTRB(24, 24, 16, 12),
           child: Column(
