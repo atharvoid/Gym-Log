@@ -1,18 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:gymlog/core/services/profile_sync_service.dart';
 import 'package:gymlog/core/theme/app_colors.dart';
+import 'package:gymlog/core/theme/app_text.dart';
 import 'package:gymlog/features/auth/presentation/providers/auth_provider.dart';
 import 'package:gymlog/shared/widgets/ui/app_dialog.dart';
 import 'package:gymlog/shared/widgets/ui/primary_button.dart';
-
-/// [onboarding_screen.dart]
-/// Purpose: First-launch welcome — captures the display name and persists it
-/// locally + to the backend (queued/retried if offline). Shown once, right
-/// after a user's first-ever Google sign-in. Dismissible only via a valid
-/// submission — no back-button escape without a name.
 
 class OnboardingScreen extends ConsumerStatefulWidget {
   const OnboardingScreen({super.key});
@@ -26,21 +21,15 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   final _focusNode = FocusNode();
   bool _isLoading = false;
 
-  bool get _isValid => _nameController.text.trim().isNotEmpty;
-
   @override
   void initState() {
     super.initState();
-    // Pre-fill from the Google account (full_name, then name) if available.
     final user = ref.read(authProvider);
     final meta = user?.userMetadata;
     final googleName = (meta?['full_name'] ?? meta?['name']) as String?;
     if (googleName != null && googleName.trim().isNotEmpty) {
       _nameController.text = googleName.trim();
     }
-    // Live-update the primary button's enabled state as they type.
-    _nameController.addListener(() => setState(() {}));
-    // Auto-focus the field.
     WidgetsBinding.instance
         .addPostFrameCallback((_) => _focusNode.requestFocus());
   }
@@ -52,10 +41,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     super.dispose();
   }
 
-  /// Visible escape hatch: signs the user out and returns to auth. Warns
-  /// (don't silently discard) if they had typed a name. The system back gesture
-  /// stays blocked (PopScope) so an accidental swipe can't lose the name — this
-  /// explicit Cancel is the deliberate way out.
   Future<void> _cancel() async {
     if (_isLoading) return;
     if (_nameController.text.trim().isNotEmpty) {
@@ -71,8 +56,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       if (!discard) return;
     }
     await ref.read(authRepositoryProvider).signOut();
-    // The redirect guard lets /onboarding run regardless of auth, so navigate
-    // explicitly — signing out alone won't move us off this screen.
     if (mounted) context.go('/auth');
   }
 
@@ -86,14 +69,15 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     setState(() => _isLoading = true);
 
     try {
-      // Local write is instant; the remote push is queued + retried and never
-      // blocks entry into the app.
       await ref.read(profileSyncProvider).submitDisplayName(
             userId: user.id,
             email: user.email ?? '',
             name: name,
           );
+      HapticFeedback.lightImpact();
       if (mounted) context.go('/');
+    } catch (_) {
+      HapticFeedback.heavyImpact();
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -101,110 +85,128 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // A welcome, not a toll booth — but there's no escape without a name.
-    // canPop:false blocks the system back gesture until they submit.
-    return PopScope(
-      canPop: false,
-      child: Scaffold(
-        backgroundColor: AppColors.bgBase,
-        body: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: TextButton(
-                    onPressed: _isLoading ? null : _cancel,
-                    style: TextButton.styleFrom(
-                      padding: EdgeInsets.zero,
-                      minimumSize: const Size(48, 44),
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: SystemUiOverlayStyle.light,
+      child: PopScope(
+        canPop: false,
+        onPopInvokedWithResult: (didPop, _) {
+          if (didPop) return;
+          _cancel();
+        },
+        child: Scaffold(
+          backgroundColor: AppColors.bgBase,
+          body: SafeArea(
+            child: CustomScrollView(
+              physics: const ClampingScrollPhysics(),
+              slivers: [
+                SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Icon(Icons.arrow_back_rounded,
-                            size: 18, color: AppColors.textSecondary),
-                        const SizedBox(width: 4),
-                        Text(
-                          'Cancel',
-                          style: GoogleFonts.inter(
-                            color: AppColors.textSecondary,
-                            fontWeight: FontWeight.w600,
-                            fontSize: 14,
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: TextButton(
+                            onPressed: _isLoading ? null : _cancel,
+                            style: TextButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(Icons.arrow_back_rounded,
+                                    size: 18, color: AppColors.textSecondary),
+                                const SizedBox(width: 4),
+                                Text(
+                                  'Cancel',
+                                  style: AppText.body(color: AppColors.textSecondary)
+                                      .copyWith(fontWeight: FontWeight.w600, fontSize: 14),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
+                        const Spacer(),
+                        Text(
+                          'Welcome to GymLog',
+                          style: AppText.label(color: AppColors.accentText).copyWith(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 0.2,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        Text(
+                          'What should we\ncall you?',
+                          style: AppText.display().copyWith(
+                            fontSize: 32,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: -0.5,
+                            height: 1.1,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'This is how you\'ll show up across GymLog — and it follows you to every device.',
+                          style: AppText.body(color: AppColors.textSecondary).copyWith(
+                            fontSize: 15,
+                            height: 1.4,
+                          ),
+                        ),
+                        const SizedBox(height: 32),
+                        TextField(
+                          controller: _nameController,
+                          focusNode: _focusNode,
+                          maxLength: 40,
+                          cursorColor: AppColors.accentPrimary,
+                          style: AppText.body().copyWith(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w600,
+                          ),
+                          textCapitalization: TextCapitalization.words,
+                          textInputAction: TextInputAction.done,
+                          onSubmitted: (_) => _submit(),
+                          decoration: InputDecoration(
+                            hintText: 'Your name',
+                            counterText: '',
+                            hintStyle: AppText.body(color: AppColors.textSecondary).copyWith(
+                              fontSize: 18,
+                            ),
+                            filled: true,
+                            fillColor: Colors.transparent,
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                            enabledBorder: BorderSide(color: Colors.white.withValues(alpha: 0.06), width: 1).none 
+                                ? const OutlineInputBorder(borderRadius: BorderRadius.zero) // Failsafe
+                                : OutlineInputBorder(
+                                    borderRadius: BorderRadius.zero,
+                                    borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.06), width: 1),
+                                  ),
+                            focusedBorder: const OutlineInputBorder(
+                              borderRadius: BorderRadius.zero,
+                              borderSide: BorderSide(color: AppColors.accentPrimary, width: 1),
+                            ),
+                          ),
+                        ),
+                        const Spacer(),
+                        ValueListenableBuilder<TextEditingValue>(
+                          valueListenable: _nameController,
+                          builder: (context, value, _) {
+                            final isValid = value.text.trim().isNotEmpty;
+                            return PrimaryButton(
+                              label: 'Get Started',
+                              onPressed: isValid && !_isLoading ? _submit : null,
+                              isLoading: _isLoading,
+                              icon: Icons.arrow_forward_rounded,
+                            );
+                          },
+                        ),
+                        const SizedBox(height: 16),
                       ],
                     ),
                   ),
                 ),
-                const Spacer(),
-                Text(
-                  'Welcome to GymLog',
-                  style: GoogleFonts.inter(
-                    // accentPrimary (#8A2BE2) is only ~3.2:1 on black — fails
-                    // AA. accentText (#B98CFF) is ~5.9:1 and on-brand.
-                    color: AppColors.accentText,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 0.2,
-                  ),
-                ),
-                const SizedBox(height: 10),
-                Text(
-                  'What should we\ncall you?',
-                  style: GoogleFonts.inter(
-                    color: AppColors.textPrimary,
-                    fontSize: 32,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: -0.5,
-                    height: 1.1,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'This is how you\'ll show up across GymLog — and it '
-                  'follows you to every device.',
-                  style: GoogleFonts.inter(
-                    color: AppColors.textSecondary,
-                    fontSize: 15,
-                    height: 1.4,
-                  ),
-                ),
-                const SizedBox(height: 32),
-                TextField(
-                  controller: _nameController,
-                  focusNode: _focusNode,
-                  maxLength: 40,
-                  cursorColor: AppColors.accentPrimary,
-                  style: GoogleFonts.inter(
-                    color: AppColors.textPrimary,
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                  ),
-                  textCapitalization: TextCapitalization.words,
-                  textInputAction: TextInputAction.done,
-                  onSubmitted: (_) => _submit(),
-                  decoration: InputDecoration(
-                    hintText: 'Your name',
-                    counterText: '',
-                    hintStyle: GoogleFonts.inter(
-                      color: AppColors.textSecondary,
-                      fontSize: 18,
-                    ),
-                  ),
-                ),
-                const Spacer(),
-                PrimaryButton(
-                  label: 'Get Started',
-                  // Enabled only on valid input; spinner while saving.
-                  onPressed: _isValid && !_isLoading ? _submit : null,
-                  isLoading: _isLoading,
-                  icon: Icons.arrow_forward_rounded,
-                ),
-                const SizedBox(height: 16),
               ],
             ),
           ),
