@@ -37,7 +37,7 @@ Future<void> showRoutineLimitUpsell(BuildContext context) {
     builder: (sheetCtx) => Container(
       decoration: const BoxDecoration(
         color: AppColors.bgSheet,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: AppRadius.sheetTop,
       ),
       child: SafeArea(
         top: false,
@@ -64,7 +64,7 @@ Future<void> showRoutineLimitUpsell(BuildContext context) {
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
                   color: AppColors.accentPrimary.withValues(alpha: 0.14),
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: AppRadius.badgeAll,
                 ),
                 child: const Icon(Icons.workspace_premium_rounded,
                     color: Color(0xFFA78BFA), size: 24),
@@ -103,8 +103,8 @@ Future<void> showRoutineLimitUpsell(BuildContext context) {
                     backgroundColor: AppColors.accentPrimary,
                     foregroundColor: Colors.white,
                     elevation: 0,
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14)),
+                    shape: const RoundedRectangleBorder(
+                        borderRadius: AppRadius.buttonPrimaryAll),
                   ),
                   child: Text(
                     'Unlock Unlimited Routines',
@@ -305,8 +305,8 @@ class _PaywallSheetState extends ConsumerState<_PaywallSheet> {
   Widget build(BuildContext context) {
     return Container(
       decoration: const BoxDecoration(
-        color: Color(0xFF121212),
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        color: AppColors.bgSheet,
+        borderRadius: AppRadius.sheetTop,
       ),
       child: SafeArea(
         top: false,
@@ -335,7 +335,7 @@ class _PaywallSheetState extends ConsumerState<_PaywallSheet> {
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
                   color: AppColors.accentPrimary.withValues(alpha: 0.14),
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: AppRadius.badgeAll,
                 ),
                 child: const Icon(Icons.workspace_premium_rounded,
                     color: Color(0xFFA78BFA), size: 24),
@@ -396,7 +396,7 @@ class _PaywallSheetState extends ConsumerState<_PaywallSheet> {
                   child: Padding(
                     padding: EdgeInsets.symmetric(vertical: 24),
                     child: CircularProgressIndicator(
-                        color: AppColors.accentPrimary, strokeWidth: 2),
+                        color: AppColors.textPrimary, strokeWidth: 2),
                   ),
                 )
               else if (_storeReady) ...[
@@ -435,8 +435,8 @@ class _PaywallSheetState extends ConsumerState<_PaywallSheet> {
                       backgroundColor: AppColors.accentPrimary,
                       foregroundColor: Colors.white,
                       elevation: 0,
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14)),
+                      shape: const RoundedRectangleBorder(
+                          borderRadius: AppRadius.buttonPrimaryAll),
                     ),
                     child: _purchasing
                         ? const SizedBox(
@@ -469,9 +469,9 @@ class _PaywallSheetState extends ConsumerState<_PaywallSheet> {
                 Container(
                   width: double.infinity,
                   padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
+                  decoration: const BoxDecoration(
                     color: AppColors.surfaceRaised,
-                    borderRadius: BorderRadius.circular(14),
+                    borderRadius: AppRadius.cardAll,
                   ),
                   child: Text(
                     'Pricing is unavailable right now. You are on the free '
@@ -564,11 +564,11 @@ class _PackageRow extends StatelessWidget {
             color: selected
                 ? AppColors.accentPrimary.withValues(alpha: 0.10)
                 : AppColors.surfaceRaised,
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: AppRadius.cardAll,
             border: Border.all(
               color: selected
-                  ? AppColors.accentPrimary.withValues(alpha: 0.55)
-                  : Colors.white.withValues(alpha: 0.06),
+                  ? AppColors.borderActive
+                  : AppColors.borderSubtle,
               width: 1,
             ),
           ),
@@ -607,7 +607,7 @@ class _PackageRow extends StatelessWidget {
                       fontSize: 9.5,
                       fontWeight: FontWeight.w700,
                       letterSpacing: 0.5,
-                      color: const Color(0xFFA78BFA),
+                      color: AppColors.indigo400,
                     ),
                   ),
                 ),

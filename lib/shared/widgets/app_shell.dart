@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../features/workout/presentation/providers/active_workout_provider.dart';
 import '../../core/services/workout_draft_store.dart';
 import '../../core/theme/app_colors.dart';
+import '../../core/theme/app_text.dart';
 import 'active_workout_bar.dart';
 import 'bottom_nav_bar.dart';
 
@@ -50,8 +51,8 @@ class _AppShellState extends ConsumerState<AppShell> {
       barrierDismissible: false, // force an explicit choice
       builder: (ctx) => AlertDialog(
         backgroundColor: AppColors.bgSheet,
-        shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        shape: const RoundedRectangleBorder(
+            borderRadius: AppRadius.cardAll),
         title: Text('Resume workout?',
             style: GoogleFonts.inter(
                 color: AppColors.textPrimary,

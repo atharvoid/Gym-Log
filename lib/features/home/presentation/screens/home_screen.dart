@@ -96,7 +96,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       body: RefreshIndicator(
         onRefresh: () =>
             ref.read(workoutHistoryProvider.notifier).refresh(),
-        color: AppColors.accentText,
+        color: AppColors.textPrimary,
         backgroundColor: AppColors.surface2,
         child: ListView.builder(
           key: const PageStorageKey('home_feed'),

@@ -155,8 +155,8 @@ class _CreateExerciseDialogState extends ConsumerState<_CreateExerciseDialog> {
   Widget build(BuildContext context) {
     return Dialog(
       backgroundColor: AppColors.surface2,
-      shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppRadius.sheet)),
+      shape: const RoundedRectangleBorder(
+          borderRadius: AppRadius.cardAll),
       insetPadding: const EdgeInsets.symmetric(horizontal: 28, vertical: 24),
       child: Padding(
         padding: const EdgeInsets.fromLTRB(22, 20, 22, 14),
@@ -256,7 +256,7 @@ class _CreateExerciseDialogState extends ConsumerState<_CreateExerciseDialog> {
                           width: 18,
                           height: 18,
                           child: CircularProgressIndicator(
-                              strokeWidth: 2, color: AppColors.accentPrimary),
+                              strokeWidth: 2, color: AppColors.textPrimary),
                         )
                       : Text('Create',
                           style: AppText.button(color: AppColors.accentText)),
