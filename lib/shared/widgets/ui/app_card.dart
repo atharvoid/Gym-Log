@@ -41,6 +41,7 @@ class AppCard extends StatelessWidget {
       return Container(
         padding: padding,
         decoration: decoration(radius: radius),
+        clipBehavior: Clip.antiAlias,
         child: child,
       );
     }

@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chest SVG Preview</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #0a090f;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+    .container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+    }
+    .svg-wrapper {
+      width: 320px;
+      height: 416px;
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 0 40px rgba(124, 58, 237, 0.15), 0 0 80px rgba(124, 58, 237, 0.05);
+    }
+    .svg-wrapper svg {
+      width: 100%;
+      height: 100%;
+    }
+    .label {
+      color: #a78bfa;
+      font-size: 14px;
+      letter-spacing: 2px;
+      opacity: 0.6;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="svg-wrapper">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 520" width="100%" height="100%">
+        <defs>
+          <!-- Background gradient -->
+          <radialGradient id="bgGrad" cx="50%" cy="40%" r="60%">
+            <stop offset="0%" stop-color="#1a1525"/>
+            <stop offset="100%" stop-color="#0d0b14"/>
+          </radialGradient>
+
+          <!-- Chest highlight gradient -->
+          <linearGradient id="chestGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stop-color="#a855f7"/>
+            <stop offset="40%" stop-color="#7c3aed"/>
+            <stop offset="100%" stop-color="#5b21b6"/>
+          </linearGradient>
+
+          <!-- Upper chest accent gradient -->
+          <linearGradient id="upperChestGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stop-color="#c084fc"/>
+            <stop offset="100%" stop-color="#7c3aed"/>
+          </linearGradient>
+
+          <!-- Glow filter for chest -->
+          <filter id="chestGlow" x="-20%" y="-20%" width="140%" height="140%">
+            <feGaussianBlur stdDeviation="4" result="blur"/>
+            <feMerge>
+              <feMergeNode in="blur"/>
+              <feMergeNode in="SourceGraphic"/>
+            </feMerge>
+          </filter>
+
+          <!-- Strong glow for highlight areas -->
+          <filter id="strongGlow" x="-30%" y="-30%" width="160%" height="160%">
+            <feGaussianBlur stdDeviation="6" result="blur"/>
+            <feMerge>
+              <feMergeNode in="blur"/>
+              <feMergeNode in="SourceGraphic"/>
+            </feMerge>
+          </filter>
+
+          <!-- Muscle fiber pattern -->
+          <pattern id="fiberPattern" width="8" height="4" patternUnits="userSpaceOnUse">
+            <line x1="0" y1="2" x2="8" y2="2" stroke="#9333ea" stroke-width="0.5" opacity="0.3"/>
+          </pattern>
+        </defs>
+
+        <!-- Background -->
+        <rect width="400" height="520" fill="url(#bgGrad)" rx="20"/>
+
+        <!-- Outer glow ring -->
+        <circle cx="200" cy="220" r="155" fill="none" stroke="#7c3aed" stroke-width="1" opacity="0.12"/>
+        <circle cx="200" cy="220" r="140" fill="none" stroke="#7c3aed" stroke-width="1" opacity="0.08"/>
+
+        <!-- ===== NECK ===== -->
+        <path d="M 175 85 Q 200 95 225 85 L 225 65 Q 200 75 175 65 Z" fill="#2d2438"/>
+        <path d="M 175 85 Q 200 95 225 85" fill="none" stroke="#3d3150" stroke-width="1.5"/>
+        <!-- Sternocleidomastoid lines -->
+        <path d="M 178 82 Q 185 70 182 58" fill="none" stroke="#3d3150" stroke-width="1.2" opacity="0.6"/>
+        <path d="M 222 82 Q 215 70 218 58" fill="none" stroke="#3d3150" stroke-width="1.2" opacity="0.6"/>
+
+        <!-- ===== TRAPEZIUS ===== -->
+        <path d="M 155 70 Q 200 55 245 70 L 255 95 Q 200 85 145 95 Z" fill="#252036"/>
+        <path d="M 155 70 Q 200 55 245 70" fill="none" stroke="#3d3150" stroke-width="1.5"/>
+        <!-- Trap fiber lines -->
+        <path d="M 170 68 Q 175 80 172 92" fill="none" stroke="#3d3150" stroke-width="1" opacity="0.4"/>
+        <path d="M 185 64 Q 190 78 187 90" fill="none" stroke="#3d3150" stroke-width="1" opacity="0.4"/>
+        <path d="M 200 62 Q 200 76 200 88" fill="none" stroke="#3d3150" stroke-width="1" opacity="0.4"/>
+        <path d="M 215 64 Q 210 78 213 90" fill="none" stroke="#3d3150" stroke-width="1" opacity="0.4"/>
+        <path d="M 230 68 Q 225 80 228 92" fill="none" stroke="#3d3150" stroke-width="1" opacity="0.4"/>
+
+        <!-- ===== DELTOIDS (Shoulders) ===== -->
+        <!-- Left Deltoid -->
+        <path d="M 145 95 Q 115 105 108 140 Q 112 170 135 175 Q 148 160 150 130 Q 152 110 145 95" fill="#252036"/>
+        <path d="M 145 95 Q 115 105 108 140 Q 112 170 135 175" fill="none" stroke="#3d3150" stroke-width="1.5"/>
+        <!-- Left deltoid fiber lines -->
+        <path d="M 140 100 Q 125 115 120 140" fill="none" stroke="#3d3150" stroke-width="1" opacity="0.35"/>
+        <path d="M 145 110 Q 130 125 126 150" fill="none" stroke="#3d3150" stroke-width="1" opacity="0.35"/>
+        <path d="M 148 125 Q 135 140 132 160" fill="none" stroke="#3d3150" stroke-width="1" opacity="0.35"/>
+
+        <!-- Right Deltoid -->
+        <path d="M 255 95 Q 285 105 292 140 Q 288 170 265 175 Q 252 160 250 130 Q 248 110 255 95" fill="#252036"/>
+        <path d="M 255 95 Q 285 105 292 140 Q 288 170 265 175" fill="none" stroke="#3d3150" stroke-width="1.5"/>
+        <!-- Right deltoid fiber lines -->
+        <path d="M 260 100 Q 275 115 280 140" fill="none" stroke="#3d3150" stroke-width="1" opacity="0.35"/>
+        <path d="M 255 110 Q 270 125 274 150" fill="none" stroke="#3d3150" stroke-width="1" opacity="0.35"/>
+        <path d="M 252 125 Q 265 140 268 160" fill="none" stroke="#3d3150" stroke-width="1" opacity="0.35"/>
+
+        <!-- ===== UPPER ARM MUSCLES (Biceps area) ===== -->
+        <!-- Left Upper Arm -->
+        <path d="M 135 175 Q 120 200 118 240 Q 125 265 140 260 Q 150 240 150 210 Q 148 185 135 175" fill="#252036"/>
+        <path d="M 135 175 Q 120 200 118 240 Q 125 265 140 260" fill="none" stroke="#3d3150" stroke-width="1.5"/>
+        <path d="M 145 180 Q 135 210 135 250" fill="none" stroke="#3d3150" stroke-width="1" opacity="0.35"/>
+
+        <!-- Right Upper Arm -->
+        <path d="M 265 175 Q 280 200 282 240 Q 275 265 260 260 Q 250 240 250 210 Q 252 185 265 175" fill="#252036"/>
+        <path d="M 265 175 Q 280 200 282 240 Q 275 265 260 260" fill="none" stroke="#3d3150" stroke-width="1.5"/>
+        <path d="M 255 180 Q 265 210 265 250" fill="none" stroke="#3d3150" stroke-width="1" opacity="0.35"/>
+
+        <!-- ===== ABDOMEN / OBLIQUES (muted) ===== -->
+        <!-- Left Oblique -->
+        <path d="M 152 215 Q 138 250 135 290 Q 145 315 165 310 Q 172 280 170 245 Q 168 225 160 215" fill="#1e1a2e"/>
+        <path d="M 152 215 Q 138 250 135 290 Q 145 315 165 310" fill="none" stroke="#2d2438" stroke-width="1.5"/>
+
+        <!-- Right Oblique -->
+        <path d="M 248 215 Q 262 250 265 290 Q 255 315 235 310 Q 228 280 230 245 Q 232 225 240 215" fill="#1e1a2e"/>
+        <path d="M 248 215 Q 262 250 265 290 Q 255 315 235 310" fill="none" stroke="#2d2438" stroke-width="1.5"/>
+
+        <!-- Abs rectus sheath outline -->
+        <path d="M 168 230 Q 165 270 168 305" fill="none" stroke="#2d2438" stroke-width="1.2" opacity="0.5"/>
+        <path d="M 232 230 Q 235 270 232 305" fill="none" stroke="#2d2438" stroke-width="1.2" opacity="0.5"/>
+
+        <!-- ======== PECTORALIS MAJOR (CHEST) - HERO ELEMENT ======== -->
+
+        <!-- Chest outer glow -->
+        <path d="M 152 100 
+                 C 130 105, 115 125, 118 155 
+                 C 120 175, 135 195, 155 200 
+                 C 175 205, 190 195, 198 185 
+                 L 200 183 
+                 L 202 185 
+                 C 210 195, 225 205, 245 200 
+                 C 265 195, 280 175, 282 155 
+                 C 285 125, 270 105, 248 100 
+                 C 230 96, 215 105, 200 118 
+                 C 185 105, 170 96, 152 100 Z" 
+              fill="#7c3aed" opacity="0.15" filter="url(#strongGlow)"/>
+
+        <!-- Left Pectoralis Major -->
+        <g filter="url(#chestGlow)">
+          <!-- Main left pec shape -->
+          <path d="M 152 100 
+                   C 130 105, 115 125, 118 155 
+                   C 120 175, 135 195, 155 200 
+                   C 175 205, 190 195, 198 185 
+                   L 200 170 
+                   L 200 140
+                   C 190 125, 180 110, 170 102 
+                   C 164 99, 158 99, 152 100 Z" 
+                fill="url(#chestGrad)"/>
+
+          <!-- Left pec upper clavicular head (accent) -->
+          <path d="M 152 100 
+                   C 145 102, 138 108, 132 118 
+                   C 138 122, 148 120, 158 115 
+                   C 168 110, 178 108, 170 102 
+                   C 164 99, 158 99, 152 100 Z" 
+                fill="url(#upperChestGrad)" opacity="0.9"/>
+        </g>
+
+        <!-- Right Pectoralis Major -->
+        <g filter="url(#chestGlow)">
+          <!-- Main right pec shape -->
+          <path d="M 248 100 
+                   C 270 105, 285 125, 282 155 
+                   C 280 175, 265 195, 245 200 
+                   C 225 205, 210 195, 202 185 
+                   L 200 170 
+                   L 200 140
+                   C 210 125, 220 110, 230 102 
+                   C 236 99, 242 99, 248 100 Z" 
+                fill="url(#chestGrad)"/>
+
+          <!-- Right pec upper clavicular head (accent) -->
+          <path d="M 248 100 
+                   C 255 102, 262 108, 268 118 
+                   C 262 122, 252 120, 242 115 
+                   C 232 110, 222 108, 230 102 
+                   C 236 99, 242 99, 248 100 Z" 
+                fill="url(#upperChestGrad)" opacity="0.9"/>
+        </g>
+
+        <!-- ===== CHEST MUSCLE FIBER LINES ===== -->
+        <!-- Left pec fibers -->
+        <path d="M 140 115 Q 150 130 165 140" fill="none" stroke="#a855f7" stroke-width="1.2" opacity="0.5"/>
+        <path d="M 132 130 Q 148 145 170 155" fill="none" stroke="#a855f7" stroke-width="1.2" opacity="0.5"/>
+        <path d="M 128 145 Q 148 160 175 168" fill="none" stroke="#a855f7" stroke-width="1.2" opacity="0.5"/>
+        <path d="M 126 160 Q 150 175 180 180" fill="none" stroke="#a855f7" stroke-width="1.2" opacity="0.45"/>
+        <path d="M 132 175 Q 155 188 185 190" fill="none" stroke="#a855f7" stroke-width="1.2" opacity="0.4"/>
+        <path d="M 145 188 Q 165 198 190 195" fill="none" stroke="#a855f7" stroke-width="1.2" opacity="0.35"/>
+
+        <!-- Right pec fibers -->
+        <path d="M 260 115 Q 250 130 235 140" fill="none" stroke="#a855f7" stroke-width="1.2" opacity="0.5"/>
+        <path d="M 268 130 Q 252 145 230 155" fill="none" stroke="#a855f7" stroke-width="1.2" opacity="0.5"/>
+        <path d="M 272 145 Q 252 160 225 168" fill="none" stroke="#a855f7" stroke-width="1.2" opacity="0.5"/>
+        <path d="M 274 160 Q 250 175 220 180" fill="none" stroke="#a855f7" stroke-width="1.2" opacity="0.45"/>
+        <path d="M 268 175 Q 245 188 215 190" fill="none" stroke="#a855f7" stroke-width="1.2" opacity="0.4"/>
+        <path d="M 255 188 Q 235 198 210 195" fill="none" stroke="#a855f7" stroke-width="1.2" opacity="0.35"/>
+
+        <!-- ===== SERRATUS ANTERIOR (accent, visible on sides) ===== -->
+        <!-- Left serratus -->
+        <path d="M 155 200 Q 148 210 145 225 Q 150 230 158 220 Q 162 210 160 200" fill="#5b21b6" opacity="0.6"/>
+        <path d="M 160 215 Q 155 230 152 245 Q 158 250 165 238 Q 168 225 165 215" fill="#5b21b6" opacity="0.5"/>
+
+        <!-- Right serratus -->
+        <path d="M 245 200 Q 252 210 255 225 Q 250 230 242 220 Q 238 210 240 200" fill="#5b21b6" opacity="0.6"/>
+        <path d="M 240 215 Q 245 230 248 245 Q 242 250 235 238 Q 232 225 235 215" fill="#5b21b6" opacity="0.5"/>
+
+        <!-- ===== STERNUM LINE (center separation) ===== -->
+        <line x1="200" y1="118" x2="200" y2="188" stroke="#4c1d95" stroke-width="2" opacity="0.7"/>
+        <line x1="200" y1="120" x2="200" y2="185" stroke="#7c3aed" stroke-width="0.8" opacity="0.5"/>
+
+        <!-- ===== COLLARBONE (Clavicle) ===== -->
+        <path d="M 145 92 Q 172 100 200 108 Q 228 100 255 92" fill="none" stroke="#3d3150" stroke-width="2" opacity="0.6"/>
+        <path d="M 148 94 Q 174 102 200 110 Q 226 102 252 94" fill="none" stroke="#4d4060" stroke-width="1" opacity="0.4"/>
+
+        <!-- ===== LABEL ===== -->
+        <text x="200" y="420" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="22" font-weight="700" fill="#e9d5ff" letter-spacing="3">CHEST</text>
+        <text x="200" y="445" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="11" font-weight="500" fill="#7c3aed" letter-spacing="5">PECTORALIS MAJOR</text>
+
+        <!-- Decorative line under label -->
+        <line x1="165" y1="460" x2="235" y2="460" stroke="#7c3aed" stroke-width="1.5" opacity="0.5" stroke-linecap="round"/>
+        <circle cx="200" cy="460" r="3" fill="#7c3aed" opacity="0.8"/>
+
+        <!-- ===== MUSCLE DOT INDICATORS (decorative) ===== -->
+        <circle cx="125" cy="340" r="2.5" fill="#7c3aed" opacity="0.3"/>
+        <circle cx="115" cy="355" r="2" fill="#7c3aed" opacity="0.2"/>
+        <circle cx="275" cy="340" r="2.5" fill="#7c3aed" opacity="0.3"/>
+        <circle cx="285" cy="355" r="2" fill="#7c3aed" opacity="0.2"/>
+      </svg>
+    </div>
+    <span class="label">CHEST MUSCLE GROUP</span>
+  </div>
+</body>
+</html>

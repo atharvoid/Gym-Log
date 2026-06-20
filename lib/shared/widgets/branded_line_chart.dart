@@ -1,6 +1,7 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:gymlog/core/theme/app_colors.dart';
 import 'package:gymlog/features/routines/presentation/widgets/routine_detail_styles.dart';
@@ -36,6 +37,13 @@ class BrandedLineChart extends StatefulWidget {
   final String emptyTitle;
   final String emptySubtitle;
   final double height;
+  final String? emptyActionLabel;
+  final VoidCallback? onEmptyAction;
+
+  /// Optional unit suffix for Y-axis labels (e.g. "kg", "min", "reps").
+  /// The value formatter still owns the full header value; this only affects
+  /// the compact axis ticks so the chart reads as a standard labelled plot.
+  final String? yAxisUnit;
 
   BrandedLineChart({
     super.key,
@@ -45,6 +53,9 @@ class BrandedLineChart extends StatefulWidget {
     String Function(DateTime date)? dateFormatter,
     this.emptyTitle = 'No data yet',
     this.emptySubtitle = 'Finish a workout to see your trend',
+    this.emptyActionLabel,
+    this.onEmptyAction,
+    this.yAxisUnit,
     this.height = 180,
   })  : axisFormatter = axisFormatter ?? defaultAxisFormat,
         dateFormatter = dateFormatter ?? ((d) => DateFormat('MMM d').format(d));
@@ -83,6 +94,13 @@ class _BrandedLineChartState extends State<BrandedLineChart> {
                     ? 500.0
                     : 1000.0;
     return (raw / magnitude).ceil() * magnitude;
+  }
+
+  String _axisLabel(double v) {
+    final unit = widget.yAxisUnit;
+    final value = widget.axisFormatter(v);
+    if (unit == null || unit.isEmpty) return value;
+    return '$value $unit';
   }
 
   @override
@@ -169,17 +187,33 @@ class _BrandedLineChartState extends State<BrandedLineChart> {
                 clipData: const FlClipData.none(),
                 gridData: FlGridData(
                   show: true,
-                  drawVerticalLine: false,
+                  drawVerticalLine: true,
+                  verticalInterval: 1,
                   horizontalInterval: interval,
                   getDrawingHorizontalLine: (v) =>
+                      FlLine(color: RDStyles.hairline, strokeWidth: 1),
+                  getDrawingVerticalLine: (v) =>
                       FlLine(color: RDStyles.hairline, strokeWidth: 1),
                 ),
                 borderData: FlBorderData(show: false),
                 titlesData: FlTitlesData(
                   topTitles: const AxisTitles(
                       sideTitles: SideTitles(showTitles: false)),
-                  rightTitles: const AxisTitles(
-                      sideTitles: SideTitles(showTitles: false)),
+                  rightTitles: AxisTitles(
+                    sideTitles: SideTitles(
+                      showTitles: true,
+                      reservedSize: 40,
+                      interval: interval,
+                      getTitlesWidget: (v, m) => (v <= 0 || v > maxY)
+                          ? const SizedBox.shrink()
+                          : SideTitleWidget(
+                              axisSide: m.axisSide,
+                              space: 8,
+                              child: Text(_axisLabel(v),
+                                  style: RDStyles.axis),
+                            ),
+                    ),
+                  ),
                   leftTitles: AxisTitles(
                     sideTitles: SideTitles(
                       showTitles: true,
@@ -190,7 +224,7 @@ class _BrandedLineChartState extends State<BrandedLineChart> {
                           : SideTitleWidget(
                               axisSide: m.axisSide,
                               space: 8,
-                              child: Text(widget.axisFormatter(v),
+                              child: Text(_axisLabel(v),
                                   style: RDStyles.axis),
                             ),
                     ),
@@ -418,6 +452,20 @@ class _BrandedLineChartState extends State<BrandedLineChart> {
             Text(widget.emptyTitle, style: RDStyles.emptyTitle),
             const SizedBox(height: 3),
             Text(widget.emptySubtitle, style: RDStyles.emptySub),
+            if (widget.onEmptyAction != null && widget.emptyActionLabel != null) ...[
+              const SizedBox(height: 14),
+              TextButton(
+                onPressed: widget.onEmptyAction,
+                child: Text(
+                  widget.emptyActionLabel!,
+                  style: GoogleFonts.inter(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.accentText,
+                  ),
+                ),
+              ),
+            ],
           ],
         ),
       );

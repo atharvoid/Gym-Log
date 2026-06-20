@@ -22,6 +22,22 @@ abstract class AppText {
   static TextStyle sectionHeading({Color color = AppColors.textPrimary}) =>
       GoogleFonts.inter(fontSize: 20, fontWeight: FontWeight.w700, color: color);
 
+  /// Sheet title (bottom-sheet headings): 18 / 700.
+  static TextStyle sheetTitle({Color color = AppColors.textPrimary}) =>
+      GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.w700, color: color);
+
+  /// Profile display name: 19 / 700.
+  static TextStyle profileName({Color color = AppColors.textPrimary}) =>
+      GoogleFonts.inter(
+          fontSize: 19,
+          fontWeight: FontWeight.w700,
+          color: color,
+          letterSpacing: -0.3);
+
+  /// Profile email / secondary identity: 13 / 400.
+  static TextStyle profileEmail({Color color = AppColors.textSecondary}) =>
+      GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w400, color: color);
+
   /// Stat number (duration, volume, sets): 28 / 700, tabular.
   static TextStyle statNumber({Color color = AppColors.textPrimary}) =>
       GoogleFonts.inter(
@@ -88,6 +104,22 @@ abstract class AppText {
   static TextStyle cardTitle({Color color = AppColors.textPrimary}) =>
       GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w700, color: color);
 
+  /// Group header (SETTINGS, ACCOUNT): 11 / 600, +0.8 tracking, textSecondary.
+  static TextStyle groupHeader({Color color = AppColors.textSecondary}) =>
+      GoogleFonts.inter(
+          fontSize: 11,
+          fontWeight: FontWeight.w600,
+          letterSpacing: 0.8,
+          color: color);
+
+  /// Stat cell value (stats strip): 17 / 700, tabular.
+  static TextStyle statValue({Color color = AppColors.textPrimary}) =>
+      GoogleFonts.inter(
+          fontSize: 17,
+          fontWeight: FontWeight.w700,
+          color: color,
+          fontFeatures: kTabular);
+
   /// List-row label (exercise name inside a feed card): 14 / 600.
   static TextStyle rowLabel({Color color = AppColors.textPrimary}) =>
       GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600, color: color);
@@ -99,6 +131,14 @@ abstract class AppText {
           fontWeight: FontWeight.w600,
           color: color,
           fontFeatures: kTabular);
+
+  /// Stat cell label (DAY STREAK, THIS WEEK): 10 / 600, +0.7 tracking.
+  static TextStyle statCellLabel({Color color = AppColors.textSecondary}) =>
+      GoogleFonts.inter(
+          fontSize: 10,
+          fontWeight: FontWeight.w600,
+          letterSpacing: 0.7,
+          color: color);
 
   /// Secondary meta (counts like "3 sets"): 13 / 400.
   static TextStyle meta({Color color = AppColors.textSecondary}) =>

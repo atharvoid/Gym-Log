@@ -1,0 +1,106 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 520" width="100%" height="100%">
+  <defs>
+    <radialGradient id="bgL" cx="50%" cy="40%" r="60%">
+      <stop offset="0%" stop-color="#171528"/>
+      <stop offset="100%" stop-color="#0f0d1a"/>
+    </radialGradient>
+    <filter id="softGlowL" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="14" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <rect width="400" height="520" fill="url(#bgL)" rx="20"/>
+  <circle cx="200" cy="250" r="130" fill="none" stroke="#7c3aed" stroke-width="0.8" opacity="0.08"/>
+
+  <!-- ===== BODY BASE (hips down) ===== -->
+  <!-- Hip / Waist base -->
+  <path d="M 155 115 Q 200 108 245 115 L 250 145 Q 200 138 150 145 Z" fill="#4a4660" stroke="#2d2a42" stroke-width="2.5" stroke-linejoin="round"/>
+  <!-- Waist line -->
+  <path d="M 155 128 Q 200 122 245 128" fill="none" stroke="#3a3650" stroke-width="1.5"/>
+
+  <!-- Lower abs area -->
+  <path d="M 165 110 Q 200 104 235 110 L 238 120 Q 200 114 162 120 Z" fill="#3e3a54" stroke="#2d2a42" stroke-width="2" stroke-linejoin="round"/>
+
+  <!-- Left Hip flexor / Sartorius area (base) -->
+  <path d="M 150 140 Q 138 165 135 195 Q 140 215 152 210 Q 160 190 162 165 Q 162 148 158 138 Z" fill="#4a4660" stroke="#2d2a42" stroke-width="2.5" stroke-linejoin="round"/>
+  <path d="M 148 155 Q 142 175 140 198" fill="none" stroke="#3a3650" stroke-width="1.5"/>
+
+  <!-- Right Hip flexor -->
+  <path d="M 250 140 Q 262 165 265 195 Q 260 215 248 210 Q 240 190 238 165 Q 238 148 242 138 Z" fill="#4a4660" stroke="#2d2a42" stroke-width="2.5" stroke-linejoin="round"/>
+  <path d="M 252 155 Q 258 175 260 198" fill="none" stroke="#3a3650" stroke-width="1.5"/>
+
+  <!-- Left Adductor (inner thigh base) -->
+  <path d="M 152 210 Q 168 230 172 270 Q 170 310 160 330 Q 150 320 148 290 Q 146 250 148 220 Z" fill="#3e3a54" stroke="#2d2a42" stroke-width="2" stroke-linejoin="round"/>
+
+  <!-- Right Adductor -->
+  <path d="M 248 210 Q 232 230 228 270 Q 230 310 240 330 Q 250 320 252 290 Q 254 250 252 220 Z" fill="#3e3a54" stroke="#2d2a42" stroke-width="2" stroke-linejoin="round"/>
+
+  <!-- Left Knee base -->
+  <path d="M 148 325 Q 142 345 138 365 Q 148 378 158 372 Q 164 355 162 335 Q 156 328 148 325 Z" fill="#4a4660" stroke="#2d2a42" stroke-width="2.5" stroke-linejoin="round"/>
+
+  <!-- Right Knee base -->
+  <path d="M 252 325 Q 258 345 262 365 Q 252 378 242 372 Q 236 355 238 335 Q 244 328 252 325 Z" fill="#4a4660" stroke="#2d2a42" stroke-width="2.5" stroke-linejoin="round"/>
+
+  <!-- Left Shin / Calf base -->
+  <path d="M 140 370 Q 132 400 128 435 Q 135 450 148 445 Q 156 425 158 395 Q 156 378 148 370 Z" fill="#4a4660" stroke="#2d2a42" stroke-width="2.5" stroke-linejoin="round"/>
+  <path d="M 136 388 Q 132 412 132 438" fill="none" stroke="#3a3650" stroke-width="1.5"/>
+
+  <!-- Right Shin / Calf base -->
+  <path d="M 260 370 Q 268 400 272 435 Q 265 450 252 445 Q 244 425 242 395 Q 244 378 252 370 Z" fill="#4a4660" stroke="#2d2a42" stroke-width="2.5" stroke-linejoin="round"/>
+  <path d="M 264 388 Q 268 412 268 438" fill="none" stroke="#3a3650" stroke-width="1.5"/>
+
+  <!-- Left Ankle/Foot base -->
+  <path d="M 128 440 Q 120 458 116 470 Q 125 478 140 472 Q 146 460 146 445 Z" fill="#4a4660" stroke="#2d2a42" stroke-width="2.5" stroke-linejoin="round"/>
+
+  <!-- Right Ankle/Foot base -->
+  <path d="M 272 440 Q 280 458 284 470 Q 275 478 260 472 Q 254 460 254 445 Z" fill="#4a4660" stroke="#2d2a42" stroke-width="2.5" stroke-linejoin="round"/>
+
+  <!-- ===== QUADRICEPS - HERO MUSCLES ===== -->
+  <!-- Glow -->
+  <path d="M 152 140 Q 128 170 122 220 Q 118 270 126 310 Q 134 332 148 328 Q 162 318 166 280 Q 170 230 164 180 Q 160 152 152 140 Z" fill="#7c3aed" opacity="0.2" filter="url(#softGlowL)"/>
+  <path d="M 248 140 Q 272 170 278 220 Q 282 270 274 310 Q 266 332 252 328 Q 238 318 234 280 Q 230 230 236 180 Q 240 152 248 140 Z" fill="#7c3aed" opacity="0.2" filter="url(#softGlowL)"/>
+
+  <!-- Left Quadricep (rectus femoris + vastus) -->
+  <path d="M 152 140 Q 128 170 122 220 Q 118 270 126 310 Q 134 332 148 328 Q 160 320 164 286 Q 168 248 166 208 Q 164 172 158 148 Q 156 142 152 140 Z" fill="#8b5cf6" stroke="#a78bfa" stroke-width="2" stroke-linejoin="round"/>
+
+  <!-- Left quad muscle separation lines -->
+  <path d="M 136 165 Q 128 192 126 230" fill="none" stroke="#7c3aed" stroke-width="1.5" opacity="0.7"/>
+  <path d="M 142 185 Q 134 215 132 255" fill="none" stroke="#7c3aed" stroke-width="1.5" opacity="0.7"/>
+  <path d="M 148 205 Q 140 238 138 278" fill="none" stroke="#7c3aed" stroke-width="1.5" opacity="0.7"/>
+  <path d="M 154 225 Q 148 260 146 300" fill="none" stroke="#7c3aed" stroke-width="1.5" opacity="0.6"/>
+
+  <!-- Left quad inner head accent -->
+  <path d="M 152 142 Q 138 158 132 182 Q 140 188 150 178 Q 158 164 158 148 Q 156 144 152 142 Z" fill="#a78bfa" stroke="#c4b5fd" stroke-width="1" stroke-linejoin="round"/>
+
+  <!-- Left quad sweep highlight -->
+  <path d="M 128 200 Q 124 240 128 280 Q 130 300 136 316 Q 140 310 140 290 Q 140 250 136 210 Q 134 200 128 200 Z" fill="#a78bfa" opacity="0.5" stroke-linejoin="round"/>
+
+  <!-- Right Quadricep -->
+  <path d="M 248 140 Q 272 170 278 220 Q 282 270 274 310 Q 266 332 252 328 Q 240 320 236 286 Q 232 248 234 208 Q 236 172 242 148 Q 244 142 248 140 Z" fill="#8b5cf6" stroke="#a78bfa" stroke-width="2" stroke-linejoin="round"/>
+
+  <!-- Right quad muscle separation lines -->
+  <path d="M 264 165 Q 272 192 274 230" fill="none" stroke="#7c3aed" stroke-width="1.5" opacity="0.7"/>
+  <path d="M 258 185 Q 266 215 268 255" fill="none" stroke="#7c3aed" stroke-width="1.5" opacity="0.7"/>
+  <path d="M 252 205 Q 260 238 262 278" fill="none" stroke="#7c3aed" stroke-width="1.5" opacity="0.7"/>
+  <path d="M 246 225 Q 252 260 254 300" fill="none" stroke="#7c3aed" stroke-width="1.5" opacity="0.6"/>
+
+  <!-- Right quad inner head accent -->
+  <path d="M 248 142 Q 262 158 268 182 Q 260 188 250 178 Q 242 164 242 148 Q 244 144 248 142 Z" fill="#a78bfa" stroke="#c4b5fd" stroke-width="1" stroke-linejoin="round"/>
+
+  <!-- Right quad sweep highlight -->
+  <path d="M 272 200 Q 276 240 272 280 Q 270 300 264 316 Q 260 310 260 290 Q 260 250 264 210 Q 266 200 272 200 Z" fill="#a78bfa" opacity="0.5" stroke-linejoin="round"/>
+
+  <!-- Teardrop (vastus medialis) hints -->
+  <path d="M 148 310 Q 152 322 158 326 Q 160 316 156 306 Q 152 308 148 310" fill="#6d28d9" stroke="#8b5cf6" stroke-width="1"/>
+  <path d="M 252 310 Q 248 322 242 326 Q 240 316 244 306 Q 248 308 252 310" fill="#6d28d9" stroke="#8b5cf6" stroke-width="1"/>
+
+  <!-- ===== LABEL ===== -->
+  <text x="200" y="415" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="24" font-weight="800" fill="#e9d5ff" letter-spacing="4">LEGS</text>
+  <text x="200" y="442" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="11" font-weight="600" fill="#8b5cf6" letter-spacing="4">QUADRICEPS</text>
+  <line x1="170" y1="458" x2="230" y2="458" stroke="#7c3aed" stroke-width="2" opacity="0.5" stroke-linecap="round"/>
+  <circle cx="200" cy="458" r="3" fill="#8b5cf6"/>
+</svg>

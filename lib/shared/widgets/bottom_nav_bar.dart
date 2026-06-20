@@ -14,6 +14,9 @@ class BottomNavBar extends StatelessWidget {
   final int currentIndex;
   final ValueChanged<int> onTap;
 
+  /// Height of the navigation bar excluding the system safe-area inset.
+  static const height = 72.0;
+
   const BottomNavBar({
     super.key,
     required this.currentIndex,

@@ -7,6 +7,7 @@ import 'package:purchases_flutter/purchases_flutter.dart'
 
 import '../../core/providers/premium_provider.dart';
 import '../../core/theme/app_colors.dart';
+import '../../core/theme/app_text.dart';
 
 /// Opens the Premium paywall as a modal bottom sheet.
 /// Safe to call when RevenueCat is unconfigured — it renders a graceful
@@ -146,29 +147,25 @@ class ProLockPill extends StatelessWidget {
     return Semantics(
       button: true,
       label: 'Premium feature. Double tap to learn more.',
-      child: GestureDetector(
-        onTap: () => showPremiumPaywall(context),
-        behavior: HitTestBehavior.opaque,
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
-          decoration: BoxDecoration(
-            color: AppColors.accentPrimary.withValues(alpha: 0.14),
-            borderRadius: BorderRadius.circular(999),
-            border: Border.all(
-              color: AppColors.accentPrimary.withValues(alpha: 0.30),
-              width: 1,
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(AppRadius.badge),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: () => showPremiumPaywall(context),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+            decoration: BoxDecoration(
+              color: AppColors.indigoTint,
+              borderRadius: BorderRadius.circular(AppRadius.badge),
+              border: Border.all(
+                color: AppColors.indigoTrack,
+                width: 1,
+              ),
             ),
-          ),
-          // No padlock — it communicates "you can't have this" while the user
-          // looks at their own data. Just the label; tap opens the paywall.
-          child: Text(
-            label,
-            style: GoogleFonts.inter(
-              fontSize: 10,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 0.6,
-              color: AppColors.indigo400,
-            ),
+            // No padlock — it communicates "you can't have this" while the user
+            // looks at their own data. Just the label; tap opens the paywall.
+            child: Text(label, style: AppText.badge(color: AppColors.indigo400)),
           ),
         ),
       ),

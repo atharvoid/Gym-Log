@@ -3,11 +3,12 @@ import 'dart:ui' show ImageFilter;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:gymlog/core/providers/premium_provider.dart';
 import 'package:gymlog/core/theme/app_colors.dart';
+import 'package:gymlog/core/theme/app_text.dart';
 import 'package:gymlog/features/routines/presentation/widgets/routine_detail_styles.dart';
 import 'package:gymlog/shared/widgets/premium_paywall.dart';
+import 'package:gymlog/shared/widgets/ui/branded_bottom_sheet.dart';
 
 const kTimeRangeOptions = ['1M', '3M', '6M', '1Y', 'All Time'];
 
@@ -50,7 +51,7 @@ class TimeRangeFilter extends ConsumerWidget {
               const Icon(
                 Icons.keyboard_arrow_down_rounded,
                 size: 16,
-                color: Color(0xFF9CA3AF),
+                color: AppColors.textTertiary,
               ),
             ],
           ),
@@ -86,7 +87,7 @@ class TimeRangeFilter extends ConsumerWidget {
                       width: 36,
                       height: 4,
                       decoration: BoxDecoration(
-                        color: AppColors.textSecondary.withValues(alpha: 0.2),
+                        color: AppColors.borderDefault,
                         borderRadius: BorderRadius.circular(6),
                       ),
                     ),
@@ -94,11 +95,7 @@ class TimeRangeFilter extends ConsumerWidget {
                   const SizedBox(height: 16),
                   Text(
                     'Time Range',
-                    style: GoogleFonts.inter(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.textPrimary,
-                    ),
+                    style: AppText.sheetTitle(),
                   ),
                   const SizedBox(height: 16),
                   ...kTimeRangeOptions.map((range) {
@@ -114,63 +111,55 @@ class TimeRangeFilter extends ConsumerWidget {
                               ? '$range, selected'
                               : range,
                       child: InkWell(
-                      onTap: () {
-                        Navigator.of(sheetCtx).pop();
-                        if (isLocked) {
-                          showPremiumPaywall(context);
-                          return;
-                        }
-                        HapticFeedback.lightImpact();
-                        onChanged(range);
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        decoration: BoxDecoration(
-                          border: Border(
-                            bottom: BorderSide(
-                              color: AppColors.textSecondary
-                                  .withValues(alpha: 0.08),
-                              width: 1,
+                        onTap: () {
+                          Navigator.of(sheetCtx).pop();
+                          if (isLocked) {
+                            showPremiumPaywall(context);
+                            return;
+                          }
+                          HapticFeedback.lightImpact();
+                          onChanged(range);
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          decoration: const BoxDecoration(
+                            border: Border(
+                              bottom: BorderSide(
+                                color: AppColors.borderSubtle,
+                                width: 1,
+                              ),
                             ),
                           ),
-                        ),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: Text(
-                                range,
-                                // A locked row must never read as "active" —
-                                // showing the accent color AND a lock on the
-                                // same row is a contradictory affordance.
-                                style: GoogleFonts.inter(
-                                  fontSize: 15,
-                                  fontWeight: isSelected && !isLocked
-                                      ? FontWeight.w600
-                                      : FontWeight.w400,
-                                  color: isLocked
-                                      ? AppColors.textSecondary
-                                      : isSelected
-                                          ? AppColors.accentPrimary
-                                          : AppColors.textPrimary,
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  range,
+                                  style: AppText.rowLabel(
+                                    color: isLocked
+                                        ? AppColors.textSecondary
+                                        : isSelected
+                                            ? AppColors.accentPrimary
+                                            : AppColors.textPrimary,
+                                  ),
                                 ),
                               ),
-                            ),
-                            if (isLocked)
-                              const Icon(
-                                Icons.lock_rounded,
-                                size: 14,
-                                color: Color(0xFFA78BFA),
-                              )
-                            else if (isSelected)
-                              const Icon(
-                                Icons.check_rounded,
-                                size: 18,
-                                color: AppColors.accentPrimary,
-                              ),
-                          ],
+                              if (isLocked)
+                                const Icon(
+                                  Icons.lock_rounded,
+                                  size: 14,
+                                  color: AppColors.indigo400,
+                                )
+                              else if (isSelected)
+                                const Icon(
+                                  Icons.check_rounded,
+                                  size: 18,
+                                  color: AppColors.accentPrimary,
+                                ),
+                            ],
+                          ),
                         ),
                       ),
-                    ),
                     );
                   }),
                 ],
@@ -192,115 +181,64 @@ Future<T?> showBrandedPickerSheet<T>({
   T? selected,
 }) {
   HapticFeedback.lightImpact();
-  return showModalBottomSheet<T>(
-    context: context,
-    useRootNavigator: true,
-    useSafeArea: true,
-    backgroundColor: Colors.transparent,
-    builder: (sheetCtx) => Container(
-      decoration: const BoxDecoration(
-        color: Color(0xFF121212),
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      child: SafeArea(
-        top: false,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 36,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: const Color(0xFF6A6A6A),
-                  borderRadius: BorderRadius.circular(6),
+
+  Widget optionRow(PickerOption<T> opt) {
+    final isSelected = selected != null && opt.value == selected;
+    return Semantics(
+      button: true,
+      selected: isSelected,
+      label: opt.label,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(AppRadius.buttonSecondary),
+          onTap: () {
+            HapticFeedback.selectionClick();
+            Navigator.of(context, rootNavigator: true).pop(opt.value);
+          },
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 13),
+            child: Row(
+              children: [
+                Container(
+                  width: 36,
+                  height: 36,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: opt.color.withValues(alpha: 0.14),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(opt.icon, size: 18, color: opt.color),
                 ),
-              ),
-              const SizedBox(height: 18),
-              Text(
-                title,
-                style: GoogleFonts.inter(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.textPrimary,
-                ),
-              ),
-              const SizedBox(height: 12),
-              // Flexible + scroll so long option lists (e.g. 7 rest
-              // durations) never overflow on short screens.
-              Flexible(
-                child: SingleChildScrollView(
+                const SizedBox(width: 14),
+                Expanded(
                   child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: options.map((opt) {
-                      final isSelected =
-                          selected != null && opt.value == selected;
-                      return Material(
-                        color: Colors.transparent,
-                        child: InkWell(
-                          borderRadius: BorderRadius.circular(12),
-                          onTap: () {
-                            HapticFeedback.selectionClick();
-                            Navigator.of(sheetCtx).pop(opt.value);
-                          },
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 4, vertical: 13),
-                            child: Row(
-                              children: [
-                                Container(
-                                  width: 36,
-                                  height: 36,
-                                  alignment: Alignment.center,
-                                  decoration: BoxDecoration(
-                                    color: opt.color.withValues(alpha: 0.14),
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                  child: Icon(opt.icon,
-                                      size: 18, color: opt.color),
-                                ),
-                                const SizedBox(width: 14),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        opt.label,
-                                        style: GoogleFonts.inter(
-                                          fontSize: 15,
-                                          fontWeight: FontWeight.w600,
-                                          color: AppColors.textPrimary,
-                                        ),
-                                      ),
-                                      if (opt.subtitle != null)
-                                        Text(
-                                          opt.subtitle!,
-                                          style: GoogleFonts.inter(
-                                            fontSize: 12,
-                                            color: AppColors.textSecondary,
-                                          ),
-                                        ),
-                                    ],
-                                  ),
-                                ),
-                                if (isSelected)
-                                  const Icon(Icons.check_rounded,
-                                      size: 18, color: AppColors.accentPrimary),
-                              ],
-                            ),
-                          ),
-                        ),
-                      );
-                    }).toList(),
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(opt.label, style: AppText.rowLabel()),
+                      if (opt.subtitle != null)
+                        Text(opt.subtitle!, style: AppText.caption()),
+                    ],
                   ),
                 ),
-              ),
-            ],
+                if (isSelected)
+                  const Icon(Icons.check_rounded,
+                      size: 18, color: AppColors.accentPrimary),
+              ],
+            ),
           ),
         ),
       ),
+    );
+  }
+
+  return showBrandedBottomSheet<T>(
+    context: context,
+    title: title,
+    scrollable: true,
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      children: options.map(optionRow).toList(),
     ),
   );
 }
