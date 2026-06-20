@@ -250,7 +250,7 @@ class _RoutineCardSkeleton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(15),
-      decoration: AppCard.decoration(),
+      decoration: AppCard.decoration(radius: 6.0),
       child: const Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -294,6 +294,7 @@ class _EmptyRoutines extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AppCard(
+      radius: 6.0,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

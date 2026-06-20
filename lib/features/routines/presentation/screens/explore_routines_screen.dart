@@ -229,7 +229,7 @@ class _ExploreRoutinesScreenState extends ConsumerState<ExploreRoutinesScreen>
         behavior: SnackBarBehavior.floating,
         action: SnackBarAction(
           label: 'View',
-          textColor: AppColors.accentText,
+          textColor: AppColors.textPrimary,
           onPressed: () => context.push('/routines/$id'),
         ),
       ));
@@ -452,7 +452,7 @@ class _HeroGlow extends StatelessWidget {
         gradient: RadialGradient(
           center: Alignment(-0.35, -0.85),
           radius: 1.15,
-          colors: [Color(0x3D7C3AED), Color(0x00000000)],
+          colors: [Color(0x12FFFFFF), Color(0x00000000)],
           stops: [0.0, 0.72],
         ),
       ),
@@ -476,7 +476,7 @@ class _CredChip extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 13, color: AppColors.accentText),
+          Icon(icon, size: 13, color: AppColors.textSecondary),
           const SizedBox(width: 6),
           Text(label, style: AppText.statLabel(color: AppColors.textSecondary)),
         ],
@@ -648,27 +648,19 @@ class _FeaturedCard extends StatelessWidget {
       hint: 'Opens program preview',
       onTap: onPreview,
       child: DecoratedBox(
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           borderRadius: AppRadius.cardAll,
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.accentPrimary.withValues(alpha: 0.22),
-              blurRadius: 26,
-              spreadRadius: -8,
-              offset: const Offset(0, 10),
-            ),
-          ],
         ),
         child: Container(
           decoration: BoxDecoration(
             gradient: const LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [Color(0xFF1C1233), Color(0xFF0B0B0D)],
+              colors: [Color(0xFF141414), Color(0xFF0B0B0D)],
             ),
             borderRadius: AppRadius.cardAll,
             border: Border.all(
-                color: AppColors.accentPrimary.withValues(alpha: 0.45)),
+                color: AppColors.borderSubtle),
           ),
           clipBehavior: Clip.antiAlias,
           child: Material(
@@ -688,11 +680,11 @@ class _FeaturedCard extends StatelessWidget {
                           Row(
                             children: [
                               const Icon(Icons.auto_awesome_rounded,
-                                  size: 13, color: AppColors.accentText),
+                                  size: 13, color: AppColors.textSecondary),
                               const SizedBox(width: 6),
                               Text('FEATURED',
                                   style: AppText.columnHeader(
-                                      color: AppColors.accentText)),
+                                      color: AppColors.textSecondary)),
                             ],
                           ),
                           const SizedBox(height: 14),
@@ -705,8 +697,7 @@ class _FeaturedCard extends StatelessWidget {
                                 alignment: Alignment.center,
                                 decoration: BoxDecoration(
                                   color: glyphColor.withValues(alpha: 0.16),
-                                  borderRadius: BorderRadius.circular(
-                                      AppRadius.thumbnail),
+                                  borderRadius: BorderRadius.zero,
                                 ),
                                 child: MuscleGlyph(
                                     muscle: muscle,
@@ -842,8 +833,7 @@ class _TemplateCard extends StatelessWidget {
                               alignment: Alignment.center,
                               decoration: BoxDecoration(
                                 color: glyphColor.withValues(alpha: 0.15),
-                                borderRadius: BorderRadius.circular(
-                                    AppRadius.thumbnail),
+                                borderRadius: BorderRadius.zero,
                               ),
                               child: MuscleGlyph(
                                   muscle: muscle, size: 26, color: glyphColor),
@@ -1116,8 +1106,7 @@ class _PreviewSheet extends StatelessWidget {
                         alignment: Alignment.center,
                         decoration: BoxDecoration(
                           color: glyphColor.withValues(alpha: 0.15),
-                          borderRadius:
-                              BorderRadius.circular(AppRadius.thumbnail),
+                          borderRadius: BorderRadius.zero,
                         ),
                         child: MuscleGlyph(
                             muscle: muscle, size: 28, color: glyphColor),

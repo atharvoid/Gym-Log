@@ -263,26 +263,41 @@ class _RoutineEditorScreenState extends ConsumerState<RoutineEditorScreen> {
                   // ── Routine name ──────────────────────────────────────
                   Padding(
                     padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
-                    child: TextField(
-                      controller: _nameController,
-                      maxLength: 50,
-                      textCapitalization: TextCapitalization.words,
-                      cursorColor: AppColors.accentPrimary,
-                      style: GoogleFonts.inter(
-                        color: AppColors.textPrimary,
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                      ),
-                      decoration: InputDecoration(
-                        hintText: 'Routine name',
-                        counterText: '',
-                        hintStyle: GoogleFonts.inter(
-                          color: AppColors.textSecondary,
+                    child: Semantics(
+                      label: 'Routine name',
+                      child: TextField(
+                        controller: _nameController,
+                        maxLength: 50,
+                        textCapitalization: TextCapitalization.words,
+                        cursorColor: AppColors.accentPrimary,
+                        style: GoogleFonts.inter(
+                          color: AppColors.textPrimary,
                           fontSize: 18,
-                          fontWeight: FontWeight.w500,
+                          fontWeight: FontWeight.w600,
                         ),
-                        filled: true,
-                        fillColor: AppColors.surfaceRaised,
+                        decoration: InputDecoration(
+                          hintText: 'Routine name',
+                          counterText: '',
+                          hintStyle: GoogleFonts.inter(
+                            color: AppColors.textSecondary,
+                            fontSize: 18,
+                            fontWeight: FontWeight.w500,
+                          ),
+                          filled: true,
+                          fillColor: AppColors.surfaceRaised,
+                          border: const OutlineInputBorder(
+                            borderRadius: BorderRadius.zero,
+                            borderSide: BorderSide(color: AppColors.borderSubtle),
+                          ),
+                          enabledBorder: const OutlineInputBorder(
+                            borderRadius: BorderRadius.zero,
+                            borderSide: BorderSide(color: AppColors.borderSubtle),
+                          ),
+                          focusedBorder: const OutlineInputBorder(
+                            borderRadius: BorderRadius.zero,
+                            borderSide: BorderSide(color: AppColors.borderDefault),
+                          ),
+                        ),
                       ),
                     ),
                   ),
@@ -307,18 +322,15 @@ class _RoutineEditorScreenState extends ConsumerState<RoutineEditorScreen> {
                               animation: animation,
                               child: child,
                               builder: (context, child) {
-                                // Lift the dragged card: subtle scale + shadow
-                                // so it visibly detaches from the list.
                                 final t =
                                     Curves.easeInOut.transform(animation.value);
                                 return Transform.scale(
                                   scale: 1.0 + 0.03 * t,
-                                  child: Material(
-                                    color: Colors.transparent,
-                                    elevation: 10 * t,
-                                    shadowColor:
-                                        Colors.black.withValues(alpha: 0.45),
-                                    borderRadius: BorderRadius.circular(16),
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      color: Color.lerp(Colors.transparent, AppColors.surface3, t),
+                                      borderRadius: BorderRadius.zero,
+                                    ),
                                     child: child,
                                   ),
                                 );
@@ -367,14 +379,18 @@ class _RoutineEditorScreenState extends ConsumerState<RoutineEditorScreen> {
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
                   child: Material(
-                    color: AppColors.surfaceRaised,
-                    borderRadius: BorderRadius.circular(14),
+                    color: Colors.transparent,
+                    borderRadius: BorderRadius.zero,
                     child: InkWell(
-                      borderRadius: BorderRadius.circular(14),
+                      borderRadius: BorderRadius.zero,
                       onTap: _addExercises,
                       child: Container(
                         height: 50,
                         alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          border: Border.all(color: AppColors.borderSubtle),
+                          borderRadius: BorderRadius.zero,
+                        ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
@@ -485,7 +501,7 @@ class _EditorExerciseCard extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         gradient: RDStyles.cardGradient,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.zero,
         border: RDStyles.hairlineBorder,
       ),
       padding: const EdgeInsets.fromLTRB(12, 12, 4, 12),
@@ -508,7 +524,7 @@ class _EditorExerciseCard extends StatelessWidget {
             ),
           ),
           ClipRRect(
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.zero,
             child: ExerciseGifWidget(
               gifUrl: exercise.gifUrl,
               width: 44,
@@ -624,9 +640,9 @@ class _StepperButton extends StatelessWidget {
               width: 28,
               height: 28,
               alignment: Alignment.center,
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 color: AppColors.surfaceRaised,
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.zero,
               ),
               child: Icon(
                 icon,

@@ -38,6 +38,7 @@ class DetailExerciseCard extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
       child: AppCard(
         padding: EdgeInsets.zero,
+        radius: 6.0,
         onTap: () {
           if (!_navThrottle()) return;
           HapticFeedback.selectionClick();

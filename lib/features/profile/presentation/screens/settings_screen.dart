@@ -42,6 +42,7 @@ Future<void> showWeeklyGoalSheet(BuildContext context, WidgetRef ref) async {
               child: Semantics(
                 button: true,
                 selected: days == current,
+                toggled: days == current,
                 label: '$days day${days == 1 ? '' : 's'} per week',
                 child: GestureDetector(
                   onTap: () {
@@ -59,7 +60,7 @@ Future<void> showWeeklyGoalSheet(BuildContext context, WidgetRef ref) async {
                       color: days == current
                           ? AppColors.accentPrimary
                           : AppColors.surfaceRaised,
-                      borderRadius: BorderRadius.circular(AppRadius.buttonSecondary),
+                      borderRadius: BorderRadius.circular(0.0),
                     ),
                     child: Text(
                       '$days',
@@ -120,14 +121,16 @@ class SettingsScreen extends ConsumerWidget {
                 padding: EdgeInsets.zero,
                 child: Column(
                   children: [
-                    AppActionRow(
-                      icon: Icons.workspace_premium_rounded,
-                      iconColor: AppColors.indigo400,
-                      title: isPremium ? 'GymLog Pro' : 'Upgrade to Pro',
-                      subtitle: isPremium
-                          ? 'Active — full history unlocked'
-                          : 'Full analytics history & more',
-                      onTap: () => _openPremium(context, isPremium: isPremium),
+                    Semantics(
+                      hint: "Navigates to paywall",
+                      child: AppActionRow(
+                        icon: Icons.workspace_premium_rounded,
+                        title: isPremium ? 'GymLog Pro' : 'Upgrade to Pro',
+                        subtitle: isPremium
+                            ? 'Active — full history unlocked'
+                            : 'Full analytics history & more',
+                        onTap: () => _openPremium(context, isPremium: isPremium),
+                      ),
                     ),
                   ],
                 ),
@@ -277,10 +280,10 @@ class _SignOutButton extends ConsumerWidget {
       label: 'Sign out',
       child: Material(
         color: Colors.transparent,
-        borderRadius: BorderRadius.circular(AppRadius.card),
+        borderRadius: BorderRadius.circular(6.0),
         clipBehavior: Clip.antiAlias,
         child: InkWell(
-          borderRadius: BorderRadius.circular(AppRadius.card),
+          borderRadius: BorderRadius.circular(6.0),
           onTap: () async {
             if (!tapGuard()) return;
             final confirmed = await showAppConfirmDialog(
@@ -300,7 +303,7 @@ class _SignOutButton extends ConsumerWidget {
             alignment: Alignment.center,
             decoration: BoxDecoration(
               color: AppColors.error.withValues(alpha: 0.10),
-              borderRadius: BorderRadius.circular(AppRadius.card),
+              borderRadius: BorderRadius.circular(6.0),
             ),
             child: Text(
               'Sign Out',
@@ -354,7 +357,7 @@ Future<void> _pickRestTimer(BuildContext context, WidgetRef ref, int restSeconds
           label: s == 0 ? 'Off' : '$s seconds',
           subtitle: s == 90 ? 'Recommended' : null,
           icon: s == 0 ? Icons.timer_off_outlined : Icons.timer_outlined,
-          color: s == 90 ? AppColors.indigo400 : AppColors.textSecondary,
+          color: AppColors.textSecondary,
         ),
     ],
   );

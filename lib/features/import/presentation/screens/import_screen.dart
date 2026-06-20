@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -21,6 +22,10 @@ enum _Phase { intro, loading, preview, importing, done }
 
 /// Import workout history exported from Hevy or Strong. The source app is
 /// auto-detected from the file; nothing is written until the user confirms.
+String _decodeBytes(List<int> bytes) {
+  return utf8.decode(bytes, allowMalformed: true);
+}
+
 class ImportScreen extends ConsumerStatefulWidget {
   const ImportScreen({super.key});
 
@@ -63,7 +68,7 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
     try {
       final bytes = file.bytes;
       if (bytes != null) {
-        content = utf8.decode(bytes, allowMalformed: true);
+        content = await compute(_decodeBytes, bytes);
       } else if (file.path != null) {
         content = await File(file.path!).readAsString();
       } else {
@@ -134,7 +139,7 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
                 _total = total;
               });
             },
-          );
+          ).timeout(const Duration(minutes: 5));
       if (!mounted) return;
       HapticFeedback.mediumImpact();
       setState(() {
@@ -486,7 +491,7 @@ class _Card extends StatelessWidget {
   Widget build(BuildContext context) => Container(
         decoration: BoxDecoration(
           gradient: RDStyles.cardGradient,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(6.0),
           border: RDStyles.hairlineBorder,
         ),
         clipBehavior: Clip.antiAlias,
@@ -539,9 +544,9 @@ class _PrimaryButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Material(
         color: AppColors.accentPrimary,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(999),
         child: InkWell(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(999),
           onTap: onTap,
           child: Container(
             height: 54,
@@ -615,7 +620,7 @@ class _SourceChips extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
             decoration: BoxDecoration(
               gradient: RDStyles.cardGradient,
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(6.0),
               border: RDStyles.hairlineBorder,
             ),
             child: Row(children: [
@@ -704,7 +709,7 @@ class _UnitChooser extends StatelessWidget {
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         gradient: RDStyles.cardGradient,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(6.0),
         border: RDStyles.hairlineBorder,
       ),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [

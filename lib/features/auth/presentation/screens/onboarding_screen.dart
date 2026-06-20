@@ -131,7 +131,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                         const Spacer(),
                         Text(
                           'Welcome to GymLog',
-                          style: AppText.label(color: AppColors.accentText).copyWith(
+                          style: AppText.caption(color: AppColors.textSecondary).copyWith(
                             fontSize: 14,
                             fontWeight: FontWeight.w700,
                             letterSpacing: 0.2,
@@ -140,7 +140,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                         const SizedBox(height: 10),
                         Text(
                           'What should we\ncall you?',
-                          style: AppText.display().copyWith(
+                          style: AppText.screenTitle().copyWith(
                             fontSize: 32,
                             fontWeight: FontWeight.w800,
                             letterSpacing: -0.5,
@@ -177,12 +177,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                             filled: true,
                             fillColor: Colors.transparent,
                             contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                            enabledBorder: BorderSide(color: Colors.white.withValues(alpha: 0.06), width: 1).none 
-                                ? const OutlineInputBorder(borderRadius: BorderRadius.zero) // Failsafe
-                                : OutlineInputBorder(
-                                    borderRadius: BorderRadius.zero,
-                                    borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.06), width: 1),
-                                  ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.zero,
+                              borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.06), width: 1),
+                            ),
                             focusedBorder: const OutlineInputBorder(
                               borderRadius: BorderRadius.zero,
                               borderSide: BorderSide(color: AppColors.accentPrimary, width: 1),
