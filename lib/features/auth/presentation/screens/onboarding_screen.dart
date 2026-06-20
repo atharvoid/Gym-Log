@@ -20,6 +20,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   final _nameController = TextEditingController();
   final _focusNode = FocusNode();
   bool _isLoading = false;
+  bool _shouldAutofocus = true;
 
   @override
   void initState() {
@@ -29,9 +30,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     final googleName = (meta?['full_name'] ?? meta?['name']) as String?;
     if (googleName != null && googleName.trim().isNotEmpty) {
       _nameController.text = googleName.trim();
+      _shouldAutofocus = false;
     }
-    WidgetsBinding.instance
-        .addPostFrameCallback((_) => _focusNode.requestFocus());
   }
 
   @override
@@ -159,6 +159,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                         TextField(
                           controller: _nameController,
                           focusNode: _focusNode,
+                          autofocus: _shouldAutofocus,
                           maxLength: 40,
                           cursorColor: AppColors.accentPrimary,
                           style: AppText.body().copyWith(

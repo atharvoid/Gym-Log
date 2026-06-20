@@ -76,7 +76,7 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
           backgroundColor: AppColors.bgBase,
           body: Center(
               child:
-                  CircularProgressIndicator(color: AppColors.accentPrimary))),
+                  CircularProgressIndicator(color: AppColors.textSecondary))),
       error: (e, st) => Scaffold(
         backgroundColor: AppColors.bgBase,
         appBar: AppBar(
@@ -200,7 +200,7 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
                   child: Padding(
                     padding: EdgeInsets.symmetric(vertical: 60),
                     child: CircularProgressIndicator(
-                      color: AppColors.accentPrimary,
+                      color: AppColors.textSecondary,
                     ),
                   ),
                 ),
@@ -441,7 +441,7 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
         Row(
           children: [
             const Icon(Icons.list_alt_rounded,
-                color: AppColors.accentPrimary, size: 20),
+                color: AppColors.textSecondary, size: 20),
             const SizedBox(width: 8),
             Text(
               'How to Perform',
@@ -472,16 +472,15 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
                         Container(
                           width: 24,
                           height: 24,
-                          decoration: BoxDecoration(
-                            color:
-                                AppColors.accentPrimary.withValues(alpha: 0.15),
-                            borderRadius: BorderRadius.circular(6),
+                          decoration: const BoxDecoration(
+                            color: AppColors.surface3,
+                            borderRadius: BorderRadius.zero,
                           ),
                           child: Center(
                             child: Text(
                               '${entry.key + 1}',
                               style: GoogleFonts.inter(
-                                color: AppColors.accentPrimary,
+                                color: AppColors.textSecondary,
                                 fontSize: 11,
                                 fontWeight: FontWeight.w700,
                               ),

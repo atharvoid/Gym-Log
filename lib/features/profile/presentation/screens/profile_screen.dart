@@ -70,18 +70,22 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
       curve: Interval(delay.clamp(0.0, 0.82), 1.0, curve: Curves.easeOutCubic),
     );
 
-    return AnimatedBuilder(
-      animation: animation,
-      builder: (_, __) => Opacity(
-        opacity: animation.value,
-        child: slide
-            ? Transform.translate(
-                offset: Offset(0, 16 * (1 - animation.value)),
-                child: child,
-              )
-            : child,
-      ),
+    final Widget fadeChild = FadeTransition(
+      opacity: animation,
+      child: child,
     );
+
+    if (slide) {
+      return SlideTransition(
+        position: Tween<Offset>(
+          begin: const Offset(0, 0.05),
+          end: Offset.zero,
+        ).animate(animation),
+        child: fadeChild,
+      );
+    }
+
+    return fadeChild;
   }
 
   void _openSettings() {
@@ -164,7 +168,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
             final email = profile?.email ?? '';
 
             return RefreshIndicator(
-              color: AppColors.accentPrimary,
+              color: AppColors.textPrimary,
               backgroundColor: AppColors.bgSurface,
               onRefresh: _onRefresh,
               child: ListView(
@@ -619,9 +623,9 @@ class _LoadingBody extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    SkeletonBox(width: 140, height: 19, radius: AppRadius.input),
+                    SkeletonBox(width: 140, height: 19, radius: 0),
                     SizedBox(height: 6),
-                    SkeletonBox(width: 180, height: 13, radius: AppRadius.input),
+                    SkeletonBox(width: 180, height: 13, radius: 0),
                   ],
                 ),
               ),
@@ -636,9 +640,9 @@ class _LoadingBody extends StatelessWidget {
                   const Expanded(
                     child: Column(
                       children: [
-                        SkeletonBox(width: 50, height: 17, radius: AppRadius.input),
+                        SkeletonBox(width: 50, height: 17, radius: 0),
                         SizedBox(height: 5),
-                        SkeletonBox(width: 56, height: 10, radius: AppRadius.input),
+                        SkeletonBox(width: 56, height: 10, radius: 0),
                       ],
                     ),
                   ),
@@ -653,11 +657,11 @@ class _LoadingBody extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                SkeletonBox(width: 120, height: 16, radius: AppRadius.input),
+                SkeletonBox(width: 120, height: 16, radius: 0),
                 SizedBox(height: 12),
-                SkeletonBox(width: double.infinity, height: 150, radius: AppRadius.card),
+                SkeletonBox(width: double.infinity, height: 150, radius: 6),
                 SizedBox(height: 14),
-                SkeletonBox(width: double.infinity, height: 36, radius: AppRadius.segmentedOuter),
+                SkeletonBox(width: double.infinity, height: 36, radius: 0),
               ],
             ),
           ),
@@ -667,7 +671,7 @@ class _LoadingBody extends StatelessWidget {
             child: Column(
               children: [
                 for (var i = 0; i < 2; i++) ...[
-                  const SkeletonBox(width: double.infinity, height: 48, radius: AppRadius.input),
+                  const SkeletonBox(width: double.infinity, height: 48, radius: 0),
                   if (i < 1) const SizedBox(height: 1),
                 ],
               ],
@@ -716,7 +720,7 @@ class _ErrorBody extends StatelessWidget {
                     foregroundColor: Colors.white,
                     elevation: 0,
                     shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(AppRadius.buttonPrimary)),
+                        borderRadius: BorderRadius.circular(999)),
                   ),
                   child: Text('Retry', style: AppText.button()),
                 ),
