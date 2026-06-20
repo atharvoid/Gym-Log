@@ -217,6 +217,7 @@ class _RoutineEditorScreenState extends ConsumerState<RoutineEditorScreen> {
           leading: IconButton(
             tooltip: 'Close',
             icon: const Icon(Icons.close, color: AppColors.textPrimary),
+            constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
             onPressed: _confirmLeave,
           ),
           title: Text(
@@ -237,7 +238,7 @@ class _RoutineEditorScreenState extends ConsumerState<RoutineEditorScreen> {
                         width: 18,
                         height: 18,
                         child: CircularProgressIndicator(
-                            strokeWidth: 2, color: AppColors.accentPrimary),
+                            strokeWidth: 2, color: AppColors.textSecondary),
                       )
                     : Text(
                         'Save',
@@ -256,7 +257,7 @@ class _RoutineEditorScreenState extends ConsumerState<RoutineEditorScreen> {
         body: _loading
             ? const Center(
                 child: CircularProgressIndicator(
-                    color: AppColors.accentPrimary, strokeWidth: 2),
+                    color: AppColors.textSecondary, strokeWidth: 2),
               )
             : Column(
                 children: [
@@ -454,7 +455,7 @@ class _EmptyEditorState extends StatelessWidget {
                 borderRadius: BorderRadius.circular(999),
                 onTap: onAdd,
                 child: Container(
-                  height: 44,
+                  height: 48,
                   padding: const EdgeInsets.symmetric(horizontal: 22),
                   alignment: Alignment.center,
                   child: Row(
@@ -633,7 +634,7 @@ class _StepperButton extends StatelessWidget {
             : null,
         behavior: HitTestBehavior.opaque,
         child: SizedBox(
-          width: 44,
+          width: 48,
           height: 48,
           child: Center(
             child: Container(
