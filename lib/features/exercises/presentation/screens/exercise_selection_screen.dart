@@ -630,7 +630,7 @@ class _LoadingList extends StatelessWidget {
           padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
           child: Row(
               children: [
-                SkeletonBox(width: 44, height: 44, radius: 10),
+                SkeletonBox(width: 44, height: 44, radius: 0),
                 SizedBox(width: 14),
                 Expanded(
                   child: Column(

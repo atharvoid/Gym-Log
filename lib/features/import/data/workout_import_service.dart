@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:drift/drift.dart';
 import 'package:uuid/uuid.dart';
 
@@ -5,6 +6,11 @@ import '../../../core/database/database.dart';
 import '../domain/import_models.dart';
 import 'exercise_matcher.dart';
 import 'workout_csv_parser.dart';
+
+/// Top-level helper function for compute() isolate execution.
+ImportParseResult _parseCsvIsolate((String, String) args) {
+  return WorkoutCsvParser.parse(args.$1, assumedStrongUnit: args.$2);
+}
 
 /// Orchestrates a Hevy/Strong CSV import end-to-end:
 ///   parse → resolve exercises (matching catalog, creating customs) → dedup →
@@ -26,8 +32,10 @@ class WorkoutImportService {
     required String userId,
     String assumedStrongUnit = 'kg',
   }) async {
-    final parsed =
-        WorkoutCsvParser.parse(text, assumedStrongUnit: assumedStrongUnit);
+    final parsed = await compute(
+      _parseCsvIsolate,
+      (text, assumedStrongUnit),
+    );
 
     final matcher = await _buildMatcher();
     final distinctNames = _distinctExerciseNames(parsed.sessions);
@@ -73,8 +81,10 @@ class WorkoutImportService {
     String assumedStrongUnit = 'kg',
     void Function(int done, int total)? onProgress,
   }) async {
-    final parsed =
-        WorkoutCsvParser.parse(text, assumedStrongUnit: assumedStrongUnit);
+    final parsed = await compute(
+      _parseCsvIsolate,
+      (text, assumedStrongUnit),
+    );
 
     // 1) Resolve every distinct exercise name to a catalog id, creating
     //    custom exercises (once each) for anything unmatched.

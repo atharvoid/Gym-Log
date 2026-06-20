@@ -54,7 +54,7 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
       case 1:
         return e.estimated1RM;
       case 2:
-        return e.weight;
+        return e.bestSetWeight;
       case 3:
         return e.volume;
       default:

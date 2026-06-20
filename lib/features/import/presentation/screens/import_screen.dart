@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -145,6 +146,12 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
       setState(() {
         _result = result;
         _phase = _Phase.done;
+      });
+    } on TimeoutException catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _error = 'The import timed out. Please try again with a smaller file or check your device performance.';
+        _phase = _Phase.preview;
       });
     } catch (_) {
       if (!mounted) return;
@@ -577,7 +584,7 @@ class _Banner extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         decoration: BoxDecoration(
           color: color.withValues(alpha: 0.08),
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.zero,
           border: Border.all(color: color.withValues(alpha: 0.22), width: 1),
         ),
         child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -604,7 +611,7 @@ class _IconBadge extends StatelessWidget {
         height: 52,
         decoration: BoxDecoration(
           color: AppColors.accentPrimary.withValues(alpha: 0.12),
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.zero,
         ),
         child: Icon(icon, color: const Color(0xFFA78BFA), size: 26),
       );
@@ -693,7 +700,7 @@ class _UnitChooser extends StatelessWidget {
             alignment: Alignment.center,
             decoration: BoxDecoration(
               color: active ? AppColors.accentPrimary : Colors.transparent,
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.zero,
             ),
             child: Text(label,
                 style: GoogleFonts.inter(
@@ -723,7 +730,7 @@ class _UnitChooser extends StatelessWidget {
           padding: const EdgeInsets.all(3),
           decoration: BoxDecoration(
             color: Colors.black.withValues(alpha: 0.30),
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.zero,
           ),
           child: Row(children: [chip('kg', 'Kilograms'), chip('lbs', 'Pounds')]),
         ),
