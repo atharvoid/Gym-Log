@@ -48,8 +48,6 @@ class RoutineDetailScreen extends ConsumerStatefulWidget {
 
 class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
     with SingleTickerProviderStateMixin {
-  String _selectedTimeRange = 'All Time';
-
   late final AnimationController _entryController;
   bool _entryStarted = false;
 
@@ -118,9 +116,8 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
 
   Future<void> _deleteRoutine(String routineId) async {
     final db = ref.read(databaseProvider);
+    context.pop(); // pop screen immediately
     await db.routinesDao.deleteRoutine(routineId);
-    if (!mounted) return;
-    context.pop();
   }
 
   void _openEditor() {
@@ -208,13 +205,15 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
       confirmLabel: 'Delete',
       isDestructive: true,
     );
-    if (confirmed) await _deleteRoutine(routineId);
+    if (confirmed) {
+      HapticFeedback.heavyImpact();
+      await _deleteRoutine(routineId);
+    }
   }
 
   Future<void> _onRefresh() async {
     ref.invalidate(routineDetailProvider(widget.routineId));
-    ref.invalidate(
-        routineDailyVolumeProvider((widget.routineId, _selectedTimeRange)));
+    ref.invalidate(routineDailyVolumeProvider);
     ref.invalidate(routineLastSetsProvider(widget.routineId));
   }
 
@@ -232,12 +231,8 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
   }
 
   Widget _buildLoaded(HydratedRoutineDetail routine) {
-    final volumeAsync = ref.watch(
-        routineDailyVolumeProvider((widget.routineId, _selectedTimeRange)));
     final lastSetsAsync = ref.watch(routineLastSetsProvider(widget.routineId));
     final isPremium = ref.watch(isPremiumProvider);
-    // TRUE per-session stats (not the day-grouped chart samples) — so two
-    // sessions on the same day count as two.
     final sessionStats =
         ref.watch(routineSessionStatsProvider(widget.routineId)).valueOrNull;
 
@@ -246,11 +241,11 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
     final isLoadingHistory =
         lastSetsAsync.isLoading && lastSetsAsync.valueOrNull == null;
 
-    final allSamples = volumeAsync.valueOrNull ?? const <DailyVolumeSample>[];
-    final visible = gateChartSamples(allSamples, isPremium);
     final exerciseCount = routine.exercises.length;
-    final lastDate = allSamples.isNotEmpty ? allSamples.last.day : null;
-    final hasTrend = allSamples.length >= 2;
+    final lastDate = ref.watch(routineDailyVolumeProvider((widget.routineId, 'All Time'))
+        .select((asyncVal) => asyncVal.valueOrNull == null || asyncVal.valueOrNull!.isEmpty
+            ? null
+            : asyncVal.valueOrNull!.last.day));
     final bottomInset = MediaQuery.viewPaddingOf(context).bottom;
 
     return Scaffold(
@@ -265,7 +260,7 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
           slivers: [
             _appBar(routine),
 
-            // Attribution + stat line + the one dominant CTA.
+            // Attribution + stat line (without Start CTA).
             SliverToBoxAdapter(
               child: _entryFade(
                 interval: const Interval(0.0, 0.32, curve: Curves.easeOutExpo),
@@ -283,18 +278,7 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
                         const SizedBox(height: 16),
                         _HeroStatStrip(stats: sessionStats),
                       ],
-                      const SizedBox(height: 18),
-                      Semantics(
-                        button: true,
-                        label: routine.exercises.isEmpty
-                            ? 'Add an exercise to start'
-                            : 'Start Routine',
-                        child: _StartRoutineButton(
-                          empty: routine.exercises.isEmpty,
-                          onTap: () => _startRoutine(routine),
-                        ),
-                      ),
-                      const SizedBox(height: 26),
+                      const SizedBox(height: 16),
                     ],
                   ),
                 ),
@@ -307,9 +291,10 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
                 interval: const Interval(0.2, 0.5, curve: Curves.easeOutExpo),
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: _volumeSection(
-                      volumeAsync, visible, isPremium, allSamples.length,
-                      hasTrend: hasTrend),
+                  child: _RoutineVolumeSection(
+                    routineId: widget.routineId,
+                    isPremium: isPremium,
+                  ),
                 ),
               ),
             ),
@@ -361,8 +346,23 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
               ),
             ),
 
-            SliverToBoxAdapter(child: SizedBox(height: 24 + bottomInset)),
+            SliverToBoxAdapter(child: SizedBox(height: 80 + bottomInset)),
           ],
+        ),
+      ),
+      bottomNavigationBar: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 10),
+          child: Semantics(
+            button: true,
+            label: routine.exercises.isEmpty
+                ? 'Add an exercise to start'
+                : 'Start Routine',
+            child: _StartRoutineButton(
+              empty: routine.exercises.isEmpty,
+              onTap: () => _startRoutine(routine),
+            ),
+          ),
         ),
       ),
     );
@@ -403,92 +403,22 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
     );
   }
 
-  Widget _volumeSection(
-    AsyncValue<List<DailyVolumeSample>> volumeAsync,
-    List<DailyVolumeSample> visible,
-    bool isPremium,
-    int totalSamples, {
-    required bool hasTrend,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Flexible(
-              child: Semantics(
-                header: true,
-                child: Text.rich(
-                  TextSpan(children: [
-                    TextSpan(text: 'Total Volume ', style: AppText.cardTitle()),
-                    TextSpan(text: '(kg)', style: AppText.meta()),
-                  ]),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-            ),
-            // Nothing to filter with fewer than two sessions — hide the
-            // dead control instead of offering a no-op.
-            if (hasTrend)
-              Row(
-                children: [
-                  if (!isPremium && totalSamples > 3)
-                    const Padding(
-                      padding: EdgeInsets.only(right: 10),
-                      child: ProLockPill(label: 'FULL HISTORY'),
-                    ),
-                  TimeRangeFilter(
-                    value: _selectedTimeRange,
-                    onChanged: (range) =>
-                        setState(() => _selectedTimeRange = range),
-                  ),
-                ],
-              ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        RepaintBoundary(
-          child: volumeAsync.when(
-            loading: () => Container(
-              height: 198,
-              decoration: AppCard.decoration(radius: 20),
-              child: const Center(
-                child:
-                    CircularProgressIndicator(color: AppColors.textSecondary),
-              ),
-            ),
-            error: (_, __) => const RoutineVolumeGraph(data: []),
-            data: (_) => AnimatedSwitcher(
-              duration: const Duration(milliseconds: 300),
-              child: RoutineVolumeGraph(
-                key: ValueKey('$_selectedTimeRange${visible.length}'),
-                data: visible,
-              ),
-            ),
-          ),
-        ),
-        _RoutineProgressPill(samples: visible),
-        const SizedBox(height: 28),
-      ],
-    );
-  }
-
-  /// Shared fade + rise entry. Reads the controller directly (no per-build
-  /// `CurvedAnimation`/`Tween` allocations to leak).
+  /// Shared fade + rise entry. Composited using FadeTransition and SlideTransition
+  /// to avoid expensive saveLayer rendering on every animation frame.
   Widget _entryFade({required Interval interval, required Widget child}) {
-    return AnimatedBuilder(
-      animation: _entryController,
-      child: child,
-      builder: (context, child) {
-        final t = interval.transform(_entryController.value.clamp(0.0, 1.0));
-        return Opacity(
-          opacity: t,
-          child: Transform.translate(offset: Offset(0, 10 * (1 - t)), child: child),
-        );
-      },
+    final curvedAnimation = CurvedAnimation(
+      parent: _entryController,
+      curve: interval,
+    );
+    return FadeTransition(
+      opacity: curvedAnimation,
+      child: SlideTransition(
+        position: Tween<Offset>(
+          begin: const Offset(0, 0.05), // Translate 5% down
+          end: Offset.zero,
+        ).animate(curvedAnimation),
+        child: child,
+      ),
     );
   }
 
@@ -565,6 +495,95 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
     return const AppNotFoundScreen(
       title: 'Routine not found',
       message: 'It may have been deleted.',
+    );
+  }
+}
+
+class _RoutineVolumeSection extends ConsumerStatefulWidget {
+  final String routineId;
+  final bool isPremium;
+
+  const _RoutineVolumeSection({
+    required this.routineId,
+    required this.isPremium,
+  });
+
+  @override
+  ConsumerState<_RoutineVolumeSection> createState() => _RoutineVolumeSectionState();
+}
+
+class _RoutineVolumeSectionState extends ConsumerState<_RoutineVolumeSection> {
+  String _selectedTimeRange = 'All Time';
+
+  @override
+  Widget build(BuildContext context) {
+    final volumeAsync = ref.watch(
+        routineDailyVolumeProvider((widget.routineId, _selectedTimeRange)));
+    final allSamples = volumeAsync.valueOrNull ?? const <DailyVolumeSample>[];
+    final visible = gateChartSamples(allSamples, widget.isPremium);
+    final hasTrend = allSamples.length >= 2;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Flexible(
+              child: Semantics(
+                header: true,
+                child: Text.rich(
+                  TextSpan(children: [
+                    TextSpan(text: 'Total Volume ', style: AppText.cardTitle()),
+                    TextSpan(text: '(kg)', style: AppText.meta()),
+                  ]),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ),
+            if (hasTrend)
+              Row(
+                children: [
+                  if (!widget.isPremium && allSamples.length > 3)
+                    const Padding(
+                      padding: EdgeInsets.only(right: 10),
+                      child: ProLockPill(label: 'FULL HISTORY'),
+                    ),
+                  TimeRangeFilter(
+                    value: _selectedTimeRange,
+                    onChanged: (range) =>
+                        setState(() => _selectedTimeRange = range),
+                  ),
+                ],
+              ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        RepaintBoundary(
+          child: volumeAsync.when(
+            loading: () => Container(
+              height: 198,
+              decoration: AppCard.decoration(radius: 6),
+              child: const Center(
+                child:
+                    CircularProgressIndicator(color: AppColors.textSecondary),
+              ),
+            ),
+            error: (_, __) => const RoutineVolumeGraph(data: []),
+            data: (_) => AnimatedSwitcher(
+              duration: const Duration(milliseconds: 300),
+              child: RoutineVolumeGraph(
+                key: ValueKey('$_selectedTimeRange${visible.length}'),
+                data: visible,
+              ),
+            ),
+          ),
+        ),
+        _RoutineProgressPill(samples: visible),
+        const SizedBox(height: 28),
+      ],
     );
   }
 }
