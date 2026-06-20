@@ -105,30 +105,32 @@ class WorkoutHeroSliver extends StatelessWidget {
                       const SizedBox(height: 2),
                       Text(dateStr, style: AppText.caption()),
                       const SizedBox(height: 12),
-                      Row(
-                        children: [
-                          Flexible(
-                            child:
-                                _HeroPip(value: durationStr, label: 'DURATION'),
-                          ),
-                          _HeroPip.dot,
-                          Flexible(
-                            // Disclosure: volume includes warm-up sets.
-                            child: Tooltip(
-                              triggerMode: TooltipTriggerMode.tap,
-                              showDuration: const Duration(seconds: 3),
-                              message:
-                                  'Volume = weight × reps across all completed '
-                                  'sets, warm-ups included.',
+                      MergeSemantics(
+                        child: Row(
+                          children: [
+                            Flexible(
                               child:
-                                  _HeroPip(value: volumeStr, label: 'VOLUME'),
+                                  _HeroPip(value: durationStr, label: 'DURATION'),
                             ),
-                          ),
-                          _HeroPip.dot,
-                          Flexible(
-                            child: _HeroPip(value: '$totalSets', label: 'SETS'),
-                          ),
-                        ],
+                            _HeroPip.dot,
+                            Flexible(
+                              // Disclosure: volume includes warm-up sets.
+                              child: Tooltip(
+                                triggerMode: TooltipTriggerMode.tap,
+                                showDuration: const Duration(seconds: 3),
+                                message:
+                                    'Volume = weight × reps across all completed '
+                                    'sets, warm-ups included.',
+                                child:
+                                    _HeroPip(value: volumeStr, label: 'VOLUME'),
+                              ),
+                            ),
+                            _HeroPip.dot,
+                            Flexible(
+                              child: _HeroPip(value: '$totalSets', label: 'SETS'),
+                            ),
+                          ],
+                        ),
                       ),
                     ],
                   ),

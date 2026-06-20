@@ -148,15 +148,15 @@ abstract class AppText {
 /// Border-radius scale. Pill is deliberately NOT in the system — the largest
 /// button radius is 14 on a ~52px control (professional proportion).
 abstract class AppRadius {
-  static const double card = 16; // workout/routine/exercise cards
-  static const double buttonPrimary = 14; // Start, Finish — NOT pill, NOT square
-  static const double buttonSecondary = 12; // Add Set, secondary actions
-  static const double input = 10; // weight/reps fields
+  static const double card = 6; // workout/routine/exercise cards
+  static const double buttonPrimary = 999; // Start, Finish — conformed to pill
+  static const double buttonSecondary = 0; // Add Set, secondary actions
+  static const double input = 0; // weight/reps fields
   static const double badge = 6; // PR badge, muscle tags, chips
-  static const double thumbnail = 14; // exercise thumbnail container
-  static const double sheet = 20; // bottom-sheet / rest-timer top corners
-  static const double segmentedOuter = 10;
-  static const double segmentedInner = 8;
+  static const double thumbnail = 0; // exercise thumbnail container
+  static const double sheet = 6; // bottom-sheet / rest-timer top corners
+  static const double segmentedOuter = 0;
+  static const double segmentedInner = 0;
   static const double nav = 0; // flush to bottom edge
 
   static const BorderRadius cardAll = BorderRadius.all(Radius.circular(card));

@@ -13,6 +13,7 @@ class ExerciseHistoryData {
   final int reps;
   final double estimated1RM;
   final double volume;
+  final double bestSetWeight;
 
   const ExerciseHistoryData({
     required this.date,
@@ -20,6 +21,7 @@ class ExerciseHistoryData {
     required this.reps,
     required this.estimated1RM,
     required this.volume,
+    required this.bestSetWeight,
   });
 }
 
@@ -724,7 +726,18 @@ class WorkoutsDao extends DatabaseAccessor<AppDatabase>
         MAX(ws.weight_kg) AS max_weight,
         MAX(ws.reps) AS max_reps,
         MAX($_epleySqlWs) AS best_e1rm,
-        SUM(ws.weight_kg * ws.reps) AS total_volume
+        SUM(ws.weight_kg * ws.reps) AS total_volume,
+        (
+          SELECT inner_ws.weight_kg
+          FROM workout_sets inner_ws
+          JOIN workout_exercises inner_we ON inner_ws.workout_exercise_id = inner_we.id
+          WHERE inner_ws.exercise_id = ws.exercise_id
+            AND inner_we.session_id = s.id
+            AND inner_ws.weight_kg > 0
+            AND inner_ws.reps > 0
+          ORDER BY (inner_ws.weight_kg * (CASE WHEN inner_ws.reps <= 1 THEN 1.0 ELSE 1.0 + inner_ws.reps / 30.0 END)) DESC
+          LIMIT 1
+        ) AS best_set_weight
       FROM workout_sets ws
       JOIN workout_exercises we ON ws.workout_exercise_id = we.id
       JOIN workout_sessions s ON we.session_id = s.id
@@ -748,12 +761,8 @@ class WorkoutsDao extends DatabaseAccessor<AppDatabase>
       final weight = row.read<double>('max_weight');
       final reps = row.read<int>('max_reps');
       final volume = row.read<double>('total_volume');
-      // Best per-set Epley across the session — NOT _epley(maxWeight, maxReps).
-      // The two MAX() aggregates come from independent sets, so combining them
-      // overstated the 1RM (e.g. a heavy single + a light burnout set reported
-      // a 1RM ~50% too high). The SQL computes the max per-set estimate with
-      // the same reps<=1 guard as [_epley].
       final best1rm = row.read<double>('best_e1rm');
+      final bestSetWeight = row.read<double>('best_set_weight');
 
       return ExerciseHistoryData(
         date: date,
@@ -761,6 +770,7 @@ class WorkoutsDao extends DatabaseAccessor<AppDatabase>
         reps: reps,
         estimated1RM: best1rm,
         volume: volume,
+        bestSetWeight: bestSetWeight,
       );
     }).toList();
   }

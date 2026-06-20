@@ -113,23 +113,12 @@ class _PrCelebrationState extends State<_PrCelebration>
                 constraints: const BoxConstraints(maxWidth: 380),
                 padding: const EdgeInsets.fromLTRB(24, 28, 24, 20),
                 decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [Color(0xFF15101D), Color(0xFF0B0B0D)],
-                  ),
-                  borderRadius: BorderRadius.circular(20),
+                  gradient: AppColors.cardGradient,
+                  borderRadius: AppRadius.cardAll,
                   border: Border.all(
-                    color: AppColors.accentPrimary.withValues(alpha: 0.35),
+                    color: AppColors.borderSubtle,
                     width: 1,
                   ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppColors.accentPrimary.withValues(alpha: 0.25),
-                      blurRadius: 48,
-                      spreadRadius: -8,
-                    ),
-                  ],
                 ),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -182,9 +171,9 @@ class _PrCelebrationState extends State<_PrCelebration>
                                 child: Container(
                                   padding: const EdgeInsets.symmetric(
                                       horizontal: 14, vertical: 12),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white.withValues(alpha: 0.04),
-                                    borderRadius: BorderRadius.circular(14),
+                                  decoration: const BoxDecoration(
+                                    color: Colors.white10,
+                                    borderRadius: BorderRadius.zero,
                                   ),
                                   child: Row(
                                     children: [
@@ -247,8 +236,8 @@ class _PrCelebrationState extends State<_PrCelebration>
                           backgroundColor: AppColors.accentPrimary,
                           foregroundColor: Colors.white,
                           elevation: 0,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14),
+                          shape: const RoundedRectangleBorder(
+                            borderRadius: AppRadius.buttonPrimaryAll,
                           ),
                         ),
                         child: Text(
