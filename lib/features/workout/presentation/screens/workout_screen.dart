@@ -113,7 +113,6 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
                   child: SecondaryButton(
                     label: 'New Routine',
                     icon: Icons.add_rounded,
-                    accent: true,
                     onPressed: () => _push('/routines/edit'),
                   ),
                 ),
@@ -256,7 +255,7 @@ class _RoutineCardSkeleton extends StatelessWidget {
         children: [
           Row(
             children: [
-              SkeletonBox(width: 44, height: 44, radius: 12),
+              SkeletonBox(width: 44, height: 44, radius: 0),
               SizedBox(width: 13),
               Expanded(
                 child: Column(
@@ -277,7 +276,7 @@ class _RoutineCardSkeleton extends StatelessWidget {
             children: [
               Expanded(child: SkeletonBox(height: 12)),
               SizedBox(width: 12),
-              SkeletonBox(width: 68, height: 32, radius: 14),
+              SkeletonBox(width: 68, height: 32, radius: 999),
             ],
           ),
         ],

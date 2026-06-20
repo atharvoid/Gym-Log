@@ -208,8 +208,8 @@ class WorkoutDetailScreen extends ConsumerWidget {
       items: [
         ActionSheetItem(
           icon: Icons.bookmark_outline_rounded,
-          iconColor: AppColors.accentPrimary,
-          iconBackground: AppColors.accentPrimary.withValues(alpha: 0.12),
+          iconColor: AppColors.textSecondary,
+          iconBackground: AppColors.surface3,
           title: 'Save as Template',
           subtitle: 'Add to your routine library',
           onTap: (sheetContext) {
@@ -281,7 +281,7 @@ class _DetailCardSkeleton extends StatelessWidget {
         children: [
           Row(
             children: [
-              SkeletonBox(width: 52, height: 52, radius: 14),
+              SkeletonBox(width: 52, height: 52, radius: 0),
               SizedBox(width: 12),
               Expanded(child: SkeletonBox(height: 16, width: 160)),
             ],
