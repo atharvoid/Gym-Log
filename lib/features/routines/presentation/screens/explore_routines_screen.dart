@@ -314,6 +314,7 @@ class _ExploreRoutinesScreenState extends ConsumerState<ExploreRoutinesScreen>
               tooltip: 'Back',
               icon: const Icon(Icons.arrow_back_rounded,
                   size: 24, color: AppColors.textPrimary),
+              constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
               onPressed: () {
                 if (context.canPop()) context.pop();
               },
@@ -574,17 +575,19 @@ class _Reveal extends StatelessWidget {
     if (index >= 8 || MediaQuery.disableAnimationsOf(context)) return child;
     final start = (index * 0.07).clamp(0.0, 0.55);
     const span = 0.45;
-    return AnimatedBuilder(
-      animation: controller,
-      child: child,
-      builder: (context, child) {
-        final raw = ((controller.value - start) / span).clamp(0.0, 1.0);
-        final v = Curves.easeOutCubic.transform(raw);
-        return Opacity(
-          opacity: v,
-          child: Transform.translate(offset: Offset(0, 18 * (1 - v)), child: child),
-        );
-      },
+    final curvedAnimation = CurvedAnimation(
+      parent: controller,
+      curve: Interval(start, (start + span).clamp(0.0, 1.0), curve: Curves.easeOutCubic),
+    );
+    return FadeTransition(
+      opacity: curvedAnimation,
+      child: SlideTransition(
+        position: Tween<Offset>(
+          begin: const Offset(0, 0.05), // Translate 5% down
+          end: Offset.zero,
+        ).animate(curvedAnimation),
+        child: child,
+      ),
     );
   }
 }
