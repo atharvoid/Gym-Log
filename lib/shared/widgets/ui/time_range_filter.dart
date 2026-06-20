@@ -39,9 +39,9 @@ class TimeRangeFilter extends ConsumerWidget {
           constraints: const BoxConstraints(minHeight: 44),
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           alignment: Alignment.center,
-          decoration: BoxDecoration(
+          decoration: const BoxDecoration(
             color: AppColors.surfaceRaised,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.zero,
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
@@ -69,12 +69,12 @@ class TimeRangeFilter extends ConsumerWidget {
       useRootNavigator: true,
       backgroundColor: Colors.transparent,
       builder: (sheetCtx) => Container(
-        decoration: BoxDecoration(
-          color: AppColors.bgSurface.withValues(alpha: 0.95),
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+        decoration: const BoxDecoration(
+          color: AppColors.bgSurface,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.sheet)),
         ),
         child: ClipRRect(
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(AppRadius.sheet)),
           child: BackdropFilter(
             filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
             child: Padding(
@@ -206,7 +206,7 @@ Future<T?> showBrandedPickerSheet<T>({
                   alignment: Alignment.center,
                   decoration: BoxDecoration(
                     color: opt.color.withValues(alpha: 0.14),
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: BorderRadius.zero,
                   ),
                   child: Icon(opt.icon, size: 18, color: opt.color),
                 ),
