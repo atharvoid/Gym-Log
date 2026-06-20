@@ -6,8 +6,9 @@ import '../../../core/theme/app_text.dart';
 
 /// [segmented_control.dart]
 /// One container with a sliding active segment (NOT three separate pills).
-/// Spec: outer 10px / Surface 1 / 1px subtle border; active segment 8px /
-/// Surface 3 / 1px border; height 36; active text white w600, inactive tertiary.
+/// Spec: track bg transparent / 1px #3A3A4A border / 10px radius;
+/// active segment #2A2A3A / 8px radius; active text white w600,
+/// inactive text #8E8E93 w400.
 class SegmentedControl extends StatelessWidget {
   final List<String> segments;
   final String selected;
@@ -27,9 +28,9 @@ class SegmentedControl extends StatelessWidget {
       height: 36,
       padding: const EdgeInsets.all(3),
       decoration: BoxDecoration(
-        color: AppColors.bgSurface, // Surface 1
+        color: Colors.transparent,
         borderRadius: BorderRadius.circular(AppRadius.segmentedOuter),
-        border: Border.all(color: AppColors.borderSubtle),
+        border: Border.all(color: const Color(0xFF3A3A4A)),
       ),
       child: LayoutBuilder(
         builder: (context, c) {
@@ -46,10 +47,9 @@ class SegmentedControl extends StatelessWidget {
                 bottom: 0,
                 child: Container(
                   decoration: BoxDecoration(
-                    color: AppColors.surface3,
+                    color: const Color(0xFF2A2A3A),
                     borderRadius:
                         BorderRadius.circular(AppRadius.segmentedInner),
-                    border: Border.all(color: AppColors.borderDefault),
                   ),
                 ),
               ),
@@ -75,7 +75,7 @@ class SegmentedControl extends StatelessWidget {
                                   : FontWeight.w400,
                               color: s == selected
                                   ? AppColors.textPrimary
-                                  : AppColors.textTertiary,
+                                  : const Color(0xFF8E8E93),
                             ),
                           ),
                         ),

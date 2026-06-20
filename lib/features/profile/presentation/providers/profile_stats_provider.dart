@@ -100,54 +100,137 @@ final weeklyGoalProvider =
 
 // ── Profile chart data ────────────────────────────────────────────────────────
 
-/// Per-session stats for the trailing 12 weeks — the Profile chart
+/// Metrics supported by the Profile weekly bar chart.
+enum ProfileGraphMetric {
+  volume('Volume'),
+  duration('Duration'),
+  reps('Reps');
+
+  final String label;
+  const ProfileGraphMetric(this.label);
+
+  static ProfileGraphMetric fromString(String? value,
+      {ProfileGraphMetric fallback = volume}) {
+    if (value == null) return fallback;
+    final lower = value.toLowerCase();
+    return ProfileGraphMetric.values.firstWhere(
+      (m) => m.name == lower || m.label.toLowerCase() == lower,
+      orElse: () => fallback,
+    );
+  }
+}
+
+/// Per-session stats for the trailing 8 weeks — the Profile chart
 /// aggregates them per week client-side for Duration / Volume / Reps.
 final sessionStatsProvider = StreamProvider<List<SessionStat>>((ref) {
   final user = ref.watch(authProvider);
   if (user == null) return Stream.value(const []);
   final db = ref.watch(databaseProvider);
-  final since = DateTime.now().subtract(const Duration(days: 84));
+  final since = DateTime.now().subtract(const Duration(days: 56));
   return db.workoutsDao.watchSessionStatsForUser(user.id, since: since);
 });
 
-/// One aggregated point per ISO week for the Profile chart.
-class WeeklyMetricPoint {
-  final DateTime weekStart;
-  final double duration; // minutes
-  final double volume; // kg
-  final double reps;
+/// One aggregated bucket per calendar week for the Profile chart.
+/// Weeks with no logged workouts are still emitted with zeroed values.
+class WeeklyAggregate {
+  final DateTime weekStart; // Monday 00:00:00 local
+  final double volumeKg;
+  final int totalReps;
+  final Duration duration;
+  final int workoutCount;
 
-  const WeeklyMetricPoint({
+  const WeeklyAggregate({
     required this.weekStart,
+    required this.volumeKg,
+    required this.totalReps,
     required this.duration,
-    required this.volume,
-    required this.reps,
+    required this.workoutCount,
   });
+
+  /// The value to plot for the given metric.
+  double valueFor(ProfileGraphMetric metric) => switch (metric) {
+        ProfileGraphMetric.volume => volumeKg,
+        ProfileGraphMetric.duration => duration.inMinutes.toDouble(),
+        ProfileGraphMetric.reps => totalReps.toDouble(),
+      };
 }
 
-final weeklyMetricsProvider = Provider<List<WeeklyMetricPoint>>((ref) {
+/// Returns exactly 8 Monday-aligned weeks ending in the current week.
+/// Missing weeks are filled with zeroed aggregates so the X-axis is continuous.
+final weeklyAggregatesProvider = Provider<List<WeeklyAggregate>>((ref) {
   final stats = ref.watch(sessionStatsProvider).valueOrNull ?? const [];
-  if (stats.isEmpty) return const [];
+  final now = DateTime.now();
 
   DateTime weekStartOf(DateTime d) {
     final day = DateTime(d.year, d.month, d.day);
     return day.subtract(Duration(days: day.weekday - 1));
   }
 
+  final currentWeek = weekStartOf(now);
+  // Oldest first so the chart reads left-to-right.
+  final weeks = List.generate(
+    8,
+    (i) => currentWeek.subtract(const Duration(days: 7) * (7 - i)),
+  );
+
   final byWeek = <DateTime, List<SessionStat>>{};
   for (final s in stats) {
-    byWeek.putIfAbsent(weekStartOf(s.date), () => []).add(s);
+    final week = weekStartOf(s.date);
+    if (!week.isBefore(weeks.first) && !week.isAfter(weeks.last)) {
+      byWeek.putIfAbsent(week, () => []).add(s);
+    }
   }
 
-  final weeks = byWeek.keys.toList()..sort();
   return [
     for (final week in weeks)
-      WeeklyMetricPoint(
+      WeeklyAggregate(
         weekStart: week,
-        duration: byWeek[week]!
-            .fold<double>(0, (sum, s) => sum + s.duration.inMinutes),
-        volume: byWeek[week]!.fold<double>(0, (sum, s) => sum + s.volumeKg),
-        reps: byWeek[week]!.fold<double>(0, (sum, s) => sum + s.reps),
+        volumeKg: byWeek[week]
+                ?.fold<double>(0, (sum, s) => sum + s.volumeKg) ??
+            0,
+        totalReps: byWeek[week]
+                ?.fold<int>(0, (sum, s) => sum + s.reps) ??
+            0,
+        duration: Duration(
+          minutes: byWeek[week]?.fold<int>(
+                0,
+                (sum, s) => sum + s.duration.inMinutes,
+              ) ??
+              0,
+        ),
+        workoutCount: byWeek[week]?.length ?? 0,
       ),
   ];
+});
+
+// ── Last-selected profile chart metric ───────────────────────────────────────
+
+/// Persists the user's preferred chart metric on Profile so switching tabs
+/// does not reset it to Volume every time.
+class ProfileChartMetricNotifier extends StateNotifier<ProfileGraphMetric> {
+  static const _key = 'profile_chart_metric';
+  static const _default = ProfileGraphMetric.volume;
+
+  ProfileChartMetricNotifier() : super(_default) {
+    _load();
+  }
+
+  Future<void> _load() async {
+    final prefs = await SharedPreferences.getInstance();
+    final stored = prefs.getString(_key);
+    if (stored != null && mounted) {
+      state = ProfileGraphMetric.fromString(stored, fallback: _default);
+    }
+  }
+
+  Future<void> setMetric(ProfileGraphMetric metric) async {
+    state = metric;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_key, metric.name);
+  }
+}
+
+final profileChartMetricProvider =
+    StateNotifierProvider<ProfileChartMetricNotifier, ProfileGraphMetric>((ref) {
+  return ProfileChartMetricNotifier();
 });

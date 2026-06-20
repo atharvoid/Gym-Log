@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Back SVG Preview</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #0a090f;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+    .container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+    }
+    .svg-wrapper {
+      width: 320px;
+      height: 416px;
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 0 40px rgba(124, 58, 237, 0.15), 0 0 80px rgba(124, 58, 237, 0.05);
+    }
+    .svg-wrapper svg {
+      width: 100%;
+      height: 100%;
+    }
+    .label {
+      color: #a78bfa;
+      font-size: 14px;
+      letter-spacing: 2px;
+      opacity: 0.6;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="svg-wrapper">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 520" width="100%" height="100%">
+        <defs>
+          <radialGradient id="bgGradBack" cx="50%" cy="40%" r="60%">
+            <stop offset="0%" stop-color="#1a1525"/>
+            <stop offset="100%" stop-color="#0d0b14"/>
+          </radialGradient>
+          <linearGradient id="latGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#a855f7"/>
+            <stop offset="50%" stop-color="#7c3aed"/>
+            <stop offset="100%" stop-color="#5b21b6"/>
+          </linearGradient>
+          <linearGradient id="trapGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stop-color="#c084fc"/>
+            <stop offset="100%" stop-color="#7c3aed"/>
+          </linearGradient>
+          <linearGradient id="erectorGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stop-color="#9333ea"/>
+            <stop offset="100%" stop-color="#5b21b6"/>
+          </linearGradient>
+          <filter id="backGlow" x="-20%" y="-20%" width="140%" height="140%">
+            <feGaussianBlur stdDeviation="4" result="blur"/>
+            <feMerge>
+              <feMergeNode in="blur"/>
+              <feMergeNode in="SourceGraphic"/>
+            </feMerge>
+          </filter>
+          <filter id="strongGlowBack" x="-30%" y="-30%" width="160%" height="160%">
+            <feGaussianBlur stdDeviation="6" result="blur"/>
+            <feMerge>
+              <feMergeNode in="blur"/>
+              <feMergeNode in="SourceGraphic"/>
+            </feMerge>
+          </filter>
+        </defs>
+
+        <rect width="400" height="520" fill="url(#bgGradBack)" rx="20"/>
+        <circle cx="200" cy="225" r="155" fill="none" stroke="#7c3aed" stroke-width="1" opacity="0.12"/>
+        <circle cx="200" cy="225" r="140" fill="none" stroke="#7c3aed" stroke-width="1" opacity="0.08"/>
+
+        <!-- Neck -->
+        <path d="M 178 85 Q 200 92 222 85 L 220 62 Q 200 68 180 62 Z" fill="#2d2438"/>
+        <path d="M 178 85 Q 200 92 222 85" fill="none" stroke="#3d3150" stroke-width="1.5"/>
+        <path d="M 188 80 Q 190 68 188 58" fill="none" stroke="#3d3150" stroke-width="1" opacity="0.5"/>
+        <path d="M 200 82 Q 200 70 200 60" fill="none" stroke="#3d3150" stroke-width="1" opacity="0.5"/>
+        <path d="M 212 80 Q 210 68 212 58" fill="none" stroke="#3d3150" stroke-width="1" opacity="0.5"/>
+
+        <!-- Rear Delts -->
+        <path d="M 152 92 Q 118 100 110 135 Q 108 165 125 178 Q 142 170 148 145 Q 152 118 152 92" fill="#252036"/>
+        <path d="M 152 92 Q 118 100 110 135 Q 108 165 125 178" fill="none" stroke="#3d3150" stroke-width="1.5"/>
+        <path d="M 145 100 Q 125 115 122 145" fill="none" stroke="#3d3150" stroke-width="1" opacity="0.35"/>
+        <path d="M 148 115 Q 130 130 128 155" fill="none" stroke="#3d3150" stroke-width="1" opacity="0.35"/>
+
+        <path d="M 248 92 Q 282 100 290 135 Q 292 165 275 178 Q 258 170 252 145 Q 248 118 248 92" fill="#252036"/>
+        <path d="M 248 92 Q 282 100 290 135 Q 292 165 275 178" fill="none" stroke="#3d3150" stroke-width="1.5"/>
+        <path d="M 255 100 Q 275 115 278 145" fill="none" stroke="#3d3150" stroke-width="1" opacity="0.35"/>
+        <path d="M 252 115 Q 270 130 272 155" fill="none" stroke="#3d3150" stroke-width="1" opacity="0.35"/>
+
+        <!-- Triceps -->
+        <path d="M 125 178 Q 108 200 106 240 Q 110 268 130 272 Q 142 260 145 230 Q 146 200 138 180" fill="#252036"/>
+        <path d="M 125 178 Q 108 200 106 240 Q 110 268 130 272" fill="none" stroke="#3d3150" stroke-width="1.5"/>
+        <path d="M 132 185 Q 120 210 120 250" fill="none" stroke="#3d3150" stroke-width="1" opacity="0.35"/>
+
+        <path d="M 275 178 Q 292 200 294 240 Q 290 268 270 272 Q 258 260 255 230 Q 254 200 262 180" fill="#252036"/>
+        <path d="M 275 178 Q 292 200 294 240 Q 290 268 270 272" fill="none" stroke="#3d3150" stroke-width="1.5"/>
+        <path d="M 268 185 Q 280 210 280 250" fill="none" stroke="#3d3150" stroke-width="1" opacity="0.35"/>
+
+        <!-- Lower back sides -->
+        <path d="M 148 235 Q 135 265 132 300 Q 142 320 160 315 Q 168 290 166 260 Q 162 240 155 232" fill="#1e1a2e"/>
+        <path d="M 148 235 Q 135 265 132 300 Q 142 320 160 315" fill="none" stroke="#2d2438" stroke-width="1.5"/>
+        <path d="M 252 235 Q 265 265 268 300 Q 258 320 240 315 Q 232 290 234 260 Q 238 240 245 232" fill="#1e1a2e"/>
+        <path d="M 252 235 Q 265 265 268 300 Q 258 320 240 315" fill="none" stroke="#2d2438" stroke-width="1.5"/>
+
+        <!-- LATS outer glow -->
+        <path d="M 152 95 C 145 120, 138 150, 140 180 C 142 210, 148 235, 158 250 C 168 265, 182 275, 196 280 L 200 282 L 204 280 C 218 275, 232 265, 242 250 C 252 235, 258 210, 260 180 C 262 150, 255 120, 248 95 C 230 105, 215 120, 200 140 C 185 120, 170 105, 152 95 Z" fill="#7c3aed" opacity="0.12" filter="url(#strongGlowBack)"/>
+
+        <!-- Left Lat -->
+        <g filter="url(#backGlow)">
+          <path d="M 152 95 C 148 110, 142 130, 140 155 C 138 180, 142 205, 150 228 C 158 248, 172 262, 188 270 C 194 273, 198 274, 200 275 L 200 250 C 192 240, 185 225, 182 205 C 178 180, 180 155, 185 135 C 188 120, 195 108, 200 98 C 185 108, 168 100, 152 95 Z" fill="url(#latGrad)"/>
+        </g>
+
+        <!-- Right Lat -->
+        <g filter="url(#backGlow)">
+          <path d="M 248 95 C 252 110, 258 130, 260 155 C 262 180, 258 205, 250 228 C 242 248, 228 262, 212 270 C 206 273, 202 274, 200 275 L 200 250 C 208 240, 215 225, 218 205 C 222 180, 220 155, 215 135 C 212 120, 205 108, 200 98 C 215 108, 232 100, 248 95 Z" fill="url(#latGrad)"/>
+        </g>
+
+        <!-- Lat fibers -->
+        <path d="M 150 115 Q 160 140 170 160" fill="none" stroke="#a855f7" stroke-width="1.2" opacity="0.45"/>
+        <path d="M 145 135 Q 158 160 172 180" fill="none" stroke="#a855f7" stroke-width="1.2" opacity="0.45"/>
+        <path d="M 142 158 Q 156 185 175 205" fill="none" stroke="#a855f7" stroke-width="1.2" opacity="0.45"/>
+        <path d="M 143 182 Q 158 208 178 225" fill="none" stroke="#a855f7" stroke-width="1.2" opacity="0.4"/>
+        <path d="M 148 205 Q 164 228 182 242" fill="none" stroke="#a855f7" stroke-width="1.2" opacity="0.4"/>
+        <path d="M 156 225 Q 170 245 188 255" fill="none" stroke="#a855f7" stroke-width="1.2" opacity="0.35"/>
+        <path d="M 168 242 Q 180 258 195 265" fill="none" stroke="#a855f7" stroke-width="1.2" opacity="0.3"/>
+        <path d="M 250 115 Q 240 140 230 160" fill="none" stroke="#a855f7" stroke-width="1.2" opacity="0.45"/>
+        <path d="M 255 135 Q 242 160 228 180" fill="none" stroke="#a855f7" stroke-width="1.2" opacity="0.45"/>
+        <path d="M 258 158 Q 244 185 225 205" fill="none" stroke="#a855f7" stroke-width="1.2" opacity="0.45"/>
+        <path d="M 257 182 Q 242 208 222 225" fill="none" stroke="#a855f7" stroke-width="1.2" opacity="0.4"/>
+        <path d="M 252 205 Q 236 228 218 242" fill="none" stroke="#a855f7" stroke-width="1.2" opacity="0.4"/>
+        <path d="M 244 225 Q 230 245 212 255" fill="none" stroke="#a855f7" stroke-width="1.2" opacity="0.35"/>
+        <path d="M 232 242 Q 220 258 205 265" fill="none" stroke="#a855f7" stroke-width="1.2" opacity="0.3"/>
+
+        <!-- TRAPS -->
+        <path d="M 162 88 C 155 78, 165 65, 180 62 Q 200 58 220 62 C 235 65, 245 78, 238 88 C 248 95, 252 108, 248 120 C 242 108, 230 100, 218 98 C 225 108, 228 122, 222 135 C 215 125, 208 115, 200 108 C 192 115, 185 125, 178 135 C 172 122, 175 108, 182 98 C 170 100, 158 108, 152 120 C 148 108, 152 95, 162 88 Z" fill="#7c3aed" opacity="0.15" filter="url(#strongGlowBack)"/>
+
+        <g filter="url(#backGlow)">
+          <path d="M 162 88 C 158 82, 168 68, 182 64 Q 200 60 218 64 C 232 68, 242 82, 238 88 C 244 96, 246 108, 242 118 C 236 108, 226 100, 215 98 C 220 108, 222 122, 218 132 C 210 122, 205 114, 200 108 C 195 114, 190 122, 182 132 C 178 122, 180 108, 185 98 C 174 100, 164 108, 158 118 C 154 108, 156 96, 162 88 Z" fill="url(#trapGrad)"/>
+        </g>
+
+        <!-- Trap fibers -->
+        <path d="M 168 75 Q 182 82 200 88" fill="none" stroke="#c084fc" stroke-width="1.2" opacity="0.5"/>
+        <path d="M 165 82 Q 182 90 200 96" fill="none" stroke="#c084fc" stroke-width="1.2" opacity="0.5"/>
+        <path d="M 162 90 Q 178 98 198 105" fill="none" stroke="#c084fc" stroke-width="1.2" opacity="0.45"/>
+        <path d="M 232 75 Q 218 82 200 88" fill="none" stroke="#c084fc" stroke-width="1.2" opacity="0.5"/>
+        <path d="M 235 82 Q 218 90 200 96" fill="none" stroke="#c084fc" stroke-width="1.2" opacity="0.5"/>
+        <path d="M 238 90 Q 222 98 202 105" fill="none" stroke="#c084fc" stroke-width="1.2" opacity="0.45"/>
+        <path d="M 200 92 Q 200 100 200 108" fill="none" stroke="#c084fc" stroke-width="1.2" opacity="0.4"/>
+
+        <!-- Rhomboids -->
+        <path d="M 182 115 Q 190 125 198 130 Q 195 140 188 145 Q 180 138 178 128 Q 179 120 182 115" fill="#5b21b6" opacity="0.7"/>
+        <path d="M 218 115 Q 210 125 202 130 Q 205 140 212 145 Q 220 138 222 128 Q 221 120 218 115" fill="#5b21b6" opacity="0.7"/>
+        <path d="M 185 120 Q 192 128 198 132" fill="none" stroke="#a855f7" stroke-width="1" opacity="0.5"/>
+        <path d="M 182 128 Q 190 136 196 140" fill="none" stroke="#a855f7" stroke-width="1" opacity="0.5"/>
+        <path d="M 215 120 Q 208 128 202 132" fill="none" stroke="#a855f7" stroke-width="1" opacity="0.5"/>
+        <path d="M 218 128 Q 210 136 204 140" fill="none" stroke="#a855f7" stroke-width="1" opacity="0.5"/>
+
+        <!-- Erectors -->
+        <g filter="url(#backGlow)">
+          <path d="M 192 145 Q 188 170 186 200 Q 185 230 188 255 Q 192 270 198 278 L 200 280 L 200 260 Q 196 240 195 210 Q 196 180 198 155 Q 196 148 192 145" fill="url(#erectorGrad)"/>
+          <path d="M 208 145 Q 212 170 214 200 Q 215 230 212 255 Q 208 270 202 278 L 200 280 L 200 260 Q 204 240 205 210 Q 204 180 202 155 Q 204 148 208 145" fill="url(#erectorGrad)"/>
+        </g>
+
+        <!-- Erector fibers -->
+        <path d="M 190 160 Q 194 180 192 210" fill="none" stroke="#a855f7" stroke-width="1" opacity="0.4"/>
+        <path d="M 188 180 Q 192 200 190 230" fill="none" stroke="#a855f7" stroke-width="1" opacity="0.4"/>
+        <path d="M 190 200 Q 194 220 192 250" fill="none" stroke="#a855f7" stroke-width="1" opacity="0.35"/>
+        <path d="M 210 160 Q 206 180 208 210" fill="none" stroke="#a855f7" stroke-width="1" opacity="0.4"/>
+        <path d="M 212 180 Q 208 200 210 230" fill="none" stroke="#a855f7" stroke-width="1" opacity="0.4"/>
+        <path d="M 210 200 Q 206 220 208 250" fill="none" stroke="#a855f7" stroke-width="1" opacity="0.35"/>
+
+        <!-- Spine -->
+        <path d="M 200 62 Q 198 80 199 100 Q 200 120 200 145 Q 200 170 200 200 Q 200 230 200 260 Q 200 275 200 282" fill="none" stroke="#4c1d95" stroke-width="2.5" opacity="0.6"/>
+        <path d="M 200 65 Q 200 80 200 100 Q 200 280" fill="none" stroke="#7c3aed" stroke-width="1" opacity="0.4"/>
+
+        <circle cx="200" cy="95" r="2" fill="#5b21b6" opacity="0.7"/>
+        <circle cx="200" cy="120" r="2" fill="#5b21b6" opacity="0.7"/>
+        <circle cx="200" cy="150" r="2.5" fill="#5b21b6" opacity="0.7"/>
+        <circle cx="200" cy="185" r="2.5" fill="#5b21b6" opacity="0.7"/>
+        <circle cx="200" cy="220" r="2.5" fill="#5b21b6" opacity="0.7"/>
+        <circle cx="200" cy="255" r="2" fill="#5b21b6" opacity="0.7"/>
+
+        <!-- Teres hints -->
+        <path d="M 155 130 Q 162 140 168 145 Q 165 152 158 148 Q 152 140 155 130" fill="#4c1d95" opacity="0.4"/>
+        <path d="M 245 130 Q 238 140 232 145 Q 235 152 242 148 Q 248 140 245 130" fill="#4c1d95" opacity="0.4"/>
+
+        <!-- Label -->
+        <text x="200" y="420" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="22" font-weight="700" fill="#e9d5ff" letter-spacing="3">BACK</text>
+        <text x="200" y="445" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="11" font-weight="500" fill="#7c3aed" letter-spacing="4">LATISSIMUS DORSI</text>
+
+        <line x1="165" y1="460" x2="235" y2="460" stroke="#7c3aed" stroke-width="1.5" opacity="0.5" stroke-linecap="round"/>
+        <circle cx="200" cy="460" r="3" fill="#7c3aed" opacity="0.8"/>
+
+        <circle cx="125" cy="345" r="2.5" fill="#7c3aed" opacity="0.3"/>
+        <circle cx="115" cy="360" r="2" fill="#7c3aed" opacity="0.2"/>
+        <circle cx="275" cy="345" r="2.5" fill="#7c3aed" opacity="0.3"/>
+        <circle cx="285" cy="360" r="2" fill="#7c3aed" opacity="0.2"/>
+      </svg>
+    </div>
+    <span class="label">BACK MUSCLE GROUP</span>
+  </div>
+</body>
+</html>

@@ -6,6 +6,7 @@
 //     "3000/2000/1000" labels while Profile rendered "9.0k" for the same
 //     visual element. One rule, every screen.
 
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gymlog/shared/widgets/branded_line_chart.dart';
 
@@ -29,4 +30,32 @@ void main() {
       expect(BrandedLineChart.defaultAxisFormat(12500), '12.5k');
     });
   });
+
+  group('BrandedLineChart.yAxisUnit', () {
+    testWidgets('renders unit suffix on both Y axes', (tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: BrandedLineChart(
+              data: [
+                ChartPoint(_date, 5),
+                ChartPoint(_date.add(const Duration(days: 7)), 10),
+                ChartPoint(_date.add(const Duration(days: 14)), 15),
+              ],
+              valueFormatter: (v) => '$v kg',
+              yAxisUnit: 'kg',
+              height: 200,
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('5 kg'), findsWidgets);
+      expect(find.text('10 kg'), findsWidgets);
+      expect(find.text('15 kg'), findsWidgets);
+    });
+  });
 }
+
+final _date = DateTime(2024, 1, 1);

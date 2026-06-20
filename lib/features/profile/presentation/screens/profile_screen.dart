@@ -1,24 +1,31 @@
-import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:intl/intl.dart';
+
 import '../../../../core/providers/premium_provider.dart';
 import '../../../../core/theme/app_colors.dart';
-import '../../../../core/utils/units.dart';
-import '../../../../features/routines/presentation/widgets/routine_detail_styles.dart';
-import '../../../../shared/widgets/branded_line_chart.dart';
+import '../../../../core/theme/app_text.dart';
+import '../../../../core/utils/tap_guard.dart';
+import '../../../../shared/widgets/bottom_nav_bar.dart';
 import '../../../../shared/widgets/premium_paywall.dart';
+import '../../../../shared/widgets/ui/app_action_row.dart';
+import '../../../../shared/widgets/ui/app_card.dart';
+import '../../../../shared/widgets/ui/goal_ring.dart';
 import '../../../../shared/widgets/ui/segmented_control.dart';
+import '../../../../shared/widgets/ui/skeleton.dart';
 import '../providers/profile_provider.dart';
 import '../providers/profile_stats_provider.dart';
+import '../widgets/graph_kpi_header.dart';
+import '../widgets/profile_graph_empty_state.dart';
+import '../widgets/profile_graph_low_data_banner.dart';
+import '../widgets/weekly_bar_chart.dart';
 import 'settings_screen.dart';
 
-/// Athlete dashboard — identity, streak, weekly goal ring, and the same
-/// chart component every other screen uses. Settings lives one tap away.
+
+/// Athlete dashboard — identity, streak, weekly goal ring, training chart,
+/// and quick links. Designed to feel personal, immediate, and scannable.
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
 
@@ -26,304 +33,354 @@ class ProfileScreen extends ConsumerStatefulWidget {
   ConsumerState<ProfileScreen> createState() => _ProfileScreenState();
 }
 
-class _ProfileScreenState extends ConsumerState<ProfileScreen> {
-  String _selectedMetric = 'Volume';
+class _ProfileScreenState extends ConsumerState<ProfileScreen>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _entranceController = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 600),
+  );
 
   @override
-  Widget build(BuildContext context) {
-    final workoutCount = ref.watch(workoutCountProvider).valueOrNull ?? 0;
-    final profile = ref.watch(currentUserProfileProvider).valueOrNull;
-    final streak = ref.watch(streakStatsProvider);
-    final goal = ref.watch(weeklyGoalProvider);
-    final isPremium = ref.watch(isPremiumProvider);
+  void initState() {
+    super.initState();
+    // Defer the entrance animation until the first paint so the screen is
+    // already laid out when the stagger begins — prevents a flash of offset.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _entranceController.forward();
+    });
+  }
 
-    final displayName = profile?.displayName ?? 'Athlete';
+  @override
+  void dispose() {
+    _entranceController.dispose();
+    super.dispose();
+  }
 
-    return Scaffold(
-      backgroundColor: AppColors.bgBase,
-      appBar: AppBar(
-        backgroundColor: AppColors.bgBase,
-        scrolledUnderElevation: 0,
-        title: Text(
-          'Profile',
-          style: GoogleFonts.inter(
-            fontWeight: FontWeight.w700,
-            fontSize: 28,
-            letterSpacing: -0.5,
-            color: AppColors.textPrimary,
-          ),
-        ),
-        actions: [
-          IconButton(
-            tooltip: 'Settings',
-            constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
-            icon: const Icon(Icons.settings_outlined,
-                size: 22, color: AppColors.textPrimary),
-            onPressed: () {
-              HapticFeedback.selectionClick();
-              context.push('/settings');
-            },
-          ),
-        ],
-      ),
-      body: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 4, 16, 120),
-        children: [
-          // ── Identity ────────────────────────────────────────────────────
-          Row(
-            children: [
-              Container(
-                width: 52,
-                height: 52,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  color: AppColors.surface2, // neutral, not competing with the accent
-                  shape: BoxShape.circle,
-                  border: Border.all(color: AppColors.borderSubtle),
-                ),
-                child: Text(
-                  displayName.isNotEmpty ? displayName[0].toUpperCase() : 'A',
-                  style: GoogleFonts.inter(
-                    color: AppColors.textSecondary, // white 60%
-                    fontSize: 20,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      displayName,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.inter(
-                        color: AppColors.textPrimary,
-                        fontSize: 19,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: -0.3,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      profile?.email ?? '',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.inter(
-                        color: AppColors.textSecondary,
-                        fontSize: 12.5,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              if (isPremium)
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: AppColors.accentPrimary.withValues(alpha: 0.14),
-                    borderRadius: BorderRadius.circular(999),
-                    border: Border.all(
-                      color: AppColors.accentPrimary.withValues(alpha: 0.3),
-                    ),
-                  ),
-                  child: Text(
-                    'PRO',
-                    style: GoogleFonts.inter(
-                      fontSize: 10.5,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 0.6,
-                      color: AppColors.indigo400,
-                    ),
-                  ),
-                ),
-            ],
-          ),
-          const SizedBox(height: 20),
+  Widget _entrance({
+    required Widget child,
+    required int index,
+    bool slide = true,
+  }) {
+    final reduceMotion = MediaQuery.disableAnimationsOf(context);
+    if (reduceMotion) return child;
 
-          // ── Stats strip: streak · weekly ring · total ───────────────────
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 16),
-            decoration: BoxDecoration(
-              gradient: RDStyles.cardGradient,
-              borderRadius: BorderRadius.circular(16),
-              border: RDStyles.hairlineBorder,
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: _StatCell(
-                    value: '${streak.currentStreak}', // 0, not "—" (reads as broken)
-                    label: 'DAY STREAK',
-                    leading: Icon(
-                      Icons.local_fire_department_rounded,
-                      size: 17,
-                      color: streak.currentStreak > 0
-                          ? AppColors.warning
-                          : AppColors.textTertiary,
-                    ),
-                  ),
-                ),
-                _statDivider(),
-                Expanded(
-                  child: Semantics(
-                    button: true,
-                    label:
-                        'Weekly goal: ${streak.workoutsThisWeek} of $goal workouts. Tap to change goal.',
-                    child: GestureDetector(
-                      behavior: HitTestBehavior.opaque,
-                      onTap: () => showWeeklyGoalSheet(context, ref),
-                      child: _StatCell(
-                        value: '${streak.workoutsThisWeek}/$goal',
-                        label: 'THIS WEEK',
-                        leading: GoalRing(
-                          progress: goal == 0
-                              ? 0
-                              : (streak.workoutsThisWeek / goal)
-                                  .clamp(0.0, 1.0),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                _statDivider(),
-                Expanded(
-                  child: _StatCell(
-                    value: '$workoutCount',
-                    label: 'WORKOUTS',
-                    leading: const Icon(
-                      Icons.fitness_center_rounded,
-                      size: 16,
-                      color: Color(0xFFA78BFA),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
+    final delay = index * 0.06;
+    final animation = CurvedAnimation(
+      parent: _entranceController,
+      curve: Interval(delay.clamp(0.0, 0.82), 1.0, curve: Curves.easeOutCubic),
+    );
 
-          if (!streak.trainedToday && streak.currentStreak > 0)
-            Padding(
-              padding: const EdgeInsets.only(top: 10, left: 4),
-              child: Text(
-                'Train today to keep your ${streak.currentStreak}-day streak alive.',
-                style: GoogleFonts.inter(
-                  fontSize: 12.5,
-                  color: AppColors.textSecondary,
-                ),
-              ),
-            ),
-          const SizedBox(height: 28),
-
-          // ── Training chart (shared component) ───────────────────────────
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text.rich(TextSpan(children: [
-                TextSpan(text: 'Training ', style: RDStyles.sectionLabel),
-                TextSpan(
-                    text: '(weekly ${_unitFor(_selectedMetric)})',
-                    style: RDStyles.sectionUnit),
-              ])),
-              if (!isPremium) const ProLockPill(label: 'FULL HISTORY'),
-            ],
-          ),
-          const SizedBox(height: 12),
-          _WeeklyChart(metric: _selectedMetric, isPremium: isPremium),
-          const SizedBox(height: 14),
-          SegmentedControl(
-            segments: const ['Volume', 'Duration', 'Reps'],
-            selected: _selectedMetric,
-            onChanged: (m) => setState(() => _selectedMetric = m),
-          ),
-          const SizedBox(height: 28),
-
-          // ── Quick links ─────────────────────────────────────────────────
-          Container(
-            decoration: BoxDecoration(
-              gradient: RDStyles.cardGradient,
-              borderRadius: BorderRadius.circular(16),
-              border: RDStyles.hairlineBorder,
-            ),
-            clipBehavior: Clip.antiAlias,
-            child: Column(
-              children: [
-                _ActionRow(
-                  icon: Icons.workspace_premium_rounded,
-                  iconColor: const Color(0xFFA78BFA),
-                  title: isPremium ? 'GymLog Pro' : 'Upgrade to Pro',
-                  subtitle: isPremium
-                      ? 'Active — full history unlocked'
-                      : 'Full analytics history & more',
-                  onTap: () {
-                    if (isPremium) {
-                      HapticFeedback.lightImpact();
-                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                        content: Text(
-                          'You are on GymLog Pro. Thanks for the support!',
-                          style:
-                              GoogleFonts.inter(color: AppColors.textPrimary),
-                        ),
-                        backgroundColor: AppColors.bgSurface,
-                        behavior: SnackBarBehavior.floating,
-                      ));
-                    } else {
-                      showPremiumPaywall(context);
-                    }
-                  },
-                ),
-                _rowDivider(),
-                _ActionRow(
-                  icon: Icons.fitness_center_rounded,
-                  iconColor: AppColors.textSecondary,
-                  title: 'Exercise Library',
-                  subtitle: 'Browse exercises, form guides & records',
-                  onTap: () {
-                    HapticFeedback.selectionClick();
-                    context.push('/exercises/library');
-                  },
-                ),
-                _rowDivider(),
-                _ActionRow(
-                  icon: Icons.settings_outlined,
-                  iconColor: AppColors.textSecondary,
-                  title: 'Settings',
-                  subtitle: 'Units, goals, rest timer, account',
-                  onTap: () {
-                    HapticFeedback.selectionClick();
-                    context.push('/settings');
-                  },
-                ),
-              ],
-            ),
-          ),
-        ],
+    return AnimatedBuilder(
+      animation: animation,
+      builder: (_, __) => Opacity(
+        opacity: animation.value,
+        child: slide
+            ? Transform.translate(
+                offset: Offset(0, 16 * (1 - animation.value)),
+                child: child,
+              )
+            : child,
       ),
     );
   }
 
-  String _unitFor(String metric) => switch (metric) {
-        'Duration' => 'min',
-        'Reps' => 'reps',
-        _ => 'kg',
-      };
+  void _openSettings() {
+    if (!tapGuard()) return;
+    HapticFeedback.selectionClick();
+    context.push('/settings');
+  }
 
-  Widget _statDivider() => Container(
-        width: 1,
-        height: 36,
-        color: Colors.white.withValues(alpha: 0.06),
-      );
+  void _openExerciseLibrary() {
+    if (!tapGuard()) return;
+    HapticFeedback.selectionClick();
+    context.push('/exercises/library');
+  }
 
-  Widget _rowDivider() => Padding(
-        padding: const EdgeInsets.only(left: 56),
-        child: Container(height: 1, color: RDStyles.hairline),
-      );
+  Future<void> _onRefresh() async {
+    HapticFeedback.mediumImpact();
+    ref.invalidate(currentUserProfileProvider);
+    ref.invalidate(workoutCountProvider);
+    ref.invalidate(sessionStatsProvider);
+    ref.invalidate(streakStatsProvider);
+    // Give the reactive streams one frame to re-emit.
+    await Future.delayed(const Duration(milliseconds: 300));
+  }
+
+  void _openPremium(BuildContext context, {required bool isPremium}) {
+    if (!tapGuard()) return;
+    if (isPremium) {
+      HapticFeedback.lightImpact();
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(
+          'You are on GymLog Pro. Thanks for the support!',
+          style: AppText.button(),
+        ),
+        backgroundColor: AppColors.bgSurface,
+        behavior: SnackBarBehavior.floating,
+      ));
+    } else {
+      showPremiumPaywall(context);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final workoutCount = ref.watch(workoutCountProvider).valueOrNull ?? 0;
+    final profileAsync = ref.watch(currentUserProfileProvider);
+    final streak = ref.watch(streakStatsProvider);
+    final goal = ref.watch(weeklyGoalProvider);
+    final isPremium = ref.watch(isPremiumProvider);
+
+    final bottomClearance = BottomNavBar.height +
+        MediaQuery.viewPaddingOf(context).bottom +
+        24;
+
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: SystemUiOverlayStyle.light,
+      child: Scaffold(
+        backgroundColor: AppColors.bgBase,
+        appBar: AppBar(
+          backgroundColor: AppColors.bgBase,
+          scrolledUnderElevation: 0,
+          title: Text('Profile', style: AppText.screenTitle()),
+          actions: [
+            IconButton(
+              tooltip: 'Settings',
+              constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
+              icon: const Icon(Icons.settings_outlined,
+                  size: 22, color: AppColors.textPrimary),
+              onPressed: _openSettings,
+            ),
+          ],
+        ),
+        body: profileAsync.when(
+          loading: () => _LoadingBody(bottomClearance: bottomClearance),
+          error: (e, _) => _ErrorBody(
+            bottomClearance: bottomClearance,
+            onRetry: () => ref.invalidate(currentUserProfileProvider),
+          ),
+          data: (profile) {
+            final displayName = profile?.displayName ?? 'Athlete';
+            final email = profile?.email ?? '';
+
+            return RefreshIndicator(
+              color: AppColors.accentPrimary,
+              backgroundColor: AppColors.bgSurface,
+              onRefresh: _onRefresh,
+              child: ListView(
+                padding: EdgeInsets.fromLTRB(16, 4, 16, bottomClearance),
+                children: [
+                _entrance(
+                  index: 0,
+                  child: Semantics(
+                    container: true,
+                    label: 'Profile, $displayName, $email',
+                    child: _IdentityHeader(
+                      displayName: displayName,
+                      email: email,
+                      isPremium: isPremium,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                _entrance(
+                  index: 1,
+                  child: AppCard(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: AppSpacing.x1, vertical: AppSpacing.x4),
+                    child: _StatsStrip(
+                      streak: streak,
+                      goal: goal,
+                      workoutCount: workoutCount,
+                      onGoalTap: () => showWeeklyGoalSheet(context, ref),
+                    ),
+                  ),
+                ),
+                if (goal > 0 && streak.workoutsThisWeek >= goal) ...[
+                  const SizedBox(height: 10),
+                  _entrance(
+                    index: 2,
+                    slide: false,
+                    child: const _GoalReachedBanner(),
+                  ),
+                ] else if (!streak.trainedToday) ...[
+                  const SizedBox(height: 10),
+                  _entrance(
+                    index: 2,
+                    slide: false,
+                    child: _StreakReminder(streak: streak),
+                  ),
+                ],
+                const SizedBox(height: 28),
+                _entrance(
+                  index: 3,
+                  child: const _TrainingChartSection(),
+                ),
+                const SizedBox(height: 28),
+                _entrance(
+                  index: 4,
+                  child: _QuickLinks(
+                    isPremium: isPremium,
+                    onPremiumTap: () => _openPremium(context, isPremium: isPremium),
+                    onExerciseLibraryTap: _openExerciseLibrary,
+                    onSettingsTap: _openSettings,
+                  ),
+                ),
+                ],
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
 }
 
-// ── Stats strip pieces ────────────────────────────────────────────────────────
+class _IdentityHeader extends StatelessWidget {
+  final String displayName;
+  final String email;
+  final bool isPremium;
+
+  const _IdentityHeader({
+    required this.displayName,
+    required this.email,
+    required this.isPremium,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Container(
+          width: 52,
+          height: 52,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: AppColors.surface2,
+            shape: BoxShape.circle,
+            border: Border.all(color: AppColors.borderSubtle),
+          ),
+          child: Text(
+            displayName.isNotEmpty ? displayName[0].toUpperCase() : 'A',
+            style: GoogleFonts.inter(
+              color: AppColors.textSecondary,
+              fontSize: 20,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ),
+        const SizedBox(width: 14),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                displayName,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: AppText.profileName(),
+              ),
+              if (email.isNotEmpty) ...[
+                const SizedBox(height: 2),
+                Text(
+                  email,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppText.profileEmail(),
+                ),
+              ],
+            ],
+          ),
+        ),
+        if (isPremium)
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            decoration: BoxDecoration(
+              color: AppColors.indigoTint,
+              borderRadius: BorderRadius.circular(AppRadius.badge),
+              border: Border.all(color: AppColors.indigoTrack),
+            ),
+            child: Text(
+              'PRO',
+              style: AppText.badge(color: AppColors.indigo400),
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+class _StatsStrip extends StatelessWidget {
+  final StreakStats streak;
+  final int goal;
+  final int workoutCount;
+  final VoidCallback onGoalTap;
+
+  const _StatsStrip({
+    required this.streak,
+    required this.goal,
+    required this.workoutCount,
+    required this.onGoalTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    const iconSize = 18.0;
+
+    return Row(
+      children: [
+        Expanded(
+          child: _StatCell(
+            value: '${streak.currentStreak}',
+            label: 'DAY STREAK',
+            leading: Icon(
+              Icons.local_fire_department_rounded,
+              size: iconSize,
+              color: streak.currentStreak > 0
+                  ? AppColors.warning
+                  : AppColors.textTertiary,
+            ),
+          ),
+        ),
+        const _StatDivider(),
+        Expanded(
+          child: Semantics(
+            button: true,
+            label:
+                'Weekly goal: ${streak.workoutsThisWeek} of $goal workouts. Tap to change goal.',
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: onGoalTap,
+              child: _StatCell(
+                value: streak.workoutsThisWeek >= goal
+                    ? '${streak.workoutsThisWeek}'
+                    : '${streak.workoutsThisWeek}/$goal',
+                label: 'THIS WEEK',
+                leading: GoalRing(
+                  progress: goal == 0
+                      ? 0
+                      : (streak.workoutsThisWeek / goal).clamp(0.0, 1.0),
+                ),
+              ),
+            ),
+          ),
+        ),
+        const _StatDivider(),
+        Expanded(
+          child: _StatCell(
+            value: '$workoutCount',
+            label: 'WORKOUTS',
+            leading: const Icon(
+              Icons.fitness_center_rounded,
+              size: iconSize,
+              color: AppColors.indigo400,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
 
 class _StatCell extends StatelessWidget {
   final String value;
@@ -338,32 +395,159 @@ class _StatCell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
+    return Semantics(
+      container: true,
+      label: '$label $value',
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              leading,
+              const SizedBox(width: 6),
+              Text(value, style: AppText.statValue()),
+            ],
+          ),
+          const SizedBox(height: 5),
+          Text(label, style: AppText.statCellLabel()),
+        ],
+      ),
+    );
+  }
+}
+
+class _StatDivider extends StatelessWidget {
+  const _StatDivider();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 1,
+      height: 36,
+      color: AppColors.borderSubtle,
+    );
+  }
+}
+
+class _StreakReminder extends StatelessWidget {
+  final StreakStats streak;
+
+  const _StreakReminder({required this.streak});
+
+  @override
+  Widget build(BuildContext context) {
+    final message = streak.currentStreak > 0
+        ? 'Train today to keep your ${streak.currentStreak}-day streak alive.'
+        : 'Train today to start a streak.';
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 4),
+      child: Text(
+        message,
+        style: AppText.caption(),
+      ),
+    );
+  }
+}
+
+class _GoalReachedBanner extends StatelessWidget {
+  const _GoalReachedBanner();
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            leading,
-            const SizedBox(width: 6),
-            Text(
-              value,
-              style: GoogleFonts.inter(
-                fontSize: 17,
-                fontWeight: FontWeight.w700,
-                color: AppColors.textPrimary,
-                fontFeatures: const [FontFeature.tabularFigures()],
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 5),
+        const Icon(Icons.emoji_events_rounded,
+            size: 14, color: AppColors.warning),
+        const SizedBox(width: 6),
         Text(
-          label,
-          style: GoogleFonts.inter(
-            fontSize: 10,
-            fontWeight: FontWeight.w600,
-            letterSpacing: 0.7,
-            color: AppColors.textSecondary,
+          'Weekly goal reached — great work!',
+          style: AppText.caption(color: AppColors.warning),
+        ),
+      ],
+    );
+  }
+}
+
+class _TrainingChartSection extends ConsumerStatefulWidget {
+  const _TrainingChartSection();
+
+  @override
+  ConsumerState<_TrainingChartSection> createState() =>
+      _TrainingChartSectionState();
+}
+
+class _TrainingChartSectionState extends ConsumerState<_TrainingChartSection> {
+  // Bumps on every metric change so AnimatedSwitcher never sees duplicate keys
+  // when the user rapidly toggles Volume/Duration/Reps.
+  int _switchVersion = 0;
+
+  @override
+  Widget build(BuildContext context) {
+    final metric = ref.watch(profileChartMetricProvider);
+    final aggregates = ref.watch(weeklyAggregatesProvider);
+    final filledWeeks = aggregates.where((a) => a.workoutCount > 0).length;
+    final isEmpty = filledWeeks == 0;
+    final showBanner = filledWeeks > 0 && filledWeeks < 4;
+
+    // With fewer than 4 data weeks we show only the weeks that have data so
+    // the chart does not look like a graveyard. Once the user has 4+ weeks we
+    // show the full 8-week window with ghost bars for empty buckets.
+    final chartAggregates = filledWeeks < 4
+        ? aggregates.where((a) => a.workoutCount > 0).toList()
+        : aggregates;
+
+    void onStartWorkout() {
+      if (!tapGuard()) return;
+      HapticFeedback.mediumImpact();
+      context.push('/workout/active');
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Semantics(
+          header: true,
+          child: Text('Training', style: AppText.sectionHeading()),
+        ),
+        const SizedBox(height: 24),
+        if (isEmpty)
+          ProfileGraphEmptyState(onStartWorkout: onStartWorkout)
+        else ...[
+          GraphKpiHeader(aggregates: chartAggregates, metric: metric),
+          if (showBanner) ...[
+            const SizedBox(height: 16),
+            const ProfileGraphLowDataBanner(),
+          ],
+          const SizedBox(height: 24),
+          AnimatedSwitcher(
+            duration: MediaQuery.disableAnimationsOf(context)
+                ? Duration.zero
+                : const Duration(milliseconds: 300),
+            switchInCurve: Curves.easeOutCubic,
+            switchOutCurve: Curves.easeOutCubic,
+            child: WeeklyBarChart(
+              key: ValueKey('${metric.name}_$_switchVersion'),
+              aggregates: chartAggregates,
+              metric: metric,
+            ),
+          ),
+        ],
+        const SizedBox(height: 20),
+        Semantics(
+          label: 'Chart metric selector',
+          child: SegmentedControl(
+            segments: const ['Volume', 'Duration', 'Reps'],
+            selected: metric.label,
+            onChanged: (label) {
+              final next = ProfileGraphMetric.values.firstWhere(
+                (m) => m.label == label,
+              );
+              if (next == metric) return;
+              HapticFeedback.selectionClick();
+              setState(() => _switchVersion++);
+              ref.read(profileChartMetricProvider.notifier).setMetric(next);
+            },
           ),
         ),
       ],
@@ -371,173 +555,168 @@ class _StatCell extends StatelessWidget {
   }
 }
 
-/// Animated weekly-goal ring — fills smoothly as workouts land, turns
-/// success-green the moment the goal completes.
-class GoalRing extends StatelessWidget {
-  final double progress;
-  final double size;
-
-  const GoalRing({super.key, required this.progress, this.size = 18});
-
-  @override
-  Widget build(BuildContext context) {
-    return TweenAnimationBuilder<double>(
-      tween: Tween(begin: 0, end: progress),
-      duration: const Duration(milliseconds: 650),
-      curve: Curves.easeOutCubic,
-      builder: (_, animated, __) => SizedBox(
-        width: size,
-        height: size,
-        child: CustomPaint(
-          painter: _RingPainter(progress: animated, complete: progress >= 1),
-        ),
-      ),
-    );
-  }
-}
-
-class _RingPainter extends CustomPainter {
-  final double progress;
-  final bool complete;
-  _RingPainter({required this.progress, required this.complete});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final center = Offset(size.width / 2, size.height / 2);
-    final radius = size.width / 2 - 1.5;
-
-    canvas.drawCircle(
-      center,
-      radius,
-      Paint()
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 3
-        ..color = Colors.white.withValues(alpha: 0.10),
-    );
-
-    if (progress > 0) {
-      canvas.drawArc(
-        Rect.fromCircle(center: center, radius: radius),
-        -math.pi / 2,
-        2 * math.pi * progress.clamp(0.0, 1.0),
-        false,
-        Paint()
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 3
-          ..strokeCap = StrokeCap.round
-          ..color =
-              complete ? const Color(0xFF34C759) : AppColors.accentPrimary,
-      );
-    }
-  }
-
-  @override
-  bool shouldRepaint(_RingPainter oldDelegate) =>
-      oldDelegate.progress != progress || oldDelegate.complete != complete;
-}
-
-// ── Weekly training chart — delegates to the shared component ────────────────
-
-class _WeeklyChart extends ConsumerWidget {
-  final String metric;
+class _QuickLinks extends StatelessWidget {
   final bool isPremium;
+  final VoidCallback onPremiumTap;
+  final VoidCallback onExerciseLibraryTap;
+  final VoidCallback onSettingsTap;
 
-  const _WeeklyChart({required this.metric, required this.isPremium});
-
-  double _valueOf(WeeklyMetricPoint p) => switch (metric) {
-        'Duration' => p.duration,
-        'Reps' => p.reps,
-        _ => p.volume,
-      };
-
-  String _formatValue(double v) => switch (metric) {
-        // Full notation + unit — never "3.0k kg" double-unit nonsense.
-        'Duration' => '${groupThousands(v)} min',
-        'Reps' => '${groupThousands(v)} reps',
-        _ => '${groupThousands(v)} kg',
-      };
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final allPoints = ref.watch(weeklyMetricsProvider);
-    final points = gateChartSamples(allPoints, isPremium);
-
-    return BrandedLineChart(
-      key: ValueKey('$metric${points.length}'),
-      data: [for (final p in points) ChartPoint(p.weekStart, _valueOf(p))],
-      valueFormatter: _formatValue,
-      dateFormatter: (d) => 'week of ${DateFormat('MMM d').format(d)}',
-      height: 150,
-      emptyTitle: 'No training data yet',
-      emptySubtitle: 'Finish a workout to see your weekly trend',
-    );
-  }
-}
-
-// ── Action rows ───────────────────────────────────────────────────────────────
-
-class _ActionRow extends StatelessWidget {
-  final IconData icon;
-  final Color iconColor;
-  final String title;
-  final String subtitle;
-  final VoidCallback onTap;
-
-  const _ActionRow({
-    required this.icon,
-    required this.iconColor,
-    required this.title,
-    required this.subtitle,
-    required this.onTap,
+  const _QuickLinks({
+    required this.isPremium,
+    required this.onPremiumTap,
+    required this.onExerciseLibraryTap,
+    required this.onSettingsTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
-          child: Row(
+    return AppCard(
+      padding: EdgeInsets.zero,
+      child: Column(
+        children: [
+          AppActionRow(
+            icon: Icons.workspace_premium_rounded,
+            iconColor: AppColors.indigo400,
+            title: isPremium ? 'GymLog Pro' : 'Upgrade to Pro',
+            subtitle: isPremium
+                ? 'Active — full history unlocked'
+                : 'Full analytics history & more',
+            onTap: onPremiumTap,
+          ),
+          const AppActionDivider(),
+          AppActionRow(
+            icon: Icons.fitness_center_rounded,
+            title: 'Exercise Library',
+            subtitle: 'Browse exercises, form guides & records',
+            onTap: onExerciseLibraryTap,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _LoadingBody extends StatelessWidget {
+  final double bottomClearance;
+
+  const _LoadingBody({required this.bottomClearance});
+
+  @override
+  Widget build(BuildContext context) {
+    return SkeletonPulse(
+      child: ListView(
+        padding: EdgeInsets.fromLTRB(16, 4, 16, bottomClearance),
+        children: [
+          const Row(
             children: [
-              SizedBox(
-                width: 28,
-                child: Icon(icon, size: 20, color: iconColor),
-              ),
-              const SizedBox(width: 12),
+              SkeletonBox(width: 52, height: 52, radius: 26),
+              SizedBox(width: 14),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      title,
-                      style: GoogleFonts.inter(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.textPrimary,
-                      ),
-                    ),
-                    const SizedBox(height: 1),
-                    Text(
-                      subtitle,
-                      style: GoogleFonts.inter(
-                        fontSize: 12,
-                        color: AppColors.textSecondary,
-                      ),
-                    ),
+                    SkeletonBox(width: 140, height: 19, radius: AppRadius.input),
+                    SizedBox(height: 6),
+                    SkeletonBox(width: 180, height: 13, radius: AppRadius.input),
                   ],
                 ),
               ),
-              Icon(
-                Icons.chevron_right_rounded,
-                size: 20,
-                color: Colors.white.withValues(alpha: 0.25),
+            ],
+          ),
+          const SizedBox(height: 20),
+          AppCard(
+            child: Row(
+              children: [
+                for (var i = 0; i < 3; i++) ...[
+                  const Expanded(
+                    child: Column(
+                      children: [
+                        SkeletonBox(width: 50, height: 17, radius: AppRadius.input),
+                        SizedBox(height: 5),
+                        SkeletonBox(width: 56, height: 10, radius: AppRadius.input),
+                      ],
+                    ),
+                  ),
+                  if (i < 2) const SizedBox(width: 1),
+                ],
+              ],
+            ),
+          ),
+          const SizedBox(height: 28),
+          const AppCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SkeletonBox(width: 120, height: 16, radius: AppRadius.input),
+                SizedBox(height: 12),
+                SkeletonBox(width: double.infinity, height: 150, radius: AppRadius.card),
+                SizedBox(height: 14),
+                SkeletonBox(width: double.infinity, height: 36, radius: AppRadius.segmentedOuter),
+              ],
+            ),
+          ),
+          const SizedBox(height: 28),
+          AppCard(
+            child: Column(
+              children: [
+                for (var i = 0; i < 2; i++) ...[
+                  const SkeletonBox(width: double.infinity, height: 48, radius: AppRadius.input),
+                  if (i < 1) const SizedBox(height: 1),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ErrorBody extends StatelessWidget {
+  final double bottomClearance;
+  final VoidCallback onRetry;
+
+  const _ErrorBody({required this.bottomClearance, required this.onRetry});
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      padding: EdgeInsets.fromLTRB(16, 4, 16, bottomClearance),
+      children: [
+        AppCard(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Icon(Icons.error_outline_rounded,
+                  color: AppColors.error, size: 28),
+              const SizedBox(height: 12),
+              Text('Could not load profile',
+                  style: AppText.sheetTitle()),
+              const SizedBox(height: 6),
+              Text(
+                'We had trouble reading your local profile. Your workouts are safe.',
+                style: AppText.body(),
+              ),
+              const SizedBox(height: 16),
+              SizedBox(
+                width: double.infinity,
+                height: 48,
+                child: ElevatedButton(
+                  onPressed: onRetry,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.accentPrimary,
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(AppRadius.buttonPrimary)),
+                  ),
+                  child: Text('Retry', style: AppText.button()),
+                ),
               ),
             ],
           ),
         ),
-      ),
+      ],
     );
   }
 }

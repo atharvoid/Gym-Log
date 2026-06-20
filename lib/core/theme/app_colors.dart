@@ -73,6 +73,18 @@ abstract class AppColors {
   // ── Charts ──────────────────────────────────────────────────────────────
   static const chartAxisLabel = Color(0x59FFFFFF); // == textTertiary
 
+  // Profile analytics bar chart — cyan is intentionally distinct from indigo
+  // upsells so the graph reads as data, not a premium CTA.
+  static const profileGraphActiveBar = Color(0xFF00C9FF);
+  static const profileGraphActiveBarBright = Color(0xFF33D4FF);
+  static const profileGraphPreviousBar = Color(0xFF3A3A5C);
+  static const profileGraphInactiveBar = Color(0xFF2A2A3A);
+  static const profileGraphGhostBar = Color(0xFF1E1E2E);
+  static const profileGraphGridLine = Color(0xFF1E1E2E);
+  static const profileGraphAxisLabel = Color(0xFF8E8E93);
+  static const profileGraphTooltipBg = Color(0xFF1C1C24);
+  static const profileGraphTooltipShadow = Color(0x33000000); // 20% black
+
   // Muscle-split data-viz palette — an ORDERED violet ramp, light→dark. The
   // dominant (largest) muscle is leftmost and lightest (most visible on the
   // AMOLED card); each subsequent step darkens. Monotonic ordering is the fix:
