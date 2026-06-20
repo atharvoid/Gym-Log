@@ -389,6 +389,7 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
         tooltip: 'Back',
         icon: const Icon(Icons.arrow_back_rounded,
             size: 24, color: AppColors.textPrimary),
+        constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
         onPressed: () => context.pop(),
       ),
       actions: [
@@ -425,10 +426,10 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
   // ── Loading / error / not-found (each owns ONE Scaffold — no nesting) ──────
 
   Widget _buildSkeleton() {
-    return Scaffold(
-      backgroundColor: AppColors.bgBase,
-      body: SkeletonPulse(
-        child: CustomScrollView(
+    return SkeletonPulse(
+      child: Scaffold(
+        backgroundColor: AppColors.bgBase,
+        body: CustomScrollView(
           physics: const NeverScrollableScrollPhysics(),
           slivers: [
             const SliverAppBar(
@@ -444,13 +445,11 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
             ),
             SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const SkeletonBox(width: 200, height: 16),
-                    const SizedBox(height: 16),
-                    const SkeletonBox(height: 52, radius: 6),
                     const SizedBox(height: 24),
                     const SkeletonBox(height: 198, radius: 6),
                     const SizedBox(height: 24),
@@ -467,6 +466,12 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
             ),
           ],
         ),
+        bottomNavigationBar: const SafeArea(
+          child: Padding(
+            padding: EdgeInsets.fromLTRB(16, 8, 16, 10),
+            child: SkeletonBox(height: 52, radius: 6),
+          ),
+        ),
       ),
     );
   }
@@ -481,6 +486,7 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
           tooltip: 'Back',
           icon: const Icon(Icons.arrow_back_rounded,
               color: AppColors.textPrimary),
+          constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
           onPressed: () => context.pop(),
         ),
       ),
@@ -669,8 +675,12 @@ class _StartRoutineButtonState extends State<_StartRoutineButton> {
   void _onTapCancel() => setState(() => _scale = 1.0);
 
   void _onTap() {
-    // Peak-intent moment — a heavier confirmation than a normal tap.
-    HapticFeedback.heavyImpact();
+    if (widget.empty) {
+      HapticFeedback.lightImpact();
+    } else {
+      // Peak-intent moment — a heavier confirmation than a normal tap.
+      HapticFeedback.heavyImpact();
+    }
     widget.onTap();
   }
 
