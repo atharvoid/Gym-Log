@@ -207,9 +207,12 @@ class _SetRowState extends State<SetRow> {
   Widget build(BuildContext context) {
     final isCompleted = widget.setData.isCompleted;
     final prev = _previousLabel;
+    // Honor OS reduce-motion: the completion tint + check-pop become instant.
+    final reduceMotion = MediaQuery.disableAnimationsOf(context);
 
     return AnimatedContainer(
-      duration: const Duration(milliseconds: 200),
+      duration:
+          reduceMotion ? Duration.zero : const Duration(milliseconds: 200),
       curve: Curves.easeInOut,
       // Completed row = 3px green left border + 6% green tint (not a full fill).
       decoration: BoxDecoration(
@@ -324,7 +327,9 @@ class _SetRowState extends State<SetRow> {
                         begin: isCompleted ? 1.15 : 1.0,
                         end: 1.0,
                       ),
-                      duration: const Duration(milliseconds: 100),
+                      duration: reduceMotion
+                          ? Duration.zero
+                          : const Duration(milliseconds: 100),
                       curve: Curves.easeOutBack,
                       builder: (context, scale, child) =>
                           Transform.scale(scale: scale, child: child),
@@ -348,7 +353,7 @@ class _SetRowState extends State<SetRow> {
                         child: Icon(
                           Icons.check_rounded,
                           color: isCompleted
-                              ? Colors.white
+                              ? AppColors.textPrimary
                               : _canComplete
                                   ? AppColors.success.withValues(alpha: 0.7)
                                   : AppColors.textPrimary

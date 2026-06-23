@@ -262,7 +262,7 @@ class ExerciseBlock extends ConsumerWidget {
                     alignment: Alignment.centerRight,
                     padding: const EdgeInsets.only(right: 22),
                     child: const Icon(Icons.delete_outline_rounded,
-                        color: Colors.white, size: 20),
+                        color: AppColors.textPrimary, size: 20),
                   ),
                   child: row,
                 );

@@ -3,7 +3,6 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:gymlog/core/theme/app_colors.dart';
 import 'package:gymlog/core/theme/app_text.dart';
 import 'package:gymlog/features/workout/presentation/providers/rest_timer_provider.dart';
@@ -43,17 +42,27 @@ class RestTimerBar extends ConsumerWidget {
           container: true,
           label: 'Rest timer, $_label remaining',
           child: _AmbientPulse(
-            radius: const BorderRadius.all(Radius.circular(6)),
+            radius: AppRadius.cardAll,
             child: SizedBox(
               height: kRestTileHeight,
               child: DecoratedBox(
                 decoration: BoxDecoration(
-                  gradient: const LinearGradient(
+                  // Accent-tinted ambient wash → near-black. Derived from
+                  // accentPrimary (not a baked-in purple literal) so the
+                  // Phase 7 dynamic-accent theme recolors the rest tile for
+                  // free.
+                  gradient: LinearGradient(
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
-                    colors: [Color(0xFF1B1226), Color(0xFF0B0B0D)],
+                    colors: [
+                      Color.alphaBlend(
+                        AppColors.accentPrimary.withValues(alpha: 0.16),
+                        AppColors.bgBase,
+                      ),
+                      AppColors.bgBase,
+                    ],
                   ),
-                  borderRadius: const BorderRadius.all(Radius.circular(6)),
+                  borderRadius: AppRadius.cardAll,
                   border: Border.all(
                     color: AppColors.accentPrimary.withValues(alpha: 0.40),
                     width: 1.2,
@@ -82,18 +91,18 @@ class RestTimerBar extends ConsumerWidget {
                           Text('REST',
                               style: AppText.columnHeader(
                                   color: AppColors.textSecondary)),
-                          // Deliberately large + tabular so a lifter can read
-                          // remaining rest from arm's length without focusing.
-                          // No AppText voice is this large by design; tabular
-                          // figures keep the digits from jittering each tick.
+                          // Derived from AppText.timer (Inter + tabular
+                          // figures), sized down to 36 / w800 for the tile —
+                          // larger than any data row so a lifter reads
+                          // remaining rest from arm's length. Tabular figures
+                          // keep the digits from jittering each tick.
                           Text(
                             _label,
-                            style: GoogleFonts.inter(
+                            style: AppText.timer(color: AppColors.textPrimary)
+                                .copyWith(
                               fontSize: 36,
-                              height: 1.0,
                               fontWeight: FontWeight.w800,
-                              color: AppColors.textPrimary,
-                              fontFeatures: const [FontFeature.tabularFigures()],
+                              height: 1.0,
                             ),
                           ),
                         ],
@@ -143,7 +152,7 @@ class _RestAction extends StatelessWidget {
     return Material(
       color: emphasized
           ? AppColors.accentPrimary.withValues(alpha: 0.16)
-          : Colors.white.withValues(alpha: 0.06),
+          : AppColors.borderSubtle,
       borderRadius: BorderRadius.circular(AppRadius.buttonSecondary),
       child: InkWell(
         borderRadius: BorderRadius.circular(AppRadius.buttonSecondary),
@@ -245,7 +254,7 @@ class _RestRingPainter extends CustomPainter {
       Paint()
         ..style = PaintingStyle.stroke
         ..strokeWidth = 3
-        ..color = Colors.white.withValues(alpha: 0.10),
+        ..color = AppColors.borderDefault,
     );
     if (progress > 0) {
       canvas.drawArc(

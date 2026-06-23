@@ -25,7 +25,7 @@ Future<void> showPrCelebration(
     context: context,
     barrierDismissible: true,
     barrierLabel: 'Personal record celebration',
-    barrierColor: Colors.black.withValues(alpha: 0.82),
+    barrierColor: AppColors.bgBase.withValues(alpha: 0.82),
     transitionDuration:
         reduceMotion ? Duration.zero : const Duration(milliseconds: 260),
     transitionBuilder: reduceMotion
@@ -172,7 +172,7 @@ class _PrCelebrationState extends State<_PrCelebration>
                                   padding: const EdgeInsets.symmetric(
                                       horizontal: 14, vertical: 12),
                                   decoration: const BoxDecoration(
-                                    color: Colors.white10,
+                                    color: AppColors.borderDefault,
                                     borderRadius: AppRadius.badgeAll,
                                   ),
                                   child: Row(
@@ -234,7 +234,7 @@ class _PrCelebrationState extends State<_PrCelebration>
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.accentPrimary,
-                          foregroundColor: Colors.white,
+                          foregroundColor: AppColors.textPrimary,
                           elevation: 0,
                           shape: const RoundedRectangleBorder(
                             borderRadius: AppRadius.buttonPrimaryAll,
@@ -242,7 +242,7 @@ class _PrCelebrationState extends State<_PrCelebration>
                         ),
                         child: Text(
                           'Keep Going',
-                          style: AppText.button(color: Colors.white),
+                          style: AppText.button(color: AppColors.textPrimary),
                         ),
                       ),
                     ),
@@ -265,18 +265,20 @@ class _ConfettiPainter extends CustomPainter {
   _ConfettiPainter({required this.progress});
 
   // Deterministic particle field — same seed every build, zero allocations
-  // beyond the paint object per frame.
+  // beyond the paint object per frame. Palette draws from design tokens; the
+  // bright celebration gold is the one intentional exception (no chrome token
+  // exists for it, and reward gold is meant to stay immutable).
   static final List<_Particle> _particles = _generate();
 
   static List<_Particle> _generate() {
     final rng = math.Random(7);
     const palette = [
-      Color(0xFFF59E0B),
-      Color(0xFFF59E0B),
-      Color(0xFFA78BFA),
-      Color(0xFFF59E0B),
-      Color(0xFFFFFFFF),
-      Color(0xFFFFCC00),
+      AppColors.warning,
+      AppColors.warning,
+      AppColors.accentText,
+      AppColors.warning,
+      AppColors.textPrimary,
+      Color(0xFFFFCC00), // celebration gold — confetti-only, intentionally untokenized
     ];
     return List.generate(64, (i) {
       return _Particle(
