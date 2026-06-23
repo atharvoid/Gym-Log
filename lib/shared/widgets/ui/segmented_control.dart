@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text.dart';
 
 /// [segmented_control.dart]
 /// One container with a sliding active segment (NOT three separate pills).
-/// Spec: track bg transparent / 1px #3A3A4A border / 10px radius;
-/// active segment #2A2A3A / 8px radius; active text white w600,
-/// inactive text #8E8E93 w400.
+/// Track: transparent fill, borderEmphasis hairline, AppRadius.segmentedOuter.
+/// Active segment: surface4 fill (a neutral RAISED surface — intentionally NOT
+/// the accent, so a Phase 7 dynamic-accent theme never recolors filter
+/// toggles), AppRadius.segmentedInner. Active label textPrimary / w600,
+/// inactive label textSecondary / w400.
 class SegmentedControl extends StatelessWidget {
   final List<String> segments;
   final String selected;
@@ -24,22 +25,27 @@ class SegmentedControl extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final idx = segments.indexOf(selected).clamp(0, segments.length - 1);
+    // Honor OS reduce-motion: the active highlight jumps instead of sliding.
+    final reduceMotion = MediaQuery.disableAnimationsOf(context);
     return Container(
       height: 36,
       padding: const EdgeInsets.all(3),
       decoration: BoxDecoration(
         color: Colors.transparent,
         borderRadius: BorderRadius.circular(AppRadius.segmentedOuter),
-        border: Border.all(color: const Color(0xFF3A3A4A)),
+        border: Border.all(color: AppColors.borderEmphasis),
       ),
       child: LayoutBuilder(
         builder: (context, c) {
           final segW = c.maxWidth / segments.length;
           return Stack(
             children: [
-              // Sliding active highlight (behind the labels).
+              // Sliding active highlight (behind the labels). Neutral raised
+              // surface, NOT the accent — keeps filter toggles accent-agnostic.
               AnimatedPositioned(
-                duration: const Duration(milliseconds: 220),
+                duration: reduceMotion
+                    ? Duration.zero
+                    : const Duration(milliseconds: 220),
                 curve: Curves.easeOutCubic,
                 left: idx * segW,
                 width: segW,
@@ -47,7 +53,7 @@ class SegmentedControl extends StatelessWidget {
                 bottom: 0,
                 child: Container(
                   decoration: BoxDecoration(
-                    color: AppColors.accentPrimary,
+                    color: AppColors.surface4,
                     borderRadius:
                         BorderRadius.circular(AppRadius.segmentedInner),
                   ),
@@ -68,14 +74,14 @@ class SegmentedControl extends StatelessWidget {
                         child: Center(
                           child: Text(
                             s,
-                            style: GoogleFonts.inter(
-                              fontSize: 14,
+                            style: AppText.rowLabel(
+                              color: s == selected
+                                  ? AppColors.textPrimary
+                                  : AppColors.textSecondary,
+                            ).copyWith(
                               fontWeight: s == selected
                                   ? FontWeight.w600
                                   : FontWeight.w400,
-                              color: s == selected
-                                  ? Colors.white
-                                  : AppColors.textSecondary,
                             ),
                           ),
                         ),

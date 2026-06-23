@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:gymlog/core/theme/app_colors.dart';
+import 'package:gymlog/core/theme/app_text.dart';
 
 Future<T?> showActionBottomSheet<T>({
   required BuildContext context,
@@ -56,9 +56,11 @@ class _ActionBottomSheetContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
+      // surface2 + AppRadius.sheetTop — same chrome as the branded confirm/
+      // input sheets (app_dialog), so every sheet in the app matches.
       decoration: const BoxDecoration(
-        color: AppColors.bgSurface,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        color: AppColors.surface2,
+        borderRadius: AppRadius.sheetTop,
       ),
       child: SafeArea(
         top: false,
@@ -69,9 +71,9 @@ class _ActionBottomSheetContent extends StatelessWidget {
             Container(
               width: 40,
               height: 4,
-              decoration: BoxDecoration(
-                color: AppColors.borderSubtle,
-                borderRadius: BorderRadius.circular(6),
+              decoration: const BoxDecoration(
+                color: AppColors.borderDefault,
+                borderRadius: AppRadius.badgeAll,
               ),
             ),
             const SizedBox(height: 20),
@@ -83,11 +85,8 @@ class _ActionBottomSheetContent extends StatelessWidget {
                   textAlign: TextAlign.center,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.inter(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.textSecondary,
-                  ),
+                  style: AppText.body(color: AppColors.textSecondary)
+                      .copyWith(fontWeight: FontWeight.w600),
                 ),
               ),
               const SizedBox(height: 16),
@@ -120,7 +119,7 @@ class _ActionSheetItemWidget extends StatelessWidget {
         color: Colors.transparent,
         child: InkWell(
           onTap: () => item.onTap(context),
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: AppRadius.buttonPrimaryAll,
           splashColor: AppColors.accentPrimary.withValues(alpha: 0.1),
           highlightColor: AppColors.accentPrimary.withValues(alpha: 0.04),
           child: SizedBox(
@@ -135,7 +134,7 @@ class _ActionSheetItemWidget extends StatelessWidget {
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
                       color: item.iconBackground,
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: AppRadius.buttonPrimaryAll,
                     ),
                     child: Icon(item.icon, color: item.iconColor, size: 20),
                   ),
@@ -149,11 +148,11 @@ class _ActionSheetItemWidget extends StatelessWidget {
                           item.title,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: GoogleFonts.inter(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w500,
-                            color: item.titleColor ?? AppColors.textPrimary,
-                          ),
+                          // 16/500 — off the standard scale, so derive the family
+                          // from AppText.button and pin the medium weight here.
+                          style: AppText.button(
+                                  color: item.titleColor ?? AppColors.textPrimary)
+                              .copyWith(fontWeight: FontWeight.w500),
                         ),
                         if (item.subtitle != null) ...[
                           const SizedBox(height: 2),
@@ -161,11 +160,9 @@ class _ActionSheetItemWidget extends StatelessWidget {
                             item.subtitle!,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: GoogleFonts.inter(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w400,
-                              color: item.subtitleColor ?? AppColors.textSecondary,
-                            ),
+                            style: AppText.meta(
+                                color: item.subtitleColor ??
+                                    AppColors.textSecondary),
                           ),
                         ],
                       ],
