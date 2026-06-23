@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import '../../core/theme/app_colors.dart';
+import '../../core/theme/app_text.dart';
 
 /// Drop-in body for `AsyncValue.when(error:)` branches.
 ///
@@ -35,13 +35,9 @@ class AsyncErrorState extends StatelessWidget {
             Text(
               message,
               textAlign: TextAlign.center,
-              style: GoogleFonts.inter(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                height: 1.4,
-                // textPrimary, not a dim grey — AA contrast on OLED black.
-                color: AppColors.textPrimary,
-              ),
+              // textPrimary, not a dim grey — AA contrast on OLED black.
+              style: AppText.rowLabel(color: AppColors.textPrimary)
+                  .copyWith(height: 1.4),
             ),
             if (onRetry != null) ...[
               const SizedBox(height: 14),
@@ -51,11 +47,7 @@ class AsyncErrorState extends StatelessWidget {
                     size: 18, color: AppColors.accentText),
                 label: Text(
                   'Try again',
-                  style: GoogleFonts.inter(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.accentText,
-                  ),
+                  style: AppText.rowLabel(color: AppColors.accentText),
                 ),
               ),
             ],
@@ -107,22 +99,15 @@ class AppNotFoundScreen extends StatelessWidget {
               Text(
                 title,
                 textAlign: TextAlign.center,
-                style: GoogleFonts.inter(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w700,
-                  color: AppColors.textPrimary,
-                ),
+                style: AppText.sheetTitle(),
               ),
               if (message != null) ...[
                 const SizedBox(height: 6),
                 Text(
                   message!,
                   textAlign: TextAlign.center,
-                  style: GoogleFonts.inter(
-                    fontSize: 14,
-                    height: 1.4,
-                    color: AppColors.textSecondary,
-                  ),
+                  style: AppText.body(color: AppColors.textSecondary)
+                      .copyWith(fontSize: 14, height: 1.4),
                 ),
               ],
               const SizedBox(height: 18),
@@ -130,11 +115,8 @@ class AppNotFoundScreen extends StatelessWidget {
                 onPressed: onAction ?? () => Navigator.of(context).maybePop(),
                 child: Text(
                   actionLabel,
-                  style: GoogleFonts.inter(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.accentText,
-                  ),
+                  style: AppText.button(color: AppColors.accentText)
+                      .copyWith(fontSize: 15, fontWeight: FontWeight.w700),
                 ),
               ),
             ],

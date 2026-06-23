@@ -29,7 +29,7 @@ Future<bool> showAppConfirmDialog({
     backgroundColor: Colors.transparent,
     builder: (sheetCtx) {
       final iconBg = isDestructive
-          ? const Color(0x1AEF4444)
+          ? AppColors.error.withValues(alpha: 0.1)
           : AppColors.indigoTint;
       final iconWidget = isDestructive
           ? const Icon(Icons.delete_outline_rounded,
