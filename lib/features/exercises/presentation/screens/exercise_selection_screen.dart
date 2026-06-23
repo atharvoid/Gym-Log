@@ -133,19 +133,12 @@ class _ExerciseSelectionScreenState
     return (c.compareTo('A') >= 0 && c.compareTo('Z') <= 0) ? c : '#';
   }
 
-  void _jumpToLetter(
-      String letter, List<_ListItem> items, Map<String, int> letterIndex) {
-    final target = letterIndex[letter];
-    if (target == null || !_scrollController.hasClients) return;
-    var offset = 0.0;
-    for (var i = 0; i < target; i++) {
-      offset += items[i].isHeader ? _kHeaderHeight : _kEstimatedRowHeight;
-    }
+  void _jumpToLetter(String letter, Map<String, double> letterOffsets) {
+    final offset = letterOffsets[letter];
+    if (offset == null || !_scrollController.hasClients) return;
     HapticFeedback.selectionClick();
-    _scrollController.animateTo(
+    _scrollController.jumpTo(
       offset.clamp(0.0, _scrollController.position.maxScrollExtent),
-      duration: const Duration(milliseconds: 240),
-      curve: Curves.easeOutCubic,
     );
   }
 
@@ -225,6 +218,7 @@ class _ExerciseSelectionScreenState
 
     return Scaffold(
       backgroundColor: AppColors.bgBase,
+      resizeToAvoidBottomInset: false,
       appBar: AppBar(
         title: Text(
           widget.browse ? 'Exercise Library' : 'Select Exercise',
@@ -371,11 +365,26 @@ class _ExerciseSelectionScreenState
       items.add(_ListItem.exercise(e));
     }
 
+    // Precompute letter offsets for O(1) jump positioning.
+    final letterOffsets = <String, double>{};
+    var currentOffset = 0.0;
+    for (int i = 0; i < items.length; i++) {
+      final item = items[i];
+      if (!item.isHeader) {
+        final letter = _initial(item.exerciseValue!.name);
+        letterOffsets.putIfAbsent(letter, () => currentOffset);
+      }
+      currentOffset += item.isHeader ? _kHeaderHeight : _kEstimatedRowHeight;
+    }
+
     final showRail = !_isSearching && catalog.length >= 15;
 
     final list = ListView.builder(
       controller: _scrollController,
-      padding: EdgeInsets.only(right: showRail ? 24 : 0, bottom: 32),
+      padding: EdgeInsets.only(
+        right: showRail ? 24 : 0,
+        bottom: 32 + MediaQuery.of(context).viewInsets.bottom,
+      ),
       itemCount: items.length,
       itemBuilder: (context, index) {
         final item = items[index];
@@ -429,7 +438,7 @@ class _ExerciseSelectionScreenState
           right: 0,
           child: _AlphabetRail(
             present: letterIndex.keys.toSet(),
-            onLetter: (l) => _jumpToLetter(l, items, letterIndex),
+            onLetter: (l) => _jumpToLetter(l, letterOffsets),
           ),
         ),
       ],
@@ -717,7 +726,7 @@ class _FilterChipButton extends StatelessWidget {
         color: active
             ? AppColors.accentPrimary.withValues(alpha: 0.14)
             : AppColors.surface3,
-        borderRadius: BorderRadius.zero,
+        borderRadius: BorderRadius.circular(AppRadius.buttonSecondary),
         clipBehavior: Clip.antiAlias,
         child: InkWell(
           onTap: onTap,
@@ -726,7 +735,7 @@ class _FilterChipButton extends StatelessWidget {
             constraints: const BoxConstraints(minHeight: 44),
             padding: const EdgeInsets.symmetric(horizontal: 14),
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.zero,
+              borderRadius: BorderRadius.circular(AppRadius.buttonSecondary),
               border: active
                   ? Border.all(
                       color: AppColors.accentPrimary.withValues(alpha: 0.45))

@@ -21,55 +21,105 @@ Future<bool> showAppConfirmDialog({
     HapticFeedback.lightImpact();
   }
 
-  final result = await showDialog<bool>(
+  final result = await showModalBottomSheet<bool>(
     context: context,
     useRootNavigator: true,
-    builder: (dialogCtx) => Dialog(
-      backgroundColor: AppColors.surface2,
-      shape: const RoundedRectangleBorder(borderRadius: AppRadius.cardAll),
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(24, 24, 16, 12),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(title, style: AppText.sectionHeading()),
-            const SizedBox(height: 10),
-            Padding(
-              padding: const EdgeInsets.only(right: 8),
-              child: Text(message, style: AppText.body()),
-            ),
-            const SizedBox(height: 18),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
+    isDismissible: false,
+    enableDrag: false,
+    backgroundColor: Colors.transparent,
+    builder: (sheetCtx) {
+      final iconBg = isDestructive
+          ? const Color(0x1AEF4444)
+          : AppColors.indigoTint;
+      final iconWidget = isDestructive
+          ? const Icon(Icons.delete_outline_rounded,
+              size: 36, color: AppColors.error)
+          : const Icon(Icons.info_outline_rounded,
+              size: 36, color: AppColors.accentText);
+      final confirmBg =
+          isDestructive ? AppColors.error : AppColors.accentPrimary;
+
+      return SafeArea(
+        top: false,
+        child: Container(
+          decoration: const BoxDecoration(
+            color: AppColors.surface2,
+            borderRadius: AppRadius.sheetTop,
+          ),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                TextButton(
-                  onPressed: () => Navigator.of(dialogCtx).pop(false),
-                  child: Text(cancelLabel,
-                      style: AppText.button(color: AppColors.textSecondary)),
+                // Drag handle
+                Container(
+                  width: 36,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: AppColors.borderEmphasis,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
                 ),
-                const SizedBox(width: 4),
-                TextButton(
-                  onPressed: () {
-                    HapticFeedback.lightImpact();
-                    Navigator.of(dialogCtx).pop(true);
-                  },
-                  child: Text(
-                    confirmLabel,
-                    style: AppText.button(
-                      // On-dark accent text uses the lighter tone (AA);
-                      // destructive stays red.
-                      color:
-                          isDestructive ? AppColors.error : AppColors.accentText,
+                const SizedBox(height: 20),
+                // Icon badge
+                Container(
+                  decoration: BoxDecoration(
+                    color: iconBg,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  padding: const EdgeInsets.all(12),
+                  child: iconWidget,
+                ),
+                const SizedBox(height: 16),
+                // Title
+                Text(title, style: AppText.sheetTitle(), textAlign: TextAlign.center),
+                const SizedBox(height: 8),
+                // Message
+                Text(message,
+                    style: AppText.body(color: AppColors.textSecondary),
+                    textAlign: TextAlign.center),
+                const SizedBox(height: 28),
+                // Confirm button
+                SizedBox(
+                  width: double.infinity,
+                  height: 50,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: confirmBg,
+                      foregroundColor: AppColors.textPrimary,
+                      elevation: 0,
+                      shape: const RoundedRectangleBorder(
+                          borderRadius: AppRadius.buttonPrimaryAll),
                     ),
+                    onPressed: () {
+                      HapticFeedback.lightImpact();
+                      Navigator.of(sheetCtx).pop(true);
+                    },
+                    child: Text(confirmLabel, style: AppText.button()),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                // Cancel button
+                SizedBox(
+                  width: double.infinity,
+                  height: 50,
+                  child: TextButton(
+                    style: TextButton.styleFrom(
+                      foregroundColor: AppColors.textSecondary,
+                      shape: const RoundedRectangleBorder(
+                          borderRadius: AppRadius.buttonSecondaryAll),
+                    ),
+                    onPressed: () => Navigator.of(sheetCtx).pop(false),
+                    child: Text(cancelLabel,
+                        style: AppText.button(color: AppColors.textSecondary)),
                   ),
                 ),
               ],
             ),
-          ],
+          ),
         ),
-      ),
-    ),
+      );
+    },
   );
   return result ?? false;
 }

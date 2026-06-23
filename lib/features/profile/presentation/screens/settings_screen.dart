@@ -60,7 +60,7 @@ Future<void> showWeeklyGoalSheet(BuildContext context, WidgetRef ref) async {
                       color: days == current
                           ? AppColors.accentPrimary
                           : AppColors.surfaceRaised,
-                      borderRadius: BorderRadius.circular(0.0),
+                      borderRadius: BorderRadius.circular(AppRadius.buttonSecondary),
                     ),
                     child: Text(
                       '$days',

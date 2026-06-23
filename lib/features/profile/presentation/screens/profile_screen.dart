@@ -19,7 +19,7 @@ import '../providers/profile_provider.dart';
 import '../providers/profile_stats_provider.dart';
 import '../widgets/graph_kpi_header.dart';
 import '../widgets/profile_graph_empty_state.dart';
-import '../widgets/profile_graph_low_data_banner.dart';
+
 import '../widgets/weekly_bar_chart.dart';
 import 'settings_screen.dart';
 
@@ -262,7 +262,7 @@ class _IdentityHeader extends StatelessWidget {
           alignment: Alignment.center,
           decoration: BoxDecoration(
             color: AppColors.surface2,
-            shape: BoxShape.circle,
+            borderRadius: BorderRadius.circular(12),
             border: Border.all(color: AppColors.borderSubtle),
           ),
           child: Text(
@@ -493,16 +493,9 @@ class _TrainingChartSectionState extends ConsumerState<_TrainingChartSection> {
   Widget build(BuildContext context) {
     final metric = ref.watch(profileChartMetricProvider);
     final aggregates = ref.watch(weeklyAggregatesProvider);
+    final isPremium = ref.watch(isPremiumProvider);
     final filledWeeks = aggregates.where((a) => a.workoutCount > 0).length;
     final isEmpty = filledWeeks == 0;
-    final showBanner = filledWeeks > 0 && filledWeeks < 4;
-
-    // With fewer than 4 data weeks we show only the weeks that have data so
-    // the chart does not look like a graveyard. Once the user has 4+ weeks we
-    // show the full 8-week window with ghost bars for empty buckets.
-    final chartAggregates = filledWeeks < 4
-        ? aggregates.where((a) => a.workoutCount > 0).toList()
-        : aggregates;
 
     void onStartWorkout() {
       if (!tapGuard()) return;
@@ -521,12 +514,12 @@ class _TrainingChartSectionState extends ConsumerState<_TrainingChartSection> {
         if (isEmpty)
           ProfileGraphEmptyState(onStartWorkout: onStartWorkout)
         else ...[
-          GraphKpiHeader(aggregates: chartAggregates, metric: metric),
-          if (showBanner) ...[
-            const SizedBox(height: 16),
-            const ProfileGraphLowDataBanner(),
-          ],
+          // KPI header: shows latest-week value + caption.
+          GraphKpiHeader(aggregates: aggregates, metric: metric),
           const SizedBox(height: 24),
+          // WeeklyBarChart owns its low-data render path:
+          //   < 4 filled weeks → honest comparison stat view
+          //   ≥ 4 filled weeks → full bar chart with linear axis
           AnimatedSwitcher(
             duration: MediaQuery.disableAnimationsOf(context)
                 ? Duration.zero
@@ -535,8 +528,9 @@ class _TrainingChartSectionState extends ConsumerState<_TrainingChartSection> {
             switchOutCurve: Curves.easeOutCubic,
             child: WeeklyBarChart(
               key: ValueKey('${metric.name}_$_switchVersion'),
-              aggregates: chartAggregates,
+              aggregates: aggregates,
               metric: metric,
+              isPremium: isPremium,
             ),
           ),
         ],
@@ -720,7 +714,7 @@ class _ErrorBody extends StatelessWidget {
                     foregroundColor: Colors.white,
                     elevation: 0,
                     shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(999)),
+                        borderRadius: BorderRadius.circular(AppRadius.buttonPrimary)),
                   ),
                   child: Text('Retry', style: AppText.button()),
                 ),

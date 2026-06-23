@@ -2,10 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_text.dart';
 
 /// [primary_button.dart]
 /// Purpose: PrimaryButton — the app's primary CTA, on-spec with the design
-/// system: 52px height, 14px radius (AppRadius.buttonPrimary), indigo fill,
+/// system: 52px height, AppRadius.buttonPrimary (12px) radius, indigo fill,
 /// w600 label. Every primary action fires a medium impact — consistent
 /// app-wide feel.
 
@@ -53,7 +54,7 @@ class PrimaryButton extends StatelessWidget {
           elevation: 0,
           shadowColor: Colors.transparent,
           shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.all(Radius.circular(999)),
+            borderRadius: AppRadius.buttonPrimaryAll,
           ),
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
         ),

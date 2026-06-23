@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../../features/workout/presentation/providers/active_workout_provider.dart';
 import '../../core/services/workout_draft_store.dart';
 import '../../core/theme/app_colors.dart';
@@ -46,38 +45,93 @@ class _AppShellState extends ConsumerState<AppShell> {
             ? '$mins min ago'
             : '${mins ~/ 60}h ${mins % 60}m ago';
 
-    final resume = await showDialog<bool>(
+    final resume = await showModalBottomSheet<bool>(
       context: context,
-      barrierDismissible: false, // force an explicit choice
-      builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.bgSheet,
-        shape: const RoundedRectangleBorder(
-            borderRadius: AppRadius.cardAll),
-        title: Text('Resume workout?',
-            style: GoogleFonts.inter(
-                color: AppColors.textPrimary,
-                fontSize: 18,
-                fontWeight: FontWeight.w700)),
-        content: Text(
-          'You have an unfinished workout started $ago. Resume where you left off?',
-          style: GoogleFonts.inter(
-              color: AppColors.textSecondary, fontSize: 14.5, height: 1.45),
+      isDismissible: false,
+      enableDrag: false,
+      backgroundColor: Colors.transparent,
+      builder: (sheetCtx) => SafeArea(
+        top: false,
+        child: Container(
+          decoration: const BoxDecoration(
+            color: AppColors.surface2,
+            borderRadius: AppRadius.sheetTop,
+          ),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Drag handle
+                Container(
+                  width: 36,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: AppColors.borderEmphasis,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                // Icon badge
+                Container(
+                  decoration: BoxDecoration(
+                    color: AppColors.indigoTint,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  padding: const EdgeInsets.all(12),
+                  child: const Icon(
+                    Icons.fitness_center_rounded,
+                    size: 36,
+                    color: AppColors.accentText,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text('Resume Workout?',
+                    style: AppText.sheetTitle(),
+                    textAlign: TextAlign.center),
+                const SizedBox(height: 8),
+                Text(
+                  'You have an unfinished workout started $ago. Continue where you left off.',
+                  style: AppText.body(color: AppColors.textSecondary),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 28),
+                // Resume (primary)
+                SizedBox(
+                  width: double.infinity,
+                  height: 50,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.accentPrimary,
+                      foregroundColor: AppColors.textPrimary,
+                      elevation: 0,
+                      shape: const RoundedRectangleBorder(
+                          borderRadius: AppRadius.buttonPrimaryAll),
+                    ),
+                    onPressed: () => Navigator.of(sheetCtx).pop(true),
+                    child: Text('Resume Workout', style: AppText.button()),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                // Discard (secondary)
+                SizedBox(
+                  width: double.infinity,
+                  height: 50,
+                  child: TextButton(
+                    style: TextButton.styleFrom(
+                      foregroundColor: AppColors.textSecondary,
+                      shape: const RoundedRectangleBorder(
+                          borderRadius: AppRadius.buttonSecondaryAll),
+                    ),
+                    onPressed: () => Navigator.of(sheetCtx).pop(false),
+                    child: Text('Discard',
+                        style: AppText.button(color: AppColors.textSecondary)),
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(false),
-            child: Text('Discard',
-                style: GoogleFonts.inter(
-                    color: AppColors.textSecondary,
-                    fontWeight: FontWeight.w500)),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(true),
-            child: Text('Resume',
-                style: GoogleFonts.inter(
-                    color: AppColors.accentText, fontWeight: FontWeight.w700)),
-          ),
-        ],
       ),
     );
     if (!mounted) return;

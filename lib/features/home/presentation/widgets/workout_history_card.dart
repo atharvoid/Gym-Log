@@ -236,15 +236,11 @@ class _StatsRow extends StatelessWidget {
     );
   }
 
+  static final _volumeFormat = NumberFormat('#,##0.##');
+
   /// Formats kg with thousands comma: 1488 → "1,488 kg", 980 → "980 kg".
   static String _formatVolume(double kg) {
-    final rounded = kg.round();
-    if (rounded >= 1000) {
-      final thousands = rounded ~/ 1000;
-      final hundreds = (rounded % 1000).toString().padLeft(3, '0');
-      return '$thousands,$hundreds kg';
-    }
-    return '$rounded kg';
+    return '${_volumeFormat.format(kg)} kg';
   }
 }
 

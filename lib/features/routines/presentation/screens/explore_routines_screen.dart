@@ -149,7 +149,7 @@ class _ExploreRoutinesScreenState extends ConsumerState<ExploreRoutinesScreen>
       final count = await db.routinesDao.countRoutinesForUser(user.id);
       if (!mounted) return;
       if (isAtFreeRoutineLimit(isPremium: isPremium, routineCount: count)) {
-        await showRoutineLimitUpsell(context);
+        await showPremiumPaywall(context, source: PaywallSource.routineLimit);
         return;
       }
 
@@ -700,7 +700,7 @@ class _FeaturedCard extends StatelessWidget {
                                 alignment: Alignment.center,
                                 decoration: BoxDecoration(
                                   color: glyphColor.withValues(alpha: 0.16),
-                                  borderRadius: BorderRadius.zero,
+                                  borderRadius: AppRadius.thumbnailAll,
                                 ),
                                 child: MuscleGlyph(
                                     muscle: muscle,
@@ -836,7 +836,7 @@ class _TemplateCard extends StatelessWidget {
                               alignment: Alignment.center,
                               decoration: BoxDecoration(
                                 color: glyphColor.withValues(alpha: 0.15),
-                                borderRadius: BorderRadius.zero,
+                                borderRadius: AppRadius.thumbnailAll,
                               ),
                               child: MuscleGlyph(
                                   muscle: muscle, size: 26, color: glyphColor),
@@ -1109,7 +1109,7 @@ class _PreviewSheet extends StatelessWidget {
                         alignment: Alignment.center,
                         decoration: BoxDecoration(
                           color: glyphColor.withValues(alpha: 0.15),
-                          borderRadius: BorderRadius.zero,
+                          borderRadius: AppRadius.thumbnailAll,
                         ),
                         child: MuscleGlyph(
                             muscle: muscle, size: 28, color: glyphColor),

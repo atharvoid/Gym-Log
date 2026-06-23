@@ -1,1 +1,109 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#FFFFFF"><path d="M5 6a2.5 2.5 0 0 1 5 0h4a2.5 2.5 0 0 1 5 0l-1.6 7.2a3 3 0 0 1-2.9 2.3h-4.6A3 3 0 0 1 6.6 13.2z"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="90 55 220 290" width="100%" height="100%">
+  <defs>
+    <radialGradient id="bgB" cx="50%" cy="40%" r="60%">
+      <stop offset="0%" stop-color="#171528" />
+      <stop offset="100%" stop-color="#0f0d1a" />
+    </radialGradient>
+    <filter id="softGlowB" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="14" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+  </defs>
+
+  <path d="M 180 90 L 180 70 Q 200 64 220 70 L 220 90 Q 200 98 180 90 Z" fill="#4a4660" stroke="#2d2a42" stroke-width="2.5" stroke-linejoin="round" />
+  <path d="M 190 82 Q 192 72 190 66" fill="none" stroke="#3a3650" stroke-width="1.5" />
+  <path d="M 210 82 Q 208 72 210 66" fill="none" stroke="#3a3650" stroke-width="1.5" />
+  <path d="M 200 86 L 200 66" fill="none" stroke="#3a3650" stroke-width="1.5" />
+
+  
+  <path d="M 150 94 Q 114 104 106 142 Q 104 176 122 190 Q 140 182 146 152 Q 150 122 150 94" fill="#4a4660" stroke="#2d2a42" stroke-width="2.5" stroke-linejoin="round" />
+  <path d="M 142 102 Q 124 120 120 148" fill="none" stroke="#3a3650" stroke-width="1.5" />
+  <path d="M 146 118 Q 130 136 128 160" fill="none" stroke="#3a3650" stroke-width="1.5" />
+
+  
+  <path d="M 250 94 Q 286 104 294 142 Q 296 176 278 190 Q 260 182 254 152 Q 250 122 250 94" fill="#4a4660" stroke="#2d2a42" stroke-width="2.5" stroke-linejoin="round" />
+  <path d="M 258 102 Q 276 120 280 148" fill="none" stroke="#3a3650" stroke-width="1.5" />
+  <path d="M 254 118 Q 270 136 272 160" fill="none" stroke="#3a3650" stroke-width="1.5" />
+
+  
+  <path d="M 122 190 Q 104 214 102 256 Q 108 286 128 282 Q 140 262 140 230 Z" fill="#4a4660" stroke="#2d2a42" stroke-width="2.5" stroke-linejoin="round" />
+  <path d="M 120 202 Q 112 226 112 262" fill="none" stroke="#3a3650" stroke-width="1.5" />
+
+  
+  <path d="M 278 190 Q 296 214 298 256 Q 292 286 272 282 Q 260 262 260 230 Z" fill="#4a4660" stroke="#2d2a42" stroke-width="2.5" stroke-linejoin="round" />
+  <path d="M 280 202 Q 288 226 288 262" fill="none" stroke="#3a3650" stroke-width="1.5" />
+
+  
+  <path d="M 146 238 Q 130 274 126 316 Q 136 338 158 332 Q 166 304 164 268 Z" fill="#3e3a54" stroke="#2d2a42" stroke-width="2" stroke-linejoin="round" />
+  <path d="M 254 238 Q 270 274 274 316 Q 264 338 242 332 Q 234 304 236 268 Z" fill="#3e3a54" stroke="#2d2a42" stroke-width="2" stroke-linejoin="round" />
+
+  
+  
+  <path d="M 152 98 C 144 124, 136 156, 138 188 C 140 218, 146 244, 156 260 C 166 278, 182 288, 198 294 L 200 296 L 202 294 C 218 288, 234 278, 244 260 C 254 244, 260 218, 262 188 C 264 156, 256 124, 248 98 C 230 108, 214 124, 200 144 C 186 124, 170 108, 152 98 Z" fill="#7c3aed" opacity="0.18" filter="url(#softGlowB)" />
+
+  
+  <path d="M 152 98 C 148 114, 140 136, 138 162 C 136 188, 140 214, 148 236 C 156 258, 170 274, 186 284 C 192 288, 196 289, 200 290 L 200 264 C 192 252, 184 234, 180 212 C 176 186, 178 158, 184 136 C 188 120, 194 108, 200 98 C 184 108, 168 100, 152 98 Z" fill="#8b5cf6" stroke="#a78bfa" stroke-width="2" stroke-linejoin="round" />
+
+  
+  <path d="M 248 98 C 252 114, 260 136, 262 162 C 264 188, 260 214, 252 236 C 244 258, 230 274, 214 284 C 208 288, 204 289, 200 290 L 200 264 C 208 252, 216 234, 220 212 C 224 186, 222 158, 216 136 C 212 120, 206 108, 200 98 C 216 108, 232 100, 248 98 Z" fill="#8b5cf6" stroke="#a78bfa" stroke-width="2" stroke-linejoin="round" />
+
+  
+  <path d="M 148 118 Q 158 144 170 164" fill="none" stroke="#7c3aed" stroke-width="1.2" opacity="0.6" />
+  <path d="M 142 140 Q 156 164 172 184" fill="none" stroke="#7c3aed" stroke-width="1.2" opacity="0.6" />
+  <path d="M 140 164 Q 156 188 176 208" fill="none" stroke="#7c3aed" stroke-width="1.2" opacity="0.6" />
+  <path d="M 142 188 Q 158 210 178 226" fill="none" stroke="#7c3aed" stroke-width="1.2" opacity="0.55" />
+  <path d="M 148 212 Q 164 232 182 244" fill="none" stroke="#7c3aed" stroke-width="1.2" opacity="0.5" />
+  <path d="M 158 232 Q 172 250 188 260" fill="none" stroke="#7c3aed" stroke-width="1.2" opacity="0.45" />
+  <path d="M 170 252 Q 182 266 196 274" fill="none" stroke="#7c3aed" stroke-width="1.2" opacity="0.4" />
+
+  <path d="M 252 118 Q 242 144 230 164" fill="none" stroke="#7c3aed" stroke-width="1.2" opacity="0.6" />
+  <path d="M 258 140 Q 244 164 228 184" fill="none" stroke="#7c3aed" stroke-width="1.2" opacity="0.6" />
+  <path d="M 260 164 Q 244 188 224 208" fill="none" stroke="#7c3aed" stroke-width="1.2" opacity="0.6" />
+  <path d="M 258 188 Q 242 210 222 226" fill="none" stroke="#7c3aed" stroke-width="1.2" opacity="0.55" />
+  <path d="M 252 212 Q 236 232 218 244" fill="none" stroke="#7c3aed" stroke-width="1.2" opacity="0.5" />
+  <path d="M 242 232 Q 228 250 212 260" fill="none" stroke="#7c3aed" stroke-width="1.2" opacity="0.45" />
+  <path d="M 230 252 Q 218 266 204 274" fill="none" stroke="#7c3aed" stroke-width="1.2" opacity="0.4" />
+
+  
+  <path d="M 164 92 C 156 80, 166 66, 182 62 Q 200 58 218 62 C 234 66, 244 80, 236 92 C 246 100, 250 114, 246 126 C 240 114, 228 106, 216 104 C 222 114, 224 128, 220 140 C 212 130, 206 120, 200 114 C 194 120, 188 130, 180 140 C 176 128, 178 114, 184 104 C 172 106, 160 114, 154 126 C 150 114, 154 100, 164 92 Z" fill="#7c3aed" opacity="0.18" filter="url(#softGlowB)" />
+
+  <path d="M 164 92 C 160 86, 170 70, 184 66 Q 200 62 216 66 C 230 70, 240 86, 236 92 C 242 100, 244 114, 240 124 C 234 114, 224 106, 212 104 C 218 114, 220 128, 216 138 C 208 128, 204 120, 200 114 C 196 120, 192 128, 184 138 C 180 128, 182 114, 188 104 C 176 106, 166 114, 160 124 C 156 114, 158 100, 164 92 Z" fill="#a78bfa" stroke="#c4b5fd" stroke-width="2" stroke-linejoin="round" />
+
+  
+  <path d="M 170 76 Q 184 84 200 90" fill="none" stroke="#8b5cf6" stroke-width="1.2" opacity="0.6" />
+  <path d="M 166 84 Q 182 92 200 98" fill="none" stroke="#8b5cf6" stroke-width="1.2" opacity="0.6" />
+  <path d="M 164 92 Q 180 100 198 108" fill="none" stroke="#8b5cf6" stroke-width="1.2" opacity="0.55" />
+  <path d="M 230 76 Q 216 84 200 90" fill="none" stroke="#8b5cf6" stroke-width="1.2" opacity="0.6" />
+  <path d="M 234 84 Q 218 92 200 98" fill="none" stroke="#8b5cf6" stroke-width="1.2" opacity="0.6" />
+  <path d="M 236 92 Q 220 100 202 108" fill="none" stroke="#8b5cf6" stroke-width="1.2" opacity="0.55" />
+  <path d="M 200 94 Q 200 104 200 114" fill="none" stroke="#8b5cf6" stroke-width="1.2" opacity="0.5" />
+
+  
+  <path d="M 182 120 Q 190 130 198 136 Q 195 146 188 150 Q 180 144 178 134 Q 179 126 182 120" fill="#6d28d9" stroke="#8b5cf6" stroke-width="1.2" />
+  <path d="M 218 120 Q 210 130 202 136 Q 205 146 212 150 Q 220 144 222 134 Q 221 126 218 120" fill="#6d28d9" stroke="#8b5cf6" stroke-width="1.2" />
+
+  
+  <path d="M 192 150 Q 188 176 186 208 Q 185 240 188 266 Q 192 282 198 290 L 200 292 L 200 272 Q 196 250 195 218 Q 196 186 198 158 Q 196 152 192 150" fill="#7c3aed" stroke="#a78bfa" stroke-width="1.5" stroke-linejoin="round" />
+  <path d="M 208 150 Q 212 176 214 208 Q 215 240 212 266 Q 208 282 202 290 L 200 292 L 200 272 Q 204 250 205 218 Q 204 186 202 158 Q 204 152 208 150" fill="#7c3aed" stroke="#a78bfa" stroke-width="1.5" stroke-linejoin="round" />
+
+  
+  <path d="M 200 64 Q 198 82 199 102 Q 200 122 200 148 Q 200 174 200 206 Q 200 238 200 270 Q 200 286 200 294" fill="none" stroke="#5b21b6" stroke-width="3" opacity="0.7" />
+  <path d="M 200 66 L 200 292" fill="none" stroke="#7c3aed" stroke-width="1.2" opacity="0.45" />
+
+  
+  <circle cx="200" cy="98" r="2" fill="#6d28d9" opacity="0.8" />
+  <circle cx="200" cy="124" r="2" fill="#6d28d9" opacity="0.8" />
+  <circle cx="200" cy="156" r="2.5" fill="#6d28d9" opacity="0.8" />
+  <circle cx="200" cy="192" r="2.5" fill="#6d28d9" opacity="0.8" />
+  <circle cx="200" cy="228" r="2.5" fill="#6d28d9" opacity="0.8" />
+  <circle cx="200" cy="264" r="2" fill="#6d28d9" opacity="0.8" />
+
+  
+  <path d="M 154 136 Q 162 146 168 150 Q 165 158 158 154 Q 152 146 154 136" fill="#5b21b6" opacity="0.6" />
+  <path d="M 246 136 Q 238 146 232 150 Q 235 158 242 154 Q 248 146 246 136" fill="#5b21b6" opacity="0.6" />
+
+  
+  </svg>

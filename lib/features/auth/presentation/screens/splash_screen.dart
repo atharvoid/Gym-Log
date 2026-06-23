@@ -41,15 +41,13 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
       return;
     }
 
-    // Start the sync engine for this session: auto-debounce on any queued
-    // write, and an immediate sync when connectivity returns. Then restore
-    // cloud data (reinstall path) and snapshot preferences — all non-blocking,
-    // navigation never waits on the network.
+    // Initialise the sync engine for this session: starts the outbox watcher,
+    // connectivity watcher, restores cloud data (reinstall path), and loads
+    // the last-synced timestamp. initSession() is idempotent — the
+    // auth-state listener in app.dart may have already started the engine for
+    // fresh-sign-in flows; this call is a safe no-op in that case.
     final engine = ref.read(syncEngineProvider);
-    engine.startAutoSync(user.id);
-    engine.startConnectivityWatch(user.id);
-    unawaited(engine.pull(user.id));
-    unawaited(engine.loadLastSynced());
+    unawaited(engine.initSession(user.id));
     unawaited(engine.enqueuePreferences(user.id));
 
     // Logged in → make the backend authoritative: fetch the stored profile

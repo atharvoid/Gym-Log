@@ -67,6 +67,37 @@ class SyncEngine {
   StreamSubscription<List<ConnectivityResult>>? _connSub;
   int _lastPending = 0;
 
+  /// Guards against double-initialisation when both the auth-state listener
+  /// in app.dart and SplashScreen (cold start) race to set up the engine for
+  /// the same user. Stores the userId of the last successfully initialised
+  /// session; null means no session has been initialised yet.
+  String? _startedForUser;
+
+  // ── Session lifecycle ──────────────────────────────────────────────────────
+
+  /// Idempotent session initialiser — safe to call from **both** the
+  /// `SplashScreen` (cold start, user already signed in) **and** the
+  /// auth-state listener in `app.dart` (fresh sign-in, GoRouter bypasses
+  /// SplashScreen). Only the first call for a given [userId] runs the pull;
+  /// subsequent calls for the same user are silent no-ops.
+  Future<void> initSession(String userId) async {
+    if (_startedForUser == userId) return;
+    _startedForUser = userId;
+    startAutoSync(userId);
+    startConnectivityWatch(userId);
+    unawaited(pull(userId));
+    unawaited(loadLastSynced());
+  }
+
+  /// Resets the session guard so the **next** sign-in (for any user) triggers
+  /// a fresh pull. Call this on `AuthChangeEvent.signedOut`.
+  void resetSession() {
+    _startedForUser = null;
+    _debounceTimer?.cancel();
+    _outboxSub?.cancel();
+    _connSub?.cancel();
+  }
+
   // ── Enqueue (called right after a local commit) ────────────────────────────
 
   /// Snapshot a finished session into the outbox. The auto-sync watcher arms

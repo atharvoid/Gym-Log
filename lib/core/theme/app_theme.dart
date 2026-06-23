@@ -106,7 +106,7 @@ final appTheme = ThemeData(
     ),
   ),
 
-  // Primary CTA → 14px (NOT pill), indigo fill, white text, 52px tall.
+  // Primary CTA → 12px slightly rounded, indigo fill, white text, 52px tall.
   elevatedButtonTheme: ElevatedButtonThemeData(
     style: ElevatedButton.styleFrom(
       backgroundColor: AppColors.indigo500,

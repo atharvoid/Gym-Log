@@ -1,6 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'core/theme/app_theme.dart';
 import 'core/router/router.dart';
 import 'core/services/sync_engine.dart';
@@ -15,6 +18,12 @@ class GymLogApp extends ConsumerStatefulWidget {
 
 class _GymLogAppState extends ConsumerState<GymLogApp> {
   late final AppLifecycleListener _lifecycle;
+
+  /// Listens for auth state changes so that the sync engine is initialised
+  /// even when GoRouter bypasses SplashScreen (e.g. fresh install: the user
+  /// signs in on /auth and is redirected directly to / without SplashScreen
+  /// running its _resolveInitialRoute).
+  StreamSubscription<AuthState>? _authSub;
 
   @override
   void initState() {
@@ -33,6 +42,14 @@ class _GymLogAppState extends ConsumerState<GymLogApp> {
       onHide: _flush,
       onPause: _flush,
       onResume: _onResume,
+    );
+
+    // Cover the fresh-install path: GoRouter redirects /auth → / directly on
+    // sign-in, so SplashScreen never runs. This listener picks that up.
+    // initSession() is idempotent, so calling it here when SplashScreen has
+    // already run (cold start) is a safe no-op.
+    _authSub = Supabase.instance.client.auth.onAuthStateChange.listen(
+      _onAuthStateChange,
     );
   }
 
@@ -54,8 +71,34 @@ class _GymLogAppState extends ConsumerState<GymLogApp> {
     if (id != null) ref.read(syncEngineProvider).scheduleSync(id);
   }
 
+  /// Handles auth state transitions emitted by Supabase.
+  ///
+  /// * `signedIn`  → kick off `initSession` (idempotent; no-op if
+  ///                 SplashScreen already ran for this user) and snapshot
+  ///                 the latest preferences.
+  /// * `signedOut` → reset the engine guard so the next sign-in triggers
+  ///                 a fresh pull.
+  /// * Everything else (tokenRefreshed, userUpdated, …) → ignored.
+  void _onAuthStateChange(AuthState event) {
+    final engine = ref.read(syncEngineProvider);
+
+    if (event.event == AuthChangeEvent.signedOut) {
+      engine.resetSession();
+      return;
+    }
+
+    if (event.event != AuthChangeEvent.signedIn) return;
+
+    final userId = event.session?.user.id;
+    if (userId == null) return;
+
+    unawaited(engine.initSession(userId));
+    unawaited(engine.enqueuePreferences(userId));
+  }
+
   @override
   void dispose() {
+    _authSub?.cancel();
     _lifecycle.dispose();
     super.dispose();
   }

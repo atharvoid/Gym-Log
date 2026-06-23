@@ -173,7 +173,7 @@ class _PrCelebrationState extends State<_PrCelebration>
                                       horizontal: 14, vertical: 12),
                                   decoration: const BoxDecoration(
                                     color: Colors.white10,
-                                    borderRadius: BorderRadius.zero,
+                                    borderRadius: AppRadius.badgeAll,
                                   ),
                                   child: Row(
                                     children: [

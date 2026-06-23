@@ -1,7 +1,7 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:purchases_flutter/purchases_flutter.dart'
     show IntroductoryPrice, Offerings, Package, PackageType, PeriodUnit;
 
@@ -9,10 +9,12 @@ import '../../core/providers/premium_provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text.dart';
 
+enum PaywallSource { generic, routineLimit, chartFilter, timeRange }
+
 /// Opens the Premium paywall as a modal bottom sheet.
 /// Safe to call when RevenueCat is unconfigured — it renders a graceful
 /// "pricing unavailable" state instead of crashing.
-Future<void> showPremiumPaywall(BuildContext context) {
+Future<void> showPremiumPaywall(BuildContext context, {PaywallSource source = PaywallSource.generic}) {
   HapticFeedback.lightImpact();
   return showModalBottomSheet<void>(
     context: context,
@@ -20,119 +22,49 @@ Future<void> showPremiumPaywall(BuildContext context) {
     useSafeArea: true,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
-    builder: (_) => const _PaywallSheet(),
+    builder: (_) => _PaywallSheet(source: source),
   );
 }
 
-/// Upsell shown when a free user hits the routine cap ([kFreeRoutineLimit]).
-/// States the limit honestly and routes straight to the paywall — one flow,
-/// shared tokens. Free users keep every routine they already have.
-Future<void> showRoutineLimitUpsell(BuildContext context) {
-  HapticFeedback.mediumImpact();
-  return showModalBottomSheet<void>(
-    context: context,
-    useRootNavigator: true,
-    useSafeArea: true,
-    backgroundColor: Colors.transparent,
-    builder: (sheetCtx) => Container(
-      decoration: const BoxDecoration(
-        color: AppColors.bgSheet,
-        borderRadius: AppRadius.sheetTop,
-      ),
-      child: SafeArea(
-        top: false,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(24, 12, 24, 18),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Center(
-                child: Container(
-                  width: 36,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF6A6A6A),
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 22),
-              Container(
-                width: 44,
-                height: 44,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  color: AppColors.accentPrimary.withValues(alpha: 0.14),
-                  borderRadius: AppRadius.badgeAll,
-                ),
-                child: const Icon(Icons.workspace_premium_rounded,
-                    color: Color(0xFFA78BFA), size: 24),
-              ),
-              const SizedBox(height: 14),
-              Text(
-                'Routine limit reached',
-                style: GoogleFonts.inter(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: -0.3,
-                  color: AppColors.textPrimary,
-                ),
-              ),
-              const SizedBox(height: 6),
-              Text(
-                'The free plan includes up to $kFreeRoutineLimit routines — '
-                'enough for a Push / Pull / Legs / Full-Body split. Upgrade to '
-                'Pro for unlimited routines and full analytics history.',
-                style: GoogleFonts.inter(
-                  fontSize: 14,
-                  height: 1.5,
-                  color: AppColors.textSecondary,
-                ),
-              ),
-              const SizedBox(height: 20),
-              SizedBox(
-                width: double.infinity,
-                height: 52,
-                child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.of(sheetCtx).pop();
-                    showPremiumPaywall(context);
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.accentPrimary,
-                    foregroundColor: Colors.white,
-                    elevation: 0,
-                    shape: const RoundedRectangleBorder(
-                        borderRadius: AppRadius.buttonPrimaryAll),
-                  ),
-                  child: Text(
-                    'Unlock Unlimited Routines',
-                    style: GoogleFonts.inter(
-                        fontSize: 16, fontWeight: FontWeight.w700),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 4),
-              Center(
-                child: TextButton(
-                  onPressed: () => Navigator.of(sheetCtx).pop(),
-                  child: Text(
-                    'Not now',
-                    style: GoogleFonts.inter(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
+class _SheetHandle extends StatelessWidget {
+  const _SheetHandle();
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Container(
+        width: 36,
+        height: 4,
+        decoration: BoxDecoration(
+          // Slightly more visible than textSecondary — machined feel.
+          color: AppColors.borderEmphasis,
+          borderRadius: BorderRadius.circular(6),
         ),
       ),
-    ),
-  );
+    );
+  }
+}
+
+/// Premium icon — a filled star on a surface-level container with a hairline
+/// border. Avoids the generic `workspace_premium_rounded` overused in every
+/// tutorial paywall.
+class _PaywallIcon extends StatelessWidget {
+  const _PaywallIcon();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 48,
+      height: 48,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: AppColors.surface3,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.borderDefault, width: 1),
+      ),
+      child: const Icon(Icons.star_rounded, color: AppColors.accentPrimary, size: 26),
+    );
+  }
 }
 
 /// Small "PRO" lock pill used next to gated features.
@@ -149,23 +81,23 @@ class ProLockPill extends StatelessWidget {
       label: 'Premium feature. Double tap to learn more.',
       child: Material(
         color: Colors.transparent,
-        borderRadius: BorderRadius.circular(AppRadius.badge),
+        borderRadius: BorderRadius.circular(8),
         clipBehavior: Clip.antiAlias,
         child: InkWell(
           onTap: () => showPremiumPaywall(context),
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
             decoration: BoxDecoration(
-              color: AppColors.indigoTint,
-              borderRadius: BorderRadius.circular(AppRadius.badge),
+              color: AppColors.accentPrimary.withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(8),
               border: Border.all(
-                color: AppColors.indigoTrack,
+                color: AppColors.accentPrimary.withValues(alpha: 0.3),
                 width: 1,
               ),
             ),
             // No padlock — it communicates "you can't have this" while the user
             // looks at their own data. Just the label; tap opens the paywall.
-            child: Text(label, style: AppText.badge(color: AppColors.indigo400)),
+            child: Text(label, style: AppText.badge(color: AppColors.accentPrimary)),
           ),
         ),
       ),
@@ -174,7 +106,9 @@ class ProLockPill extends StatelessWidget {
 }
 
 class _PaywallSheet extends ConsumerStatefulWidget {
-  const _PaywallSheet();
+  final PaywallSource source;
+
+  const _PaywallSheet({this.source = PaywallSource.generic});
 
   @override
   ConsumerState<_PaywallSheet> createState() => _PaywallSheetState();
@@ -184,16 +118,30 @@ class _PaywallSheetState extends ConsumerState<_PaywallSheet> {
   Offerings? _offerings;
   bool _loading = true;
   bool _purchasing = false;
+  bool _restoring = false;
+  bool _trialEligible = false;
   Package? _selected;
 
   // HONESTY RULE: this list may only name things that exist in the app
   // today. Advertising unbuilt features in a paid subscription is a
-  // Play/App Store rejection risk and a user-trust killer. The first row
-  // deliberately reaffirms what stays free.
+  // Play/App Store rejection risk and a user-trust killer.
+  //
+  // Icons are FILLED (not outline). Outline icons are the #1 signature of
+  // "I didn't hire a designer." Filled icons read as intentional.
   static const _features = [
-    (Icons.all_inclusive_rounded, 'Unlimited workouts', 'Free, forever'),
-    (Icons.insights_rounded, 'Full analytics history', 'Every chart, all of it'),
-    (Icons.date_range_rounded, 'All time ranges', '1Y and All Time unlocked'),
+    (
+      Icons.fitness_center,       // filled
+      'Unlimited routines',
+      'No more $kFreeRoutineLimit-routine cap',
+    ),
+    (Icons.insights,              // filled
+      'Full analytics history',
+      'Every chart, all of it',
+    ),
+    (Icons.calendar_month,        // filled
+      'All time ranges',
+      '1Y and All Time unlocked',
+    ),
   ];
 
   @override
@@ -203,6 +151,7 @@ class _PaywallSheetState extends ConsumerState<_PaywallSheet> {
   }
 
   Future<void> _loadOfferings() async {
+    if (mounted) setState(() => _loading = true);
     final offerings = await ref.read(premiumServiceProvider).offerings();
     if (!mounted) return;
     setState(() {
@@ -210,6 +159,7 @@ class _PaywallSheetState extends ConsumerState<_PaywallSheet> {
       _loading = false;
       _selected = _annual ?? _monthly;
     });
+    await _refreshTrialEligibility();
   }
 
   Package? get _monthly => _offerings?.current?.availablePackages
@@ -222,24 +172,39 @@ class _PaywallSheetState extends ConsumerState<_PaywallSheet> {
 
   bool get _storeReady => _monthly != null || _annual != null;
 
-  /// Free-trial intro offer on the selected package, or null. A paid intro
-  /// price (e.g. discounted first month) is NOT a free trial — claiming
-  /// "free" for it would be a store-policy violation.
-  IntroductoryPrice? get _freeTrial {
+  void _selectPackage(Package pkg) {
+    HapticFeedback.selectionClick();
+    setState(() => _selected = pkg);
+    unawaited(_refreshTrialEligibility());
+  }
+
+  Future<void> _refreshTrialEligibility() async {
+    final package = _selected;
+    final intro = package?.storeProduct.introductoryPrice;
+    if (package == null || intro == null || intro.price > 0) {
+      if (mounted) setState(() => _trialEligible = false);
+      return;
+    }
+    final eligible = await ref
+        .read(premiumServiceProvider)
+        .isEligibleForTrial(package.storeProduct.identifier);
+    if (mounted) setState(() => _trialEligible = eligible);
+  }
+
+  bool get _hasFreeTrial {
     final intro = _selected?.storeProduct.introductoryPrice;
-    if (intro == null || intro.price > 0) return null;
-    return intro;
+    return intro != null && intro.price == 0 && _trialEligible;
   }
 
   /// CTA + caption derive from the live offering — never hardcode trial
   /// terms the store may not actually grant.
   String get _ctaLabel =>
-      _freeTrial != null ? 'Start Free Trial' : 'Upgrade to Pro';
+      _hasFreeTrial ? 'Start Free Trial' : 'Upgrade to Pro';
 
   String get _ctaCaption {
-    final trial = _freeTrial;
-    if (trial == null) return 'Cancel anytime.';
-    return '${_trialLength(trial)} free, cancel anytime.';
+    if (!_hasFreeTrial) return 'Cancel anytime.';
+    final intro = _selected!.storeProduct.introductoryPrice!;
+    return '${_trialLength(intro)} free, cancel anytime.';
   }
 
   static String _trialLength(IntroductoryPrice intro) {
@@ -253,6 +218,25 @@ class _PaywallSheetState extends ConsumerState<_PaywallSheet> {
     };
   }
 
+  double? get _annualSavingsPercent {
+    final annual = _annual;
+    final monthly = _monthly;
+    if (annual == null || monthly == null) return null;
+    final monthlyPrice = monthly.storeProduct.price;
+    if (monthlyPrice <= 0) return null;
+    final annualMonthlyEquivalent = annual.storeProduct.price / 12;
+    final savings = 1 - (annualMonthlyEquivalent / monthlyPrice);
+    return savings > 0 ? savings * 100 : null;
+  }
+
+  String? _perMonthEquivalent(Package annual) {
+    final full = annual.storeProduct.priceString;
+    final match = RegExp(r'^[^\d-]*').firstMatch(full);
+    final prefix = match?.group(0) ?? '';
+    final perMonth = annual.storeProduct.price / 12;
+    return '$prefix${perMonth.toStringAsFixed(2)}/mo';
+  }
+
   Future<void> _purchase() async {
     final package = _selected;
     if (package == null || _purchasing) return;
@@ -263,10 +247,20 @@ class _PaywallSheetState extends ConsumerState<_PaywallSheet> {
       final info =
           await ref.read(premiumServiceProvider).purchasePackage(package);
       if (!mounted) return;
-      if (info != null && info.entitlements.active.isNotEmpty) {
+      if (info == null) {
+        // User cancelled the purchase
+        return;
+      }
+      if (info.entitlements.active.isNotEmpty) {
         HapticFeedback.heavyImpact();
         Navigator.of(context).pop();
         _snack('Welcome to GymLog Pro — everything is unlocked.');
+      } else {
+        HapticFeedback.heavyImpact();
+        _snack(
+          "Payment received — finishing setup. If Pro isn't unlocked in "
+          "a minute, reopen the app or contact support.",
+        );
       }
     } catch (e) {
       if (mounted) _snack('Purchase failed. You were not charged.');
@@ -276,7 +270,9 @@ class _PaywallSheetState extends ConsumerState<_PaywallSheet> {
   }
 
   Future<void> _restore() async {
+    if (_restoring) return;
     HapticFeedback.lightImpact();
+    setState(() => _restoring = true);
     try {
       final info = await ref.read(premiumServiceProvider).restorePurchases();
       if (!mounted) return;
@@ -289,13 +285,15 @@ class _PaywallSheetState extends ConsumerState<_PaywallSheet> {
       }
     } catch (_) {
       if (mounted) _snack('Restore failed. Try again later.');
+    } finally {
+      if (mounted) setState(() => _restoring = false);
     }
   }
 
   void _snack(String message) {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
       content:
-          Text(message, style: GoogleFonts.inter(color: AppColors.textPrimary)),
+          Text(message, style: AppText.body(color: AppColors.textPrimary)),
       backgroundColor: AppColors.bgSurface,
       behavior: SnackBarBehavior.floating,
     ));
@@ -303,226 +301,253 @@ class _PaywallSheetState extends ConsumerState<_PaywallSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final savings = _annualSavingsPercent;
+    final String headline;
+    final String subheadline;
+
+    switch (widget.source) {
+      case PaywallSource.generic:
+        headline = 'Unlock Premium';
+        subheadline = 'Go deeper on the data behind your training.';
+        break;
+      case PaywallSource.routineLimit:
+        headline = 'Routine limit reached';
+        subheadline =
+            'The free plan includes up to $kFreeRoutineLimit routines — enough for a Push / Pull / Legs / Full-Body split. Upgrade to Pro for unlimited routines and full analytics history.';
+        break;
+      case PaywallSource.chartFilter:
+        headline = 'Full history locked';
+        subheadline =
+            'Free plan shows your last 3 weeks. Upgrade to see your full history.';
+        break;
+      case PaywallSource.timeRange:
+        headline = 'Long-term trends';
+        subheadline = '1Y and All Time ranges unlocked with Pro.';
+        break;
+    }
+
     return Container(
       decoration: const BoxDecoration(
         color: AppColors.bgSheet,
-        borderRadius: AppRadius.sheetTop,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        // Hairline border — defines the sheet edge against the black canvas.
+        // This is what separates "material" from "grey blob on black."
+        border: Border(
+          top:   BorderSide(color: AppColors.surface3, width: 1),
+          left:  BorderSide(color: AppColors.surface3, width: 1),
+          right: BorderSide(color: AppColors.surface3, width: 1),
+        ),
       ),
       child: SafeArea(
         top: false,
         child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(24, 12, 24, 16),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Center(
-                child: Container(
-                  width: 36,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF6A6A6A),
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 24),
-
-              // ── Header ────────────────────────────────────────────────
+              // ── Top glow — light leak at sheet edge ──────────────────
+              // Premium apps use light to create depth, not shadow.
+              // This 1px row emits a faint purple luminance above the handle.
               Container(
-                width: 44,
-                height: 44,
-                alignment: Alignment.center,
+                height: 1,
                 decoration: BoxDecoration(
-                  color: AppColors.accentPrimary.withValues(alpha: 0.14),
-                  borderRadius: AppRadius.badgeAll,
-                ),
-                child: const Icon(Icons.workspace_premium_rounded,
-                    color: Color(0xFFA78BFA), size: 24),
-              ),
-              const SizedBox(height: 14),
-              Text(
-                'Unlock Premium',
-                style: GoogleFonts.inter(
-                  fontSize: 22,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: -0.4,
-                  color: AppColors.textPrimary,
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.accentPrimary.withValues(alpha: 0.18),
+                      blurRadius: 12,
+                      spreadRadius: 2,
+                    ),
+                  ],
                 ),
               ),
-              const SizedBox(height: 4),
-              Text(
-                'Go deeper on the data behind your training.',
-                style: GoogleFonts.inter(
-                  fontSize: 14,
-                  color: AppColors.textSecondary,
-                ),
-              ),
-              const SizedBox(height: 20),
 
-              // ── Features ──────────────────────────────────────────────
-              for (final (icon, title, subtitle) in _features)
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 14),
-                  child: Row(
-                    children: [
-                      Icon(icon, size: 19, color: const Color(0xFFA78BFA)),
-                      const SizedBox(width: 14),
-                      Expanded(
-                        child: Text(
-                          title,
-                          style: GoogleFonts.inter(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w600,
+              Padding(
+                padding: const EdgeInsets.fromLTRB(24, 12, 24, 16),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const _SheetHandle(),
+                    const SizedBox(height: 24),
+
+                    // ── Header ──────────────────────────────────────────
+                    const _PaywallIcon(),
+                    const SizedBox(height: 14),
+                    Text(
+                      headline,
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                            fontWeight: FontWeight.w700,
                             color: AppColors.textPrimary,
+                          ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      subheadline,
+                      style: AppText.body(color: AppColors.textSecondary),
+                    ),
+                    const SizedBox(height: 20),
+
+                    // ── Features ────────────────────────────────────────
+                    // Subtitles are sentence case — uppercase reads like a
+                    // system alert. Sentence case reads like a human wrote it.
+                    for (final (icon, title, subtitle) in _features)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 14),
+                        child: Semantics(
+                          label: '$title, $subtitle',
+                          child: Row(
+                            children: [
+                              // Filled icons signal intentional design.
+                              // Outline icons look like a default choice.
+                              Icon(icon, size: 20, color: AppColors.accentPrimary),
+                              const SizedBox(width: 14),
+                              Expanded(
+                                child: ExcludeSemantics(
+                                  child: Text(
+                                    title,
+                                    style: AppText.body(color: AppColors.textPrimary)
+                                        .copyWith(fontWeight: FontWeight.w600),
+                                  ),
+                                ),
+                              ),
+                              ExcludeSemantics(
+                                child: Text(
+                                  subtitle,           // sentence case — not .toUpperCase()
+                                  style: AppText.label(color: AppColors.textSecondary),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ),
-                      Text(
-                        subtitle,
-                        style: GoogleFonts.inter(
-                          fontSize: 12,
-                          color: AppColors.textSecondary,
+                    const SizedBox(height: 8),
+
+                    // ── Pricing ─────────────────────────────────────────
+                    if (_loading)
+                      const Center(
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(vertical: 24),
+                          child: CircularProgressIndicator(
+                              color: AppColors.textPrimary, strokeWidth: 2),
+                        ),
+                      )
+                    else if (_storeReady) ...[
+                      if (_annual != null)
+                        _PackageRow(
+                          title: 'Yearly',
+                          price: _annual!.storeProduct.priceString,
+                          caption: _perMonthEquivalent(_annual!) ?? 'per year',
+                          badge: savings != null ? 'SAVE ${savings.round()}%' : null,
+                          selected: _selected == _annual,
+                          onTap: () => _selectPackage(_annual!),
+                        ),
+                      if (_annual != null && _monthly != null)
+                        const SizedBox(height: 10),
+                      if (_monthly != null)
+                        _PackageRow(
+                          title: 'Monthly',
+                          price: _monthly!.storeProduct.priceString,
+                          caption: 'per month',
+                          selected: _selected == _monthly,
+                          onTap: () => _selectPackage(_monthly!),
+                        ),
+                      const SizedBox(height: 18),
+                      Material(
+                        color: _purchasing
+                            ? AppColors.accentPrimary.withValues(alpha: 0.85)
+                            : AppColors.accentPrimary,
+                        borderRadius: BorderRadius.circular(12),
+                        elevation: 0,
+                        child: InkWell(
+                          onTap: _purchasing ? null : _purchase,
+                          borderRadius: BorderRadius.circular(12),
+                          child: Container(
+                            height: 52,
+                            width: double.infinity,
+                            alignment: Alignment.center,
+                            child: _purchasing
+                                ? const SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: CircularProgressIndicator(
+                                        color: AppColors.canvas, strokeWidth: 2),
+                                  )
+                                : Text(
+                                    _ctaLabel,
+                                    style: AppText.body(color: AppColors.canvas)
+                                        .copyWith(fontWeight: FontWeight.bold),
+                                  ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Center(
+                        child: Text(
+                          _ctaCaption,
+                          style: AppText.caption(color: AppColors.textSecondary),
+                        ),
+                      ),
+                    ] else ...[
+                      // RevenueCat unreachable — actionable, not apologetic.
+                      // A premium app never shows a "broken" UI; it shows a
+                      // minimal, tappable state that lets the user retry.
+                      const SizedBox(height: 8),
+                      Center(
+                        child: GestureDetector(
+                          onTap: _loadOfferings,
+                          behavior: HitTestBehavior.opaque,
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            child: Text(
+                              'Pricing unavailable. Tap to retry.',
+                              style: AppText.caption(color: AppColors.textSecondary),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
                         ),
                       ),
                     ],
-                  ),
-                ),
-              const SizedBox(height: 8),
 
-              // ── Pricing ───────────────────────────────────────────────
-              if (_loading)
-                const Center(
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(vertical: 24),
-                    child: CircularProgressIndicator(
-                        color: AppColors.textPrimary, strokeWidth: 2),
-                  ),
-                )
-              else if (_storeReady) ...[
-                if (_annual != null)
-                  _PackageRow(
-                    title: 'Yearly',
-                    price: _annual!.storeProduct.priceString,
-                    caption: 'per year',
-                    badge: 'BEST VALUE',
-                    selected: _selected == _annual,
-                    onTap: () {
-                      HapticFeedback.selectionClick();
-                      setState(() => _selected = _annual);
-                    },
-                  ),
-                if (_annual != null && _monthly != null)
-                  const SizedBox(height: 10),
-                if (_monthly != null)
-                  _PackageRow(
-                    title: 'Monthly',
-                    price: _monthly!.storeProduct.priceString,
-                    caption: 'per month',
-                    selected: _selected == _monthly,
-                    onTap: () {
-                      HapticFeedback.selectionClick();
-                      setState(() => _selected = _monthly);
-                    },
-                  ),
-                const SizedBox(height: 18),
-                SizedBox(
-                  width: double.infinity,
-                  height: 52,
-                  child: ElevatedButton(
-                    onPressed: _purchasing ? null : _purchase,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.accentPrimary,
-                      foregroundColor: Colors.white,
-                      elevation: 0,
-                      shape: const RoundedRectangleBorder(
-                          borderRadius: AppRadius.buttonPrimaryAll),
-                    ),
-                    child: _purchasing
-                        ? const SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(
-                                color: Colors.white, strokeWidth: 2),
-                          )
-                        : Text(
-                            _ctaLabel,
-                            style: GoogleFonts.inter(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w700,
-                            ),
+                    const SizedBox(height: 8),
+
+                    // ── Secondary actions ───────────────────────────────
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        TextButton(
+                          onPressed: () => Navigator.of(context).pop(),
+                          style: TextButton.styleFrom(
+                            minimumSize: const Size(0, 48),
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
                           ),
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Center(
-                  child: Text(
-                    _ctaCaption,
-                    style: GoogleFonts.inter(
-                      fontSize: 12,
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
-                ),
-              ] else
-                // RevenueCat unreachable / unconfigured — honest, no fakes.
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(16),
-                  decoration: const BoxDecoration(
-                    color: AppColors.surfaceRaised,
-                    borderRadius: AppRadius.cardAll,
-                  ),
-                  child: Text(
-                    'Pricing is unavailable right now. You are on the free '
-                    'plan — workout logging stays free, forever.',
-                    style: GoogleFonts.inter(
-                      fontSize: 13,
-                      height: 1.5,
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
-                ),
-
-              const SizedBox(height: 8),
-
-              // ── Secondary actions ─────────────────────────────────────
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  TextButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    child: Text(
-                      'Maybe Later',
-                      style: GoogleFonts.inter(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                        color: AppColors.textSecondary,
-                      ),
-                    ),
-                  ),
-                  if (_storeReady) ...[
-                    Container(
-                      width: 3,
-                      height: 3,
-                      decoration: const BoxDecoration(
-                        color: Color(0xFF6A6A6A),
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                    TextButton(
-                      onPressed: _restore,
-                      child: Text(
-                        'Restore Purchases',
-                        style: GoogleFonts.inter(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                          color: AppColors.textSecondary,
+                          child: Text(
+                            'Maybe Later',
+                            style: AppText.body(color: AppColors.textSecondary),
+                          ),
                         ),
-                      ),
+                        Container(
+                          width: 3,
+                          height: 3,
+                          decoration: const BoxDecoration(
+                            color: AppColors.textSecondary,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                        TextButton(
+                          onPressed: _restoring ? null : _restore,
+                          style: TextButton.styleFrom(
+                            minimumSize: const Size(0, 48),
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                          ),
+                          child: Text(
+                            _restoring ? 'Restoring…' : 'Restore Purchases',
+                            style: AppText.body(color: AppColors.textSecondary),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
-                ],
+                ),
               ),
             ],
           ),
@@ -555,85 +580,86 @@ class _PackageRow extends StatelessWidget {
       button: true,
       selected: selected,
       label: '$title plan, $price $caption',
-      child: GestureDetector(
-        onTap: onTap,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 150),
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-          decoration: BoxDecoration(
-            color: selected
-                ? AppColors.accentPrimary.withValues(alpha: 0.10)
-                : AppColors.surfaceRaised,
-            borderRadius: AppRadius.cardAll,
-            border: Border.all(
-              color: selected
-                  ? AppColors.borderActive
-                  : AppColors.borderSubtle,
-              width: 1,
-            ),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        clipBehavior: Clip.antiAlias,
+        decoration: BoxDecoration(
+          // Unselected cards are transparent — no grey blob pattern.
+          // Only the selected card gets a tinted fill.
+          color: selected
+              ? AppColors.accentPrimary.withValues(alpha: 0.10)
+              : Colors.transparent,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: selected ? AppColors.borderActive : AppColors.borderDefault,
+            width: 1,
           ),
-          child: Row(
-            children: [
-              Icon(
-                selected
-                    ? Icons.radio_button_checked_rounded
-                    : Icons.radio_button_off_rounded,
-                size: 18,
-                color: selected
-                    ? AppColors.accentPrimary
-                    : AppColors.textSecondary,
-              ),
-              const SizedBox(width: 12),
-              Text(
-                title,
-                style: GoogleFonts.inter(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.textPrimary,
-                ),
-              ),
-              if (badge != null) ...[
-                const SizedBox(width: 8),
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: AppColors.accentPrimary.withValues(alpha: 0.16),
-                    borderRadius: BorderRadius.circular(999),
-                  ),
-                  child: Text(
-                    badge!,
-                    style: GoogleFonts.inter(
-                      fontSize: 9.5,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 0.5,
-                      color: AppColors.indigo400,
-                    ),
-                  ),
-                ),
-              ],
-              const Spacer(),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
+        ),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: onTap,
+            borderRadius: BorderRadius.circular(16),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              child: Row(
                 children: [
+                  Icon(
+                    selected
+                        ? Icons.radio_button_checked_rounded
+                        : Icons.radio_button_off_rounded,
+                    size: 18,
+                    color: selected
+                        ? AppColors.accentPrimary
+                        : AppColors.textSecondary,
+                  ),
+                  const SizedBox(width: 12),
                   Text(
-                    price,
-                    style: GoogleFonts.inter(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.textPrimary,
+                    title,
+                    style: AppText.body(color: AppColors.textPrimary).copyWith(
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
-                  Text(
-                    caption,
-                    style: GoogleFonts.inter(
-                      fontSize: 11,
-                      color: AppColors.textSecondary,
+                  if (badge != null) ...[
+                    const SizedBox(width: 8),
+                    Container(
+                      padding:
+                          const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: AppColors.accentPrimary.withValues(alpha: 0.16),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        badge!.toUpperCase(),
+                        style: AppText.label(
+                          color: AppColors.accentPrimary,
+                          letterSpacing: 12 * 0.05,
+                        ).copyWith(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ),
+                  ],
+                  const Spacer(),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(
+                        price,
+                        style: AppText.value(color: AppColors.textPrimary).copyWith(
+                          fontSize: 17,
+                        ),
+                      ),
+                      Text(
+                        caption,
+                        style: AppText.caption(color: AppColors.textSecondary),
+                      ),
+                    ],
                   ),
                 ],
               ),
-            ],
+            ),
           ),
         ),
       ),

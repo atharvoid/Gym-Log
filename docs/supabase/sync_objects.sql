@@ -22,6 +22,11 @@ create table if not exists public.sync_objects (
 create index if not exists idx_sync_objects_user_type
   on public.sync_objects (user_id, entity_type);
 
+-- Covers the pull query: WHERE user_id = $1 ORDER BY updated_at DESC.
+-- Without this the planner does a sequential scan + sort for every login pull.
+create index if not exists idx_sync_objects_user_updated
+  on public.sync_objects (user_id, updated_at desc);
+
 -- Row-Level Security: a user only ever sees and writes their own rows.
 -- PostgREST runs with the caller's JWT, so auth.uid() is them.
 alter table public.sync_objects enable row level security;

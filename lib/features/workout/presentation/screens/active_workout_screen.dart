@@ -328,7 +328,7 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
                 : ListView.builder(
                     padding: EdgeInsets.only(
                       top: 8,
-                      bottom: MediaQuery.viewPaddingOf(context).bottom + 160.0,
+                      bottom: MediaQuery.viewPaddingOf(context).bottom + 190.0,
                     ),
                     itemCount: exerciseIds.length,
                     itemBuilder: (context, index) {
@@ -375,54 +375,88 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
                 ),
         ],
       ),
-
-      // ── Floating Action Button (Sticky Add Exercise) ────────────────
-      // Ensures the button is always accessible without scrolling.
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-      floatingActionButton: !workoutExists
+      bottomNavigationBar: !workoutExists
           ? null
-          : Padding(
-              padding: EdgeInsets.only(
-                bottom: restTimer != null ? 80.0 : 0.0,
-              ),
-              child: FloatingActionButton.extended(
-                onPressed: () async {
-                  final selected =
-                      await context.push<Exercise>('/exercises/select');
-                  if (selected != null && mounted) {
-                    notifier.addExercise(selected.id, selected.name);
-                  }
-                },
-                backgroundColor: AppColors.surface3,
-                elevation: 0,
-                highlightElevation: 0,
-                shape: const RoundedRectangleBorder(
-                  borderRadius: BorderRadius.zero, // Three-radius law: 0px for secondary
-                  side: BorderSide(color: AppColors.borderSubtle),
+          : Container(
+              decoration: const BoxDecoration(
+                color: AppColors.bgBase,
+                border: Border(
+                  top: BorderSide(color: AppColors.borderSubtle, width: 0.5),
                 ),
-                label: Text('+ Add Exercise', style: AppText.button(color: AppColors.textPrimary)),
+              ),
+              child: SafeArea(
+                top: false,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 240),
+                      switchInCurve: Curves.easeOutCubic,
+                      switchOutCurve: Curves.easeInCubic,
+                      transitionBuilder: (child, animation) => SizeTransition(
+                        sizeFactor: animation,
+                        child: SlideTransition(
+                          position: Tween<Offset>(
+                            begin: const Offset(0, 1),
+                            end: Offset.zero,
+                          ).animate(animation),
+                          child: child,
+                        ),
+                      ),
+                      child: restTimer == null
+                          ? const SizedBox.shrink(key: ValueKey('noRest'))
+                          : RestTimerBar(key: const ValueKey('rest'), state: restTimer),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Material(
+                              color: AppColors.surface3,
+                              borderRadius: AppRadius.buttonSecondaryAll,
+                              child: InkWell(
+                                borderRadius: AppRadius.buttonSecondaryAll,
+                                onTap: () async {
+                                  final selected =
+                                      await context.push<Exercise>('/exercises/select');
+                                  if (selected != null && mounted) {
+                                    notifier.addExercise(selected.id, selected.name);
+                                  }
+                                },
+                                child: Container(
+                                  height: 48,
+                                  alignment: Alignment.center,
+                                  decoration: BoxDecoration(
+                                    border: Border.all(color: AppColors.borderSubtle),
+                                    borderRadius: AppRadius.buttonSecondaryAll,
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      const Icon(
+                                        Icons.add_rounded,
+                                        color: AppColors.textPrimary,
+                                        size: 18,
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Text(
+                                        'Add Exercise',
+                                        style: AppText.button(color: AppColors.textPrimary),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
-
-      // ── Rest timer — the 90-second heartbeat of the session ───────────
-      bottomNavigationBar: AnimatedSwitcher(
-        duration: const Duration(milliseconds: 240),
-        switchInCurve: Curves.easeOutCubic,
-        switchOutCurve: Curves.easeInCubic,
-        transitionBuilder: (child, animation) => SizeTransition(
-          sizeFactor: animation,
-          child: SlideTransition(
-            position: Tween<Offset>(
-              begin: const Offset(0, 1),
-              end: Offset.zero,
-            ).animate(animation),
-            child: child,
-          ),
-        ),
-        child: restTimer == null
-            ? const SizedBox.shrink(key: ValueKey('noRest'))
-            : RestTimerBar(key: const ValueKey('rest'), state: restTimer),
-      ),
     ),
     );
   }
