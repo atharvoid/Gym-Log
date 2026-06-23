@@ -53,9 +53,28 @@ class SyncEngine {
   static const _netTimeout = Duration(seconds: 20);
   static const _lastSyncedKey = 'sync_last_synced_ms';
 
-  /// Live state for the Settings UI. ValueListenable → ValueListenableBuilder.
-  final ValueNotifier<SyncStatus> status =
-      ValueNotifier(const SyncStatus(SyncPhase.idle));
+  /// Current sync state. Exposed to Riverpod via [statusStream]; see
+  /// `SyncStatusController` (`sync_status_provider.dart`), the first-class,
+  /// code-generated provider that supersedes the old `ValueNotifier` channel.
+  SyncStatus _status = const SyncStatus(SyncPhase.idle);
+  final StreamController<SyncStatus> _statusController =
+      StreamController<SyncStatus>.broadcast();
+
+  /// The latest status snapshot — a synchronous read (e.g. for tests).
+  SyncStatus get status => _status;
+
+  /// A broadcast stream that replays the current status to each new listener,
+  /// then emits every subsequent transition. `SyncStatusController` turns this
+  /// into an `AsyncValue<SyncStatus>` for the widget tree.
+  Stream<SyncStatus> get statusStream async* {
+    yield _status;
+    yield* _statusController.stream;
+  }
+
+  void _setStatus(SyncStatus next) {
+    _status = next;
+    if (!_statusController.isClosed) _statusController.add(next);
+  }
 
   // SharedPreferences keys mirrored to the cloud as part of 'preferences'.
   static const _kWeeklyGoal = 'weekly_goal_days';
@@ -160,7 +179,7 @@ class SyncEngine {
     if (_running) return;
     _debounceTimer?.cancel();
     _running = true;
-    status.value = status.value.copyWith(phase: SyncPhase.syncing);
+    _setStatus(_status.copyWith(phase: SyncPhase.syncing));
     try {
       while (true) {
         final batch = await _db.syncOutboxDao.nextBatch(userId, limit: _batchSize);
@@ -187,11 +206,11 @@ class SyncEngine {
 
       final now = DateTime.now();
       await _persistLastSynced(now);
-      status.value = SyncStatus(SyncPhase.synced, lastSyncedAt: now);
+      _setStatus(SyncStatus(SyncPhase.synced, lastSyncedAt: now));
     } catch (_) {
       // Offline or server error — rows stay queued, retried on the next
       // trigger. Never surfaced as a blocking failure.
-      status.value = status.value.copyWith(phase: SyncPhase.offline);
+      _setStatus(_status.copyWith(phase: SyncPhase.offline));
     } finally {
       _running = false;
     }
@@ -231,8 +250,8 @@ class SyncEngine {
     final prefs = await _prefs();
     final ms = prefs.getInt(_lastSyncedKey);
     if (ms != null) {
-      status.value = status.value
-          .copyWith(lastSyncedAt: DateTime.fromMillisecondsSinceEpoch(ms));
+      _setStatus(_status
+          .copyWith(lastSyncedAt: DateTime.fromMillisecondsSinceEpoch(ms)));
     }
   }
 
@@ -270,7 +289,7 @@ class SyncEngine {
     _debounceTimer?.cancel();
     _outboxSub?.cancel();
     _connSub?.cancel();
-    status.dispose();
+    _statusController.close();
   }
 }
 

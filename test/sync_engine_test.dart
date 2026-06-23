@@ -124,7 +124,7 @@ void main() {
 
     expect(await db.syncOutboxDao.pendingCount(userId), 0);
     expect(remote.store.containsKey('session:s1'), isTrue);
-    expect(engine.status.value.phase, SyncPhase.synced);
+    expect(engine.status.phase, SyncPhase.synced);
   });
 
   test('offline keeps the queue; a later retry delivers it', () async {
@@ -134,7 +134,7 @@ void main() {
     remote.failNext = true;
     await engine.syncNow(userId);
     expect(await db.syncOutboxDao.pendingCount(userId), 1); // still queued
-    expect(engine.status.value.phase, SyncPhase.offline);
+    expect(engine.status.phase, SyncPhase.offline);
 
     remote.failNext = false;
     await engine.syncNow(userId);
