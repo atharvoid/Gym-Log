@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text.dart';
+import '../../../../core/services/muscle_color_service.dart';
 import '../../../../core/utils/tap_guard.dart';
 import '../../../../core/utils/relative_time.dart';
 import '../../../../core/providers/database_provider.dart';
@@ -35,15 +36,11 @@ class RoutineCard extends ConsumerWidget {
     this.lastTrained,
   });
 
-  /// Stable accent derived from the routine's dominant muscle group, so the
-  /// glyph square is tinted consistently per muscle.
-  Color get _glyphColor {
-    if (muscleTags.isEmpty) return AppColors.accentText;
-    final index =
-        muscleTags.first.hashCode.abs() % AppColors.muscleSplitPalette.length;
-    final base = AppColors.muscleSplitPalette[index];
-    return Color.lerp(base, Colors.white, 0.35)!;
-  }
+  /// Dominant-muscle accent, sourced from the shared [MuscleColorService] so the
+  /// routine glyph follows the same "dominant = brightest" rule as the muscle-
+  /// split bar (replaces the previous ad-hoc per-name hashCode tint).
+  Color get _glyphColor => MuscleColorService.glyphColorFor(
+      muscleTags.isNotEmpty ? muscleTags.first : null);
 
   Widget _tag(String label) => Container(
         padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3),
@@ -164,13 +161,13 @@ class RoutineCard extends ConsumerWidget {
                     ),
                   ),
 
-                // ── Divider ──────────────────────────────────────────────
+                // ── Divider ─────────────────────────────────────
                 Padding(
                   padding: const EdgeInsets.only(top: 13),
                   child: Container(height: 1, color: RDStyles.hairline),
                 ),
 
-                // ── Footer: preview + Start pill ─────────────────────────
+                // ── Footer: preview + Start pill ──────────────────────
                 Padding(
                   padding: const EdgeInsets.only(top: 12),
                   child: Row(

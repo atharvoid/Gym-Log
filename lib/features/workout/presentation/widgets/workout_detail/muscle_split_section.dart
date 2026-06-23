@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:gymlog/core/theme/app_colors.dart';
 import 'package:gymlog/core/theme/app_text.dart';
+import 'package:gymlog/core/services/muscle_color_service.dart';
 
 /// Single-line proportional muscle-split bar + legend. Segment widths are ∝ the
-/// session's logged set counts; the dominant muscle gets the accent and the
-/// rest descending white-opacity steps (see [AppColors.muscleSplitPalette]).
+/// session's logged set counts. Color assignment is delegated to
+/// [MuscleColorService]: the dominant muscle gets the lightest violet and each
+/// lesser share steps darker (see [AppColors.muscleSplitPalette]).
 class MuscleSplitSection extends StatelessWidget {
   /// target muscle name → set count for this session.
   final Map<String, int> muscleSetCounts;
@@ -13,15 +15,8 @@ class MuscleSplitSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (muscleSetCounts.isEmpty) return const SizedBox.shrink();
-
-    final sorted = muscleSetCounts.entries.toList()
-      ..sort((a, b) => b.value.compareTo(a.value));
-    final totalSets = sorted.fold<int>(0, (s, e) => s + e.value);
-    if (totalSets == 0) return const SizedBox.shrink();
-
-    Color colorFor(int rank) => AppColors.muscleSplitPalette[
-        rank.clamp(0, AppColors.muscleSplitPalette.length - 1)];
+    final slices = MuscleColorService.rankedSplit(muscleSetCounts);
+    if (slices.isEmpty) return const SizedBox.shrink();
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 20, 16, 0),
@@ -40,7 +35,7 @@ class MuscleSplitSection extends StatelessWidget {
             spacing: 12,
             runSpacing: 4,
             children: [
-              for (var i = 0; i < sorted.length; i++)
+              for (final s in slices)
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -48,13 +43,13 @@ class MuscleSplitSection extends StatelessWidget {
                       width: 8,
                       height: 8,
                       decoration: BoxDecoration(
-                        color: colorFor(i),
+                        color: s.color,
                         borderRadius: AppRadius.badgeAll,
                       ),
                     ),
                     const SizedBox(width: 5),
                     Text(
-                      '${sorted[i].key}  ${((sorted[i].value / totalSets) * 100).round()}%',
+                      '${s.muscle}  ${s.percent}%',
                       style: AppText.caption(),
                     ),
                   ],
@@ -67,7 +62,7 @@ class MuscleSplitSection extends StatelessWidget {
           // decorative segments hidden (the text legend carries the breakdown).
           Semantics(
             label: 'Muscle split: '
-                '${sorted.map((e) => '${e.key} ${((e.value / totalSets) * 100).round()} percent').join(', ')}',
+                '${slices.map((s) => '${s.muscle} ${s.percent} percent').join(', ')}',
             child: ExcludeSemantics(
               child: ClipRRect(
                 borderRadius: AppRadius.badgeAll,
@@ -75,14 +70,14 @@ class MuscleSplitSection extends StatelessWidget {
                   height: 8,
                   child: Row(
                     children: [
-                      for (var i = 0; i < sorted.length; i++)
+                      for (var i = 0; i < slices.length; i++)
                         Expanded(
-                          flex: sorted[i].value < 1 ? 1 : sorted[i].value,
+                          flex: slices[i].setCount < 1 ? 1 : slices[i].setCount,
                           child: Container(
-                            margin: i < sorted.length - 1
+                            margin: i < slices.length - 1
                                 ? const EdgeInsets.only(right: 1)
                                 : EdgeInsets.zero,
-                            color: colorFor(i),
+                            color: slices[i].color,
                           ),
                         ),
                     ],
