@@ -8,21 +8,25 @@ import 'core/theme/app_theme.dart';
 import 'core/router/router.dart';
 import 'core/services/sync_engine.dart';
 import 'features/auth/presentation/providers/auth_provider.dart';
+import 'shared/widgets/database_recovery_screen.dart';
 
 class GymLogApp extends ConsumerStatefulWidget {
-  const GymLogApp({super.key});
+  /// When true, the local database failed its integrity check during
+  /// [Bootstrap]. The app renders a recovery surface instead of the normal
+  /// router tree and skips all sync wiring.
+  final bool databaseCorrupted;
+
+  const GymLogApp({super.key, this.databaseCorrupted = false});
 
   @override
   ConsumerState<GymLogApp> createState() => _GymLogAppState();
 }
 
 class _GymLogAppState extends ConsumerState<GymLogApp> {
-  late final AppLifecycleListener _lifecycle;
+  AppLifecycleListener? _lifecycle;
 
   /// Listens for auth state changes so that the sync engine is initialised
-  /// even when GoRouter bypasses SplashScreen (e.g. fresh install: the user
-  /// signs in on /auth and is redirected directly to / without SplashScreen
-  /// running its _resolveInitialRoute).
+  /// even when GoRouter bypasses SplashScreen (e.g. fresh install).
   StreamSubscription<AuthState>? _authSub;
 
   @override
@@ -35,19 +39,19 @@ class _GymLogAppState extends ConsumerState<GymLogApp> {
       Sentry.captureException(details.exception, stackTrace: details.stack);
     };
 
+    // In recovery mode the database is unusable — do not wire sync at all.
+    if (widget.databaseCorrupted) return;
+
     // Backgrounding is an explicit sync trigger — flush the queue before the
-    // OS may suspend us. Resuming arms a debounced sync (covers the common
-    // "came back" case without a connectivity plugin).
+    // OS may suspend us. Resuming arms a debounced sync.
     _lifecycle = AppLifecycleListener(
       onHide: _flush,
       onPause: _flush,
       onResume: _onResume,
     );
 
-    // Cover the fresh-install path: GoRouter redirects /auth → / directly on
-    // sign-in, so SplashScreen never runs. This listener picks that up.
-    // initSession() is idempotent, so calling it here when SplashScreen has
-    // already run (cold start) is a safe no-op.
+    // Cover the fresh-install path: GoRouter redirects /auth -> / directly on
+    // sign-in, so SplashScreen never runs. initSession() is idempotent.
     _authSub = Supabase.instance.client.auth.onAuthStateChange.listen(
       _onAuthStateChange,
     );
@@ -59,8 +63,6 @@ class _GymLogAppState extends ConsumerState<GymLogApp> {
     final id = _userId;
     if (id == null) return;
     final engine = ref.read(syncEngineProvider);
-    // Snapshot the latest preferences, then flush the whole queue before the
-    // OS may suspend us.
     engine
         .enqueuePreferences(id)
         .whenComplete(() => engine.syncNow(id, reason: 'background'));
@@ -72,13 +74,6 @@ class _GymLogAppState extends ConsumerState<GymLogApp> {
   }
 
   /// Handles auth state transitions emitted by Supabase.
-  ///
-  /// * `signedIn`  → kick off `initSession` (idempotent; no-op if
-  ///                 SplashScreen already ran for this user) and snapshot
-  ///                 the latest preferences.
-  /// * `signedOut` → reset the engine guard so the next sign-in triggers
-  ///                 a fresh pull.
-  /// * Everything else (tokenRefreshed, userUpdated, …) → ignored.
   void _onAuthStateChange(AuthState event) {
     final engine = ref.read(syncEngineProvider);
 
@@ -99,24 +94,30 @@ class _GymLogAppState extends ConsumerState<GymLogApp> {
   @override
   void dispose() {
     _authSub?.cancel();
-    _lifecycle.dispose();
+    _lifecycle?.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    // Recovery mode: a self-contained MaterialApp with no router/auth deps.
+    if (widget.databaseCorrupted) {
+      return MaterialApp(
+        title: 'GymLog',
+        theme: appTheme,
+        debugShowCheckedModeBanner: false,
+        home: const DatabaseRecoveryScreen(),
+      );
+    }
+
     final router = ref.watch(routerProvider);
     return MaterialApp.router(
       title: 'GymLog',
       theme: appTheme,
-      // Auto-applied by the framework when the OS "increase contrast" setting
-      // is on. Both slots point at the same variant since the app is dark-only.
       highContrastTheme: appHighContrastTheme,
       highContrastDarkTheme: appHighContrastTheme,
       routerConfig: router,
       debugShowCheckedModeBanner: false,
-      // Clamp Dynamic Type so extreme OS font scales can't clip CTAs or
-      // overflow dense stat rows; users below the cap are unaffected.
       builder: (context, child) {
         final mq = MediaQuery.of(context);
         return MediaQuery(
