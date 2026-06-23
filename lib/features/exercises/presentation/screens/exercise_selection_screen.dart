@@ -71,15 +71,18 @@ class _ExerciseSelectionScreenState
     extends ConsumerState<ExerciseSelectionScreen> {
   final _searchController = TextEditingController();
   final _scrollController = ScrollController();
+  final _searchFocus = FocusNode();
   Timer? _searchDebounce;
   String? _muscleFilter;
   String? _equipmentFilter;
   bool _isSearching = false;
+  bool _searchFocused = false;
 
   @override
   void initState() {
     super.initState();
     _searchController.addListener(_onQueryChanged);
+    _searchFocus.addListener(_onFocusChanged);
   }
 
   @override
@@ -87,7 +90,15 @@ class _ExerciseSelectionScreenState
     _searchDebounce?.cancel();
     _searchController.dispose();
     _scrollController.dispose();
+    _searchFocus.dispose();
     super.dispose();
+  }
+
+  /// Toggles the focus glow only on the focus↔blur boundary.
+  void _onFocusChanged() {
+    if (_searchFocus.hasFocus != _searchFocused) {
+      setState(() => _searchFocused = _searchFocus.hasFocus);
+    }
   }
 
   /// `setState` runs ONLY on the empty↔non-empty boundary (Recent visibility +
@@ -238,36 +249,68 @@ class _ExerciseSelectionScreenState
       body: Column(
         children: [
           // ── Search ─────────────────────────────────────────────────────
+          // An input is a recessed surface: Surface-3 fill, hairline border by
+          // default, a thicker accent edge + soft accent glow on focus.
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 10),
-            child: TextField(
-              controller: _searchController,
-              autofocus: true,
-              style: AppText.body(color: AppColors.textPrimary),
-              cursorColor: AppColors.accentPrimary,
-              textInputAction: TextInputAction.search,
-              textCapitalization: TextCapitalization.words,
-              autocorrect: false,
-              decoration: InputDecoration(
-                hintText: 'Search exercises…',
-                hintStyle: AppText.body(color: AppColors.textTertiary),
-                prefixIcon: const Icon(Icons.search_rounded,
-                    color: AppColors.textSecondary),
-                suffixIcon: _isSearching
-                    ? IconButton(
-                        tooltip: 'Clear',
-                        icon: const Icon(Icons.close_rounded,
-                            size: 18, color: AppColors.textSecondary),
-                        onPressed: _searchController.clear,
-                      )
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 120),
+              decoration: BoxDecoration(
+                borderRadius: AppRadius.inputAll,
+                boxShadow: _searchFocused
+                    ? [
+                        BoxShadow(
+                          color:
+                              AppColors.accentPrimary.withValues(alpha: 0.18),
+                          blurRadius: 12,
+                          spreadRadius: 0.5,
+                        ),
+                      ]
                     : null,
-                filled: true,
-                fillColor: AppColors.bgSurface,
-                border: const OutlineInputBorder(
-                  borderRadius: BorderRadius.zero,
-                  borderSide: BorderSide.none,
+              ),
+              child: TextField(
+                controller: _searchController,
+                focusNode: _searchFocus,
+                autofocus: true,
+                style: AppText.body(color: AppColors.textPrimary),
+                cursorColor: AppColors.accentPrimary,
+                textInputAction: TextInputAction.search,
+                textCapitalization: TextCapitalization.words,
+                autocorrect: false,
+                decoration: InputDecoration(
+                  hintText: 'Search exercises…',
+                  hintStyle: AppText.body(color: AppColors.textTertiary),
+                  prefixIcon:
+                      const Icon(Icons.search, color: AppColors.textSecondary),
+                  suffixIcon: _isSearching
+                      ? IconButton(
+                          tooltip: 'Clear',
+                          icon: const Icon(Icons.cancel,
+                              size: 18, color: AppColors.textSecondary),
+                          onPressed: _searchController.clear,
+                        )
+                      : null,
+                  filled: true,
+                  // Surface 3 is the design system's recessed input fill.
+                  fillColor: AppColors.surface3,
+                  enabledBorder: const OutlineInputBorder(
+                    borderRadius: AppRadius.inputAll,
+                    borderSide:
+                        BorderSide(color: AppColors.borderSubtle, width: 1),
+                  ),
+                  border: const OutlineInputBorder(
+                    borderRadius: AppRadius.inputAll,
+                    borderSide:
+                        BorderSide(color: AppColors.borderSubtle, width: 1),
+                  ),
+                  focusedBorder: const OutlineInputBorder(
+                    borderRadius: AppRadius.inputAll,
+                    borderSide:
+                        BorderSide(color: AppColors.borderActive, width: 1.5),
+                  ),
+                  contentPadding:
+                      const EdgeInsets.symmetric(horizontal: 16),
                 ),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16),
               ),
             ),
           ),
@@ -474,8 +517,8 @@ class _ExerciseRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return Material(
       color: Colors.transparent,
-        child: InkWell(
-          onTap: onTap,
+      child: InkWell(
+        onTap: onTap,
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
           child: Row(
@@ -506,18 +549,19 @@ class _ExerciseRow extends StatelessWidget {
                   child: Icon(Icons.chevron_right_rounded,
                       size: 20, color: AppColors.textTertiary),
                 ),
-                ],
               ],
-            ),
+            ],
           ),
         ),
-      );
+      ),
+    );
   }
 }
 
 /// A–Z scrubber rail (Hevy-style). Tap or drag to jump the list to a letter;
 /// present letters are accented, absent ones dimmed. One haptic per letter
-/// change (not per drag frame).
+/// change (not per drag frame). The letter column is wrapped in a FittedBox so
+/// it scales to the available height instead of overflowing on short screens.
 class _AlphabetRail extends StatefulWidget {
   final Set<String> present;
   final ValueChanged<String> onLetter;
@@ -561,19 +605,22 @@ class _AlphabetRailState extends State<_AlphabetRail> {
             label: 'Alphabet scrubber',
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 6),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  for (final l in _AlphabetRail._letters)
-                    Text(
-                      l,
-                      style: AppText.columnHeader(
-                        color: widget.present.contains(l)
-                            ? AppColors.accentText
-                            : AppColors.textTertiary,
+              child: FittedBox(
+                fit: BoxFit.fitHeight,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    for (final l in _AlphabetRail._letters)
+                      Text(
+                        l,
+                        style: AppText.columnHeader(
+                          color: widget.present.contains(l)
+                              ? AppColors.accentText
+                              : AppColors.textTertiary,
+                        ),
                       ),
-                    ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
@@ -638,23 +685,23 @@ class _LoadingList extends StatelessWidget {
         itemBuilder: (_, __) => const Padding(
           padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
           child: Row(
-              children: [
-                SkeletonBox(width: 44, height: 44, radius: 0),
-                SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      SkeletonBox(width: 160, height: 13),
-                      SizedBox(height: 7),
-                      SkeletonBox(width: 100, height: 11),
-                    ],
-                  ),
+            children: [
+              SkeletonBox(width: 44, height: 44, radius: 0),
+              SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SkeletonBox(width: 160, height: 13),
+                    SizedBox(height: 7),
+                    SkeletonBox(width: 100, height: 11),
+                  ],
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
+        ),
       ),
     );
   }
