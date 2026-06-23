@@ -12,6 +12,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 
 import 'package:gymlog/core/theme/app_colors.dart';
+import 'package:gymlog/core/theme/app_text.dart';
 import 'package:gymlog/core/utils/units.dart';
 import 'package:gymlog/features/import/domain/import_models.dart';
 import 'package:gymlog/features/import/presentation/providers/import_provider.dart';
@@ -551,9 +552,9 @@ class _PrimaryButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Material(
         color: AppColors.accentPrimary,
-        borderRadius: BorderRadius.circular(999),
+        borderRadius: BorderRadius.circular(AppRadius.buttonPrimary),
         child: InkWell(
-          borderRadius: BorderRadius.circular(999),
+          borderRadius: BorderRadius.circular(AppRadius.buttonPrimary),
           onTap: onTap,
           child: Container(
             height: 54,
@@ -611,7 +612,7 @@ class _IconBadge extends StatelessWidget {
         height: 52,
         decoration: BoxDecoration(
           color: AppColors.accentPrimary.withValues(alpha: 0.12),
-          borderRadius: BorderRadius.zero,
+          borderRadius: BorderRadius.circular(AppRadius.badge),
         ),
         child: Icon(icon, color: const Color(0xFFA78BFA), size: 26),
       );
@@ -660,7 +661,7 @@ class _DetectedPill extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
         decoration: BoxDecoration(
           color: AppColors.accentPrimary.withValues(alpha: 0.12),
-          borderRadius: BorderRadius.circular(999),
+          borderRadius: BorderRadius.circular(AppRadius.badge),
           border: Border.all(
               color: AppColors.accentPrimary.withValues(alpha: 0.30), width: 1),
         ),
@@ -700,7 +701,7 @@ class _UnitChooser extends StatelessWidget {
             alignment: Alignment.center,
             decoration: BoxDecoration(
               color: active ? AppColors.accentPrimary : Colors.transparent,
-              borderRadius: BorderRadius.zero,
+              borderRadius: BorderRadius.circular(AppRadius.buttonSecondary),
             ),
             child: Text(label,
                 style: GoogleFonts.inter(
@@ -730,7 +731,7 @@ class _UnitChooser extends StatelessWidget {
           padding: const EdgeInsets.all(3),
           decoration: BoxDecoration(
             color: Colors.black.withValues(alpha: 0.30),
-            borderRadius: BorderRadius.zero,
+            borderRadius: BorderRadius.circular(AppRadius.buttonSecondary),
           ),
           child: Row(children: [chip('kg', 'Kilograms'), chip('lbs', 'Pounds')]),
         ),

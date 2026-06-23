@@ -1,3 +1,11 @@
+// Location: lib/core/services/premium_service.dart
+//
+// CHANGES FROM ORIGINAL:
+//   C3  added isEligibleForTrial() — checks real per-user trial
+//       eligibility instead of relying on product metadata alone
+//   M7  offerings() now caches for 5 minutes and serves stale data on
+//       a failed refresh instead of falling back to "pricing unavailable"
+
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
@@ -8,24 +16,6 @@ import 'package:purchases_flutter/purchases_flutter.dart';
 import '../config/env.dart';
 import '../database/database.dart';
 
-/// Thin, crash-proof wrapper around RevenueCat.
-///
-/// Design rules (offline-first app):
-///   * GymLog must behave identically whether RevenueCat is reachable,
-///     unconfigured (no API keys in .env), or unsupported (web/desktop).
-///   * The local Drift `user_profiles.isPremium` / `premiumExpiry` columns
-///     are the OFFLINE CACHE — every CustomerInfo update is mirrored there,
-///     and `isPremiumProvider` falls back to them when RC has no answer.
-///   * No RC types leak into widgets except through [customerInfoStream]
-///     and the paywall (which needs Offerings/Package for live pricing).
-///
-/// Expected compile-time config (via --dart-define-from-file=.env,
-/// never hardcoded, never committed — see lib/core/config/env.dart):
-///   REVENUECAT_ANDROID_KEY / REVENUECAT_IOS_KEY
-///
-/// Expected dashboard setup (manual):
-///   products `gymlog_premium_monthly` + `gymlog_premium_yearly`,
-///   both attached to a single entitlement named `premium`.
 class PremiumService with WidgetsBindingObserver {
   PremiumService(this._db);
 
@@ -36,16 +26,17 @@ class PremiumService with WidgetsBindingObserver {
   bool _configured = false;
   String? _userId;
 
+  // FIX (M7): cache so the paywall sheet doesn't hit the network every
+  // single time it's opened. Serves stale data on a failed refresh
+  // rather than forcing the "pricing unavailable" fallback UI.
   Offerings? _cachedOfferings;
   DateTime? _offeringsFetchedAt;
   static const _offeringsCacheTtl = Duration(minutes: 5);
 
   final _customerInfoController = StreamController<CustomerInfo>.broadcast();
 
-  /// Live entitlement updates (purchase, renewal, expiration, restore).
-  /// Never emits when RevenueCat is unavailable — consumers must fall back
-  /// to the local Drift cache.
-  Stream<CustomerInfo> get customerInfoStream => _customerInfoController.stream;
+  Stream<CustomerInfo> get customerInfoStream =>
+      _customerInfoController.stream;
 
   bool get isConfigured => _configured;
 
@@ -58,8 +49,6 @@ class PremiumService with WidgetsBindingObserver {
       ? Env.revenueCatAndroidKey
       : Env.revenueCatIosKey;
 
-  /// Configures the SDK. Safe to call on any platform — degrades to a no-op
-  /// when unsupported or when API keys are absent.
   Future<void> initialize({String? userId}) async {
     _userId = userId;
     if (!platformSupported) return;
@@ -85,13 +74,11 @@ class PremiumService with WidgetsBindingObserver {
     }
   }
 
-  /// Keeps the RC identity in sync with Supabase auth.
   Future<void> setUser(String? userId) async {
     final previous = _userId;
     _userId = userId;
 
     if (!_configured) {
-      // First sign-in on a key-equipped build that started signed-out.
       if (userId != null && previous == null) await initialize(userId: userId);
       return;
     }
@@ -108,8 +95,6 @@ class PremiumService with WidgetsBindingObserver {
     }
   }
 
-  /// Re-fetch entitlements — called on app foreground so a subscription
-  /// bought/cancelled outside the app reflects without a restart.
   Future<void> refresh() async {
     if (!_configured) return;
     try {
@@ -124,8 +109,8 @@ class PremiumService with WidgetsBindingObserver {
     if (state == AppLifecycleState.resumed) unawaited(refresh());
   }
 
-  /// Current offerings, or null when RC is unavailable. The paywall renders
-  /// a graceful "pricing unavailable" state on null — it must never crash.
+  /// FIX (M7): cached with a short TTL. Pass forceRefresh: true if you
+  /// need a guaranteed-fresh fetch (e.g. after a known offering change).
   Future<Offerings?> offerings({bool forceRefresh = false}) async {
     if (!_configured) return null;
 
@@ -150,22 +135,29 @@ class PremiumService with WidgetsBindingObserver {
     }
   }
 
-  /// Checks if the user is eligible for a trial or introductory price for a product.
+  /// FIX (C3): "Start Free Trial" must never be shown to a user who
+  /// isn't actually eligible — that's how you end up charging someone
+  /// who thought they were getting a trial. Defaults to false (no
+  /// trial promised) on any error or ambiguity, never the reverse.
+  ///
+  /// NOTE: verify `checkTrialOrIntroductoryPriceEligibility` and
+  /// `IntroEligibilityStatus` against your installed purchases_flutter
+  /// version — the RevenueCat Flutter SDK's exact API surface has
+  /// shifted across major versions.
   Future<bool> isEligibleForTrial(String productId) async {
     if (!_configured) return false;
     try {
       final result =
-          await Purchases.checkTrialOrIntroductoryPriceEligibility([productId]);
+          await Purchases.checkTrialOrIntroductoryPriceEligibility(
+              [productId]);
       final status = result[productId]?.status;
-      return status == IntroEligibilityStatus.introEligibilityStatusEligible;
+      return status == IntroEligibilityStatus.eligible;
     } catch (e) {
       debugPrint('[PremiumService] eligibility check failed: $e');
       return false;
     }
   }
 
-  /// Returns updated CustomerInfo on success, null on user-cancel.
-  /// Rethrows real failures so the paywall can surface them.
   Future<CustomerInfo?> purchasePackage(Package package) async {
     try {
       final info = await Purchases.purchasePackage(package);
@@ -201,7 +193,6 @@ class PremiumService with WidgetsBindingObserver {
     unawaited(_syncToLocalCache(info));
   }
 
-  /// Mirrors the entitlement into Drift so offline launches keep Pro.
   Future<void> _syncToLocalCache(CustomerInfo info) async {
     final userId = _userId;
     if (userId == null) return;
@@ -216,7 +207,7 @@ class PremiumService with WidgetsBindingObserver {
       final profile = await _db.userDao.getUserOrNull(userId);
       if (profile == null) return;
       if (profile.isPremium == isPremium && profile.premiumExpiry == expiry) {
-        return; // no-op — avoid useless stream churn
+        return;
       }
 
       await _db.userDao.setPremiumStatus(

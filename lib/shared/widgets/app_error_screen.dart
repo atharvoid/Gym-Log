@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/router/router.dart';
 import '../../core/theme/app_colors.dart';
+import '../../core/theme/app_text.dart';
 
 /// Branded replacement for Flutter's red/grey error screen in release mode.
 /// Wired up via `ErrorWidget.builder` in main.dart.
@@ -52,7 +53,7 @@ class AppErrorScreen extends StatelessWidget {
                   alignment: Alignment.center,
                   decoration: const BoxDecoration(
                     color: AppColors.surface3,
-                    borderRadius: BorderRadius.zero,
+                    borderRadius: AppRadius.badgeAll,
                   ),
                   child: const Icon(
                     Icons.fitness_center_rounded,
@@ -135,8 +136,8 @@ class _ErrorAction extends StatelessWidget {
                 ? AppColors.accentPrimary
                 : Colors.transparent,
             borderRadius: primary
-                ? BorderRadius.circular(999)
-                : BorderRadius.zero,
+                ? BorderRadius.circular(AppRadius.buttonPrimary)
+                : BorderRadius.circular(AppRadius.buttonSecondary),
             border: primary
                 ? null
                 : Border.all(

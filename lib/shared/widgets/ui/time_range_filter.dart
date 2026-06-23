@@ -39,9 +39,9 @@ class TimeRangeFilter extends ConsumerWidget {
           constraints: const BoxConstraints(minHeight: 44),
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           alignment: Alignment.center,
-          decoration: const BoxDecoration(
+          decoration: BoxDecoration(
             color: AppColors.surfaceRaised,
-            borderRadius: BorderRadius.zero,
+            borderRadius: BorderRadius.circular(AppRadius.buttonSecondary),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
@@ -206,7 +206,7 @@ Future<T?> showBrandedPickerSheet<T>({
                   alignment: Alignment.center,
                   decoration: BoxDecoration(
                     color: opt.color.withValues(alpha: 0.14),
-                    borderRadius: BorderRadius.zero,
+                    borderRadius: BorderRadius.circular(AppRadius.badge),
                   ),
                   child: Icon(opt.icon, size: 18, color: opt.color),
                 ),

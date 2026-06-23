@@ -277,10 +277,24 @@ class ActiveWorkoutNotifier extends StateNotifier<ActiveWorkoutState?> {
     if (state == null || state!.originalSessionId == null) return;
 
     final db = _ref.read(databaseProvider);
+    // Capture before clearing state — enqueueSession needs both after the
+    // local commit sets state = null.
+    final sessionId = state!.originalSessionId!;
+    final user = _ref.read(authProvider);
+    final userId = user?.id ?? '';
 
     try {
       await db.workoutsDao.updateHistoricalWorkout(state!);
       state = null;
+
+      // Mirror the edit to the cloud: same pattern as finishWorkout().
+      // Non-blocking: a network failure leaves the row queued for the next
+      // debounced or explicit sync.
+      if (userId.isNotEmpty) {
+        final engine = _ref.read(syncEngineProvider);
+        await engine.enqueueSession(userId, sessionId);
+        unawaited(engine.syncNow(userId, reason: 'workout_edited'));
+      }
     } catch (e) {
       debugPrint('[saveEditedWorkout] transaction failed: $e');
     }

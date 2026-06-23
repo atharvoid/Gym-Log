@@ -144,9 +144,9 @@ class _RestAction extends StatelessWidget {
       color: emphasized
           ? AppColors.accentPrimary.withValues(alpha: 0.16)
           : Colors.white.withValues(alpha: 0.06),
-      borderRadius: BorderRadius.circular(999),
+      borderRadius: BorderRadius.circular(AppRadius.buttonSecondary),
       child: InkWell(
-        borderRadius: BorderRadius.circular(999),
+        borderRadius: BorderRadius.circular(AppRadius.buttonSecondary),
         onTap: onTap,
         child: Container(
           height: 44,

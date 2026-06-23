@@ -64,11 +64,12 @@ class MuscleGlyph extends StatelessWidget {
   Widget build(BuildContext context) {
     final group = groupFor(muscle);
     final name = _groups.contains(group) ? group : 'fullbody';
+    final isDetailed = name != 'fullbody';
     return SvgPicture.asset(
       'assets/icons/muscles/$name.svg',
       width: size,
       height: size,
-      colorFilter: ColorFilter.mode(color, BlendMode.srcIn),
+      colorFilter: isDetailed ? null : ColorFilter.mode(color, BlendMode.srcIn),
       // Neutral fallback if a file is ever missing — never throws on screen.
       placeholderBuilder: (_) =>
           Icon(Icons.fitness_center_rounded, size: size, color: color),

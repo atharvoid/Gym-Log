@@ -165,10 +165,11 @@ class _HeroPip extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(value,
-              style: AppText.heroStat(),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text(value, style: AppText.heroStat(), maxLines: 1),
+          ),
           const SizedBox(height: 2),
           Text(label, style: AppText.columnHeader(color: AppColors.textSecondary)),
         ],

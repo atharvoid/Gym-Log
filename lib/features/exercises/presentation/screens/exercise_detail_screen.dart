@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:gymlog/core/theme/app_colors.dart';
+import 'package:gymlog/core/theme/app_text.dart';
 import 'package:gymlog/core/exercises/muscle_taxonomy.dart';
 import 'package:gymlog/core/database/database.dart';
 import 'package:gymlog/core/database/daos/workouts_dao.dart';
@@ -172,7 +173,7 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
                                 horizontal: 11, vertical: 6),
                             decoration: BoxDecoration(
                               color: AppColors.surface3,
-                              borderRadius: BorderRadius.zero,
+                              borderRadius: BorderRadius.circular(AppRadius.badge),
                               border: Border.all(
                                 color: AppColors.borderSubtle,
                                 width: 1,
@@ -310,7 +311,7 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
                 decoration: BoxDecoration(
                   color:
                       isActive ? AppColors.accentPrimary : AppColors.bgSurface,
-                  borderRadius: BorderRadius.zero,
+                  borderRadius: BorderRadius.circular(AppRadius.buttonSecondary),
                 ),
                 child: Text(
                   entry.value,
@@ -364,7 +365,7 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
         Container(
           decoration: const BoxDecoration(
             color: AppColors.bgSurface,
-            borderRadius: BorderRadius.zero,
+            borderRadius: AppRadius.cardAll,
           ),
           child: Column(
             children: [
@@ -457,7 +458,7 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
         Container(
           decoration: const BoxDecoration(
             color: AppColors.bgSurface,
-            borderRadius: BorderRadius.zero,
+            borderRadius: AppRadius.cardAll,
           ),
           child: Column(
             children: steps.asMap().entries.map((entry) {
@@ -474,7 +475,7 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
                           height: 24,
                           decoration: const BoxDecoration(
                             color: AppColors.surface3,
-                            borderRadius: BorderRadius.zero,
+                            borderRadius: AppRadius.badgeAll,
                           ),
                           child: Center(
                             child: Text(

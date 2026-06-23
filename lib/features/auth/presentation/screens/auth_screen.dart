@@ -1,12 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/config/legal_links.dart';
 import '../../../../core/theme/app_colors.dart';
-import '../../../../shared/widgets/ui/primary_button.dart';
 import '../providers/auth_provider.dart';
+
+const String _googleIconSvg = '''
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">
+  <path fill="#EA4335" d="M20.33 3.34c-2.16-2-4.99-2.84-8.33-2.84-4.67 0-8.7 2.68-10.67 6.58l4.12 3.19c.97-2.92 3.7-5.23 6.55-5.23 1.83 0 3.48.63 4.77 1.86l3.56-3.56z"/>
+  <path fill="#4285F4" d="M23.45 11.3c0-.83-.07-1.63-.2-2.41h-11.25v4.62h6.43c-.28 1.46-1.1 2.7-2.34 3.53l3.95 3.07c2.31-2.13 3.41-5.28 3.41-8.81z"/>
+  <path fill="#34A853" d="M12 18.96c-2.85 0-5.58-2.31-6.55-5.23L1.33 16.92C3.3 20.82 7.33 23.5 12 23.5c3.23 0 6.13-1.07 8.21-2.93l-3.95-3.07c-1.13.76-2.6 1.46-4.26 1.46z"/>
+  <path fill="#FBBC05" d="M5.45 13.73c-.25-.76-.4-1.57-.4-2.43s.15-1.67.4-2.43L1.33 5.68C.48 7.38 0 9.27 0 11.3s.48 3.92 1.33 5.62l4.12-3.19z"/>
+</svg>
+''';
 
 class AuthScreen extends ConsumerStatefulWidget {
   const AuthScreen({super.key});
@@ -17,25 +26,14 @@ class AuthScreen extends ConsumerStatefulWidget {
 
 class _AuthScreenState extends ConsumerState<AuthScreen> {
   bool _isSigningIn = false;
-  bool _isLogin = true;
-  bool _obscurePassword = true;
-
-  final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
-
-  @override
-  void dispose() {
-    _emailController.dispose();
-    _passwordController.dispose();
-    super.dispose();
-  }
 
   Future<void> _signIn() async {
     if (_isSigningIn) return;
     setState(() => _isSigningIn = true);
     try {
       await ref.read(authRepositoryProvider).signInWithGoogle();
-    } catch (_) {
+    } catch (e, s) {
+      debugPrint("Error signing in with Google: $e\n$s");
       if (!mounted) return;
       _snack("Couldn't sign in. Please try again.");
     } finally {
@@ -60,13 +58,6 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     if (!ok && mounted) _snack("Couldn't open the link.");
   }
 
-  void _toggleForm() {
-    HapticFeedback.selectionClick();
-    _emailController.clear();
-    _passwordController.clear();
-    setState(() => _isLogin = !_isLogin);
-  }
-
   @override
   Widget build(BuildContext context) {
     final fine = GoogleFonts.inter(
@@ -76,191 +67,119 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
       height: 1.4,
     );
 
-    final inputDecoration = InputDecoration(
-      filled: false,
-      enabledBorder: const OutlineInputBorder(
-        borderRadius: BorderRadius.zero,
-        borderSide: BorderSide(color: AppColors.borderSubtle, width: 1),
-      ),
-      focusedBorder: const OutlineInputBorder(
-        borderRadius: BorderRadius.zero,
-        borderSide: BorderSide(color: AppColors.textPrimary, width: 1),
-      ),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-      hintStyle: GoogleFonts.inter(color: AppColors.textTertiary),
-    );
-
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.light,
       child: Scaffold(
         backgroundColor: AppColors.bgBase,
         body: SafeArea(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 48),
-            child: Column(
-              children: [
-                Text(
-                  'GymLog',
-                  style: GoogleFonts.inter(
-                    color: AppColors.textPrimary,
-                    fontSize: 32,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: -0.5,
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              return SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    minHeight: constraints.maxHeight,
                   ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Your gym. Your data.',
-                  style: GoogleFonts.inter(
-                    color: AppColors.textSecondary,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w400,
-                  ),
-                ),
-                const SizedBox(height: 48),
-                
-                AutofillGroup(
-                  child: Column(
-                    children: [
-                      TextField(
-                        controller: _emailController,
-                        keyboardType: TextInputType.emailAddress,
-                        autocorrect: false,
-                        enableSuggestions: true,
-                        autofillHints: const [AutofillHints.email],
-                        style: GoogleFonts.inter(color: AppColors.textPrimary),
-                        textInputAction: TextInputAction.next,
-                        decoration: inputDecoration.copyWith(hintText: 'Email'),
-                      ),
-                      const SizedBox(height: 16),
-                      TextField(
-                        controller: _passwordController,
-                        obscureText: _obscurePassword,
-                        autocorrect: false,
-                        enableSuggestions: false,
-                        autofillHints: const [AutofillHints.password],
-                        style: GoogleFonts.inter(color: AppColors.textPrimary),
-                        textInputAction: TextInputAction.done,
-                        decoration: inputDecoration.copyWith(
-                          hintText: 'Password',
-                          suffixIcon: IconButton(
-                            icon: Icon(
-                              _obscurePassword
-                                  ? Icons.visibility_off_rounded
-                                  : Icons.visibility_rounded,
-                              color: AppColors.textSecondary,
-                              size: 20,
-                            ),
-                            onPressed: () {
-                              setState(() => _obscurePassword = !_obscurePassword);
-                            },
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 48),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Text(
+                          'GymLog',
+                          style: GoogleFonts.inter(
+                            color: AppColors.textPrimary,
+                            fontSize: 32,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: -0.5,
                           ),
                         ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 24),
-                
-                PrimaryButton(
-                  label: _isSigningIn ? 'Signing in…' : (_isLogin ? 'Log in' : 'Sign up'),
-                  isLoading: _isSigningIn,
-                  onPressed: () {
-                    // Stub for email/password action
-                  },
-                ),
-                const SizedBox(height: 16),
-                
-                GestureDetector(
-                  onTap: _toggleForm,
-                  child: AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 200),
-                    child: Text(
-                      _isLogin ? "Don't have an account? Sign up" : "Already have an account? Log in",
-                      key: ValueKey(_isLogin),
-                      style: GoogleFonts.inter(
-                        color: AppColors.textPrimary,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                        decoration: TextDecoration.underline,
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 32),
-  
-                Row(
-                  children: [
-                    const Expanded(child: Divider(color: AppColors.borderSubtle)),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: Text('OR', style: GoogleFonts.inter(color: AppColors.textSecondary, fontSize: 12)),
-                    ),
-                    const Expanded(child: Divider(color: AppColors.borderSubtle)),
-                  ],
-                ),
-                const SizedBox(height: 32),
-  
-                SizedBox(
-                  width: double.infinity,
-                  height: 52,
-                  child: OutlinedButton(
-                    onPressed: _signIn,
-                    style: OutlinedButton.styleFrom(
-                      backgroundColor: Colors.transparent,
-                      foregroundColor: AppColors.textPrimary,
-                      side: const BorderSide(color: AppColors.borderSubtle, width: 1),
-                      shape: const RoundedRectangleBorder(
-                        borderRadius: BorderRadius.zero,
-                      ),
-                    ),
-                    child: _isSigningIn
-                        ? const SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation<Color>(AppColors.textPrimary),
-                            ),
-                          )
-                        : Text(
-                            'Continue with Google',
-                            style: GoogleFonts.inter(
-                              fontWeight: FontWeight.w600,
-                              fontSize: 16,
-                            ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Your gym. Your data.',
+                          style: GoogleFonts.inter(
+                            color: AppColors.textSecondary,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w400,
                           ),
+                        ),
+                        const SizedBox(height: 64),
+                        
+                        SizedBox(
+                          width: double.infinity,
+                          height: 52,
+                          child: ElevatedButton(
+                            onPressed: _signIn,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.white,
+                              foregroundColor: const Color(0xFF1F1F1F),
+                              elevation: 0,
+                              shape: const StadiumBorder(),
+                            ),
+                            child: _isSigningIn
+                                ? const SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF1F1F1F)),
+                                    ),
+                                  )
+                                : Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      SvgPicture.string(
+                                        _googleIconSvg,
+                                        width: 20,
+                                        height: 20,
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Text(
+                                        'Continue with Google',
+                                        style: GoogleFonts.inter(
+                                          fontWeight: FontWeight.w600,
+                                          fontSize: 16,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+                        
+                        Semantics(
+                          button: true,
+                          child: Wrap(
+                            alignment: WrapAlignment.center,
+                            crossAxisAlignment: WrapCrossAlignment.center,
+                            children: [
+                              Text('By continuing, you agree to our ', style: fine),
+                              _LegalLink(
+                                label: 'Terms of Service',
+                                onTap: () => _openUrl(kTermsOfServiceUrl),
+                              ),
+                              Text(' and ', style: fine),
+                              _LegalLink(
+                                label: 'Privacy Policy',
+                                onTap: () => _openUrl(kPrivacyPolicyUrl),
+                              ),
+                              Text('.', style: fine),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        Text(
+                          'Free to use. Sign in with Google to sync across your devices.',
+                          style: fine,
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-                const SizedBox(height: 24),
-  
-                Semantics(
-                  button: true,
-                  child: Wrap(
-                    alignment: WrapAlignment.center,
-                    crossAxisAlignment: WrapCrossAlignment.center,
-                    children: [
-                      Text('By continuing you agree to our ', style: fine),
-                      _LegalLink(
-                          label: 'Terms',
-                          onTap: () => _openUrl(kTermsOfServiceUrl)),
-                      Text(' and ', style: fine),
-                      _LegalLink(
-                          label: 'Privacy Policy',
-                          onTap: () => _openUrl(kPrivacyPolicyUrl)),
-                      Text('.', style: fine),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 10),
-                Text(
-                  'Free to use. Sign in with Google to sync across your devices.',
-                  style: fine,
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 32),
-              ],
-            ),
+              );
+            },
           ),
         ),
       ),

@@ -89,12 +89,24 @@ flutter {
     source = "../.."
 }
 
+val hasSentryToken = System.getenv("SENTRY_AUTH_TOKEN")?.isNotEmpty() == true
+
 sentry {
-    org.set("your-org-slug")
-    projectName.set("gymlog")
-    authToken.set(System.getenv("SENTRY_AUTH_TOKEN"))
+    org.set("twizz-4i")
+    projectName.set("gym-log")
     
-    // Only upload on release builds
-    autoUploadProguardMapping.set(true)
+    // Only enable mapping and upload logic if Sentry Auth Token is present (CI/CD)
+    includeProguardMapping.set(hasSentryToken)
+    autoUploadProguardMapping.set(hasSentryToken)
     uploadNativeSymbols.set(false) // Flutter handles native symbols
+}
+
+// Prevent Sentry tasks from executing and failing local builds when token is absent
+if (!hasSentryToken) {
+    tasks.configureEach {
+        if (name.contains("sentry", ignoreCase = true) && 
+            (name.contains("upload", ignoreCase = true) || name.contains("mapping", ignoreCase = true))) {
+            enabled = false
+        }
+    }
 }

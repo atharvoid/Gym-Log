@@ -7,7 +7,7 @@
 library;
 
 const String kPrivacyPolicyUrl =
-    'https://github.com/atharvoid/Gym-Log/blob/main/docs/legal/PRIVACY_POLICY.md';
+    'https://atharvoid.github.io/Gym-Log/legal/PRIVACY_POLICY.md';
 
 const String kTermsOfServiceUrl =
-    'https://github.com/atharvoid/Gym-Log/blob/main/docs/legal/TERMS_OF_SERVICE.md';
+    'https://atharvoid.github.io/Gym-Log/legal/terms-of-service.html';

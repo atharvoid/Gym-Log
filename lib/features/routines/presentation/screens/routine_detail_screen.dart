@@ -748,7 +748,7 @@ class _RoutineProgressPill extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 6),
           decoration: BoxDecoration(
             color: AppColors.surface3,
-            borderRadius: BorderRadius.circular(999),
+            borderRadius: BorderRadius.circular(AppRadius.badge),
             border: Border.all(
               color: AppColors.borderSubtle,
               width: 1,

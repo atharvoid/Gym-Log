@@ -5,22 +5,35 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:gymlog/core/theme/app_colors.dart';
+import 'package:gymlog/core/theme/app_text.dart';
 import 'package:gymlog/core/utils/units.dart';
+import 'package:gymlog/core/providers/premium_provider.dart';
 import 'package:gymlog/features/profile/presentation/providers/profile_stats_provider.dart';
 import 'package:gymlog/shared/widgets/branded_line_chart.dart';
 import 'package:intl/intl.dart';
 
 /// Categorical weekly bar chart for the Profile "Training" section.
-/// Accepts the exact weeks the caller wants to display; empty weeks are rendered
-/// as 1px ghost bars so the baseline stays rhythmically consistent.
+///
+/// **Low-data path (< 4 filled weeks):** renders a [_ComparisonView] — a clear
+/// stat comparison card that honestly reflects how little data exists. No chart
+/// is rendered, no lock banner needed.
+///
+/// **Full-data path (≥ 4 filled weeks):** renders the BarChart with:
+///   - Linear, evenly-spaced Y-axis (max = dataMax × 1.15 rounded to next interval)
+///   - Indigo current-week bar / neutral-gray historical bars (no cyan)
+///   - Value labels printed above bars (when ≤ 6 bars)
+///   - Horizontal X-axis labels (no rotation) when ≤ 4 bars; 30° for more
+///   - White-8% gridlines (barely-there guides, not competing with bars)
 class WeeklyBarChart extends StatefulWidget {
   final List<WeeklyAggregate> aggregates;
   final ProfileGraphMetric metric;
+  final bool isPremium;
 
   const WeeklyBarChart({
     super.key,
     required this.aggregates,
     required this.metric,
+    required this.isPremium,
   });
 
   @override
@@ -33,6 +46,11 @@ class _WeeklyBarChartState extends State<WeeklyBarChart> {
   double _maxY = 1;
   double _interval = 1;
 
+  // Derived counts — recomputed in _computeBars.
+  int _filledWeeks = 0;
+  List<WeeklyAggregate> _gatedAggregates = const [];
+
+
   @override
   void initState() {
     super.initState();
@@ -43,14 +61,24 @@ class _WeeklyBarChartState extends State<WeeklyBarChart> {
   void didUpdateWidget(covariant WeeklyBarChart oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.aggregates != widget.aggregates ||
-        oldWidget.metric != widget.metric) {
+        oldWidget.metric != widget.metric ||
+        oldWidget.isPremium != widget.isPremium) {
       _computeBars();
     }
   }
 
   void _computeBars() {
     final metric = widget.metric;
-    final values = widget.aggregates.map((a) => a.valueFor(metric)).toList();
+    _gatedAggregates = gateChartSamples(widget.aggregates, widget.isPremium);
+    final values = _gatedAggregates.map((a) => a.valueFor(metric)).toList();
+
+    // Count filled weeks from the FULL ungated window so free users with
+    // ≥4 filled weeks across 8 weeks still unlock the full chart.
+    // The gate only clips which bars render — it must not suppress the
+    // threshold check that decides between chart and comparison view.
+    _filledWeeks =
+        widget.aggregates.where((a) => a.workoutCount > 0).length;
+
     final maxValue = values.isEmpty
         ? 0.0
         : values.reduce((a, b) => a > b ? a : b);
@@ -60,19 +88,19 @@ class _WeeklyBarChartState extends State<WeeklyBarChart> {
 
     final now = DateTime.now();
     final currentWeekStart = _weekStartOf(now);
-    final isCurrentWeekInProgress = widget.aggregates.isNotEmpty &&
-        widget.aggregates.last.weekStart == currentWeekStart &&
+    final isCurrentWeekInProgress = _gatedAggregates.isNotEmpty &&
+        _gatedAggregates.last.weekStart == currentWeekStart &&
         now.weekday != DateTime.sunday;
 
     _barGroups = [
-      for (var i = 0; i < widget.aggregates.length; i++)
+      for (var i = 0; i < _gatedAggregates.length; i++)
         _buildGroup(
           index: i,
-          aggregate: widget.aggregates[i],
+          aggregate: _gatedAggregates[i],
           value: values[i],
-          isLatest: i == widget.aggregates.length - 1,
+          isLatest: i == _gatedAggregates.length - 1,
           isInProgress:
-              isCurrentWeekInProgress && i == widget.aggregates.length - 1,
+              isCurrentWeekInProgress && i == _gatedAggregates.length - 1,
         ),
     ];
   }
@@ -87,23 +115,23 @@ class _WeeklyBarChartState extends State<WeeklyBarChart> {
     final isTouched = index == _touchedIndex;
     final hasValue = value > 0;
 
+    // ── Semantic color rule ──────────────────────────────────────────────────
+    // current week (complete)  → brand indigo
+    // current week (in-flight) → brand indigo 50% (shows progress, not done)
+    // previous weeks with data → neutral cool-gray (historical reference)
+    // empty week slot          → ghost (barely visible placeholder)
+    // touch highlight          → indigo400 (slightly brighter)
     final Color rodColor;
-    final Gradient? rodGradient;
     if (isTouched) {
-      rodColor = AppColors.profileGraphActiveBarBright;
-      rodGradient = null;
+      rodColor = AppColors.profileGraphCurrentBarBright;
+    } else if (isLatest && !isInProgress) {
+      rodColor = AppColors.profileGraphCurrentBar;
     } else if (isInProgress) {
-      rodColor = AppColors.profileGraphInactiveBar;
-      rodGradient = _hatchedGradient();
-    } else if (isLatest) {
-      rodColor = AppColors.profileGraphActiveBar;
-      rodGradient = null;
+      rodColor = AppColors.profileGraphCurrentBar.withValues(alpha: 0.50);
     } else if (hasValue) {
-      rodColor = AppColors.profileGraphPreviousBar;
-      rodGradient = null;
+      rodColor = AppColors.profileGraphHistoricalBar;
     } else {
       rodColor = AppColors.profileGraphGhostBar;
-      rodGradient = null;
     }
 
     // Render a ~1px ghost bar for empty weeks so the X-axis slot is not a void.
@@ -119,8 +147,7 @@ class _WeeklyBarChartState extends State<WeeklyBarChart> {
             topLeft: Radius.circular(4),
             topRight: Radius.circular(4),
           ),
-          color: rodGradient == null ? rodColor : null,
-          gradient: rodGradient,
+          color: rodColor,
           backDrawRodData: BackgroundBarChartRodData(
             show: true,
             toY: _maxY,
@@ -131,50 +158,35 @@ class _WeeklyBarChartState extends State<WeeklyBarChart> {
     );
   }
 
-  Gradient _hatchedGradient() {
-    return LinearGradient(
-      begin: Alignment.topLeft,
-      end: Alignment.bottomRight,
-      transform: const GradientRotation(pi / 4),
-      colors: [
-        AppColors.profileGraphActiveBar.withValues(alpha: 0.3),
-        AppColors.profileGraphActiveBar.withValues(alpha: 0.3),
-        AppColors.profileGraphInactiveBar,
-        AppColors.profileGraphInactiveBar,
-      ],
-      stops: const [0.0, 0.2, 0.2, 0.4],
-      tileMode: TileMode.repeated,
-    );
+  /// Corrected axis max: dataMax × 1.15, rounded UP to the next clean interval.
+  /// This guarantees the top label is always above the tallest bar and that
+  /// every tick gap is identical — fixing the non-linear axis bug.
+  double _axisMax(double dataMax, ProfileGraphMetric metric, double interval) {
+    if (dataMax <= 0) return interval * 4; // sensible empty-state range
+    final padded = dataMax * 1.15;
+    return (padded / interval).ceil() * interval;
   }
 
   /// Nice interval for gridlines and axis labels.
-  double _niceInterval(double max, ProfileGraphMetric metric) {
-    if (max <= 0) {
+  /// Target: 4–5 ticks maximum so the chart doesn't feel cluttered.
+  double _niceInterval(double dataMax, ProfileGraphMetric metric) {
+    if (dataMax <= 0) {
       return switch (metric) {
         ProfileGraphMetric.duration => 30,
         ProfileGraphMetric.reps => 100,
-        ProfileGraphMetric.volume => 1000,
+        ProfileGraphMetric.volume => 2000,
       };
     }
+    // Candidate steps — always results in 3–5 ticks
     const steps = <double>[
-      1, 2, 5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000, 50000,
-      100000,
+      1, 2, 5, 10, 20, 50, 100, 200, 500,
+      1000, 2000, 5000, 10000, 20000, 50000, 100000,
     ];
+    // We aim for max / step ≤ 5 ticks
     for (final step in steps) {
-      if (max / step <= 4) return step;
+      if (dataMax / step <= 5) return step;
     }
     return steps.last;
-  }
-
-  /// Upper bound of the Y-axis. For volume we round to the nearest 1k so the
-  /// top label is not overscaled (e.g. 6,780 -> 7k instead of 8k).
-  double _axisMax(double max, ProfileGraphMetric metric, double interval) {
-    if (max <= 0) return interval;
-    if (metric == ProfileGraphMetric.volume) {
-      final kCeiling = ((max / 1000).ceil() * 1000).toDouble();
-      return kCeiling < interval ? interval : kCeiling;
-    }
-    return ((max / interval).ceil() * interval);
   }
 
   DateTime _weekStartOf(DateTime d) {
@@ -204,6 +216,105 @@ class _WeeklyBarChartState extends State<WeeklyBarChart> {
     return '${DateFormat('MMM d').format(start)} — ${DateFormat('MMM d').format(end)}';
   }
 
+  // ── Low-data comparison view ───────────────────────────────────────────────
+
+  /// Renders when filledWeeks < 4. Shows an honest stat comparison instead of
+  /// a broken/half-empty chart sitting under a "data not ready" banner.
+  Widget _buildComparisonView() {
+    final filledAggs = _gatedAggregates.where((a) => a.workoutCount > 0).toList();
+    final latest = filledAggs.isNotEmpty ? filledAggs.last : null;
+    final previous = filledAggs.length >= 2 ? filledAggs[filledAggs.length - 2] : null;
+
+    final latestValue = latest?.valueFor(widget.metric) ?? 0;
+    final prevValue = previous?.valueFor(widget.metric) ?? 0;
+
+    final double? deltaFraction = (prevValue > 0 && latestValue > 0)
+        ? (latestValue - prevValue) / prevValue
+        : null;
+
+    const neededWeeks = 4;
+    final progressFraction = (_filledWeeks / neededWeeks).clamp(0.0, 1.0);
+
+    final totalLoggedSamples = widget.aggregates.where((a) => a.workoutCount > 0).length;
+    // visibleSamples: use the gated count (how many weeks are actually shown
+    // to this user tier) so the banner reflects what IS visible, not total history.
+    final gatedFilledWeeks = _gatedAggregates.where((a) => a.workoutCount > 0).length;
+    final bannerText = chartLimitBannerCopy(
+          isPremium: widget.isPremium,
+          totalLoggedSamples: totalLoggedSamples,
+          visibleSamples: gatedFilledWeeks,
+          minSamplesForTrend: neededWeeks,
+        ) ?? '';
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Stat comparison row
+        Row(
+          children: [
+            if (previous != null) ...[
+              Expanded(
+                child: _StatBlock(
+                  label: 'Last week',
+                  value: _valueLabel(prevValue),
+                  dim: true,
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                child: _buildDeltaIndicator(deltaFraction),
+              ),
+            ],
+            Expanded(
+              child: _StatBlock(
+                label: 'This week',
+                value: latest != null ? _valueLabel(latestValue) : '—',
+                dim: false,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 20),
+        // Progress toward unlocking the chart
+        if (bannerText.isNotEmpty)
+          _UnlockProgress(
+            progressFraction: progressFraction,
+            bannerText: bannerText,
+          ),
+      ],
+    );
+  }
+
+  Widget _buildDeltaIndicator(double? fraction) {
+    if (fraction == null) {
+      return const Icon(Icons.arrow_forward_rounded,
+          size: 18, color: AppColors.textTertiary);
+    }
+    final isUp = fraction >= 0;
+    final pct = (fraction * 100).round().abs();
+    final color = isUp ? AppColors.success : AppColors.error;
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(
+          isUp ? Icons.arrow_upward_rounded : Icons.arrow_downward_rounded,
+          size: 16,
+          color: color,
+        ),
+        Text(
+          '$pct%',
+          style: GoogleFonts.inter(
+            fontSize: 11,
+            fontWeight: FontWeight.w600,
+            color: color,
+          ),
+        ),
+      ],
+    );
+  }
+
+  // ── Full bar chart ─────────────────────────────────────────────────────────
+
   @override
   Widget build(BuildContext context) {
     final reduceMotion = MediaQuery.disableAnimationsOf(context);
@@ -211,10 +322,21 @@ class _WeeklyBarChartState extends State<WeeklyBarChart> {
 
     if (_barGroups.isEmpty) return const SizedBox.shrink();
 
+    // Low-data path: honest comparison view instead of a half-empty chart.
+    if (_filledWeeks < 4) {
+      return _buildComparisonView();
+    }
+
+    // Full chart — ≥ 4 filled weeks.
+    final barCount = _gatedAggregates.length;
+    final showValueLabels = barCount <= 6;
+    // Rotate labels when many bars; keep horizontal for ≤ 4.
+    final labelAngle = barCount <= 4 ? 0.0 : -pi / 6;
+    final labelBottomPad = barCount <= 4 ? 28.0 : 44.0;
+
     return Semantics(
       label: _buildAccessibilitySummary(),
       child: Padding(
-        // Prevent the top Y-axis label from being clipped by the container.
         padding: const EdgeInsets.only(top: 4),
         child: AspectRatio(
           aspectRatio: 1.55,
@@ -232,14 +354,43 @@ class _WeeklyBarChartState extends State<WeeklyBarChart> {
                 drawVerticalLine: false,
                 horizontalInterval: _interval,
                 getDrawingHorizontalLine: (_) => const FlLine(
-                  color: AppColors.profileGraphGridLine,
+                  color: AppColors.profileGraphGridLine, // white 8%
                   strokeWidth: 1,
                   dashArray: [4, 4],
                 ),
               ),
               titlesData: FlTitlesData(
-                topTitles: const AxisTitles(
-                    sideTitles: SideTitles(showTitles: false)),
+                // Value labels above bars
+                topTitles: AxisTitles(
+                  sideTitles: SideTitles(
+                    showTitles: showValueLabels,
+                    reservedSize: 22,
+                    getTitlesWidget: (value, meta) {
+                      final index = value.toInt();
+                      if (index < 0 || index >= _gatedAggregates.length) {
+                        return const SizedBox.shrink();
+                      }
+                      final agg = _gatedAggregates[index];
+                      final v = agg.valueFor(widget.metric);
+                      if (v <= 0) return const SizedBox.shrink();
+                      return SideTitleWidget(
+                        axisSide: meta.axisSide,
+                        space: 4,
+                        child: Text(
+                          _yAxisLabel(v),
+                          style: GoogleFonts.inter(
+                            fontSize: 9,
+                            fontWeight: FontWeight.w600,
+                            color: index == _gatedAggregates.length - 1
+                                ? AppColors.accentText
+                                : AppColors.textTertiary,
+                            fontFeatures: const [FontFeature.tabularFigures()],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
                 rightTitles: const AxisTitles(
                     sideTitles: SideTitles(showTitles: false)),
                 leftTitles: AxisTitles(
@@ -266,31 +417,43 @@ class _WeeklyBarChartState extends State<WeeklyBarChart> {
                 bottomTitles: AxisTitles(
                   sideTitles: SideTitles(
                     showTitles: true,
-                    reservedSize: 48,
+                    reservedSize: labelBottomPad,
                     interval: 1,
                     getTitlesWidget: (value, meta) {
                       final index = value.toInt();
-                      if (index < 0 || index >= widget.aggregates.length) {
+                      if (index < 0 || index >= _gatedAggregates.length) {
                         return const SizedBox.shrink();
                       }
+                      final label = DateFormat('MMM d')
+                          .format(_gatedAggregates[index].weekStart);
                       return SideTitleWidget(
                         axisSide: meta.axisSide,
                         space: 4,
-                        child: Transform.rotate(
-                          angle: -pi / 4,
-                          alignment: Alignment.bottomCenter,
-                          child: Text(
-                            DateFormat('MMM d')
-                                .format(widget.aggregates[index].weekStart),
-                            style: GoogleFonts.inter(
-                              fontSize: 11,
-                              fontWeight: boldText
-                                  ? FontWeight.w600
-                                  : FontWeight.w400,
-                              color: AppColors.profileGraphAxisLabel,
-                            ),
-                          ),
-                        ),
+                        child: labelAngle == 0.0
+                            ? Text(
+                                label,
+                                style: GoogleFonts.inter(
+                                  fontSize: 11,
+                                  fontWeight: boldText
+                                      ? FontWeight.w600
+                                      : FontWeight.w400,
+                                  color: AppColors.profileGraphAxisLabel,
+                                ),
+                              )
+                            : Transform.rotate(
+                                angle: labelAngle,
+                                alignment: Alignment.bottomCenter,
+                                child: Text(
+                                  label,
+                                  style: GoogleFonts.inter(
+                                    fontSize: 11,
+                                    fontWeight: boldText
+                                        ? FontWeight.w600
+                                        : FontWeight.w400,
+                                    color: AppColors.profileGraphAxisLabel,
+                                  ),
+                                ),
+                              ),
                       );
                     },
                   ),
@@ -299,14 +462,14 @@ class _WeeklyBarChartState extends State<WeeklyBarChart> {
               barTouchData: BarTouchData(
                 enabled: true,
                 touchTooltipData: BarTouchTooltipData(
-                  tooltipRoundedRadius: 8,
+                  tooltipRoundedRadius: AppRadius.badge.toDouble(),
                   tooltipPadding: const EdgeInsets.all(12),
                   tooltipMargin: 8,
                   getTooltipColor: (_) => AppColors.profileGraphTooltipBg,
                   fitInsideHorizontally: true,
                   fitInsideVertically: true,
                   getTooltipItem: (group, groupIndex, rod, rodIndex) {
-                    final aggregate = widget.aggregates[groupIndex];
+                    final aggregate = _gatedAggregates[groupIndex];
                     final value = aggregate.valueFor(widget.metric);
                     return BarTooltipItem(
                       '${_weekRangeLabel(aggregate.weekStart)}\n',
@@ -367,12 +530,12 @@ class _WeeklyBarChartState extends State<WeeklyBarChart> {
   }
 
   String _buildAccessibilitySummary() {
-    final latest = widget.aggregates.lastOrNull;
+    final latest = _gatedAggregates.lastOrNull;
     if (latest == null) return 'Weekly training chart';
 
     final latestValue = _valueLabel(latest.valueFor(widget.metric));
-    final previous = widget.aggregates.length >= 2
-        ? widget.aggregates[widget.aggregates.length - 2]
+    final previous = _gatedAggregates.length >= 2
+        ? _gatedAggregates[_gatedAggregates.length - 2]
         : null;
     String change = '';
     if (previous != null && previous.valueFor(widget.metric) != 0) {
@@ -384,6 +547,91 @@ class _WeeklyBarChartState extends State<WeeklyBarChart> {
       change = ', $direction $pct percent from previous week';
     }
     return 'Weekly ${widget.metric.label.toLowerCase()} chart, '
-        '${widget.aggregates.length} weeks, latest week $latestValue$change';
+        '${_gatedAggregates.length} weeks, latest week $latestValue$change';
+  }
+}
+
+// ── Supporting widgets for the comparison/low-data view ──────────────────────
+
+class _StatBlock extends StatelessWidget {
+  final String label;
+  final String value;
+  final bool dim;
+
+  const _StatBlock({
+    required this.label,
+    required this.value,
+    required this.dim,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: AppText.caption(
+            color: dim ? AppColors.textTertiary : AppColors.textSecondary,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          value,
+          style: GoogleFonts.inter(
+            fontSize: 22,
+            fontWeight: FontWeight.w700,
+            color: dim ? AppColors.textSecondary : AppColors.textPrimary,
+            letterSpacing: -0.5,
+            fontFeatures: const [FontFeature.tabularFigures()],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _UnlockProgress extends StatelessWidget {
+  final double progressFraction;
+  final String bannerText;
+
+  const _UnlockProgress({
+    required this.progressFraction,
+    required this.bannerText,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Progress bar
+        ClipRRect(
+          borderRadius: BorderRadius.circular(AppRadius.badge),
+          child: LinearProgressIndicator(
+            value: progressFraction,
+            minHeight: 4,
+            backgroundColor: AppColors.surface3,
+            valueColor: const AlwaysStoppedAnimation<Color>(
+              AppColors.accentPrimary,
+            ),
+          ),
+        ),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            const Icon(Icons.lock_outline_rounded,
+                size: 13, color: AppColors.textTertiary),
+            const SizedBox(width: 5),
+            Expanded(
+              child: Text(
+                bannerText,
+                style: AppText.caption(color: AppColors.textTertiary),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
   }
 }

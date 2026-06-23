@@ -161,14 +161,10 @@ class WorkoutDetailScreen extends ConsumerWidget {
 
   // ── Helpers ──────────────────────────────────────────────────────────────────
 
+  static final _volumeFormat = NumberFormat('#,##0.##');
+
   static String _formatVolume(double kg) {
-    final rounded = kg.round();
-    if (rounded >= 1000) {
-      final t = rounded ~/ 1000;
-      final h = (rounded % 1000).toString().padLeft(3, '0');
-      return '$t,$h kg';
-    }
-    return '$rounded kg';
+    return '${_volumeFormat.format(kg)} kg';
   }
 
   void _saveAsRoutine(

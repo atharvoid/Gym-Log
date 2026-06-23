@@ -54,6 +54,7 @@ abstract class AppColors {
   // Legacy accent aliases.
   static const accentPrimary = Color(0xFF7C3AED); // == indigo500
   static const accentText    = Color(0xFFA78BFA); // == indigo400 (accent text on black)
+  static const canvas        = Color(0xFF0A0A0A); // High-contrast black for CTA background/text
 
   // ── Semantic — each has exactly one job ─────────────────────────────────
   static const success = Color(0xFF10B981); // Completion green — completed-set check + left border ONLY
@@ -73,17 +74,23 @@ abstract class AppColors {
   // ── Charts ──────────────────────────────────────────────────────────────
   static const chartAxisLabel = Color(0x59FFFFFF); // == textTertiary
 
-  // Profile analytics bar chart — cyan is intentionally distinct from indigo
-  // upsells so the graph reads as data, not a premium CTA.
-  static const profileGraphActiveBar = Color(0xFF00C9FF);
-  static const profileGraphActiveBarBright = Color(0xFF33D4FF);
-  static const profileGraphPreviousBar = Color(0xFF3A3A5C);
-  static const profileGraphInactiveBar = Color(0xFF2A2A3A);
-  static const profileGraphGhostBar = Color(0xFF1E1E2E);
-  static const profileGraphGridLine = Color(0xFF1E1E2E);
-  static const profileGraphAxisLabel = Color(0xFF8E8E93);
-  static const profileGraphTooltipBg = Color(0xFF1C1C24);
-  static const profileGraphTooltipShadow = Color(0x33000000); // 20% black
+  // Profile analytics bar chart.
+  // Semantic rule: current week = brand indigo, historical = neutral gray.
+  // No cyan — keeping the accent consistent with the rest of the app chrome.
+  static const profileGraphCurrentBar     = Color(0xFF7C3AED); // == accentPrimary — current/latest week
+  static const profileGraphCurrentBarBright = Color(0xFFA78BFA); // == accentText — touch highlight
+  static const profileGraphHistoricalBar  = Color(0xFF2C2C3A); // neutral cool-gray — previous weeks
+  static const profileGraphInactiveBar    = Color(0xFF2A2A3A); // in-progress week (mid-week, muted)
+  static const profileGraphGhostBar       = Color(0xFF1A1A26); // zero-value slot — barely visible
+  static const profileGraphGridLine       = Color(0x14FFFFFF); // white 8% — barely-there guides
+  static const profileGraphAxisLabel      = Color(0x59FFFFFF); // == textTertiary
+  static const profileGraphTooltipBg      = Color(0xFF242424); // == surface4
+  static const profileGraphTooltipShadow  = Color(0x33000000); // 20% black
+
+  // Keep old names as aliases so any future references don't break.
+  static const profileGraphActiveBar       = profileGraphCurrentBar;
+  static const profileGraphActiveBarBright = profileGraphCurrentBarBright;
+  static const profileGraphPreviousBar     = profileGraphHistoricalBar;
 
   // Muscle-split data-viz palette — an ORDERED violet ramp, light→dark. The
   // dominant (largest) muscle is leftmost and lightest (most visible on the

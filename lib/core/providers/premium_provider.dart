@@ -45,6 +45,34 @@ List<T> gateChartSamples<T>(List<T> samples, bool isPremium) {
   return samples.sublist(samples.length - 3);
 }
 
+/// Computes the trend chart lock state banner copy depending on premium status
+/// and data volume. Prevents promising free users that "more logging" will
+/// unlock the full trend chart when they are capped by the free plan.
+String? chartLimitBannerCopy({
+  required bool isPremium,
+  required int totalLoggedSamples,
+  required int visibleSamples,
+  int minSamplesForTrend = 4,
+}) {
+  if (isPremium) {
+    if (totalLoggedSamples >= minSamplesForTrend) return null;
+    final remaining = minSamplesForTrend - totalLoggedSamples;
+    return remaining == 1
+        ? 'Log 1 more week to unlock your trend chart'
+        : 'Log $remaining more weeks to unlock your trend chart';
+  } else {
+    // Free user
+    if (totalLoggedSamples >= 3) {
+      return 'Free plan shows your last 3 weeks. Upgrade to see your full history.';
+    }
+    final remaining = minSamplesForTrend - totalLoggedSamples;
+    return remaining == 1
+        ? 'Log 1 more week to unlock your trend chart'
+        : 'Log $remaining more weeks to unlock your trend chart';
+  }
+}
+
+
 /// Free-tier routine ceiling. Matches Hevy's free cap (4) and beats Strong (3):
 /// high enough for Push/Pull/Legs + a Full-Body day, low enough that
 /// program-hoppers convert. Pro is unlimited.

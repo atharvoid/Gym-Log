@@ -5,7 +5,9 @@ import 'package:gymlog/core/utils/units.dart';
 import 'package:gymlog/features/profile/presentation/providers/profile_stats_provider.dart';
 
 /// KPI header above the profile weekly bar chart.
-/// Shows the latest-week value and a delta pill vs the previous week.
+/// Shows the latest-week value with a contextual "This week" caption, and
+/// a delta pill vs the previous week — but only once there are ≥ 4 filled
+/// weeks so the percentage is computed from enough data to be meaningful.
 class GraphKpiHeader extends StatelessWidget {
   final List<WeeklyAggregate> aggregates;
   final ProfileGraphMetric metric;
@@ -23,20 +25,37 @@ class GraphKpiHeader extends StatelessWidget {
         aggregates.length >= 2 ? aggregates[aggregates.length - 2] : null;
     final filledWeeks = aggregates.where((a) => a.workoutCount > 0).length;
 
+    // Delta pill is suppressed below n=4 — two weeks of data is too noisy
+    // for a percentage change to be a meaningful signal.
+    final showDelta = filledWeeks >= 4 && latest != null && previous != null;
+
     return Row(
-      crossAxisAlignment: CrossAxisAlignment.baseline,
-      textBaseline: TextBaseline.alphabetic,
+      crossAxisAlignment: CrossAxisAlignment.end,
       children: [
         Expanded(
-          child: Text(
-            latest == null ? '—' : _formatValue(latest.valueFor(metric)),
-            style: AppText.statNumber(),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                latest == null ? '—' : _formatValue(latest.valueFor(metric)),
+                style: AppText.statNumber(),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                'This week',
+                style: AppText.caption(color: AppColors.textTertiary),
+              ),
+            ],
           ),
         ),
-        if (filledWeeks >= 2 && latest != null && previous != null)
-          _DeltaPill(
-            latest: latest.valueFor(metric),
-            previous: previous.valueFor(metric),
+        if (showDelta)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 2),
+            child: _DeltaPill(
+              latest: latest.valueFor(metric),
+              previous: previous.valueFor(metric),
+            ),
           ),
       ],
     );
@@ -65,10 +84,10 @@ class _DeltaPill extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
         decoration: BoxDecoration(
           color: AppColors.textSecondary.withValues(alpha: 0.12),
-          borderRadius: BorderRadius.circular(999),
+          borderRadius: BorderRadius.circular(AppRadius.badge),
         ),
         child: Text(
-          '—',
+          'vs last week',
           style: AppText.statLabel(color: AppColors.textSecondary),
         ),
       );
@@ -83,7 +102,7 @@ class _DeltaPill extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(999),
+        borderRadius: BorderRadius.circular(AppRadius.badge),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -97,7 +116,7 @@ class _DeltaPill extends StatelessWidget {
           ),
           const SizedBox(width: 4),
           Text(
-            '$pct%',
+            '$pct% vs last week',
             style: AppText.statLabel(color: color),
           ),
         ],

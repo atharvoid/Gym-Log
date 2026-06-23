@@ -8,6 +8,7 @@ import 'package:gymlog/core/database/database.dart';
 import 'package:gymlog/core/providers/database_provider.dart';
 import 'package:gymlog/core/providers/premium_provider.dart';
 import 'package:gymlog/core/theme/app_colors.dart';
+import 'package:gymlog/core/theme/app_text.dart';
 import 'package:gymlog/shared/widgets/premium_paywall.dart';
 import 'package:gymlog/features/auth/presentation/providers/auth_provider.dart';
 import 'package:gymlog/shared/widgets/exercise_gif_widget.dart';
@@ -161,7 +162,7 @@ class _RoutineEditorScreenState extends ConsumerState<RoutineEditorScreen> {
         final isPremium = ref.read(isPremiumProvider);
         final count = await dao.countRoutinesForUser(user.id);
         if (isAtFreeRoutineLimit(isPremium: isPremium, routineCount: count)) {
-          if (mounted) await showRoutineLimitUpsell(context);
+          if (mounted) await showPremiumPaywall(context, source: PaywallSource.routineLimit);
           return; // draft stays on screen; nothing saved
         }
 
@@ -377,16 +378,16 @@ class _RoutineEditorScreenState extends ConsumerState<RoutineEditorScreen> {
                   padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
                   child: Material(
                     color: Colors.transparent,
-                    borderRadius: BorderRadius.zero,
+                    borderRadius: BorderRadius.circular(AppRadius.buttonSecondary),
                     child: InkWell(
-                      borderRadius: BorderRadius.zero,
+                      borderRadius: BorderRadius.circular(AppRadius.buttonSecondary),
                       onTap: _addExercises,
                       child: Container(
                         height: 50,
                         alignment: Alignment.center,
                         decoration: BoxDecoration(
                           border: Border.all(color: AppColors.borderSubtle),
-                          borderRadius: BorderRadius.zero,
+                          borderRadius: BorderRadius.circular(AppRadius.buttonSecondary),
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
@@ -446,9 +447,9 @@ class _EmptyEditorState extends StatelessWidget {
             const SizedBox(height: 20),
             Material(
               color: AppColors.accentPrimary,
-              borderRadius: BorderRadius.circular(999),
+              borderRadius: BorderRadius.circular(AppRadius.buttonPrimary),
               child: InkWell(
-                borderRadius: BorderRadius.circular(999),
+                borderRadius: BorderRadius.circular(AppRadius.buttonPrimary),
                 onTap: onAdd,
                 child: Container(
                   height: 48,
@@ -521,14 +522,14 @@ class _EditorExerciseCard extends StatelessWidget {
             ),
           ),
           ClipRRect(
-            borderRadius: BorderRadius.zero,
+            borderRadius: AppRadius.thumbnailAll,
             child: ExerciseGifWidget(
               gifUrl: exercise.gifUrl,
               width: 44,
               height: 44,
               fit: BoxFit.cover,
               animate: false,
-              borderRadius: BorderRadius.zero,
+              borderRadius: AppRadius.thumbnailAll,
             ),
           ),
           const SizedBox(width: 12),
@@ -637,9 +638,9 @@ class _StepperButton extends StatelessWidget {
               width: 28,
               height: 28,
               alignment: Alignment.center,
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 color: AppColors.surfaceRaised,
-                borderRadius: BorderRadius.zero,
+                borderRadius: BorderRadius.circular(AppRadius.badge),
               ),
               child: Icon(
                 icon,

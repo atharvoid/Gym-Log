@@ -47,7 +47,7 @@ class SegmentedControl extends StatelessWidget {
                 bottom: 0,
                 child: Container(
                   decoration: BoxDecoration(
-                    color: const Color(0xFF2A2A3A),
+                    color: AppColors.accentPrimary,
                     borderRadius:
                         BorderRadius.circular(AppRadius.segmentedInner),
                   ),
@@ -74,8 +74,8 @@ class SegmentedControl extends StatelessWidget {
                                   ? FontWeight.w600
                                   : FontWeight.w400,
                               color: s == selected
-                                  ? AppColors.textPrimary
-                                  : const Color(0xFF8E8E93),
+                                  ? Colors.white
+                                  : AppColors.textSecondary,
                             ),
                           ),
                         ),

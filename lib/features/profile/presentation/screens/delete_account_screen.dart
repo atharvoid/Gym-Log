@@ -210,7 +210,7 @@ class _DeleteAccountScreenState extends ConsumerState<DeleteAccountScreen> {
                             Colors.white.withValues(alpha: 0.5),
                         elevation: 0,
                         shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(999)),
+                            borderRadius: BorderRadius.circular(AppRadius.buttonPrimary)),
                       ),
                       child: _deleting
                           ? const CupertinoActivityIndicator(color: Colors.white)

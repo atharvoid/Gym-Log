@@ -143,20 +143,34 @@ abstract class AppText {
   /// Secondary meta (counts like "3 sets"): 13 / 400.
   static TextStyle meta({Color color = AppColors.textSecondary}) =>
       GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w400, color: color);
+
+  /// Label / badge style (uppercase subheadlines/badges): 12 / 500.
+  static TextStyle label({
+    Color color = AppColors.textSecondary,
+    double letterSpacing = 0.0,
+  }) =>
+      GoogleFonts.inter(
+        fontSize: 12,
+        fontWeight: FontWeight.w500,
+        color: color,
+        letterSpacing: letterSpacing,
+      );
 }
 
-/// Border-radius scale. Pill is deliberately NOT in the system — the largest
-/// button radius is 14 on a ~52px control (professional proportion).
+/// Border-radius scale. "Slightly rounded" premium style: primary CTAs use
+/// 12px, secondary actions use 10px. Data-display pills (badges, chips,
+/// progress tags) use 6px. Sharp 0px is reserved for data-entry fields and
+/// inline table rows only.
 abstract class AppRadius {
   static const double card = 6; // workout/routine/exercise cards
-  static const double buttonPrimary = 999; // Start, Finish — conformed to pill
-  static const double buttonSecondary = 0; // Add Set, secondary actions
+  static const double buttonPrimary = 12; // Start, Finish, primary CTAs
+  static const double buttonSecondary = 10; // Add Set, secondary actions
   static const double input = 0; // weight/reps fields
-  static const double badge = 6; // PR badge, muscle tags, chips
-  static const double thumbnail = 0; // exercise thumbnail container
+  static const double badge = 6; // PR badge, muscle tags, chips, data pills
+  static const double thumbnail = 6; // exercise thumbnail container
   static const double sheet = 6; // bottom-sheet / rest-timer top corners
-  static const double segmentedOuter = 0;
-  static const double segmentedInner = 0;
+  static const double segmentedOuter = 10;
+  static const double segmentedInner = 8;
   static const double nav = 0; // flush to bottom edge
 
   static const BorderRadius cardAll = BorderRadius.all(Radius.circular(card));

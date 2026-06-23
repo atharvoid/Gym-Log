@@ -43,7 +43,7 @@ class ProfileGraphEmptyState extends StatelessWidget {
               foregroundColor: AppColors.bgBase,
               elevation: 0,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(14),
+                borderRadius: BorderRadius.circular(AppRadius.buttonPrimary),
               ),
             ),
             child: Text(
