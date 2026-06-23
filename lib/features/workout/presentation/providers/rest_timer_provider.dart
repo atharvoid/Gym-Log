@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class RestTimerState {
@@ -18,36 +19,55 @@ class RestTimerState {
 
 /// Between-set rest countdown. Auto-started on set completion, dismissible,
 /// extendable in ±15s steps. Buzzes twice at zero — the cue to load the bar.
-class RestTimerNotifier extends StateNotifier<RestTimerState?> {
+///
+/// The countdown is anchored to an absolute wall-clock [_endTime] rather than a
+/// naive per-tick decrement, so it stays accurate across app backgrounding: the
+/// 1s ticker only samples the clock, and an [AppLifecycleState.resumed] event
+/// re-syncs (and fires completion if the timer expired while suspended).
+class RestTimerNotifier extends StateNotifier<RestTimerState?>
+    with WidgetsBindingObserver {
   Timer? _ticker;
+  DateTime? _endTime;
+  int _totalSeconds = 0;
+  bool _finished = false;
 
-  RestTimerNotifier() : super(null);
+  RestTimerNotifier() : super(null) {
+    WidgetsBinding.instance.addObserver(this);
+  }
 
   void start(int seconds) {
     _ticker?.cancel();
+    _finished = false;
+    _totalSeconds = seconds;
+    _endTime = DateTime.now().add(Duration(seconds: seconds));
     state = RestTimerState(totalSeconds: seconds, remainingSeconds: seconds);
-    _ticker = Timer.periodic(const Duration(seconds: 1), (_) => _tick());
+    _ticker = Timer.periodic(const Duration(seconds: 1), (_) => _sync());
   }
 
-  void _tick() {
-    final current = state;
-    if (current == null) {
+  /// Recomputes remaining seconds from the wall clock. Safe to call on every
+  /// tick and on resume.
+  void _sync() {
+    final end = _endTime;
+    if (end == null) {
       _ticker?.cancel();
       return;
     }
-    final remaining = current.remainingSeconds - 1;
+    final remaining = end.difference(DateTime.now()).inSeconds;
     if (remaining <= 0) {
       _finish();
     } else {
       state = RestTimerState(
-        totalSeconds: current.totalSeconds,
+        totalSeconds: _totalSeconds,
         remainingSeconds: remaining,
       );
     }
   }
 
   Future<void> _finish() async {
+    if (_finished) return;
+    _finished = true;
     _ticker?.cancel();
+    _endTime = null;
     state = null;
     // Double buzz — felt even with the phone on the bench.
     await HapticFeedback.heavyImpact();
@@ -57,22 +77,33 @@ class RestTimerNotifier extends StateNotifier<RestTimerState?> {
 
   void addSeconds(int delta) {
     final current = state;
-    if (current == null) return;
+    final end = _endTime;
+    if (current == null || end == null) return;
     final remaining = (current.remainingSeconds + delta).clamp(1, 600);
-    final total = delta > 0 && remaining > current.totalSeconds
-        ? remaining
-        : current.totalSeconds;
+    final total =
+        delta > 0 && remaining > _totalSeconds ? remaining : _totalSeconds;
+    _totalSeconds = total;
+    _endTime = DateTime.now().add(Duration(seconds: remaining));
     state = RestTimerState(totalSeconds: total, remainingSeconds: remaining);
   }
 
   void skip() {
     _ticker?.cancel();
+    _endTime = null;
     state = null;
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState appState) {
+    if (appState == AppLifecycleState.resumed && _endTime != null) {
+      _sync();
+    }
   }
 
   @override
   void dispose() {
     _ticker?.cancel();
+    WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
 }
