@@ -388,9 +388,10 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
         onPressed: () => context.pop(),
       ),
       actions: [
+        // S13: standardized to more_horiz_rounded + showActionBottomSheet
         IconButton(
-          tooltip: 'Routine options',
-          icon: const Icon(Icons.more_vert_rounded,
+          tooltip: 'More options',
+          icon: const Icon(Icons.more_horiz_rounded,
               size: 24, color: AppColors.textPrimary),
           constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
           onPressed: () => _showActions(routine),
