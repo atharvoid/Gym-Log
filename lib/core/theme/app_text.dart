@@ -157,20 +157,20 @@ abstract class AppText {
       );
 }
 
-/// Border-radius scale. "Slightly rounded" premium style: primary CTAs use
-/// 12px, secondary actions use 10px. Data-display pills (badges, chips,
-/// progress tags) use 6px. Sharp 0px is reserved for data-entry fields and
-/// inline table rows only.
+/// Border-radius scale. The "sweet spot" premium curvature: cards and
+/// thumbnails 10px, primary CTAs 14px, secondary actions 14px, badges 8px,
+/// sheets 12px. Not boxy (6), not pill (24+). Data-entry fields stay sharp
+/// at 0px — this is intentional per the design system.
 abstract class AppRadius {
-  static const double card = 6; // workout/routine/exercise cards
-  static const double buttonPrimary = 12; // Start, Finish, primary CTAs
-  static const double buttonSecondary = 10; // Add Set, secondary actions
-  static const double input = 0; // weight/reps fields
-  static const double badge = 6; // PR badge, muscle tags, chips, data pills
-  static const double thumbnail = 6; // exercise thumbnail container
-  static const double sheet = 6; // bottom-sheet / rest-timer top corners
-  static const double segmentedOuter = 10;
-  static const double segmentedInner = 8;
+  static const double card = 10; // workout/routine/exercise cards
+  static const double buttonPrimary = 14; // Start, Finish, primary CTAs
+  static const double buttonSecondary = 14; // Add Set, secondary actions
+  static const double input = 0; // weight/reps fields (intentional sharp)
+  static const double badge = 8; // PR badge, muscle tags, chips, data pills
+  static const double thumbnail = 10; // exercise thumbnail container
+  static const double sheet = 12; // bottom-sheet / rest-timer top corners
+  static const double segmentedOuter = 14;
+  static const double segmentedInner = 12;
   static const double nav = 0; // flush to bottom edge
 
   static const BorderRadius cardAll = BorderRadius.all(Radius.circular(card));
