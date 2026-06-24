@@ -94,8 +94,8 @@ class RestTimerNotifier extends StateNotifier<RestTimerState?>
   }
 
   @override
-  void didChangeAppLifecycleState(AppLifecycleState appState) {
-    if (appState == AppLifecycleState.resumed && _endTime != null) {
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed && _endTime != null) {
       _sync();
     }
   }

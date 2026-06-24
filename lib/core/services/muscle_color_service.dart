@@ -37,7 +37,7 @@ abstract class MuscleColorService {
   /// Color for a given volume rank (0 = dominant / largest = lightest). Ranks
   /// beyond the palette length clamp to the darkest shade.
   static Color colorForRank(int rank) {
-    final palette = AppColors.muscleSplitPalette;
+    const palette = AppColors.muscleSplitPalette;
     return palette[rank.clamp(0, palette.length - 1)];
   }
 
