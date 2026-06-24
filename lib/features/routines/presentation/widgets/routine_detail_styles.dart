@@ -11,8 +11,14 @@ import 'package:gymlog/core/theme/app_colors.dart';
 /// depends on its chart typography. The color/surface members below now alias
 /// [AppColors] tokens; migrating the remaining GoogleFonts text styles onto
 /// [AppText] is a cross-cutting change tracked for a shared-widget pass.
+///
+/// ACCENT RULE: nothing in this file may bake in an accent color. A static
+/// const TextStyle cannot react to the runtime palette, so accent-colored text
+/// (e.g. the chart's selected-date header) starts from a NEUTRAL style here and
+/// has the live accent applied at the call site with
+/// `style.copyWith(color: context.accent.light)`.
 class RDStyles {
-  // ── Header / AppBar ──────────────────────────────────────────
+  // ── Header / AppBar ────────────────────────────
   static TextStyle title = GoogleFonts.inter(
       fontSize: 22,
       fontWeight: FontWeight.w700,
@@ -22,7 +28,7 @@ class RDStyles {
   static TextStyle subtitle =
       GoogleFonts.inter(fontSize: 13, color: AppColors.textSecondary);
 
-  // ── Buttons ──────────────────────────────────────────────
+  // ── Buttons ─────────────────────────
   static TextStyle startBtn = GoogleFonts.inter(
       fontSize: 16, fontWeight: FontWeight.w600, color: Colors.white);
   static TextStyle editBtn = GoogleFonts.inter(
@@ -34,7 +40,7 @@ class RDStyles {
       fontWeight: FontWeight.w600,
       color: Colors.white.withValues(alpha: 0.90));
 
-  // ── Section header + range pill ───────────────────────────────
+  // ── Section header + range pill ────────────────────
   static TextStyle sectionLabel = GoogleFonts.inter(
       fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textPrimary);
   static TextStyle sectionUnit = GoogleFonts.inter(
@@ -46,24 +52,30 @@ class RDStyles {
       fontWeight: FontWeight.w500,
       color: Colors.white.withValues(alpha: 0.86));
 
-  // ── Chart ───────────────────────────────────────────────
+  // ── Chart ────────────────────────
   static TextStyle chartValue = GoogleFonts.inter(
       fontSize: 22, fontWeight: FontWeight.w700, color: Colors.white);
+  // NEUTRAL base — the chart's selected-date header is accent-colored, so the
+  // consumer applies `chartDate.copyWith(color: context.accent.light)`. Never
+  // bake an accent here: a static style is frozen at first load and was the
+  // exact cause of the hardcoded-purple date axis.
   static TextStyle chartDate = GoogleFonts.inter(
       fontSize: 15,
       fontWeight: FontWeight.w600,
-      color: AppColors.accentPrimary);
+      color: AppColors.textSecondary);
   static TextStyle axis = GoogleFonts.inter(
       fontSize: 10,
       fontWeight: FontWeight.w500,
       color: AppColors.chartAxisLabel,
       fontFeatures: const [FontFeature.tabularFigures()]);
+  // NEUTRAL base — apply the live accent at the call site if an accent-colored
+  // delta is desired (`deltaPill.copyWith(color: context.accent.light)`).
   static TextStyle deltaPill = GoogleFonts.inter(
       fontSize: 12.5,
       fontWeight: FontWeight.w600,
-      color: AppColors.accentText);
+      color: AppColors.textSecondary);
 
-  // ── Exercise block ──────────────────────────────────────────
+  // ── Exercise block ───────────────────────────
   static TextStyle exName = GoogleFonts.inter(
       fontSize: 17,
       fontWeight: FontWeight.w600,
@@ -87,7 +99,7 @@ class RDStyles {
       color: Colors.white.withValues(alpha: 0.92),
       fontFeatures: const [FontFeature.tabularFigures()]);
 
-  // ── Empty state ────────────────────────────────────────────
+  // ── Empty state ─────────────────────────
   static TextStyle emptyTitle = GoogleFonts.inter(
       fontSize: 13.5,
       fontWeight: FontWeight.w500,
