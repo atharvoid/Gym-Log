@@ -222,9 +222,8 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
   }
 
   /// Builds the "Add Exercise" button that appears at the end of the
-  /// scrollable exercise list (S12.2). It's not fixed at the bottom —
-  /// it scrolls into view only when the user reaches the end.
-  Widget _buildAddExerciseButton(WorkoutNotifier notifier) {
+  /// scrollable exercise list (S12.2).
+  Widget _buildAddExerciseButton(ActiveWorkoutNotifier notifier) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
       child: Material(
