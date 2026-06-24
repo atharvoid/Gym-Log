@@ -725,4 +725,75 @@ class _LoadingBody extends StatelessWidget {
                 SizedBox(height: 12),
                 SkeletonBox(width: double.infinity, height: 150, radius: 6),
                 SizedBox(height: 14),
-                SkeletonBox(width: double.infinity, height: 36, radius: 0
+                SkeletonBox(width: double.infinity, height: 36, radius: 0),
+              ],
+            ),
+          ),
+          const SizedBox(height: 28),
+          AppCard(
+            radius: AppRadius.card,
+            child: Column(
+              children: [
+                for (var i = 0; i < 2; i++) ...[
+                  const SkeletonBox(width: double.infinity, height: 48, radius: 0),
+                  if (i < 1) const SizedBox(height: 1),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ErrorBody extends StatelessWidget {
+  final double bottomClearance;
+  final VoidCallback onRetry;
+
+  const _ErrorBody({required this.bottomClearance, required this.onRetry});
+
+  @override
+  Widget build(BuildContext context) {
+    final surface = context.surface;
+    return ListView(
+      padding: EdgeInsets.fromLTRB(16, 4, 16, bottomClearance),
+      children: [
+        AppCard(
+          radius: AppRadius.card,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Icon(Icons.error_outline_rounded,
+                  color: AppColors.error, size: 28),
+              const SizedBox(height: 12),
+              Text('Could not load profile',
+                  style: AppText.sheetTitle(color: surface.textPrimary)),
+              const SizedBox(height: 6),
+              Text(
+                'We had trouble reading your local profile. Your workouts are safe.',
+                style: AppText.body(color: surface.textSecondary),
+              ),
+              const SizedBox(height: 16),
+              SizedBox(
+                width: double.infinity,
+                height: 48,
+                child: ElevatedButton(
+                  onPressed: onRetry,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: context.accent.base,
+                    foregroundColor: context.accent.onAccent,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(AppRadius.buttonPrimary)),
+                  ),
+                  child: Text('Retry', style: AppText.button()),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
