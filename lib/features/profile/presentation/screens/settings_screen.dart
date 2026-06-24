@@ -123,8 +123,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     if (mounted) setState(() => _syncEnabled = value);
 
     if (!value) {
-      // Toggle OFF: pause sync engine.
-      await engine.pauseSync(userId);
+      // Toggle OFF: pause sync engine (void — no await needed).
+      engine.pauseSync(userId);
     } else {
       // Toggle ON: resume sync engine and pull.
       await engine.resumeSync(userId, isPremium: isPremium);
@@ -142,7 +142,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
     final version = versionAsync.valueOrNull ?? kAppVersionFallback;
 
-    // Determine sync subtitle based on premium + toggle state.
     final String syncSubtitle;
     if (!isPremium) {
       syncSubtitle = 'Upgrade to Pro to sync across devices';
@@ -256,7 +255,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               ),
               const SizedBox(height: 22),
 
-              // ── CLOUD SYNC ──────────────────────────────────────────
               const _GroupHeader('CLOUD SYNC'),
               AppCard(
                 padding: EdgeInsets.zero,
@@ -280,7 +278,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                             horizontal: 16, vertical: 14),
                         child: Row(
                           children: [
-                            Icon(
+                            const Icon(
                               Icons.sync_rounded,
                               size: 20,
                               color: AppColors.textSecondary,
@@ -316,7 +314,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                               Switch.adaptive(
                                 value: _syncEnabled ?? true,
                                 onChanged: (v) => _toggleSync(v),
-                                activeColor: AppColors.accentPrimary,
+                                activeTrackColor: AppColors.accentPrimary,
                               ),
                           ],
                         ),
