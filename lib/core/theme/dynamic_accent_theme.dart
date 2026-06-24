@@ -99,6 +99,21 @@ class AccentColors extends ThemeExtension<AccentColors> {
   /// Slightly stronger accent for the border of a selected card/input (~35%).
   Color get selectionBorder => base.withValues(alpha: 0.35);
 
+  /// Generates a 6-step accent ramp, DARKEST → LIGHTEST.
+  /// Index 0 = deepest (for dominant muscle), index 5 = lightest.
+  /// Used by workout-history muscle-split visualization.
+  ///
+  /// This replaces the static [AppColors.muscleSplitPalette] — the ramp now
+  /// follows the active accent palette and is INVERTED from the old order:
+  /// the dominant (largest) muscle gets the darkest/richest color, the
+  /// smallest gets the lightest/most muted.
+  List<Color> get muscleSplitRamp {
+    return [
+      for (int i = 0; i < 6; i++)
+        Color.lerp(dark, light, i / 5)!,
+    ];
+  }
+
   /// The default accent, for the rare path where a widget needs an accent
   /// before the inherited theme is available (e.g. a State field initializer
   /// that runs ahead of didChangeDependencies). Matches the fallback used by
