@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:gymlog/core/theme/app_colors.dart';
 import 'package:gymlog/core/theme/app_text.dart';
+import 'package:gymlog/core/theme/dynamic_accent_theme.dart';
 
 Future<T?> showActionBottomSheet<T>({
   required BuildContext context,
@@ -113,6 +114,7 @@ class _ActionSheetItemWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final accent = context.accent;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12),
       child: Material(
@@ -120,8 +122,8 @@ class _ActionSheetItemWidget extends StatelessWidget {
         child: InkWell(
           onTap: () => item.onTap(context),
           borderRadius: AppRadius.buttonPrimaryAll,
-          splashColor: AppColors.accentPrimary.withValues(alpha: 0.1),
-          highlightColor: AppColors.accentPrimary.withValues(alpha: 0.04),
+          splashColor: accent.base.withValues(alpha: 0.1),
+          highlightColor: accent.base.withValues(alpha: 0.04),
           child: SizedBox(
             height: 56,
             child: Padding(
