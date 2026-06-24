@@ -22,6 +22,12 @@ class WorkoutActionsNotifier extends StateNotifier<AsyncValue<void>> {
   ///   3. If the app crashes between the tombstone write and the local delete,
   ///      the outbox row survives and retries the cloud deletion — the local
   ///      row is simply re-deleted next launch (idempotent).
+  ///
+  /// **Gated:** the engine's `syncNow` is a no-op when the entitlement gate
+  /// is closed (free user, or Pro opted out). The tombstone enqueue still
+  /// happens (it's a local Drift write), but it won't be pushed until the
+  /// gate opens. This is correct — the tombstone is harmless locally and
+  /// ensures the deletion propagates if sync is later enabled.
   Future<void> deleteSession(String sessionId) async {
     state = const AsyncValue.loading();
     try {
@@ -37,7 +43,7 @@ class WorkoutActionsNotifier extends StateNotifier<AsyncValue<void>> {
           payload: '', // empty payload signals deletion
           op: 'delete',
         );
-        // Kick off an immediate flush so the tombstone reaches Supabase fast.
+        // Kick off an immediate flush — no-op if gate is closed.
         unawaited(
           _ref
               .read(syncEngineProvider)

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'core/providers/premium_provider.dart';
 import 'core/theme/app_theme.dart';
 import 'core/router/router.dart';
 import 'core/services/sync_engine.dart';
@@ -62,6 +63,8 @@ class _GymLogAppState extends ConsumerState<GymLogApp> {
   void _flush() {
     final id = _userId;
     if (id == null) return;
+    // The gate is checked inside the engine — if sync is not allowed,
+    // enqueuePreferences and syncNow are silent no-ops.
     final engine = ref.read(syncEngineProvider);
     engine
         .enqueuePreferences(id)
@@ -87,7 +90,8 @@ class _GymLogAppState extends ConsumerState<GymLogApp> {
     final userId = event.session?.user.id;
     if (userId == null) return;
 
-    unawaited(engine.initSession(userId));
+    final isPremium = ref.read(isPremiumProvider);
+    unawaited(engine.initSession(userId, isPremium: isPremium));
     unawaited(engine.enqueuePreferences(userId));
   }
 

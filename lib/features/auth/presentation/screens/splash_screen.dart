@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/providers/premium_provider.dart';
 import '../../../../core/services/profile_sync_service.dart';
 import '../../../../core/services/sync_engine.dart';
 import '../providers/auth_provider.dart';
@@ -46,8 +47,12 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
     // the last-synced timestamp. initSession() is idempotent — the
     // auth-state listener in app.dart may have already started the engine for
     // fresh-sign-in flows; this call is a safe no-op in that case.
+    //
+    // The gate is checked inside the engine — if sync is not allowed (free
+    // user, or Pro user opted out), the engine stays dormant.
+    final isPremium = ref.read(isPremiumProvider);
     final engine = ref.read(syncEngineProvider);
-    unawaited(engine.initSession(user.id));
+    unawaited(engine.initSession(user.id, isPremium: isPremium));
     unawaited(engine.enqueuePreferences(user.id));
 
     // Logged in → make the backend authoritative: fetch the stored profile
