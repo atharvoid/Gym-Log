@@ -125,10 +125,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     if (mounted) setState(() => _syncEnabled = value);
 
     if (!value) {
-      // Toggle OFF: pause sync engine (void — no await needed).
       engine.pauseSync(userId);
     } else {
-      // Toggle ON: resume sync engine and pull.
       await engine.resumeSync(userId, isPremium: isPremium);
     }
   }
@@ -142,10 +140,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final goal = ref.watch(weeklyGoalProvider);
     final versionAsync = ref.watch(appVersionProvider);
     final accent = context.accent;
+    final surface = context.surface;
 
     final version = versionAsync.valueOrNull ?? kAppVersionFallback;
 
-    // Determine sync subtitle based on premium + toggle state.
     final String syncSubtitle;
     if (!isPremium) {
       syncSubtitle = 'Upgrade to Pro to sync across devices';
@@ -156,27 +154,27 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     }
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: SystemUiOverlayStyle.light,
+      value: surface.isLight ? SystemUiOverlayStyle.dark : SystemUiOverlayStyle.light,
       child: Scaffold(
-        backgroundColor: AppColors.bgBase,
+        backgroundColor: surface.bgBase,
         appBar: AppBar(
-          backgroundColor: AppColors.bgBase,
+          backgroundColor: surface.bgBase,
           scrolledUnderElevation: 0,
           titleSpacing: 0,
           leading: IconButton(
             tooltip: 'Back',
             constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
-            icon: const Icon(Icons.arrow_back_ios_new,
-                size: 18, color: AppColors.textPrimary),
+            icon: Icon(Icons.arrow_back_ios_new,
+                size: 18, color: surface.textPrimary),
             onPressed: () => context.pop(),
           ),
-          title: Text('Settings', style: AppText.sheetTitle()),
+          title: Text('Settings', style: AppText.sheetTitle(color: surface.textPrimary)),
         ),
         body: SafeArea(
           child: ListView(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
             children: [
-              const _GroupHeader('ACCOUNT'),
+              _GroupHeader('ACCOUNT', color: surface.textSecondary),
               AppCard(
                 padding: EdgeInsets.zero,
                 child: Column(
@@ -198,7 +196,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               ),
               const SizedBox(height: 22),
 
-              const _GroupHeader('PREFERENCES'),
+              _GroupHeader('PREFERENCES', color: surface.textSecondary),
               AppCard(
                 padding: EdgeInsets.zero,
                 child: Column(
@@ -245,7 +243,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               ),
               const SizedBox(height: 22),
 
-              const _GroupHeader('DATA'),
+              _GroupHeader('DATA', color: surface.textSecondary),
               AppCard(
                 padding: EdgeInsets.zero,
                 child: Column(
@@ -275,8 +273,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               ),
               const SizedBox(height: 22),
 
-              // ── CLOUD SYNC ──────────────────────────────────────────
-              const _GroupHeader('CLOUD SYNC'),
+              _GroupHeader('CLOUD SYNC', color: surface.textSecondary),
               AppCard(
                 padding: EdgeInsets.zero,
                 child: Semantics(
@@ -299,10 +296,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                             horizontal: 16, vertical: 14),
                         child: Row(
                           children: [
-                            const Icon(
+                            Icon(
                               Icons.sync_rounded,
                               size: 20,
-                              color: AppColors.textSecondary,
+                              color: surface.textSecondary,
                             ),
                             const SizedBox(width: 14),
                             Expanded(
@@ -314,7 +311,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                       Text(
                                         'Sync workout data to cloud',
                                         style: AppText.rowLabel(
-                                            color: AppColors.textPrimary),
+                                            color: surface.textPrimary),
                                       ),
                                       if (!isPremium) ...[
                                         const SizedBox(width: 8),
@@ -326,7 +323,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                   Text(
                                     syncSubtitle,
                                     style: AppText.meta(
-                                        color: AppColors.textSecondary),
+                                        color: surface.textSecondary),
                                   ),
                                 ],
                               ),
@@ -346,7 +343,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               ),
               const SizedBox(height: 22),
 
-              const _GroupHeader('HELP'),
+              _GroupHeader('HELP', color: surface.textSecondary),
               AppCard(
                 padding: EdgeInsets.zero,
                 child: Column(
@@ -410,12 +407,13 @@ const kAppVersionFallback = '1.0.0';
 
 class _GroupHeader extends StatelessWidget {
   final String label;
-  const _GroupHeader(this.label);
+  final Color? color;
+  const _GroupHeader(this.label, {this.color});
 
   @override
   Widget build(BuildContext context) => Padding(
         padding: const EdgeInsets.only(left: 4, bottom: 8),
-        child: Text(label, style: AppText.groupHeader()),
+        child: Text(label, style: AppText.groupHeader(color: color)),
       );
 }
 
