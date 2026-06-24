@@ -1,5 +1,3 @@
-import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'app_colors.dart';
@@ -315,8 +313,8 @@ abstract class AppText {
 
 /// Border-radius scale. The premium "sweet spot" curvature: cards and
 /// thumbnails 10px, primary CTAs 14px, secondary actions 14px, badges 8px,
-/// sheets 12px. Not boxy (6), not pill (24+). Data-entry fields stay sharp
-/// at 0px — this is intentional per the design system.
+/// sheets 12px. Data-entry fields stay sharp at 0px — this is intentional
+/// per the design system.
 abstract class AppRadius {
   static const double card = 10;
   static const double buttonPrimary = 14;
