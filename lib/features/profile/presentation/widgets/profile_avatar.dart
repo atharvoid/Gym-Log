@@ -3,20 +3,15 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
+import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
 
 import 'package:gymlog/core/theme/app_colors.dart';
 import 'package:gymlog/core/theme/app_text.dart';
 import 'package:gymlog/core/theme/dynamic_accent_theme.dart';
 
-/// Tappable profile avatar that shows an uploaded profile picture (if one
-/// exists) or falls back to the initial-letter avatar. A subtle accent-tinted
-/// ring frames the avatar, and a camera badge appears in the bottom-right
-/// corner when no image is set.
-///
-/// S11: Profile Picture Upload Feature.
 class ProfileAvatar extends StatefulWidget {
   final String displayName;
   final String? imagePath;
@@ -40,14 +35,43 @@ class _ProfileAvatarState extends State<ProfileAvatar> {
 
   static const _fileName = 'profile_image.jpg';
 
-  Future<String?> _captureAndCompress(XFile picked) async {
+  /// Crop the picked image with a premium-feeling square cropper.
+  /// Accent-tinted toolbar, smooth animations, 1:1 lock.
+  Future<File?> _cropImage(String sourcePath, Color accentBase) async {
+    final cropped = await ImageCropper().cropImage(
+      sourcePath: sourcePath,
+      aspectRatio: const CropAspectRatio(ratioX: 1, ratioY: 1),
+      uiSettings: [
+        AndroidUiSettings(
+          toolbarTitle: 'Crop Photo',
+          toolbarColor: accentBase,
+          toolbarWidgetColor: Colors.white,
+          activeControlsWidgetColor: accentBase,
+          lockAspectRatio: true,
+          aspectRatioPresets: [CropAspectRatioPreset.square],
+          hideBottomControls: false,
+          showCropGrid: true,
+        ),
+        IOSUiSettings(
+          title: 'Crop Photo',
+          aspectRatioPresets: [CropAspectRatioPreset.square],
+          aspectRatioLockEnabled: true,
+          aspectRatioLockDimensionSwapEnabled: false,
+          resetAspectRatioEnabled: false,
+        ),
+      ],
+    );
+    return cropped == null ? null : File(cropped.path);
+  }
+
+  Future<String?> _compress(File source) async {
     final dir = await getApplicationDocumentsDirectory();
     final outPath = p.join(dir.path, _fileName);
 
     final compressed = await FlutterImageCompress.compressAndGetFile(
-      picked.path,
+      source.path,
       outPath,
-      quality: 85,
+      quality: 90,
       minWidth: 256,
       minHeight: 256,
     );
@@ -61,12 +85,18 @@ class _ProfileAvatarState extends State<ProfileAvatar> {
       final picker = ImagePicker();
       final picked = await picker.pickImage(
         source: source,
-        maxWidth: 512,
-        maxHeight: 512,
-        imageQuality: 85,
+        maxWidth: 1024,
+        maxHeight: 1024,
+        imageQuality: 90,
       );
       if (picked == null) return;
-      final compressed = await _captureAndCompress(picked);
+
+      // Premium crop step — available to all users.
+      final accent = context.accent;
+      final croppedFile = await _cropImage(picked.path, accent.base);
+      if (croppedFile == null) return; // user cancelled crop
+
+      final compressed = await _compress(croppedFile);
       if (compressed != null && mounted) {
         HapticFeedback.mediumImpact();
         widget.onImageChanged(compressed);
@@ -89,6 +119,7 @@ class _ProfileAvatarState extends State<ProfileAvatar> {
   }
 
   void _showOptionsSheet() {
+    final surface = context.surface;
     final hasImage = widget.imagePath != null &&
         widget.imagePath!.isNotEmpty;
 
@@ -97,8 +128,8 @@ class _ProfileAvatarState extends State<ProfileAvatar> {
       useRootNavigator: true,
       backgroundColor: Colors.transparent,
       builder: (sheetCtx) => Container(
-        decoration: const BoxDecoration(
-          color: AppColors.surface2,
+        decoration: BoxDecoration(
+          color: surface.surface2,
           borderRadius: AppRadius.sheetTop,
         ),
         child: SafeArea(
@@ -111,7 +142,7 @@ class _ProfileAvatarState extends State<ProfileAvatar> {
                 width: 36,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: AppColors.borderEmphasis,
+                  color: surface.borderEmphasis,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -152,6 +183,7 @@ class _ProfileAvatarState extends State<ProfileAvatar> {
   @override
   Widget build(BuildContext context) {
     final accent = context.accent;
+    final surface = context.surface;
     final hasImage = widget.imagePath != null &&
         widget.imagePath!.isNotEmpty;
 
@@ -163,7 +195,6 @@ class _ProfileAvatarState extends State<ProfileAvatar> {
         child: Stack(
           clipBehavior: Clip.none,
           children: [
-            // Avatar with accent-tinted ring.
             Container(
               width: widget.size,
               height: widget.size,
@@ -177,13 +208,13 @@ class _ProfileAvatarState extends State<ProfileAvatar> {
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(AppRadius.buttonPrimary),
                 child: _processing
-                    ? const Center(
+                    ? Center(
                         child: SizedBox(
                           width: 20,
                           height: 20,
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
-                            color: AppColors.textSecondary,
+                            color: surface.textSecondary,
                           ),
                         ),
                       )
@@ -195,20 +226,19 @@ class _ProfileAvatarState extends State<ProfileAvatar> {
                             height: widget.size,
                           )
                         : Container(
-                            color: AppColors.surface2,
+                            color: surface.surface2,
                             alignment: Alignment.center,
                             child: Text(
                               widget.displayName.isNotEmpty
                                   ? widget.displayName[0].toUpperCase()
                                   : 'A',
                               style: AppText.sheetTitle(
-                                      color: AppColors.textSecondary)
+                                      color: surface.textSecondary)
                                   .copyWith(fontSize: 20),
                             ),
                           ),
               ),
             ),
-            // Camera badge (only when no image is set).
             if (!hasImage && !_processing)
               Positioned(
                 right: -2,
@@ -220,7 +250,7 @@ class _ProfileAvatarState extends State<ProfileAvatar> {
                     color: accent.base,
                     shape: BoxShape.circle,
                     border: Border.all(
-                      color: AppColors.bgBase,
+                      color: surface.bgBase,
                       width: 2,
                     ),
                   ),
@@ -253,9 +283,8 @@ class _SheetOption extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = isDestructive
-        ? AppColors.error
-        : AppColors.textPrimary;
+    final surface = context.surface;
+    final color = isDestructive ? AppColors.error : surface.textPrimary;
     return InkWell(
       onTap: onTap,
       child: Padding(
