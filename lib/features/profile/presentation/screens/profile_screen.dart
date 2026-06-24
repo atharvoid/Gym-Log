@@ -24,8 +24,6 @@ import '../widgets/weekly_bar_chart.dart';
 import 'settings_screen.dart';
 
 
-/// Athlete dashboard — identity, streak, weekly goal ring, training chart,
-/// and quick links. Designed to feel personal, immediate, and scannable.
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
 
@@ -43,8 +41,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
   @override
   void initState() {
     super.initState();
-    // Defer the entrance animation until the first paint so the screen is
-    // already laid out when the stagger begins — prevents a flash of offset.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) _entranceController.forward();
     });
@@ -107,7 +103,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     ref.invalidate(sessionStatsProvider);
     ref.invalidate(streakStatsProvider);
     ref.invalidate(isSyncAllowedProvider);
-    // Give the reactive streams one frame to re-emit.
     await Future.delayed(const Duration(milliseconds: 300));
   }
 
@@ -135,7 +130,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     final streak = ref.watch(streakStatsProvider);
     final goal = ref.watch(weeklyGoalProvider);
     final isPremium = ref.watch(isPremiumProvider);
-    // Watch sync state — true when sync is allowed (Pro + toggle ON).
     final syncAllowed = ref.watch(isSyncAllowedProvider).valueOrNull ?? true;
     final showSyncPausedBadge = isPremium && !syncAllowed;
 
@@ -306,7 +300,7 @@ class _IdentityHeader extends StatelessWidget {
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(
+                          const Icon(
                             Icons.cloud_off_rounded,
                             size: 11,
                             color: AppColors.textTertiary,
@@ -522,8 +516,6 @@ class _TrainingChartSection extends ConsumerStatefulWidget {
 }
 
 class _TrainingChartSectionState extends ConsumerState<_TrainingChartSection> {
-  // Bumps on every metric change so AnimatedSwitcher never sees duplicate keys
-  // when the user rapidly toggles Volume/Duration/Reps.
   int _switchVersion = 0;
 
   @override
@@ -551,12 +543,8 @@ class _TrainingChartSectionState extends ConsumerState<_TrainingChartSection> {
         if (isEmpty)
           ProfileGraphEmptyState(onStartWorkout: onStartWorkout)
         else ...[
-          // KPI header: shows latest-week value + caption.
           GraphKpiHeader(aggregates: aggregates, metric: metric),
           const SizedBox(height: 24),
-          // WeeklyBarChart owns its low-data render path:
-          //   < 4 filled weeks → honest comparison stat view
-          //   ≥ 4 filled weeks → full bar chart with linear axis
           AnimatedSwitcher(
             duration: MediaQuery.disableAnimationsOf(context)
                 ? Duration.zero
