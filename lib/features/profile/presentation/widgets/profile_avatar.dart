@@ -7,9 +7,9 @@ import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
 
-import '../../../core/theme/app_colors.dart';
-import '../../../core/theme/app_text.dart';
-import '../../../core/theme/dynamic_accent_theme.dart';
+import 'package:gymlog/core/theme/app_colors.dart';
+import 'package:gymlog/core/theme/app_text.dart';
+import 'package:gymlog/core/theme/dynamic_accent_theme.dart';
 
 /// Tappable profile avatar that shows an uploaded profile picture (if one
 /// exists) or falls back to the initial-letter avatar. A subtle accent-tinted
@@ -50,8 +50,6 @@ class _ProfileAvatarState extends State<ProfileAvatar> {
       quality: 85,
       minWidth: 256,
       minHeight: 256,
-      inSourceWidth: 256,
-      inSourceHeight: 256,
     );
     return compressed?.path ?? outPath;
   }
@@ -226,10 +224,10 @@ class _ProfileAvatarState extends State<ProfileAvatar> {
                       width: 2,
                     ),
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.camera_alt,
                     size: 10,
-                    color: AppColors.onAccent,
+                    color: accent.onAccent,
                   ),
                 ),
               ),
