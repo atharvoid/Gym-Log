@@ -13,7 +13,7 @@ import 'package:flutter/material.dart';
 /// lime 'completed set' signal on the workout screen.
 ///
 /// Each palette exposes six tokens with exactly one job each:
-///   base     — primary action color (CTA fill, active nav, selected border)
+///   base     — primary action color (CTA fill, active states, selected borders)
 ///   light    — accent text, hairlines, chart date header (WCAG-safer on black)
 ///   dark     — pressed / active-depressed states
 ///   muted    — selected-row / tinted card / chart-fill background (~14% alpha)
@@ -66,7 +66,9 @@ enum ThemePalette {
   neonPurple,
   neonCyan,
   neonMagenta,
-  electricIndigo;
+  electricIndigo,
+  white,
+  higgsfield;
 
   /// Stable key persisted to SharedPreferences. Decoupled from the index so
   /// reordering the enum never corrupts a saved choice.
@@ -78,6 +80,8 @@ enum ThemePalette {
         ThemePalette.neonCyan => 'Cyan',
         ThemePalette.neonMagenta => 'Magenta',
         ThemePalette.electricIndigo => 'Electric Indigo',
+        ThemePalette.white => 'White',
+        ThemePalette.higgsfield => 'Higgsfield',
       };
 
   /// Accessibility label for the swatch.
@@ -86,6 +90,8 @@ enum ThemePalette {
         ThemePalette.neonCyan => 'Cyan',
         ThemePalette.neonMagenta => 'Magenta',
         ThemePalette.electricIndigo => 'Electric indigo',
+        ThemePalette.white => 'White',
+        ThemePalette.higgsfield => 'Higgsfield',
       };
 
   /// The six-token set for this palette. muted = 0x24 (~14%), glow = 0x1F
@@ -128,6 +134,28 @@ enum ThemePalette {
             glow: Color(0x1F5E5CE6),
             onAccent: Color(0xFFFFFFFF),
           ),
+        // 5 — White: light-surface identity. Off-white base (not pure #FFFFFF)
+        // so it reads as premium pearl, not a blank void on AMOLED. near-black
+        // onAccent keeps CTA labels legible. light is dimmed grey to avoid
+        // blinding white text on black at full opacity.
+        ThemePalette.white => const ThemePaletteTokens(
+            base: Color(0xFFF5F5F7),
+            light: Color(0xFFB0B0B5),
+            dark: Color(0xFFD0D0D4),
+            muted: Color(0x24F5F5F7),
+            glow: Color(0x1FF5F5F7),
+            onAccent: Color(0xFF1C1C1E),
+          ),
+        // 6 — Higgsfield: deep saturated electric chartreuse-lime. High-luminance
+        // base needs near-black onAccent so CTA labels stay crisp.
+        ThemePalette.higgsfield => const ThemePaletteTokens(
+            base: Color(0xFFC8FF00),
+            light: Color(0xFFEAFF66),
+            dark: Color(0xFF9FCC00),
+            muted: Color(0x24C8FF00),
+            glow: Color(0x1FC8FF00),
+            onAccent: Color(0xFF0A0A0A),
+          ),
       };
 
   /// The solid swatch color shown in the Appearance picker (== base).
@@ -135,6 +163,10 @@ enum ThemePalette {
 
   /// The single default accent — the app's designed identity.
   static ThemePalette get fallback => ThemePalette.neonPurple;
+
+  /// Whether this palette has a light base surface (White). Used to switch text
+  /// shadow strategy from accent-tinted to dark-grey.
+  bool get isLightSurface => this == ThemePalette.white;
 
   /// Resolves a persisted key back to a palette, defaulting to [fallback] when
   /// the key is absent or unrecognized. Keys from BOTH previous systems (the
@@ -157,8 +189,9 @@ enum ThemePalette {
       'phosphorAmber' => ThemePalette.neonMagenta,
       'steelBlue' => ThemePalette.electricIndigo,
       'chromaticRose' => ThemePalette.neonMagenta,
-      'tacticalGreen' => ThemePalette.neonCyan,
-      'neutralWhite' => ThemePalette.neonPurple,
+      'tacticalGreen' => ThemePalette.higgsfield,
+      // 'neutralWhite' previously mapped to neonPurple; now maps to White.
+      'neutralWhite' => ThemePalette.white,
       _ => fallback,
     };
   }
