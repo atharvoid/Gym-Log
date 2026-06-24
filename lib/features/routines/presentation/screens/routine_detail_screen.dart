@@ -13,6 +13,7 @@ import 'package:gymlog/core/providers/database_provider.dart';
 import 'package:gymlog/core/providers/premium_provider.dart';
 import 'package:gymlog/core/theme/app_colors.dart';
 import 'package:gymlog/core/theme/app_text.dart';
+import 'package:gymlog/core/theme/dynamic_accent_theme.dart';
 import 'package:gymlog/core/utils/relative_time.dart';
 import 'package:gymlog/core/utils/tap_guard.dart';
 import 'package:gymlog/core/utils/units.dart';
@@ -700,7 +701,7 @@ class _StartRoutineButtonState extends State<_StartRoutineButton> {
           height: 52,
           width: double.infinity,
           decoration: BoxDecoration(
-            color: empty ? AppColors.surface3 : AppColors.accentPrimary,
+            color: empty ? AppColors.surface3 : context.accent.base,
             borderRadius: AppRadius.buttonPrimaryAll,
           ),
           alignment: Alignment.center,
