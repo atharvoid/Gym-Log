@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:gymlog/core/theme/app_colors.dart';
 import 'package:gymlog/core/theme/app_text.dart';
+import 'package:gymlog/core/theme/dynamic_accent_theme.dart';
 import 'package:gymlog/core/exercises/muscle_taxonomy.dart';
 import 'package:gymlog/core/database/database.dart';
 import 'package:gymlog/core/database/daos/workouts_dao.dart';
@@ -39,7 +40,7 @@ final _exerciseFallbackProvider =
 
 class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
   int _activeToggleIndex = 0;
-  String _selectedTimeRange = 'All Time';
+  String _selectedTimeRange = '6M';
 
   static const _toggleLabels = [
     'Heaviest Weight',
@@ -107,7 +108,7 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
             ),
             backgroundColor: AppColors.bgBase,
             scrolledUnderElevation: 0,
-            titleSpacing: 0, // title hugs the back button on every sub-screen
+            titleSpacing: 0,
             iconTheme: const IconThemeData(color: AppColors.textPrimary),
           ),
           body: ListView(
@@ -215,9 +216,6 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
                   ),
                 ),
                 data: (history) {
-                  // Free tier: 3 most recent sessions in the chart as a
-                  // teaser. PR aggregates stay free — they're core
-                  // motivation, not deep analytics.
                   final isPremium = ref.watch(isPremiumProvider);
                   final visible = gateChartSamples(history, isPremium);
                   return Column(
@@ -245,6 +243,7 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
 
   Widget _buildGraphSection(List<ExerciseHistoryData> history,
       {bool showProPill = false}) {
+    final accent = context.accent;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -270,8 +269,6 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
           ],
         ),
         const SizedBox(height: 12),
-        // The same chart component as Routine Detail and Profile — same
-        // touch-to-inspect header, dots, axis density and animations.
         BrandedLineChart(
           key: ValueKey(
               '$_activeToggleIndex|$_selectedTimeRange|${history.length}'),
@@ -290,6 +287,7 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
   }
 
   Widget _buildStatToggles() {
+    final accent = context.accent;
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Row(
@@ -309,14 +307,13 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
                 padding:
                     const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 decoration: BoxDecoration(
-                  color:
-                      isActive ? AppColors.accentPrimary : AppColors.bgSurface,
+                  color: isActive ? accent.base : AppColors.bgSurface,
                   borderRadius: BorderRadius.circular(AppRadius.buttonSecondary),
                 ),
                 child: Text(
                   entry.value,
                   style: GoogleFonts.inter(
-                    color: isActive ? Colors.white : AppColors.textSecondary,
+                    color: isActive ? accent.onAccent : AppColors.textSecondary,
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
                   ),
@@ -349,7 +346,7 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
       children: [
         Row(
           children: [
-            const Icon(Icons.emoji_events, color: AppColors.warning, size: 20),
+            const Icon(Icons.emoji_events, color: AppColors.rewardGold, size: 20),
             const SizedBox(width: 8),
             Text(
               'Personal Records',
