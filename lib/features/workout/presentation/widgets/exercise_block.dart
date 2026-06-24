@@ -116,7 +116,7 @@ class ExerciseBlock extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // ── Header ───────────────────────────────────────────────────
+          // ── Header ──────────────────────────────────
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 14, 4, 0),
             child: Row(
@@ -274,6 +274,7 @@ class ExerciseBlock extends ConsumerWidget {
             padding: const EdgeInsets.fromLTRB(16, 4, 16, 14),
             child: SecondaryButton(
               label: '+ Add Set',
+              accent: true,
               onPressed: () {
                 HapticFeedback.lightImpact();
                 onAddSet();
