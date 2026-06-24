@@ -53,8 +53,6 @@ class RestTimerBar extends ConsumerWidget {
               height: kRestTileHeight,
               child: DecoratedBox(
                 decoration: BoxDecoration(
-                  // Cyan-tinted ambient wash → near-black. Fixed semantic hue;
-                  // rest reads the same in every brand accent.
                   gradient: LinearGradient(
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
@@ -98,14 +96,12 @@ class RestTimerBar extends ConsumerWidget {
                           Text('REST',
                               style: AppText.columnHeader(
                                   color: AppColors.textSecondary)),
-                          // Derived from AppText.timer (Inter + tabular
-                          // figures), sized down to 36 / w800 for the tile —
-                          // larger than any data row so a lifter reads
-                          // remaining rest from arm's length. Tabular figures
-                          // keep the digits from jittering each tick.
+                          // S3: text-depth shadow on timer display
                           Text(
                             _label,
-                            style: AppText.timer(color: AppColors.textPrimary)
+                            style: AppText.timer(
+                                    color: AppColors.textPrimary,
+                                    shadows: AppText.depthFor(context))
                                 .copyWith(
                               fontSize: 36,
                               fontWeight: FontWeight.w800,
