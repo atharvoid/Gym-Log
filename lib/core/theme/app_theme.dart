@@ -47,7 +47,7 @@ TextStyle _ct({
 ///
 /// When [palette] is [ThemePalette.white], returns a LIGHT ThemeData with
 /// the inverted surface hierarchy from [SurfaceTokens.light].
-ThemeData buildAppTheme(ThemePaletteTokens tokens, {ThemePalette palette = ThemePalette.fallback}) {
+ThemeData buildAppTheme(ThemePaletteTokens tokens, {ThemePalette palette = ThemePalette.neonPurple}) {
   final isLight = palette.isLightSurface;
   final s = isLight ? SurfaceTokens.light : SurfaceTokens.dark;
 
@@ -265,7 +265,7 @@ const _hcSecondaryLight = Color(0xFF3A3A3C);
 const _hcBorderLight = Color(0xFF8A8A8E);
 
 /// High-contrast variant of [buildAppTheme] for the given accent tokens.
-ThemeData buildHighContrastTheme(ThemePaletteTokens tokens, {ThemePalette palette = ThemePalette.fallback}) {
+ThemeData buildHighContrastTheme(ThemePaletteTokens tokens, {ThemePalette palette = ThemePalette.neonPurple}) {
   final base = buildAppTheme(tokens, palette: palette);
   final isLight = palette.isLightSurface;
   final hcSecondary = isLight ? _hcSecondaryLight : _hcSecondary;

@@ -312,13 +312,13 @@ class _RoutineEditorScreenState extends ConsumerState<RoutineEditorScreen> {
                               .copyWith(fontWeight: FontWeight.w500),
                           filled: true,
                           fillColor: AppColors.surfaceRaised,
-                          border: const OutlineInputBorder(
+                          border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(10),
-                            borderSide: BorderSide(color: AppColors.borderSubtle),
+                            borderSide: const BorderSide(color: AppColors.borderSubtle),
                           ),
-                          enabledBorder: const OutlineInputBorder(
+                          enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(10),
-                            borderSide: BorderSide(color: AppColors.borderSubtle),
+                            borderSide: const BorderSide(color: AppColors.borderSubtle),
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(10),
@@ -501,9 +501,9 @@ class _EditorExerciseCard extends StatelessWidget {
             color: accent.base.withValues(alpha: 0.35),
             width: 2,
           ),
-          top: BorderSide(color: AppColors.borderSubtle),
-          right: BorderSide(color: AppColors.borderSubtle),
-          bottom: BorderSide(color: AppColors.borderSubtle),
+          top: const BorderSide(color: AppColors.borderSubtle),
+          right: const BorderSide(color: AppColors.borderSubtle),
+          bottom: const BorderSide(color: AppColors.borderSubtle),
         ),
       ),
       padding: const EdgeInsets.fromLTRB(12, 12, 4, 12),
