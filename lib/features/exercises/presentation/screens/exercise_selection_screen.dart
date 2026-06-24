@@ -17,8 +17,9 @@ import '../providers/exercises_provider.dart';
 import '../widgets/create_exercise_dialog.dart';
 
 /// Fixed header height — the alphabet scrubber computes scroll offsets from these.
-/// Exercise rows use an estimated height of 64 for scrolling calculations.
-const double _kEstimatedRowHeight = 64;
+/// S5.2: Exercise rows use an estimated height of 80 for scrolling calculations
+/// (up from 64) to match the new larger row sizing.
+const double _kEstimatedRowHeight = 80;
 const double _kHeaderHeight = 36;
 
 /// Live recent-exercise ids from workout history.
@@ -164,7 +165,7 @@ class _ExerciseSelectionScreenState
     final result = await showModalBottomSheet<String?>(
       context: context,
       useRootNavigator: true,
-      isScrollControlled: true, // size to content (+ scroll) — never overflow
+      isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (sheetCtx) => Container(
         decoration: const BoxDecoration(
@@ -189,8 +190,6 @@ class _ExerciseSelectionScreenState
                 const SizedBox(height: 18),
                 Text(title, style: AppText.cardTitle()),
                 const SizedBox(height: 12),
-                // Scrollable so a long option list (Equipment has 8) never
-                // overflows on short screens.
                 Flexible(
                   child: SingleChildScrollView(
                     child: Column(
@@ -250,11 +249,6 @@ class _ExerciseSelectionScreenState
       ),
       body: Column(
         children: [
-          // ── Search ─────────────────────────────────────────────────────
-          // An input is a recessed surface: Surface-3 fill, hairline border by
-          // default, a thicker accent edge + soft accent glow on focus. The
-          // accent edge/glow are pulled from the live palette so the dynamic-accent
-          // theme recolors search focus for free.
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 10),
             child: AnimatedContainer(
@@ -294,7 +288,6 @@ class _ExerciseSelectionScreenState
                         )
                       : null,
                   filled: true,
-                  // Surface 3 is the design system's recessed input fill.
                   fillColor: AppColors.surface3,
                   enabledBorder: const OutlineInputBorder(
                     borderRadius: AppRadius.inputAll,
@@ -317,8 +310,6 @@ class _ExerciseSelectionScreenState
             ),
           ),
 
-          // ── Filters ────────────────────────────────────────────────────
-          // S5.3: Added SizedBox(height: 4) between search and filter row.
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
             child: Row(
@@ -360,7 +351,6 @@ class _ExerciseSelectionScreenState
             ),
           ),
 
-          // ── List ───────────────────────────────────────────────────────
           Expanded(
             child: exercisesAsync.when(
               data: (exercises) => _list(exercises, recentIds),
@@ -395,7 +385,6 @@ class _ExerciseSelectionScreenState
       return _EmptyState(isSearching: _isSearching, onCreate: _createCustom);
     }
 
-    // Build the flat item list + a letter→firstItemIndex map for the scrubber.
     final items = <_ListItem>[];
     final letterIndex = <String, int>{};
     if (recent.isNotEmpty) {
@@ -412,7 +401,6 @@ class _ExerciseSelectionScreenState
       items.add(_ListItem.exercise(e));
     }
 
-    // Precompute letter offsets for O(1) jump positioning.
     final letterOffsets = <String, double>{};
     var currentOffset = 0.0;
     for (int i = 0; i < items.length; i++) {
@@ -433,8 +421,6 @@ class _ExerciseSelectionScreenState
         bottom: 32 + MediaQuery.of(context).viewInsets.bottom,
       ),
       itemCount: items.length,
-      // RepaintBoundary on every row so scrolling doesn't repaint rows that
-      // haven't changed. The thumbnail GIF in each row is the main paint cost.
       itemBuilder: (context, index) {
         final item = items[index];
         final header = item.headerLabel;
@@ -507,8 +493,12 @@ class _ListItem {
   bool get isHeader => headerLabel != null;
 }
 
-/// Fixed-height (64) exercise row — replaces the stock ListTile so the A–Z
+/// Fixed-height exercise row — replaces the stock ListTile so the A–Z
 /// scrubber can compute exact scroll offsets.
+///
+/// S5.2: Row sizing increased — vertical padding 10→14, thumbnail 44→52,
+/// thumbnail gap 14→16, name-to-subtitle gap 2→4. _kEstimatedRowHeight
+/// bumped to 80 to match.
 class _ExerciseRow extends StatelessWidget {
   final Exercise exercise;
   final bool browse;
@@ -528,12 +518,12 @@ class _ExerciseRow extends StatelessWidget {
       child: InkWell(
         onTap: onTap,
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           child: Row(
             children: [
               ExerciseThumbnail(
-                  gifUrl: exercise.gifUrl, size: 44, fastFrame: true),
-              const SizedBox(width: 14),
+                  gifUrl: exercise.gifUrl, size: 52, fastFrame: true),
+              const SizedBox(width: 16),
               Expanded(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -543,7 +533,7 @@ class _ExerciseRow extends StatelessWidget {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: AppText.exerciseName()),
-                    const SizedBox(height: 2),
+                    const SizedBox(height: 4),
                     Text('${exercise.target} • ${exercise.equipment}',
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -566,17 +556,13 @@ class _ExerciseRow extends StatelessWidget {
   }
 }
 
-/// A–Z scrubber rail (Hevy-style). Tap or drag to jump the list to a letter;
-/// present letters are accented, absent ones dimmed. One haptic per letter
-/// change (not per drag frame). The letter column is wrapped in a FittedBox so
-/// it scales to the available height instead of overflowing on short screens.
 class _AlphabetRail extends StatefulWidget {
   final Set<String> present;
   final ValueChanged<String> onLetter;
   const _AlphabetRail({required this.present, required this.onLetter});
 
   static const _letters = [
-    'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', //
+    'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
     'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
   ];
 
@@ -682,6 +668,9 @@ class _EmptyState extends StatelessWidget {
 
 /// Shimmer placeholder list — matches the real row geometry so the swap on
 /// load doesn't pop.
+///
+/// S5.2: Skeleton updated to match new row sizing (52×52 thumbnail, 16 gap,
+/// vertical 14 padding, 4 name-subtitle gap).
 class _LoadingList extends StatelessWidget {
   const _LoadingList();
 
@@ -693,18 +682,18 @@ class _LoadingList extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 8),
         itemCount: 9,
         itemBuilder: (_, __) => const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           child: Row(
             children: [
-              SkeletonBox(width: 44, height: 44, radius: 0),
-              SizedBox(width: 14),
+              SkeletonBox(width: 52, height: 52, radius: 0),
+              SizedBox(width: 16),
               Expanded(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     SkeletonBox(width: 160, height: 13),
-                    SizedBox(height: 7),
+                    SizedBox(height: 4),
                     SkeletonBox(width: 100, height: 11),
                   ],
                 ),
@@ -763,9 +752,7 @@ class _FilterOptionRow extends StatelessWidget {
 }
 
 /// S5.3: Filter chip button aligned with the explore tab's _FilterChip pattern.
-/// Active state uses full-saturation accent.base fill + accent.onAccent text
-/// (not the old muted 14% alpha fill). Radius set to BorderRadius.circular(14)
-/// to match the global button sweet spot. Padding compacted to chip-like feel.
+/// Active state uses full-saturation accent.base fill + accent.onAccent text.
 class _FilterChipButton extends StatelessWidget {
   final String label;
   final bool active;
