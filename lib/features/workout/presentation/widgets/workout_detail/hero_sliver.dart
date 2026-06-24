@@ -97,7 +97,9 @@ class WorkoutHeroSliver extends StatelessWidget {
                         header: true,
                         child: Text(
                           name,
-                          style: AppText.sectionHeading(),
+                          // S3: text-depth shadow on hero heading
+                          style: AppText.sectionHeading(
+                              shadows: AppText.depthFor(context)),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -109,25 +111,34 @@ class WorkoutHeroSliver extends StatelessWidget {
                         child: Row(
                           children: [
                             Flexible(
-                              child:
-                                  _HeroPip(value: durationStr, label: 'DURATION'),
+                              child: _HeroPip(
+                                  value: durationStr,
+                                  label: 'DURATION',
+                                  shadows: AppText.depthFor(context),
+                              ),
                             ),
                             _HeroPip.dot,
                             Flexible(
-                              // Disclosure: volume includes warm-up sets.
                               child: Tooltip(
                                 triggerMode: TooltipTriggerMode.tap,
                                 showDuration: const Duration(seconds: 3),
                                 message:
                                     'Volume = weight × reps across all completed '
                                     'sets, warm-ups included.',
-                                child:
-                                    _HeroPip(value: volumeStr, label: 'VOLUME'),
+                                child: _HeroPip(
+                                    value: volumeStr,
+                                    label: 'VOLUME',
+                                    shadows: AppText.depthFor(context),
+                                ),
                               ),
                             ),
                             _HeroPip.dot,
                             Flexible(
-                              child: _HeroPip(value: '$totalSets', label: 'SETS'),
+                              child: _HeroPip(
+                                  value: '$totalSets',
+                                  label: 'SETS',
+                                  shadows: AppText.depthFor(context),
+                              ),
                             ),
                           ],
                         ),
@@ -147,8 +158,9 @@ class WorkoutHeroSliver extends StatelessWidget {
 class _HeroPip extends StatelessWidget {
   final String value;
   final String label;
+  final List<Shadow>? shadows;
 
-  const _HeroPip({required this.value, required this.label});
+  const _HeroPip({required this.value, required this.label, this.shadows});
 
   static const dot = Padding(
     padding: EdgeInsets.symmetric(horizontal: 14),
@@ -168,7 +180,12 @@ class _HeroPip extends StatelessWidget {
           FittedBox(
             fit: BoxFit.scaleDown,
             alignment: Alignment.centerLeft,
-            child: Text(value, style: AppText.heroStat(), maxLines: 1),
+            // S3: text-depth shadow on hero stat values
+            child: Text(
+              value,
+              style: AppText.heroStat(shadows: shadows),
+              maxLines: 1,
+            ),
           ),
           const SizedBox(height: 2),
           Text(label, style: AppText.columnHeader(color: AppColors.textSecondary)),
