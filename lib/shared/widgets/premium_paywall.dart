@@ -46,24 +46,32 @@ class _SheetHandle extends StatelessWidget {
   }
 }
 
-/// Premium icon — a filled star on a surface-level container with a hairline
-/// border. Avoids the generic `workspace_premium_rounded` overused in every
-/// tutorial paywall.
+/// PRO wordmark badge — a compact pill with "PRO" in the accent color on a
+/// tinted accent surface. Replaces the generic star icon that every tutorial
+/// paywall uses. The wordmark reads as a brand, not a decorative emoji.
 class _PaywallIcon extends StatelessWidget {
   const _PaywallIcon();
 
   @override
   Widget build(BuildContext context) {
+    final accent = context.accent;
     return Container(
-      width: 48,
-      height: 48,
+      width: 56,
+      height: 56,
       alignment: Alignment.center,
       decoration: BoxDecoration(
-        color: AppColors.surface3,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.borderDefault, width: 1),
+        color: accent.base.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(AppRadius.buttonPrimary),
+        border: Border.all(
+          color: accent.base.withValues(alpha: 0.3),
+          width: 1,
+        ),
       ),
-      child: Icon(Icons.star_rounded, color: context.accent.base, size: 26),
+      child: Text(
+        'PRO',
+        style: AppText.cardTitle(color: accent.base)
+            .copyWith(fontWeight: FontWeight.w800, letterSpacing: 1.2),
+      ),
     );
   }
 }
@@ -470,11 +478,11 @@ class _PaywallSheetState extends ConsumerState<_PaywallSheet> {
                         color: _purchasing
                             ? accent.base.withValues(alpha: 0.85)
                             : accent.base,
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(AppRadius.buttonPrimary),
                         elevation: 0,
                         child: InkWell(
                           onTap: _purchasing ? null : _purchase,
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(AppRadius.buttonPrimary),
                           child: Container(
                             height: 52,
                             width: double.infinity,
@@ -488,7 +496,7 @@ class _PaywallSheetState extends ConsumerState<_PaywallSheet> {
                                   )
                                 : Text(
                                     _ctaLabel,
-                                    style: AppText.body(color: AppColors.canvas)
+                                    style: AppText.body(color: AppColors.onAccent)
                                         .copyWith(fontWeight: FontWeight.bold),
                                   ),
                           ),
@@ -604,7 +612,7 @@ class _PackageRow extends StatelessWidget {
           color: selected
               ? accent.base.withValues(alpha: 0.10)
               : Colors.transparent,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(AppRadius.buttonSecondary),
           border: Border.all(
             color: selected ? accent.base : AppColors.borderDefault,
             width: 1,
@@ -614,7 +622,7 @@ class _PackageRow extends StatelessWidget {
           color: Colors.transparent,
           child: InkWell(
             onTap: onTap,
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(AppRadius.buttonSecondary),
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
               child: Row(
@@ -642,7 +650,7 @@ class _PackageRow extends StatelessWidget {
                           const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
                       decoration: BoxDecoration(
                         color: accent.base.withValues(alpha: 0.16),
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(AppRadius.badge),
                       ),
                       child: Text(
                         badge!.toUpperCase(),
