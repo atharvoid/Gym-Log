@@ -2,12 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:gymlog/core/theme/app_colors.dart';
 import 'package:gymlog/core/theme/app_text.dart';
+import 'package:gymlog/core/theme/dynamic_accent_theme.dart';
 import 'package:gymlog/core/theme/set_type.dart';
 import 'package:gymlog/core/utils/units.dart';
 import 'package:gymlog/features/workout/domain/active_workout_state.dart';
 import 'package:gymlog/shared/widgets/ui/time_range_filter.dart';
 
-// ── Shared column geometry ──────────────────────────────────────────────────
+// ── Shared column geometry ────────────────────────────────────────
 // The header row (ExerciseBlock) and every data row (SetRow) consume these
 // SAME constants so a caption can never drift from the column it labels.
 // Layout, left → right: SET · PREVIOUS · KG · REPS · ✓
@@ -156,7 +157,8 @@ class _SetRowState extends State<SetRow> {
   }
 
   /// A bare value field — no box, border, fill, or radius. The number sits
-  /// directly on the row surface; focus is signalled only by the cursor.
+  /// directly on the row surface; focus is signalled only by the cursor
+  /// (tinted with the active accent palette).
   Widget _numberField({
     required TextEditingController controller,
     required FocusNode focusNode,
@@ -176,7 +178,7 @@ class _SetRowState extends State<SetRow> {
         textAlignVertical: TextAlignVertical.center,
         textInputAction: action,
         keyboardType: TextInputType.numberWithOptions(decimal: isDecimal),
-        cursorColor: AppColors.accentPrimary,
+        cursorColor: context.accent.base,
         inputFormatters: [
           if (isDecimal)
             FilteringTextInputFormatter.allow(RegExp(r'[0-9.]'))
@@ -215,6 +217,8 @@ class _SetRowState extends State<SetRow> {
           reduceMotion ? Duration.zero : const Duration(milliseconds: 200),
       curve: Curves.easeInOut,
       // Completed row = 3px green left border + 6% green tint (not a full fill).
+      // Completion is a fixed success semantic — like reward gold, it never
+      // shifts with the accent palette.
       decoration: BoxDecoration(
         color: isCompleted ? AppColors.completionTint : Colors.transparent,
         border: isCompleted
@@ -268,7 +272,7 @@ class _SetRowState extends State<SetRow> {
               ),
             ),
 
-            // ── KG — bare number, unit lives in the header ────────────────
+            // ── KG — bare number, unit lives in the header ────────────
             Expanded(
               flex: kWeightFlex,
               child: _numberField(
@@ -287,7 +291,7 @@ class _SetRowState extends State<SetRow> {
               ),
             ),
 
-            // ── REPS — bare number ────────────────────────────────────────
+            // ── REPS — bare number ───────────────────────────────
             Expanded(
               flex: kRepsFlex,
               child: _numberField(
