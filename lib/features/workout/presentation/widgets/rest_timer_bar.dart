@@ -5,7 +5,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gymlog/core/theme/app_colors.dart';
 import 'package:gymlog/core/theme/app_text.dart';
-import 'package:gymlog/core/theme/dynamic_accent_theme.dart';
 import 'package:gymlog/features/workout/presentation/providers/rest_timer_provider.dart';
 
 /// Floating rest-timer tile shown in the Active Workout's
@@ -13,10 +12,16 @@ import 'package:gymlog/features/workout/presentation/providers/rest_timer_provid
 /// height is HARD-BOUNDED to [kRestTileHeight] so it can never stretch,
 /// no matter what constraints an ancestor passes down.
 ///
-/// Sized for GLANCEABILITY: large tabular numerals + an ambient accent glow so
-/// a lifter can read remaining rest from arm's length without focusing. The
-/// active-workout list reserves enough bottom padding to clear this height.
+/// Sized for GLANCEABILITY: large tabular numerals + an ambient glow so a
+/// lifter can read remaining rest from arm's length without focusing.
+///
+/// COLOR: rest is a FIXED semantic (Neon Cyan, AppColors.accentInfo) — like the
+/// lime 'completed' check and the gold PR badge, it never shifts with the brand
+/// accent. 'You are resting' should read as the same cyan in every palette.
 const double kRestTileHeight = 84;
+
+/// The fixed rest-timer hue. Reserved cyan so rest is always recognizable.
+const Color _kRest = AppColors.accentInfo;
 
 class RestTimerBar extends ConsumerWidget {
   final RestTimerState state;
@@ -32,7 +37,6 @@ class RestTimerBar extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final notifier = ref.read(restTimerProvider.notifier);
-    final accent = context.accent;
 
     return SafeArea(
       top: false,
@@ -49,16 +53,14 @@ class RestTimerBar extends ConsumerWidget {
               height: kRestTileHeight,
               child: DecoratedBox(
                 decoration: BoxDecoration(
-                  // Accent-tinted ambient wash → near-black. Derived from the
-                  // live accent (not a baked-in purple literal) so the
-                  // Phase 7 dynamic-accent theme recolors the rest tile for
-                  // free.
+                  // Cyan-tinted ambient wash → near-black. Fixed semantic hue;
+                  // rest reads the same in every brand accent.
                   gradient: LinearGradient(
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
                     colors: [
                       Color.alphaBlend(
-                        accent.base.withValues(alpha: 0.16),
+                        _kRest.withValues(alpha: 0.16),
                         AppColors.bgBase,
                       ),
                       AppColors.bgBase,
@@ -66,7 +68,7 @@ class RestTimerBar extends ConsumerWidget {
                   ),
                   borderRadius: AppRadius.cardAll,
                   border: Border.all(
-                    color: accent.base.withValues(alpha: 0.40),
+                    color: _kRest.withValues(alpha: 0.40),
                     width: 1.2,
                   ),
                 ),
@@ -80,11 +82,11 @@ class RestTimerBar extends ConsumerWidget {
                         child: CustomPaint(
                           painter: _RestRingPainter(
                             progress: state.progress,
-                            arcColor: accent.base,
+                            arcColor: _kRest,
                           ),
-                          child: Center(
+                          child: const Center(
                             child: Icon(Icons.timer_outlined,
-                                size: 18, color: accent.light),
+                                size: 18, color: _kRest),
                           ),
                         ),
                       ),
@@ -154,10 +156,9 @@ class _RestAction extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final accent = context.accent;
     return Material(
       color: emphasized
-          ? accent.base.withValues(alpha: 0.16)
+          ? _kRest.withValues(alpha: 0.16)
           : AppColors.borderSubtle,
       borderRadius: BorderRadius.circular(AppRadius.buttonSecondary),
       child: InkWell(
@@ -170,7 +171,7 @@ class _RestAction extends StatelessWidget {
           child: Text(
             label,
             style: AppText.statLabel(
-              color: emphasized ? accent.light : AppColors.textPrimary,
+              color: emphasized ? _kRest : AppColors.textPrimary,
             ),
           ),
         ),
@@ -179,7 +180,7 @@ class _RestAction extends StatelessWidget {
   }
 }
 
-/// A slow accent glow around the rest tile, visible in peripheral vision so a
+/// A slow cyan glow around the rest tile, visible in peripheral vision so a
 /// lifter can tell at a glance whether rest is still running. Honors OS
 /// reduce-motion by holding a steady (non-pulsing) glow instead.
 class _AmbientPulse extends StatefulWidget {
@@ -206,7 +207,6 @@ class _AmbientPulseState extends State<_AmbientPulse>
 
   @override
   Widget build(BuildContext context) {
-    final accent = context.accent;
     if (MediaQuery.disableAnimationsOf(context)) {
       // Reduce-motion: a steady glow, no pulsing.
       return DecoratedBox(
@@ -214,7 +214,7 @@ class _AmbientPulseState extends State<_AmbientPulse>
           borderRadius: widget.radius,
           boxShadow: [
             BoxShadow(
-              color: accent.base.withValues(alpha: 0.28),
+              color: _kRest.withValues(alpha: 0.28),
               blurRadius: 18,
               spreadRadius: -2,
             ),
@@ -232,7 +232,7 @@ class _AmbientPulseState extends State<_AmbientPulse>
             borderRadius: widget.radius,
             boxShadow: [
               BoxShadow(
-                color: accent.base.withValues(alpha: 0.18 + 0.30 * t),
+                color: _kRest.withValues(alpha: 0.18 + 0.30 * t),
                 blurRadius: 14 + 16 * t,
                 spreadRadius: -2,
               ),
