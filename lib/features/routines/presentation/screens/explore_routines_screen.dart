@@ -443,7 +443,8 @@ class _HeroTitle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) =>
-      Text('Explore', style: AppText.sectionHeading());
+      // S3: text-depth shadow on Explore hero title
+      Text('Explore', style: AppText.sectionHeading(shadows: AppText.depthFor(context)));
 }
 
 /// Ambient violet aura behind the hero — gives the AMOLED black depth and brand
@@ -565,8 +566,10 @@ class _FilterChip extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Text(
               label,
+              // S3: on-accent halo shadow for selected chip text
               style: AppText.statLabel(
-                  color: selected ? accent.onAccent : AppColors.textSecondary),
+                  color: selected ? accent.onAccent : AppColors.textSecondary,
+                  shadows: selected ? TextDepth.onAccentHalo(context.accent.palette) : null),
             ),
           ),
         ),
@@ -739,8 +742,9 @@ class _FeaturedCard extends StatelessWidget {
                                   crossAxisAlignment:
                                       CrossAxisAlignment.start,
                                   children: [
+                                    // S3: text-depth shadow on featured card title
                                     Text(template.name,
-                                        style: AppText.sectionHeading()),
+                                        style: AppText.sectionHeading(shadows: AppText.depthFor(context))),
                                     const SizedBox(height: 3),
                                     Text(template.focus,
                                         maxLines: 1,
@@ -888,8 +892,9 @@ class _TemplateCard extends StatelessWidget {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
+                                  // S3: text-depth shadow on template card title
                                   Text(template.name,
-                                      style: AppText.cardTitle()),
+                                      style: AppText.cardTitle(shadows: AppText.depthFor(context))),
                                   const SizedBox(height: 3),
                                   Text(template.focus,
                                       maxLines: 1,
@@ -1050,8 +1055,11 @@ class _ImportPill extends StatelessWidget {
               Icon(imported ? Icons.check_rounded : Icons.download_rounded,
                   size: 16, color: fg),
               const SizedBox(width: 6),
+              // S3: on-accent halo shadow when Add (active accent button)
               Text(imported ? 'View' : 'Add',
-                  style: AppText.statLabel(color: fg)),
+                  style: AppText.statLabel(
+                      color: fg,
+                      shadows: !imported ? TextDepth.onAccentHalo(context.accent.palette) : null)),
             ],
           );
 
@@ -1164,8 +1172,9 @@ class _PreviewSheet extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
+                            // S3: text-depth shadow on preview sheet title
                             Text(template.name,
-                                style: AppText.sectionHeading()),
+                                style: AppText.sectionHeading(shadows: AppText.depthFor(context))),
                             const SizedBox(height: 3),
                             Text(template.focus, style: AppText.meta()),
                           ],
