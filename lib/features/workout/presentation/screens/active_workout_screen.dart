@@ -46,7 +46,7 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
   }
 
   Future<void> _finish() async {
-    if (!tapGuard()) return; // no double-tap → double sheet / double save
+    if (!tapGuard()) return;
     final workout = ref.read(activeWorkoutProvider);
     if (workout == null) return;
 
@@ -57,8 +57,6 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
       (sum, ex) => sum + ex.sets.where((s) => s.isCompleted).length,
     );
 
-    // Warn when 10+ completed sets were logged in under 5 minutes —
-    // physically implausible, usually means the timer wasn't started.
     if (completedSets >= 10 && durationMinutes < 5) {
       final confirmed = await showAppConfirmDialog(
         context: context,
@@ -72,16 +70,12 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
     }
     if (!mounted) return;
 
-    // Pre-fill with the routine name (when started from one) or a time-of-day
-    // default. Cancelling the sheet backs out of finishing — nothing is saved.
     final preFill = (workout.name != null && workout.name!.trim().isNotEmpty)
         ? workout.name!.trim()
         : getWorkoutNameFallback(workout.startTime, null);
     final (volumeKg, sets) =
         ref.read(activeWorkoutProvider.notifier).sessionTotals;
 
-    // The session recap + name in one premium sheet (replaces the bare dialog):
-    // the user sees what they earned, names it, and confirms.
     final name = await showFinishSummarySheet(
       context: context,
       duration: DateTime.now().difference(workout.startTime),
@@ -90,12 +84,10 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
       unit: ref.read(weightUnitProvider),
       initialName: preFill,
     );
-    if (name == null || !mounted) return; // cancelled → stay in the session
+    if (name == null || !mounted) return;
 
     ref.read(restTimerProvider.notifier).skip();
 
-    // The root navigator outlives this screen, so the PR celebration can land
-    // over Home rather than over the (about-to-be-torn-down) active screen.
     final rootNavigator = Navigator.of(context, rootNavigator: true);
 
     try {
@@ -103,9 +95,7 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
           .read(activeWorkoutProvider.notifier)
           .finishWorkout(name: name);
       if (!mounted) return;
-      HapticFeedback.heavyImpact(); // saved — definitive success cue
-      // Leave the workout screen FIRST, then celebrate over Home next frame
-      // (no z-order glitch, no jump-back).
+      HapticFeedback.heavyImpact();
       context.go('/');
       if (prs.isNotEmpty) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -113,7 +103,6 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
         });
       }
     } catch (e) {
-      // Save failed — keep the user IN the session (nothing lost) + tell them.
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -133,8 +122,6 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
     if (mounted) context.go('/');
   }
 
-  /// Toggle completion; when a set flips TO complete in a live session,
-  /// auto-start the rest countdown.
   void _toggleSet(int exerciseIndex, int setIndex, {required bool isEditing}) {
     final workout = ref.read(activeWorkoutProvider);
     if (workout == null) return;
@@ -153,15 +140,6 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
     }
   }
 
-  /// Focus-safe reorder: a dedicated sheet of plain exercise-name tiles.
-  /// Because it contains NO text fields, ReorderableListView is safe here —
-  /// dragging can't steal focus from a weight/reps input.
-  ///
-  /// The sheet renders from a LOCAL snapshot (not a watched provider) and uses
-  /// a fixed-height modal rather than DraggableScrollableSheet. That removes
-  /// the two glitch sources of the old version: (1) the watched list rebuilding
-  /// the ReorderableListView mid drop-animation, and (2) edge auto-scroll
-  /// fighting the draggable sheet over a shared ScrollController.
   void _showReorderSheet() {
     final snapshot = ref.read(activeWorkoutProvider)?.exercises;
     if (snapshot == null || snapshot.length < 2) return;
@@ -221,8 +199,6 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
         .setOverride(exerciseId, selected == '_default' ? null : selected);
   }
 
-  /// Builds the "Add Exercise" button that appears at the end of the
-  /// scrollable exercise list (S12.2).
   Widget _buildAddExerciseButton(ActiveWorkoutNotifier notifier) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
@@ -276,6 +252,8 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
 
     final exerciseIds = ref.watch(activeWorkoutProvider.select((state) => state?.exercises.map((e) => e.id).toList() ?? const <String>[]));
 
+    final surface = context.surface;
+
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, result) {
@@ -283,15 +261,15 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
         _confirmDiscard();
       },
       child: Scaffold(
-      backgroundColor: AppColors.bgBase,
+      backgroundColor: surface.bgBase,
       body: Column(
         children: [
           // ── Header ────────────────────────────────────────────────────
           Container(
-            decoration: const BoxDecoration(
-              color: AppColors.bgBase,
+            decoration: BoxDecoration(
+              color: surface.bgBase,
               border: Border(
-                bottom: BorderSide(color: AppColors.borderSubtle, width: 0.5),
+                bottom: BorderSide(color: surface.borderSubtle, width: 0.5),
               ),
             ),
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
@@ -301,7 +279,7 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
                 children: [
                   IconButton(
                     tooltip: 'Discard workout',
-                    icon: const Icon(Icons.close, color: AppColors.textPrimary),
+                    icon: Icon(Icons.close, color: surface.textPrimary),
                     onPressed: _confirmDiscard,
                   ),
                   const Spacer(),
@@ -331,7 +309,7 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
                           children: [
                             Text(
                               isEditing ? 'Edit Workout' : timer,
-                              style: isEditing ? AppText.cardTitle() : AppText.heroStat(),
+                              style: isEditing ? AppText.cardTitle(color: surface.textPrimary) : AppText.heroStat(color: surface.textPrimary),
                             ),
                             const SizedBox(height: 1),
                             Text(
@@ -340,7 +318,7 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
                                   : completedSets == 0
                                       ? 'Log your first set'
                                       : '${groupThousands(kgToDisplay(volumeKg, globalUnit))} $globalUnit · $completedSets set${completedSets != 1 ? 's' : ''}',
-                              style: AppText.statLabel(),
+                              style: AppText.statLabel(color: surface.textSecondary),
                             ),
                           ],
                         );
@@ -358,20 +336,6 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
             ),
           ),
 
-          // ── Body ──────────────────────────────────────────────────────
-          // Plain ListView (NOT ReorderableListView): the latter assigns
-          // internal per-item GlobalKeys, and a keystroke → updateSet →
-          // provider rebuild made those keys collide, throwing
-          // "Multiple widgets used the same GlobalKey" and stealing focus
-          // from the weight/reps field (keyboard dismissed every tap).
-          // A keyed StatefulWidget SetRow inside a plain ListView keeps its
-          // FocusNode across rebuilds. Reordering moved to a focus-safe
-          // sheet (no live text fields) — see _showReorderSheet.
-          //
-          // S12.2: The "Add Exercise" button is now the LAST item in the
-          // scrollable list — it scrolls into view at the end instead of
-          // being permanently fixed at the bottom. The bottomNavigationBar
-          // now only hosts the rest timer bar.
           Expanded(
             child: !workoutExists
                 ? const SizedBox.shrink()
@@ -380,10 +344,8 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
                       top: 8,
                       bottom: MediaQuery.viewPaddingOf(context).bottom + 100.0,
                     ),
-                    // +1 item: the last slot is the "Add Exercise" button.
                     itemCount: exerciseIds.length + 1,
                     itemBuilder: (context, index) {
-                      // Last item → Add Exercise button at end of list.
                       if (index == exerciseIds.length) {
                         return _buildAddExerciseButton(notifier);
                       }
@@ -430,15 +392,13 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
                 ),
         ],
       ),
-      // S12.2: bottomNavigationBar now ONLY hosts the rest timer bar.
-      // The "Add Exercise" button was moved to the end of the scrollable list.
       bottomNavigationBar: !workoutExists || restTimer == null
           ? null
           : Container(
-              decoration: const BoxDecoration(
-                color: AppColors.bgBase,
+              decoration: BoxDecoration(
+                color: surface.bgBase,
                 border: Border(
-                  top: BorderSide(color: AppColors.borderSubtle, width: 0.5),
+                  top: BorderSide(color: surface.borderSubtle, width: 0.5),
                 ),
               ),
               child: SafeArea(
@@ -466,11 +426,6 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
   }
 }
 
-/// The reorder sheet body. Owns a LOCAL, mutable copy of the exercise order so
-/// the ReorderableListView is never rebuilt by an external provider change
-/// while a drop animation is settling — the single biggest cause of the old
-/// reorder glitch. Each drop mutates the local list (smooth animation) and
-/// forwards the same move to the provider via [onReorder] to persist it.
 class _ReorderExercisesSheet extends StatefulWidget {
   final List<WorkoutExerciseState> initialExercises;
   final void Function(int oldIndex, int newIndex) onReorder;
@@ -490,14 +445,13 @@ class _ReorderExercisesSheetState extends State<_ReorderExercisesSheet> {
 
   @override
   Widget build(BuildContext context) {
-    // Cap the sheet height so a long list scrolls INSIDE the list (its own
-    // controller) instead of resizing the sheet — no controller tug-of-war.
     final maxHeight = MediaQuery.of(context).size.height * 0.7;
+    final surface = context.surface;
 
     return Container(
       constraints: BoxConstraints(maxHeight: maxHeight),
-      decoration: const BoxDecoration(
-        color: AppColors.surface2,
+      decoration: BoxDecoration(
+        color: surface.surface2,
         borderRadius: AppRadius.sheetTop,
       ),
       child: Column(
@@ -508,19 +462,19 @@ class _ReorderExercisesSheetState extends State<_ReorderExercisesSheet> {
             width: 36,
             height: 4,
             decoration: BoxDecoration(
-              color: AppColors.borderEmphasis,
+              color: surface.borderEmphasis,
               borderRadius: BorderRadius.circular(2),
             ),
           ),
           const SizedBox(height: 16),
           Text(
             'Reorder Exercises',
-            style: AppText.cardTitle(),
+            style: AppText.cardTitle(color: surface.textPrimary),
           ),
           const SizedBox(height: 4),
           Text(
             'Drag to change the order',
-            style: AppText.meta(),
+            style: AppText.meta(color: surface.textSecondary),
           ),
           const SizedBox(height: 12),
           Flexible(
@@ -530,8 +484,6 @@ class _ReorderExercisesSheetState extends State<_ReorderExercisesSheet> {
               buildDefaultDragHandles: false,
               onReorderStart: (_) => HapticFeedback.selectionClick(),
               onReorderItem: (oldIndex, newIndex) {
-                // Local mutation drives the smooth drop animation; the same
-                // move is forwarded to the provider to persist the order.
                 setState(() {
                   final item = _items.removeAt(oldIndex);
                   _items.insert(newIndex, item);
@@ -545,8 +497,8 @@ class _ReorderExercisesSheetState extends State<_ReorderExercisesSheet> {
                   key: ValueKey('reorder_${ex.id}'),
                   padding: const EdgeInsets.only(bottom: 8),
                   child: Container(
-                    decoration: const BoxDecoration(
-                      color: AppColors.surface3,
+                    decoration: BoxDecoration(
+                      color: surface.surface3,
                       borderRadius: AppRadius.cardAll,
                     ),
                     padding: const EdgeInsets.fromLTRB(16, 14, 8, 14),
@@ -556,14 +508,14 @@ class _ReorderExercisesSheetState extends State<_ReorderExercisesSheet> {
                           width: 26,
                           height: 26,
                           alignment: Alignment.center,
-                          decoration: const BoxDecoration(
-                            color: AppColors.surface3,
+                          decoration: BoxDecoration(
+                            color: surface.surface3,
                             borderRadius: AppRadius.badgeAll,
                           ),
                           child: Text(
                             '${index + 1}',
                             style:
-                                AppText.statLabel(color: AppColors.textSecondary),
+                                AppText.statLabel(color: surface.textSecondary),
                           ),
                         ),
                         const SizedBox(width: 12),
@@ -572,7 +524,7 @@ class _ReorderExercisesSheetState extends State<_ReorderExercisesSheet> {
                             ex.name,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: AppText.exerciseName(),
+                            style: AppText.exerciseName(color: surface.textPrimary),
                           ),
                         ),
                         ReorderableDragStartListener(
@@ -584,7 +536,9 @@ class _ReorderExercisesSheetState extends State<_ReorderExercisesSheet> {
                             child: Icon(
                               Icons.drag_handle_rounded,
                               size: 22,
-                              color: Colors.white.withValues(alpha: 0.4),
+                              color: surface.isLight
+                                  ? Colors.black.withValues(alpha: 0.4)
+                                  : Colors.white.withValues(alpha: 0.4),
                             ),
                           ),
                         ),
