@@ -7,6 +7,7 @@ import '../../../../core/providers/premium_provider.dart';
 import '../../../../core/services/sync_entitlement_gate.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text.dart';
+import '../../../../core/theme/dynamic_accent_theme.dart';
 import '../../../../core/utils/tap_guard.dart';
 import '../../../../shared/widgets/bottom_nav_bar.dart';
 import '../../../../shared/widgets/premium_paywall.dart';
@@ -603,7 +604,7 @@ class _QuickLinks extends StatelessWidget {
         children: [
           AppActionRow(
             icon: Icons.workspace_premium_rounded,
-            iconColor: AppColors.indigo400,
+            iconColor: context.accent.light,
             title: isPremium ? 'GymLog Pro' : 'Upgrade to Pro',
             subtitle: isPremium
                 ? 'Active — full history unlocked'
@@ -735,7 +736,7 @@ class _ErrorBody extends StatelessWidget {
                 child: ElevatedButton(
                   onPressed: onRetry,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.accentPrimary,
+                    backgroundColor: context.accent.base,
                     foregroundColor: AppColors.textPrimary,
                     elevation: 0,
                     shape: RoundedRectangleBorder(
