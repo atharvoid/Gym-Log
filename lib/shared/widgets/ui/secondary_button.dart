@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text.dart';
+import '../../../core/theme/dynamic_accent_theme.dart';
 
 /// [secondary_button.dart]
 /// Shared secondary button. Neutral by default (dark surface, white label —
-/// used for "+ Add Set" / "+ Add Exercise"); pass [accent] for the
-/// accent-outline variant (indigo tint + violet hairline + violet label),
-/// used for "New Routine". 48dp tall, [AppRadius.buttonSecondary] corners.
+/// used for "+ Add Exercise"); pass [accent] for the accent-outline variant
+/// (palette muted fill + palette hairline + palette-light label), used for
+/// "+ Add Set" / "New Routine". The accent variant tracks the active palette
+/// (purple/copper/teal/red) via [BuildContext.accent] — never a hardcoded hue.
+/// 48dp tall, [AppRadius.buttonSecondary] corners.
 class SecondaryButton extends StatelessWidget {
   final String label;
   final VoidCallback? onPressed;
@@ -25,7 +28,8 @@ class SecondaryButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final fg = accent ? AppColors.accentText : AppColors.textPrimary;
+    final accentColors = context.accent;
+    final fg = accent ? accentColors.light : AppColors.textPrimary;
 
     return SizedBox(
       height: 48,
@@ -33,7 +37,7 @@ class SecondaryButton extends StatelessWidget {
       child: ElevatedButton(
         onPressed: onPressed,
         style: ElevatedButton.styleFrom(
-          backgroundColor: accent ? AppColors.indigoTint : AppColors.bgSurface,
+          backgroundColor: accent ? accentColors.muted : AppColors.bgSurface,
           foregroundColor: fg,
           disabledBackgroundColor: AppColors.bgSurface,
           disabledForegroundColor: AppColors.textDisabled,
@@ -41,7 +45,7 @@ class SecondaryButton extends StatelessWidget {
           shadowColor: Colors.transparent,
           side: accent
               ? BorderSide(
-                  color: AppColors.accentPrimary.withValues(alpha: 0.45))
+                  color: accentColors.base.withValues(alpha: 0.45))
               : BorderSide.none,
           shape: const RoundedRectangleBorder(
             borderRadius: AppRadius.buttonSecondaryAll,
