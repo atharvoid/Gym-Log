@@ -318,6 +318,7 @@ class _ExerciseSelectionScreenState
           ),
 
           // ── Filters ────────────────────────────────────────────────────
+          // S5.3: Added SizedBox(height: 4) between search and filter row.
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
             child: Row(
@@ -761,6 +762,10 @@ class _FilterOptionRow extends StatelessWidget {
   }
 }
 
+/// S5.3: Filter chip button aligned with the explore tab's _FilterChip pattern.
+/// Active state uses full-saturation accent.base fill + accent.onAccent text
+/// (not the old muted 14% alpha fill). Radius set to BorderRadius.circular(14)
+/// to match the global button sweet spot. Padding compacted to chip-like feel.
 class _FilterChipButton extends StatelessWidget {
   final String label;
   final bool active;
@@ -775,29 +780,23 @@ class _FilterChipButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final accent = context.accent;
-    final fg = active ? accent.light : AppColors.textPrimary;
+    final fg = active ? accent.onAccent : AppColors.textPrimary;
     return Semantics(
       button: true,
       label: '$label filter${active ? ', active' : ''}',
       excludeSemantics: true,
       child: Material(
-        color: active
-            ? accent.base.withValues(alpha: 0.14)
-            : AppColors.surface3,
-        borderRadius: BorderRadius.circular(AppRadius.buttonSecondary),
+        color: active ? accent.base : AppColors.surface3,
+        borderRadius: BorderRadius.circular(14),
         clipBehavior: Clip.antiAlias,
         child: InkWell(
           onTap: onTap,
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 150),
             constraints: const BoxConstraints(minHeight: 44),
-            padding: const EdgeInsets.symmetric(horizontal: 14),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(AppRadius.buttonSecondary),
-              border: active
-                  ? Border.all(
-                      color: accent.base.withValues(alpha: 0.45))
-                  : null,
+              borderRadius: BorderRadius.circular(14),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
@@ -807,7 +806,7 @@ class _FilterChipButton extends StatelessWidget {
                 Icon(Icons.keyboard_arrow_down_rounded,
                     size: 16,
                     color:
-                        active ? accent.light : AppColors.textSecondary),
+                        active ? accent.onAccent : AppColors.textSecondary),
               ],
             ),
           ),
