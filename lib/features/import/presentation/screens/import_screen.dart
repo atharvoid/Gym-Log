@@ -13,6 +13,7 @@ import 'package:intl/intl.dart';
 
 import 'package:gymlog/core/theme/app_colors.dart';
 import 'package:gymlog/core/theme/app_text.dart';
+import 'package:gymlog/core/theme/dynamic_accent_theme.dart';
 import 'package:gymlog/core/utils/units.dart';
 import 'package:gymlog/features/import/domain/import_models.dart';
 import 'package:gymlog/features/import/presentation/providers/import_provider.dart';
@@ -204,8 +205,10 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
   }
 
   Widget _buildBody() => switch (_phase) {
+        // Spinner color omitted — inherits the active palette base via
+        // app_theme's progressIndicatorTheme.
         _Phase.loading => _centered(const CircularProgressIndicator(
-            color: AppColors.accentPrimary, strokeWidth: 2.5)),
+            strokeWidth: 2.5)),
         _Phase.importing => _buildImporting(),
         _Phase.done => _buildDone(),
         _Phase.preview => _buildPreview(),
@@ -214,7 +217,7 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
 
   Widget _centered(Widget child) => Center(child: child);
 
-  // ── Intro ──────────────────────────────────────────────────────────────────
+  // ── Intro ───────────────────────────────────────────────
 
   Widget _buildIntro() {
     return ListView(
@@ -258,10 +261,11 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
     );
   }
 
-  // ── Preview ────────────────────────────────────────────────────────────────
+  // ── Preview ───────────────────────────────────────────
 
   Widget _buildPreview() {
     final s = _summary!;
+    final accent = context.accent;
     final df = DateFormat('MMM d, yyyy');
     final range = (s.firstDate != null && s.lastDate != null)
         ? '${df.format(s.firstDate!)} – ${df.format(s.lastDate!)}'
@@ -326,7 +330,7 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
           const SizedBox(height: 16),
           _Banner(
             icon: Icons.add_circle_outline_rounded,
-            color: const Color(0xFFA78BFA),
+            color: accent.light,
             text: _newExercisesText(s.newExerciseNames),
           ),
         ],
@@ -377,7 +381,7 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
         'library: $shown$extra';
   }
 
-  // ── Importing ────────────────────────────────────────────────────────────────
+  // ── Importing ───────────────────────────────────────────
 
   Widget _buildImporting() {
     final pct = _total == 0 ? null : (_done / _total).clamp(0.0, 1.0);
@@ -388,7 +392,7 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
           height: 56,
           child: CircularProgressIndicator(
               value: pct,
-              color: AppColors.accentPrimary,
+              color: context.accent.base,
               strokeWidth: 3,
               backgroundColor: Colors.white.withValues(alpha: 0.08)),
         ),
@@ -406,7 +410,7 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
     );
   }
 
-  // ── Done ──────────────────────────────────────────────────────────────────
+  // ── Done ──────────────────────────────────────────────
 
   Widget _buildDone() {
     final r = _result!;
@@ -489,7 +493,7 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
       );
 }
 
-// ── Reusable bits ─────────────────────────────────────────────────────────────
+// ── Reusable bits ──────────────────────────────────────────
 
 class _Card extends StatelessWidget {
   const _Card({required this.child});
@@ -534,7 +538,7 @@ class _StatRow extends StatelessWidget {
                     fontSize: emphasize ? 18 : 15,
                     fontWeight: FontWeight.w700,
                     color: emphasize
-                        ? AppColors.accentPrimary
+                        ? context.accent.base
                         : AppColors.textPrimary,
                     fontFeatures: const [FontFeature.tabularFigures()])),
           ],
@@ -551,7 +555,7 @@ class _PrimaryButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Material(
-        color: AppColors.accentPrimary,
+        color: context.accent.base,
         borderRadius: BorderRadius.circular(AppRadius.buttonPrimary),
         child: InkWell(
           borderRadius: BorderRadius.circular(AppRadius.buttonPrimary),
@@ -607,15 +611,18 @@ class _IconBadge extends StatelessWidget {
   final IconData icon;
 
   @override
-  Widget build(BuildContext context) => Container(
-        width: 52,
-        height: 52,
-        decoration: BoxDecoration(
-          color: AppColors.accentPrimary.withValues(alpha: 0.12),
-          borderRadius: BorderRadius.circular(AppRadius.badge),
-        ),
-        child: Icon(icon, color: const Color(0xFFA78BFA), size: 26),
-      );
+  Widget build(BuildContext context) {
+    final accent = context.accent;
+    return Container(
+      width: 52,
+      height: 52,
+      decoration: BoxDecoration(
+        color: accent.base.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(AppRadius.badge),
+      ),
+      child: Icon(icon, color: accent.light, size: 26),
+    );
+  }
 }
 
 class _SourceChips extends StatelessWidget {
@@ -657,25 +664,28 @@ class _DetectedPill extends StatelessWidget {
   final ImportSource source;
 
   @override
-  Widget build(BuildContext context) => Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-        decoration: BoxDecoration(
-          color: AppColors.accentPrimary.withValues(alpha: 0.12),
-          borderRadius: BorderRadius.circular(AppRadius.badge),
-          border: Border.all(
-              color: AppColors.accentPrimary.withValues(alpha: 0.30), width: 1),
-        ),
-        child: Row(mainAxisSize: MainAxisSize.min, children: [
-          const Icon(Icons.check_circle_rounded,
-              size: 15, color: Color(0xFFA78BFA)),
-          const SizedBox(width: 7),
-          Text('Detected: ${source.label}',
-              style: GoogleFonts.inter(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.textPrimary)),
-        ]),
-      );
+  Widget build(BuildContext context) {
+    final accent = context.accent;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+      decoration: BoxDecoration(
+        color: accent.base.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(AppRadius.badge),
+        border: Border.all(
+            color: accent.base.withValues(alpha: 0.30), width: 1),
+      ),
+      child: Row(mainAxisSize: MainAxisSize.min, children: [
+        Icon(Icons.check_circle_rounded,
+            size: 15, color: accent.light),
+        const SizedBox(width: 7),
+        Text('Detected: ${source.label}',
+            style: GoogleFonts.inter(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textPrimary)),
+      ]),
+    );
+  }
 }
 
 class _UnitChooser extends StatelessWidget {
@@ -685,6 +695,7 @@ class _UnitChooser extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final accent = context.accent;
     Widget chip(String value, String label) {
       final active = unit == value;
       return Expanded(
@@ -700,7 +711,7 @@ class _UnitChooser extends StatelessWidget {
             height: 40,
             alignment: Alignment.center,
             decoration: BoxDecoration(
-              color: active ? AppColors.accentPrimary : Colors.transparent,
+              color: active ? accent.base : Colors.transparent,
               borderRadius: BorderRadius.circular(AppRadius.buttonSecondary),
             ),
             child: Text(label,
