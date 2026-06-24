@@ -7,11 +7,14 @@ import 'package:flutter_web_plugins/url_strategy.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../config/env.dart';
 import '../database/database.dart';
 import '../services/premium_service.dart';
+import '../theme/dynamic_accent_theme.dart';
+import '../theme/theme_palette.dart';
 import '../../shared/widgets/app_error_screen.dart';
 
 /// Outcome of the staged startup sequence. Carries the shared singletons the
@@ -28,11 +31,16 @@ class BootstrapResult {
   /// the timeout. When false, the app runs local-only until the next launch.
   final bool cloudAvailable;
 
+  /// The accent palette persisted by the user (or [ThemePalette.purple] on a
+  /// fresh install). Read before the first frame so there is no accent flash.
+  final ThemePalette accentPalette;
+
   const BootstrapResult({
     required this.db,
     required this.premiumService,
     required this.databaseCorrupted,
     required this.cloudAvailable,
+    required this.accentPalette,
   });
 }
 
@@ -74,6 +82,9 @@ abstract final class Bootstrap {
         // ── Stage 4: local database readiness (+ integrity check) ────────
         final dbStage = await _initDatabase();
 
+        // ── Stage 4b: persisted accent palette (cheap; before first frame) ─
+        final accentPalette = await _initAccentPalette();
+
         // ── Stage 5: cloud auth readiness (bounded; local-only on failure)
         final cloudAvailable = await _initCloud();
 
@@ -85,6 +96,7 @@ abstract final class Bootstrap {
           premiumService: premiumService,
           databaseCorrupted: dbStage.corrupted,
           cloudAvailable: cloudAvailable,
+          accentPalette: accentPalette,
         );
 
         runApp(appBuilder(result));
@@ -97,7 +109,7 @@ abstract final class Bootstrap {
     );
   }
 
-  // ── Stage 1 helpers ────────────────────────────────────────────────────
+  // ── Stage 1 helpers ──────────────────────────────────────────────────────
 
   /// Bound the in-memory image cache. GymLog streams animated exercise GIFs
   /// (each frame is a separate decoded bitmap), so the framework default
@@ -108,7 +120,7 @@ abstract final class Bootstrap {
       ..maximumSizeBytes = 80 << 20; // 80 MiB
   }
 
-  // ── Stage 2 helper ─────────────────────────────────────────────────────
+  // ── Stage 2 helper ──────────────────────────────────────────────────
 
   static FutureOr<void> _configureSentry(SentryFlutterOptions options) {
     options.dsn = Env.sentryDsn;
@@ -144,7 +156,7 @@ abstract final class Bootstrap {
     }
   }
 
-  // ── Stage 4 helper ─────────────────────────────────────────────────────
+  // ── Stage 4 helper ──────────────────────────────────────────────────
 
   /// Opens the database and verifies integrity. Returns the handle plus a
   /// `corrupted` flag; never throws.
@@ -179,7 +191,21 @@ abstract final class Bootstrap {
     if (await file.exists()) await file.delete();
   }
 
-  // ── Stage 5 helper ─────────────────────────────────────────────────────
+  // ── Stage 4b helper ───────────────────────────────────────────────
+
+  /// Reads the user's saved accent palette. Never throws — any failure falls
+  /// back to the default purple so startup is never blocked by preferences.
+  static Future<ThemePalette> _initAccentPalette() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      return ThemePalette.fromStorage(prefs.getString(kAccentPaletteKey));
+    } catch (e) {
+      debugPrint('[Bootstrap] accent palette load failed — default purple: $e');
+      return ThemePalette.purple;
+    }
+  }
+
+  // ── Stage 5 helper ────────────────────────────────────────────────
 
   /// Initialises Supabase auth. Config arrives at compile time; a build without
   /// it must not crash. The call is bounded by [cloudInitTimeout]; on timeout
@@ -207,7 +233,7 @@ abstract final class Bootstrap {
     }
   }
 
-  // ── Stage 6 helper ─────────────────────────────────────────────────────
+  // ── Stage 6 helper ────────────────────────────────────────────────
 
   /// Configures premium entitlements (RevenueCat). Degrades to free mode when
   /// keys are absent or the platform is unsupported — never blocks launch.
@@ -230,7 +256,7 @@ abstract final class Bootstrap {
     return premiumService;
   }
 
-  // ── Stage 7 helper ─────────────────────────────────────────────────────
+  // ── Stage 7 helper ────────────────────────────────────────────────
 
   static Future<void> _postLaunchMaintenance(AppDatabase db) async {
     try {

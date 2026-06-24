@@ -6,6 +6,7 @@ import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'core/providers/premium_provider.dart';
 import 'core/theme/app_theme.dart';
+import 'core/theme/dynamic_accent_theme.dart';
 import 'core/router/router.dart';
 import 'core/services/sync_engine.dart';
 import 'features/auth/presentation/providers/auth_provider.dart';
@@ -105,6 +106,7 @@ class _GymLogAppState extends ConsumerState<GymLogApp> {
   @override
   Widget build(BuildContext context) {
     // Recovery mode: a self-contained MaterialApp with no router/auth deps.
+    // Uses the purple-default theme since it renders before normal wiring.
     if (widget.databaseCorrupted) {
       return MaterialApp(
         title: 'GymLog',
@@ -115,11 +117,17 @@ class _GymLogAppState extends ConsumerState<GymLogApp> {
     }
 
     final router = ref.watch(routerProvider);
+
+    // Rebuild the theme whenever the user switches accent palettes. The active
+    // tokens flow into colorScheme, buttons, inputs, switches, and the
+    // AccentColors extension consumed via `context.accent`.
+    final tokens = ref.watch(accentTokensProvider);
+
     return MaterialApp.router(
       title: 'GymLog',
-      theme: appTheme,
-      highContrastTheme: appHighContrastTheme,
-      highContrastDarkTheme: appHighContrastTheme,
+      theme: buildAppTheme(tokens),
+      highContrastTheme: buildHighContrastTheme(tokens),
+      highContrastDarkTheme: buildHighContrastTheme(tokens),
       routerConfig: router,
       debugShowCheckedModeBanner: false,
       builder: (context, child) {
