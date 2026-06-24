@@ -253,8 +253,8 @@ class _ExerciseSelectionScreenState
           // ── Search ─────────────────────────────────────────────────────
           // An input is a recessed surface: Surface-3 fill, hairline border by
           // default, a thicker accent edge + soft accent glow on focus. The
-          // accent edge/glow are pulled from the live palette so the Phase 7
-          // dynamic-accent theme recolors search focus for free.
+          // accent edge/glow are pulled from the live palette so the dynamic-accent
+          // theme recolors search focus for free.
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 10),
             child: AnimatedContainer(
@@ -321,6 +321,7 @@ class _ExerciseSelectionScreenState
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
             child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 _FilterChipButton(
                   label: _muscleFilter ?? 'Muscle',
@@ -431,6 +432,8 @@ class _ExerciseSelectionScreenState
         bottom: 32 + MediaQuery.of(context).viewInsets.bottom,
       ),
       itemCount: items.length,
+      // RepaintBoundary on every row so scrolling doesn't repaint rows that
+      // haven't changed. The thumbnail GIF in each row is the main paint cost.
       itemBuilder: (context, index) {
         final item = items[index];
         final header = item.headerLabel;
@@ -455,19 +458,21 @@ class _ExerciseSelectionScreenState
             ),
           );
         }
-        return _ExerciseRow(
-          key: ValueKey('e_${item.exerciseValue!.id}'),
-          exercise: item.exerciseValue!,
-          browse: widget.browse,
-          onTap: () {
-            HapticFeedback.selectionClick();
-            if (widget.browse) {
-              context.push('/exercise/detail/${item.exerciseValue!.id}',
-                  extra: item.exerciseValue);
-            } else {
-              Navigator.pop(context, item.exerciseValue);
-            }
-          },
+        return RepaintBoundary(
+          child: _ExerciseRow(
+            key: ValueKey('e_${item.exerciseValue!.id}'),
+            exercise: item.exerciseValue!,
+            browse: widget.browse,
+            onTap: () {
+              HapticFeedback.selectionClick();
+              if (widget.browse) {
+                context.push('/exercise/detail/${item.exerciseValue!.id}',
+                    extra: item.exerciseValue);
+              } else {
+                Navigator.pop(context, item.exerciseValue);
+              }
+            },
+          ),
         );
       },
     );
