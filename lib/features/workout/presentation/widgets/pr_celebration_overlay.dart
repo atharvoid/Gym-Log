@@ -5,15 +5,16 @@ import 'package:flutter/services.dart';
 import 'package:gymlog/core/database/daos/workouts_dao.dart';
 import 'package:gymlog/core/theme/app_colors.dart';
 import 'package:gymlog/core/theme/app_text.dart';
-import 'package:gymlog/core/theme/dynamic_accent_theme.dart';
 
 /// Full-screen celebration shown when a finished workout contains PRs.
 /// Turns a silent `is_pr = 1` database write into the app's best moment:
 /// strong haptic, festive confetti, and the actual numbers that were beaten.
 ///
-/// The trophy badge + ambient halo follow the live accent palette (Phase 7),
-/// while the confetti and reward gold stay palette-independent so a PR always
-/// feels celebratory regardless of the chosen accent.
+/// COLOR: a PR is a FIXED celebration identity — it does NOT follow the brand
+/// accent. The badge ring, ambient halo and CTA use the reserved reward magenta
+/// (AppColors.accentReward, #FF2D55), while the trophy and the beaten 1RM
+/// numbers use the immutable reward gold (#E6C84A). A personal record always
+/// reads as the same triumphant magenta-and-gold moment, in every palette.
 ///
 /// Dependency-free — confetti is a lightweight CustomPainter, not a package.
 Future<void> showPrCelebration(
@@ -89,7 +90,6 @@ class _PrCelebrationState extends State<_PrCelebration>
   @override
   Widget build(BuildContext context) {
     final prs = widget.prs;
-    final accent = context.accent;
     final title = prs.length == 1
         ? 'New Personal Record!'
         : '${prs.length} New Personal Records!';
@@ -109,7 +109,7 @@ class _PrCelebrationState extends State<_PrCelebration>
             ),
           ),
 
-        // ── Card ─────────────────────────────────────────────────────
+        // ── Card ───────────────────────────────────────────────
         Center(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 28),
@@ -135,24 +135,25 @@ class _PrCelebrationState extends State<_PrCelebration>
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: accent.base.withValues(alpha: 0.16),
+                        // Fixed reward magenta ring + ambient magenta halo —
+                        // the celebration identity, palette-independent.
+                        color: AppColors.accentReward.withValues(alpha: 0.16),
                         border: Border.all(
-                          color: accent.base.withValues(alpha: 0.4),
+                          color: AppColors.accentReward.withValues(alpha: 0.4),
                         ),
-                        // Ambient accent halo behind the badge — the Phase 7
-                        // 'glow behind the badge'. Uses the palette glow token
-                        // so it shifts hue with the chosen accent.
                         boxShadow: [
                           BoxShadow(
-                            color: accent.glow,
+                            color:
+                                AppColors.accentReward.withValues(alpha: 0.28),
                             blurRadius: 28,
                             spreadRadius: 4,
                           ),
                         ],
                       ),
-                      child: Icon(
+                      // The trophy stays immutable gold — the achievement color.
+                      child: const Icon(
                         Icons.emoji_events_rounded,
-                        color: accent.light,
+                        color: AppColors.rewardGold,
                         size: 30,
                       ),
                     ),
@@ -216,10 +217,12 @@ class _PrCelebrationState extends State<_PrCelebration>
                                         crossAxisAlignment:
                                             CrossAxisAlignment.end,
                                         children: [
+                                          // The beaten 1RM — the headline number
+                                          // — in immutable achievement gold.
                                           Text(
                                             '${_fmtKg(pr.estimated1rm)} kg',
                                             style: AppText.value(
-                                                color: accent.light),
+                                                color: AppColors.rewardGold),
                                           ),
                                           Text(
                                             pr.previousBest1rm > 0
@@ -249,7 +252,8 @@ class _PrCelebrationState extends State<_PrCelebration>
                           Navigator.of(context).pop();
                         },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: accent.base,
+                          // Fixed reward magenta CTA — the celebration color.
+                          backgroundColor: AppColors.accentReward,
                           foregroundColor: AppColors.textPrimary,
                           elevation: 0,
                           shape: const RoundedRectangleBorder(
@@ -273,7 +277,7 @@ class _PrCelebrationState extends State<_PrCelebration>
   }
 }
 
-// ── Confetti ───────────────────────────────────────────────────────────
+// ── Confetti ─────────────────────────────────────────────
 
 class _ConfettiPainter extends CustomPainter {
   final double progress;
@@ -282,20 +286,20 @@ class _ConfettiPainter extends CustomPainter {
 
   // Deterministic particle field — same seed every build, zero allocations
   // beyond the paint object per frame. The palette is intentionally
-  // palette-INDEPENDENT (warning amber, white, and immutable celebration
-  // gold): the field is a static const built once, and a PR should read as
-  // festive gold/white no matter which accent the user picked.
+  // palette-INDEPENDENT (reward magenta, white, and immutable celebration
+  // gold): a PR should read as a festive magenta/gold burst no matter which
+  // brand accent the user picked.
   static final List<_Particle> _particles = _generate();
 
   static List<_Particle> _generate() {
     final rng = math.Random(7);
     const palette = [
-      AppColors.warning,
-      AppColors.warning,
+      AppColors.accentReward,
+      AppColors.rewardGold,
       AppColors.textPrimary,
-      AppColors.warning,
+      AppColors.accentReward,
+      AppColors.rewardGold,
       AppColors.textPrimary,
-      Color(0xFFFFCC00), // celebration gold — confetti-only, intentionally untokenized
     ];
     return List.generate(64, (i) {
       return _Particle(
