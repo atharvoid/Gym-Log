@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../../core/providers/premium_provider.dart';
 import '../../../../core/services/sync_entitlement_gate.dart';
@@ -19,11 +20,16 @@ import '../../../../shared/widgets/ui/skeleton.dart';
 import '../providers/profile_provider.dart';
 import '../providers/profile_stats_provider.dart';
 import '../widgets/graph_kpi_header.dart';
+import '../widgets/profile_avatar.dart';
 import '../widgets/profile_graph_empty_state.dart';
 
 import '../widgets/weekly_bar_chart.dart';
 import 'settings_screen.dart';
 
+/// Key for storing the profile image path in SharedPreferences.
+/// A full DB migration is overkill for a single user-scoped file path —
+/// SharedPreferences is simpler and doesn't require a schema bump.
+const _kProfileImageKey = 'profile_image_path';
 
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
@@ -39,12 +45,32 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     duration: const Duration(milliseconds: 600),
   );
 
+  /// Local cache of the profile image path so the avatar updates instantly
+  /// after a pick without waiting for a provider round-trip.
+  String? _profileImagePath;
+
   @override
   void initState() {
     super.initState();
+    _loadImagePath();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) _entranceController.forward();
     });
+  }
+
+  Future<void> _loadImagePath() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (mounted) setState(() => _profileImagePath = prefs.getString(_kProfileImageKey));
+  }
+
+  Future<void> _onImageChanged(String? path) async {
+    final prefs = await SharedPreferences.getInstance();
+    if (path != null) {
+      await prefs.setString(_kProfileImageKey, path);
+    } else {
+      await prefs.remove(_kProfileImageKey);
+    }
+    if (mounted) setState(() => _profileImagePath = path);
   }
 
   @override
@@ -104,6 +130,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     ref.invalidate(sessionStatsProvider);
     ref.invalidate(streakStatsProvider);
     ref.invalidate(isSyncAllowedProvider);
+    await _loadImagePath();
     await Future.delayed(const Duration(milliseconds: 300));
   }
 
@@ -183,6 +210,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                       email: email,
                       isPremium: isPremium,
                       showSyncPausedBadge: showSyncPausedBadge,
+                      imagePath: _profileImagePath,
+                      onImageChanged: _onImageChanged,
                     ),
                   ),
                 ),
@@ -246,32 +275,29 @@ class _IdentityHeader extends StatelessWidget {
   final String email;
   final bool isPremium;
   final bool showSyncPausedBadge;
+  final String? imagePath;
+  final ValueChanged<String?> onImageChanged;
 
   const _IdentityHeader({
     required this.displayName,
     required this.email,
     required this.isPremium,
     this.showSyncPausedBadge = false,
+    this.imagePath,
+    required this.onImageChanged,
   });
 
   @override
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Container(
-          width: 52,
-          height: 52,
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            color: AppColors.surface2,
-            borderRadius: BorderRadius.circular(AppRadius.buttonPrimary),
-            border: Border.all(color: AppColors.borderSubtle),
-          ),
-          child: Text(
-            displayName.isNotEmpty ? displayName[0].toUpperCase() : 'A',
-            style: AppText.sheetTitle(color: AppColors.textSecondary)
-                .copyWith(fontSize: 20),
-          ),
+        // S11: ProfileAvatar replaces the old static letter avatar.
+        // 56×56 with accent-tinted ring, camera badge, and tap-to-upload.
+        ProfileAvatar(
+          displayName: displayName,
+          imagePath: imagePath,
+          onImageChanged: onImageChanged,
+          size: 56,
         ),
         const SizedBox(width: 14),
         Expanded(
@@ -637,7 +663,7 @@ class _LoadingBody extends StatelessWidget {
         children: [
           const Row(
             children: [
-              SkeletonBox(width: 52, height: 52, radius: 26),
+              SkeletonBox(width: 56, height: 56, radius: 14),
               SizedBox(width: 14),
               Expanded(
                 child: Column(
