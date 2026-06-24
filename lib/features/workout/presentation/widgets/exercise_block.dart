@@ -116,7 +116,7 @@ class ExerciseBlock extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // ── Header ──────────────────────────────────
+          // ── Header ──────────────────────────
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 14, 4, 0),
             child: Row(
@@ -131,7 +131,8 @@ class ExerciseBlock extends ConsumerWidget {
                         : null,
                     child: Text(
                       exerciseName,
-                      style: AppText.cardTitle(),
+                      // S3: text-depth shadow on exercise card title
+                      style: AppText.cardTitle(shadows: AppText.depthFor(context)),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -216,7 +217,7 @@ class ExerciseBlock extends ConsumerWidget {
           ),
           const SizedBox(height: 4),
 
-          // ── Sets — swipe left to delete (locked once completed) ──────
+          // ── Sets — swipe left to delete (locked once completed) ──
           ...Iterable<int>.generate(setsLength).map((setIndex) {
             return Consumer(
               builder: (context, ref, child) {
