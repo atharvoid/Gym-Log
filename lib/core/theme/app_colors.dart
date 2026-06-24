@@ -1,13 +1,34 @@
 import 'package:flutter/material.dart';
 
 /// [app_colors.dart]
-/// GymLog Design System — AMOLED-first, indigo as the single source of energy.
+/// GymLog Design System — AMOLED-first, Apple Watch Neon palette.
 ///
-/// TOKEN DISCIPLINE: this file is the single source of truth for color. Never
-/// hardcode a color anywhere else. Token NAMES are preserved from the previous
-/// (purple) system so no call site breaks; VALUES are re-pointed. Text and
-/// borders are WHITE AT OPACITY (expressed as const ARGB) so they darken
-/// consistently across surfaces — never hardcoded grey.
+/// TOKEN DISCIPLINE: this file is the single source of truth for FIXED color.
+/// Never hardcode a color anywhere else. There are two color layers in this app
+/// and they must never be confused:
+///
+///   LAYER 1 — BRAND ACCENT (personalizable, REACTIVE). One hue the user picks
+///   in Appearance. It propagates to CTAs, the active nav indicator, selected
+///   borders, and the primary chart series. It lives in [ThemePalette] /
+///   [AccentColors] and is read via `context.accent.*` — NOT from this file.
+///   The accent statics below (accentPrimary/accentText/indigo*) are only the
+///   DEFAULT fallback values used before the reactive theme is available.
+///
+///   LAYER 2 — SEMANTIC ACCENTS (FIXED, never change with the brand accent).
+///   success/info/warning/reward carry meaning, so the eye decodes them without
+///   thinking. Making them reactive would collapse the signal into brand noise,
+///   so they are const here and never pickable.
+///
+/// DARK-MODE SATURATION LADDER — the one opacity policy for accent-derived
+/// color on the AMOLED canvas. Full saturation is a moment, not a wash:
+///   small marks (check, dot, ring) ... 100%
+///   primary CTA fill ................. 100%  (the single focal hit per view)
+///   standard/secondary buttons ....... 80%
+///   large tinted surfaces / fills .... 14%
+///   selected borders ................. 35%
+///   atmospheric glows ................ 12%
+/// The reactive helpers live on [AccentColors] (tint/selectionBorder/glow);
+/// the fixed-token tints below mirror the same ladder for semantic color.
 abstract class AppColors {
   // ── Background & surface hierarchy (AMOLED, build upward in steps) ───────
   static const bgBase    = Color(0xFF000000); // Background — pure void
@@ -23,47 +44,69 @@ abstract class AppColors {
   static const elevated      = Color(0xFF242424); // == Surface 4
 
   // ── Card surface gradient — the shipped "felt-not-seen" near-black fill ──
-  // Single source of truth for card chrome (see AppCard). Promoted here so no
-  // feature reaches into another feature's style class for a surface.
   static const cardGradient = LinearGradient(
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,
     colors: [Color(0xFF0E0E11), Color(0xFF09090B)],
   );
 
-  // ── Borders — white at low opacity (never solid/opaque), + indigo focus ──
+  // ── Borders — white at low opacity (never solid/opaque), + accent focus ──
   static const borderSubtle   = Color(0x0FFFFFFF); // white 6% — default card border
   static const borderDefault  = Color(0x1AFFFFFF); // white 10% — interactive element border
   static const borderEmphasis = Color(0x2EFFFFFF); // white 18% — focused/selected
-  static const borderActive   = Color(0xFF7C3AED); // indigo    — focused inputs, selected cards
+  static const borderActive   = Color(0xFFBF5AF2); // neon purple — DEFAULT focus (reactive: context.accent.base)
   static const thumbBorder    = Color(0x14FFFFFF); // white 8%  — exercise thumbnail frame
-  // Light exercise-thumbnail tile (Hevy-style). Exercise GIFs are baked on
-  // white, so a uniform light tile keeps GIF + icon-fallback thumbnails
-  // consistent on the dark feed (instead of "white block vs dark block").
   static const thumbTile      = Color(0xFFF5F5F5); // light tile background
   static const thumbIcon      = Color(0xFF9E9E9E); // neutral icon on light tile
 
-  // ── Indigo — the only accent for UI chrome ──────────────────────────────
-  static const indigo400 = Color(0xFFA78BFA); // labels, secondary indigo text, chart line
-  static const indigo500 = Color(0xFF7C3AED); // primary CTA, active states, selected
-  static const indigo600 = Color(0xFF6D28D9); // pressed/active state of indigo buttons
-  static const indigoTint = Color(0x1F7C3AED); // indigo 12% — selected-row / active-tab bg
-  static const indigoTrack = Color(0x337C3AED); // indigo 20% — rest-timer ring track
-  static const chartAreaFill = Color(0x147C3AED); // indigo 8% — chart area fill (subtle)
-
-  // Legacy accent aliases.
-  static const accentPrimary = Color(0xFF7C3AED); // == indigo500
-  static const accentText    = Color(0xFFA78BFA); // == indigo400 (accent text on black)
+  // ── Brand accent DEFAULT fallback (reactive truth is context.accent.*) ───
+  // Apple Watch Neon Purple. These statics exist only for the pre-theme path;
+  // every live surface reads the chosen palette via context.accent.
+  static const accentPrimary = Color(0xFFBF5AF2); // neon purple — default CTA/active/selected
+  static const accentText    = Color(0xFFD9A6FF); // neon purple LIGHT — default accent text on black
+  static const accentDark    = Color(0xFF9A3FD0); // neon purple pressed/depressed
+  static const accentTint    = Color(0x24BF5AF2); // neon purple 14% — default tinted fill
+  static const accentBorder  = Color(0x59BF5AF2); // neon purple 35% — default selected border
+  static const accentGlow    = Color(0x1FBF5AF2); // neon purple 12% — default atmospheric glow
   static const canvas        = Color(0xFF0A0A0A); // High-contrast black for CTA background/text
 
-  // ── Semantic — each has exactly one job ─────────────────────────────────
-  static const success = Color(0xFF10B981); // Completion green — completed-set check + left border ONLY
-  static const completionTint = Color(0x0F10B981); // green 6% — completed-set row bg
-  static const warning = Color(0xFFF59E0B); // Achievement amber — PR badges / trophy ONLY
-  static const prBadgeBg = Color(0x26F59E0B); // amber 15% — PR badge background
-  static const prBadgeBorder = Color(0x4DF59E0B); // amber 30% — PR badge border
-  static const error = Color(0xFFEF4444); // Destructive red — delete / errors ONLY
-  static const errorBorder = Color(0x99EF4444); // red 60% — destructive button border
+  // Legacy indigo aliases — re-pointed onto the neon-purple default so any
+  // straggler call site stays on-brand until migrated to context.accent.
+  static const indigo400 = accentText;    // light accent text
+  static const indigo500 = accentPrimary; // primary CTA / active / selected
+  static const indigo600 = accentDark;    // pressed
+  static const indigoTint = accentTint;   // tinted fill
+  static const indigoTrack = Color(0x33BF5AF2); // neon purple 20% — generic ring track default
+  static const chartAreaFill = Color(0x14BF5AF2); // neon purple 8% — chart area fill (subtle)
+
+  // ── LAYER 2 — Neon semantic accents (FIXED — never follow the brand accent) ─
+  static const accentSuccess = Color(0xFFA6E000); // deepened neon lime — completed sets
+  static const accentInfo    = Color(0xFF00D9FF); // neon cyan — rest timer
+  static const accentWarning = Color(0xFFFF9500); // neon orange — warmups / warnings
+  static const accentReward  = Color(0xFFFF2D55); // neon magenta — PR celebration
+  static const rewardGold    = Color(0xFFE6C84A); // IMMUTABLE — PR medal / trophy gold
+  static const error         = Color(0xFFEF4444); // destructive red — delete / errors ONLY
+
+  // Semantic tints — same saturation ladder, fixed hues.
+  static const successMark   = accentSuccess;       // 100% — completed-set check / left border
+  static const successTint   = Color(0x24A6E000);   // lime 14% — completed-set row bg
+  static const infoMark      = accentInfo;          // 100% — rest-timer ring
+  static const infoTint      = Color(0x2400D9FF);   // cyan 14% — rest-timer track / chip bg
+  static const infoTrack     = Color(0x3300D9FF);   // cyan 20% — rest-timer ring track
+  static const warningMark   = accentWarning;       // 100% — warmup dot / warning icon
+  static const warningTint   = Color(0x24FF9500);   // orange 14% — warmup chip bg
+  static const rewardMark    = accentReward;        // 100% — PR burst accent
+  static const rewardTint    = Color(0x24FF2D55);   // magenta 14% — PR celebration backdrop
+  static const errorBorder   = Color(0x99EF4444);   // red 60% — destructive button border
+
+  // Legacy semantic aliases re-pointed onto the neon layer (completed-set green
+  // -> lime; achievement amber -> orange) so existing call sites stay correct.
+  static const success        = accentSuccess; // was completion green — now neon lime
+  static const completionTint = successTint;   // lime 14% — completed-set row bg
+  static const warning        = accentWarning; // was achievement amber — now neon orange
+  // PR badge stays GOLD (the medal), independent of the magenta celebration burst.
+  static const prBadgeBg     = Color(0x26E6C84A); // gold 15% — PR badge background
+  static const prBadgeBorder = Color(0x4DE6C84A); // gold 30% — PR badge border
 
   // ── Text — white at controlled opacity (NOT hardcoded grey) ─────────────
   static const textPrimary   = Color(0xFFFFFFFF); // headings, key numbers, exercise names
@@ -75,10 +118,9 @@ abstract class AppColors {
   static const chartAxisLabel = Color(0x59FFFFFF); // == textTertiary
 
   // Profile analytics bar chart.
-  // Semantic rule: current week = brand indigo, historical = neutral gray.
-  // No cyan — keeping the accent consistent with the rest of the app chrome.
-  static const profileGraphCurrentBar     = Color(0xFF7C3AED); // == accentPrimary — current/latest week
-  static const profileGraphCurrentBarBright = Color(0xFFA78BFA); // == accentText — touch highlight
+  // Semantic rule: current week = brand accent (reactive at call site), historical = neutral gray.
+  static const profileGraphCurrentBar     = Color(0xFFBF5AF2); // == accentPrimary default — current/latest week
+  static const profileGraphCurrentBarBright = Color(0xFFD9A6FF); // == accentText default — touch highlight
   static const profileGraphHistoricalBar  = Color(0xFF2C2C3A); // neutral cool-gray — previous weeks
   static const profileGraphInactiveBar    = Color(0xFF2A2A3A); // in-progress week (mid-week, muted)
   static const profileGraphGhostBar       = Color(0xFF1A1A26); // zero-value slot — barely visible
@@ -92,17 +134,15 @@ abstract class AppColors {
   static const profileGraphActiveBarBright = profileGraphCurrentBarBright;
   static const profileGraphPreviousBar     = profileGraphHistoricalBar;
 
-  // Muscle-split data-viz palette — an ORDERED violet ramp, light→dark. The
-  // dominant (largest) muscle is leftmost and lightest (most visible on the
-  // AMOLED card); each subsequent step darkens. Monotonic ordering is the fix:
-  // the old ramp was the same violets in a RANDOM order (500/400/600/300),
-  // which read as a muddy smear. Same hue family = on-brand single-accent.
+  // Muscle-split data-viz palette — an ORDERED neon-violet ramp, light→dark.
+  // The dominant (largest) muscle is leftmost and lightest; each step darkens.
+  // Same hue family as the neon-purple default = on-brand single-accent viz.
   static const muscleSplitPalette = [
-    Color(0xFFC4B5FD), // violet 300 — dominant / largest share
-    Color(0xFFA78BFA), // violet 400
-    Color(0xFF8B5CF6), // violet 500
-    Color(0xFF7C3AED), // violet 600
-    Color(0xFF6D28D9), // violet 700
-    Color(0xFF5B21B6), // violet 800 — smallest share
+    Color(0xFFE5BDFF), // neon violet 200 — dominant / largest share
+    Color(0xFFD9A6FF), // neon violet 300
+    Color(0xFFBF5AF2), // neon violet 500 — base
+    Color(0xFFA63FE0), // neon violet 600
+    Color(0xFF8A2FC4), // neon violet 700
+    Color(0xFF6E249E), // neon violet 800 — smallest share
   ];
 }
