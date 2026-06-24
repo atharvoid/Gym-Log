@@ -7,7 +7,6 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'core/providers/premium_provider.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/dynamic_accent_theme.dart';
-import 'core/theme/theme_palette.dart';
 import 'core/router/router.dart';
 import 'core/services/sync_engine.dart';
 import 'features/auth/presentation/providers/auth_provider.dart';
@@ -37,7 +36,7 @@ class _GymLogAppState extends ConsumerState<GymLogApp> {
     super.initState();
 
     // Capture Flutter framework errors and forward them to Sentry.
-    FlutterError.onError = (FlutterErrorDetails details) => {
+    FlutterError.onError = (FlutterErrorDetails details) {
       FlutterError.presentError(details);
       Sentry.captureException(details.exception, stackTrace: details.stack);
     };

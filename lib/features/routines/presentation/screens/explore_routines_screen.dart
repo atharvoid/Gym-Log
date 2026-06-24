@@ -13,7 +13,6 @@ import 'package:gymlog/features/auth/presentation/providers/auth_provider.dart';
 import 'package:gymlog/features/routines/presentation/data/explore_catalog.dart';
 import 'package:gymlog/features/routines/presentation/providers/routines_provider.dart';
 import 'package:gymlog/shared/widgets/premium_paywall.dart';
-import 'package:gymlog/shared/widgets/ui/app_card.dart';
 import 'package:gymlog/shared/widgets/ui/muscle_glyph.dart';
 import 'package:gymlog/shared/widgets/ui/primary_button.dart';
 
