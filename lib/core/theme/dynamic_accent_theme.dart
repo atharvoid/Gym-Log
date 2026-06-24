@@ -77,6 +77,14 @@ class AccentColors extends ThemeExtension<AccentColors> {
         glow: t.glow,
       );
 
+  /// The default (purple) accent, for the rare path where a widget needs an
+  /// accent before the inherited theme is available (e.g. a State field
+  /// initializer that runs ahead of didChangeDependencies). Matches the
+  /// fallback used by [AccentColorsContextX.accent] so 'default purple' has a
+  /// single source of truth.
+  static AccentColors get purpleFallback =>
+      AccentColors.fromTokens(ThemePalette.purple.tokens);
+
   @override
   AccentColors copyWith({
     Color? base,
