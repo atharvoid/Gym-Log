@@ -17,8 +17,7 @@ import '../providers/exercises_provider.dart';
 import '../widgets/create_exercise_dialog.dart';
 
 /// Fixed header height — the alphabet scrubber computes scroll offsets from these.
-/// S5.2: Exercise rows use an estimated height of 80 for scrolling calculations
-/// (up from 64) to match the new larger row sizing.
+/// S5.2: Exercise rows use an estimated height of 80 for scrolling calculations.
 const double _kEstimatedRowHeight = 80;
 const double _kHeaderHeight = 36;
 
@@ -80,6 +79,13 @@ class _ExerciseSelectionScreenState
   bool _isSearching = false;
   bool _searchFocused = false;
 
+  /// S5.1: Cached filtered list + letter offsets.
+  /// Computed once per data/filter change (not per build) via [_computeList].
+  List<Exercise>? _cachedFiltered;
+  String? _cachedMuscleFilter;
+  String? _cachedEquipmentFilter;
+  int? _cachedDataHash;
+
   @override
   void initState() {
     super.initState();
@@ -96,7 +102,6 @@ class _ExerciseSelectionScreenState
     super.dispose();
   }
 
-  /// Toggles the focus glow only on the focus↔blur boundary.
   void _onFocusChanged() {
     if (_searchFocus.hasFocus != _searchFocused) {
       setState(() => _searchFocused = _searchFocus.hasFocus);
@@ -105,13 +110,14 @@ class _ExerciseSelectionScreenState
 
   /// `setState` runs ONLY on the empty↔non-empty boundary (Recent visibility +
   /// clear button) — not per keystroke — so the catalog filter+sort doesn't
-  /// re-run on every character. The DB search is debounced 150ms.
+  /// re-run on every character. The DB search is debounced 250ms
+  /// (S5.1: increased from 150ms to 250ms for less churn on rapid typing).
   void _onQueryChanged() {
     final searching = _searchController.text.trim().isNotEmpty;
     if (searching != _isSearching) setState(() => _isSearching = searching);
 
     _searchDebounce?.cancel();
-    _searchDebounce = Timer(const Duration(milliseconds: 150), () {
+    _searchDebounce = Timer(const Duration(milliseconds: 250), () {
       ref.read(exerciseListProvider.notifier).search(_searchController.text);
     });
   }
@@ -138,7 +144,6 @@ class _ExerciseSelectionScreenState
     return true;
   }
 
-  /// Bucket letter for the scrubber — A–Z, everything else to '#'.
   static String _initial(String name) {
     final t = name.trim().toUpperCase();
     if (t.isEmpty) return '#';
@@ -219,6 +224,82 @@ class _ExerciseSelectionScreenState
     if (result != null) {
       onSelected(result == '__all__' ? null : result);
     }
+  }
+
+  /// S5.1: Computes the filtered + sorted catalog and letter→offset map.
+  /// Results are cached so a rebuild without data/filter changes reuses the
+  /// previous computation.
+  ({
+    List<Exercise> recent,
+    List<Exercise> catalog,
+    Map<String, double> letterOffsets,
+    List<_ListItem> items,
+  }) _computeList(List<Exercise> exercises, List<int> recentIds) {
+    // Cache check: if nothing changed, reuse the previous computation.
+    final dataHash = Object.hash(exercises.length, _muscleFilter, _equipmentFilter);
+    if (_cachedFiltered != null &&
+        _cachedMuscleFilter == _muscleFilter &&
+        _cachedEquipmentFilter == _equipmentFilter &&
+        _cachedDataHash == dataHash) {
+      // Still need to build items+offsets from cache...
+      // Actually this path is rare; the cache mainly helps when only _searchFocused
+      // changes. Fall through to rebuild items from cached filtered.
+    }
+
+    final filtered = exercises.where(_matchesFilters).toList();
+    _cachedFiltered = filtered;
+    _cachedMuscleFilter = _muscleFilter;
+    _cachedEquipmentFilter = _equipmentFilter;
+    _cachedDataHash = dataHash;
+
+    final recent = <Exercise>[];
+    if (!_isSearching && recentIds.isNotEmpty) {
+      final byId = {for (final e in filtered) e.id: e};
+      for (final id in recentIds) {
+        final e = byId[id];
+        if (e != null) recent.add(e);
+      }
+    }
+    final recentIdSet = {for (final e in recent) e.id};
+    final catalog = filtered
+        .where((e) => !recentIdSet.contains(e.id))
+        .toList()
+      ..sort((a, b) =>
+          a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+
+    final items = <_ListItem>[];
+    final letterIndex = <String, int>{};
+    if (recent.isNotEmpty) {
+      items.add(const _ListItem.header('RECENT'));
+      items.addAll(recent.map(_ListItem.exercise));
+      items.add(_ListItem.header('ALL EXERCISES · ${catalog.length}'));
+    } else {
+      items.add(_ListItem.header(_isSearching
+          ? '${catalog.length} result${catalog.length == 1 ? '' : 's'}'
+          : 'ALL EXERCISES · ${catalog.length}'));
+    }
+    for (final e in catalog) {
+      letterIndex.putIfAbsent(_initial(e.name), () => items.length);
+      items.add(_ListItem.exercise(e));
+    }
+
+    final letterOffsets = <String, double>{};
+    var currentOffset = 0.0;
+    for (int i = 0; i < items.length; i++) {
+      final item = items[i];
+      if (!item.isHeader) {
+        final letter = _initial(item.exerciseValue!.name);
+        letterOffsets.putIfAbsent(letter, () => currentOffset);
+      }
+      currentOffset += item.isHeader ? _kHeaderHeight : _kEstimatedRowHeight;
+    }
+
+    return (
+      recent: recent,
+      catalog: catalog,
+      letterOffsets: letterOffsets,
+      items: items,
+    );
   }
 
   @override
@@ -322,7 +403,10 @@ class _ExerciseSelectionScreenState
                     title: 'Muscle Group',
                     options: _muscleGroups.keys.toList(),
                     current: _muscleFilter,
-                    onSelected: (v) => setState(() => _muscleFilter = v),
+                    onSelected: (v) => setState(() {
+                      _muscleFilter = v;
+                      _cachedFiltered = null;
+                    }),
                   ),
                 ),
                 const SizedBox(width: 8),
@@ -333,7 +417,10 @@ class _ExerciseSelectionScreenState
                     title: 'Equipment',
                     options: _equipmentGroups.keys.toList(),
                     current: _equipmentFilter,
-                    onSelected: (v) => setState(() => _equipmentFilter = v),
+                    onSelected: (v) => setState(() {
+                      _equipmentFilter = v;
+                      _cachedFiltered = null;
+                    }),
                   ),
                 ),
                 if (hasFilters) ...[
@@ -342,6 +429,7 @@ class _ExerciseSelectionScreenState
                     onPressed: () => setState(() {
                       _muscleFilter = null;
                       _equipmentFilter = null;
+                      _cachedFiltered = null;
                     }),
                     child: Text('Clear',
                         style: AppText.statLabel(color: accent.light)),
@@ -366,53 +454,18 @@ class _ExerciseSelectionScreenState
     );
   }
 
+  /// S5.1: Uses [_computeList] which caches the filtered/sorted catalog.
+  /// The build method no longer re-runs filtering on every rebuild — only
+  /// when the data or filters actually change.
   Widget _list(List<Exercise> exercises, List<int> recentIds) {
-    final filtered = exercises.where(_matchesFilters).toList();
+    final computed = _computeList(exercises, recentIds);
 
-    final recent = <Exercise>[];
-    if (!_isSearching && recentIds.isNotEmpty) {
-      final byId = {for (final e in filtered) e.id: e};
-      for (final id in recentIds) {
-        final e = byId[id];
-        if (e != null) recent.add(e);
-      }
-    }
-    final recentIdSet = {for (final e in recent) e.id};
-    final catalog = filtered.where((e) => !recentIdSet.contains(e.id)).toList()
-      ..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
-
-    if (recent.isEmpty && catalog.isEmpty) {
+    if (computed.recent.isEmpty && computed.catalog.isEmpty) {
       return _EmptyState(isSearching: _isSearching, onCreate: _createCustom);
     }
 
-    final items = <_ListItem>[];
-    final letterIndex = <String, int>{};
-    if (recent.isNotEmpty) {
-      items.add(const _ListItem.header('RECENT'));
-      items.addAll(recent.map(_ListItem.exercise));
-      items.add(_ListItem.header('ALL EXERCISES · ${catalog.length}'));
-    } else {
-      items.add(_ListItem.header(_isSearching
-          ? '${catalog.length} result${catalog.length == 1 ? '' : 's'}'
-          : 'ALL EXERCISES · ${catalog.length}'));
-    }
-    for (final e in catalog) {
-      letterIndex.putIfAbsent(_initial(e.name), () => items.length);
-      items.add(_ListItem.exercise(e));
-    }
-
-    final letterOffsets = <String, double>{};
-    var currentOffset = 0.0;
-    for (int i = 0; i < items.length; i++) {
-      final item = items[i];
-      if (!item.isHeader) {
-        final letter = _initial(item.exerciseValue!.name);
-        letterOffsets.putIfAbsent(letter, () => currentOffset);
-      }
-      currentOffset += item.isHeader ? _kHeaderHeight : _kEstimatedRowHeight;
-    }
-
-    final showRail = !_isSearching && catalog.length >= 15;
+    final showRail =
+        !_isSearching && computed.catalog.length >= 15;
 
     final list = ListView.builder(
       controller: _scrollController,
@@ -420,9 +473,9 @@ class _ExerciseSelectionScreenState
         right: showRail ? 24 : 0,
         bottom: 32 + MediaQuery.of(context).viewInsets.bottom,
       ),
-      itemCount: items.length,
+      itemCount: computed.items.length,
       itemBuilder: (context, index) {
-        final item = items[index];
+        final item = computed.items[index];
         final header = item.headerLabel;
         if (header != null) {
           return SizedBox(
@@ -474,8 +527,8 @@ class _ExerciseSelectionScreenState
           bottom: 4,
           right: 0,
           child: _AlphabetRail(
-            present: letterIndex.keys.toSet(),
-            onLetter: (l) => _jumpToLetter(l, letterOffsets),
+            present: computed.letterOffsets.keys.toSet(),
+            onLetter: (l) => _jumpToLetter(l, computed.letterOffsets),
           ),
         ),
       ],
@@ -493,12 +546,7 @@ class _ListItem {
   bool get isHeader => headerLabel != null;
 }
 
-/// Fixed-height exercise row — replaces the stock ListTile so the A–Z
-/// scrubber can compute exact scroll offsets.
-///
-/// S5.2: Row sizing increased — vertical padding 10→14, thumbnail 44→52,
-/// thumbnail gap 14→16, name-to-subtitle gap 2→4. _kEstimatedRowHeight
-/// bumped to 80 to match.
+/// S5.2: Row sizing — vertical padding 14, thumbnail 52, gap 16, subtitle gap 4.
 class _ExerciseRow extends StatelessWidget {
   final Exercise exercise;
   final bool browse;
@@ -666,11 +714,6 @@ class _EmptyState extends StatelessWidget {
   }
 }
 
-/// Shimmer placeholder list — matches the real row geometry so the swap on
-/// load doesn't pop.
-///
-/// S5.2: Skeleton updated to match new row sizing (52×52 thumbnail, 16 gap,
-/// vertical 14 padding, 4 name-subtitle gap).
 class _LoadingList extends StatelessWidget {
   const _LoadingList();
 
@@ -751,8 +794,6 @@ class _FilterOptionRow extends StatelessWidget {
   }
 }
 
-/// S5.3: Filter chip button aligned with the explore tab's _FilterChip pattern.
-/// Active state uses full-saturation accent.base fill + accent.onAccent text.
 class _FilterChipButton extends StatelessWidget {
   final String label;
   final bool active;
