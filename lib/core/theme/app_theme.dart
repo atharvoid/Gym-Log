@@ -21,6 +21,12 @@ import 'theme_palette.dart';
 /// ON-ACCENT: the label that sits on a full-saturation [base] fill comes from
 /// tokens.onAccent (white for colored palettes, near-black for the neutral
 /// palette) — never a hardcoded white, so the white palette stays legible.
+///
+/// BRIGHTNESS: the White palette drives a LIGHT ThemeData (Brightness.light,
+/// ColorScheme.light) with a inverted surface luminance hierarchy. All other
+/// palettes use the AMOLED dark theme. Screen surfaces should read from
+/// `context.surface` (SurfaceContextX) rather than hardcoded AppColors.* to
+/// stay correct under both brightness modes.
 
 TextStyle _ct({
   required double fontSize,
@@ -38,82 +44,98 @@ TextStyle _ct({
 
 /// Builds the app theme for a given accent token set. Call this from the root
 /// MaterialApp with the active palette's tokens.
-ThemeData buildAppTheme(ThemePaletteTokens tokens) => ThemeData(
+///
+/// When [palette] is [ThemePalette.white], returns a LIGHT ThemeData with
+/// the inverted surface hierarchy from [SurfaceTokens.light].
+ThemeData buildAppTheme(ThemePaletteTokens tokens, {ThemePalette palette = ThemePalette.fallback}) {
+  final isLight = palette.isLightSurface;
+  final s = isLight ? SurfaceTokens.light : SurfaceTokens.dark;
+
+  return ThemeData(
       useMaterial3: true,
-      brightness: Brightness.dark,
+      brightness: isLight ? Brightness.light : Brightness.dark,
       fontFamily: GoogleFonts.inter().fontFamily,
 
       // Live accent tokens, readable anywhere via `context.accent`.
       extensions: <ThemeExtension<dynamic>>[
-        AccentColors.fromTokens(tokens),
+        AccentColors.fromTokens(tokens, palette),
       ],
 
-      colorScheme: ColorScheme.dark(
-        surface: AppColors.bgBase,
-        surfaceContainerHighest: AppColors.bgSurface,
-        primary: tokens.base,
-        onPrimary: tokens.onAccent, // legible on the accent for every palette
-        secondary: tokens.light,
-        onSecondary: AppColors.bgBase,
-        error: AppColors.error,
-        onSurface: AppColors.textPrimary,
-        onSurfaceVariant: AppColors.textSecondary,
-        outline: AppColors.borderSubtle,
-      ),
+      colorScheme: isLight
+          ? ColorScheme.light(
+              surface: s.bgBase,
+              surfaceContainerHighest: s.bgSurface,
+              primary: tokens.base,
+              onPrimary: tokens.onAccent,
+              secondary: tokens.light,
+              onSecondary: s.bgBase,
+              error: AppColors.error,
+              onSurface: s.textPrimary,
+              onSurfaceVariant: s.textSecondary,
+              outline: s.borderSubtle,
+            )
+          : ColorScheme.dark(
+              surface: AppColors.bgBase,
+              surfaceContainerHighest: AppColors.bgSurface,
+              primary: tokens.base,
+              onPrimary: tokens.onAccent,
+              secondary: tokens.light,
+              onSecondary: AppColors.bgBase,
+              error: AppColors.error,
+              onSurface: AppColors.textPrimary,
+              onSurfaceVariant: AppColors.textSecondary,
+              outline: AppColors.borderSubtle,
+            ),
 
-      scaffoldBackgroundColor: AppColors.bgBase,
-      cardColor: AppColors.bgSurface,
-      dividerColor: AppColors.borderSubtle,
+      scaffoldBackgroundColor: s.bgBase,
+      cardColor: s.bgSurface,
+      dividerColor: s.borderSubtle,
 
       appBarTheme: AppBarTheme(
-        backgroundColor: AppColors.bgBase,
+        backgroundColor: s.bgBase,
         elevation: 0,
         scrolledUnderElevation: 0,
         surfaceTintColor: Colors.transparent,
         centerTitle: false,
-        // Explicit light status-bar icons on the AMOLED canvas + transparent
-        // bar for edge-to-edge (targetSdk 35). Don't leave this to AppBar
-        // brightness inference — screens without an AppBar would get no
-        // guarantee.
-        systemOverlayStyle: SystemUiOverlayStyle.light
+        systemOverlayStyle: (isLight ? SystemUiOverlayStyle.dark : SystemUiOverlayStyle.light)
             .copyWith(statusBarColor: Colors.transparent),
-        iconTheme: const IconThemeData(color: AppColors.textPrimary),
+        iconTheme: IconThemeData(color: s.textPrimary),
         titleTextStyle: _ct(
           fontSize: 20,
           fontWeight: FontWeight.w700,
-          color: AppColors.textPrimary,
+          color: s.textPrimary,
         ),
       ),
 
       // Bottom sheets → 20px top corners, Surface 2.
-      bottomSheetTheme: const BottomSheetThemeData(
-        backgroundColor: AppColors.surface2,
+      bottomSheetTheme: BottomSheetThemeData(
+        backgroundColor: s.surface2,
         elevation: 0,
-        shape: RoundedRectangleBorder(borderRadius: AppRadius.sheetTop),
+        shape: const RoundedRectangleBorder(borderRadius: AppRadius.sheetTop),
       ),
 
-      // Cards → 16px radius + 1px subtle white border (no shadow).
-      cardTheme: const CardThemeData(
+      // Cards → 16px radius + 1px subtle border (no shadow).
+      cardTheme: CardThemeData(
         elevation: 0,
-        color: AppColors.bgSurface,
+        color: s.bgSurface,
         shadowColor: Colors.transparent,
         shape: RoundedRectangleBorder(
           borderRadius: AppRadius.cardAll,
-          side: BorderSide(color: AppColors.borderSubtle),
+          side: BorderSide(color: s.borderSubtle),
         ),
       ),
 
-      // Inputs → Surface 3 fill, white-10% border, accent focus ring.
+      // Inputs → Surface 3 fill, border, accent focus ring.
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: AppColors.surface3,
-        border: const OutlineInputBorder(
+        fillColor: s.surface3,
+        border: OutlineInputBorder(
           borderRadius: AppRadius.inputAll,
-          borderSide: BorderSide(color: AppColors.borderDefault),
+          borderSide: BorderSide(color: s.borderDefault),
         ),
-        enabledBorder: const OutlineInputBorder(
+        enabledBorder: OutlineInputBorder(
           borderRadius: AppRadius.inputAll,
-          borderSide: BorderSide(color: AppColors.borderDefault),
+          borderSide: BorderSide(color: s.borderDefault),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: AppRadius.inputAll,
@@ -124,7 +146,7 @@ ThemeData buildAppTheme(ThemePaletteTokens tokens) => ThemeData(
         hintStyle: _ct(
           fontSize: 16,
           fontWeight: FontWeight.w400,
-          color: AppColors.textTertiary,
+          color: s.textTertiary,
         ),
       ),
 
@@ -152,11 +174,10 @@ ThemeData buildAppTheme(ThemePaletteTokens tokens) => ThemeData(
       ),
 
       iconButtonTheme: IconButtonThemeData(
-        style: IconButton.styleFrom(foregroundColor: AppColors.textPrimary),
+        style: IconButton.styleFrom(foregroundColor: s.textPrimary),
       ),
 
-      // Switches default to the accent when on. The thumb uses on-accent so it
-      // stays visible on the neutral (white) track. Explicit overrides win.
+      // Switches default to the accent when on.
       switchTheme: SwitchThemeData(
         thumbColor: WidgetStateProperty.resolveWith(
           (states) => states.contains(WidgetState.selected)
@@ -179,59 +200,60 @@ ThemeData buildAppTheme(ThemePaletteTokens tokens) => ThemeData(
         displayLarge: _ct(
             fontSize: 32,
             fontWeight: FontWeight.w700,
-            color: AppColors.textPrimary),
+            color: s.textPrimary),
         headlineLarge: _ct(
             fontSize: 28,
             fontWeight: FontWeight.w700,
-            color: AppColors.textPrimary),
+            color: s.textPrimary),
         headlineMedium: _ct(
             fontSize: 24,
             fontWeight: FontWeight.w700,
-            color: AppColors.textPrimary),
+            color: s.textPrimary),
         titleLarge: _ct(
             fontSize: 20,
             fontWeight: FontWeight.w700,
-            color: AppColors.textPrimary),
+            color: s.textPrimary),
 
         // Component labels / values
         titleMedium: _ct(
             fontSize: 16,
             fontWeight: FontWeight.w600,
-            color: AppColors.textPrimary),
+            color: s.textPrimary),
         titleSmall: _ct(
             fontSize: 14,
             fontWeight: FontWeight.w600,
-            color: AppColors.textPrimary),
+            color: s.textPrimary),
 
         // Body
         bodyLarge: _ct(
             fontSize: 16,
             fontWeight: FontWeight.w400,
-            color: AppColors.textPrimary),
+            color: s.textPrimary),
         bodyMedium: _ct(
             fontSize: 15,
             fontWeight: FontWeight.w400,
-            color: AppColors.textSecondary),
+            color: s.textSecondary),
         bodySmall: _ct(
             fontSize: 12,
             fontWeight: FontWeight.w400,
-            color: AppColors.textSecondary),
+            color: s.textSecondary),
 
         // Labels
         labelLarge: _ct(
             fontSize: 14,
             fontWeight: FontWeight.w600,
-            color: AppColors.textSecondary),
+            color: s.textSecondary),
         labelMedium: _ct(
             fontSize: 12,
             fontWeight: FontWeight.w600,
-            color: AppColors.textSecondary),
+            color: s.textSecondary),
         labelSmall: _ct(
             fontSize: 11,
             fontWeight: FontWeight.w600,
-            color: AppColors.textTertiary),
+            color: s.textTertiary),
       ),
     );
+}
 
 // ── High-contrast variant ───────────────────────────────────────────────────
 // Selected automatically by MaterialApp when the OS "increase contrast" setting
@@ -239,21 +261,27 @@ ThemeData buildAppTheme(ThemePaletteTokens tokens) => ThemeData(
 const _hcSecondary = Color(0xFFD2D2D7);
 const _hcBorder = Color(0xFF8A8A8E);
 
+const _hcSecondaryLight = Color(0xFF3A3A3C);
+const _hcBorderLight = Color(0xFF8A8A8E);
+
 /// High-contrast variant of [buildAppTheme] for the given accent tokens.
-ThemeData buildHighContrastTheme(ThemePaletteTokens tokens) {
-  final base = buildAppTheme(tokens);
+ThemeData buildHighContrastTheme(ThemePaletteTokens tokens, {ThemePalette palette = ThemePalette.fallback}) {
+  final base = buildAppTheme(tokens, palette: palette);
+  final isLight = palette.isLightSurface;
+  final hcSecondary = isLight ? _hcSecondaryLight : _hcSecondary;
+  final hcBorder = isLight ? _hcBorderLight : _hcBorder;
   return base.copyWith(
-    dividerColor: _hcBorder,
+    dividerColor: hcBorder,
     colorScheme: base.colorScheme.copyWith(
-      onSurfaceVariant: _hcSecondary,
-      outline: _hcBorder,
+      onSurfaceVariant: hcSecondary,
+      outline: hcBorder,
     ),
     textTheme: base.textTheme.copyWith(
-      bodyMedium: base.textTheme.bodyMedium?.copyWith(color: _hcSecondary),
-      bodySmall: base.textTheme.bodySmall?.copyWith(color: _hcSecondary),
-      labelLarge: base.textTheme.labelLarge?.copyWith(color: _hcSecondary),
-      labelMedium: base.textTheme.labelMedium?.copyWith(color: _hcSecondary),
-      labelSmall: base.textTheme.labelSmall?.copyWith(color: _hcSecondary),
+      bodyMedium: base.textTheme.bodyMedium?.copyWith(color: hcSecondary),
+      bodySmall: base.textTheme.bodySmall?.copyWith(color: hcSecondary),
+      labelLarge: base.textTheme.labelLarge?.copyWith(color: hcSecondary),
+      labelMedium: base.textTheme.labelMedium?.copyWith(color: hcSecondary),
+      labelSmall: base.textTheme.labelSmall?.copyWith(color: hcSecondary),
     ),
   );
 }
@@ -261,6 +289,6 @@ ThemeData buildHighContrastTheme(ThemePaletteTokens tokens) {
 /// Default-accent theme. Used by surfaces that build before the provider scope
 /// exists (e.g. the DB-recovery MaterialApp). Normal screens use the reactive
 /// [buildAppTheme] wired in app.dart.
-final appTheme = buildAppTheme(ThemePalette.fallback.tokens);
+final appTheme = buildAppTheme(ThemePalette.fallback.tokens, palette: ThemePalette.fallback);
 final appHighContrastTheme =
-    buildHighContrastTheme(ThemePalette.fallback.tokens);
+    buildHighContrastTheme(ThemePalette.fallback.tokens, palette: ThemePalette.fallback);
