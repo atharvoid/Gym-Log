@@ -315,7 +315,8 @@ class _ExerciseSelectionScreenState
       appBar: AppBar(
         title: Text(
           widget.browse ? 'Exercise Library' : 'Select Exercise',
-          style: AppText.sectionHeading(),
+          // S3: text-depth shadow on screen title
+          style: AppText.sectionHeading(shadows: AppText.depthFor(context)),
         ),
         backgroundColor: AppColors.bgBase,
         scrolledUnderElevation: 0,
@@ -577,10 +578,11 @@ class _ExerciseRow extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // S3: text-depth shadow on exercise name
                     Text(exercise.name,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: AppText.exerciseName()),
+                        style: AppText.exerciseName(shadows: AppText.depthFor(context))),
                     const SizedBox(height: 4),
                     Text('${exercise.target} • ${exercise.equipment}',
                         maxLines: 1,
@@ -829,7 +831,10 @@ class _FilterChipButton extends StatelessWidget {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text(label, style: AppText.statLabel(color: fg)),
+                // S3: on-accent halo shadow when active
+                Text(label, style: AppText.statLabel(
+                    color: fg,
+                    shadows: active ? TextDepth.onAccentHalo(context.accent.palette) : null)),
                 const SizedBox(width: 4),
                 Icon(Icons.keyboard_arrow_down_rounded,
                     size: 16,
