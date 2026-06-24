@@ -407,8 +407,8 @@ const kAppVersionFallback = '1.0.0';
 
 class _GroupHeader extends StatelessWidget {
   final String label;
-  final Color? color;
-  const _GroupHeader(this.label, {this.color});
+  final Color color;
+  const _GroupHeader(this.label, {required this.color});
 
   @override
   Widget build(BuildContext context) => Padding(
