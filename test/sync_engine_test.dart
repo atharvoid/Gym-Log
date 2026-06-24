@@ -1,7 +1,7 @@
 // SyncEngine behaviour without a live backend — a fake SyncRemote stands in
 // for Supabase, and an in-memory Drift DB provides the local source of truth.
 // Covers: outbox drain + batching, offline requeue/retry, the session
-// round-trip (enqueue → push → pull → rehydrate), pending count, and the
+// round-trip (enqueue -> push -> pull -> rehydrate), pending count, and the
 // compression codec.
 
 import 'dart:ffi';
@@ -14,6 +14,7 @@ import 'package:gymlog/core/database/database.dart';
 import 'package:gymlog/core/database/daos/routines_dao.dart';
 import 'package:gymlog/core/services/sync_codec.dart';
 import 'package:gymlog/core/services/sync_engine.dart';
+import 'package:gymlog/core/services/sync_entitlement_gate.dart';
 import 'package:gymlog/core/services/sync_remote.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqlite3/open.dart';
@@ -61,10 +62,15 @@ void main() {
   });
 
   setUp(() {
-    SharedPreferences.setMockInitialValues({});
+    SharedPreferences.setMockInitialValues({
+      'sync_enabled': true,
+    });
     db = AppDatabase.forTesting(NativeDatabase.memory());
     remote = FakeRemote();
-    engine = SyncEngine(db: db, remote: remote);
+    final gate = SyncEntitlementGate();
+    engine = SyncEngine(db: db, remote: remote, gate: gate);
+    // Initialize session as a premium user so sync is allowed.
+    engine.initSession(userId, isPremium: true);
   });
 
   tearDown(() {
@@ -167,7 +173,7 @@ void main() {
   });
 
   test('batches large queues across multiple push calls', () async {
-    // 250 sessions > the 200 batch size → at least 2 push calls.
+    // 250 sessions > the 200 batch size -> at least 2 push calls.
     for (var i = 0; i < 250; i++) {
       await seedSession('s$i', 1);
       await engine.enqueueSession(userId, 's$i');
