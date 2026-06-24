@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gymlog/core/providers/premium_provider.dart';
 import 'package:gymlog/core/theme/app_colors.dart';
 import 'package:gymlog/core/theme/app_text.dart';
+import 'package:gymlog/core/theme/dynamic_accent_theme.dart';
 import 'package:gymlog/features/routines/presentation/widgets/routine_detail_styles.dart';
 import 'package:gymlog/shared/widgets/premium_paywall.dart';
 import 'package:gymlog/shared/widgets/ui/branded_bottom_sheet.dart';
@@ -63,6 +64,10 @@ class TimeRangeFilter extends ConsumerWidget {
   void _showSheet(BuildContext context, WidgetRef ref) {
     HapticFeedback.lightImpact();
     final isPremium = ref.read(isPremiumProvider);
+    // Resolve the live accent once from the calling context — the modal
+    // builder runs under a different (root navigator) context, so capture it
+    // here rather than reading it inside the sheet.
+    final accent = context.accent;
 
     showModalBottomSheet<void>(
       context: context,
@@ -139,22 +144,22 @@ class TimeRangeFilter extends ConsumerWidget {
                                     color: isLocked
                                         ? AppColors.textSecondary
                                         : isSelected
-                                            ? AppColors.accentPrimary
+                                            ? accent.base
                                             : AppColors.textPrimary,
                                   ),
                                 ),
                               ),
                               if (isLocked)
-                                const Icon(
+                                Icon(
                                   Icons.lock_rounded,
                                   size: 14,
-                                  color: AppColors.indigo400,
+                                  color: accent.light,
                                 )
                               else if (isSelected)
-                                const Icon(
+                                Icon(
                                   Icons.check_rounded,
                                   size: 18,
-                                  color: AppColors.accentPrimary,
+                                  color: accent.base,
                                 ),
                             ],
                           ),
@@ -181,6 +186,7 @@ Future<T?> showBrandedPickerSheet<T>({
   T? selected,
 }) {
   HapticFeedback.lightImpact();
+  final accent = context.accent;
 
   Widget optionRow(PickerOption<T> opt) {
     final isSelected = selected != null && opt.value == selected;
@@ -222,8 +228,8 @@ Future<T?> showBrandedPickerSheet<T>({
                   ),
                 ),
                 if (isSelected)
-                  const Icon(Icons.check_rounded,
-                      size: 18, color: AppColors.accentPrimary),
+                  Icon(Icons.check_rounded,
+                      size: 18, color: accent.base),
               ],
             ),
           ),
