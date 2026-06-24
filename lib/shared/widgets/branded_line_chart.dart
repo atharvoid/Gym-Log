@@ -214,21 +214,9 @@ class _BrandedLineChartState extends State<BrandedLineChart> {
                 titlesData: FlTitlesData(
                   topTitles: const AxisTitles(
                       sideTitles: SideTitles(showTitles: false)),
-                  rightTitles: AxisTitles(
-                    sideTitles: SideTitles(
-                      showTitles: true,
-                      reservedSize: 40,
-                      interval: interval,
-                      getTitlesWidget: (v, m) => (v <= 0 || v > maxY)
-                          ? const SizedBox.shrink()
-                          : SideTitleWidget(
-                              axisSide: m.axisSide,
-                              space: 8,
-                              child: Text(_axisLabel(v),
-                                  style: RDStyles.axis),
-                            ),
-                    ),
-                  ),
+                  // Right axis disabled — no digit labels on the right side.
+                  rightTitles: const AxisTitles(
+                      sideTitles: SideTitles(showTitles: false)),
                   leftTitles: AxisTitles(
                     sideTitles: SideTitles(
                       showTitles: true,
