@@ -496,7 +496,7 @@ class _PaywallSheetState extends ConsumerState<_PaywallSheet> {
                                   )
                                 : Text(
                                     _ctaLabel,
-                                    style: AppText.body(color: AppColors.onAccent)
+                                    style: AppText.body(color: accent.onAccent)
                                         .copyWith(fontWeight: FontWeight.bold),
                                   ),
                           ),
