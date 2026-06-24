@@ -157,7 +157,7 @@ abstract class AppText {
       );
 }
 
-/// Border-radius scale. The "sweet spot" premium curvature: cards and
+/// Border-radius scale. The premium "sweet spot" curvature: cards and
 /// thumbnails 10px, primary CTAs 14px, secondary actions 14px, badges 8px,
 /// sheets 12px. Not boxy (6), not pill (24+). Data-entry fields stay sharp
 /// at 0px — this is intentional per the design system.
