@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter/services.dart';
 import '../../core/theme/app_colors.dart';
+import '../../core/theme/dynamic_accent_theme.dart';
 
 /// [bottom_nav_bar.dart]
 /// 3-tab navigation (Home, Routines, Profile). Driven by the parent
@@ -10,6 +11,7 @@ import '../../core/theme/app_colors.dart';
 ///
 /// Active-tab indicator: a small accent underline drawn INSIDE each tab cell,
 /// directly under its label — centered by construction, no cross-bar math.
+/// The active color follows the user's chosen accent palette.
 class BottomNavBar extends StatelessWidget {
   final int currentIndex;
   final ValueChanged<int> onTap;
@@ -77,7 +79,8 @@ class _NavButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = isActive ? AppColors.accentText : AppColors.textSecondary;
+    final accent = context.accent;
+    final color = isActive ? accent.light : AppColors.textSecondary;
     return Semantics(
       selected: isActive,
       button: true,
@@ -104,7 +107,7 @@ class _NavButton extends StatelessWidget {
               height: 2,
               width: isActive ? 16 : 0,
               decoration: BoxDecoration(
-                color: AppColors.accentText,
+                color: accent.light,
                 borderRadius: BorderRadius.circular(6),
               ),
             ),

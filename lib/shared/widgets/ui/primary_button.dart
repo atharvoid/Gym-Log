@@ -2,12 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text.dart';
+import '../../../core/theme/dynamic_accent_theme.dart';
 
 /// [primary_button.dart]
 /// Purpose: PrimaryButton — the app's primary CTA, on-spec with the design
-/// system: 52px height, AppRadius.buttonPrimary (12px) radius, indigo fill,
+/// system: 52px height, AppRadius.buttonPrimary (12px) radius, accent fill,
 /// w600 label. Every primary action fires a medium impact — consistent
-/// app-wide feel.
+/// app-wide feel. The fill follows the active accent palette.
 
 class PrimaryButton extends StatelessWidget {
   final String label;
@@ -31,6 +32,7 @@ class PrimaryButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final accent = context.accent;
     final disabled = isLoading || onPressed == null;
     final button = SizedBox(
       height: 52,
@@ -43,12 +45,11 @@ class PrimaryButton extends StatelessWidget {
                 onPressed!();
               },
         style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.accentPrimary,
+          backgroundColor: accent.base,
           foregroundColor: AppColors.textPrimary,
-          // Busy state stays on-brand (dimmed purple), not the default gray
+          // Busy state stays on-brand (dimmed accent), not the default gray
           // "disabled" look — it reads as "working", not "unavailable".
-          disabledBackgroundColor:
-              AppColors.accentPrimary.withValues(alpha: 0.6),
+          disabledBackgroundColor: accent.base.withValues(alpha: 0.6),
           disabledForegroundColor: AppColors.textPrimary,
           elevation: 0,
           shadowColor: Colors.transparent,
