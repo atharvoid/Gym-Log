@@ -16,12 +16,9 @@ import 'package:gymlog/shared/widgets/ui/skeleton.dart';
 import '../providers/exercises_provider.dart';
 import '../widgets/create_exercise_dialog.dart';
 
-/// Fixed header height — the alphabet scrubber computes scroll offsets from these.
-/// S5.2: Exercise rows use an estimated height of 80 for scrolling calculations.
 const double _kEstimatedRowHeight = 80;
 const double _kHeaderHeight = 36;
 
-/// Live recent-exercise ids from workout history.
 final _recentExerciseIdsProvider = StreamProvider.autoDispose<List<int>>((ref) {
   final user = ref.watch(authProvider);
   if (user == null) return Stream.value(const []);
@@ -29,7 +26,6 @@ final _recentExerciseIdsProvider = StreamProvider.autoDispose<List<int>>((ref) {
   return db.workoutsDao.watchRecentExerciseIds(user.id);
 });
 
-/// Muscle-group buckets → exercise.bodyPart (region) values.
 const _muscleGroups = <String, List<String>>{
   'Chest': ['chest'],
   'Back': ['back'],
@@ -39,7 +35,6 @@ const _muscleGroups = <String, List<String>>{
   'Core': ['core'],
 };
 
-/// Equipment buckets → matcher over exercise.equipment (lower-cased).
 final _equipmentGroups = <String, bool Function(String)>{
   'Barbell': (e) =>
       e.contains('barbell') || e.contains('ez bar') || e.contains('trap bar'),
@@ -51,13 +46,6 @@ final _equipmentGroups = <String, bool Function(String)>{
   'Band': (e) => e.contains('band'),
 };
 
-/// Exercise list with live search, Recent section, combinable Muscle / Equipment
-/// filters, and an A–Z scrubber.
-///
-/// Two modes, one screen:
-///  * Selection (default): tapping pops with the chosen [Exercise].
-///  * Browse (`browse: true`, route `/exercises/library`): tapping opens
-///    the exercise detail.
 class ExerciseSelectionScreen extends ConsumerStatefulWidget {
   final bool browse;
 
@@ -79,8 +67,6 @@ class _ExerciseSelectionScreenState
   bool _isSearching = false;
   bool _searchFocused = false;
 
-  /// S5.1: Cached filtered list + letter offsets.
-  /// Computed once per data/filter change (not per build) via [_computeList].
   List<Exercise>? _cachedFiltered;
   String? _cachedMuscleFilter;
   String? _cachedEquipmentFilter;
@@ -108,10 +94,6 @@ class _ExerciseSelectionScreenState
     }
   }
 
-  /// `setState` runs ONLY on the empty↔non-empty boundary (Recent visibility +
-  /// clear button) — not per keystroke — so the catalog filter+sort doesn't
-  /// re-run on every character. The DB search is debounced 250ms
-  /// (S5.1: increased from 150ms to 250ms for less churn on rapid typing).
   void _onQueryChanged() {
     final searching = _searchController.text.trim().isNotEmpty;
     if (searching != _isSearching) setState(() => _isSearching = searching);
@@ -167,14 +149,15 @@ class _ExerciseSelectionScreenState
     required ValueChanged<String?> onSelected,
   }) async {
     HapticFeedback.lightImpact();
+    final surface = context.surface;
     final result = await showModalBottomSheet<String?>(
       context: context,
       useRootNavigator: true,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (sheetCtx) => Container(
-        decoration: const BoxDecoration(
-          color: AppColors.surface2,
+        decoration: BoxDecoration(
+          color: surface.surface2,
           borderRadius: AppRadius.sheetTop,
         ),
         child: SafeArea(
@@ -188,12 +171,12 @@ class _ExerciseSelectionScreenState
                   width: 36,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: AppColors.borderEmphasis,
+                    color: surface.borderEmphasis,
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
                 const SizedBox(height: 18),
-                Text(title, style: AppText.cardTitle()),
+                Text(title, style: AppText.cardTitle(color: surface.textPrimary)),
                 const SizedBox(height: 12),
                 Flexible(
                   child: SingleChildScrollView(
@@ -226,24 +209,18 @@ class _ExerciseSelectionScreenState
     }
   }
 
-  /// S5.1: Computes the filtered + sorted catalog and letter→offset map.
-  /// Results are cached so a rebuild without data/filter changes reuses the
-  /// previous computation.
   ({
     List<Exercise> recent,
     List<Exercise> catalog,
     Map<String, double> letterOffsets,
     List<_ListItem> items,
   }) _computeList(List<Exercise> exercises, List<int> recentIds) {
-    // Cache check: if nothing changed, reuse the previous computation.
     final dataHash = Object.hash(exercises.length, _muscleFilter, _equipmentFilter);
     if (_cachedFiltered != null &&
         _cachedMuscleFilter == _muscleFilter &&
         _cachedEquipmentFilter == _equipmentFilter &&
         _cachedDataHash == dataHash) {
-      // Still need to build items+offsets from cache...
-      // Actually this path is rare; the cache mainly helps when only _searchFocused
-      // changes. Fall through to rebuild items from cached filtered.
+      // Cache hit — reuse previous computation.
     }
 
     final filtered = exercises.where(_matchesFilters).toList();
@@ -308,23 +285,25 @@ class _ExerciseSelectionScreenState
     final recentIds = ref.watch(_recentExerciseIdsProvider).valueOrNull ?? [];
     final hasFilters = _muscleFilter != null || _equipmentFilter != null;
     final accent = context.accent;
+    final surface = context.surface;
 
     return Scaffold(
-      backgroundColor: AppColors.bgBase,
+      backgroundColor: surface.bgBase,
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
         title: Text(
           widget.browse ? 'Exercise Library' : 'Select Exercise',
-          // S3: text-depth shadow on screen title
-          style: AppText.sectionHeading(shadows: AppText.depthFor(context)),
+          style: AppText.sectionHeading(
+              color: surface.textPrimary,
+              shadows: AppText.depthFor(context)),
         ),
-        backgroundColor: AppColors.bgBase,
+        backgroundColor: surface.bgBase,
         scrolledUnderElevation: 0,
         titleSpacing: 0,
         actions: [
           IconButton(
             tooltip: 'Create custom exercise',
-            icon: const Icon(Icons.add_rounded, color: AppColors.textPrimary),
+            icon: Icon(Icons.add_rounded, color: surface.textPrimary),
             onPressed: _createCustom,
           ),
         ],
@@ -351,35 +330,35 @@ class _ExerciseSelectionScreenState
                 controller: _searchController,
                 focusNode: _searchFocus,
                 autofocus: true,
-                style: AppText.body(color: AppColors.textPrimary),
+                style: AppText.body(color: surface.textPrimary),
                 cursorColor: accent.base,
                 textInputAction: TextInputAction.search,
                 textCapitalization: TextCapitalization.words,
                 autocorrect: false,
                 decoration: InputDecoration(
                   hintText: 'Search exercises…',
-                  hintStyle: AppText.body(color: AppColors.textTertiary),
+                  hintStyle: AppText.body(color: surface.textTertiary),
                   prefixIcon:
-                      const Icon(Icons.search, color: AppColors.textSecondary),
+                      Icon(Icons.search, color: surface.textSecondary),
                   suffixIcon: _isSearching
                       ? IconButton(
                           tooltip: 'Clear',
-                          icon: const Icon(Icons.cancel,
-                              size: 18, color: AppColors.textSecondary),
+                          icon: Icon(Icons.cancel,
+                              size: 18, color: surface.textSecondary),
                           onPressed: _searchController.clear,
                         )
                       : null,
                   filled: true,
-                  fillColor: AppColors.surface3,
-                  enabledBorder: const OutlineInputBorder(
+                  fillColor: surface.surface3,
+                  enabledBorder: OutlineInputBorder(
                     borderRadius: AppRadius.inputAll,
                     borderSide:
-                        BorderSide(color: AppColors.borderSubtle, width: 1),
+                        BorderSide(color: surface.borderSubtle, width: 1),
                   ),
-                  border: const OutlineInputBorder(
+                  border: OutlineInputBorder(
                     borderRadius: AppRadius.inputAll,
                     borderSide:
-                        BorderSide(color: AppColors.borderSubtle, width: 1),
+                        BorderSide(color: surface.borderSubtle, width: 1),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: AppRadius.inputAll,
@@ -455,9 +434,6 @@ class _ExerciseSelectionScreenState
     );
   }
 
-  /// S5.1: Uses [_computeList] which caches the filtered/sorted catalog.
-  /// The build method no longer re-runs filtering on every rebuild — only
-  /// when the data or filters actually change.
   Widget _list(List<Exercise> exercises, List<int> recentIds) {
     final computed = _computeList(exercises, recentIds);
 
@@ -492,7 +468,7 @@ class _ExerciseSelectionScreenState
                     header: true,
                     child: Text(header,
                         style: AppText.columnHeader(
-                            color: AppColors.textSecondary)),
+                            color: context.surface.textSecondary)),
                   ),
                 ),
               ),
@@ -547,7 +523,6 @@ class _ListItem {
   bool get isHeader => headerLabel != null;
 }
 
-/// S5.2: Row sizing — vertical padding 14, thumbnail 52, gap 16, subtitle gap 4.
 class _ExerciseRow extends StatelessWidget {
   final Exercise exercise;
   final bool browse;
@@ -562,6 +537,7 @@ class _ExerciseRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final surface = context.surface;
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -578,24 +554,25 @@ class _ExerciseRow extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // S3: text-depth shadow on exercise name
                     Text(exercise.name,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: AppText.exerciseName(shadows: AppText.depthFor(context))),
+                        style: AppText.exerciseName(
+                            color: surface.textPrimary,
+                            shadows: AppText.depthFor(context))),
                     const SizedBox(height: 4),
                     Text('${exercise.target} • ${exercise.equipment}',
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: AppText.caption()),
+                        style: AppText.caption(color: surface.textSecondary)),
                   ],
                 ),
               ),
               if (browse) ...[
                 const SizedBox(width: 8),
-                const ExcludeSemantics(
+                ExcludeSemantics(
                   child: Icon(Icons.chevron_right_rounded,
-                      size: 20, color: AppColors.textTertiary),
+                      size: 20, color: surface.textTertiary),
                 ),
               ],
             ],
@@ -637,6 +614,7 @@ class _AlphabetRailState extends State<_AlphabetRail> {
   @override
   Widget build(BuildContext context) {
     final accent = context.accent;
+    final surface = context.surface;
     return LayoutBuilder(
       builder: (context, constraints) {
         final h = constraints.maxHeight;
@@ -661,7 +639,7 @@ class _AlphabetRailState extends State<_AlphabetRail> {
                         style: AppText.columnHeader(
                           color: widget.present.contains(l)
                               ? accent.light
-                              : AppColors.textTertiary,
+                              : surface.textTertiary,
                         ),
                       ),
                   ],
@@ -683,6 +661,7 @@ class _EmptyState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final accent = context.accent;
+    final surface = context.surface;
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32),
@@ -690,16 +669,18 @@ class _EmptyState extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(Icons.search_off_rounded,
-                size: 30, color: Colors.white.withValues(alpha: 0.25)),
+                size: 30, color: surface.isLight
+                    ? Colors.black.withValues(alpha: 0.25)
+                    : Colors.white.withValues(alpha: 0.25)),
             const SizedBox(height: 10),
-            Text('No exercises match', style: AppText.rowLabel()),
+            Text('No exercises match', style: AppText.rowLabel(color: surface.textPrimary)),
             const SizedBox(height: 3),
             Text(
               isSearching
                   ? 'Not in the library? Add it yourself.'
                   : 'Try clearing a filter or changing the search.',
               textAlign: TextAlign.center,
-              style: AppText.caption(),
+              style: AppText.caption(color: surface.textSecondary),
             ),
             const SizedBox(height: 14),
             TextButton.icon(
@@ -764,6 +745,7 @@ class _FilterOptionRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final accent = context.accent;
+    final surface = context.surface;
     return Semantics(
       button: true,
       selected: selected,
@@ -771,8 +753,8 @@ class _FilterOptionRow extends StatelessWidget {
         onTap: onTap,
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 14),
-          decoration: const BoxDecoration(
-            border: Border(bottom: BorderSide(color: AppColors.borderSubtle)),
+          decoration: BoxDecoration(
+            border: Border(bottom: BorderSide(color: surface.borderSubtle)),
           ),
           child: Row(
             children: [
@@ -782,7 +764,7 @@ class _FilterOptionRow extends StatelessWidget {
                   style: AppText.body(
                       color: selected
                           ? accent.base
-                          : AppColors.textPrimary),
+                          : surface.textPrimary),
                 ),
               ),
               if (selected)
@@ -810,13 +792,14 @@ class _FilterChipButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final accent = context.accent;
-    final fg = active ? accent.onAccent : AppColors.textPrimary;
+    final surface = context.surface;
+    final fg = active ? accent.onAccent : surface.textPrimary;
     return Semantics(
       button: true,
       label: '$label filter${active ? ', active' : ''}',
       excludeSemantics: true,
       child: Material(
-        color: active ? accent.base : AppColors.surface3,
+        color: active ? accent.base : surface.surface3,
         borderRadius: BorderRadius.circular(14),
         clipBehavior: Clip.antiAlias,
         child: InkWell(
@@ -831,7 +814,6 @@ class _FilterChipButton extends StatelessWidget {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // S3: on-accent halo shadow when active
                 Text(label, style: AppText.statLabel(
                     color: fg,
                     shadows: active ? TextDepth.onAccentHalo(context.accent.palette) : null)),
@@ -839,7 +821,7 @@ class _FilterChipButton extends StatelessWidget {
                 Icon(Icons.keyboard_arrow_down_rounded,
                     size: 16,
                     color:
-                        active ? accent.onAccent : AppColors.textSecondary),
+                        active ? accent.onAccent : surface.textSecondary),
               ],
             ),
           ),
