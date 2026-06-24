@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:gymlog/core/theme/app_colors.dart';
 import 'package:gymlog/core/theme/app_text.dart';
+import 'package:gymlog/core/theme/dynamic_accent_theme.dart';
 import 'package:gymlog/core/utils/units.dart';
 import 'package:gymlog/core/providers/premium_provider.dart';
 import 'package:gymlog/features/profile/presentation/providers/profile_stats_provider.dart';
@@ -20,7 +21,7 @@ import 'package:intl/intl.dart';
 ///
 /// **Full-data path (≥ 4 filled weeks):** renders the BarChart with:
 ///   - Linear, evenly-spaced Y-axis (max = dataMax × 1.15 rounded to next interval)
-///   - Indigo current-week bar / neutral-gray historical bars (no cyan)
+///   - Accent current-week bar / neutral-gray historical bars (no cyan)
 ///   - Value labels printed above bars (when ≤ 6 bars)
 ///   - Horizontal X-axis labels (no rotation) when ≤ 4 bars; 30° for more
 ///   - White-8% gridlines (barely-there guides, not competing with bars)
@@ -46,15 +47,25 @@ class _WeeklyBarChartState extends State<WeeklyBarChart> {
   double _maxY = 1;
   double _interval = 1;
 
+  // Live accent palette — resolved from the inherited theme in
+  // didChangeDependencies so bar colors track the user's chosen palette.
+  // Bars are computed off the BuildContext (initState/didUpdateWidget), so the
+  // accent must be cached on the State rather than read inside _buildGroup.
+  AccentColors _accent = AccentColors.purpleFallback;
+
   // Derived counts — recomputed in _computeBars.
   int _filledWeeks = 0;
   List<WeeklyAggregate> _gatedAggregates = const [];
 
-
   @override
-  void initState() {
-    super.initState();
-    _computeBars();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Re-fires whenever the MaterialApp theme rebuilds (i.e. the user picks a
+    // new accent), so the bars recolor without an explicit listener.
+    final accent = context.accent;
+    final changed = accent != _accent;
+    _accent = accent;
+    if (changed || _barGroups.isEmpty) _computeBars();
   }
 
   @override
@@ -115,19 +126,19 @@ class _WeeklyBarChartState extends State<WeeklyBarChart> {
     final isTouched = index == _touchedIndex;
     final hasValue = value > 0;
 
-    // ── Semantic color rule ──────────────────────────────────────────────────
-    // current week (complete)  → brand indigo
-    // current week (in-flight) → brand indigo 50% (shows progress, not done)
+    // ── Semantic color rule ─────────────────────────────────────────────────────
+    // current week (complete)  → accent base
+    // current week (in-flight) → accent base 50% (shows progress, not done)
     // previous weeks with data → neutral cool-gray (historical reference)
     // empty week slot          → ghost (barely visible placeholder)
-    // touch highlight          → indigo400 (slightly brighter)
+    // touch highlight          → accent light (slightly brighter)
     final Color rodColor;
     if (isTouched) {
-      rodColor = AppColors.profileGraphCurrentBarBright;
+      rodColor = _accent.light;
     } else if (isLatest && !isInProgress) {
-      rodColor = AppColors.profileGraphCurrentBar;
+      rodColor = _accent.base;
     } else if (isInProgress) {
-      rodColor = AppColors.profileGraphCurrentBar.withValues(alpha: 0.50);
+      rodColor = _accent.base.withValues(alpha: 0.50);
     } else if (hasValue) {
       rodColor = AppColors.profileGraphHistoricalBar;
     } else {
@@ -216,7 +227,7 @@ class _WeeklyBarChartState extends State<WeeklyBarChart> {
     return '${DateFormat('MMM d').format(start)} — ${DateFormat('MMM d').format(end)}';
   }
 
-  // ── Low-data comparison view ───────────────────────────────────────────────
+  // ── Low-data comparison view ─────────────────────────────────────────────────
 
   /// Renders when filledWeeks < 4. Shows an honest stat comparison instead of
   /// a broken/half-empty chart sitting under a "data not ready" banner.
@@ -319,6 +330,7 @@ class _WeeklyBarChartState extends State<WeeklyBarChart> {
   Widget build(BuildContext context) {
     final reduceMotion = MediaQuery.disableAnimationsOf(context);
     final boldText = MediaQuery.boldTextOf(context);
+    final accent = context.accent;
 
     if (_barGroups.isEmpty) return const SizedBox.shrink();
 
@@ -382,7 +394,7 @@ class _WeeklyBarChartState extends State<WeeklyBarChart> {
                             fontSize: 9,
                             fontWeight: FontWeight.w600,
                             color: index == _gatedAggregates.length - 1
-                                ? AppColors.accentText
+                                ? accent.light
                                 : AppColors.textTertiary,
                             fontFeatures: const [FontFeature.tabularFigures()],
                           ),
@@ -515,6 +527,8 @@ class _WeeklyBarChartState extends State<WeeklyBarChart> {
                     } else {
                       _touchedIndex = index;
                     }
+                    // Recolor the touched/last bars off the new selection.
+                    _computeBars();
                   });
                 },
               ),
@@ -551,7 +565,7 @@ class _WeeklyBarChartState extends State<WeeklyBarChart> {
   }
 }
 
-// ── Supporting widgets for the comparison/low-data view ──────────────────────
+// ── Supporting widgets for the comparison/low-data view ──────────────────────────
 
 class _StatBlock extends StatelessWidget {
   final String label;
@@ -612,8 +626,8 @@ class _UnlockProgress extends StatelessWidget {
             value: progressFraction,
             minHeight: 4,
             backgroundColor: AppColors.surface3,
-            valueColor: const AlwaysStoppedAnimation<Color>(
-              AppColors.accentPrimary,
+            valueColor: AlwaysStoppedAnimation<Color>(
+              context.accent.base,
             ),
           ),
         ),
