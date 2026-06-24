@@ -17,6 +17,10 @@ import 'theme_palette.dart';
 /// switches, and progress indicators all follow the accent for free. Explicit
 /// accent consumers read the live tokens via `context.accent` (see
 /// dynamic_accent_theme.dart). Surfaces / text / semantic colors never change.
+///
+/// ON-ACCENT: the label that sits on a full-saturation [base] fill comes from
+/// tokens.onAccent (white for colored palettes, near-black for the neutral
+/// palette) — never a hardcoded white, so the white palette stays legible.
 
 TextStyle _ct({
   required double fontSize,
@@ -48,7 +52,7 @@ ThemeData buildAppTheme(ThemePaletteTokens tokens) => ThemeData(
         surface: AppColors.bgBase,
         surfaceContainerHighest: AppColors.bgSurface,
         primary: tokens.base,
-        onPrimary: AppColors.textPrimary, // white on accent (spec) ~4.5:1
+        onPrimary: tokens.onAccent, // legible on the accent for every palette
         secondary: tokens.light,
         onSecondary: AppColors.bgBase,
         error: AppColors.error,
@@ -124,11 +128,11 @@ ThemeData buildAppTheme(ThemePaletteTokens tokens) => ThemeData(
         ),
       ),
 
-      // Primary CTA → 12px slightly rounded, accent fill, white text, 52px tall.
+      // Primary CTA → 12px slightly rounded, accent fill, on-accent text, 52px.
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: tokens.base,
-          foregroundColor: AppColors.textPrimary,
+          foregroundColor: tokens.onAccent,
           elevation: 0,
           shadowColor: Colors.transparent,
           minimumSize: const Size(0, 52),
@@ -151,11 +155,12 @@ ThemeData buildAppTheme(ThemePaletteTokens tokens) => ThemeData(
         style: IconButton.styleFrom(foregroundColor: AppColors.textPrimary),
       ),
 
-      // Switches default to the accent when on. Explicit overrides still win.
+      // Switches default to the accent when on. The thumb uses on-accent so it
+      // stays visible on the neutral (white) track. Explicit overrides win.
       switchTheme: SwitchThemeData(
         thumbColor: WidgetStateProperty.resolveWith(
           (states) => states.contains(WidgetState.selected)
-              ? AppColors.textPrimary
+              ? tokens.onAccent
               : null,
         ),
         trackColor: WidgetStateProperty.resolveWith(
@@ -253,8 +258,9 @@ ThemeData buildHighContrastTheme(ThemePaletteTokens tokens) {
   );
 }
 
-/// Purple-default theme. Used by surfaces that build before the provider scope
+/// Default-accent theme. Used by surfaces that build before the provider scope
 /// exists (e.g. the DB-recovery MaterialApp). Normal screens use the reactive
 /// [buildAppTheme] wired in app.dart.
-final appTheme = buildAppTheme(ThemePalette.purple.tokens);
-final appHighContrastTheme = buildHighContrastTheme(ThemePalette.purple.tokens);
+final appTheme = buildAppTheme(ThemePalette.fallback.tokens);
+final appHighContrastTheme =
+    buildHighContrastTheme(ThemePalette.fallback.tokens);
