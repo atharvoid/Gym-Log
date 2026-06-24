@@ -26,9 +26,6 @@ import '../widgets/profile_graph_empty_state.dart';
 import '../widgets/weekly_bar_chart.dart';
 import 'settings_screen.dart';
 
-/// Key for storing the profile image path in SharedPreferences.
-/// A full DB migration is overkill for a single user-scoped file path —
-/// SharedPreferences is simpler and doesn't require a schema bump.
 const _kProfileImageKey = 'profile_image_path';
 
 class ProfileScreen extends ConsumerStatefulWidget {
@@ -45,8 +42,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     duration: const Duration(milliseconds: 600),
   );
 
-  /// Local cache of the profile image path so the avatar updates instantly
-  /// after a pick without waiting for a provider round-trip.
   String? _profileImagePath;
 
   @override
@@ -165,22 +160,25 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
         MediaQuery.viewPaddingOf(context).bottom +
         24;
 
+    final surface = context.surface;
+
     return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: SystemUiOverlayStyle.light,
+      value: surface.isLight ? SystemUiOverlayStyle.dark : SystemUiOverlayStyle.light,
       child: Scaffold(
-        backgroundColor: AppColors.bgBase,
+        backgroundColor: surface.bgBase,
         appBar: AppBar(
-          backgroundColor: AppColors.bgBase,
+          backgroundColor: surface.bgBase,
           scrolledUnderElevation: 0,
-          // S3: text-depth shadow on Profile screen title
           title: Text('Profile',
-              style: AppText.screenTitle(shadows: AppText.depthFor(context))),
+              style: AppText.screenTitle(
+                  color: surface.textPrimary,
+                  shadows: AppText.depthFor(context))),
           actions: [
             IconButton(
               tooltip: 'Settings',
               constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
-              icon: const Icon(Icons.settings_outlined,
-                  size: 22, color: AppColors.textPrimary),
+              icon: Icon(Icons.settings_outlined,
+                  size: 22, color: surface.textPrimary),
               onPressed: _openSettings,
             ),
           ],
@@ -196,8 +194,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
             final email = profile?.email ?? '';
 
             return RefreshIndicator(
-              color: AppColors.textPrimary,
-              backgroundColor: AppColors.bgSurface,
+              color: surface.textPrimary,
+              backgroundColor: surface.bgSurface,
               onRefresh: _onRefresh,
               child: ListView(
                 padding: EdgeInsets.fromLTRB(16, 4, 16, bottomClearance),
@@ -291,10 +289,9 @@ class _IdentityHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final surface = context.surface;
     return Row(
       children: [
-        // S11: ProfileAvatar replaces the old static letter avatar.
-        // 56×56 with accent-tinted ring, camera badge, and tap-to-upload.
         ProfileAvatar(
           displayName: displayName,
           imagePath: imagePath,
@@ -313,8 +310,9 @@ class _IdentityHeader extends StatelessWidget {
                       displayName,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      // S3: text-depth shadow on profile name
-                      style: AppText.profileName(shadows: AppText.depthFor(context)),
+                      style: AppText.profileName(
+                          color: surface.textPrimary,
+                          shadows: AppText.depthFor(context)),
                     ),
                   ),
                   if (showSyncPausedBadge) ...[
@@ -323,22 +321,22 @@ class _IdentityHeader extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 8, vertical: 3),
                       decoration: BoxDecoration(
-                        color: AppColors.surface3,
+                        color: surface.surface3,
                         borderRadius: BorderRadius.circular(AppRadius.badge),
-                        border: Border.all(color: AppColors.borderSubtle),
+                        border: Border.all(color: surface.borderSubtle),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Icon(
+                          Icon(
                             Icons.cloud_off_rounded,
                             size: 11,
-                            color: AppColors.textTertiary,
+                            color: surface.textTertiary,
                           ),
                           const SizedBox(width: 4),
                           Text(
                             'Sync paused',
-                            style: AppText.badge(color: AppColors.textTertiary),
+                            style: AppText.badge(color: surface.textTertiary),
                           ),
                         ],
                       ),
@@ -352,7 +350,7 @@ class _IdentityHeader extends StatelessWidget {
                   email,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: AppText.profileEmail(),
+                  style: AppText.profileEmail(color: surface.textSecondary),
                 ),
               ],
             ],
@@ -365,11 +363,11 @@ class _IdentityHeader extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(AppRadius.badge),
-                border: Border.all(color: AppColors.borderSubtle),
+                border: Border.all(color: surface.borderSubtle),
               ),
               child: Text(
                 'PRO',
-                style: AppText.badge(color: AppColors.textSecondary),
+                style: AppText.badge(color: surface.textSecondary),
               ),
             ),
           ),
@@ -463,6 +461,7 @@ class _StatCell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final surface = context.surface;
     return Semantics(
       container: true,
       label: '$label $value',
@@ -473,12 +472,13 @@ class _StatCell extends StatelessWidget {
             children: [
               leading,
               const SizedBox(width: 6),
-              // S3: text-depth shadow on stat values
-              Text(value, style: AppText.statValue(shadows: AppText.depthFor(context))),
+              Text(value, style: AppText.statValue(
+                  color: surface.textPrimary,
+                  shadows: AppText.depthFor(context))),
             ],
           ),
           const SizedBox(height: 5),
-          Text(label, style: AppText.statCellLabel()),
+          Text(label, style: AppText.statCellLabel(color: surface.textSecondary)),
         ],
       ),
     );
@@ -493,7 +493,7 @@ class _StatDivider extends StatelessWidget {
     return Container(
       width: 1,
       height: 36,
-      color: AppColors.borderSubtle,
+      color: context.surface.borderSubtle,
     );
   }
 }
@@ -513,7 +513,7 @@ class _StreakReminder extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 4),
       child: Text(
         message,
-        style: AppText.caption(),
+        style: AppText.caption(color: context.surface.textSecondary),
       ),
     );
   }
@@ -569,8 +569,9 @@ class _TrainingChartSectionState extends ConsumerState<_TrainingChartSection> {
         Semantics(
           header: true,
           child: Text('Training',
-              // S3: text-depth shadow on section heading
-              style: AppText.sectionHeading(shadows: AppText.depthFor(context))),
+              style: AppText.sectionHeading(
+                  color: context.surface.textPrimary,
+                  shadows: AppText.depthFor(context))),
         ),
         const SizedBox(height: 24),
         if (isEmpty)
@@ -743,6 +744,7 @@ class _ErrorBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final surface = context.surface;
     return ListView(
       padding: EdgeInsets.fromLTRB(16, 4, 16, bottomClearance),
       children: [
@@ -755,11 +757,11 @@ class _ErrorBody extends StatelessWidget {
                   color: AppColors.error, size: 28),
               const SizedBox(height: 12),
               Text('Could not load profile',
-                  style: AppText.sheetTitle()),
+                  style: AppText.sheetTitle(color: surface.textPrimary)),
               const SizedBox(height: 6),
               Text(
                 'We had trouble reading your local profile. Your workouts are safe.',
-                style: AppText.body(),
+                style: AppText.body(color: surface.textSecondary),
               ),
               const SizedBox(height: 16),
               SizedBox(
@@ -769,7 +771,7 @@ class _ErrorBody extends StatelessWidget {
                   onPressed: onRetry,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: context.accent.base,
-                    foregroundColor: AppColors.textPrimary,
+                    foregroundColor: context.accent.onAccent,
                     elevation: 0,
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(AppRadius.buttonPrimary)),
