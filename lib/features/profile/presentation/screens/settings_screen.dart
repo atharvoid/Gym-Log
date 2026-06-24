@@ -185,6 +185,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       hint: "Navigates to paywall",
                       child: AppActionRow(
                         icon: Icons.workspace_premium_rounded,
+                        iconColor: accent.light,
                         title: isPremium ? 'GymLog Pro' : 'Upgrade to Pro',
                         subtitle: isPremium
                             ? 'Active — full history unlocked'
@@ -204,6 +205,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   children: [
                     AppActionRow(
                       icon: Icons.scale_rounded,
+                      iconColor: accent.light,
                       title: 'Weight unit',
                       subtitle: unit == 'kg' ? 'Kilograms (kg)' : 'Pounds (lbs)',
                       onTap: () => _pickWeightUnit(context, ref, unit),
@@ -211,6 +213,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     const AppActionDivider(),
                     AppActionRow(
                       icon: Icons.flag_rounded,
+                      iconColor: accent.light,
                       title: 'Weekly goal',
                       subtitle: '$goal workout${goal != 1 ? 's' : ''} per week',
                       onTap: () => showWeeklyGoalSheet(context, ref),
@@ -218,6 +221,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     const AppActionDivider(),
                     AppActionRow(
                       icon: Icons.timer_outlined,
+                      iconColor: accent.light,
                       title: 'Rest timer',
                       subtitle: restSeconds == 0
                           ? 'Off'
@@ -227,6 +231,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     const AppActionDivider(),
                     AppActionRow(
                       icon: Icons.palette_outlined,
+                      iconColor: accent.light,
                       title: 'Appearance',
                       subtitle: 'Accent color',
                       onTap: () {
