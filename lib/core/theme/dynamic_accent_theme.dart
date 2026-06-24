@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
 import 'theme_palette.dart';
 
 /// [dynamic_accent_theme.dart]
@@ -71,6 +70,10 @@ class AccentColors extends ThemeExtension<AccentColors> {
   /// label). White for colored palettes; near-black for the neutral palette.
   final Color onAccent;
 
+  /// The palette enum that produced these tokens. Used by SurfaceContextX
+  /// and TextDepth.onAccentHalo to switch between dark/light surface strategy.
+  final ThemePalette palette;
+
   const AccentColors({
     required this.base,
     required this.light,
@@ -78,15 +81,18 @@ class AccentColors extends ThemeExtension<AccentColors> {
     required this.muted,
     required this.glow,
     required this.onAccent,
+    required this.palette,
   });
 
-  factory AccentColors.fromTokens(ThemePaletteTokens t) => AccentColors(
+  factory AccentColors.fromTokens(ThemePaletteTokens t, ThemePalette p) =>
+      AccentColors(
         base: t.base,
         light: t.light,
         dark: t.dark,
         muted: t.muted,
         glow: t.glow,
         onAccent: t.onAccent,
+        palette: p,
       );
 
   /// Saturation-rule helpers — the single place the dark-mode opacity policy
@@ -114,12 +120,15 @@ class AccentColors extends ThemeExtension<AccentColors> {
     ];
   }
 
+  /// Whether this palette drives a light surface hierarchy.
+  bool get isLightSurface => palette.isLightSurface;
+
   /// The default accent, for the rare path where a widget needs an accent
   /// before the inherited theme is available (e.g. a State field initializer
   /// that runs ahead of didChangeDependencies). Matches the fallback used by
   /// [AccentColorsContextX.accent] so 'default accent' has one source of truth.
   static AccentColors get fallback =>
-      AccentColors.fromTokens(ThemePalette.fallback.tokens);
+      AccentColors.fromTokens(ThemePalette.fallback.tokens, ThemePalette.fallback);
 
   /// Backwards-compatible alias for [fallback]. Retained so existing callers
   /// (e.g. weekly_bar_chart) keep compiling; now resolves to the active
@@ -134,6 +143,7 @@ class AccentColors extends ThemeExtension<AccentColors> {
     Color? muted,
     Color? glow,
     Color? onAccent,
+    ThemePalette? palette,
   }) =>
       AccentColors(
         base: base ?? this.base,
@@ -142,6 +152,7 @@ class AccentColors extends ThemeExtension<AccentColors> {
         muted: muted ?? this.muted,
         glow: glow ?? this.glow,
         onAccent: onAccent ?? this.onAccent,
+        palette: palette ?? this.palette,
       );
 
   @override
@@ -154,6 +165,7 @@ class AccentColors extends ThemeExtension<AccentColors> {
       muted: Color.lerp(muted, other.muted, t)!,
       glow: Color.lerp(glow, other.glow, t)!,
       onAccent: Color.lerp(onAccent, other.onAccent, t)!,
+      palette: t < 0.5 ? palette : other.palette,
     );
   }
 }
