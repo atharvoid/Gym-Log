@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dynamic_accent_theme.dart';
 
 /// [app_colors.dart]
 /// GymLog Design System — AMOLED-first, Apple Watch Neon palette.
@@ -30,24 +31,55 @@ import 'package:flutter/material.dart';
 /// The reactive helpers live on [AccentColors] (tint/selectionBorder/glow);
 /// the fixed-token tints below mirror the same ladder for semantic color.
 abstract class AppColors {
-  // ── Background & surface hierarchy (AMOLED, build upward in steps) ───────
+  // ═══════════════════════════════════════════════════════════════════════════
+  // DARK SURFACE HIERARCHY (AMOLED, build upward in steps)
+  // ═══════════════════════════════════════════════════════════════════════════
   static const bgBase    = Color(0xFF000000); // Background — pure void
   static const bgSurface = Color(0xFF0D0D0D); // Surface 1 — default card (most used)
   static const surface2  = Color(0xFF141414); // Surface 2 — elevated cards, charts, modals
   static const surface3  = Color(0xFF1C1C1C); // Surface 3 — inputs, +Add Set, secondary buttons
   static const surface4  = Color(0xFF242424); // Surface 4 — menus, action sheets, tooltips
 
+  // ═══════════════════════════════════════════════════════════════════════════
+  // LIGHT SURFACE HIERARCHY (White palette — inverted luminance ladder)
+  // Build DOWNWARD in steps from a near-white base toward darker surfaces.
+  // This mirrors the dark hierarchy so the same visual depth layering works.
+  // ═══════════════════════════════════════════════════════════════════════════
+  static const bgBaseLight    = Color(0xFFF5F5F7); // Background — premium pearl white
+  static const bgSurfaceLight = Color(0xFFEBEBEE); // Surface 1 — default card
+  static const surface2Light  = Color(0xFFE0E0E3); // Surface 2 — elevated cards, charts, modals
+  static const surface3Light  = Color(0xFFD6D6D9); // Surface 3 — inputs, +Add Set, secondary buttons
+  static const surface4Light  = Color(0xFFCCCCCF); // Surface 4 — menus, action sheets, tooltips
+
+  // ── Light borders — black at low opacity (mirror of dark white-opacity) ──
+  static const borderSubtleLight   = Color(0x1A000000); // black 10% — default card border
+  static const borderDefaultLight  = Color(0x33000000); // black 20% — interactive element border
+  static const borderEmphasisLight = Color(0x4D000000); // black 30% — focused/selected
+
+  // ── Light text — black at controlled opacity ────────────────────────────
+  static const textPrimaryLight   = Color(0xFF1C1C1E); // headings, key numbers
+  static const textSecondaryLight = Color(0x66000000); // black 40% — dates, subtitles
+  static const textTertiaryLight  = Color(0x40000000); // black 25% — placeholders, column headers
+  static const textDisabledLight  = Color(0x26000000); // black 15% — inactive states
+
   // Legacy surface aliases re-pointed onto the hierarchy.
-  static const surfaceCard   = Color(0xFF0D0D0D); // == Surface 1
-  static const surfaceRaised = Color(0xFF141414); // == Surface 2
-  static const bgSheet       = Color(0xFF141414); // == Surface 2 (rest timer / dialog bg)
-  static const elevated      = Color(0xFF242424); // == Surface 4
+  static const surfaceCard   = Color(0xFF0D0D0D); // == Surface 1 (dark)
+  static const surfaceRaised = Color(0xFF141414); // == Surface 2 (dark)
+  static const bgSheet       = Color(0xFF141414); // == Surface 2 (dark)
+  static const elevated      = Color(0xFF242424); // == Surface 4 (dark)
 
   // ── Card surface gradient — the shipped "felt-not-seen" near-black fill ──
   static const cardGradient = LinearGradient(
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,
     colors: [Color(0xFF0E0E11), Color(0xFF09090B)],
+  );
+
+  // ── Card surface gradient — LIGHT variant ──────────────────────────────
+  static const cardGradientLight = LinearGradient(
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+    colors: [Color(0xFFEFEFF2), Color(0xFFE8E8EB)],
   );
 
   // ── Borders — white at low opacity (never solid/opaque), + accent focus ──
@@ -145,4 +177,90 @@ abstract class AppColors {
     Color(0xFF8A2FC4), // neon violet 700
     Color(0xFF6E249E), // neon violet 800 — smallest share
   ];
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// SurfaceContextX — context-aware surface tokens that switch between dark
+// and light hierarchies based on the active palette.
+// ═══════════════════════════════════════════════════════════════════════════
+
+/// A bundle of surface tokens for the current brightness mode.
+/// Access via `context.surface` — returns [SurfaceTokensDark] for dark
+/// palettes and [SurfaceTokensLight] for the White palette.
+@immutable
+class SurfaceTokens {
+  final Color bgBase;
+  final Color bgSurface;
+  final Color surface2;
+  final Color surface3;
+  final Color surface4;
+  final Color borderSubtle;
+  final Color borderDefault;
+  final Color borderEmphasis;
+  final Color textPrimary;
+  final Color textSecondary;
+  final Color textTertiary;
+  final Color textDisabled;
+  final bool isLight;
+
+  const SurfaceTokens({
+    required this.bgBase,
+    required this.bgSurface,
+    required this.surface2,
+    required this.surface3,
+    required this.surface4,
+    required this.borderSubtle,
+    required this.borderDefault,
+    required this.borderEmphasis,
+    required this.textPrimary,
+    required this.textSecondary,
+    required this.textTertiary,
+    required this.textDisabled,
+    required this.isLight,
+  });
+
+  /// Dark surface tokens (AMOLED hierarchy).
+  static const dark = SurfaceTokens(
+    bgBase: AppColors.bgBase,
+    bgSurface: AppColors.bgSurface,
+    surface2: AppColors.surface2,
+    surface3: AppColors.surface3,
+    surface4: AppColors.surface4,
+    borderSubtle: AppColors.borderSubtle,
+    borderDefault: AppColors.borderDefault,
+    borderEmphasis: AppColors.borderEmphasis,
+    textPrimary: AppColors.textPrimary,
+    textSecondary: AppColors.textSecondary,
+    textTertiary: AppColors.textTertiary,
+    textDisabled: AppColors.textDisabled,
+    isLight: false,
+  );
+
+  /// Light surface tokens (White palette hierarchy).
+  static const light = SurfaceTokens(
+    bgBase: AppColors.bgBaseLight,
+    bgSurface: AppColors.bgSurfaceLight,
+    surface2: AppColors.surface2Light,
+    surface3: AppColors.surface3Light,
+    surface4: AppColors.surface4Light,
+    borderSubtle: AppColors.borderSubtleLight,
+    borderDefault: AppColors.borderDefaultLight,
+    borderEmphasis: AppColors.borderEmphasisLight,
+    textPrimary: AppColors.textPrimaryLight,
+    textSecondary: AppColors.textSecondaryLight,
+    textTertiary: AppColors.textTertiaryLight,
+    textDisabled: AppColors.textDisabledLight,
+    isLight: true,
+  );
+}
+
+/// Context extension: `context.surface.bgBase` returns the right surface token
+/// for the active palette — dark AMOLED tokens for colored palettes, light
+/// tokens for the White palette.
+extension SurfaceContextX on BuildContext {
+  SurfaceTokens get surface {
+    final accent = Theme.of(this).extension<AccentColors>();
+    if (accent != null && accent.isLightSurface) return SurfaceTokens.light;
+    return SurfaceTokens.dark;
+  }
 }
