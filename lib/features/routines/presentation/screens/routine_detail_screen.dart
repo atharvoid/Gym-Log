@@ -78,7 +78,7 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
     super.dispose();
   }
 
-  // ── Actions ──────────────────────────────────────────────────────
+  // ── Actions ────────────────────────────────────────────────────────────────
 
   void _startRoutine(HydratedRoutineDetail routine) {
     if (!tapGuard()) return; // no double-push / double session reset
@@ -217,7 +217,7 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
     ref.invalidate(routineLastSetsProvider(widget.routineId));
   }
 
-  // ── Build ──────────────────────────────────────────────────────
+  // ── Build ────────────────────────────────────────────────────────────────
 
   @override
   Widget build(BuildContext context) {
@@ -594,6 +594,185 @@ class _RoutineVolumeSectionState extends ConsumerState<_RoutineVolumeSection> {
   }
 }
 
-// ══════════════════════════════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════════════════════════
 // Sub-widgets
-// ══════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════════════════════════
+
+/// Personal "scoreboard" for this routine — sessions, best and average volume.
+/// Aggregates (counts), distinct from the chart's per-session trend.
+class _HeroStatStrip extends StatelessWidget {
+  final RoutineSessionStats stats;
+  const _HeroStatStrip({required this.stats});
+
+  @override
+  Widget build(BuildContext context) {
+    return MergeSemantics(
+      child: Row(
+        children: [
+          Expanded(
+              child: _HeroStat(value: '${stats.count}', label: 'SESSIONS')),
+          const _StatDivider(),
+          Expanded(
+              child: _HeroStat(
+                  value: groupThousands(stats.bestVolumeKg), label: 'BEST KG')),
+          const _StatDivider(),
+          Expanded(
+              child: _HeroStat(
+                  value: groupThousands(stats.avgVolumeKg), label: 'AVG KG')),
+        ],
+      ),
+    );
+  }
+}
+
+class _StatDivider extends StatelessWidget {
+  const _StatDivider();
+  @override
+  Widget build(BuildContext context) => Container(
+      width: 1, height: 26, color: AppColors.borderSubtle);
+}
+
+class _HeroStat extends StatelessWidget {
+  final String value;
+  final String label;
+  const _HeroStat({required this.value, required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        FittedBox(
+          fit: BoxFit.scaleDown,
+          alignment: Alignment.centerLeft,
+          child: Text(value, style: AppText.heroStat(), maxLines: 1),
+        ),
+        const SizedBox(height: 3),
+        Text(label, style: AppText.columnHeader(color: AppColors.textSecondary)),
+      ],
+    );
+  }
+}
+
+/// The single dominant CTA — bespoke for its signature glow + press-scale, but
+/// on-system (52dp, [AppRadius.buttonPrimary]). Falls back to "Add exercise"
+/// for an empty routine instead of starting a contentless workout.
+class _StartRoutineButton extends StatefulWidget {
+  final VoidCallback onTap;
+  final bool empty;
+
+  const _StartRoutineButton({required this.onTap, required this.empty});
+
+  @override
+  State<_StartRoutineButton> createState() => _StartRoutineButtonState();
+}
+
+class _StartRoutineButtonState extends State<_StartRoutineButton> {
+  double _scale = 1.0;
+
+  void _onTapDown(TapDownDetails _) => setState(() => _scale = 0.97);
+  void _onTapUp(TapUpDetails _) => setState(() => _scale = 1.0);
+  void _onTapCancel() => setState(() => _scale = 1.0);
+
+  void _onTap() {
+    if (widget.empty) {
+      HapticFeedback.lightImpact();
+    } else {
+      // Peak-intent moment — a heavier confirmation than a normal tap.
+      HapticFeedback.heavyImpact();
+    }
+    widget.onTap();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final empty = widget.empty;
+    return GestureDetector(
+      onTapDown: _onTapDown,
+      onTapUp: _onTapUp,
+      onTapCancel: _onTapCancel,
+      onTap: _onTap,
+      child: AnimatedScale(
+        scale: _scale,
+        duration: const Duration(milliseconds: 150),
+        curve: Curves.easeOutQuint,
+        child: Container(
+          height: 52,
+          width: double.infinity,
+          decoration: BoxDecoration(
+            color: empty ? AppColors.surface3 : AppColors.accentPrimary,
+            borderRadius: AppRadius.buttonPrimaryAll,
+          ),
+          alignment: Alignment.center,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(empty ? Icons.add_rounded : Icons.play_arrow_rounded,
+                  color: empty ? AppColors.textSecondary : AppColors.textPrimary,
+                  size: 22),
+              const SizedBox(width: 8),
+              Text(
+                empty ? 'Add an exercise' : 'Start Routine',
+                style: AppText.button(
+                    color: empty ? AppColors.textSecondary : AppColors.textPrimary),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _RoutineProgressPill extends StatelessWidget {
+  final List<DailyVolumeSample> samples;
+
+  const _RoutineProgressPill({required this.samples});
+
+  @override
+  Widget build(BuildContext context) {
+    if (samples.length < 2) return const SizedBox.shrink();
+
+    final first = samples.first.volume;
+    final latest = samples.last.volume;
+    if (first == 0) return const SizedBox.shrink();
+
+    final delta = ((latest - first) / first * 100).round();
+    final isUp = delta >= 0;
+
+    return Padding(
+      padding: const EdgeInsets.only(top: 14),
+      child: Align(
+        alignment: Alignment.centerLeft,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 6),
+          decoration: BoxDecoration(
+            color: AppColors.surface3,
+            borderRadius: BorderRadius.circular(AppRadius.badge),
+            border: Border.all(
+              color: AppColors.borderSubtle,
+              width: 1,
+            ),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                isUp ? Icons.trending_up_rounded : Icons.trending_down_rounded,
+                size: 14,
+                color: AppColors.textSecondary,
+              ),
+              const SizedBox(width: 6),
+              Text(
+                isUp
+                    ? 'Volume up $delta% since ${_monthDay.format(samples.first.day)}'
+                    : 'Volume down ${-delta}% since ${_monthDay.format(samples.first.day)}',
+                style: AppText.statLabel(color: AppColors.textSecondary),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
