@@ -547,14 +547,16 @@ class _FilterChip extends StatelessWidget {
   Widget build(BuildContext context) {
     // Selected chip is a full-saturation active indicator — reads the live
     // accent so the filter bar tracks the chosen palette.
+    // S9.4: selected text uses accent.onAccent (reactive to light surfaces).
+    final accent = context.accent;
     return Semantics(
       button: true,
       selected: selected,
       label: label,
       excludeSemantics: true,
       child: Material(
-        color: selected ? context.accent.base : AppColors.surface3,
-        borderRadius: AppRadius.badgeAll,
+        color: selected ? accent.base : AppColors.surface3,
+        borderRadius: BorderRadius.circular(14),
         clipBehavior: Clip.antiAlias,
         child: InkWell(
           onTap: onTap,
@@ -564,7 +566,7 @@ class _FilterChip extends StatelessWidget {
             child: Text(
               label,
               style: AppText.statLabel(
-                  color: selected ? AppColors.textPrimary : AppColors.textSecondary),
+                  color: selected ? accent.onAccent : AppColors.textSecondary),
             ),
           ),
         ),
@@ -652,6 +654,7 @@ class _FeaturedCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final accent = context.accent;
     final muscle = _dominantMuscle(template.focus);
     final glyphColor = _glyphColor(muscle, ramp);
     final a11yLabel = 'Featured. ${template.name}. ${template.levelLabel}, '
@@ -665,8 +668,17 @@ class _FeaturedCard extends StatelessWidget {
       hint: 'Opens program preview',
       onTap: onPreview,
       child: DecoratedBox(
-        decoration: const BoxDecoration(
+        // S9.4: subtle accent-tinted depth shadow (visible on AMOLED).
+        decoration: BoxDecoration(
           borderRadius: AppRadius.cardAll,
+          boxShadow: [
+            BoxShadow(
+              color: accent.glow,
+              blurRadius: 8,
+              spreadRadius: -2,
+              offset: const Offset(0, 2),
+            ),
+          ],
         ),
         child: Container(
           decoration: BoxDecoration(
@@ -756,13 +768,13 @@ class _FeaturedCard extends StatelessWidget {
                                   label: '${template.slots.length} exercises'),
                             ],
                           ),
-                          const SizedBox(height: 12),
-                          Text(template.description,
-                              style: AppText.body().copyWith(height: 1.45)),
+                          // S9.3: description removed from featured card.
+                          // Freed space replaced with slightly more breathing
+                          // room before the CTA.
+                          const SizedBox(height: 20),
                         ],
                       ),
                     ),
-                    const SizedBox(height: 16),
                     Row(
                       children: [
                         Expanded(
@@ -808,6 +820,7 @@ class _TemplateCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final accent = context.accent;
     final preview = template.slots.take(3).map((s) => s.name).join(', ');
     final extra = template.slots.length - 3;
     final muscle = _dominantMuscle(template.focus);
@@ -826,7 +839,20 @@ class _TemplateCard extends StatelessWidget {
       hint: 'Opens program preview',
       onTap: onPreview,
       child: Container(
-        decoration: AppCard.decoration(),
+        // S9.4: subtle accent-tinted depth shadow + slightly more rounded card.
+        decoration: BoxDecoration(
+          color: AppColors.bgSurface,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: AppColors.borderSubtle),
+          boxShadow: [
+            BoxShadow(
+              color: accent.glow,
+              blurRadius: 8,
+              spreadRadius: -2,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
         clipBehavior: Clip.antiAlias,
         child: Material(
           color: Colors.transparent,
@@ -990,6 +1016,9 @@ class _MetaChip extends StatelessWidget {
 /// a 48dp tap target, and a reduce-motion-gated swap animation so a successful
 /// import resolves with a satisfying check instead of snapping. Wrap in an
 /// [Expanded] to stretch it full-width (the featured hero does this).
+///
+/// S9.4: Radius explicitly set to BorderRadius.circular(14) — the sweet spot
+/// between boxy (6) and pill (24+), matching the global button radius update.
 class _ImportPill extends StatelessWidget {
   final bool importing;
   final bool imported;
@@ -1041,7 +1070,7 @@ class _ImportPill extends StatelessWidget {
         color: imported
             ? AppColors.success.withValues(alpha: 0.14)
             : context.accent.base,
-        borderRadius: AppRadius.buttonSecondaryAll,
+        borderRadius: BorderRadius.circular(14),
         clipBehavior: Clip.antiAlias,
         child: InkWell(
           onTap: onTap,
