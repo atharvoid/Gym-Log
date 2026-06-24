@@ -159,6 +159,9 @@ class _SetRowState extends State<SetRow> {
   /// A bare value field — no box, border, fill, or radius. The number sits
   /// directly on the row surface; focus is signalled only by the cursor
   /// (tinted with the active accent palette).
+  ///
+  /// Horizontal padding expands the tap target so a finger lands on the
+  /// number field with room, not edge-to-edge.
   Widget _numberField({
     required TextEditingController controller,
     required FocusNode focusNode,
@@ -195,7 +198,7 @@ class _SetRowState extends State<SetRow> {
           enabledBorder: InputBorder.none,
           filled: false,
           isDense: true,
-          contentPadding: EdgeInsets.zero,
+          contentPadding: const EdgeInsets.symmetric(horizontal: 8),
         ),
         onChanged: onChanged,
         onSubmitted: (_) => action == TextInputAction.next
