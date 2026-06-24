@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text.dart';
+import '../../core/theme/dynamic_accent_theme.dart';
 
 /// Drop-in body for `AsyncValue.when(error:)` branches.
 ///
@@ -24,6 +25,7 @@ class AsyncErrorState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final accent = context.accent;
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32),
@@ -43,11 +45,11 @@ class AsyncErrorState extends StatelessWidget {
               const SizedBox(height: 14),
               TextButton.icon(
                 onPressed: onRetry,
-                icon: const Icon(Icons.refresh_rounded,
-                    size: 18, color: AppColors.accentText),
+                icon: Icon(Icons.refresh_rounded,
+                    size: 18, color: accent.light),
                 label: Text(
                   'Try again',
-                  style: AppText.rowLabel(color: AppColors.accentText),
+                  style: AppText.rowLabel(color: accent.light),
                 ),
               ),
             ],
@@ -115,7 +117,7 @@ class AppNotFoundScreen extends StatelessWidget {
                 onPressed: onAction ?? () => Navigator.of(context).maybePop(),
                 child: Text(
                   actionLabel,
-                  style: AppText.button(color: AppColors.accentText)
+                  style: AppText.button(color: context.accent.light)
                       .copyWith(fontSize: 15, fontWeight: FontWeight.w700),
                 ),
               ),
