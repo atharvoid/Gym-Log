@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../../core/providers/premium_provider.dart';
+import '../../../../core/services/profile_image_sync_service.dart';
 import '../../../../core/services/sync_entitlement_gate.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text.dart';
@@ -66,6 +67,28 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
       await prefs.remove(_kProfileImageKey);
     }
     if (mounted) setState(() => _profileImagePath = path);
+
+    // Silent cloud sync — Pro users only, no visible paywall or prompt.
+    // The service itself checks isPremium and no-ops for free users.
+    final profile = ref.read(currentUserProfileProvider).valueOrNull;
+    final userId = profile?.id;
+    if (userId == null) return;
+
+    final isPremium = ref.read(isPremiumProvider);
+    final syncService = ref.read(profileImageSyncProvider);
+
+    if (path != null) {
+      await syncService.uploadIfEntitled(
+        userId: userId,
+        isPremium: isPremium,
+        localPath: path,
+      );
+    } else {
+      await syncService.deleteRemoteIfEntitled(
+        userId: userId,
+        isPremium: isPremium,
+      );
+    }
   }
 
   @override
