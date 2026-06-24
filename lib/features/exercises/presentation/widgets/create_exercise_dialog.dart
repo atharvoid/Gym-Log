@@ -7,6 +7,7 @@ import 'package:gymlog/core/exercises/muscle_taxonomy.dart';
 import 'package:gymlog/core/providers/database_provider.dart';
 import 'package:gymlog/core/theme/app_colors.dart';
 import 'package:gymlog/core/theme/app_text.dart';
+import 'package:gymlog/core/theme/dynamic_accent_theme.dart';
 import 'package:gymlog/features/auth/presentation/providers/auth_provider.dart';
 import '../providers/exercises_provider.dart';
 
@@ -153,6 +154,7 @@ class _CreateExerciseDialogState extends ConsumerState<_CreateExerciseDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final accent = context.accent;
     return Dialog(
       backgroundColor: AppColors.surface2,
       shape: const RoundedRectangleBorder(
@@ -172,7 +174,7 @@ class _CreateExerciseDialogState extends ConsumerState<_CreateExerciseDialog> {
               textCapitalization: TextCapitalization.words,
               textInputAction: TextInputAction.done,
               maxLength: 60,
-              cursorColor: AppColors.accentPrimary,
+              cursorColor: accent.base,
               style: AppText.value(),
               onChanged: (_) {
                 if (_error != null) setState(() => _error = null);
@@ -190,10 +192,10 @@ class _CreateExerciseDialogState extends ConsumerState<_CreateExerciseDialog> {
                   borderRadius: AppRadius.inputAll,
                   borderSide: BorderSide.none,
                 ),
-                focusedBorder: const OutlineInputBorder(
+                focusedBorder: OutlineInputBorder(
                   borderRadius: AppRadius.inputAll,
                   borderSide:
-                      BorderSide(color: AppColors.borderActive, width: 1.5),
+                      BorderSide(color: accent.light, width: 1.5),
                 ),
               ),
             ),
@@ -259,7 +261,7 @@ class _CreateExerciseDialogState extends ConsumerState<_CreateExerciseDialog> {
                               strokeWidth: 2, color: AppColors.textPrimary),
                         )
                       : Text('Create',
-                          style: AppText.button(color: AppColors.accentText)),
+                          style: AppText.button(color: accent.light)),
                 ),
               ],
             ),
@@ -382,6 +384,7 @@ class _OptionRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final accent = context.accent;
     return Semantics(
       button: true,
       selected: selected,
@@ -398,12 +401,12 @@ class _OptionRow extends StatelessWidget {
                 child: Text(label,
                     style: AppText.body(
                         color: selected
-                            ? AppColors.accentPrimary
+                            ? accent.light
                             : AppColors.textPrimary)),
               ),
               if (selected)
-                const Icon(Icons.check_rounded,
-                    size: 18, color: AppColors.accentPrimary),
+                Icon(Icons.check_rounded,
+                    size: 18, color: accent.base),
             ],
           ),
         ),
