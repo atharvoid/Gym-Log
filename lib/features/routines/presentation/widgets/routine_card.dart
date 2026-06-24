@@ -140,7 +140,7 @@ class RoutineCard extends ConsumerWidget {
                       constraints:
                           const BoxConstraints(minWidth: 48, minHeight: 48),
                       iconSize: 20,
-                      icon: const Icon(Icons.more_horiz_rounded,
+                      icon: const Icon(Icons.more_vert_rounded,
                           color: AppColors.textSecondary),
                       onPressed: () => _showOptions(context, ref),
                     ),
