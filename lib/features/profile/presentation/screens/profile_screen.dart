@@ -172,7 +172,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
         appBar: AppBar(
           backgroundColor: AppColors.bgBase,
           scrolledUnderElevation: 0,
-          title: Text('Profile', style: AppText.screenTitle()),
+          // S3: text-depth shadow on Profile screen title
+          title: Text('Profile',
+              style: AppText.screenTitle(shadows: AppText.depthFor(context))),
           actions: [
             IconButton(
               tooltip: 'Settings',
@@ -311,7 +313,8 @@ class _IdentityHeader extends StatelessWidget {
                       displayName,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: AppText.profileName(),
+                      // S3: text-depth shadow on profile name
+                      style: AppText.profileName(shadows: AppText.depthFor(context)),
                     ),
                   ),
                   if (showSyncPausedBadge) ...[
@@ -470,7 +473,8 @@ class _StatCell extends StatelessWidget {
             children: [
               leading,
               const SizedBox(width: 6),
-              Text(value, style: AppText.statValue()),
+              // S3: text-depth shadow on stat values
+              Text(value, style: AppText.statValue(shadows: AppText.depthFor(context))),
             ],
           ),
           const SizedBox(height: 5),
@@ -564,7 +568,9 @@ class _TrainingChartSectionState extends ConsumerState<_TrainingChartSection> {
       children: [
         Semantics(
           header: true,
-          child: Text('Training', style: AppText.sectionHeading()),
+          child: Text('Training',
+              // S3: text-depth shadow on section heading
+              style: AppText.sectionHeading(shadows: AppText.depthFor(context))),
         ),
         const SizedBox(height: 24),
         if (isEmpty)
