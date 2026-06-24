@@ -5,10 +5,15 @@ import 'package:flutter/services.dart';
 import 'package:gymlog/core/database/daos/workouts_dao.dart';
 import 'package:gymlog/core/theme/app_colors.dart';
 import 'package:gymlog/core/theme/app_text.dart';
+import 'package:gymlog/core/theme/dynamic_accent_theme.dart';
 
 /// Full-screen celebration shown when a finished workout contains PRs.
 /// Turns a silent `is_pr = 1` database write into the app's best moment:
-/// strong haptic, purple confetti, and the actual numbers that were beaten.
+/// strong haptic, festive confetti, and the actual numbers that were beaten.
+///
+/// The trophy badge + ambient halo follow the live accent palette (Phase 7),
+/// while the confetti and reward gold stay palette-independent so a PR always
+/// feels celebratory regardless of the chosen accent.
 ///
 /// Dependency-free — confetti is a lightweight CustomPainter, not a package.
 Future<void> showPrCelebration(
@@ -84,6 +89,7 @@ class _PrCelebrationState extends State<_PrCelebration>
   @override
   Widget build(BuildContext context) {
     final prs = widget.prs;
+    final accent = context.accent;
     final title = prs.length == 1
         ? 'New Personal Record!'
         : '${prs.length} New Personal Records!';
@@ -103,7 +109,7 @@ class _PrCelebrationState extends State<_PrCelebration>
             ),
           ),
 
-        // ── Card ──────────────────────────────────────────────────────────
+        // ── Card ─────────────────────────────────────────────────────
         Center(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 28),
@@ -129,14 +135,24 @@ class _PrCelebrationState extends State<_PrCelebration>
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: AppColors.accentPrimary.withValues(alpha: 0.16),
+                        color: accent.base.withValues(alpha: 0.16),
                         border: Border.all(
-                          color: AppColors.accentPrimary.withValues(alpha: 0.4),
+                          color: accent.base.withValues(alpha: 0.4),
                         ),
+                        // Ambient accent halo behind the badge — the Phase 7
+                        // 'glow behind the badge'. Uses the palette glow token
+                        // so it shifts hue with the chosen accent.
+                        boxShadow: [
+                          BoxShadow(
+                            color: accent.glow,
+                            blurRadius: 28,
+                            spreadRadius: 4,
+                          ),
+                        ],
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.emoji_events_rounded,
-                        color: AppColors.accentText,
+                        color: accent.light,
                         size: 30,
                       ),
                     ),
@@ -203,7 +219,7 @@ class _PrCelebrationState extends State<_PrCelebration>
                                           Text(
                                             '${_fmtKg(pr.estimated1rm)} kg',
                                             style: AppText.value(
-                                                color: AppColors.accentText),
+                                                color: accent.light),
                                           ),
                                           Text(
                                             pr.previousBest1rm > 0
@@ -233,7 +249,7 @@ class _PrCelebrationState extends State<_PrCelebration>
                           Navigator.of(context).pop();
                         },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.accentPrimary,
+                          backgroundColor: accent.base,
                           foregroundColor: AppColors.textPrimary,
                           elevation: 0,
                           shape: const RoundedRectangleBorder(
@@ -257,7 +273,7 @@ class _PrCelebrationState extends State<_PrCelebration>
   }
 }
 
-// ── Confetti ──────────────────────────────────────────────────────────────────
+// ── Confetti ───────────────────────────────────────────────────────────
 
 class _ConfettiPainter extends CustomPainter {
   final double progress;
@@ -265,9 +281,10 @@ class _ConfettiPainter extends CustomPainter {
   _ConfettiPainter({required this.progress});
 
   // Deterministic particle field — same seed every build, zero allocations
-  // beyond the paint object per frame. Palette draws from design tokens; the
-  // bright celebration gold is the one intentional exception (no chrome token
-  // exists for it, and reward gold is meant to stay immutable).
+  // beyond the paint object per frame. The palette is intentionally
+  // palette-INDEPENDENT (warning amber, white, and immutable celebration
+  // gold): the field is a static const built once, and a PR should read as
+  // festive gold/white no matter which accent the user picked.
   static final List<_Particle> _particles = _generate();
 
   static List<_Particle> _generate() {
@@ -275,7 +292,7 @@ class _ConfettiPainter extends CustomPainter {
     const palette = [
       AppColors.warning,
       AppColors.warning,
-      AppColors.accentText,
+      AppColors.textPrimary,
       AppColors.warning,
       AppColors.textPrimary,
       Color(0xFFFFCC00), // celebration gold — confetti-only, intentionally untokenized
