@@ -1,26 +1,29 @@
 import 'package:flutter/material.dart';
 
 /// [theme_palette.dart]
-/// User-selectable accent palettes for the Dynamic Accent Theme system.
+/// User-selectable BRAND ACCENT palettes — the Apple Watch Neon system.
 ///
 /// DESIGN DISCIPLINE: only the ACCENT hue is user-controlled. Surfaces
-/// (bgBase, surface2/3/4), text, and borders are fixed in [AppColors] and
-/// never shift with the palette. This keeps the app feeling like one coherent
-/// product in every accent.
+/// (bgBase, surface2/3/4), text, borders, and the FIXED semantic accents
+/// (success/info/warning/reward in [AppColors]) never shift with the palette.
+/// This keeps the app one coherent product in every accent and — critically —
+/// keeps semantic color (done = lime, rest = cyan, PR = magenta) legible no
+/// matter which brand accent is active. That is why Neon Lime is a semantic
+/// token and NOT a pickable accent: a lime brand accent would collide with the
+/// lime 'completed set' signal on the workout screen.
 ///
 /// Each palette exposes six tokens with exactly one job each:
 ///   base     — primary action color (CTA fill, active nav, selected border)
 ///   light    — accent text, hairlines, chart date header (WCAG-safer on black)
 ///   dark     — pressed / active-depressed states
-///   muted    — selected-row / tinted card / chart-fill background (~15% alpha)
-///   glow     — atmospheric effects (sheet glow, celebration backdrop, ~18%)
+///   muted    — selected-row / tinted card / chart-fill background (~14% alpha)
+///   glow     — atmospheric effects (sheet glow, celebration backdrop, ~12%)
 ///   onAccent — text/icon that sits ON the full-saturation base (CTA label)
 ///
-/// PREMIUM DARK-MODE SATURATION RULE: `base` (full saturation) appears only on
-/// elements that must demand attention — the primary CTA, the active nav
-/// indicator, and selected-card borders. Everywhere else (icon fills, chart
-/// bars, tinted backgrounds, badges) the accent appears via `muted`/`glow`
-/// (~12–18% alpha) so it reads as depth, not noise.
+/// SATURATION RULE: `base` (full saturation) appears only on elements that must
+/// demand attention — the primary CTA, the active nav indicator, selected-card
+/// borders. Everywhere else the accent appears via `muted`/`glow` so it reads
+/// as depth, not noise.
 
 /// Reward gold — the achievement color. IMMUTABLE across every palette: PR
 /// badges, the streak flame, and celebration gold are emotional anchors that
@@ -38,15 +41,15 @@ class ThemePaletteTokens {
   /// Pressed / depressed states.
   final Color dark;
 
-  /// Hover / pressed backgrounds and selected-row tints (~15% alpha).
+  /// Hover / pressed backgrounds and selected-row tints (~14% alpha).
   final Color muted;
 
-  /// Atmospheric glow — top-sheet glow, PR celebration backdrop (~18% alpha).
+  /// Atmospheric glow — top-sheet glow, PR celebration backdrop (~12% alpha).
   final Color glow;
 
   /// Text / icon color that sits on top of the full-saturation [base] (e.g. a
-  /// CTA label). White for the colored palettes; near-black for the neutral
-  /// (white) palette where white-on-white would be invisible.
+  /// CTA label). White for the deeper palettes; near-black for the bright
+  /// neon cyan where white-on-cyan would wash out.
   final Color onAccent;
 
   const ThemePaletteTokens({
@@ -60,12 +63,10 @@ class ThemePaletteTokens {
 }
 
 enum ThemePalette {
-  spectralViolet,
-  phosphorAmber,
-  steelBlue,
-  chromaticRose,
-  tacticalGreen,
-  neutralWhite;
+  neonPurple,
+  neonCyan,
+  neonMagenta,
+  electricIndigo;
 
   /// Stable key persisted to SharedPreferences. Decoupled from the index so
   /// reordering the enum never corrupts a saved choice.
@@ -73,82 +74,59 @@ enum ThemePalette {
 
   /// Human-facing name shown under the swatch in the Appearance screen.
   String get displayName => switch (this) {
-        ThemePalette.spectralViolet => 'Deep Spectral Violet',
-        ThemePalette.phosphorAmber => 'Phosphor Amber',
-        ThemePalette.steelBlue => 'Electric Steel Blue',
-        ThemePalette.chromaticRose => 'Chromatic Rose',
-        ThemePalette.tacticalGreen => 'Tactical Green',
-        ThemePalette.neutralWhite => 'Pure White',
+        ThemePalette.neonPurple => 'Neon Purple',
+        ThemePalette.neonCyan => 'Neon Cyan',
+        ThemePalette.neonMagenta => 'Neon Magenta',
+        ThemePalette.electricIndigo => 'Electric Indigo',
       };
 
   /// Accessibility label for the swatch.
   String get a11yName => switch (this) {
-        ThemePalette.spectralViolet => 'Deep spectral violet',
-        ThemePalette.phosphorAmber => 'Phosphor amber',
-        ThemePalette.steelBlue => 'Electric steel blue',
-        ThemePalette.chromaticRose => 'Chromatic rose',
-        ThemePalette.tacticalGreen => 'Tactical green',
-        ThemePalette.neutralWhite => 'Pure white',
+        ThemePalette.neonPurple => 'Neon purple',
+        ThemePalette.neonCyan => 'Neon cyan',
+        ThemePalette.neonMagenta => 'Neon magenta',
+        ThemePalette.electricIndigo => 'Electric indigo',
       };
 
-  /// The six-token set for this palette. Alpha values: muted = 0x26 (~15%),
-  /// glow = 0x2E (~18%); the neutral palette uses white at 0x24/0x2E.
+  /// The six-token set for this palette. muted = 0x24 (~14%), glow = 0x1F
+  /// (~12%) — the dark-mode saturation ladder.
   ThemePaletteTokens get tokens => switch (this) {
-        // 1 — Deep Spectral Violet: a richer, darker descendant of the
-        // profile-tab indigo. The app's on-brand default.
-        ThemePalette.spectralViolet => const ThemePaletteTokens(
-            base: Color(0xFF7C4DFF),
-            light: Color(0xFFB39DFF),
-            dark: Color(0xFF5A2EB8),
-            muted: Color(0x267C4DFF),
-            glow: Color(0x2E7C4DFF),
+        // 1 — Neon Purple: the app's on-brand default identity.
+        ThemePalette.neonPurple => const ThemePaletteTokens(
+            base: Color(0xFFBF5AF2),
+            light: Color(0xFFD9A6FF),
+            dark: Color(0xFF9A3FD0),
+            muted: Color(0x24BF5AF2),
+            glow: Color(0x1FBF5AF2),
             onAccent: Color(0xFFFFFFFF),
           ),
-        // 2 — Phosphor Amber: deep gold-amber (performance / PR alignment).
-        // Dark text reads cleanly on the bright base.
-        ThemePalette.phosphorAmber => const ThemePaletteTokens(
-            base: Color(0xFFE8910C),
-            light: Color(0xFFF6C064),
-            dark: Color(0xFF9C5E00),
-            muted: Color(0x26E8910C),
-            glow: Color(0x2EE8910C),
+        // 2 — Neon Cyan: bright analytical cyan. Near-black on-accent so a CTA
+        // label stays legible on the luminous fill.
+        ThemePalette.neonCyan => const ThemePaletteTokens(
+            base: Color(0xFF00D9FF),
+            light: Color(0xFF7FEBFF),
+            dark: Color(0xFF00A6C4),
+            muted: Color(0x2400D9FF),
+            glow: Color(0x1F00D9FF),
             onAccent: Color(0xFF0A0A0A),
           ),
-        // 3 — Electric Steel Blue: deep, desaturated, analytical.
-        ThemePalette.steelBlue => const ThemePaletteTokens(
-            base: Color(0xFF4574C4),
-            light: Color(0xFF8FB2E0),
-            dark: Color(0xFF2A4A7A),
-            muted: Color(0x264574C4),
-            glow: Color(0x2E4574C4),
+        // 3 — Neon Magenta: high-energy magenta-red.
+        ThemePalette.neonMagenta => const ThemePaletteTokens(
+            base: Color(0xFFFF2D55),
+            light: Color(0xFFFF8FA6),
+            dark: Color(0xFFC41E3F),
+            muted: Color(0x24FF2D55),
+            glow: Color(0x1FFF2D55),
             onAccent: Color(0xFFFFFFFF),
           ),
-        // 4 — Chromatic Rose: deep magenta-leaning pink, sophisticated.
-        ThemePalette.chromaticRose => const ThemePaletteTokens(
-            base: Color(0xFFD6418A),
-            light: Color(0xFFED8FBE),
-            dark: Color(0xFF8C2A5C),
-            muted: Color(0x26D6418A),
-            glow: Color(0x2ED6418A),
+        // 4 — Electric Indigo: precise, technical blue-purple.
+        ThemePalette.electricIndigo => const ThemePaletteTokens(
+            base: Color(0xFF5E5CE6),
+            light: Color(0xFFA6A4FF),
+            dark: Color(0xFF4240B0),
+            muted: Color(0x245E5CE6),
+            glow: Color(0x1F5E5CE6),
             onAccent: Color(0xFFFFFFFF),
-          ),
-        // 5 — Tactical Green: deep military-influenced green (not mint/teal).
-        ThemePalette.tacticalGreen => const ThemePaletteTokens(
-            base: Color(0xFF4E7D3E),
-            light: Color(0xFF8FB87C),
-            dark: Color(0xFF2F4E24),
-            muted: Color(0x264E7D3E),
-            glow: Color(0x2E4E7D3E),
-            onAccent: Color(0xFFFFFFFF),
-          ),
-        // 6 — Pure White / Neutral: maximum contrast, no hue. Dark on-accent.
-        ThemePalette.neutralWhite => const ThemePaletteTokens(
-            base: Color(0xFFF2F2F5),
-            light: Color(0xFFFFFFFF),
-            dark: Color(0xFFC7C7CC),
-            muted: Color(0x24FFFFFF),
-            glow: Color(0x2EFFFFFF),
-            onAccent: Color(0xFF0A0A0A),
           ),
       };
 
@@ -156,22 +134,31 @@ enum ThemePalette {
   Color get swatch => tokens.base;
 
   /// The single default accent — the app's designed identity.
-  static ThemePalette get fallback => ThemePalette.spectralViolet;
+  static ThemePalette get fallback => ThemePalette.neonPurple;
 
   /// Resolves a persisted key back to a palette, defaulting to [fallback] when
-  /// the key is absent or unrecognized. Legacy keys from the previous
-  /// 4-palette system (purple/copper/teal/red) migrate forward so an existing
-  /// user never loses their choice or lands on an unrecognized default.
+  /// the key is absent or unrecognized. Keys from BOTH previous systems (the
+  /// original purple/copper/teal/red and the 6-palette premium set) migrate
+  /// forward to the nearest neon palette so an existing user never loses their
+  /// choice or lands on an unrecognized default.
   static ThemePalette fromStorage(String? key) {
     if (key == null) return fallback;
     for (final p in ThemePalette.values) {
       if (p.storageKey == key) return p;
     }
     return switch (key) {
-      'purple' => ThemePalette.spectralViolet,
-      'copper' => ThemePalette.phosphorAmber,
-      'teal' => ThemePalette.tacticalGreen,
-      'red' => ThemePalette.chromaticRose,
+      // original 4-palette system
+      'purple' => ThemePalette.neonPurple,
+      'copper' => ThemePalette.neonMagenta,
+      'teal' => ThemePalette.neonCyan,
+      'red' => ThemePalette.neonMagenta,
+      // 6-palette premium system
+      'spectralViolet' => ThemePalette.neonPurple,
+      'phosphorAmber' => ThemePalette.neonMagenta,
+      'steelBlue' => ThemePalette.electricIndigo,
+      'chromaticRose' => ThemePalette.neonMagenta,
+      'tacticalGreen' => ThemePalette.neonCyan,
+      'neutralWhite' => ThemePalette.neonPurple,
       _ => fallback,
     };
   }
