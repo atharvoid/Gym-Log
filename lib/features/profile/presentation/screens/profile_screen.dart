@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/providers/premium_provider.dart';
+import '../../../../core/services/sync_entitlement_gate.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text.dart';
 import '../../../../core/utils/tap_guard.dart';
@@ -105,6 +106,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     ref.invalidate(workoutCountProvider);
     ref.invalidate(sessionStatsProvider);
     ref.invalidate(streakStatsProvider);
+    ref.invalidate(isSyncAllowedProvider);
     // Give the reactive streams one frame to re-emit.
     await Future.delayed(const Duration(milliseconds: 300));
   }
@@ -133,6 +135,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     final streak = ref.watch(streakStatsProvider);
     final goal = ref.watch(weeklyGoalProvider);
     final isPremium = ref.watch(isPremiumProvider);
+    // Watch sync state — true when sync is allowed (Pro + toggle ON).
+    final syncAllowed = ref.watch(isSyncAllowedProvider).valueOrNull ?? true;
+    final showSyncPausedBadge = isPremium && !syncAllowed;
 
     final bottomClearance = BottomNavBar.height +
         MediaQuery.viewPaddingOf(context).bottom +
@@ -182,6 +187,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                       displayName: displayName,
                       email: email,
                       isPremium: isPremium,
+                      showSyncPausedBadge: showSyncPausedBadge,
                     ),
                   ),
                 ),
@@ -244,11 +250,13 @@ class _IdentityHeader extends StatelessWidget {
   final String displayName;
   final String email;
   final bool isPremium;
+  final bool showSyncPausedBadge;
 
   const _IdentityHeader({
     required this.displayName,
     required this.email,
     required this.isPremium,
+    this.showSyncPausedBadge = false,
   });
 
   @override
@@ -275,11 +283,44 @@ class _IdentityHeader extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                displayName,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: AppText.profileName(),
+              Row(
+                children: [
+                  Flexible(
+                    child: Text(
+                      displayName,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: AppText.profileName(),
+                    ),
+                  ),
+                  if (showSyncPausedBadge) ...[
+                    const SizedBox(width: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: AppColors.surface3,
+                        borderRadius: BorderRadius.circular(AppRadius.badge),
+                        border: Border.all(color: AppColors.borderSubtle),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.cloud_off_rounded,
+                            size: 11,
+                            color: AppColors.textTertiary,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            'Sync paused',
+                            style: AppText.badge(color: AppColors.textTertiary),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ],
               ),
               if (email.isNotEmpty) ...[
                 const SizedBox(height: 2),
