@@ -196,6 +196,46 @@ class _RoutineEditorScreenState extends ConsumerState<RoutineEditorScreen> {
     if (discard && mounted) context.pop();
   }
 
+  /// Builds the non-reorderable "Add Exercise" button that appears as the
+  /// last item in the exercise list (S12.2).
+  Widget _buildAddExerciseButton() {
+    return Padding(
+      key: const ValueKey('add_exercise_button'),
+      padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(AppRadius.buttonSecondary),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(AppRadius.buttonSecondary),
+          onTap: _addExercises,
+          child: Container(
+            height: 50,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              border: Border.all(color: AppColors.borderSubtle),
+              borderRadius: BorderRadius.circular(AppRadius.buttonSecondary),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.add_rounded,
+                    color: AppColors.textPrimary
+                        .withValues(alpha: 0.9),
+                    size: 16),
+                const SizedBox(width: 9),
+                Text('Add Exercise',
+                    style: AppText.button(
+                            color: AppColors.textPrimary
+                                .withValues(alpha: 0.90))
+                        .copyWith(fontSize: 15)),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final accent = context.accent;
@@ -273,15 +313,15 @@ class _RoutineEditorScreenState extends ConsumerState<RoutineEditorScreen> {
                           filled: true,
                           fillColor: AppColors.surfaceRaised,
                           border: const OutlineInputBorder(
-                            borderRadius: BorderRadius.zero,
+                            borderRadius: BorderRadius.circular(10),
                             borderSide: BorderSide(color: AppColors.borderSubtle),
                           ),
                           enabledBorder: const OutlineInputBorder(
-                            borderRadius: BorderRadius.zero,
+                            borderRadius: BorderRadius.circular(10),
                             borderSide: BorderSide(color: AppColors.borderSubtle),
                           ),
                           focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.zero,
+                            borderRadius: BorderRadius.circular(10),
                             borderSide: BorderSide(color: accent.base, width: 1.5),
                           ),
                         ),
@@ -294,8 +334,9 @@ class _RoutineEditorScreenState extends ConsumerState<RoutineEditorScreen> {
                     child: _exercises.isEmpty
                         ? _EmptyEditorState(onAdd: _addExercises)
                         : ReorderableListView.builder(
-                            padding: const EdgeInsets.fromLTRB(16, 8, 16, 120),
-                            itemCount: _exercises.length,
+                            padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+                            // +1 item: the last slot is the "Add Exercise" button.
+                            itemCount: _exercises.length + 1,
                             // The card supplies its own drag handle
                             // (ReorderableDragStartListener). Leaving the
                             // default handles on too gives every item TWO
@@ -335,6 +376,10 @@ class _RoutineEditorScreenState extends ConsumerState<RoutineEditorScreen> {
                               });
                             },
                             itemBuilder: (context, index) {
+                              // Last item → non-reorderable Add Exercise button.
+                              if (index == _exercises.length) {
+                                return _buildAddExerciseButton();
+                              }
                               final e = _exercises[index];
                               return Padding(
                                 key: ValueKey(e.uid),
@@ -360,44 +405,8 @@ class _RoutineEditorScreenState extends ConsumerState<RoutineEditorScreen> {
                   ),
                 ],
               ),
-        bottomNavigationBar: _exercises.isEmpty
-            ? null
-            : SafeArea(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
-                  child: Material(
-                    color: Colors.transparent,
-                    borderRadius: BorderRadius.circular(AppRadius.buttonSecondary),
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(AppRadius.buttonSecondary),
-                      onTap: _addExercises,
-                      child: Container(
-                        height: 50,
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                          border: Border.all(color: AppColors.borderSubtle),
-                          borderRadius: BorderRadius.circular(AppRadius.buttonSecondary),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(Icons.add_rounded,
-                                color: AppColors.textPrimary
-                                    .withValues(alpha: 0.9),
-                                size: 16),
-                            const SizedBox(width: 9),
-                            Text('Add Exercise',
-                                style: AppText.button(
-                                        color: AppColors.textPrimary
-                                            .withValues(alpha: 0.90))
-                                    .copyWith(fontSize: 15)),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
+        // S12.2: bottomNavigationBar removed — "Add Exercise" is now the
+        // last item in the scrollable ReorderableListView.
       ),
     );
   }
@@ -481,11 +490,21 @@ class _EditorExerciseCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final accent = context.accent;
     return Container(
       decoration: BoxDecoration(
         gradient: AppColors.cardGradient,
         borderRadius: BorderRadius.circular(AppRadius.card),
-        border: Border.all(color: AppColors.borderSubtle),
+        // S10: accent-tinted left border for exercise cards.
+        border: Border(
+          left: BorderSide(
+            color: accent.base.withValues(alpha: 0.35),
+            width: 2,
+          ),
+          top: BorderSide(color: AppColors.borderSubtle),
+          right: BorderSide(color: AppColors.borderSubtle),
+          bottom: BorderSide(color: AppColors.borderSubtle),
+        ),
       ),
       padding: const EdgeInsets.fromLTRB(12, 12, 4, 12),
       child: Row(
