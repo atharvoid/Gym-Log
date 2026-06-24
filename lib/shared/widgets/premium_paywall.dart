@@ -9,7 +9,7 @@ import '../../core/providers/premium_provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text.dart';
 
-enum PaywallSource { generic, routineLimit, chartFilter, timeRange }
+enum PaywallSource { generic, routineLimit, chartFilter, timeRange, sync }
 
 /// Opens the Premium paywall as a modal bottom sheet.
 /// Safe to call when RevenueCat is unconfigured — it renders a graceful
@@ -133,6 +133,11 @@ class _PaywallSheetState extends ConsumerState<_PaywallSheet> {
       Icons.fitness_center,       // filled
       'Unlimited routines',
       'No more $kFreeRoutineLimit-routine cap',
+    ),
+    (
+      Icons.sync_rounded,          // filled
+      'Sync across devices',
+      'Your data, on any device',
     ),
     (Icons.insights,              // filled
       'Full analytics history',
@@ -323,6 +328,11 @@ class _PaywallSheetState extends ConsumerState<_PaywallSheet> {
       case PaywallSource.timeRange:
         headline = 'Long-term trends';
         subheadline = '1Y and All Time ranges unlocked with Pro.';
+        break;
+      case PaywallSource.sync:
+        headline = 'Sync across devices';
+        subheadline =
+            'Cloud sync is a Pro feature. Upgrade to back up your data and pick up where you left off on any device.';
         break;
     }
 
