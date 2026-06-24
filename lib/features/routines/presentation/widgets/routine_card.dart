@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text.dart';
+import '../../../../core/theme/dynamic_accent_theme.dart';
 import '../../../../core/services/muscle_color_service.dart';
 import '../../../../core/utils/tap_guard.dart';
 import '../../../../core/utils/relative_time.dart';
@@ -160,13 +161,13 @@ class RoutineCard extends ConsumerWidget {
                     ),
                   ),
 
-                // ── Divider ──────────────────────────────────────
+                // ── Divider ───────────────────────────────
                 Padding(
                   padding: const EdgeInsets.only(top: 13),
                   child: Container(height: 1, color: AppColors.borderSubtle),
                 ),
 
-                // ── Footer: preview + Start pill ──────────────────────
+                // ── Footer: preview + Start pill ────────────────────
                 Padding(
                   padding: const EdgeInsets.only(top: 12),
                   child: Row(
@@ -271,7 +272,8 @@ class _StartPill extends StatelessWidget {
   Widget build(BuildContext context) {
     // Disabled (0-exercise routine): muted surface + tertiary text so it
     // visibly reads as not-startable; the tap still explains why.
-    final bg = enabled ? AppColors.accentPrimary : AppColors.surface3;
+    // Enabled fill follows the active accent palette.
+    final bg = enabled ? context.accent.base : AppColors.surface3;
     final fg = enabled ? AppColors.textPrimary : AppColors.textTertiary;
     return Material(
       color: bg,
