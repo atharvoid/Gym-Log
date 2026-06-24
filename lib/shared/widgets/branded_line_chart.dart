@@ -18,6 +18,13 @@ class ChartPoint {
 /// through this single component so curve behavior, dot styling, axis
 /// formatting, touch handling and empty states are pixel-identical.
 ///
+/// ACCENT: fl_chart does NOT read ThemeData — every colored element is an
+/// explicit argument. So the accent is resolved once per build from the live
+/// palette (`context.accent`) and injected into the line, dots, touch
+/// indicator, area fill AND the selected-date header (via
+/// `RDStyles.chartDate.copyWith(color: accent.light)`, because a static
+/// TextStyle can't react). No accent hex is hardcoded here.
+///
 /// Interaction model (Hevy-benchmarked, per design memory): no floating
 /// tooltip box — touching a point updates the value+date header above the
 /// plot. The latest point is emphasized with a ringed dot. Data changes
@@ -114,7 +121,9 @@ class _BrandedLineChartState extends State<BrandedLineChart> {
     if (data.length == 1) return _single(context, data.first);
 
     // Accent is resolved once per build — every brand-colored mark below
-    // (line, dots, touch indicator, area fill) reads from the live palette.
+    // (line, dots, touch indicator, area fill, date header) reads from the
+    // live palette. fl_chart ignores ThemeData, so this explicit injection is
+    // the ONLY way the chart tracks the accent.
     final accent = context.accent;
 
     final maxV =
@@ -172,7 +181,8 @@ class _BrandedLineChartState extends State<BrandedLineChart> {
                       style: RDStyles.chartValue),
                 ),
                 const SizedBox(width: 8),
-                Text(widget.dateFormatter(sel.date), style: RDStyles.chartDate),
+                Text(widget.dateFormatter(sel.date),
+                    style: RDStyles.chartDate.copyWith(color: accent.light)),
               ],
             ),
           ),
@@ -374,6 +384,7 @@ class _BrandedLineChartState extends State<BrandedLineChart> {
 
   /// Single-session state — a confident stat, not a lonely dot.
   Widget _single(BuildContext context, ChartPoint p) {
+    final accent = context.accent;
     return Semantics(
       container: true,
       label: 'Volume chart, one session: '
@@ -396,14 +407,15 @@ class _BrandedLineChartState extends State<BrandedLineChart> {
               children: [
                 Text(widget.valueFormatter(p.value), style: RDStyles.chartValue),
                 const SizedBox(width: 8),
-                Text(widget.dateFormatter(p.date), style: RDStyles.chartDate),
+                Text(widget.dateFormatter(p.date),
+                    style: RDStyles.chartDate.copyWith(color: accent.light)),
               ],
             ),
             const SizedBox(height: 12),
             Row(
               children: [
                 Icon(Icons.show_chart_rounded,
-                    size: 15, color: context.accent.light),
+                    size: 15, color: accent.light),
                 const SizedBox(width: 6),
                 Flexible(
                   child: Text(
