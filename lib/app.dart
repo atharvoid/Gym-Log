@@ -7,6 +7,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'core/providers/premium_provider.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/dynamic_accent_theme.dart';
+import 'core/theme/theme_palette.dart';
 import 'core/router/router.dart';
 import 'core/services/sync_engine.dart';
 import 'features/auth/presentation/providers/auth_provider.dart';
@@ -36,7 +37,7 @@ class _GymLogAppState extends ConsumerState<GymLogApp> {
     super.initState();
 
     // Capture Flutter framework errors and forward them to Sentry.
-    FlutterError.onError = (FlutterErrorDetails details) {
+    FlutterError.onError = (FlutterErrorDetails details) => {
       FlutterError.presentError(details);
       Sentry.captureException(details.exception, stackTrace: details.stack);
     };
@@ -121,13 +122,17 @@ class _GymLogAppState extends ConsumerState<GymLogApp> {
     // Rebuild the theme whenever the user switches accent palettes. The active
     // tokens flow into colorScheme, buttons, inputs, switches, and the
     // AccentColors extension consumed via `context.accent`.
-    final tokens = ref.watch(accentTokensProvider);
+    //
+    // Task 11: we also watch the palette enum so buildAppTheme can switch
+    // brightness/surfaces for the White palette.
+    final palette = ref.watch(dynamicAccentThemeProvider);
+    final tokens = palette.tokens;
 
     return MaterialApp.router(
       title: 'GymLog',
-      theme: buildAppTheme(tokens),
-      highContrastTheme: buildHighContrastTheme(tokens),
-      highContrastDarkTheme: buildHighContrastTheme(tokens),
+      theme: buildAppTheme(tokens, palette: palette),
+      highContrastTheme: buildHighContrastTheme(tokens, palette: palette),
+      highContrastDarkTheme: buildHighContrastTheme(tokens, palette: palette),
       routerConfig: router,
       debugShowCheckedModeBanner: false,
       builder: (context, child) {
