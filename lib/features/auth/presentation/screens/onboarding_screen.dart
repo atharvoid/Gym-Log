@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:gymlog/core/services/profile_sync_service.dart';
 import 'package:gymlog/core/theme/app_colors.dart';
 import 'package:gymlog/core/theme/app_text.dart';
+import 'package:gymlog/core/theme/dynamic_accent_theme.dart';
 import 'package:gymlog/features/auth/presentation/providers/auth_provider.dart';
 import 'package:gymlog/shared/widgets/ui/app_dialog.dart';
 import 'package:gymlog/shared/widgets/ui/primary_button.dart';
@@ -85,6 +86,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final accent = context.accent;
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.light,
       child: PopScope(
@@ -161,7 +163,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                           focusNode: _focusNode,
                           autofocus: _shouldAutofocus,
                           maxLength: 40,
-                          cursorColor: AppColors.accentPrimary,
+                          cursorColor: accent.base,
                           style: AppText.body().copyWith(
                             fontSize: 18,
                             fontWeight: FontWeight.w600,
@@ -182,9 +184,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                               borderRadius: BorderRadius.zero,
                               borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.06), width: 1),
                             ),
-                            focusedBorder: const OutlineInputBorder(
+                            focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.zero,
-                              borderSide: BorderSide(color: AppColors.accentPrimary, width: 1),
+                              borderSide: BorderSide(color: accent.light, width: 1),
                             ),
                           ),
                         ),
