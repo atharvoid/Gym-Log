@@ -243,7 +243,6 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
 
   Widget _buildGraphSection(List<ExerciseHistoryData> history,
       {bool showProPill = false}) {
-    final accent = context.accent;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
