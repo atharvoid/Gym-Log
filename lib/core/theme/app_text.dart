@@ -23,9 +23,9 @@ const List<FontFeature> kTabular = <FontFeature>[FontFeature.tabularFigures()];
 // - On the White theme: a darker shadow (~18% black) because the base surface
 //   is light and an accent-tinted shadow would be invisible.
 //
-// Usage: pass `shadows: TextDepth.forAccent(context.accent)` to any AppText
-// style method. The methods accept an optional `shadows` parameter for
-// backward compatibility — when null, no shadow is applied.
+// Usage: pass `shadows: AppText.depthFor(context)` to any AppText style method.
+// The methods accept an optional `shadows` parameter for backward
+// compatibility — when null, no shadow is applied.
 
 abstract class TextDepth {
   /// Accent-tinted etched shadow for dark themes. Returns an empty list when
@@ -81,6 +81,17 @@ abstract class TextDepth {
 }
 
 abstract class AppText {
+  /// Convenience helper: returns the appropriate shadow list for the current
+  /// theme. Pass to any AppText style method via `shadows: AppText.depthFor(context)`.
+  /// - Light theme → [TextDepth.forLightSurface] (dark grey shadow)
+  /// - Dark theme → [TextDepth.forAccent] with the live accent color
+  static List<Shadow>? depthFor(BuildContext context) {
+    final accent = context.accent;
+    return Theme.of(context).brightness == Brightness.light
+        ? TextDepth.forLightSurface()
+        : TextDepth.forAccent(accent);
+  }
+
   /// Screen title (Home, Profile, Routines): 32 / 700.
   static TextStyle screenTitle({
     Color color = AppColors.textPrimary,
