@@ -142,6 +142,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
     final version = versionAsync.valueOrNull ?? kAppVersionFallback;
 
+    // Determine sync subtitle based on premium + toggle state.
     final String syncSubtitle;
     if (!isPremium) {
       syncSubtitle = 'Upgrade to Pro to sync across devices';
@@ -255,6 +256,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               ),
               const SizedBox(height: 22),
 
+              // ── CLOUD SYNC ──────────────────────────────────────────
               const _GroupHeader('CLOUD SYNC'),
               AppCard(
                 padding: EdgeInsets.zero,
