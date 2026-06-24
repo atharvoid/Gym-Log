@@ -66,7 +66,7 @@ Future<void> showWeeklyGoalSheet(BuildContext context, WidgetRef ref) async {
                       '$days',
                       style: AppText.button(
                         color: days == current
-                            ? Colors.white
+                            ? AppColors.textPrimary
                             : AppColors.textPrimary,
                       ),
                     ),
@@ -280,10 +280,10 @@ class _SignOutButton extends ConsumerWidget {
       label: 'Sign out',
       child: Material(
         color: Colors.transparent,
-        borderRadius: BorderRadius.circular(6.0),
+        borderRadius: AppRadius.cardAll,
         clipBehavior: Clip.antiAlias,
         child: InkWell(
-          borderRadius: BorderRadius.circular(6.0),
+          borderRadius: AppRadius.cardAll,
           onTap: () async {
             if (!tapGuard()) return;
             final confirmed = await showAppConfirmDialog(
@@ -303,7 +303,7 @@ class _SignOutButton extends ConsumerWidget {
             alignment: Alignment.center,
             decoration: BoxDecoration(
               color: AppColors.error.withValues(alpha: 0.10),
-              borderRadius: BorderRadius.circular(6.0),
+              borderRadius: AppRadius.cardAll,
             ),
             child: Text(
               'Sign Out',

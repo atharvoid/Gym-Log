@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../core/providers/premium_provider.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -190,7 +189,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                 _entrance(
                   index: 1,
                   child: AppCard(
-                    radius: 6.0,
+                    radius: AppRadius.card,
                     padding: const EdgeInsets.symmetric(
                         horizontal: AppSpacing.x1, vertical: AppSpacing.x4),
                     child: _StatsStrip(
@@ -262,16 +261,13 @@ class _IdentityHeader extends StatelessWidget {
           alignment: Alignment.center,
           decoration: BoxDecoration(
             color: AppColors.surface2,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(AppRadius.buttonPrimary),
             border: Border.all(color: AppColors.borderSubtle),
           ),
           child: Text(
             displayName.isNotEmpty ? displayName[0].toUpperCase() : 'A',
-            style: GoogleFonts.inter(
-              color: AppColors.textSecondary,
-              fontSize: 20,
-              fontWeight: FontWeight.w700,
-            ),
+            style: AppText.sheetTitle(color: AppColors.textSecondary)
+                .copyWith(fontSize: 20),
           ),
         ),
         const SizedBox(width: 14),
@@ -572,7 +568,7 @@ class _QuickLinks extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AppCard(
-      radius: 6.0,
+      radius: AppRadius.card,
       padding: EdgeInsets.zero,
       child: Column(
         children: [
@@ -627,7 +623,7 @@ class _LoadingBody extends StatelessWidget {
           ),
           const SizedBox(height: 20),
           AppCard(
-            radius: 6.0,
+            radius: AppRadius.card,
             child: Row(
               children: [
                 for (var i = 0; i < 3; i++) ...[
@@ -647,7 +643,7 @@ class _LoadingBody extends StatelessWidget {
           ),
           const SizedBox(height: 28),
           const AppCard(
-            radius: 6.0,
+            radius: AppRadius.card,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -661,7 +657,7 @@ class _LoadingBody extends StatelessWidget {
           ),
           const SizedBox(height: 28),
           AppCard(
-            radius: 6.0,
+            radius: AppRadius.card,
             child: Column(
               children: [
                 for (var i = 0; i < 2; i++) ...[
@@ -689,7 +685,7 @@ class _ErrorBody extends StatelessWidget {
       padding: EdgeInsets.fromLTRB(16, 4, 16, bottomClearance),
       children: [
         AppCard(
-          radius: 6.0,
+          radius: AppRadius.card,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -711,7 +707,7 @@ class _ErrorBody extends StatelessWidget {
                   onPressed: onRetry,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.accentPrimary,
-                    foregroundColor: Colors.white,
+                    foregroundColor: AppColors.textPrimary,
                     elevation: 0,
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(AppRadius.buttonPrimary)),

@@ -131,12 +131,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  // ── Quick Start ──────────────────────────────────────────────────────────
+  // ── Quick Start ────────────────────────────────────────────────
   Widget _quickStart() {
     return Padding(
       padding: const EdgeInsets.only(bottom: 20),
       child: AppCard(
-        radius: 6.0,
+        radius: AppRadius.card,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -162,7 +162,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  // ── Section header + week-at-a-glance ──────────────────────────────────────
+  // ── Section header + week-at-a-glance ──────────────────────────────
   Widget _header() {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
@@ -186,7 +186,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  // ── Footer: loading | error | empty | all-caught-up ────────────────────────
+  // ── Footer: loading | error | empty | all-caught-up ─────────────────────
   Widget _footer(WorkoutHistoryState state) {
     if (state.isLoadingMore) {
       return const Padding(
@@ -217,7 +217,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         );
       }
       return AppCard(
-        radius: 6.0,
+        radius: AppRadius.card,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
