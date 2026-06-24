@@ -221,6 +221,52 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
         .setOverride(exerciseId, selected == '_default' ? null : selected);
   }
 
+  /// Builds the "Add Exercise" button that appears at the end of the
+  /// scrollable exercise list (S12.2). It's not fixed at the bottom —
+  /// it scrolls into view only when the user reaches the end.
+  Widget _buildAddExerciseButton(WorkoutNotifier notifier) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+      child: Material(
+        color: AppColors.surface3,
+        borderRadius: AppRadius.buttonSecondaryAll,
+        child: InkWell(
+          borderRadius: AppRadius.buttonSecondaryAll,
+          onTap: () async {
+            final selected =
+                await context.push<Exercise>('/exercises/select');
+            if (selected != null && mounted) {
+              notifier.addExercise(selected.id, selected.name);
+            }
+          },
+          child: Container(
+            height: 48,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              border: Border.all(color: AppColors.borderSubtle),
+              borderRadius: AppRadius.buttonSecondaryAll,
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(
+                  Icons.add_rounded,
+                  color: AppColors.textPrimary,
+                  size: 18,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  'Add Exercise',
+                  style: AppText.button(color: AppColors.textPrimary),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final workoutExists = ref.watch(activeWorkoutProvider.select((state) => state != null));
@@ -322,16 +368,26 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
           // A keyed StatefulWidget SetRow inside a plain ListView keeps its
           // FocusNode across rebuilds. Reordering moved to a focus-safe
           // sheet (no live text fields) — see _showReorderSheet.
+          //
+          // S12.2: The "Add Exercise" button is now the LAST item in the
+          // scrollable list — it scrolls into view at the end instead of
+          // being permanently fixed at the bottom. The bottomNavigationBar
+          // now only hosts the rest timer bar.
           Expanded(
             child: !workoutExists
                 ? const SizedBox.shrink()
                 : ListView.builder(
                     padding: EdgeInsets.only(
                       top: 8,
-                      bottom: MediaQuery.viewPaddingOf(context).bottom + 190.0,
+                      bottom: MediaQuery.viewPaddingOf(context).bottom + 100.0,
                     ),
-                    itemCount: exerciseIds.length,
+                    // +1 item: the last slot is the "Add Exercise" button.
+                    itemCount: exerciseIds.length + 1,
                     itemBuilder: (context, index) {
+                      // Last item → Add Exercise button at end of list.
+                      if (index == exerciseIds.length) {
+                        return _buildAddExerciseButton(notifier);
+                      }
                       return ExerciseBlock(
                         key: ValueKey(exerciseIds[index]),
                         exerciseIndex: index,
@@ -375,7 +431,9 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
                 ),
         ],
       ),
-      bottomNavigationBar: !workoutExists
+      // S12.2: bottomNavigationBar now ONLY hosts the rest timer bar.
+      // The "Add Exercise" button was moved to the end of the scrollable list.
+      bottomNavigationBar: !workoutExists || restTimer == null
           ? null
           : Container(
               decoration: const BoxDecoration(
@@ -386,74 +444,21 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
               ),
               child: SafeArea(
                 top: false,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 240),
-                      switchInCurve: Curves.easeOutCubic,
-                      switchOutCurve: Curves.easeInCubic,
-                      transitionBuilder: (child, animation) => SizeTransition(
-                        sizeFactor: animation,
-                        child: SlideTransition(
-                          position: Tween<Offset>(
-                            begin: const Offset(0, 1),
-                            end: Offset.zero,
-                          ).animate(animation),
-                          child: child,
-                        ),
-                      ),
-                      child: restTimer == null
-                          ? const SizedBox.shrink(key: ValueKey('noRest'))
-                          : RestTimerBar(key: const ValueKey('rest'), state: restTimer),
+                child: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 240),
+                  switchInCurve: Curves.easeOutCubic,
+                  switchOutCurve: Curves.easeInCubic,
+                  transitionBuilder: (child, animation) => SizeTransition(
+                    sizeFactor: animation,
+                    child: SlideTransition(
+                      position: Tween<Offset>(
+                        begin: const Offset(0, 1),
+                        end: Offset.zero,
+                      ).animate(animation),
+                      child: child,
                     ),
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: Material(
-                              color: AppColors.surface3,
-                              borderRadius: AppRadius.buttonSecondaryAll,
-                              child: InkWell(
-                                borderRadius: AppRadius.buttonSecondaryAll,
-                                onTap: () async {
-                                  final selected =
-                                      await context.push<Exercise>('/exercises/select');
-                                  if (selected != null && mounted) {
-                                    notifier.addExercise(selected.id, selected.name);
-                                  }
-                                },
-                                child: Container(
-                                  height: 48,
-                                  alignment: Alignment.center,
-                                  decoration: BoxDecoration(
-                                    border: Border.all(color: AppColors.borderSubtle),
-                                    borderRadius: AppRadius.buttonSecondaryAll,
-                                  ),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      const Icon(
-                                        Icons.add_rounded,
-                                        color: AppColors.textPrimary,
-                                        size: 18,
-                                      ),
-                                      const SizedBox(width: 8),
-                                      Text(
-                                        'Add Exercise',
-                                        style: AppText.button(color: AppColors.textPrimary),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
+                  ),
+                  child: RestTimerBar(key: const ValueKey('rest'), state: restTimer),
                 ),
               ),
             ),
