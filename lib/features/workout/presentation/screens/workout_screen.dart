@@ -6,6 +6,7 @@ import 'package:uuid/uuid.dart';
 import 'package:gymlog/core/database/daos/routines_dao.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text.dart';
+import '../../../../core/theme/dynamic_accent_theme.dart';
 import '../../../../core/utils/tap_guard.dart';
 import '../../../../core/utils/relative_time.dart';
 import '../../../../shared/widgets/async_error_state.dart';
@@ -95,7 +96,7 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ── Recency summary ──────────────────────────────────────────
+            // ── Recency summary ─────────────────────────────────
             routinesAsync.maybeWhen(
               data: (routines) => routines.isEmpty
                   ? const SizedBox.shrink()
@@ -128,11 +129,11 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
             ),
             const SizedBox(height: 22),
 
-            // ── Collapsible section header ───────────────────────────────
+            // ── Collapsible section header ──────────────────────────
             _collapsibleHeader(routinesAsync, reduceMotion),
             const SizedBox(height: 10),
 
-            // ── Routine list — smooth height collapse ────────────────────
+            // ── Routine list — smooth height collapse ──────────────────
             AnimatedSize(
               duration:
                   reduceMotion ? Duration.zero : const Duration(milliseconds: 220),
@@ -292,6 +293,7 @@ class _EmptyRoutines extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final accent = context.accent;
     return AppCard(
       radius: 6.0,
       child: Column(
@@ -307,12 +309,12 @@ class _EmptyRoutines extends StatelessWidget {
             style: TextButton.styleFrom(
               padding: EdgeInsets.zero,
               minimumSize: const Size(0, 44),
-              foregroundColor: AppColors.accentText,
+              foregroundColor: accent.light,
             ),
-            icon: const Icon(Icons.add_rounded,
-                size: 18, color: AppColors.accentText),
+            icon: Icon(Icons.add_rounded,
+                size: 18, color: accent.light),
             label: Text('New Routine',
-                style: AppText.button(color: AppColors.accentText)),
+                style: AppText.button(color: accent.light)),
           ),
         ],
       ),
