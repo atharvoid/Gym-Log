@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:gymlog/core/theme/app_colors.dart';
+import 'package:gymlog/core/theme/dynamic_accent_theme.dart';
 import 'package:gymlog/features/routines/presentation/widgets/routine_detail_styles.dart';
 
 /// One data point on a [BrandedLineChart].
@@ -106,11 +107,15 @@ class _BrandedLineChartState extends State<BrandedLineChart> {
   @override
   Widget build(BuildContext context) {
     final data = widget.data;
-    if (data.isEmpty) return _empty();
+    if (data.isEmpty) return _empty(context);
     // A line needs two points to be a line. With exactly one session a lone
     // floating dot reads as "broken" — show the value as a confident single
     // stat instead (the most common state for a new / just-imported routine).
-    if (data.length == 1) return _single(data.first);
+    if (data.length == 1) return _single(context, data.first);
+
+    // Accent is resolved once per build — every brand-colored mark below
+    // (line, dots, touch indicator, area fill) reads from the live palette.
+    final accent = context.accent;
 
     final maxV =
         data.map((s) => s.value).fold<double>(0, (a, b) => a > b ? a : b);
@@ -266,8 +271,7 @@ class _BrandedLineChartState extends State<BrandedLineChart> {
                   getTouchedSpotIndicator: (bar, idx) => idx
                       .map((i) => TouchedSpotIndicatorData(
                             FlLine(
-                              color: AppColors.accentPrimary
-                                  .withValues(alpha: 0.25),
+                              color: accent.base.withValues(alpha: 0.25),
                               strokeWidth: 1,
                             ),
                             FlDotData(
@@ -275,7 +279,7 @@ class _BrandedLineChartState extends State<BrandedLineChart> {
                               getDotPainter: (s, p, b, ix) =>
                                   FlDotCirclePainter(
                                 radius: 5.5,
-                                color: AppColors.accentPrimary,
+                                color: accent.base,
                                 strokeWidth: 2.5,
                                 strokeColor: Colors.white,
                               ),
@@ -298,7 +302,7 @@ class _BrandedLineChartState extends State<BrandedLineChart> {
                   LineChartBarData(
                     spots: spots,
                     isCurved: false,
-                    color: AppColors.accentPrimary,
+                    color: accent.base,
                     barWidth: 2.5,
                     isStrokeCapRound: true,
                     dotData: FlDotData(
@@ -310,7 +314,7 @@ class _BrandedLineChartState extends State<BrandedLineChart> {
                         final isSelected = i == selIndex;
                         return FlDotCirclePainter(
                           radius: isSelected ? 5.5 : 3,
-                          color: AppColors.accentPrimary,
+                          color: accent.base,
                           strokeWidth: isSelected ? 2.5 : 0,
                           strokeColor: Colors.white,
                         );
@@ -322,8 +326,8 @@ class _BrandedLineChartState extends State<BrandedLineChart> {
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
                         colors: [
-                          AppColors.accentPrimary.withValues(alpha: 0.08),
-                          AppColors.accentPrimary.withValues(alpha: 0.0),
+                          accent.base.withValues(alpha: 0.08),
+                          accent.base.withValues(alpha: 0.0),
                         ],
                       ),
                     ),
@@ -369,7 +373,7 @@ class _BrandedLineChartState extends State<BrandedLineChart> {
   }
 
   /// Single-session state — a confident stat, not a lonely dot.
-  Widget _single(ChartPoint p) {
+  Widget _single(BuildContext context, ChartPoint p) {
     return Semantics(
       container: true,
       label: 'Volume chart, one session: '
@@ -398,8 +402,8 @@ class _BrandedLineChartState extends State<BrandedLineChart> {
             const SizedBox(height: 12),
             Row(
               children: [
-                const Icon(Icons.show_chart_rounded,
-                    size: 15, color: AppColors.accentText),
+                Icon(Icons.show_chart_rounded,
+                    size: 15, color: context.accent.light),
                 const SizedBox(width: 6),
                 Flexible(
                   child: Text(
@@ -415,7 +419,7 @@ class _BrandedLineChartState extends State<BrandedLineChart> {
     );
   }
 
-  Widget _empty() => Container(
+  Widget _empty(BuildContext context) => Container(
         height: 150,
         decoration: BoxDecoration(
           gradient: RDStyles.cardGradient,
@@ -461,7 +465,7 @@ class _BrandedLineChartState extends State<BrandedLineChart> {
                   style: GoogleFonts.inter(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
-                    color: AppColors.accentText,
+                    color: context.accent.light,
                   ),
                 ),
               ),
