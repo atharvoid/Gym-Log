@@ -2,9 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text.dart';
+import '../../../core/theme/dynamic_accent_theme.dart';
 
 /// [toggle_pill.dart]
-/// Purpose: TogglePill - Pill-shaped toggle, active=purple bg, inactive=dark grey
+/// Purpose: TogglePill - Pill-shaped toggle, active=accent bg, inactive=dark grey.
+/// The active fill follows the user's chosen accent palette (purple/copper/
+/// teal/red) via [BuildContext.accent] — never a hardcoded hue.
 /// Selection fires a light impact, per the app-wide haptic map.
 
 class TogglePill extends StatelessWidget {
@@ -36,7 +39,7 @@ class TogglePill extends StatelessWidget {
         duration: motion,
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
         decoration: BoxDecoration(
-          color: isActive ? AppColors.accentPrimary : AppColors.borderSubtle,
+          color: isActive ? context.accent.base : AppColors.borderSubtle,
           borderRadius: BorderRadius.circular(999),
         ),
         child: AnimatedDefaultTextStyle(
