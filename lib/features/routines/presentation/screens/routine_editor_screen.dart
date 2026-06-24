@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:gymlog/core/database/daos/routines_dao.dart';
 import 'package:gymlog/core/database/database.dart';
 import 'package:gymlog/core/providers/database_provider.dart';
@@ -13,7 +12,6 @@ import 'package:gymlog/shared/widgets/premium_paywall.dart';
 import 'package:gymlog/features/auth/presentation/providers/auth_provider.dart';
 import 'package:gymlog/shared/widgets/exercise_gif_widget.dart';
 import 'package:gymlog/shared/widgets/ui/app_dialog.dart';
-import 'package:gymlog/features/routines/presentation/widgets/routine_detail_styles.dart';
 import 'package:uuid/uuid.dart';
 
 /// Real routine builder — replaces the old "Coming Soon" stub.
@@ -219,11 +217,7 @@ class _RoutineEditorScreenState extends ConsumerState<RoutineEditorScreen> {
           ),
           title: Text(
             _isEditMode ? 'Edit Routine' : 'New Routine',
-            style: GoogleFonts.inter(
-              fontWeight: FontWeight.w700,
-              fontSize: 18,
-              color: AppColors.textPrimary,
-            ),
+            style: AppText.sheetTitle(color: AppColors.textPrimary),
           ),
           actions: [
             Padding(
@@ -239,13 +233,11 @@ class _RoutineEditorScreenState extends ConsumerState<RoutineEditorScreen> {
                       )
                     : Text(
                         'Save',
-                        style: GoogleFonts.inter(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
+                        style: AppText.button(
                           color: _canSave
                               ? AppColors.accentPrimary
                               : AppColors.textSecondary.withValues(alpha: 0.5),
-                        ),
+                        ).copyWith(fontWeight: FontWeight.w700),
                       ),
               ),
             ),
@@ -258,7 +250,7 @@ class _RoutineEditorScreenState extends ConsumerState<RoutineEditorScreen> {
               )
             : Column(
                 children: [
-                  // ── Routine name ──────────────────────────────────────
+                  // ── Routine name ─────────────────────────────────
                   Padding(
                     padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
                     child: Semantics(
@@ -268,19 +260,14 @@ class _RoutineEditorScreenState extends ConsumerState<RoutineEditorScreen> {
                         maxLength: 50,
                         textCapitalization: TextCapitalization.words,
                         cursorColor: AppColors.accentPrimary,
-                        style: GoogleFonts.inter(
-                          color: AppColors.textPrimary,
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600,
-                        ),
+                        style: AppText.sheetTitle(color: AppColors.textPrimary)
+                            .copyWith(fontWeight: FontWeight.w600),
                         decoration: InputDecoration(
                           hintText: 'Routine name',
                           counterText: '',
-                          hintStyle: GoogleFonts.inter(
-                            color: AppColors.textSecondary,
-                            fontSize: 18,
-                            fontWeight: FontWeight.w500,
-                          ),
+                          hintStyle: AppText.sheetTitle(
+                                  color: AppColors.textSecondary)
+                              .copyWith(fontWeight: FontWeight.w500),
                           filled: true,
                           fillColor: AppColors.surfaceRaised,
                           border: const OutlineInputBorder(
@@ -300,7 +287,7 @@ class _RoutineEditorScreenState extends ConsumerState<RoutineEditorScreen> {
                     ),
                   ),
 
-                  // ── Exercise list ─────────────────────────────────────
+                  // ── Exercise list ────────────────────────────────
                   Expanded(
                     child: _exercises.isEmpty
                         ? _EmptyEditorState(onAdd: _addExercises)
@@ -393,10 +380,15 @@ class _RoutineEditorScreenState extends ConsumerState<RoutineEditorScreen> {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Icon(Icons.add_rounded,
-                                color: Colors.white.withValues(alpha: 0.9),
+                                color: AppColors.textPrimary
+                                    .withValues(alpha: 0.9),
                                 size: 16),
                             const SizedBox(width: 9),
-                            Text('Add Exercise', style: RDStyles.addBtn),
+                            Text('Add Exercise',
+                                style: AppText.button(
+                                        color: AppColors.textPrimary
+                                            .withValues(alpha: 0.90))
+                                    .copyWith(fontSize: 15)),
                           ],
                         ),
                       ),
@@ -409,7 +401,7 @@ class _RoutineEditorScreenState extends ConsumerState<RoutineEditorScreen> {
   }
 }
 
-// ── Sub-widgets ───────────────────────────────────────────────────────────────
+// ── Sub-widgets ──────────────────────────────────────────────────
 
 class _EmptyEditorState extends StatelessWidget {
   final VoidCallback onAdd;
@@ -424,25 +416,19 @@ class _EmptyEditorState extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(Icons.fitness_center_rounded,
-                size: 34, color: Colors.white.withValues(alpha: 0.25)),
+                size: 34,
+                color: AppColors.textPrimary.withValues(alpha: 0.25)),
             const SizedBox(height: 14),
             Text(
               'Build your routine',
-              style: GoogleFonts.inter(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: AppColors.textPrimary,
-              ),
+              style: AppText.exerciseName(color: AppColors.textPrimary),
             ),
             const SizedBox(height: 4),
             Text(
               'Add exercises from the library, set your\ntargets, and start training in one tap.',
               textAlign: TextAlign.center,
-              style: GoogleFonts.inter(
-                fontSize: 13,
-                height: 1.5,
-                color: AppColors.textSecondary,
-              ),
+              style: AppText.meta(color: AppColors.textSecondary)
+                  .copyWith(height: 1.5),
             ),
             const SizedBox(height: 20),
             Material(
@@ -459,15 +445,11 @@ class _EmptyEditorState extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       const Icon(Icons.add_rounded,
-                          size: 18, color: Colors.white),
+                          size: 18, color: AppColors.textPrimary),
                       const SizedBox(width: 6),
                       Text(
                         'Add Exercise',
-                        style: GoogleFonts.inter(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
-                        ),
+                        style: AppText.rowLabel(color: AppColors.textPrimary),
                       ),
                     ],
                   ),
@@ -498,9 +480,9 @@ class _EditorExerciseCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        gradient: RDStyles.cardGradient,
+        gradient: AppColors.cardGradient,
         borderRadius: BorderRadius.zero,
-        border: RDStyles.hairlineBorder,
+        border: Border.all(color: AppColors.borderSubtle),
       ),
       padding: const EdgeInsets.fromLTRB(12, 12, 4, 12),
       child: Row(
@@ -516,7 +498,7 @@ class _EditorExerciseCard extends StatelessWidget {
                 child: Icon(
                   Icons.drag_indicator_rounded,
                   size: 20,
-                  color: Colors.white.withValues(alpha: 0.30),
+                  color: AppColors.textPrimary.withValues(alpha: 0.30),
                 ),
               ),
             ),
@@ -545,12 +527,8 @@ class _EditorExerciseCard extends StatelessWidget {
                   // row were indistinguishable).
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.inter(
-                    fontSize: 14.5,
-                    fontWeight: FontWeight.w600,
-                    height: 1.2,
-                    color: AppColors.textPrimary,
-                  ),
+                  style: AppText.rowLabel(color: AppColors.textPrimary)
+                      .copyWith(fontSize: 14.5, height: 1.2),
                 ),
                 const SizedBox(height: 2),
                 Text(
@@ -558,10 +536,7 @@ class _EditorExerciseCard extends StatelessWidget {
                   '${(exercise.equipment ?? '').isNotEmpty ? ' · ${exercise.equipment}' : ''}',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.inter(
-                    fontSize: 12,
-                    color: AppColors.textSecondary,
-                  ),
+                  style: AppText.caption(color: AppColors.textSecondary),
                 ),
               ],
             ),
@@ -578,11 +553,8 @@ class _EditorExerciseCard extends StatelessWidget {
             child: Text(
               '${exercise.sets}',
               textAlign: TextAlign.center,
-              style: GoogleFonts.inter(
-                fontSize: 15,
-                fontWeight: FontWeight.w700,
-                color: AppColors.textPrimary,
-              ),
+              style: AppText.body(color: AppColors.textPrimary)
+                  .copyWith(fontWeight: FontWeight.w700),
             ),
           ),
           _StepperButton(
@@ -595,7 +567,8 @@ class _EditorExerciseCard extends StatelessWidget {
             tooltip: 'Remove ${exercise.name}',
             constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
             icon: Icon(Icons.close_rounded,
-                size: 18, color: Colors.white.withValues(alpha: 0.4)),
+                size: 18,
+                color: AppColors.textPrimary.withValues(alpha: 0.4)),
             onPressed: onRemove,
           ),
         ],

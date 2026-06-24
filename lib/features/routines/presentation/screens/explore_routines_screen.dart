@@ -327,7 +327,7 @@ class _ExploreRoutinesScreenState extends ConsumerState<ExploreRoutinesScreen>
             ),
           ),
 
-          // ── Subtitle + credibility ──────────────────────────────────────
+          // ── Subtitle + credibility ────────────────────────────────
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(
@@ -357,7 +357,7 @@ class _ExploreRoutinesScreenState extends ConsumerState<ExploreRoutinesScreen>
             ),
           ),
 
-          // ── Sticky goal filters ─────────────────────────────────────────
+          // ── Sticky goal filters ──────────────────────────────────
           SliverPersistentHeader(
             pinned: true,
             delegate: _FilterHeaderDelegate(
@@ -443,6 +443,10 @@ class _HeroTitle extends StatelessWidget {
 
 /// Ambient violet aura behind the hero — gives the AMOLED black depth and brand
 /// presence on first open. FlexibleSpaceBar fades it out as the bar collapses.
+///
+/// The radial blend (~7% white → transparent) is a bespoke ambient effect with
+/// no exact AppColors token; kept as literal const Colors to preserve the
+/// approved glow and stay compile-time const.
 class _HeroGlow extends StatelessWidget {
   const _HeroGlow();
 
@@ -552,7 +556,7 @@ class _FilterChip extends StatelessWidget {
             child: Text(
               label,
               style: AppText.statLabel(
-                  color: selected ? Colors.white : AppColors.textSecondary),
+                  color: selected ? AppColors.textPrimary : AppColors.textSecondary),
             ),
           ),
         ),
@@ -659,7 +663,7 @@ class _FeaturedCard extends StatelessWidget {
             gradient: const LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [Color(0xFF141414), Color(0xFF0B0B0D)],
+              colors: [AppColors.surface2, Color(0xFF0B0B0D)],
             ),
             borderRadius: AppRadius.cardAll,
             border: Border.all(
@@ -991,7 +995,7 @@ class _ImportPill extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final reduceMotion = MediaQuery.disableAnimationsOf(context);
-    final fg = imported ? AppColors.success : Colors.white;
+    final fg = imported ? AppColors.success : AppColors.textPrimary;
 
     final Widget child = importing
         ? const SizedBox(
@@ -999,7 +1003,7 @@ class _ImportPill extends StatelessWidget {
             width: 16,
             height: 16,
             child:
-                CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                CircularProgressIndicator(strokeWidth: 2, color: AppColors.textPrimary),
           )
         : Row(
             key: ValueKey(imported),

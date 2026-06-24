@@ -11,7 +11,6 @@ import '../../../../core/providers/database_provider.dart';
 import '../../../../shared/widgets/ui/action_bottom_sheet.dart';
 import '../../../../shared/widgets/ui/app_dialog.dart';
 import '../../../../shared/widgets/ui/muscle_glyph.dart';
-import 'routine_detail_styles.dart';
 
 /// Premium routine card for the Routines list.
 /// - Tapping the body opens the routine detail (`/routines/:id`).
@@ -69,9 +68,9 @@ class RoutineCard extends ConsumerWidget {
 
     return Container(
       decoration: BoxDecoration(
-        gradient: RDStyles.cardGradient,
+        gradient: AppColors.cardGradient,
         borderRadius: AppRadius.cardAll,
-        border: RDStyles.hairlineBorder,
+        border: Border.all(color: AppColors.borderSubtle),
       ),
       clipBehavior: Clip.antiAlias,
       child: Material(
@@ -100,7 +99,7 @@ class RoutineCard extends ConsumerWidget {
                         alignment: Alignment.center,
                         decoration: BoxDecoration(
                           color: _glyphColor.withValues(alpha: 0.15),
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: AppRadius.buttonPrimaryAll,
                         ),
                         child: MuscleGlyph(
                           muscle:
@@ -161,10 +160,10 @@ class RoutineCard extends ConsumerWidget {
                     ),
                   ),
 
-                // ── Divider ─────────────────────────────────────
+                // ── Divider ──────────────────────────────────────
                 Padding(
                   padding: const EdgeInsets.only(top: 13),
-                  child: Container(height: 1, color: RDStyles.hairline),
+                  child: Container(height: 1, color: AppColors.borderSubtle),
                 ),
 
                 // ── Footer: preview + Start pill ──────────────────────
