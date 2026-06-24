@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gymlog/core/theme/app_colors.dart';
 import 'package:gymlog/core/theme/app_text.dart';
+import 'package:gymlog/core/theme/dynamic_accent_theme.dart';
 import 'package:gymlog/features/workout/presentation/providers/rest_timer_provider.dart';
 
 /// Floating rest-timer tile shown in the Active Workout's
@@ -31,6 +32,7 @@ class RestTimerBar extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final notifier = ref.read(restTimerProvider.notifier);
+    final accent = context.accent;
 
     return SafeArea(
       top: false,
@@ -47,8 +49,8 @@ class RestTimerBar extends ConsumerWidget {
               height: kRestTileHeight,
               child: DecoratedBox(
                 decoration: BoxDecoration(
-                  // Accent-tinted ambient wash → near-black. Derived from
-                  // accentPrimary (not a baked-in purple literal) so the
+                  // Accent-tinted ambient wash → near-black. Derived from the
+                  // live accent (not a baked-in purple literal) so the
                   // Phase 7 dynamic-accent theme recolors the rest tile for
                   // free.
                   gradient: LinearGradient(
@@ -56,7 +58,7 @@ class RestTimerBar extends ConsumerWidget {
                     end: Alignment.bottomCenter,
                     colors: [
                       Color.alphaBlend(
-                        AppColors.accentPrimary.withValues(alpha: 0.16),
+                        accent.base.withValues(alpha: 0.16),
                         AppColors.bgBase,
                       ),
                       AppColors.bgBase,
@@ -64,7 +66,7 @@ class RestTimerBar extends ConsumerWidget {
                   ),
                   borderRadius: AppRadius.cardAll,
                   border: Border.all(
-                    color: AppColors.accentPrimary.withValues(alpha: 0.40),
+                    color: accent.base.withValues(alpha: 0.40),
                     width: 1.2,
                   ),
                 ),
@@ -76,10 +78,13 @@ class RestTimerBar extends ConsumerWidget {
                         width: 44,
                         height: 44,
                         child: CustomPaint(
-                          painter: _RestRingPainter(progress: state.progress),
-                          child: const Center(
+                          painter: _RestRingPainter(
+                            progress: state.progress,
+                            arcColor: accent.base,
+                          ),
+                          child: Center(
                             child: Icon(Icons.timer_outlined,
-                                size: 18, color: AppColors.accentText),
+                                size: 18, color: accent.light),
                           ),
                         ),
                       ),
@@ -149,9 +154,10 @@ class _RestAction extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final accent = context.accent;
     return Material(
       color: emphasized
-          ? AppColors.accentPrimary.withValues(alpha: 0.16)
+          ? accent.base.withValues(alpha: 0.16)
           : AppColors.borderSubtle,
       borderRadius: BorderRadius.circular(AppRadius.buttonSecondary),
       child: InkWell(
@@ -164,7 +170,7 @@ class _RestAction extends StatelessWidget {
           child: Text(
             label,
             style: AppText.statLabel(
-              color: emphasized ? AppColors.accentText : AppColors.textPrimary,
+              color: emphasized ? accent.light : AppColors.textPrimary,
             ),
           ),
         ),
@@ -200,6 +206,7 @@ class _AmbientPulseState extends State<_AmbientPulse>
 
   @override
   Widget build(BuildContext context) {
+    final accent = context.accent;
     if (MediaQuery.disableAnimationsOf(context)) {
       // Reduce-motion: a steady glow, no pulsing.
       return DecoratedBox(
@@ -207,7 +214,7 @@ class _AmbientPulseState extends State<_AmbientPulse>
           borderRadius: widget.radius,
           boxShadow: [
             BoxShadow(
-              color: AppColors.accentPrimary.withValues(alpha: 0.28),
+              color: accent.base.withValues(alpha: 0.28),
               blurRadius: 18,
               spreadRadius: -2,
             ),
@@ -225,7 +232,7 @@ class _AmbientPulseState extends State<_AmbientPulse>
             borderRadius: widget.radius,
             boxShadow: [
               BoxShadow(
-                color: AppColors.accentPrimary.withValues(alpha: 0.18 + 0.30 * t),
+                color: accent.base.withValues(alpha: 0.18 + 0.30 * t),
                 blurRadius: 14 + 16 * t,
                 spreadRadius: -2,
               ),
@@ -241,7 +248,8 @@ class _AmbientPulseState extends State<_AmbientPulse>
 
 class _RestRingPainter extends CustomPainter {
   final double progress;
-  _RestRingPainter({required this.progress});
+  final Color arcColor;
+  _RestRingPainter({required this.progress, required this.arcColor});
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -266,12 +274,12 @@ class _RestRingPainter extends CustomPainter {
           ..style = PaintingStyle.stroke
           ..strokeWidth = 3
           ..strokeCap = StrokeCap.round
-          ..color = AppColors.accentPrimary,
+          ..color = arcColor,
       );
     }
   }
 
   @override
   bool shouldRepaint(_RestRingPainter oldDelegate) =>
-      oldDelegate.progress != progress;
+      oldDelegate.progress != progress || oldDelegate.arcColor != arcColor;
 }
