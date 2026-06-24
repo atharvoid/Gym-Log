@@ -7,7 +7,7 @@
 -- have been synced before the gating was introduced.
 --
 -- This is a SERVER-SIDE safety net. The client-side SyncEntitlementGate
--- is the primary enforcement point — this RLS policy exists in case
+-- is the primary enforcement point; this RLS policy exists in case
 -- the client gate is bypassed (e.g. a modified client or direct
 -- API call).
 --
