@@ -134,13 +134,14 @@ class RoutineCard extends ConsumerWidget {
                         ),
                       ),
                     ),
+                    // S13: standardized to more_horiz_rounded + showActionBottomSheet
                     IconButton(
-                      tooltip: 'Routine options',
+                      tooltip: 'More options',
                       padding: EdgeInsets.zero,
                       constraints:
                           const BoxConstraints(minWidth: 48, minHeight: 48),
                       iconSize: 20,
-                      icon: const Icon(Icons.more_vert_rounded,
+                      icon: const Icon(Icons.more_horiz_rounded,
                           color: AppColors.textSecondary),
                       onPressed: () => _showOptions(context, ref),
                     ),
