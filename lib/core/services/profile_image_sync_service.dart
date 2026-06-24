@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:path_provider/path_provider.dart' as path_provider;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -30,7 +31,6 @@ class ProfileImageSyncService {
 
   static const _bucket = 'profile-images';
   static const _pendingUploadKey = 'pending_profile_image_upload';
-  static const _pendingDownloadKey = 'pending_profile_image_download';
 
   /// Upload the local profile image to Supabase Storage.
   /// Silently no-ops when the user is not Pro — no error, no paywall.
@@ -73,18 +73,17 @@ class ProfileImageSyncService {
 
     try {
       final storagePath = '$userId/profile.jpg';
-      final exists = await _client.storage
+      final listing = await _client.storage
           .from(_bucket)
           .list(path: userId);
-      if (!exists.any((f) => f.name == 'profile.jpg')) return null;
+      if (!listing.any((f) => f.name == 'profile.jpg')) return null;
 
       final bytes = await _client.storage
           .from(_bucket)
           .download(storagePath);
 
-      // Write to the app documents directory.
-      final dir = await _getDocumentsDir();
-      final localPath = '${dir.path}/profile_image.jpg';
+      final docDir = await path_provider.getApplicationDocumentsDirectory();
+      final localPath = '${docDir.path}/profile_image.jpg';
       final file = File(localPath);
       await file.writeAsBytes(bytes);
       return localPath;
@@ -124,7 +123,7 @@ class ProfileImageSyncService {
     }
   }
 
-  /// Check if the uploaded image should be deleted (e.g. on image removal).
+  /// Delete the remote copy (e.g. when the user removes their photo).
   Future<void> deleteRemoteIfEntitled({
     required String userId,
     required bool isPremium,
@@ -136,17 +135,9 @@ class ProfileImageSyncService {
       // Best-effort; never surface to the user.
     }
   }
-
-  Future<Directory> _getDocumentsDir() async {
-    // Lazy import to avoid pulling path_provider at module scope.
-    return await path_provider.getApplicationDocumentsDirectory();
-  }
 }
 
 // ── Providers ────────────────────────────────────────────────────────────────
-
-import 'package:path_provider/path_provider.dart' as path_provider;
-import 'dart:io' show Directory;
 
 final profileImageSyncProvider = Provider<ProfileImageSyncService>((ref) {
   return ProfileImageSyncService(
