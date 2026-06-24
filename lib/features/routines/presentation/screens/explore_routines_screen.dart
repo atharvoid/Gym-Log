@@ -29,7 +29,7 @@ String _dominantMuscle(String focus) {
 }
 
 /// Stable per-muscle tint from the reactive accent ramp — identical
-derivation to the saved-routine card (via MuscleColorService), so a chest
+/// derivation to the saved-routine card (via MuscleColorService), so a chest
 /// template and a chest routine read the same.
 Color _glyphColor(String muscle, List<Color> ramp) {
   final i = muscle.hashCode.abs() % ramp.length;
