@@ -101,12 +101,14 @@ class ExerciseGifWidget extends StatelessWidget {
         color: AppColors.bgSurface,
         borderRadius: borderRadius,
       ),
+      // Color intentionally omitted — inherits the active palette base via
+      // app_theme's progressIndicatorTheme, so the spinner tracks the user's
+      // chosen accent instead of a hardcoded purple.
       child: const Center(
         child: SizedBox(
           width: 28,
           height: 28,
           child: CircularProgressIndicator(
-            color: AppColors.accentPrimary,
             strokeWidth: 2.5,
           ),
         ),
