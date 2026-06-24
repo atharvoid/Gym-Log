@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text.dart';
+import '../../core/theme/dynamic_accent_theme.dart';
 
 /// [active_workout_bar.dart]
-/// Purpose: High-Density Tracker - Active workout indicator with indigo pulse
+/// Purpose: High-Density Tracker - Active workout indicator with an accent pulse
 /// Dependencies: flutter/material.dart, go_router, app_colors.dart, app_text.dart
-/// Last modified: Premium OLED Redesign
+/// Last modified: Phase 7 — gradient wash, glow, and play dot follow the active
+/// accent palette (purple/copper/teal/red) via [BuildContext.accent].
 
 class ActiveWorkoutBar extends StatefulWidget {
   const ActiveWorkoutBar({super.key});
@@ -56,21 +58,22 @@ class _ActiveWorkoutBarState extends State<ActiveWorkoutBar>
 
   Widget _buildBar(BuildContext context,
       {required double glowAlpha, required double blurRadius}) {
+    final accent = context.accent;
     return GestureDetector(
       onTap: () => context.push('/workout/active'),
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          gradient: const LinearGradient(
+          gradient: LinearGradient(
             begin: Alignment.centerLeft,
             end: Alignment.centerRight,
-            colors: [Color(0x267C3AED), AppColors.surface2],
+            colors: [accent.muted, AppColors.surface2],
           ),
           borderRadius: BorderRadius.circular(AppRadius.buttonSecondary),
           border: Border.all(color: AppColors.borderDefault, width: 1),
           boxShadow: [
             BoxShadow(
-              color: AppColors.accentPrimary.withValues(alpha: glowAlpha),
+              color: accent.base.withValues(alpha: glowAlpha),
               blurRadius: blurRadius,
               spreadRadius: 0,
             ),
@@ -79,10 +82,10 @@ class _ActiveWorkoutBarState extends State<ActiveWorkoutBar>
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         child: Row(
           children: [
-            // Filled indigo play button dot
+            // Filled accent play button dot
             Container(
               decoration: BoxDecoration(
-                color: AppColors.accentPrimary,
+                color: accent.base,
                 borderRadius: BorderRadius.circular(6),
               ),
               padding: const EdgeInsets.all(8),
