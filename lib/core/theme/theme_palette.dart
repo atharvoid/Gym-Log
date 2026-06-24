@@ -74,17 +74,17 @@ enum ThemePalette {
 
   /// Human-facing name shown under the swatch in the Appearance screen.
   String get displayName => switch (this) {
-        ThemePalette.neonPurple => 'Neon Purple',
-        ThemePalette.neonCyan => 'Neon Cyan',
-        ThemePalette.neonMagenta => 'Neon Magenta',
+        ThemePalette.neonPurple => 'Purple',
+        ThemePalette.neonCyan => 'Cyan',
+        ThemePalette.neonMagenta => 'Magenta',
         ThemePalette.electricIndigo => 'Electric Indigo',
       };
 
   /// Accessibility label for the swatch.
   String get a11yName => switch (this) {
-        ThemePalette.neonPurple => 'Neon purple',
-        ThemePalette.neonCyan => 'Neon cyan',
-        ThemePalette.neonMagenta => 'Neon magenta',
+        ThemePalette.neonPurple => 'Purple',
+        ThemePalette.neonCyan => 'Cyan',
+        ThemePalette.neonMagenta => 'Magenta',
         ThemePalette.electricIndigo => 'Electric indigo',
       };
 
