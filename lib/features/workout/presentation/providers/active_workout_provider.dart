@@ -17,9 +17,6 @@ class ActiveWorkoutNotifier extends StateNotifier<ActiveWorkoutState?> {
   Timer? _draftDebounce;
 
   ActiveWorkoutNotifier(this._ref) : super(null) {
-    // Crash/kill resilience: persist a debounced snapshot of the live session
-    // and drop it on finish/discard. This is a passive side-effect on state
-    // changes — it does NOT alter how sets are logged.
     addListener(_persistDraftOnChange, fireImmediately: false);
   }
 
@@ -27,20 +24,15 @@ class ActiveWorkoutNotifier extends StateNotifier<ActiveWorkoutState?> {
     _draftDebounce?.cancel();
     final store = _ref.read(workoutDraftStoreProvider);
     if (s == null) {
-      // Finished or discarded — remove the draft immediately.
       unawaited(store.clear());
       return;
     }
-    // Only NEW live sessions are resumable; editing history is not.
     if (s.originalSessionId != null) return;
-    // updateSet fires per keystroke — debounce the encrypted write.
     _draftDebounce = Timer(const Duration(milliseconds: 800), () {
       unawaited(store.save(s));
     });
   }
 
-  /// Restores a persisted draft as the live session (used by the launch-time
-  /// "resume interrupted workout?" prompt).
   void resumeDraft(ActiveWorkoutState draft) {
     state = draft;
   }
@@ -56,11 +48,6 @@ class ActiveWorkoutNotifier extends StateNotifier<ActiveWorkoutState?> {
     String? name,
     List<WorkoutExerciseState>? initialExercises,
   }) async {
-    // Safety net: every exercise MUST have a unique id — the active-workout
-    // list and the reorder sheet key on it. Callers that pass initialExercises
-    // sometimes omit it (it defaults to ''), which would collapse the list to
-    // a single row during reorder. Backfill any missing id here so no caller
-    // can reintroduce that bug.
     final seeded = <WorkoutExerciseState>[
       for (final e in (initialExercises ?? const <WorkoutExerciseState>[]))
         e.id.isEmpty ? e.copyWith(id: const Uuid().v4()) : e,
@@ -82,8 +69,6 @@ class ActiveWorkoutNotifier extends StateNotifier<ActiveWorkoutState?> {
           await db.routinesDao.getExercisesForDay(days.first.id);
       if (routineExercises.isEmpty) return;
 
-      // Batch lookups — one query for metadata, one for previous sets,
-      // instead of 4 queries per routine exercise.
       final exerciseIds =
           routineExercises.map((re) => re.exerciseId).toSet().toList();
       final metaRows = await (db.select(db.exercises)
@@ -121,7 +106,6 @@ class ActiveWorkoutNotifier extends StateNotifier<ActiveWorkoutState?> {
         ));
       }
 
-      // Guard against the user discarding / switching routines mid-load.
       if (state != null && state!.routineId == routineId) {
         state = state!.copyWith(exercises: exercises);
       }
@@ -129,8 +113,8 @@ class ActiveWorkoutNotifier extends StateNotifier<ActiveWorkoutState?> {
   }
 
   /// Persists the active workout and returns any personal records that
-  /// were set — the screen turns them into a celebration moment.
-  /// The HomeScreen feed reloads itself via its Drift revision stream.
+  /// were set. The local commit always happens regardless of sync gate.
+  /// `enqueueSession`/`syncNow` are no-ops when the gate is closed.
   Future<List<PrRecord>> finishWorkout({String? name}) async {
     if (state == null) return const [];
 
@@ -145,7 +129,6 @@ class ActiveWorkoutNotifier extends StateNotifier<ActiveWorkoutState?> {
     final user = _ref.read(authProvider);
     final userId = user?.id ?? '';
 
-    // Calculate total volume from completed sets
     double totalVolume = 0;
     for (final ex in state!.exercises) {
       for (final set in ex.sets) {
@@ -156,9 +139,6 @@ class ActiveWorkoutNotifier extends StateNotifier<ActiveWorkoutState?> {
     }
 
     final sessionId = const Uuid().v4();
-
-    // The name the user confirmed at finish wins; otherwise fall back to the
-    // in-progress name (the routine name, when started from one).
     final workoutName = (name != null && name.trim().isNotEmpty)
         ? name.trim()
         : state!.name;
@@ -177,7 +157,6 @@ class ActiveWorkoutNotifier extends StateNotifier<ActiveWorkoutState?> {
           ),
         );
 
-        // Strip exercises where the user completed zero sets
         final exercisesToSave = state!.exercises
             .where((ex) => ex.sets.any((s) => s.isCompleted))
             .toList();
@@ -196,8 +175,6 @@ class ActiveWorkoutNotifier extends StateNotifier<ActiveWorkoutState?> {
             ),
           );
 
-          // Compact, gap-free set ordering — incomplete sets are skipped,
-          // so order_index must not inherit their slots ("Set 1, Set 3").
           var setIndex = 0;
           for (final set in exercise.sets) {
             if (set.isCompleted) {
@@ -218,16 +195,12 @@ class ActiveWorkoutNotifier extends StateNotifier<ActiveWorkoutState?> {
           }
         }
 
-        // PR detection: marks best Epley 1RM set per exercise against
-        // prior history, and reports what was beaten.
         return db.workoutsDao.detectAndMarkPrs(sessionId, state!.startTime);
       });
 
       state = null;
 
-      // Local commit is done — now mirror to the cloud. Queue a compressed
-      // snapshot and fire an immediate post-workout sync (explicit trigger).
-      // Entirely non-blocking: a failure just leaves the row queued.
+      // The gate is checked inside the engine — no-op when closed.
       if (userId.isNotEmpty) {
         final engine = _ref.read(syncEngineProvider);
         await engine.enqueueSession(userId, sessionId);
@@ -277,8 +250,6 @@ class ActiveWorkoutNotifier extends StateNotifier<ActiveWorkoutState?> {
     if (state == null || state!.originalSessionId == null) return;
 
     final db = _ref.read(databaseProvider);
-    // Capture before clearing state — enqueueSession needs both after the
-    // local commit sets state = null.
     final sessionId = state!.originalSessionId!;
     final user = _ref.read(authProvider);
     final userId = user?.id ?? '';
@@ -287,9 +258,7 @@ class ActiveWorkoutNotifier extends StateNotifier<ActiveWorkoutState?> {
       await db.workoutsDao.updateHistoricalWorkout(state!);
       state = null;
 
-      // Mirror the edit to the cloud: same pattern as finishWorkout().
-      // Non-blocking: a network failure leaves the row queued for the next
-      // debounced or explicit sync.
+      // The gate is checked inside the engine — no-op when closed.
       if (userId.isNotEmpty) {
         final engine = _ref.read(syncEngineProvider);
         await engine.enqueueSession(userId, sessionId);
@@ -373,8 +342,6 @@ class ActiveWorkoutNotifier extends StateNotifier<ActiveWorkoutState?> {
     state = state!.copyWith(exercises: exercises);
   }
 
-  /// Removes a single set (swipe-to-delete). Keeps at least the list valid —
-  /// an exercise with zero sets simply shows its "+ Add Set" footer.
   void removeSet(int exerciseIndex, int setIndex) {
     if (state == null) return;
     final exercises = [...state!.exercises];
@@ -385,9 +352,6 @@ class ActiveWorkoutNotifier extends StateNotifier<ActiveWorkoutState?> {
     state = state!.copyWith(exercises: exercises);
   }
 
-  /// Reorders an exercise from [oldIndex] to [newIndex] (drag-to-reorder).
-  /// Uses ReorderableListView.onReorderItem semantics — [newIndex] is
-  /// already adjusted for the removed item, so no manual decrement.
   void reorderExercise(int oldIndex, int newIndex) {
     if (state == null) return;
     final exercises = [...state!.exercises];
@@ -398,7 +362,6 @@ class ActiveWorkoutNotifier extends StateNotifier<ActiveWorkoutState?> {
     state = state!.copyWith(exercises: exercises);
   }
 
-  /// Live investment readout for the header: (volumeKg, completedSets).
   (double, int) get sessionTotals {
     final current = state;
     if (current == null) return (0, 0);
