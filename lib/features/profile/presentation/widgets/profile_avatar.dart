@@ -1,44 +1,34 @@
 import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:image_cropper/image_cropper.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:path/path.dart' as p;
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text.dart';
 import '../../../core/theme/dynamic_accent_theme.dart';
 
-/// A tappable profile avatar that shows an uploaded profile picture (if one
-/// exists) or falls back to the initial-letter avatar.
+/// Tappable profile avatar that shows an uploaded profile picture (if one
+/// exists) or falls back to the initial-letter avatar. A subtle accent-tinted
+/// ring frames the avatar, and a camera badge appears in the bottom-right
+/// corner when no image is set.
 ///
 /// S11: Profile Picture Upload Feature.
-///
-/// Requires the following pubspec dependencies:
-///   image_picker: ^1.1.2
-///   image_cropper: ^8.0.2
-///   flutter_image_compress: ^2.3.0
-///
-/// Add them with: flutter pub add image_picker image_cropper flutter_image_compress
-///
-/// Also add to Android AndroidManifest.xml inside <activity>:
-///   <activity
-///     android:name="com.yalantis.ucrop.UCropActivity"
-///     android:screenOrientation="portrait"
-///     android:theme="@style/Theme.AppCompat.Light.NoActionBar"/>
 class ProfileAvatar extends StatefulWidget {
   final String displayName;
   final String? imagePath;
-  final ValueChanged<String?> onImageChanged;
   final double size;
+  final ValueChanged<String?> onImageChanged;
 
   const ProfileAvatar({
     super.key,
     required this.displayName,
     this.imagePath,
-    required this.onImageChanged,
     this.size = 56,
+    required this.onImageChanged,
   });
 
   @override
@@ -47,21 +37,66 @@ class ProfileAvatar extends StatefulWidget {
 
 class _ProfileAvatarState extends State<ProfileAvatar> {
   bool _processing = false;
-  String? _localPath;
 
-  @override
-  void initState() {
-    super.initState();
-    _localPath = widget.imagePath;
+  static const _fileName = 'profile_image.jpg';
+
+  Future<String?> _captureAndCompress(XFile picked) async {
+    final dir = await getApplicationDocumentsDirectory();
+    final outPath = p.join(dir.path, _fileName);
+
+    final compressed = await FlutterImageCompress.compressAndGetFile(
+      picked.path,
+      outPath,
+      quality: 85,
+      minWidth: 256,
+      minHeight: 256,
+      inSourceWidth: 256,
+      inSourceHeight: 256,
+    );
+    return compressed?.path ?? outPath;
   }
 
-  Future<void> _showOptionsSheet() {
+  Future<void> _pickImage(ImageSource source) async {
     HapticFeedback.selectionClick();
-    return showModalBottomSheet<void>(
+    setState(() => _processing = true);
+    try {
+      final picker = ImagePicker();
+      final picked = await picker.pickImage(
+        source: source,
+        maxWidth: 512,
+        maxHeight: 512,
+        imageQuality: 85,
+      );
+      if (picked == null) return;
+      final compressed = await _captureAndCompress(picked);
+      if (compressed != null && mounted) {
+        HapticFeedback.mediumImpact();
+        widget.onImageChanged(compressed);
+      }
+    } catch (_) {
+      // Silently fail — the user can retry.
+    } finally {
+      if (mounted) setState(() => _processing = false);
+    }
+  }
+
+  Future<void> _removeImage() async {
+    HapticFeedback.lightImpact();
+    try {
+      final dir = await getApplicationDocumentsDirectory();
+      final file = File(p.join(dir.path, _fileName));
+      if (await file.exists()) await file.delete();
+    } catch (_) {/* best-effort cleanup */}
+    if (mounted) widget.onImageChanged(null);
+  }
+
+  void _showOptionsSheet() {
+    final hasImage = widget.imagePath != null &&
+        widget.imagePath!.isNotEmpty;
+
+    showModalBottomSheet<void>(
       context: context,
       useRootNavigator: true,
-      useSafeArea: true,
-      isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (sheetCtx) => Container(
         decoration: const BoxDecoration(
@@ -83,8 +118,6 @@ class _ProfileAvatarState extends State<ProfileAvatar> {
                 ),
               ),
               const SizedBox(height: 16),
-              Text('Profile Photo', style: AppText.cardTitle()),
-              const SizedBox(height: 16),
               _SheetOption(
                 icon: Icons.photo_library_rounded,
                 label: 'Choose from Library',
@@ -101,17 +134,16 @@ class _ProfileAvatarState extends State<ProfileAvatar> {
                   _pickImage(ImageSource.camera);
                 },
               ),
-              if (_localPath != null)
-                _SheetOption(
-                  icon: Icons.delete_outline_rounded,
-                  label: 'Remove Photo',
-                  isDestructive: true,
-                  onTap: () {
-                    Navigator.of(sheetCtx).pop();
-                    _removeImage();
-                  },
-                ),
-              const SizedBox(height: 12),
+              if (hasImage) _SheetOption(
+                icon: Icons.delete_outline_rounded,
+                label: 'Remove Photo',
+                isDestructive: true,
+                onTap: () {
+                  Navigator.of(sheetCtx).pop();
+                  _removeImage();
+                },
+              ),
+              const SizedBox(height: 8),
             ],
           ),
         ),
@@ -119,172 +151,89 @@ class _ProfileAvatarState extends State<ProfileAvatar> {
     );
   }
 
-  Future<void> _pickImage(ImageSource source) async {
-    if (_processing) return;
-    setState(() => _processing = true);
-
-    try {
-      final picker = ImagePicker();
-      final picked = await picker.pickImage(
-        source: source,
-        maxWidth: 1024,
-        maxHeight: 1024,
-        imageQuality: 85,
-      );
-      if (picked == null) return;
-
-      // Crop to 1:1 square.
-      final cropped = await ImageCropper().cropImage(
-        sourcePath: picked.path,
-        aspectRatio: const CropAspectRatio(ratioX: 1, ratioY: 1),
-        uiSettings: [
-          AndroidUiSettings(
-            toolbarTitle: 'Crop Photo',
-            toolbarColor: AppColors.bgBase,
-            toolbarWidgetColor: AppColors.textPrimary,
-            backgroundColor: AppColors.bgBase,
-            activeControlsWidgetColor: context.accent.base,
-            cropFrameColor: context.accent.base,
-            lockAspectRatio: true,
-          ),
-          IOSUiSettings(
-            title: 'Crop Photo',
-            aspectRatioLockEnabled: true,
-            aspectRatioPickerOptionHidden: true,
-          ),
-        ],
-      );
-      if (cropped == null) return;
-
-      // Compress to 256x256 and save to app documents directory.
-      final dir = await getApplicationDocumentsDirectory();
-      final targetPath =
-          '${dir.path}/profile_image.jpg';
-
-      await FlutterImageCompress.compressAndGetFile(
-        cropped.path,
-        targetPath,
-        quality: 88,
-        minWidth: 256,
-        minHeight: 256,
-      );
-
-      if (!mounted) return;
-      setState(() => _localPath = targetPath);
-      widget.onImageChanged(targetPath);
-      HapticFeedback.mediumImpact();
-    } catch (e) {
-      // Silently fail — user can retry. No crash on permission denial.
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text(
-            'Could not save photo. Check camera/photo permissions.',
-            style: AppText.body(color: AppColors.textPrimary),
-          ),
-          backgroundColor: AppColors.surface3,
-          behavior: SnackBarBehavior.floating,
-        ));
-      }
-    } finally {
-      if (mounted) setState(() => _processing = false);
-    }
-  }
-
-  void _removeImage() {
-    HapticFeedback.lightImpact();
-    setState(() => _localPath = null);
-    widget.onImageChanged(null);
-  }
-
   @override
   Widget build(BuildContext context) {
     final accent = context.accent;
-    final hasImage = _localPath != null && File(_localPath!).existsSync();
+    final hasImage = widget.imagePath != null &&
+        widget.imagePath!.isNotEmpty;
 
-    return Semantics(
-      button: true,
-      label: hasImage
-          ? 'Profile photo. Double tap to change.'
-          : 'Profile photo placeholder. Double tap to upload a photo.',
-      child: GestureDetector(
-        onTap: _processing ? null : _showOptionsSheet,
-        child: Container(
-          width: widget.size,
-          height: widget.size,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(AppRadius.buttonPrimary),
-            border: Border.all(
-              color: accent.base.withValues(alpha: 0.35),
-              width: 1.5,
-            ),
-          ),
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              // Avatar content
-              ClipRRect(
+    return GestureDetector(
+      onTap: _processing ? null : _showOptionsSheet,
+      child: SizedBox(
+        width: widget.size,
+        height: widget.size,
+        child: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            // Avatar with accent-tinted ring.
+            Container(
+              width: widget.size,
+              height: widget.size,
+              decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(AppRadius.buttonPrimary),
-                child: hasImage
-                    ? Image.file(
-                        File(_localPath!),
-                        fit: BoxFit.cover,
-                        gaplessPlayback: true,
-                      )
-                    : Container(
-                        color: AppColors.surface2,
-                        alignment: Alignment.center,
-                        child: Text(
-                          widget.displayName.isNotEmpty
-                              ? widget.displayName[0].toUpperCase()
-                              : 'A',
-                          style: AppText.sheetTitle(
-                                  color: AppColors.textSecondary)
-                              .copyWith(fontSize: 20),
-                        ),
-                      ),
+                border: Border.all(
+                  color: accent.base.withValues(alpha: 0.35),
+                  width: 1.5,
+                ),
               ),
-              // Camera badge (bottom-right) when no image is set
-              if (!hasImage && !_processing)
-                Positioned(
-                  right: 0,
-                  bottom: 0,
-                  child: Container(
-                    width: 20,
-                    height: 20,
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      color: accent.base,
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                          color: AppColors.bgBase, width: 1.5),
-                    ),
-                    child: Icon(
-                      Icons.camera_alt_rounded,
-                      size: 10,
-                      color: accent.onAccent,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(AppRadius.buttonPrimary),
+                child: _processing
+                    ? const Center(
+                        child: SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                      )
+                    : hasImage
+                        ? Image.file(
+                            File(widget.imagePath!),
+                            fit: BoxFit.cover,
+                            width: widget.size,
+                            height: widget.size,
+                          )
+                        : Container(
+                            color: AppColors.surface2,
+                            alignment: Alignment.center,
+                            child: Text(
+                              widget.displayName.isNotEmpty
+                                  ? widget.displayName[0].toUpperCase()
+                                  : 'A',
+                              style: AppText.sheetTitle(
+                                      color: AppColors.textSecondary)
+                                  .copyWith(fontSize: 20),
+                            ),
+                          ),
+              ),
+            ),
+            // Camera badge (only when no image is set).
+            if (!hasImage && !_processing)
+              Positioned(
+                right: -2,
+                bottom: -2,
+                child: Container(
+                  width: 20,
+                  height: 20,
+                  decoration: BoxDecoration(
+                    color: accent.base,
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: AppColors.bgBase,
+                      width: 2,
                     ),
                   ),
-                ),
-              // Processing overlay
-              if (_processing)
-                ClipRRect(
-                  borderRadius:
-                      BorderRadius.circular(AppRadius.buttonPrimary),
-                  child: Container(
-                    color: Colors.black.withValues(alpha: 0.5),
-                    alignment: Alignment.center,
-                    child: const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: AppColors.textPrimary,
-                      ),
-                    ),
+                  child: const Icon(
+                    Icons.camera_alt,
+                    size: 10,
+                    color: AppColors.onAccent,
                   ),
                 ),
-            ],
-          ),
+              ),
+          ],
         ),
       ),
     );
@@ -294,51 +243,31 @@ class _ProfileAvatarState extends State<ProfileAvatar> {
 class _SheetOption extends StatelessWidget {
   final IconData icon;
   final String label;
-  final VoidCallback onTap;
   final bool isDestructive;
+  final VoidCallback onTap;
 
   const _SheetOption({
     required this.icon,
     required this.label,
-    required this.onTap,
     this.isDestructive = false,
+    required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    final accent = context.accent;
-    return Semantics(
-      button: true,
-      label: label,
-      child: InkWell(
-        onTap: onTap,
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-          decoration: const BoxDecoration(
-            border: Border(
-                bottom: BorderSide(color: AppColors.borderSubtle)),
-          ),
-          child: Row(
-            children: [
-              Icon(
-                icon,
-                size: 20,
-                color: isDestructive
-                    ? AppColors.error
-                    : accent.light,
-              ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Text(
-                  label,
-                  style: AppText.body(
-                      color: isDestructive
-                          ? AppColors.error
-                          : AppColors.textPrimary),
-                ),
-              ),
-            ],
-          ),
+    final color = isDestructive
+        ? AppColors.error
+        : AppColors.textPrimary;
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        child: Row(
+          children: [
+            Icon(icon, size: 20, color: color),
+            const SizedBox(width: 14),
+            Text(label, style: AppText.body(color: color)),
+          ],
         ),
       ),
     );
