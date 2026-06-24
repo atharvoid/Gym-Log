@@ -12,6 +12,8 @@ import 'package:gymlog/core/services/sync_entitlement_gate.dart';
 import 'package:gymlog/core/services/workout_export_service.dart';
 import 'package:gymlog/core/theme/app_colors.dart';
 import 'package:gymlog/core/theme/app_text.dart';
+import 'package:gymlog/core/theme/dynamic_accent_theme.dart';
+import 'package:gymlog/core/theme/theme_palette.dart';
 import 'package:gymlog/core/utils/tap_guard.dart';
 import 'package:gymlog/features/auth/presentation/providers/auth_provider.dart';
 import 'package:gymlog/features/profile/presentation/providers/profile_provider.dart';
@@ -21,6 +23,7 @@ import 'package:gymlog/shared/widgets/ui/app_action_row.dart';
 import 'package:gymlog/shared/widgets/ui/app_card.dart';
 import 'package:gymlog/shared/widgets/ui/app_dialog.dart';
 import 'package:gymlog/shared/widgets/ui/branded_bottom_sheet.dart';
+import 'package:gymlog/shared/widgets/ui/goal_ring.dart';
 import 'package:gymlog/shared/widgets/ui/time_range_filter.dart';
 import 'package:gymlog/core/config/legal_links.dart';
 import 'package:share_plus/share_plus.dart';
@@ -30,6 +33,7 @@ import 'package:url_launcher/url_launcher.dart';
 Future<void> showWeeklyGoalSheet(BuildContext context, WidgetRef ref) async {
   final current = ref.read(weeklyGoalProvider);
   HapticFeedback.lightImpact();
+  final accent = context.accent;
 
   await showBrandedBottomSheet<void>(
     context: context,
@@ -61,7 +65,7 @@ Future<void> showWeeklyGoalSheet(BuildContext context, WidgetRef ref) async {
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
                       color: days == current
-                          ? AppColors.accentPrimary
+                          ? accent.base
                           : AppColors.surfaceRaised,
                       borderRadius: BorderRadius.circular(AppRadius.buttonSecondary),
                     ),
@@ -139,6 +143,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final restSeconds = ref.watch(defaultRestSecondsProvider);
     final goal = ref.watch(weeklyGoalProvider);
     final versionAsync = ref.watch(appVersionProvider);
+    final accent = context.accent;
 
     final version = versionAsync.valueOrNull ?? kAppVersionFallback;
 
@@ -224,6 +229,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   ],
                 ),
               ),
+              const SizedBox(height: 22),
+
+              // ── ACCENT COLOR ────────────────────────────────────────
+              // Free personalization. Only the accent hue changes; every
+              // surface, text, and reward-gold token stays put.
+              const _AccentColorSection(),
               const SizedBox(height: 22),
 
               const _GroupHeader('DATA'),
@@ -316,7 +327,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                               Switch.adaptive(
                                 value: _syncEnabled ?? true,
                                 onChanged: (v) => _toggleSync(v),
-                                activeTrackColor: AppColors.accentPrimary,
+                                activeTrackColor: accent.base,
                               ),
                           ],
                         ),
@@ -388,6 +399,165 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 }
 
 const kAppVersionFallback = '1.0.0';
+
+/// Accent-palette picker. The four swatches show each palette's own base
+/// color; tapping one applies it app-wide instantly (and persists). The live
+/// preview reads the active accent, so it recolors the moment a swatch is
+/// chosen. Surfaces never change — only the accent hue.
+class _AccentColorSection extends ConsumerWidget {
+  const _AccentColorSection();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final active = ref.watch(dynamicAccentThemeProvider);
+    final accent = context.accent;
+    final reduceMotion = MediaQuery.disableAnimationsOf(context);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const _GroupHeader('ACCENT COLOR'),
+        AppCard(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 18),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  for (final palette in ThemePalette.values)
+                    _AccentSwatch(
+                      palette: palette,
+                      selected: palette == active,
+                      reduceMotion: reduceMotion,
+                      onTap: () {
+                        HapticFeedback.selectionClick();
+                        ref
+                            .read(dynamicAccentThemeProvider.notifier)
+                            .setPalette(palette);
+                      },
+                    ),
+                ],
+              ),
+              const SizedBox(height: 6),
+              Center(
+                child: Text(
+                  active.displayName,
+                  style: AppText.caption(color: AppColors.textSecondary),
+                ),
+              ),
+              const SizedBox(height: 16),
+              _AccentPreviewCard(accent: accent),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _AccentSwatch extends StatelessWidget {
+  final ThemePalette palette;
+  final bool selected;
+  final bool reduceMotion;
+  final VoidCallback onTap;
+
+  const _AccentSwatch({
+    required this.palette,
+    required this.selected,
+    required this.reduceMotion,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      button: true,
+      selected: selected,
+      excludeSemantics: true,
+      label: selected ? 'Selected, ${palette.a11yName}' : palette.a11yName,
+      child: GestureDetector(
+        onTap: onTap,
+        behavior: HitTestBehavior.opaque,
+        child: SizedBox(
+          width: 56,
+          height: 56,
+          child: Center(
+            child: AnimatedContainer(
+              duration: reduceMotion
+                  ? Duration.zero
+                  : const Duration(milliseconds: 150),
+              curve: Curves.easeOutCubic,
+              padding: EdgeInsets.all(selected ? 4 : 0),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: selected
+                    ? Border.all(color: Color(0xFFFFFFFF), width: 2)
+                    : null,
+              ),
+              child: Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: palette.swatch,
+                  border: selected
+                      ? null
+                      : Border.all(color: AppColors.borderDefault, width: 1),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _AccentPreviewCard extends StatelessWidget {
+  final AccentColors accent;
+
+  const _AccentPreviewCard({required this.accent});
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      label: 'Accent preview',
+      child: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: AppColors.surface2,
+          borderRadius: AppRadius.cardAll,
+          border: Border.all(color: AppColors.borderSubtle),
+        ),
+        child: Row(
+          children: [
+            const SizedBox(
+              width: 40,
+              height: 40,
+              child: Center(child: GoalRing(progress: 0.68, size: 40)),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Container(
+                height: 44,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: accent.base,
+                  borderRadius: AppRadius.buttonPrimaryAll,
+                ),
+                child: Text(
+                  'Preview',
+                  style: AppText.button(color: AppColors.bgBase),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
 
 class _GroupHeader extends StatelessWidget {
   final String label;
