@@ -10,44 +10,53 @@ import 'package:gymlog/core/theme/app_colors.dart';
 ///
 /// PERCEPTUAL HIERARCHY (the fix): the mapping is VOLUME-RANKED and
 /// luminance-INVERTED. The muscle with the largest logged share gets the
-/// lightest / most-prominent violet ([AppColors.muscleSplitPalette] index 0);
-/// each lesser share steps one shade darker. So the dominant data point is the
-/// brightest — the eye lands on what matters most.
+/// darkest / most-prominent color (ramp index 0); each lesser share steps
+/// one shade lighter. So the dominant data point is the deepest — the eye
+/// lands on what matters most.
+///
+/// When a reactive `ramp` is passed (e.g. `context.accent.muscleSplitRamp`),
+/// the colors follow the live accent palette. When null, the old static
+/// `AppColors.muscleSplitPalette` is used (backward compatible).
 abstract class MuscleColorService {
   /// Ranks [muscleSetCounts] (muscle name -> logged set count) by descending
   /// volume and returns ordered slices. The dominant muscle is first and gets
-  /// the lightest palette color. Entries with a non-positive count are dropped;
+  /// the deepest ramp color. Entries with a non-positive count are dropped;
   /// an empty/zero-total input yields an empty list.
-  static List<MuscleSplitSlice> rankedSplit(Map<String, int> muscleSetCounts) {
+  static List<MuscleSplitSlice> rankedSplit(
+    Map<String, int> muscleSetCounts, {
+    List<Color>? ramp,
+  }) {
     final entries = muscleSetCounts.entries.where((e) => e.value > 0).toList()
       ..sort((a, b) => b.value.compareTo(a.value));
     final total = entries.fold<int>(0, (sum, e) => sum + e.value);
     if (total == 0) return const <MuscleSplitSlice>[];
+    final palette = ramp ?? AppColors.muscleSplitPalette;
     return [
       for (var i = 0; i < entries.length; i++)
         MuscleSplitSlice(
           muscle: entries[i].key,
           setCount: entries[i].value,
           share: entries[i].value / total,
-          color: colorForRank(i),
+          color: palette[i.clamp(0, palette.length - 1)],
         ),
     ];
   }
 
-  /// Color for a given volume rank (0 = dominant / largest = lightest). Ranks
-  /// beyond the palette length clamp to the darkest shade.
-  static Color colorForRank(int rank) {
-    const palette = AppColors.muscleSplitPalette;
+  /// Color for a given volume rank (0 = dominant / largest = deepest). Ranks
+  /// beyond the ramp length clamp to the lightest shade.
+  static Color colorForRank(int rank, {List<Color>? ramp}) {
+    final palette = ramp ?? AppColors.muscleSplitPalette;
     return palette[rank.clamp(0, palette.length - 1)];
   }
 
   /// Accent for a SINGLE dominant-muscle glyph (e.g. a routine card), where the
-  /// volume rank is implicitly 0. By the dominant=brightest rule this is the
-  /// lightest palette entry, lifted slightly toward white for legibility on the
+  /// volume rank is implicitly 0. By the dominant=deepest rule this is the
+  /// deepest ramp entry, lifted slightly toward white for legibility on the
   /// dark tinted tile. [dominantMuscle] is accepted for call-site clarity and
   /// future per-group theming; the brand is intentionally single-accent today.
-  static Color glyphColorFor(String? dominantMuscle) {
-    final base = AppColors.muscleSplitPalette.first; // lightest = dominant
+  static Color glyphColorFor(String? dominantMuscle, {List<Color>? ramp}) {
+    final palette = ramp ?? AppColors.muscleSplitPalette;
+    final base = palette.first; // deepest = dominant
     return Color.lerp(base, Colors.white, 0.2) ?? base;
   }
 }
