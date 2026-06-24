@@ -8,6 +8,7 @@ import 'package:gymlog/core/providers/database_provider.dart';
 import 'package:gymlog/core/providers/premium_provider.dart';
 import 'package:gymlog/core/theme/app_colors.dart';
 import 'package:gymlog/core/theme/app_text.dart';
+import 'package:gymlog/core/theme/dynamic_accent_theme.dart';
 import 'package:gymlog/features/auth/presentation/providers/auth_provider.dart';
 import 'package:gymlog/features/routines/presentation/data/explore_catalog.dart';
 import 'package:gymlog/features/routines/presentation/providers/routines_provider.dart';
@@ -327,7 +328,7 @@ class _ExploreRoutinesScreenState extends ConsumerState<ExploreRoutinesScreen>
             ),
           ),
 
-          // ── Subtitle + credibility ────────────────────────────────
+          // ── Subtitle + credibility ──────────────────────────
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(
@@ -357,14 +358,14 @@ class _ExploreRoutinesScreenState extends ConsumerState<ExploreRoutinesScreen>
             ),
           ),
 
-          // ── Sticky goal filters ──────────────────────────────────
+          // ── Sticky goal filters ─────────────────────────
           SliverPersistentHeader(
             pinned: true,
             delegate: _FilterHeaderDelegate(
                 selected: _filter, onSelect: _setFilter),
           ),
 
-          // ── Catalog (featured + sections), staggered entrance ───────────
+          // ── Catalog (featured + sections), staggered entrance ──────────
           SliverPadding(
             padding: EdgeInsets.fromLTRB(
                 AppSpacing.screenH, 8, AppSpacing.screenH, 24 + bottomInset),
@@ -446,7 +447,8 @@ class _HeroTitle extends StatelessWidget {
 ///
 /// The radial blend (~7% white → transparent) is a bespoke ambient effect with
 /// no exact AppColors token; kept as literal const Colors to preserve the
-/// approved glow and stay compile-time const.
+/// approved glow and stay compile-time const. It is deliberately neutral white,
+/// not accent-derived, so it reads identically under every palette.
 class _HeroGlow extends StatelessWidget {
   const _HeroGlow();
 
@@ -539,13 +541,15 @@ class _FilterChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Selected chip is a full-saturation active indicator — reads the live
+    // accent so the filter bar tracks the chosen palette.
     return Semantics(
       button: true,
       selected: selected,
       label: label,
       excludeSemantics: true,
       child: Material(
-        color: selected ? AppColors.accentPrimary : AppColors.surface3,
+        color: selected ? context.accent.base : AppColors.surface3,
         borderRadius: AppRadius.badgeAll,
         clipBehavior: Clip.antiAlias,
         child: InkWell(
@@ -1017,6 +1021,8 @@ class _ImportPill extends StatelessWidget {
             ],
           );
 
+    // Add state is the card's primary CTA — full-saturation live accent.
+    // Imported state is semantic success (intentionally fixed, not accent).
     return Semantics(
       button: true,
       enabled: !importing,
@@ -1029,7 +1035,7 @@ class _ImportPill extends StatelessWidget {
       child: Material(
         color: imported
             ? AppColors.success.withValues(alpha: 0.14)
-            : AppColors.accentPrimary,
+            : context.accent.base,
         borderRadius: AppRadius.buttonSecondaryAll,
         clipBehavior: Clip.antiAlias,
         child: InkWell(
