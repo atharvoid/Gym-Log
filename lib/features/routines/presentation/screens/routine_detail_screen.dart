@@ -79,13 +79,11 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
     super.dispose();
   }
 
-  // ── Actions ────────────────────────────────────────────────────────────────
+  // ── Actions ─────────────────────────────────────────────────────────────────
 
   void _startRoutine(HydratedRoutineDetail routine) {
-    if (!tapGuard()) return; // no double-push / double session reset
+    if (!tapGuard()) return;
     if (routine.exercises.isEmpty) {
-      // Empty routine: route to the editor to add exercises rather than start a
-      // contentless workout. Push directly — tapGuard was already consumed.
       context.push('/routines/edit?id=${widget.routineId}');
       return;
     }
@@ -117,7 +115,7 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
 
   Future<void> _deleteRoutine(String routineId) async {
     final db = ref.read(databaseProvider);
-    context.pop(); // pop screen immediately
+    context.pop();
     await db.routinesDao.deleteRoutine(routineId);
   }
 
@@ -218,7 +216,7 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
     ref.invalidate(routineLastSetsProvider(widget.routineId));
   }
 
-  // ── Build ────────────────────────────────────────────────────────────────
+  // ── Build ─────────────────────────────────────────────────────────────────
 
   @override
   Widget build(BuildContext context) {
@@ -243,7 +241,7 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
         lastSetsAsync.isLoading && lastSetsAsync.valueOrNull == null;
 
     final exerciseCount = routine.exercises.length;
-    final lastDate = ref.watch(routineDailyVolumeProvider((widget.routineId, 'All Time'))
+    final lastDate = ref.watch(routineDailyVolumeProvider((widget.routineId, '6M'))
         .select((asyncVal) => asyncVal.valueOrNull == null || asyncVal.valueOrNull!.isEmpty
             ? null
             : asyncVal.valueOrNull!.last.day));
@@ -261,7 +259,6 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
           slivers: [
             _appBar(routine),
 
-            // Attribution + stat line (without Start CTA).
             SliverToBoxAdapter(
               child: _entryFade(
                 interval: const Interval(0.0, 0.32, curve: Curves.easeOutExpo),
@@ -286,7 +283,6 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
               ),
             ),
 
-            // Volume trend.
             SliverToBoxAdapter(
               child: _entryFade(
                 interval: const Interval(0.2, 0.5, curve: Curves.easeOutExpo),
@@ -300,7 +296,6 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
               ),
             ),
 
-            // Exercises.
             SliverPadding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               sliver: SliverList(
@@ -335,7 +330,6 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
               ),
             ),
 
-            // Add exercise.
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(16, 20, 16, 0),
@@ -396,7 +390,7 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
       actions: [
         IconButton(
           tooltip: 'Routine options',
-          icon: const Icon(Icons.more_horiz_rounded,
+          icon: const Icon(Icons.more_vert_rounded,
               size: 24, color: AppColors.textPrimary),
           constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
           onPressed: () => _showActions(routine),
@@ -405,8 +399,6 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
     );
   }
 
-  /// Shared fade + rise entry. Composited using FadeTransition and SlideTransition
-  /// to avoid expensive saveLayer rendering on every animation frame.
   Widget _entryFade({required Interval interval, required Widget child}) {
     final curvedAnimation = CurvedAnimation(
       parent: _entryController,
@@ -416,7 +408,7 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
       opacity: curvedAnimation,
       child: SlideTransition(
         position: Tween<Offset>(
-          begin: const Offset(0, 0.05), // Translate 5% down
+          begin: const Offset(0, 0.05),
           end: Offset.zero,
         ).animate(curvedAnimation),
         child: child,
@@ -424,7 +416,7 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
     );
   }
 
-  // ── Loading / error / not-found (each owns ONE Scaffold — no nesting) ──────
+  // ── Loading / error / not-found ──────────────────────────────────────────────
 
   Widget _buildSkeleton() {
     return SkeletonPulse(
@@ -520,7 +512,7 @@ class _RoutineVolumeSection extends ConsumerStatefulWidget {
 }
 
 class _RoutineVolumeSectionState extends ConsumerState<_RoutineVolumeSection> {
-  String _selectedTimeRange = 'All Time';
+  String _selectedTimeRange = '6M';
 
   @override
   Widget build(BuildContext context) {
@@ -599,8 +591,6 @@ class _RoutineVolumeSectionState extends ConsumerState<_RoutineVolumeSection> {
 // Sub-widgets
 // ══════════════════════════════════════════════════════════════════════════════
 
-/// Personal "scoreboard" for this routine — sessions, best and average volume.
-/// Aggregates (counts), distinct from the chart's per-session trend.
 class _HeroStatStrip extends StatelessWidget {
   final RoutineSessionStats stats;
   const _HeroStatStrip({required this.stats});
@@ -655,9 +645,6 @@ class _HeroStat extends StatelessWidget {
   }
 }
 
-/// The single dominant CTA — bespoke for its signature glow + press-scale, but
-/// on-system (52dp, [AppRadius.buttonPrimary]). Falls back to "Add exercise"
-/// for an empty routine instead of starting a contentless workout.
 class _StartRoutineButton extends StatefulWidget {
   final VoidCallback onTap;
   final bool empty;
@@ -679,7 +666,6 @@ class _StartRoutineButtonState extends State<_StartRoutineButton> {
     if (widget.empty) {
       HapticFeedback.lightImpact();
     } else {
-      // Peak-intent moment — a heavier confirmation than a normal tap.
       HapticFeedback.heavyImpact();
     }
     widget.onTap();
