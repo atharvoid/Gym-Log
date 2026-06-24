@@ -8,6 +8,7 @@ import 'package:purchases_flutter/purchases_flutter.dart'
 import '../../core/providers/premium_provider.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text.dart';
+import '../../core/theme/dynamic_accent_theme.dart';
 
 enum PaywallSource { generic, routineLimit, chartFilter, timeRange, sync }
 
@@ -62,7 +63,7 @@ class _PaywallIcon extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: AppColors.borderDefault, width: 1),
       ),
-      child: const Icon(Icons.star_rounded, color: AppColors.accentPrimary, size: 26),
+      child: Icon(Icons.star_rounded, color: context.accent.base, size: 26),
     );
   }
 }
@@ -76,6 +77,7 @@ class ProLockPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final accent = context.accent;
     return Semantics(
       button: true,
       label: 'Premium feature. Double tap to learn more.',
@@ -88,16 +90,16 @@ class ProLockPill extends StatelessWidget {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
             decoration: BoxDecoration(
-              color: AppColors.accentPrimary.withValues(alpha: 0.15),
+              color: accent.muted,
               borderRadius: BorderRadius.circular(8),
               border: Border.all(
-                color: AppColors.accentPrimary.withValues(alpha: 0.3),
+                color: accent.base.withValues(alpha: 0.3),
                 width: 1,
               ),
             ),
             // No padlock — it communicates "you can't have this" while the user
             // looks at their own data. Just the label; tap opens the paywall.
-            child: Text(label, style: AppText.badge(color: AppColors.accentPrimary)),
+            child: Text(label, style: AppText.badge(color: accent.base)),
           ),
         ),
       ),
@@ -124,7 +126,8 @@ class _PaywallSheetState extends ConsumerState<_PaywallSheet> {
 
   // HONESTY RULE: this list may only name things that exist in the app
   // today. Advertising unbuilt features in a paid subscription is a
-  // Play/App Store rejection risk and a user-trust killer.
+  // Play/App Store rejection risk and a user-trust killer. Accent palettes
+  // are FREE personalization and deliberately not sold here.
   //
   // Icons are FILLED (not outline). Outline icons are the #1 signature of
   // "I didn't hire a designer." Filled icons read as intentional.
@@ -306,6 +309,7 @@ class _PaywallSheetState extends ConsumerState<_PaywallSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final accent = context.accent;
     final savings = _annualSavingsPercent;
     final String headline;
     final String subheadline;
@@ -357,13 +361,13 @@ class _PaywallSheetState extends ConsumerState<_PaywallSheet> {
             children: [
               // ── Top glow — light leak at sheet edge ──────────────────
               // Premium apps use light to create depth, not shadow.
-              // This 1px row emits a faint purple luminance above the handle.
+              // This 1px row emits a faint accent luminance above the handle.
               Container(
                 height: 1,
                 decoration: BoxDecoration(
                   boxShadow: [
                     BoxShadow(
-                      color: AppColors.accentPrimary.withValues(alpha: 0.18),
+                      color: accent.glow,
                       blurRadius: 12,
                       spreadRadius: 2,
                     ),
@@ -409,7 +413,7 @@ class _PaywallSheetState extends ConsumerState<_PaywallSheet> {
                             children: [
                               // Filled icons signal intentional design.
                               // Outline icons look like a default choice.
-                              Icon(icon, size: 20, color: AppColors.accentPrimary),
+                              Icon(icon, size: 20, color: accent.base),
                               const SizedBox(width: 14),
                               Expanded(
                                 child: ExcludeSemantics(
@@ -464,8 +468,8 @@ class _PaywallSheetState extends ConsumerState<_PaywallSheet> {
                       const SizedBox(height: 18),
                       Material(
                         color: _purchasing
-                            ? AppColors.accentPrimary.withValues(alpha: 0.85)
-                            : AppColors.accentPrimary,
+                            ? accent.base.withValues(alpha: 0.85)
+                            : accent.base,
                         borderRadius: BorderRadius.circular(12),
                         elevation: 0,
                         child: InkWell(
@@ -586,6 +590,7 @@ class _PackageRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final accent = context.accent;
     return Semantics(
       button: true,
       selected: selected,
@@ -597,11 +602,11 @@ class _PackageRow extends StatelessWidget {
           // Unselected cards are transparent — no grey blob pattern.
           // Only the selected card gets a tinted fill.
           color: selected
-              ? AppColors.accentPrimary.withValues(alpha: 0.10)
+              ? accent.base.withValues(alpha: 0.10)
               : Colors.transparent,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: selected ? AppColors.borderActive : AppColors.borderDefault,
+            color: selected ? accent.base : AppColors.borderDefault,
             width: 1,
           ),
         ),
@@ -620,7 +625,7 @@ class _PackageRow extends StatelessWidget {
                         : Icons.radio_button_off_rounded,
                     size: 18,
                     color: selected
-                        ? AppColors.accentPrimary
+                        ? accent.base
                         : AppColors.textSecondary,
                   ),
                   const SizedBox(width: 12),
@@ -636,13 +641,13 @@ class _PackageRow extends StatelessWidget {
                       padding:
                           const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
                       decoration: BoxDecoration(
-                        color: AppColors.accentPrimary.withValues(alpha: 0.16),
+                        color: accent.base.withValues(alpha: 0.16),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
                         badge!.toUpperCase(),
                         style: AppText.label(
-                          color: AppColors.accentPrimary,
+                          color: accent.base,
                           letterSpacing: 12 * 0.05,
                         ).copyWith(
                           fontSize: 12,
