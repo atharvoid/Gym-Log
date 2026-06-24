@@ -31,8 +31,9 @@ class BootstrapResult {
   /// the timeout. When false, the app runs local-only until the next launch.
   final bool cloudAvailable;
 
-  /// The accent palette persisted by the user (or [ThemePalette.purple] on a
-  /// fresh install). Read before the first frame so there is no accent flash.
+  /// The accent palette persisted by the user (or [ThemePalette.fallback] —
+  /// Deep Spectral Violet — on a fresh install). Read before the first frame
+  /// so there is no accent flash.
   final ThemePalette accentPalette;
 
   const BootstrapResult({
@@ -109,7 +110,7 @@ abstract final class Bootstrap {
     );
   }
 
-  // ── Stage 1 helpers ──────────────────────────────────────────────────────
+  // ── Stage 1 helpers ────────────────────────────────────────────────────────
 
   /// Bound the in-memory image cache. GymLog streams animated exercise GIFs
   /// (each frame is a separate decoded bitmap), so the framework default
@@ -120,7 +121,7 @@ abstract final class Bootstrap {
       ..maximumSizeBytes = 80 << 20; // 80 MiB
   }
 
-  // ── Stage 2 helper ──────────────────────────────────────────────────
+  // ── Stage 2 helper ─────────────────────────────────────────
 
   static FutureOr<void> _configureSentry(SentryFlutterOptions options) {
     options.dsn = Env.sentryDsn;
@@ -156,7 +157,7 @@ abstract final class Bootstrap {
     }
   }
 
-  // ── Stage 4 helper ──────────────────────────────────────────────────
+  // ── Stage 4 helper ─────────────────────────────────────────
 
   /// Opens the database and verifies integrity. Returns the handle plus a
   /// `corrupted` flag; never throws.
@@ -191,21 +192,23 @@ abstract final class Bootstrap {
     if (await file.exists()) await file.delete();
   }
 
-  // ── Stage 4b helper ───────────────────────────────────────────────
+  // ── Stage 4b helper ───────────────────────────────────
 
   /// Reads the user's saved accent palette. Never throws — any failure falls
-  /// back to the default purple so startup is never blocked by preferences.
+  /// back to the default accent ([ThemePalette.fallback], Deep Spectral Violet)
+  /// so startup is never blocked by preferences.
   static Future<ThemePalette> _initAccentPalette() async {
     try {
       final prefs = await SharedPreferences.getInstance();
       return ThemePalette.fromStorage(prefs.getString(kAccentPaletteKey));
     } catch (e) {
-      debugPrint('[Bootstrap] accent palette load failed — default purple: $e');
-      return ThemePalette.purple;
+      debugPrint(
+          '[Bootstrap] accent palette load failed — default accent: $e');
+      return ThemePalette.fallback;
     }
   }
 
-  // ── Stage 5 helper ────────────────────────────────────────────────
+  // ── Stage 5 helper ───────────────────────────────────
 
   /// Initialises Supabase auth. Config arrives at compile time; a build without
   /// it must not crash. The call is bounded by [cloudInitTimeout]; on timeout
@@ -233,7 +236,7 @@ abstract final class Bootstrap {
     }
   }
 
-  // ── Stage 6 helper ────────────────────────────────────────────────
+  // ── Stage 6 helper ───────────────────────────────────
 
   /// Configures premium entitlements (RevenueCat). Degrades to free mode when
   /// keys are absent or the platform is unsupported — never blocks launch.
@@ -256,7 +259,7 @@ abstract final class Bootstrap {
     return premiumService;
   }
 
-  // ── Stage 7 helper ────────────────────────────────────────────────
+  // ── Stage 7 helper ───────────────────────────────────
 
   static Future<void> _postLaunchMaintenance(AppDatabase db) async {
     try {
