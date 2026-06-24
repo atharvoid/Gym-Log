@@ -54,7 +54,7 @@ class WorkoutHistoryCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // ── Row 1: name + date, with the options menu ───────────────────
+          // ── Row 1: name + date, with the options menu ───────────────
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.center,
@@ -76,10 +76,11 @@ class WorkoutHistoryCard extends StatelessWidget {
                 ),
               ),
               if (onMenuPressed != null)
+                // S13: standardized to more_horiz_rounded
                 IconButton(
-                  tooltip: 'Workout options',
+                  tooltip: 'More options',
                   icon: const Icon(
-                    Icons.more_horiz,
+                    Icons.more_horiz_rounded,
                     size: 20,
                     color: AppColors.textSecondary,
                   ),
@@ -93,7 +94,7 @@ class WorkoutHistoryCard extends StatelessWidget {
             ],
           ),
 
-          // ── Exercise preview rows ───────────────────────────────────────
+          // ── Exercise preview rows ──────────────────────────────
           if (preview.topExercises.isNotEmpty) ...[
             const SizedBox(height: 12),
             ...preview.topExercises.map(
@@ -121,11 +122,8 @@ class WorkoutHistoryCard extends StatelessWidget {
   }
 }
 
-// ── Sub-widgets ─────────────────────────────────────────────────────────────
+// ── Sub-widgets ─────────────────────────────────────────────
 
-/// ConsumerWidget so it can watch the global [gifLastFrameProvider], which
-/// decodes + caches the GIF's last frame. The cached MemoryImage survives
-/// navigation; no widget state involved.
 class _ExerciseRow extends ConsumerWidget {
   final ExercisePreviewItem item;
 
@@ -135,7 +133,6 @@ class _ExerciseRow extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return Row(
       children: [
-        // Decorative — the exercise name beside it carries the meaning.
         ExcludeSemantics(child: _buildThumbnail(ref)),
         const SizedBox(width: 12),
         Expanded(
@@ -163,7 +160,6 @@ class _ExerciseRow extends ConsumerWidget {
     } else {
       final frameAsync = ref.watch(gifLastFrameProvider(url));
       inner = frameAsync.when(
-        // Surface-3 fill shows through while the codec runs.
         loading: () => const SizedBox.shrink(),
         error: (_, __) => _iconFallback(),
         data: (memoryImage) => memoryImage == null
@@ -178,13 +174,9 @@ class _ExerciseRow extends ConsumerWidget {
       );
     }
 
-    // RepaintBoundary isolates async thumbnail repaints from the scroll layer.
     return RepaintBoundary(child: _frame(inner));
   }
 
-  /// Uniform light tile (Hevy-style). Exercise GIFs are baked on white, so a
-  /// consistent light tile makes the GIF and icon-fallback thumbnails read as
-  /// one set on the dark feed — not "bright white block vs dark block".
   Widget _frame(Widget child) => Container(
         width: 52,
         height: 52,
@@ -215,9 +207,6 @@ class _StatsRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final hasPrs = preview.prCount > 0;
 
-    // Volume + duration are ALWAYS left-clustered at the same positions so the
-    // eye holds a stable column across cards regardless of PR presence; the PR
-    // badge (when present) is pushed to the trailing edge.
     return MergeSemantics(
       child: Row(
         children: [
@@ -238,7 +227,6 @@ class _StatsRow extends StatelessWidget {
 
   static final _volumeFormat = NumberFormat('#,##0.##');
 
-  /// Formats kg with thousands comma: 1488 → "1,488 kg", 980 → "980 kg".
   static String _formatVolume(double kg) {
     return '${_volumeFormat.format(kg)} kg';
   }
@@ -263,8 +251,6 @@ class _StatChip extends StatelessWidget {
   }
 }
 
-/// Reward emphasis: the one place the system calls for a filled badge
-/// (amber 15% fill, amber 30% border). Trophy + "PRs" label = not color-alone.
 class _PrBadge extends StatelessWidget {
   final int count;
   const _PrBadge({required this.count});
