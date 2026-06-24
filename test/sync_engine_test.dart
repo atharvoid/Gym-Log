@@ -67,7 +67,7 @@ void main() {
     });
     db = AppDatabase.forTesting(NativeDatabase.memory());
     remote = FakeRemote();
-    final gate = SyncEntitlementGate();
+    final gate = SyncEntitlementGate(SharedPreferences.getInstance);
     engine = SyncEngine(db: db, remote: remote, gate: gate);
     // Initialize session as a premium user so sync is allowed.
     engine.initSession(userId, isPremium: true);
