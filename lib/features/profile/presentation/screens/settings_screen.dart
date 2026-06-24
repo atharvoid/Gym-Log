@@ -2,10 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:gymlog/core/providers/app_info_provider.dart';
 import 'package:gymlog/core/providers/database_provider.dart';
 import 'package:gymlog/core/providers/premium_provider.dart';
 import 'package:gymlog/core/providers/settings_provider.dart';
+import 'package:gymlog/core/services/sync_engine.dart';
+import 'package:gymlog/core/services/sync_entitlement_gate.dart';
 import 'package:gymlog/core/services/workout_export_service.dart';
 import 'package:gymlog/core/theme/app_colors.dart';
 import 'package:gymlog/core/theme/app_text.dart';
@@ -81,11 +84,55 @@ Future<void> showWeeklyGoalSheet(BuildContext context, WidgetRef ref) async {
 }
 
 /// Settings — grouped rows, clear information architecture, zero social clutter.
-class SettingsScreen extends ConsumerWidget {
+class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<SettingsScreen> createState() => _SettingsScreenState();
+}
+
+class _SettingsScreenState extends ConsumerState<SettingsScreen> {
+  bool? _syncEnabled;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSyncPref();
+  }
+
+  Future<void> _loadSyncPref() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (mounted) {
+      setState(() {
+        _syncEnabled = prefs.getBool(kSyncEnabledKey) ?? true;
+      });
+    }
+  }
+
+  Future<void> _toggleSync(bool value) async {
+    final isPremium = ref.read(isPremiumProvider);
+    final user = ref.read(authProvider);
+    final userId = user?.id ?? '';
+    if (userId.isEmpty) return;
+
+    HapticFeedback.selectionClick();
+    final gate = ref.read(syncEntitlementGateProvider);
+    final engine = ref.read(syncEngineProvider);
+
+    await gate.setSyncEnabled(value);
+    if (mounted) setState(() => _syncEnabled = value);
+
+    if (!value) {
+      // Toggle OFF: pause sync engine.
+      await engine.pauseSync(userId);
+    } else {
+      // Toggle ON: resume sync engine and pull.
+      await engine.resumeSync(userId, isPremium: isPremium);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final profile = ref.watch(currentUserProfileProvider).valueOrNull;
     final isPremium = ref.watch(isPremiumProvider);
     final unit = ref.watch(weightUnitProvider);
@@ -94,6 +141,16 @@ class SettingsScreen extends ConsumerWidget {
     final versionAsync = ref.watch(appVersionProvider);
 
     final version = versionAsync.valueOrNull ?? kAppVersionFallback;
+
+    // Determine sync subtitle based on premium + toggle state.
+    final String syncSubtitle;
+    if (!isPremium) {
+      syncSubtitle = 'Upgrade to Pro to sync across devices';
+    } else if (_syncEnabled == false) {
+      syncSubtitle = 'Sync paused. Your data stays on this device.';
+    } else {
+      syncSubtitle = 'Backup across devices and protect against data loss';
+    }
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.light,
@@ -195,6 +252,77 @@ class SettingsScreen extends ConsumerWidget {
                       ),
                     ],
                   ],
+                ),
+              ),
+              const SizedBox(height: 22),
+
+              // ── CLOUD SYNC ──────────────────────────────────────────
+              const _GroupHeader('CLOUD SYNC'),
+              AppCard(
+                padding: EdgeInsets.zero,
+                child: Semantics(
+                  button: !isPremium,
+                  label: isPremium
+                      ? 'Sync workout data to cloud. Currently ${_syncEnabled == false ? "off" : "on"}.'
+                      : 'Upgrade to Pro to sync across devices',
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: isPremium
+                          ? null
+                          : () {
+                              if (!tapGuard()) return;
+                              showPremiumPaywall(context,
+                                  source: PaywallSource.sync);
+                            },
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 14),
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.sync_rounded,
+                              size: 20,
+                              color: AppColors.textSecondary,
+                            ),
+                            const SizedBox(width: 14),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Text(
+                                        'Sync workout data to cloud',
+                                        style: AppText.rowLabel(
+                                            color: AppColors.textPrimary),
+                                      ),
+                                      if (!isPremium) ...[
+                                        const SizedBox(width: 8),
+                                        const ProLockPill(),
+                                      ],
+                                    ],
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    syncSubtitle,
+                                    style: AppText.meta(
+                                        color: AppColors.textSecondary),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            if (isPremium)
+                              Switch.adaptive(
+                                value: _syncEnabled ?? true,
+                                onChanged: (v) => _toggleSync(v),
+                                activeColor: AppColors.accentPrimary,
+                              ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
                 ),
               ),
               const SizedBox(height: 22),
