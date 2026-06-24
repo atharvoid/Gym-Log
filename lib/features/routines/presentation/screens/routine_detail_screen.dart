@@ -264,7 +264,7 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
                 interval: const Interval(0.0, 0.32, curve: Curves.easeOutExpo),
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
-                  child: Column(
+                    child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
@@ -378,7 +378,8 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
         routine.routine.name,
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
-        style: AppText.sectionHeading(),
+        // S3: text-depth shadow on routine detail title
+        style: AppText.sectionHeading(shadows: AppText.depthFor(context)),
       ),
       leading: IconButton(
         tooltip: 'Back',
@@ -588,7 +589,7 @@ class _RoutineVolumeSectionState extends ConsumerState<_RoutineVolumeSection> {
   }
 }
 
-// ══════════════════════════════════════════════════════════════════════════════
+// ════════════════════════════════════════════════════════════════════════════
 // Sub-widgets
 // ══════════════════════════════════════════════════════════════════════════════
 
@@ -602,15 +603,15 @@ class _HeroStatStrip extends StatelessWidget {
       child: Row(
         children: [
           Expanded(
-              child: _HeroStat(value: '${stats.count}', label: 'SESSIONS')),
+              child: _HeroStat(value: '${stats.count}', label: 'SESSIONS', shadows: AppText.depthFor(context))),
           const _StatDivider(),
           Expanded(
               child: _HeroStat(
-                  value: groupThousands(stats.bestVolumeKg), label: 'BEST KG')),
+                  value: groupThousands(stats.bestVolumeKg), label: 'BEST KG', shadows: AppText.depthFor(context))),
           const _StatDivider(),
           Expanded(
               child: _HeroStat(
-                  value: groupThousands(stats.avgVolumeKg), label: 'AVG KG')),
+                  value: groupThousands(stats.avgVolumeKg), label: 'AVG KG', shadows: AppText.depthFor(context))),
         ],
       ),
     );
@@ -627,7 +628,8 @@ class _StatDivider extends StatelessWidget {
 class _HeroStat extends StatelessWidget {
   final String value;
   final String label;
-  const _HeroStat({required this.value, required this.label});
+  final List<Shadow>? shadows;
+  const _HeroStat({required this.value, required this.label, this.shadows});
 
   @override
   Widget build(BuildContext context) {
@@ -637,7 +639,7 @@ class _HeroStat extends StatelessWidget {
         FittedBox(
           fit: BoxFit.scaleDown,
           alignment: Alignment.centerLeft,
-          child: Text(value, style: AppText.heroStat(), maxLines: 1),
+          child: Text(value, style: AppText.heroStat(shadows: shadows), maxLines: 1),
         ),
         const SizedBox(height: 3),
         Text(label, style: AppText.columnHeader(color: AppColors.textSecondary)),
