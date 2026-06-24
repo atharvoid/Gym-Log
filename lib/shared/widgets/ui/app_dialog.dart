@@ -2,11 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text.dart';
+import '../../../core/theme/dynamic_accent_theme.dart';
 
 /// Branded confirmation dialog — the single replacement for every stock
 /// `AlertDialog` confirm in the app, so destructive flows look and feel
 /// identical everywhere. Destructive confirms fire a warning haptic BEFORE
 /// the dialog appears. Returns true when the user confirms.
+///
+/// Non-destructive accents (info icon, confirm fill, icon wash) track the
+/// active accent palette via [BuildContext.accent]; destructive flows stay
+/// red because danger is a fixed semantic, never a personalization.
 Future<bool> showAppConfirmDialog({
   required BuildContext context,
   required String title,
@@ -28,16 +33,17 @@ Future<bool> showAppConfirmDialog({
     enableDrag: false,
     backgroundColor: Colors.transparent,
     builder: (sheetCtx) {
+      final accent = sheetCtx.accent;
       final iconBg = isDestructive
           ? AppColors.error.withValues(alpha: 0.1)
-          : AppColors.indigoTint;
+          : accent.muted;
       final iconWidget = isDestructive
           ? const Icon(Icons.delete_outline_rounded,
               size: 36, color: AppColors.error)
-          : const Icon(Icons.info_outline_rounded,
-              size: 36, color: AppColors.accentText);
+          : Icon(Icons.info_outline_rounded,
+              size: 36, color: accent.light);
       final confirmBg =
-          isDestructive ? AppColors.error : AppColors.accentPrimary;
+          isDestructive ? AppColors.error : accent.base;
 
       return SafeArea(
         top: false,
@@ -143,6 +149,7 @@ Future<String?> showAppTextInputDialog({
     context: context,
     useRootNavigator: true,
     builder: (dialogCtx) {
+      final accent = dialogCtx.accent;
       void submit() {
         final value = controller.text.trim();
         if (value.isEmpty) return;
@@ -167,7 +174,7 @@ Future<String?> showAppTextInputDialog({
                   autofocus: true,
                   maxLength: maxLength,
                   textCapitalization: TextCapitalization.words,
-                  cursorColor: AppColors.accentPrimary,
+                  cursorColor: accent.base,
                   style: AppText.value(),
                   decoration: InputDecoration(
                     hintText: hint,
@@ -182,10 +189,10 @@ Future<String?> showAppTextInputDialog({
                       borderRadius: AppRadius.inputAll,
                       borderSide: BorderSide.none,
                     ),
-                    focusedBorder: const OutlineInputBorder(
+                    focusedBorder: OutlineInputBorder(
                       borderRadius: AppRadius.inputAll,
                       borderSide:
-                          BorderSide(color: AppColors.borderActive, width: 1.5),
+                          BorderSide(color: accent.light, width: 1.5),
                     ),
                   ),
                   onSubmitted: (_) => submit(),
@@ -204,7 +211,7 @@ Future<String?> showAppTextInputDialog({
                   TextButton(
                     onPressed: submit,
                     child: Text(confirmLabel,
-                        style: AppText.button(color: AppColors.accentText)),
+                        style: AppText.button(color: accent.light)),
                   ),
                 ],
               ),
