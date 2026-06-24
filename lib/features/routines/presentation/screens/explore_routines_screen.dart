@@ -17,9 +17,6 @@ import 'package:gymlog/shared/widgets/ui/app_card.dart';
 import 'package:gymlog/shared/widgets/ui/muscle_glyph.dart';
 import 'package:gymlog/shared/widgets/ui/primary_button.dart';
 
-/// Dominant muscle token for a template's [RoutineTemplate.focus] — the first
-/// token that maps to a real muscle group (skipping qualifiers like "Strength"
-/// / "Total Body"), so the glyph is meaningful and not a fallback.
 String _dominantMuscle(String focus) {
   final tokens = focus.split(' · ');
   for (final t in tokens) {
@@ -28,15 +25,11 @@ String _dominantMuscle(String focus) {
   return tokens.isNotEmpty ? tokens.first : 'fullbody';
 }
 
-/// Stable per-muscle tint from the reactive accent ramp — identical
-/// derivation to the saved-routine card (via MuscleColorService), so a chest
-/// template and a chest routine read the same.
 Color _glyphColor(String muscle, List<Color> ramp) {
   final i = muscle.hashCode.abs() % ramp.length;
   return Color.lerp(ramp[i], Colors.white, 0.35)!;
 }
 
-/// Difficulty filter for the sticky goal chips.
 enum _LevelFilter {
   all,
   beginner,
@@ -58,9 +51,6 @@ enum _LevelFilter {
       };
 }
 
-/// A flat content row (featured | section header | card) so the list can be a
-/// single virtualized [SliverList] while still driving the staggered entrance
-/// by row index.
 sealed class _Row {
   const _Row();
 }
@@ -81,9 +71,6 @@ class _CardRow extends _Row {
   const _CardRow(this.template);
 }
 
-/// Explore — a curated catalog of premade routines, importable into the user's
-/// library in one tap. Built as a first-impression: an ambient brand glow, a
-/// featured spotlight, goal filters, and a choreographed entrance.
 class ExploreRoutinesScreen extends ConsumerStatefulWidget {
   const ExploreRoutinesScreen({super.key});
 
@@ -94,19 +81,11 @@ class ExploreRoutinesScreen extends ConsumerStatefulWidget {
 
 class _ExploreRoutinesScreenState extends ConsumerState<ExploreRoutinesScreen>
     with SingleTickerProviderStateMixin {
-  /// Templates whose import is in flight (shows the spinner).
   final Set<String> _importing = {};
-
-  /// Templates imported THIS session (optimistic), unioned with the DB-derived
-  /// set so "View" shows instantly and survives the rebuild without a flash.
   final Set<String> _imported = {};
-
-  /// name → created routine id, for the "View" action on session imports.
   final Map<String, String> _importedIds = {};
-
   _LevelFilter _filter = _LevelFilter.all;
 
-  // Drives the one-shot staggered entrance (re-runs when a filter is picked).
   late final AnimationController _reveal = AnimationController(
     vsync: this,
     duration: const Duration(milliseconds: 640),
@@ -127,20 +106,17 @@ class _ExploreRoutinesScreenState extends ConsumerState<ExploreRoutinesScreen>
     if (f == _filter) return;
     HapticFeedback.selectionClick();
     setState(() => _filter = f);
-    _reveal.forward(from: 0); // re-reveal the new set
+    _reveal.forward(from: 0);
   }
 
   Future<void> _import(RoutineTemplate template) async {
     final user = ref.read(authProvider);
     if (user == null) return;
-    // Claim the in-flight lock SYNCHRONOUSLY, before any await — otherwise a
-    // double-tap during the count/resolve awaits slips through and imports
-    // twice.
     if (_importing.contains(template.name) ||
         _imported.contains(template.name)) {
       return;
     }
-    HapticFeedback.selectionClick(); // acknowledge EVERY accepted tap
+    HapticFeedback.selectionClick();
     setState(() => _importing.add(template.name));
 
     try {
@@ -154,9 +130,6 @@ class _ExploreRoutinesScreenState extends ConsumerState<ExploreRoutinesScreen>
         return;
       }
 
-      // Resolve each slot by EXACT canonical name first (audited to exist),
-      // falling back to a substring match only for resilience against a
-      // differently-versioned library.
       final drafts = <RoutineDraftExercise>[];
       var missed = 0;
       for (final slot in template.slots) {
@@ -216,8 +189,6 @@ class _ExploreRoutinesScreenState extends ConsumerState<ExploreRoutinesScreen>
       ));
   }
 
-  /// Success snackbar with a one-tap route to the routine just created — a
-  /// creation action should lead somewhere, not dead-end.
   void _snackImported(String name, String id, int missed) {
     final msg = missed == 0
         ? '"$name" added to My Routines.'
@@ -260,8 +231,6 @@ class _ExploreRoutinesScreenState extends ConsumerState<ExploreRoutinesScreen>
     );
   }
 
-  /// Filtered → grouped sections in the curated order. The unfiltered case
-  /// reuses the memoized [exploreSections] (minus the featured spotlight).
   List<({String category, List<RoutineTemplate> items})> _sections(
       {required RoutineTemplate? excluded}) {
     final byCategory = <String, List<RoutineTemplate>>{};
@@ -279,10 +248,8 @@ class _ExploreRoutinesScreenState extends ConsumerState<ExploreRoutinesScreen>
   @override
   Widget build(BuildContext context) {
     final ramp = context.accent.muscleSplitRamp;
+    final surface = context.surface;
 
-    // "Added" state is DERIVED from the reactive routines stream (∪ the session
-    // set), so a template whose name already exists shows "View", never a
-    // second "Add" — which is what prevents the silent duplicate-import.
     final existing = ref.watch(hydratedRoutinesProvider).valueOrNull ??
         const <HydratedRoutine>[];
     final existingIds = <String, String>{
@@ -303,20 +270,19 @@ class _ExploreRoutinesScreenState extends ConsumerState<ExploreRoutinesScreen>
     final bottomInset = MediaQuery.viewPaddingOf(context).bottom;
 
     return Scaffold(
-      backgroundColor: AppColors.bgBase,
+      backgroundColor: surface.bgBase,
       body: CustomScrollView(
         slivers: [
-          // ── Hero: ambient violet aura + collapsing large title ──────────
           SliverAppBar(
             pinned: true,
             expandedHeight: 150,
-            backgroundColor: AppColors.bgBase,
+            backgroundColor: surface.bgBase,
             surfaceTintColor: Colors.transparent,
             scrolledUnderElevation: 0,
             leading: IconButton(
               tooltip: 'Back',
-              icon: const Icon(Icons.arrow_back_rounded,
-                  size: 24, color: AppColors.textPrimary),
+              icon: Icon(Icons.arrow_back_rounded,
+                  size: 24, color: surface.textPrimary),
               constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
               onPressed: () {
                 if (context.canPop()) context.pop();
@@ -330,7 +296,6 @@ class _ExploreRoutinesScreenState extends ConsumerState<ExploreRoutinesScreen>
             ),
           ),
 
-          // ── Subtitle + credibility ──────────────────────────
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(
@@ -341,7 +306,7 @@ class _ExploreRoutinesScreenState extends ConsumerState<ExploreRoutinesScreen>
                   Text(
                     'Trainer-built programs, ready to train. Import one and '
                     'make it yours.',
-                    style: AppText.body(),
+                    style: AppText.body(color: surface.textSecondary),
                   ),
                   const SizedBox(height: 12),
                   Row(
@@ -360,14 +325,12 @@ class _ExploreRoutinesScreenState extends ConsumerState<ExploreRoutinesScreen>
             ),
           ),
 
-          // ── Sticky goal filters ─────────────────────────
           SliverPersistentHeader(
             pinned: true,
             delegate: _FilterHeaderDelegate(
                 selected: _filter, onSelect: _setFilter),
           ),
 
-          // ── Catalog (featured + sections), staggered entrance ──────────
           SliverPadding(
             padding: EdgeInsets.fromLTRB(
                 AppSpacing.screenH, 8, AppSpacing.screenH, 24 + bottomInset),
@@ -436,24 +399,16 @@ class _ExploreRoutinesScreenState extends ConsumerState<ExploreRoutinesScreen>
       _importedIds[t.name] ?? existingIds[t.name];
 }
 
-/// The large "Explore" title that FlexibleSpaceBar scales between the expanded
-/// hero and the collapsed app bar.
 class _HeroTitle extends StatelessWidget {
   const _HeroTitle();
 
   @override
   Widget build(BuildContext context) =>
-      // S3: text-depth shadow on Explore hero title
-      Text('Explore', style: AppText.sectionHeading(shadows: AppText.depthFor(context)));
+      Text('Explore', style: AppText.sectionHeading(
+          color: context.surface.textPrimary,
+          shadows: AppText.depthFor(context)));
 }
 
-/// Ambient violet aura behind the hero — gives the AMOLED black depth and brand
-/// presence on first open. FlexibleSpaceBar fades it out as the bar collapses.
-///
-/// The radial blend (~7% white → transparent) is a bespoke ambient effect with
-/// no exact AppColors token; kept as literal const Colors to preserve the
-/// approved glow and stay compile-time const. It is deliberately neutral white,
-/// not accent-derived, so it reads identically under every palette.
 class _HeroGlow extends StatelessWidget {
   const _HeroGlow();
 
@@ -479,25 +434,25 @@ class _CredChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final surface = context.surface;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: const BoxDecoration(
-        color: AppColors.surface3,
+      decoration: BoxDecoration(
+        color: surface.surface3,
         borderRadius: AppRadius.badgeAll,
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 13, color: AppColors.textSecondary),
+          Icon(icon, size: 13, color: surface.textSecondary),
           const SizedBox(width: 6),
-          Text(label, style: AppText.statLabel(color: AppColors.textSecondary)),
+          Text(label, style: AppText.statLabel(color: surface.textSecondary)),
         ],
       ),
     );
   }
 }
 
-/// Sticky goal-filter bar. Tapping a chip filters the catalog and re-reveals it.
 class _FilterHeaderDelegate extends SliverPersistentHeaderDelegate {
   final _LevelFilter selected;
   final ValueChanged<_LevelFilter> onSelect;
@@ -512,7 +467,7 @@ class _FilterHeaderDelegate extends SliverPersistentHeaderDelegate {
   Widget build(
       BuildContext context, double shrinkOffset, bool overlapsContent) {
     return Container(
-      color: AppColors.bgBase,
+      color: context.surface.bgBase,
       alignment: Alignment.centerLeft,
       child: ListView(
         scrollDirection: Axis.horizontal,
@@ -546,17 +501,15 @@ class _FilterChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Selected chip is a full-saturation active indicator — reads the live
-    // accent so the filter bar tracks the chosen palette.
-    // S9.4: selected text uses accent.onAccent (reactive to light surfaces).
     final accent = context.accent;
+    final surface = context.surface;
     return Semantics(
       button: true,
       selected: selected,
       label: label,
       excludeSemantics: true,
       child: Material(
-        color: selected ? accent.base : AppColors.surface3,
+        color: selected ? accent.base : surface.surface3,
         borderRadius: BorderRadius.circular(14),
         clipBehavior: Clip.antiAlias,
         child: InkWell(
@@ -566,9 +519,8 @@ class _FilterChip extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Text(
               label,
-              // S3: on-accent halo shadow for selected chip text
               style: AppText.statLabel(
-                  color: selected ? accent.onAccent : AppColors.textSecondary,
+                  color: selected ? accent.onAccent : surface.textSecondary,
                   shadows: selected ? TextDepth.onAccentHalo(context.accent.palette) : null),
             ),
           ),
@@ -578,8 +530,6 @@ class _FilterChip extends StatelessWidget {
   }
 }
 
-/// One-shot fade + rise on first build / filter change. Off-screen rows (index
-/// past the first screenful) and reduce-motion render instantly — never blank.
 class _Reveal extends StatelessWidget {
   final int index;
   final AnimationController controller;
@@ -600,7 +550,7 @@ class _Reveal extends StatelessWidget {
       opacity: curvedAnimation,
       child: SlideTransition(
         position: Tween<Offset>(
-          begin: const Offset(0, 0.05), // Translate 5% down
+          begin: const Offset(0, 0.05),
           end: Offset.zero,
         ).animate(curvedAnimation),
         child: child,
@@ -616,6 +566,7 @@ class _SectionHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final surface = context.surface;
     return Padding(
       padding: const EdgeInsets.fromLTRB(0, 18, 0, 10),
       child: Semantics(
@@ -623,9 +574,9 @@ class _SectionHeader extends StatelessWidget {
         child: Row(
           children: [
             Text(label.toUpperCase(),
-                style: AppText.columnHeader(color: AppColors.textSecondary)),
+                style: AppText.columnHeader(color: surface.textSecondary)),
             const SizedBox(width: 8),
-            Text('$count', style: AppText.statLabel()),
+            Text('$count', style: AppText.statLabel(color: surface.textSecondary)),
           ],
         ),
       ),
@@ -633,9 +584,6 @@ class _SectionHeader extends StatelessWidget {
   }
 }
 
-/// The editor's spotlight — a richer, violet-lit hero card the eye lands on
-/// first. Same import semantics as a normal card; bigger, glowing, full-width
-/// CTA.
 class _FeaturedCard extends StatelessWidget {
   final RoutineTemplate template;
   final List<Color> ramp;
@@ -658,6 +606,7 @@ class _FeaturedCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final accent = context.accent;
+    final surface = context.surface;
     final muscle = _dominantMuscle(template.focus);
     final glyphColor = _glyphColor(muscle, ramp);
     final a11yLabel = 'Featured. ${template.name}. ${template.levelLabel}, '
@@ -671,7 +620,6 @@ class _FeaturedCard extends StatelessWidget {
       hint: 'Opens program preview',
       onTap: onPreview,
       child: DecoratedBox(
-        // S9.4: subtle accent-tinted depth shadow (visible on AMOLED).
         decoration: BoxDecoration(
           borderRadius: AppRadius.cardAll,
           boxShadow: [
@@ -685,14 +633,15 @@ class _FeaturedCard extends StatelessWidget {
         ),
         child: Container(
           decoration: BoxDecoration(
-            gradient: const LinearGradient(
+            gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [AppColors.surface2, Color(0xFF0B0B0D)],
+              colors: surface.isLight
+                  ? [surface.surface2, surface.bgSurface]
+                  : [AppColors.surface2, const Color(0xFF0B0B0D)],
             ),
             borderRadius: AppRadius.cardAll,
-            border: Border.all(
-                color: AppColors.borderSubtle),
+            border: Border.all(color: surface.borderSubtle),
           ),
           clipBehavior: Clip.antiAlias,
           child: Material(
@@ -711,12 +660,12 @@ class _FeaturedCard extends StatelessWidget {
                         children: [
                           Row(
                             children: [
-                              const Icon(Icons.auto_awesome_rounded,
-                                  size: 13, color: AppColors.textSecondary),
+                              Icon(Icons.auto_awesome_rounded,
+                                  size: 13, color: surface.textSecondary),
                               const SizedBox(width: 6),
                               Text('FEATURED',
                                   style: AppText.columnHeader(
-                                      color: AppColors.textSecondary)),
+                                      color: surface.textSecondary)),
                             ],
                           ),
                           const SizedBox(height: 14),
@@ -742,14 +691,15 @@ class _FeaturedCard extends StatelessWidget {
                                   crossAxisAlignment:
                                       CrossAxisAlignment.start,
                                   children: [
-                                    // S3: text-depth shadow on featured card title
                                     Text(template.name,
-                                        style: AppText.sectionHeading(shadows: AppText.depthFor(context))),
+                                        style: AppText.sectionHeading(
+                                            color: surface.textPrimary,
+                                            shadows: AppText.depthFor(context))),
                                     const SizedBox(height: 3),
                                     Text(template.focus,
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
-                                        style: AppText.meta()),
+                                        style: AppText.meta(color: surface.textSecondary)),
                                   ],
                                 ),
                               ),
@@ -772,9 +722,6 @@ class _FeaturedCard extends StatelessWidget {
                                   label: '${template.slots.length} exercises'),
                             ],
                           ),
-                          // S9.3: description removed from featured card.
-                          // Freed space replaced with slightly more breathing
-                          // room before the CTA.
                           const SizedBox(height: 20),
                         ],
                       ),
@@ -825,13 +772,12 @@ class _TemplateCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final accent = context.accent;
+    final surface = context.surface;
     final preview = template.slots.take(3).map((s) => s.name).join(', ');
     final extra = template.slots.length - 3;
     final muscle = _dominantMuscle(template.focus);
     final glyphColor = _glyphColor(muscle, ramp);
 
-    // One screen-reader node for the whole card (a program), plus the pill's
-    // own button node — instead of ~8 disconnected fragments per card.
     final a11yLabel = '${template.name}. ${template.levelLabel}, '
         'about ${template.estMinutes} minutes, ${template.slots.length} exercises. '
         '${template.focus}. ${template.description}';
@@ -843,11 +789,10 @@ class _TemplateCard extends StatelessWidget {
       hint: 'Opens program preview',
       onTap: onPreview,
       child: Container(
-        // S9.4: subtle accent-tinted depth shadow + slightly more rounded card.
         decoration: BoxDecoration(
-          color: AppColors.bgSurface,
+          color: surface.bgSurface,
           borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: AppColors.borderSubtle),
+          border: Border.all(color: surface.borderSubtle),
           boxShadow: [
             BoxShadow(
               color: accent.glow,
@@ -892,22 +837,21 @@ class _TemplateCard extends StatelessWidget {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  // S3: text-depth shadow on template card title
                                   Text(template.name,
-                                      style: AppText.cardTitle(shadows: AppText.depthFor(context))),
+                                      style: AppText.cardTitle(
+                                          color: surface.textPrimary,
+                                          shadows: AppText.depthFor(context))),
                                   const SizedBox(height: 3),
                                   Text(template.focus,
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
-                                      style: AppText.meta()),
+                                      style: AppText.meta(color: surface.textSecondary)),
                                 ],
                               ),
                             ),
                           ],
                         ),
                         const SizedBox(height: AppSpacing.x3),
-                        // Wrap (not Row) so chips reflow instead of overflowing
-                        // on narrow screens / large system text scales.
                         Wrap(
                           spacing: AppSpacing.x2,
                           runSpacing: 6,
@@ -924,12 +868,12 @@ class _TemplateCard extends StatelessWidget {
                                 label: '${template.slots.length} exercises'),
                           ],
                         ),
-                        const Padding(
-                          padding: EdgeInsets.only(top: 13),
+                        Padding(
+                          padding: const EdgeInsets.only(top: 13),
                           child: Divider(
                               height: 1,
                               thickness: 1,
-                              color: AppColors.borderSubtle),
+                              color: surface.borderSubtle),
                         ),
                       ],
                     ),
@@ -945,7 +889,7 @@ class _TemplateCard extends StatelessWidget {
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: AppText.caption(
-                                  color: AppColors.textTertiary),
+                                  color: surface.textTertiary),
                             ),
                           ),
                         ),
@@ -1006,24 +950,18 @@ class _MetaChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final surface = context.surface;
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, size: 13, color: AppColors.textSecondary),
+        Icon(icon, size: 13, color: surface.textSecondary),
         const SizedBox(width: 4),
-        Text(label, style: AppText.meta()),
+        Text(label, style: AppText.meta(color: surface.textSecondary)),
       ],
     );
   }
 }
 
-/// Compact in-card CTA: Add → (spinner) → View. On-system radius (NOT a pill),
-/// a 48dp tap target, and a reduce-motion-gated swap animation so a successful
-/// import resolves with a satisfying check instead of snapping. Wrap in an
-/// [Expanded] to stretch it full-width (the featured hero does this).
-///
-/// S9.4: Radius explicitly set to BorderRadius.circular(14) — the sweet spot
-/// between boxy (6) and pill (24+), matching the global button radius update.
 class _ImportPill extends StatelessWidget {
   final bool importing;
   final bool imported;
@@ -1038,15 +976,15 @@ class _ImportPill extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final reduceMotion = MediaQuery.disableAnimationsOf(context);
-    final fg = imported ? AppColors.success : AppColors.textPrimary;
+    final surface = context.surface;
+    final fg = imported ? AppColors.success : surface.textPrimary;
 
     final Widget child = importing
-        ? const SizedBox(
-            key: ValueKey('spin'),
+        ? SizedBox(
+            key: const ValueKey('spin'),
             width: 16,
             height: 16,
-            child:
-                CircularProgressIndicator(strokeWidth: 2, color: AppColors.textPrimary),
+            child: CircularProgressIndicator(strokeWidth: 2, color: surface.textPrimary),
           )
         : Row(
             key: ValueKey(imported),
@@ -1055,7 +993,6 @@ class _ImportPill extends StatelessWidget {
               Icon(imported ? Icons.check_rounded : Icons.download_rounded,
                   size: 16, color: fg),
               const SizedBox(width: 6),
-              // S3: on-accent halo shadow when Add (active accent button)
               Text(imported ? 'View' : 'Add',
                   style: AppText.statLabel(
                       color: fg,
@@ -1063,8 +1000,6 @@ class _ImportPill extends StatelessWidget {
             ],
           );
 
-    // Add state is the card's primary CTA — full-saturation live accent.
-    // Imported state is semantic success (intentionally fixed, not accent).
     return Semantics(
       button: true,
       enabled: !importing,
@@ -1099,9 +1034,6 @@ class _ImportPill extends StatelessWidget {
   }
 }
 
-/// Full-template preview — every slot (name · sets×reps) so a user can evaluate
-/// a program before committing. Primary action mirrors the card: Add (or View
-/// if it's already in the library).
 class _PreviewSheet extends StatelessWidget {
   final RoutineTemplate template;
   final bool imported;
@@ -1117,6 +1049,7 @@ class _PreviewSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final surface = context.surface;
     final muscle = _dominantMuscle(template.focus);
     final ramp = context.accent.muscleSplitRamp;
     final glyphColor = _glyphColor(muscle, ramp);
@@ -1127,14 +1060,16 @@ class _PreviewSheet extends StatelessWidget {
       maxChildSize: 0.92,
       expand: false,
       builder: (context, scrollController) => DecoratedBox(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [AppColors.surface2, AppColors.bgBase],
+            colors: surface.isLight
+                ? [surface.surface2, surface.bgBase]
+                : [AppColors.surface2, AppColors.bgBase],
           ),
           borderRadius: AppRadius.sheetTop,
-          border: Border(top: BorderSide(color: AppColors.borderSubtle)),
+          border: Border(top: BorderSide(color: surface.borderSubtle)),
         ),
         child: Column(
           children: [
@@ -1143,7 +1078,7 @@ class _PreviewSheet extends StatelessWidget {
               width: 36,
               height: 4,
               decoration: BoxDecoration(
-                color: AppColors.borderEmphasis,
+                color: surface.borderEmphasis,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -1172,11 +1107,12 @@ class _PreviewSheet extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            // S3: text-depth shadow on preview sheet title
                             Text(template.name,
-                                style: AppText.sectionHeading(shadows: AppText.depthFor(context))),
+                                style: AppText.sectionHeading(
+                                    color: surface.textPrimary,
+                                    shadows: AppText.depthFor(context))),
                             const SizedBox(height: 3),
-                            Text(template.focus, style: AppText.meta()),
+                            Text(template.focus, style: AppText.meta(color: surface.textSecondary)),
                           ],
                         ),
                       ),
@@ -1201,11 +1137,11 @@ class _PreviewSheet extends StatelessWidget {
                   ),
                   const SizedBox(height: AppSpacing.x4),
                   Text(template.description,
-                      style: AppText.body().copyWith(height: 1.45)),
+                      style: AppText.body(color: surface.textSecondary).copyWith(height: 1.45)),
                   const SizedBox(height: AppSpacing.x5),
                   Text('EXERCISES',
                       style: AppText.columnHeader(
-                          color: AppColors.textSecondary)),
+                          color: surface.textSecondary)),
                   const SizedBox(height: AppSpacing.x2),
                   for (var i = 0; i < template.slots.length; i++)
                     _PreviewSlotRow(index: i + 1, slot: template.slots[i]),
@@ -1239,24 +1175,25 @@ class _PreviewSlotRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final surface = context.surface;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 9),
       child: Row(
         children: [
           SizedBox(
             width: 22,
-            child: Text('$index', style: AppText.statLabel()),
+            child: Text('$index', style: AppText.statLabel(color: surface.textSecondary)),
           ),
           const SizedBox(width: AppSpacing.x2),
           Expanded(
             child: Text(slot.name,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: AppText.rowLabel()),
+                style: AppText.rowLabel(color: surface.textPrimary)),
           ),
           const SizedBox(width: AppSpacing.x2),
           Text('${slot.sets} × ${slot.reps}',
-              style: AppText.statLabel(color: AppColors.textSecondary)),
+              style: AppText.statLabel(color: surface.textSecondary)),
         ],
       ),
     );
