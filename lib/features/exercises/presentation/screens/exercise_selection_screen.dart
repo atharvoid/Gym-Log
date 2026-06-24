@@ -8,6 +8,7 @@ import 'package:gymlog/core/database/database.dart';
 import 'package:gymlog/core/providers/database_provider.dart';
 import 'package:gymlog/core/theme/app_colors.dart';
 import 'package:gymlog/core/theme/app_text.dart';
+import 'package:gymlog/core/theme/dynamic_accent_theme.dart';
 import 'package:gymlog/features/auth/presentation/providers/auth_provider.dart';
 import 'package:gymlog/shared/widgets/async_error_state.dart';
 import 'package:gymlog/shared/widgets/ui/exercise_thumbnail.dart';
@@ -226,6 +227,7 @@ class _ExerciseSelectionScreenState
     final exercisesAsync = ref.watch(exerciseListProvider);
     final recentIds = ref.watch(_recentExerciseIdsProvider).valueOrNull ?? [];
     final hasFilters = _muscleFilter != null || _equipmentFilter != null;
+    final accent = context.accent;
 
     return Scaffold(
       backgroundColor: AppColors.bgBase,
@@ -250,7 +252,9 @@ class _ExerciseSelectionScreenState
         children: [
           // ── Search ─────────────────────────────────────────────────────
           // An input is a recessed surface: Surface-3 fill, hairline border by
-          // default, a thicker accent edge + soft accent glow on focus.
+          // default, a thicker accent edge + soft accent glow on focus. The
+          // accent edge/glow are pulled from the live palette so the Phase 7
+          // dynamic-accent theme recolors search focus for free.
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 10),
             child: AnimatedContainer(
@@ -260,8 +264,7 @@ class _ExerciseSelectionScreenState
                 boxShadow: _searchFocused
                     ? [
                         BoxShadow(
-                          color:
-                              AppColors.accentPrimary.withValues(alpha: 0.18),
+                          color: accent.base.withValues(alpha: 0.18),
                           blurRadius: 12,
                           spreadRadius: 0.5,
                         ),
@@ -273,7 +276,7 @@ class _ExerciseSelectionScreenState
                 focusNode: _searchFocus,
                 autofocus: true,
                 style: AppText.body(color: AppColors.textPrimary),
-                cursorColor: AppColors.accentPrimary,
+                cursorColor: accent.base,
                 textInputAction: TextInputAction.search,
                 textCapitalization: TextCapitalization.words,
                 autocorrect: false,
@@ -303,10 +306,9 @@ class _ExerciseSelectionScreenState
                     borderSide:
                         BorderSide(color: AppColors.borderSubtle, width: 1),
                   ),
-                  focusedBorder: const OutlineInputBorder(
+                  focusedBorder: OutlineInputBorder(
                     borderRadius: AppRadius.inputAll,
-                    borderSide:
-                        BorderSide(color: AppColors.borderActive, width: 1.5),
+                    borderSide: BorderSide(color: accent.base, width: 1.5),
                   ),
                   contentPadding:
                       const EdgeInsets.symmetric(horizontal: 16),
@@ -349,7 +351,7 @@ class _ExerciseSelectionScreenState
                       _equipmentFilter = null;
                     }),
                     child: Text('Clear',
-                        style: AppText.statLabel(color: AppColors.accentText)),
+                        style: AppText.statLabel(color: accent.light)),
                   ),
                 ],
               ],
@@ -592,6 +594,7 @@ class _AlphabetRailState extends State<_AlphabetRail> {
 
   @override
   Widget build(BuildContext context) {
+    final accent = context.accent;
     return LayoutBuilder(
       builder: (context, constraints) {
         final h = constraints.maxHeight;
@@ -615,7 +618,7 @@ class _AlphabetRailState extends State<_AlphabetRail> {
                         l,
                         style: AppText.columnHeader(
                           color: widget.present.contains(l)
-                              ? AppColors.accentText
+                              ? accent.light
                               : AppColors.textTertiary,
                         ),
                       ),
@@ -637,6 +640,7 @@ class _EmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final accent = context.accent;
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32),
@@ -658,10 +662,10 @@ class _EmptyState extends StatelessWidget {
             const SizedBox(height: 14),
             TextButton.icon(
               onPressed: onCreate,
-              icon: const Icon(Icons.add_rounded,
-                  size: 18, color: AppColors.accentText),
+              icon: Icon(Icons.add_rounded,
+                  size: 18, color: accent.light),
               label: Text('Create custom exercise',
-                  style: AppText.statLabel(color: AppColors.accentText)),
+                  style: AppText.statLabel(color: accent.light)),
             ),
           ],
         ),
@@ -719,6 +723,7 @@ class _FilterOptionRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final accent = context.accent;
     return Semantics(
       button: true,
       selected: selected,
@@ -736,13 +741,13 @@ class _FilterOptionRow extends StatelessWidget {
                   label,
                   style: AppText.body(
                       color: selected
-                          ? AppColors.accentPrimary
+                          ? accent.base
                           : AppColors.textPrimary),
                 ),
               ),
               if (selected)
-                const Icon(Icons.check_rounded,
-                    size: 18, color: AppColors.accentPrimary),
+                Icon(Icons.check_rounded,
+                    size: 18, color: accent.base),
             ],
           ),
         ),
@@ -764,14 +769,15 @@ class _FilterChipButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final fg = active ? AppColors.accentText : AppColors.textPrimary;
+    final accent = context.accent;
+    final fg = active ? accent.light : AppColors.textPrimary;
     return Semantics(
       button: true,
       label: '$label filter${active ? ', active' : ''}',
       excludeSemantics: true,
       child: Material(
         color: active
-            ? AppColors.accentPrimary.withValues(alpha: 0.14)
+            ? accent.base.withValues(alpha: 0.14)
             : AppColors.surface3,
         borderRadius: BorderRadius.circular(AppRadius.buttonSecondary),
         clipBehavior: Clip.antiAlias,
@@ -785,7 +791,7 @@ class _FilterChipButton extends StatelessWidget {
               borderRadius: BorderRadius.circular(AppRadius.buttonSecondary),
               border: active
                   ? Border.all(
-                      color: AppColors.accentPrimary.withValues(alpha: 0.45))
+                      color: accent.base.withValues(alpha: 0.45))
                   : null,
             ),
             child: Row(
@@ -796,7 +802,7 @@ class _FilterChipButton extends StatelessWidget {
                 Icon(Icons.keyboard_arrow_down_rounded,
                     size: 16,
                     color:
-                        active ? AppColors.accentText : AppColors.textSecondary),
+                        active ? accent.light : AppColors.textSecondary),
               ],
             ),
           ),
