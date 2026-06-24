@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:gymlog/core/theme/app_colors.dart';
 import 'package:gymlog/core/theme/app_text.dart';
+import 'package:gymlog/core/theme/dynamic_accent_theme.dart';
 import 'package:gymlog/core/services/muscle_color_service.dart';
 
 /// Single-line proportional muscle-split bar + legend. Segment widths are ∝ the
 /// session's logged set counts. Color assignment is delegated to
-/// [MuscleColorService]: the dominant muscle gets the lightest violet and each
-/// lesser share steps darker (see [AppColors.muscleSplitPalette]).
+/// [MuscleColorService]: the dominant muscle gets the deepest ramp color and
+/// each lesser share steps lighter (see [AccentColors.muscleSplitRamp]).
 class MuscleSplitSection extends StatelessWidget {
   /// target muscle name → set count for this session.
   final Map<String, int> muscleSetCounts;
@@ -15,7 +16,10 @@ class MuscleSplitSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final slices = MuscleColorService.rankedSplit(muscleSetCounts);
+    final slices = MuscleColorService.rankedSplit(
+      muscleSetCounts,
+      ramp: context.accent.muscleSplitRamp,
+    );
     if (slices.isEmpty) return const SizedBox.shrink();
 
     return Padding(
