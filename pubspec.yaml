@@ -46,9 +46,10 @@ dependencies:
   # File import (Hevy / Strong CSV)
   file_picker: ^8.1.2
 
-  # Profile picture upload (S11)
+  # Profile picture upload (S11) + premium crop (Task 10)
   image_picker: ^1.1.2
   flutter_image_compress: ^2.3.0
+  image_cropper: ^8.0.2
 
   # Utils
   intl: ^0.19.0
@@ -83,16 +84,8 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   assets:
-    # SECURITY: .env is NOT a bundled asset. Config is injected at compile
-    # time via --dart-define-from-file=.env (see lib/core/config/env.dart).
-    # Bundling it would ship the raw file inside every APK/IPA and break
-    # clean-checkout builds when the gitignored file is absent.
     - assets/db/exercises.json
-    # Muscle-group glyphs for routine cards (simple originals; swap a polished
-    # pack in at the same paths to upgrade).
     - assets/icons/muscles/
-    # generated/copied to the app's documents directory at first launch, not
-    # a bundled asset. Bundling it would waste ~870 KB in every APK build.
 
 sentry:
   upload_debug_symbols: true
