@@ -8,6 +8,7 @@ import 'package:gymlog/core/providers/database_provider.dart';
 import 'package:gymlog/core/providers/premium_provider.dart';
 import 'package:gymlog/core/theme/app_colors.dart';
 import 'package:gymlog/core/theme/app_text.dart';
+import 'package:gymlog/core/theme/dynamic_accent_theme.dart';
 import 'package:gymlog/shared/widgets/premium_paywall.dart';
 import 'package:gymlog/features/auth/presentation/providers/auth_provider.dart';
 import 'package:gymlog/shared/widgets/exercise_gif_widget.dart';
@@ -197,6 +198,7 @@ class _RoutineEditorScreenState extends ConsumerState<RoutineEditorScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final accent = context.accent;
     return PopScope(
       canPop: !_dirty,
       onPopInvokedWithResult: (didPop, _) {
@@ -235,7 +237,7 @@ class _RoutineEditorScreenState extends ConsumerState<RoutineEditorScreen> {
                         'Save',
                         style: AppText.button(
                           color: _canSave
-                              ? AppColors.accentPrimary
+                              ? accent.base
                               : AppColors.textSecondary.withValues(alpha: 0.5),
                         ).copyWith(fontWeight: FontWeight.w700),
                       ),
@@ -259,7 +261,7 @@ class _RoutineEditorScreenState extends ConsumerState<RoutineEditorScreen> {
                         controller: _nameController,
                         maxLength: 50,
                         textCapitalization: TextCapitalization.words,
-                        cursorColor: AppColors.accentPrimary,
+                        cursorColor: accent.base,
                         style: AppText.sheetTitle(color: AppColors.textPrimary)
                             .copyWith(fontWeight: FontWeight.w600),
                         decoration: InputDecoration(
@@ -278,9 +280,9 @@ class _RoutineEditorScreenState extends ConsumerState<RoutineEditorScreen> {
                             borderRadius: BorderRadius.zero,
                             borderSide: BorderSide(color: AppColors.borderSubtle),
                           ),
-                          focusedBorder: const OutlineInputBorder(
+                          focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.zero,
-                            borderSide: BorderSide(color: AppColors.borderDefault),
+                            borderSide: BorderSide(color: accent.base, width: 1.5),
                           ),
                         ),
                       ),
@@ -314,7 +316,7 @@ class _RoutineEditorScreenState extends ConsumerState<RoutineEditorScreen> {
                                   child: Container(
                                     decoration: BoxDecoration(
                                       color: Color.lerp(Colors.transparent, AppColors.surface3, t),
-                                      borderRadius: BorderRadius.zero,
+                                      borderRadius: BorderRadius.circular(AppRadius.card),
                                     ),
                                     child: child,
                                   ),
@@ -409,6 +411,7 @@ class _EmptyEditorState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final accent = context.accent;
     return Center(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 32),
@@ -432,7 +435,7 @@ class _EmptyEditorState extends StatelessWidget {
             ),
             const SizedBox(height: 20),
             Material(
-              color: AppColors.accentPrimary,
+              color: accent.base,
               borderRadius: BorderRadius.circular(AppRadius.buttonPrimary),
               child: InkWell(
                 borderRadius: BorderRadius.circular(AppRadius.buttonPrimary),
@@ -481,7 +484,7 @@ class _EditorExerciseCard extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         gradient: AppColors.cardGradient,
-        borderRadius: BorderRadius.zero,
+        borderRadius: BorderRadius.circular(AppRadius.card),
         border: Border.all(color: AppColors.borderSubtle),
       ),
       padding: const EdgeInsets.fromLTRB(12, 12, 4, 12),
