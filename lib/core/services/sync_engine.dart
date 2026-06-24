@@ -8,10 +8,12 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../database/database.dart';
 import '../providers/database_provider.dart';
+import '../providers/premium_provider.dart';
 import 'sync_codec.dart';
+import 'sync_entitlement_gate.dart';
 import 'sync_remote.dart';
 
-enum SyncPhase { idle, syncing, synced, offline, error }
+enum SyncPhase { idle, syncing, synced, offline, error, paused }
 
 /// Snapshot of the engine's state for the UI.
 @immutable
@@ -34,17 +36,26 @@ class SyncStatus {
 /// immediately on explicit triggers (post-workout, backgrounding, "Sync
 /// Now"). Failures leave rows queued (offline-safe, retried later); nothing
 /// is ever lost. [pull] restores everything after a reinstall.
+///
+/// **Entitlement gating (Phase 6):** When the [SyncEntitlementGate] says
+/// sync is not allowed (free user, or Pro user opted out), the engine is
+/// dormant — [enqueueSession], [enqueuePreferences], [syncNow],
+/// [startAutoSync], and [startConnectivityWatch] are all no-ops. No outbox
+/// rows are created, no network calls fire, the UI sees no error states.
 class SyncEngine {
   SyncEngine({
     required AppDatabase db,
     required SyncRemote remote,
+    required SyncEntitlementGate gate,
     Future<SharedPreferences> Function()? prefs,
   })  : _db = db,
         _remote = remote,
+        _gate = gate,
         _prefs = prefs ?? SharedPreferences.getInstance;
 
   final AppDatabase _db;
   final SyncRemote _remote;
+  final SyncEntitlementGate _gate;
   final Future<SharedPreferences> Function() _prefs;
 
   /// Debounce window: upload after this much write-inactivity.
@@ -92,6 +103,23 @@ class SyncEngine {
   /// session; null means no session has been initialised yet.
   String? _startedForUser;
 
+  /// Cached gate resolution for the current session. Set during
+  /// [initSession] and refreshed by [resumeSync].
+  bool _isSyncAllowed = false;
+
+  // ── Entitlement ────────────────────────────────────────────────────────────
+
+  /// Returns the live gate decision. The caller must pass the current
+  /// [isPremium] (from [isPremiumProvider]).
+  Future<bool> _resolveGate({required bool isPremium}) async {
+    final state = await _gate.resolve(isPremium: isPremium);
+    _isSyncAllowed = state.isSyncAllowed;
+    return _isSyncAllowed;
+  }
+
+  /// Whether the engine is currently permitted to sync.
+  bool get isSyncAllowed => _isSyncAllowed;
+
   // ── Session lifecycle ──────────────────────────────────────────────────────
 
   /// Idempotent session initialiser — safe to call from **both** the
@@ -99,9 +127,19 @@ class SyncEngine {
   /// auth-state listener in `app.dart` (fresh sign-in, GoRouter bypasses
   /// SplashScreen). Only the first call for a given [userId] runs the pull;
   /// subsequent calls for the same user are silent no-ops.
-  Future<void> initSession(String userId) async {
+  ///
+  /// **Gating:** if the entitlement gate is closed, the engine initialises
+  /// but stays idle — no pull, no auto-sync, no connectivity watcher.
+  Future<void> initSession(String userId, {bool isPremium = false}) async {
     if (_startedForUser == userId) return;
     _startedForUser = userId;
+
+    final allowed = await _resolveGate(isPremium: isPremium);
+    if (!allowed) {
+      _setStatus(const SyncStatus(SyncPhase.paused));
+      return;
+    }
+
     startAutoSync(userId);
     startConnectivityWatch(userId);
     unawaited(pull(userId));
@@ -112,16 +150,46 @@ class SyncEngine {
   /// a fresh pull. Call this on `AuthChangeEvent.signedOut`.
   void resetSession() {
     _startedForUser = null;
+    _isSyncAllowed = false;
     _debounceTimer?.cancel();
     _outboxSub?.cancel();
     _connSub?.cancel();
+  }
+
+  /// Called when a Pro user toggles sync back ON (or a free user upgrades).
+  /// Performs a full pull to fetch any existing cloud data, then restarts
+  /// the background watchers so normal operation resumes.
+  Future<void> resumeSync(String userId, {required bool isPremium}) async {
+    final allowed = await _resolveGate(isPremium: isPremium);
+    if (!allowed) return;
+
+    startAutoSync(userId);
+    startConnectivityWatch(userId);
+    unawaited(pull(userId));
+    unawaited(loadLastSynced());
+    _setStatus(const SyncStatus(SyncPhase.idle));
+  }
+
+  /// Called when a Pro user toggles sync OFF. Flushes the debounce timer,
+  /// stops the background watchers, and marks the engine as paused.
+  /// The pending outbox is **not** drained — the rows stay queued locally
+  /// so that if the user re-enables sync, they are still pushed.
+  void pauseSync(String userId) {
+    _isSyncAllowed = false;
+    _debounceTimer?.cancel();
+    _outboxSub?.cancel();
+    _connSub?.cancel();
+    _setStatus(const SyncStatus(SyncPhase.paused));
   }
 
   // ── Enqueue (called right after a local commit) ────────────────────────────
 
   /// Snapshot a finished session into the outbox. The auto-sync watcher arms
   /// the debounce; the network is never touched here.
+  ///
+  /// **Gated:** if the entitlement gate is closed this is a silent no-op.
   Future<void> enqueueSession(String userId, String sessionId) async {
+    if (!_isSyncAllowed) return;
     final data = await _db.workoutsDao.exportSessionJson(sessionId);
     if (data == null) return;
     await _db.syncOutboxDao.enqueue(
@@ -136,7 +204,10 @@ class SyncEngine {
   /// Snapshot the user's preferences (DB prefs + SharedPreferences) so a
   /// reinstall restores weight unit, rest timer, weekly goal and per-exercise
   /// unit overrides. Called on app background / Sync Now / login.
+  ///
+  /// **Gated:** if the entitlement gate is closed this is a silent no-op.
   Future<void> enqueuePreferences(String userId) async {
+    if (!_isSyncAllowed) return;
     final profile = await _db.userDao.getUserOrNull(userId);
     final prefs = await _prefs();
     final data = <String, dynamic>{
@@ -169,13 +240,17 @@ class SyncEngine {
 
   /// Debounced trigger — resets the 5s timer on each write.
   void scheduleSync(String userId) {
+    if (!_isSyncAllowed) return;
     _debounceTimer?.cancel();
     _debounceTimer = Timer(debounce, () => syncNow(userId, reason: 'debounce'));
   }
 
   /// Immediate trigger — post-workout, app backgrounding, connectivity
   /// restore, or the Settings "Sync Now" button. Coalesces concurrent calls.
+  ///
+  /// **Gated:** if the entitlement gate is closed this is a silent no-op.
   Future<void> syncNow(String userId, {String reason = 'manual'}) async {
+    if (!_isSyncAllowed) return;
     if (_running) return;
     _debounceTimer?.cancel();
     _running = true;
@@ -265,7 +340,10 @@ class SyncEngine {
   /// Watches the outbox: whenever new work is queued (from ANY source — the
   /// session enqueue, the routine DAO enqueue, preferences) the debounce arms
   /// itself. This is why no UI call site needs to remember to trigger a sync.
+  ///
+  /// **No-op when the gate is closed.**
   void startAutoSync(String userId) {
+    if (!_isSyncAllowed) return;
     _outboxSub?.cancel();
     _lastPending = 0;
     _outboxSub = _db.syncOutboxDao.watchPendingCount(userId).listen((count) {
@@ -277,7 +355,10 @@ class SyncEngine {
   /// Syncs the moment connectivity is restored (the brief's explicit
   /// requirement). connectivity_plus emits on every transition; we fire only
   /// when at least one real transport is back.
+  ///
+  /// **No-op when the gate is closed.**
   void startConnectivityWatch(String userId) {
+    if (!_isSyncAllowed) return;
     _connSub?.cancel();
     _connSub = Connectivity().onConnectivityChanged.listen((results) {
       final online = results.any((r) => r != ConnectivityResult.none);
@@ -303,6 +384,7 @@ final syncEngineProvider = Provider<SyncEngine>((ref) {
   final engine = SyncEngine(
     db: ref.read(databaseProvider),
     remote: ref.read(syncRemoteProvider),
+    gate: ref.read(syncEntitlementGateProvider),
   );
   ref.onDispose(engine.dispose);
   return engine;
