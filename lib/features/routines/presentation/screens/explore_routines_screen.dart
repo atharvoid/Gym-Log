@@ -28,12 +28,12 @@ String _dominantMuscle(String focus) {
   return tokens.isNotEmpty ? tokens.first : 'fullbody';
 }
 
-/// Stable per-muscle tint from the shared violet ramp — IDENTICAL derivation to
-/// the saved-routine card, so a chest template and a chest routine read the
-/// same.
-Color _glyphColor(String muscle) {
-  final i = muscle.hashCode.abs() % AppColors.muscleSplitPalette.length;
-  return Color.lerp(AppColors.muscleSplitPalette[i], Colors.white, 0.35)!;
+/// Stable per-muscle tint from the reactive accent ramp — identical
+derivation to the saved-routine card (via MuscleColorService), so a chest
+/// template and a chest routine read the same.
+Color _glyphColor(String muscle, List<Color> ramp) {
+  final i = muscle.hashCode.abs() % ramp.length;
+  return Color.lerp(ramp[i], Colors.white, 0.35)!;
 }
 
 /// Difficulty filter for the sticky goal chips.
@@ -278,6 +278,8 @@ class _ExploreRoutinesScreenState extends ConsumerState<ExploreRoutinesScreen>
 
   @override
   Widget build(BuildContext context) {
+    final ramp = context.accent.muscleSplitRamp;
+
     // "Added" state is DERIVED from the reactive routines stream (∪ the session
     // set), so a template whose name already exists shows "View", never a
     // second "Add" — which is what prevents the silent duplicate-import.
@@ -383,6 +385,7 @@ class _ExploreRoutinesScreenState extends ConsumerState<ExploreRoutinesScreen>
                             const EdgeInsets.only(bottom: AppSpacing.x5),
                         child: _FeaturedCard(
                           template: template,
+                          ramp: ramp,
                           importing: _importing.contains(template.name),
                           imported: imported,
                           onImport: () => _import(template),
@@ -403,6 +406,7 @@ class _ExploreRoutinesScreenState extends ConsumerState<ExploreRoutinesScreen>
                             bottom: AppSpacing.sectionGap),
                         child: _TemplateCard(
                           template: template,
+                          ramp: ramp,
                           importing: _importing.contains(template.name),
                           imported: imported,
                           onImport: () => _import(template),
@@ -629,6 +633,7 @@ class _SectionHeader extends StatelessWidget {
 /// CTA.
 class _FeaturedCard extends StatelessWidget {
   final RoutineTemplate template;
+  final List<Color> ramp;
   final bool importing;
   final bool imported;
   final VoidCallback onImport;
@@ -637,6 +642,7 @@ class _FeaturedCard extends StatelessWidget {
 
   const _FeaturedCard({
     required this.template,
+    required this.ramp,
     required this.importing,
     required this.imported,
     required this.onImport,
@@ -647,7 +653,7 @@ class _FeaturedCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final muscle = _dominantMuscle(template.focus);
-    final glyphColor = _glyphColor(muscle);
+    final glyphColor = _glyphColor(muscle, ramp);
     final a11yLabel = 'Featured. ${template.name}. ${template.levelLabel}, '
         'about ${template.estMinutes} minutes, ${template.slots.length} exercises. '
         '${template.focus}. ${template.description}';
@@ -783,6 +789,7 @@ class _FeaturedCard extends StatelessWidget {
 
 class _TemplateCard extends StatelessWidget {
   final RoutineTemplate template;
+  final List<Color> ramp;
   final bool importing;
   final bool imported;
   final VoidCallback onImport;
@@ -791,6 +798,7 @@ class _TemplateCard extends StatelessWidget {
 
   const _TemplateCard({
     required this.template,
+    required this.ramp,
     required this.importing,
     required this.imported,
     required this.onImport,
@@ -803,7 +811,7 @@ class _TemplateCard extends StatelessWidget {
     final preview = template.slots.take(3).map((s) => s.name).join(', ');
     final extra = template.slots.length - 3;
     final muscle = _dominantMuscle(template.focus);
-    final glyphColor = _glyphColor(muscle);
+    final glyphColor = _glyphColor(muscle, ramp);
 
     // One screen-reader node for the whole card (a program), plus the pill's
     // own button node — instead of ~8 disconnected fragments per card.
@@ -885,9 +893,6 @@ class _TemplateCard extends StatelessWidget {
                                 label: '${template.slots.length} exercises'),
                           ],
                         ),
-                        const SizedBox(height: 11),
-                        Text(template.description,
-                            style: AppText.caption().copyWith(height: 1.45)),
                         const Padding(
                           padding: EdgeInsets.only(top: 13),
                           child: Divider(
@@ -1076,7 +1081,8 @@ class _PreviewSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final muscle = _dominantMuscle(template.focus);
-    final glyphColor = _glyphColor(muscle);
+    final ramp = context.accent.muscleSplitRamp;
+    final glyphColor = _glyphColor(muscle, ramp);
 
     return DraggableScrollableSheet(
       initialChildSize: 0.6,
