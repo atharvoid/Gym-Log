@@ -541,9 +541,9 @@ class _ReorderExercisesSheetState extends State<_ReorderExercisesSheet> {
                   key: ValueKey('reorder_${ex.id}'),
                   padding: const EdgeInsets.only(bottom: 8),
                   child: Container(
-                    decoration: const BoxDecoration(
+                    decoration: BoxDecoration(
                       color: AppColors.surface3,
-                      borderRadius: BorderRadius.zero,
+                      borderRadius: AppRadius.cardAll,
                     ),
                     padding: const EdgeInsets.fromLTRB(16, 14, 8, 14),
                     child: Row(
@@ -552,9 +552,9 @@ class _ReorderExercisesSheetState extends State<_ReorderExercisesSheet> {
                           width: 26,
                           height: 26,
                           alignment: Alignment.center,
-                          decoration: const BoxDecoration(
+                          decoration: BoxDecoration(
                             color: AppColors.surface3,
-                            borderRadius: BorderRadius.zero,
+                            borderRadius: AppRadius.badgeAll,
                           ),
                           child: Text(
                             '${index + 1}',
