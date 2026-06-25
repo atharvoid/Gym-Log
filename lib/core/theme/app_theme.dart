@@ -22,11 +22,10 @@ import 'theme_palette.dart';
 /// tokens.onAccent (white for colored palettes, near-black for the neutral
 /// palette) — never a hardcoded white, so the white palette stays legible.
 ///
-/// BRIGHTNESS: the White palette drives a LIGHT ThemeData (Brightness.light,
-/// ColorScheme.light) with a inverted surface luminance hierarchy. All other
-/// palettes use the AMOLED dark theme. Screen surfaces should read from
-/// `context.surface` (SurfaceContextX) rather than hardcoded AppColors.* to
-/// stay correct under both brightness modes.
+/// BRIGHTNESS: every palette, including White, uses the AMOLED dark theme
+/// (Brightness.dark, ColorScheme.dark). White is a white ACCENT on the dark
+/// canvas, not a light theme. Screen surfaces should read from `context.surface`
+/// (SurfaceContextX) to stay on the dark hierarchy.
 
 TextStyle _ct({
   required double fontSize,
@@ -45,15 +44,16 @@ TextStyle _ct({
 /// Builds the app theme for a given accent token set. Call this from the root
 /// MaterialApp with the active palette's tokens.
 ///
-/// When [palette] is [ThemePalette.white], returns a LIGHT ThemeData with
-/// the inverted surface hierarchy from [SurfaceTokens.light].
+/// The app is AMOLED-dark for every palette — White is a white ACCENT, not a
+/// light theme — so this always returns a [Brightness.dark] ThemeData built
+/// from [SurfaceTokens.dark].
 ThemeData buildAppTheme(ThemePaletteTokens tokens, {ThemePalette palette = ThemePalette.neonPurple}) {
-  final isLight = palette.isLightSurface;
-  final s = isLight ? SurfaceTokens.light : SurfaceTokens.dark;
+  // AMOLED dark for every palette. White is a white ACCENT, not a light theme.
+  const s = SurfaceTokens.dark;
 
   return ThemeData(
       useMaterial3: true,
-      brightness: isLight ? Brightness.light : Brightness.dark,
+      brightness: Brightness.dark,
       fontFamily: GoogleFonts.inter().fontFamily,
 
       // Live accent tokens, readable anywhere via `context.accent`.
@@ -61,31 +61,18 @@ ThemeData buildAppTheme(ThemePaletteTokens tokens, {ThemePalette palette = Theme
         AccentColors.fromTokens(tokens, palette),
       ],
 
-      colorScheme: isLight
-          ? ColorScheme.light(
-              surface: s.bgBase,
-              surfaceContainerHighest: s.bgSurface,
-              primary: tokens.base,
-              onPrimary: tokens.onAccent,
-              secondary: tokens.light,
-              onSecondary: s.bgBase,
-              error: AppColors.error,
-              onSurface: s.textPrimary,
-              onSurfaceVariant: s.textSecondary,
-              outline: s.borderSubtle,
-            )
-          : ColorScheme.dark(
-              surface: AppColors.bgBase,
-              surfaceContainerHighest: AppColors.bgSurface,
-              primary: tokens.base,
-              onPrimary: tokens.onAccent,
-              secondary: tokens.light,
-              onSecondary: AppColors.bgBase,
-              error: AppColors.error,
-              onSurface: AppColors.textPrimary,
-              onSurfaceVariant: AppColors.textSecondary,
-              outline: AppColors.borderSubtle,
-            ),
+      colorScheme: ColorScheme.dark(
+        surface: s.bgBase,
+        surfaceContainerHighest: s.bgSurface,
+        primary: tokens.base,
+        onPrimary: tokens.onAccent,
+        secondary: tokens.light,
+        onSecondary: s.bgBase,
+        error: AppColors.error,
+        onSurface: s.textPrimary,
+        onSurfaceVariant: s.textSecondary,
+        outline: s.borderSubtle,
+      ),
 
       scaffoldBackgroundColor: s.bgBase,
       cardColor: s.bgSurface,
@@ -97,8 +84,7 @@ ThemeData buildAppTheme(ThemePaletteTokens tokens, {ThemePalette palette = Theme
         scrolledUnderElevation: 0,
         surfaceTintColor: Colors.transparent,
         centerTitle: false,
-        systemOverlayStyle: (isLight ? SystemUiOverlayStyle.dark : SystemUiOverlayStyle.light)
-            .copyWith(statusBarColor: Colors.transparent),
+        systemOverlayStyle: SystemUiOverlayStyle.light.copyWith(statusBarColor: Colors.transparent),
         iconTheme: IconThemeData(color: s.textPrimary),
         titleTextStyle: _ct(
           fontSize: 20,
@@ -261,15 +247,11 @@ ThemeData buildAppTheme(ThemePaletteTokens tokens, {ThemePalette palette = Theme
 const _hcSecondary = Color(0xFFD2D2D7);
 const _hcBorder = Color(0xFF8A8A8E);
 
-const _hcSecondaryLight = Color(0xFF3A3A3C);
-const _hcBorderLight = Color(0xFF8A8A8E);
-
 /// High-contrast variant of [buildAppTheme] for the given accent tokens.
 ThemeData buildHighContrastTheme(ThemePaletteTokens tokens, {ThemePalette palette = ThemePalette.neonPurple}) {
   final base = buildAppTheme(tokens, palette: palette);
-  final isLight = palette.isLightSurface;
-  final hcSecondary = isLight ? _hcSecondaryLight : _hcSecondary;
-  final hcBorder = isLight ? _hcBorderLight : _hcBorder;
+  const hcSecondary = _hcSecondary;
+  const hcBorder = _hcBorder;
   return base.copyWith(
     dividerColor: hcBorder,
     colorScheme: base.colorScheme.copyWith(

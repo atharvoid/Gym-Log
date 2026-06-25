@@ -46,9 +46,10 @@ dependencies:
   # File import (Hevy / Strong CSV)
   file_picker: ^8.1.2
 
-  # Profile picture upload (S11) + in-app premium crop (Task 10, dependency-free)
+  # Profile picture upload (S11) + in-app premium crop
   image_picker: ^1.1.2
   flutter_image_compress: ^2.3.0
+  crop_your_image: ^2.0.0
 
   # Utils
   intl: ^0.19.0

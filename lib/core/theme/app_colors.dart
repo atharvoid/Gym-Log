@@ -111,34 +111,32 @@ abstract class AppColors {
   static const indigoTrack = Color(0x33BF5AF2); // neon purple 20% — generic ring track default
   static const chartAreaFill = Color(0x14BF5AF2); // neon purple 8% — chart area fill (subtle)
 
-  // ── LAYER 2 — Neon semantic accents (FIXED — never follow the brand accent) ─
-  static const accentSuccess = Color(0xFFA6E000); // deepened neon lime — completed sets
-  static const accentInfo    = Color(0xFF00D9FF); // neon cyan — rest timer
-  static const accentWarning = Color(0xFFFF9500); // neon orange — warmups / warnings
-  static const accentReward  = Color(0xFFFF2D55); // neon magenta — PR celebration
+  // ── LAYER 2 — semantic accents (FIXED — never follow the brand accent) ──
+  static const accentSuccess = Color(0xFF34C759); // iOS system green — completed sets / success
+  static const accentInfo    = Color(0xFF00D9FF); // (now unused by timer — see Task 3) kept for any info chips
+  static const accentWarning = Color(0xFFFF9F0A); // amber — warm-up sets / warnings
+  static const accentReward  = Color(0xFFE6C84A); // PR celebration → GOLD (was magenta #FF2D55)
   static const rewardGold    = Color(0xFFE6C84A); // IMMUTABLE — PR medal / trophy gold
-  static const error         = Color(0xFFEF4444); // destructive red — delete / errors ONLY
+  static const error         = Color(0xFFFF3B30); // iOS system red — delete / errors ONLY
 
   // Semantic tints — same saturation ladder, fixed hues.
-  static const successMark   = accentSuccess;       // 100% — completed-set check / left border
-  static const successTint   = Color(0x24A6E000);   // lime 14% — completed-set row bg
+  static const successMark   = accentSuccess;
+  static const successTint   = Color(0x2434C759);   // green 14% — completed-set row bg
   static const infoMark      = accentInfo;          // 100% — rest-timer ring
   static const infoTint      = Color(0x2400D9FF);   // cyan 14% — rest-timer track / chip bg
   static const infoTrack     = Color(0x3300D9FF);   // cyan 20% — rest-timer ring track
-  static const warningMark   = accentWarning;       // 100% — warmup dot / warning icon
-  static const warningTint   = Color(0x24FF9500);   // orange 14% — warmup chip bg
-  static const rewardMark    = accentReward;        // 100% — PR burst accent
-  static const rewardTint    = Color(0x24FF2D55);   // magenta 14% — PR celebration backdrop
-  static const errorBorder   = Color(0x99EF4444);   // red 60% — destructive button border
+  static const warningMark   = accentWarning;
+  static const warningTint   = Color(0x24FF9F0A);   // amber 14%
+  static const rewardMark    = accentReward;        // gold
+  static const rewardTint    = Color(0x24E6C84A);   // gold 14% — PR backdrop
+  static const errorBorder   = Color(0x99FF3B30);   // red 60% — destructive button border
 
-  // Legacy semantic aliases re-pointed onto the neon layer (completed-set green
-  // -> lime; achievement amber -> orange) so existing call sites stay correct.
-  static const success        = accentSuccess; // was completion green — now neon lime
-  static const completionTint = successTint;   // lime 14% — completed-set row bg
-  static const warning        = accentWarning; // was achievement amber — now neon orange
-  // PR badge stays GOLD (the medal), independent of the magenta celebration burst.
-  static const prBadgeBg     = Color(0x26E6C84A); // gold 15% — PR badge background
-  static const prBadgeBorder = Color(0x4DE6C84A); // gold 30% — PR badge border
+  // Legacy aliases re-pointed onto the standardized layer.
+  static const success        = accentSuccess; // standard green
+  static const completionTint = successTint;   // green 14%
+  static const warning        = accentWarning;
+  static const prBadgeBg     = Color(0x26E6C84A); // gold 15%
+  static const prBadgeBorder = Color(0x4DE6C84A); // gold 30%
 
   // ── Text — white at controlled opacity (NOT hardcoded grey) ─────────────
   static const textPrimary   = Color(0xFFFFFFFF); // headings, key numbers, exercise names

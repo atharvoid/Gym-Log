@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:gymlog/core/theme/app_colors.dart';
 import 'package:gymlog/core/theme/app_text.dart';
+import 'package:gymlog/core/theme/dynamic_accent_theme.dart';
 import 'package:gymlog/core/utils/units.dart';
 import 'package:gymlog/shared/widgets/ui/primary_button.dart';
 import 'package:gymlog/shared/widgets/ui/secondary_button.dart';
@@ -88,6 +89,7 @@ class _FinishSummarySheetState extends State<_FinishSummarySheet> {
 
   @override
   Widget build(BuildContext context) {
+    final accent = context.accent;
     return Padding(
       // Lift above the keyboard when the name field is focused.
       padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom),
@@ -127,11 +129,11 @@ class _FinishSummarySheetState extends State<_FinishSummarySheet> {
                       height: 40,
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
-                        color: AppColors.success.withValues(alpha: 0.15),
+                        color: accent.base.withValues(alpha: 0.15),
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(Icons.check_rounded,
-                          color: AppColors.success, size: 24),
+                      child: Icon(Icons.check_rounded,
+                          color: accent.base, size: 24),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
@@ -169,7 +171,7 @@ class _FinishSummarySheetState extends State<_FinishSummarySheet> {
                   maxLength: 50,
                   textCapitalization: TextCapitalization.words,
                   textInputAction: TextInputAction.done,
-                  cursorColor: AppColors.accentPrimary,
+                  cursorColor: accent.base,
                   style: AppText.value(),
                   decoration: InputDecoration(
                     labelText: 'Workout name',
@@ -183,10 +185,10 @@ class _FinishSummarySheetState extends State<_FinishSummarySheet> {
                       borderRadius: AppRadius.inputAll,
                       borderSide: BorderSide.none,
                     ),
-                    focusedBorder: const OutlineInputBorder(
+                    focusedBorder: OutlineInputBorder(
                       borderRadius: AppRadius.inputAll,
                       borderSide:
-                          BorderSide(color: AppColors.borderActive, width: 1.5),
+                          BorderSide(color: accent.base, width: 1.5),
                     ),
                   ),
                   onSubmitted: (_) => _submit(),

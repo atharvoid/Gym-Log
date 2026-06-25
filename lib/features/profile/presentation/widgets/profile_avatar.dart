@@ -1,8 +1,7 @@
 import 'dart:io';
-import 'dart:ui' as ui;
 
+import 'package:crop_your_image/crop_your_image.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:image_picker/image_picker.dart';
@@ -15,8 +14,8 @@ import 'package:gymlog/core/theme/dynamic_accent_theme.dart';
 
 /// Tappable profile avatar that shows an uploaded profile picture (if one
 /// exists) or falls back to the initial-letter avatar. Tapping opens a bottom
-/// sheet (Library / Camera / Remove). After picking, the user enters a
-/// premium, dependency-free in-app crop screen.
+/// sheet (Library / Camera / Remove). After picking, the user enters a premium
+/// in-app crop screen powered by [crop_your_image].
 class ProfileAvatar extends StatefulWidget {
   final String displayName;
   final String? imagePath;
@@ -293,69 +292,46 @@ class _SheetOption extends StatelessWidget {
   }
 }
 
-/// Full-screen, dependency-free crop experience. The picked image is shown
-/// inside a fixed square viewport; the user pans + pinch-zooms to frame it,
-/// then taps 'Use Photo'. The framed square is captured via
-/// [RenderRepaintBoundary.toImage] — a WYSIWYG crop with no native plugin.
+/// Full-screen crop experience using [crop_your_image]. The picked image is
+/// shown inside a fixed square viewport; the user pans + pinch-zooms to frame
+/// it, then taps 'Use Photo'. The package returns the exact framed square as
+/// cropped bytes — deterministic across all device DPRs.
 class _CropScreen extends StatefulWidget {
   final String sourcePath;
   final Color accentBase;
   final Color accentOnAccent;
-
-  const _CropScreen({
-    required this.sourcePath,
-    required this.accentBase,
-    required this.accentOnAccent,
-  });
-
+  const _CropScreen({required this.sourcePath, required this.accentBase, required this.accentOnAccent});
   @override
   State<_CropScreen> createState() => _CropScreenState();
 }
 
 class _CropScreenState extends State<_CropScreen> {
-  final GlobalKey _boundaryKey = GlobalKey();
-  final TransformationController _controller = TransformationController();
+  final _controller = CropController();
+  Uint8List? _bytes;
   bool _saving = false;
 
   @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
+  void initState() {
+    super.initState();
+    File(widget.sourcePath).readAsBytes().then((b) {
+      if (mounted) setState(() => _bytes = b);
+    });
   }
 
-  Future<void> _confirm() async {
-    if (_saving) return;
-    setState(() => _saving = true);
-    HapticFeedback.mediumImpact();
-
-    final dpr = MediaQuery.of(context).devicePixelRatio;
-    try {
-      final boundary = _boundaryKey.currentContext!.findRenderObject()
-          as RenderRepaintBoundary;
-      final ui.Image image = await boundary.toImage(pixelRatio: dpr);
-      final ByteData? data =
-          await image.toByteData(format: ui.ImageByteFormat.png);
-      image.dispose();
-      if (data == null) {
-        if (mounted) Navigator.of(context).pop(null);
-        return;
-      }
-      final Uint8List bytes = data.buffer.asUint8List();
-      final dir = await getTemporaryDirectory();
-      final outPath = p.join(
-          dir.path, 'crop_${DateTime.now().millisecondsSinceEpoch}.png');
-      await File(outPath).writeAsBytes(bytes);
-      if (mounted) Navigator.of(context).pop(outPath);
-    } catch (_) {
-      if (mounted) Navigator.of(context).pop(null);
+  Future<void> _onCropped(CropResult result) async {
+    if (result is! CropSuccess) {
+      if (mounted) { setState(() => _saving = false); Navigator.of(context).pop(null); }
+      return;
     }
+    final dir = await getTemporaryDirectory();
+    final outPath = p.join(dir.path, 'crop_${DateTime.now().millisecondsSinceEpoch}.png');
+    await File(outPath).writeAsBytes(result.croppedImage);
+    if (mounted) Navigator.of(context).pop(outPath);
   }
 
   @override
   Widget build(BuildContext context) {
     final media = MediaQuery.of(context);
-    final cropSize = media.size.width - 48;
-
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
@@ -369,88 +345,53 @@ class _CropScreenState extends State<_CropScreen> {
           onPressed: _saving ? null : () => Navigator.of(context).pop(null),
         ),
       ),
-      body: Column(
-        children: [
-          const Spacer(),
-          Center(
-            child: SizedBox(
-              width: cropSize,
-              height: cropSize,
-              child: Stack(
-                children: [
-                  RepaintBoundary(
-                    key: _boundaryKey,
-                    child: Container(
-                      width: cropSize,
-                      height: cropSize,
-                      color: Colors.black,
-                      child: InteractiveViewer(
-                        transformationController: _controller,
-                        clipBehavior: Clip.hardEdge,
-                        minScale: 1.0,
-                        maxScale: 5.0,
-                        child: Image.file(
-                          File(widget.sourcePath),
-                          fit: BoxFit.cover,
-                          width: cropSize,
-                          height: cropSize,
-                        ),
-                      ),
-                    ),
-                  ),
-                  IgnorePointer(
-                    child: Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(AppRadius.card),
-                        border: Border.all(
-                          color: widget.accentBase.withValues(alpha: 0.6),
-                          width: 2,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(height: 18),
-          Text(
-            'Pinch to zoom · Drag to reposition',
-            textAlign: TextAlign.center,
-            style: AppText.caption(color: Colors.white70),
-          ),
-          const Spacer(),
-          Padding(
-            padding: EdgeInsets.fromLTRB(24, 0, 24, 24 + media.viewPadding.bottom),
-            child: SizedBox(
-              width: double.infinity,
-              height: 52,
-              child: ElevatedButton(
-                onPressed: _saving ? null : _confirm,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: widget.accentBase,
-                  foregroundColor: widget.accentOnAccent,
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(AppRadius.buttonPrimary),
+      body: _bytes == null
+          ? const Center(child: CircularProgressIndicator())
+          : Column(
+              children: [
+                Expanded(
+                  child: Crop(
+                    image: _bytes!,
+                    controller: _controller,
+                    aspectRatio: 1,            // square avatar
+                    withCircleUi: false,
+                    baseColor: Colors.black,
+                    maskColor: Colors.black.withValues(alpha: 0.6),
+                    cornerDotBuilder: (size, index) =>
+                        const DotControl(color: Colors.white),
+                    onCropped: _onCropped,
                   ),
                 ),
-                child: _saving
-                    ? SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: widget.accentOnAccent,
+                const SizedBox(height: 12),
+                Text('Pinch to zoom · Drag to reposition',
+                    style: AppText.caption(color: Colors.white70)),
+                Padding(
+                  padding: EdgeInsets.fromLTRB(24, 12, 24, 24 + media.viewPadding.bottom),
+                  child: SizedBox(
+                    width: double.infinity,
+                    height: 52,
+                    child: ElevatedButton(
+                      onPressed: _saving ? null : () {
+                        setState(() => _saving = true);
+                        HapticFeedback.mediumImpact();
+                        _controller.crop(); // triggers onCropped
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: widget.accentBase,
+                        foregroundColor: widget.accentOnAccent,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(AppRadius.buttonPrimary),
                         ),
-                      )
-                    : Text('Use Photo',
-                        style: AppText.button(color: widget.accentOnAccent)),
-              ),
+                      ),
+                      child: _saving
+                          ? SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: widget.accentOnAccent))
+                          : Text('Use Photo', style: AppText.button(color: widget.accentOnAccent)),
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ),
-        ],
-      ),
     );
   }
 }

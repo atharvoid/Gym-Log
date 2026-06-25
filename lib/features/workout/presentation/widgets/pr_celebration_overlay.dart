@@ -11,10 +11,10 @@ import 'package:gymlog/core/theme/app_text.dart';
 /// strong haptic, festive confetti, and the actual numbers that were beaten.
 ///
 /// COLOR: a PR is a FIXED celebration identity — it does NOT follow the brand
-/// accent. The badge ring, ambient halo and CTA use the reserved reward magenta
-/// (AppColors.accentReward, #FF2D55), while the trophy and the beaten 1RM
-/// numbers use the immutable reward gold (#E6C84A). A personal record always
-/// reads as the same triumphant magenta-and-gold moment, in every palette.
+/// accent. The badge ring, ambient halo, CTA and confetti use the immutable
+/// reward gold (#E6C84A), while the trophy and the beaten 1RM numbers use the
+/// same gold. A personal record always reads as a clean, triumphant gold
+/// moment, in every palette.
 ///
 /// Dependency-free — confetti is a lightweight CustomPainter, not a package.
 Future<void> showPrCelebration(
@@ -252,9 +252,8 @@ class _PrCelebrationState extends State<_PrCelebration>
                           Navigator.of(context).pop();
                         },
                         style: ElevatedButton.styleFrom(
-                          // Fixed reward magenta CTA — the celebration color.
-                          backgroundColor: AppColors.accentReward,
-                          foregroundColor: AppColors.textPrimary,
+                          backgroundColor: AppColors.rewardGold,
+                          foregroundColor: const Color(0xFF1C1C1E),
                           elevation: 0,
                           shape: const RoundedRectangleBorder(
                             borderRadius: AppRadius.buttonPrimaryAll,
@@ -262,7 +261,7 @@ class _PrCelebrationState extends State<_PrCelebration>
                         ),
                         child: Text(
                           'Keep Going',
-                          style: AppText.button(color: AppColors.textPrimary),
+                          style: AppText.button(color: const Color(0xFF1C1C1E)),
                         ),
                       ),
                     ),
@@ -286,18 +285,18 @@ class _ConfettiPainter extends CustomPainter {
 
   // Deterministic particle field — same seed every build, zero allocations
   // beyond the paint object per frame. The palette is intentionally
-  // palette-INDEPENDENT (reward magenta, white, and immutable celebration
-  // gold): a PR should read as a festive magenta/gold burst no matter which
-  // brand accent the user picked.
+  // palette-INDEPENDENT (immutable celebration gold, white, and pale gold
+  // highlight): a PR should read as a clean gold burst no matter which brand
+  // accent the user picked.
   static final List<_Particle> _particles = _generate();
 
   static List<_Particle> _generate() {
     final rng = math.Random(7);
     const palette = [
-      AppColors.accentReward,
       AppColors.rewardGold,
       AppColors.textPrimary,
-      AppColors.accentReward,
+      AppColors.rewardGold,
+      Color(0xFFFFF1B8), // pale gold highlight
       AppColors.rewardGold,
       AppColors.textPrimary,
     ];

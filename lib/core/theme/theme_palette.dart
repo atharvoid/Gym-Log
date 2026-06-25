@@ -134,17 +134,17 @@ enum ThemePalette {
             glow: Color(0x1F5E5CE6),
             onAccent: Color(0xFFFFFFFF),
           ),
-        // 5 — White: light-surface identity. Off-white base (not pure #FFFFFF)
-        // so it reads as premium pearl, not a blank void on AMOLED. near-black
-        // onAccent keeps CTA labels legible. light is dimmed grey to avoid
-        // blinding white text on black at full opacity.
+        // 5 — White: white ACCENT on the dark AMOLED canvas. Off-white base
+        // (not pure #FFFFFF) reads as premium pearl, not a blank void. Near-black
+        // onAccent keeps CTA labels legible on the pearl fill; bright light keeps
+        // accent text/hairlines crisp against black.
         ThemePalette.white => const ThemePaletteTokens(
-            base: Color(0xFFF5F5F7),
-            light: Color(0xFFB0B0B5),
-            dark: Color(0xFFD0D0D4),
-            muted: Color(0x24F5F5F7),
-            glow: Color(0x1FF5F5F7),
-            onAccent: Color(0xFF1C1C1E),
+            base: Color(0xFFF5F5F7),   // pearl-white CTA / active / selected
+            light: Color(0xFFE5E5EA),  // bright near-white for accent text on black
+            dark: Color(0xFFC7C7CC),   // pressed
+            muted: Color(0x24F5F5F7),  // ~14% white tinted fill
+            glow: Color(0x1FF5F5F7),   // ~12% white glow
+            onAccent: Color(0xFF0A0A0A),// near-black label ON the white fill
           ),
         // 6 — Higgsfield: deep saturated electric chartreuse-lime. High-luminance
         // base needs near-black onAccent so CTA labels stay crisp.
@@ -164,9 +164,10 @@ enum ThemePalette {
   /// The single default accent — the app's designed identity.
   static ThemePalette get fallback => ThemePalette.neonPurple;
 
-  /// Whether this palette has a light base surface (White). Used to switch text
-  /// shadow strategy from accent-tinted to dark-grey.
-  bool get isLightSurface => this == ThemePalette.white;
+  /// Whether this palette has a light base surface. The app is AMOLED-dark for
+  /// EVERY palette — White is a white ACCENT on the dark canvas, not a light
+  /// theme — so this is always false. Retained as a hook only.
+  bool get isLightSurface => false;
 
   /// Resolves a persisted key back to a palette, defaulting to [fallback] when
   /// the key is absent or unrecognized. Keys from BOTH previous systems (the

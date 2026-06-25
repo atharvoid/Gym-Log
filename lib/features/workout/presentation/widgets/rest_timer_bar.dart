@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gymlog/core/theme/app_colors.dart';
 import 'package:gymlog/core/theme/app_text.dart';
+import 'package:gymlog/core/theme/dynamic_accent_theme.dart';
 import 'package:gymlog/features/workout/presentation/providers/rest_timer_provider.dart';
 
 /// Floating rest-timer tile shown in the Active Workout's
@@ -15,13 +16,10 @@ import 'package:gymlog/features/workout/presentation/providers/rest_timer_provid
 /// Sized for GLANCEABILITY: large tabular numerals + an ambient glow so a
 /// lifter can read remaining rest from arm's length without focusing.
 ///
-/// COLOR: rest is a FIXED semantic (Neon Cyan, AppColors.accentInfo) — like the
-/// lime 'completed' check and the gold PR badge, it never shifts with the brand
-/// accent. 'You are resting' should read as the same cyan in every palette.
+/// COLOR: rest now follows the app's live BRAND ACCENT so the timer feels
+/// integrated with the chosen theme. The previously fixed cyan semantic is
+/// replaced by `context.accent.base` everywhere in this widget.
 const double kRestTileHeight = 84;
-
-/// The fixed rest-timer hue. Reserved cyan so rest is always recognizable.
-const Color _kRest = AppColors.accentInfo;
 
 class RestTimerBar extends ConsumerWidget {
   final RestTimerState state;
@@ -37,6 +35,7 @@ class RestTimerBar extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final notifier = ref.read(restTimerProvider.notifier);
+    final rest = context.accent.base; // reactive timer hue
 
     return SafeArea(
       top: false,
@@ -49,6 +48,7 @@ class RestTimerBar extends ConsumerWidget {
           label: 'Rest timer, $_label remaining',
           child: _AmbientPulse(
             radius: AppRadius.cardAll,
+            color: rest,
             child: SizedBox(
               height: kRestTileHeight,
               child: DecoratedBox(
@@ -58,7 +58,7 @@ class RestTimerBar extends ConsumerWidget {
                     end: Alignment.bottomCenter,
                     colors: [
                       Color.alphaBlend(
-                        _kRest.withValues(alpha: 0.16),
+                        rest.withValues(alpha: 0.16),
                         AppColors.bgBase,
                       ),
                       AppColors.bgBase,
@@ -66,7 +66,7 @@ class RestTimerBar extends ConsumerWidget {
                   ),
                   borderRadius: AppRadius.cardAll,
                   border: Border.all(
-                    color: _kRest.withValues(alpha: 0.40),
+                    color: rest.withValues(alpha: 0.40),
                     width: 1.2,
                   ),
                 ),
@@ -80,11 +80,11 @@ class RestTimerBar extends ConsumerWidget {
                         child: CustomPaint(
                           painter: _RestRingPainter(
                             progress: state.progress,
-                            arcColor: _kRest,
+                            arcColor: rest,
                           ),
-                          child: const Center(
+                          child: Center(
                             child: Icon(Icons.timer_outlined,
-                                size: 18, color: _kRest),
+                                size: 18, color: rest),
                           ),
                         ),
                       ),
@@ -113,6 +113,7 @@ class RestTimerBar extends ConsumerWidget {
                       const Spacer(),
                       _RestAction(
                         label: '+15s',
+                        accent: rest,
                         onTap: () {
                           HapticFeedback.selectionClick();
                           notifier.addSeconds(15);
@@ -122,6 +123,7 @@ class RestTimerBar extends ConsumerWidget {
                       _RestAction(
                         label: 'Skip',
                         emphasized: true,
+                        accent: rest,
                         onTap: () {
                           HapticFeedback.lightImpact();
                           notifier.skip();
@@ -143,18 +145,20 @@ class _RestAction extends StatelessWidget {
   final String label;
   final bool emphasized;
   final VoidCallback onTap;
+  final Color accent;
 
   const _RestAction({
     required this.label,
     this.emphasized = false,
     required this.onTap,
+    required this.accent,
   });
 
   @override
   Widget build(BuildContext context) {
     return Material(
       color: emphasized
-          ? _kRest.withValues(alpha: 0.16)
+          ? accent.withValues(alpha: 0.16)
           : AppColors.borderSubtle,
       borderRadius: BorderRadius.circular(AppRadius.buttonSecondary),
       child: InkWell(
@@ -167,7 +171,7 @@ class _RestAction extends StatelessWidget {
           child: Text(
             label,
             style: AppText.statLabel(
-              color: emphasized ? _kRest : AppColors.textPrimary,
+              color: emphasized ? accent : AppColors.textPrimary,
             ),
           ),
         ),
@@ -176,13 +180,14 @@ class _RestAction extends StatelessWidget {
   }
 }
 
-/// A slow cyan glow around the rest tile, visible in peripheral vision so a
-/// lifter can tell at a glance whether rest is still running. Honors OS
+/// A slow accent-tinted glow around the rest tile, visible in peripheral vision
+/// so a lifter can tell at a glance whether rest is still running. Honors OS
 /// reduce-motion by holding a steady (non-pulsing) glow instead.
 class _AmbientPulse extends StatefulWidget {
   final Widget child;
   final BorderRadius radius;
-  const _AmbientPulse({required this.child, required this.radius});
+  final Color color;
+  const _AmbientPulse({required this.child, required this.radius, required this.color});
 
   @override
   State<_AmbientPulse> createState() => _AmbientPulseState();
@@ -210,7 +215,7 @@ class _AmbientPulseState extends State<_AmbientPulse>
           borderRadius: widget.radius,
           boxShadow: [
             BoxShadow(
-              color: _kRest.withValues(alpha: 0.28),
+              color: widget.color.withValues(alpha: 0.28),
               blurRadius: 18,
               spreadRadius: -2,
             ),
@@ -228,7 +233,7 @@ class _AmbientPulseState extends State<_AmbientPulse>
             borderRadius: widget.radius,
             boxShadow: [
               BoxShadow(
-                color: _kRest.withValues(alpha: 0.18 + 0.30 * t),
+                color: widget.color.withValues(alpha: 0.18 + 0.30 * t),
                 blurRadius: 14 + 16 * t,
                 spreadRadius: -2,
               ),
