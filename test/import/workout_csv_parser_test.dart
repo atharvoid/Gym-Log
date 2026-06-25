@@ -7,8 +7,7 @@ import 'import_fixtures.dart';
 double _volume(ImportParseResult r) =>
     r.sessions.fold(0.0, (s, x) => s + x.totalVolumeKg);
 
-int _sets(ImportParseResult r) =>
-    r.sessions.fold(0, (s, x) => s + x.setCount);
+int _sets(ImportParseResult r) => r.sessions.fold(0, (s, x) => s + x.setCount);
 
 int _warmups(ImportParseResult r) => r.sessions.fold(
       0,
@@ -16,7 +15,8 @@ int _warmups(ImportParseResult r) => r.sessions.fold(
           s +
           x.exercises.fold(
             0,
-            (a, e) => a + e.sets.where((st) => st.setType == SetTypes.warmup).length,
+            (a, e) =>
+                a + e.sets.where((st) => st.setType == SetTypes.warmup).length,
           ),
     );
 
@@ -41,8 +41,7 @@ void main() {
 
     test('orders sets 0-based and contiguous within each exercise', () {
       final r = WorkoutCsvParser.parse(hevySampleCsv);
-      final chest =
-          r.sessions.firstWhere((s) => s.name == 'Monday Chest Day');
+      final chest = r.sessions.firstWhere((s) => s.name == 'Monday Chest Day');
       final incline = chest.exercises.first;
       expect(incline.name, 'Incline Bench Press (Dumbbell)');
       expect(incline.sets.map((s) => s.orderIndex), [0, 1, 2]);
@@ -109,8 +108,8 @@ void main() {
     });
 
     test('throws on an empty file', () {
-      expect(() => WorkoutCsvParser.parse('   '),
-          throwsA(isA<ImportException>()));
+      expect(
+          () => WorkoutCsvParser.parse('   '), throwsA(isA<ImportException>()));
     });
   });
 }

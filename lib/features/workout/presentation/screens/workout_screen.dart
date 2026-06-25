@@ -35,7 +35,9 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
   bool _routinesExpanded = true;
 
   void _startRoutine(HydratedRoutine routine) async {
-    if (routine.exerciseIds.isEmpty) return; // guarded again in the card (with feedback)
+    if (routine.exerciseIds.isEmpty) {
+      return; // guarded again in the card (with feedback)
+    }
     if (!tapGuard()) return;
     HapticFeedback.mediumImpact();
 
@@ -99,7 +101,8 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
                   ? const SizedBox.shrink()
                   : Padding(
                       padding: const EdgeInsets.only(bottom: 16),
-                      child: Text(_summaryLine(routines), style: AppText.meta()),
+                      child:
+                          Text(_summaryLine(routines), style: AppText.meta()),
                     ),
               orElse: () => const SizedBox.shrink(),
             ),
@@ -111,7 +114,8 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
                   child: SecondaryButton(
                     label: 'New Routine',
                     icon: Icons.add_rounded,
-                    solid: true, // solid accent fill + onAccent label — the one focal CTA
+                    solid:
+                        true, // solid accent fill + onAccent label — the one focal CTA
                     onPressed: () => _push('/routines/edit'),
                   ),
                 ),
@@ -133,8 +137,9 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
 
             // ── Routine list — smooth height collapse ──────────────────
             AnimatedSize(
-              duration:
-                  reduceMotion ? Duration.zero : const Duration(milliseconds: 220),
+              duration: reduceMotion
+                  ? Duration.zero
+                  : const Duration(milliseconds: 220),
               curve: Curves.easeInOut,
               alignment: Alignment.topCenter,
               child: !_routinesExpanded
@@ -309,10 +314,9 @@ class _EmptyRoutines extends StatelessWidget {
               minimumSize: const Size(0, 44),
               foregroundColor: accent.light,
             ),
-            icon: Icon(Icons.add_rounded,
-                size: 18, color: accent.light),
-            label: Text('New Routine',
-                style: AppText.button(color: accent.light)),
+            icon: Icon(Icons.add_rounded, size: 18, color: accent.light),
+            label:
+                Text('New Routine', style: AppText.button(color: accent.light)),
           ),
         ],
       ),

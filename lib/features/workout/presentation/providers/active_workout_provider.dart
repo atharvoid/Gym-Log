@@ -139,9 +139,8 @@ class ActiveWorkoutNotifier extends StateNotifier<ActiveWorkoutState?> {
     }
 
     final sessionId = const Uuid().v4();
-    final workoutName = (name != null && name.trim().isNotEmpty)
-        ? name.trim()
-        : state!.name;
+    final workoutName =
+        (name != null && name.trim().isNotEmpty) ? name.trim() : state!.name;
 
     try {
       final prs = await db.transaction<List<PrRecord>>(() async {

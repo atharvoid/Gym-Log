@@ -196,7 +196,8 @@ class _SetTable extends StatelessWidget {
                       SizedBox(
                         width: 20,
                         child: Text('${sets[i].setNumber}',
-                            style: AppText.value(color: AppColors.textSecondary)),
+                            style:
+                                AppText.value(color: AppColors.textSecondary)),
                       ),
                       const SizedBox(width: 10),
                       if (_chipFor(sets[i].setType) case final chip?) chip,

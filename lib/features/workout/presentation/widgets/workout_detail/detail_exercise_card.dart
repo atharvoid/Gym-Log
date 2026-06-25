@@ -15,7 +15,9 @@ const _kAccentPos = AppColors.success;
 DateTime _lastNav = DateTime.fromMillisecondsSinceEpoch(0);
 bool _navThrottle() {
   final now = DateTime.now();
-  if (now.difference(_lastNav) < const Duration(milliseconds: 600)) return false;
+  if (now.difference(_lastNav) < const Duration(milliseconds: 600)) {
+    return false;
+  }
   _lastNav = now;
   return true;
 }

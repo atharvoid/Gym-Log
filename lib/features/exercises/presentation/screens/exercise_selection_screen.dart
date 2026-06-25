@@ -159,7 +159,8 @@ class _ExerciseSelectionScreenState
                   ),
                 ),
                 const SizedBox(height: 18),
-                Text(title, style: AppText.cardTitle(color: surface.textPrimary)),
+                Text(title,
+                    style: AppText.cardTitle(color: surface.textPrimary)),
                 const SizedBox(height: 12),
                 Flexible(
                   child: SingleChildScrollView(
@@ -197,7 +198,8 @@ class _ExerciseSelectionScreenState
     List<Exercise> catalog,
     List<_ListItem> items,
   }) _computeList(List<Exercise> exercises, List<int> recentIds) {
-    final dataHash = Object.hash(exercises.length, _muscleFilter, _equipmentFilter);
+    final dataHash =
+        Object.hash(exercises.length, _muscleFilter, _equipmentFilter);
     if (_cachedFiltered != null &&
         _cachedMuscleFilter == _muscleFilter &&
         _cachedEquipmentFilter == _equipmentFilter &&
@@ -220,11 +222,8 @@ class _ExerciseSelectionScreenState
       }
     }
     final recentIdSet = {for (final e in recent) e.id};
-    final catalog = filtered
-        .where((e) => !recentIdSet.contains(e.id))
-        .toList()
-      ..sort((a, b) =>
-          a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+    final catalog = filtered.where((e) => !recentIdSet.contains(e.id)).toList()
+      ..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
 
     final items = <_ListItem>[];
     if (recent.isNotEmpty) {
@@ -262,8 +261,7 @@ class _ExerciseSelectionScreenState
         title: Text(
           widget.browse ? 'Exercise Library' : 'Select Exercise',
           style: AppText.sectionHeading(
-              color: surface.textPrimary,
-              shadows: AppText.depthFor(context)),
+              color: surface.textPrimary, shadows: AppText.depthFor(context)),
         ),
         backgroundColor: surface.bgBase,
         scrolledUnderElevation: 0,
@@ -306,8 +304,7 @@ class _ExerciseSelectionScreenState
                 decoration: InputDecoration(
                   hintText: 'Search exercises…',
                   hintStyle: AppText.body(color: surface.textTertiary),
-                  prefixIcon:
-                      Icon(Icons.search, color: surface.textSecondary),
+                  prefixIcon: Icon(Icons.search, color: surface.textSecondary),
                   suffixIcon: _isSearching
                       ? IconButton(
                           tooltip: 'Clear',
@@ -332,13 +329,11 @@ class _ExerciseSelectionScreenState
                     borderRadius: AppRadius.buttonSecondaryAll,
                     borderSide: BorderSide(color: accent.base, width: 1.5),
                   ),
-                  contentPadding:
-                      const EdgeInsets.symmetric(horizontal: 16),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16),
                 ),
               ),
             ),
           ),
-
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
             child: Column(
@@ -395,7 +390,6 @@ class _ExerciseSelectionScreenState
               ],
             ),
           ),
-
           Expanded(
             child: exercisesAsync.when(
               data: (exercises) => _list(exercises, recentIds),
@@ -555,11 +549,13 @@ class _EmptyState extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(Icons.search_off_rounded,
-                size: 30, color: surface.isLight
+                size: 30,
+                color: surface.isLight
                     ? Colors.black.withValues(alpha: 0.25)
                     : Colors.white.withValues(alpha: 0.25)),
             const SizedBox(height: 10),
-            Text('No exercises match', style: AppText.rowLabel(color: surface.textPrimary)),
+            Text('No exercises match',
+                style: AppText.rowLabel(color: surface.textPrimary)),
             const SizedBox(height: 3),
             Text(
               isSearching
@@ -571,8 +567,7 @@ class _EmptyState extends StatelessWidget {
             const SizedBox(height: 14),
             TextButton.icon(
               onPressed: onCreate,
-              icon: Icon(Icons.add_rounded,
-                  size: 18, color: accent.light),
+              icon: Icon(Icons.add_rounded, size: 18, color: accent.light),
               label: Text('Create custom exercise',
                   style: AppText.statLabel(color: accent.light)),
             ),
@@ -648,14 +643,11 @@ class _FilterOptionRow extends StatelessWidget {
                 child: Text(
                   label,
                   style: AppText.body(
-                      color: selected
-                          ? accent.base
-                          : surface.textPrimary),
+                      color: selected ? accent.base : surface.textPrimary),
                 ),
               ),
               if (selected)
-                Icon(Icons.check_rounded,
-                    size: 18, color: accent.base),
+                Icon(Icons.check_rounded, size: 18, color: accent.base),
             ],
           ),
         ),
@@ -701,14 +693,16 @@ class _FilterChipButton extends StatelessWidget {
               mainAxisSize: MainAxisSize.max,
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(label, style: AppText.statLabel(
-                    color: fg,
-                    shadows: active ? TextDepth.onAccentHalo(context.accent.palette) : null)),
+                Text(label,
+                    style: AppText.statLabel(
+                        color: fg,
+                        shadows: active
+                            ? TextDepth.onAccentHalo(context.accent.palette)
+                            : null)),
                 const SizedBox(width: 4),
                 Icon(Icons.keyboard_arrow_down_rounded,
                     size: 16,
-                    color:
-                        active ? accent.onAccent : surface.textSecondary),
+                    color: active ? accent.onAccent : surface.textSecondary),
               ],
             ),
           ),

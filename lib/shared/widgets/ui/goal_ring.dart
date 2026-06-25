@@ -19,10 +19,13 @@ class GoalRing extends StatelessWidget {
     final disableAnimations = MediaQuery.disableAnimationsOf(context);
     final accent = context.accent;
     return Semantics(
-      label: 'Weekly goal ${(progress.clamp(0.0, 1.0) * 100).round()}% complete',
+      label:
+          'Weekly goal ${(progress.clamp(0.0, 1.0) * 100).round()}% complete',
       child: TweenAnimationBuilder<double>(
         tween: Tween(begin: 0, end: progress.clamp(0.0, 1.0)),
-        duration: disableAnimations ? Duration.zero : const Duration(milliseconds: 650),
+        duration: disableAnimations
+            ? Duration.zero
+            : const Duration(milliseconds: 650),
         curve: Curves.easeOutCubic,
         builder: (_, animated, __) => SizedBox(
           width: size,

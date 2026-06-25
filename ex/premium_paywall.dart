@@ -250,8 +250,11 @@ class _PaywallSheetState extends ConsumerState<_PaywallSheet> {
       'Unlimited routines',
       'No more $kFreeRoutineLimit-routine cap',
     ),
-    (Icons.insights_rounded, 'Full analytics history',
-        'Every chart, all of it'),
+    (
+      Icons.insights_rounded,
+      'Full analytics history',
+      'Every chart, all of it'
+    ),
     (Icons.date_range_rounded, 'All time ranges', '1Y and All Time unlocked'),
   ];
 
@@ -312,8 +315,7 @@ class _PaywallSheetState extends ConsumerState<_PaywallSheet> {
     return intro != null && intro.price == 0 && _trialEligible;
   }
 
-  String get _ctaLabel =>
-      _hasFreeTrial ? 'Start Free Trial' : 'Upgrade to Pro';
+  String get _ctaLabel => _hasFreeTrial ? 'Start Free Trial' : 'Upgrade to Pro';
 
   String get _ctaCaption {
     if (!_hasFreeTrial) return 'Cancel anytime.';
@@ -420,8 +422,8 @@ class _PaywallSheetState extends ConsumerState<_PaywallSheet> {
 
   void _snack(String message) {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text(message,
-          style: GoogleFonts.inter(color: AppColors.textPrimary)),
+      content:
+          Text(message, style: GoogleFonts.inter(color: AppColors.textPrimary)),
       backgroundColor: AppColors.bgSurface,
       behavior: SnackBarBehavior.floating,
     ));
@@ -717,8 +719,7 @@ class _PackageRow extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 7, vertical: 2),
                       decoration: BoxDecoration(
-                        color:
-                            AppColors.accentPrimary.withValues(alpha: 0.16),
+                        color: AppColors.accentPrimary.withValues(alpha: 0.16),
                         borderRadius: BorderRadius.circular(AppRadius.badge),
                       ),
                       child: Text(

@@ -52,8 +52,7 @@ class WorkoutDraftStore {
         await clear();
         return null;
       }
-      final state =
-          _workoutFromJson(map['workout'] as Map<String, dynamic>);
+      final state = _workoutFromJson(map['workout'] as Map<String, dynamic>);
       // A draft with no logged work isn't worth resuming.
       if (state.exercises.isEmpty) {
         await clear();
@@ -106,7 +105,8 @@ Map<String, dynamic> _exToJson(WorkoutExerciseState e) => {
       'sets': [for (final s in e.sets) _setToJson(s)],
     };
 
-WorkoutExerciseState _exFromJson(Map<String, dynamic> m) => WorkoutExerciseState(
+WorkoutExerciseState _exFromJson(Map<String, dynamic> m) =>
+    WorkoutExerciseState(
       id: m['id'] as String? ?? '',
       exerciseId: (m['exerciseId'] as num).toInt(),
       name: m['name'] as String? ?? '',
@@ -124,7 +124,8 @@ Map<String, dynamic> _workoutToJson(ActiveWorkoutState s) => {
       'exercises': [for (final e in s.exercises) _exToJson(e)],
     };
 
-ActiveWorkoutState _workoutFromJson(Map<String, dynamic> m) => ActiveWorkoutState(
+ActiveWorkoutState _workoutFromJson(Map<String, dynamic> m) =>
+    ActiveWorkoutState(
       id: m['id'] as String,
       startTime: DateTime.fromMillisecondsSinceEpoch(m['startTime'] as int),
       routineId: m['routineId'] as String?,

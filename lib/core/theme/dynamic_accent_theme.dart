@@ -110,7 +110,6 @@ class AccentColors extends ThemeExtension<AccentColors> {
   /// Slightly stronger accent for the border of a selected card/input (~35%).
   Color get selectionBorder => base.withValues(alpha: 0.35);
 
-
   /// Whether this palette drives a light surface hierarchy.
   bool get isLightSurface => palette.isLightSurface;
 
@@ -118,8 +117,8 @@ class AccentColors extends ThemeExtension<AccentColors> {
   /// before the inherited theme is available (e.g. a State field initializer
   /// that runs ahead of didChangeDependencies). Matches the fallback used by
   /// [AccentColorsContextX.accent] so 'default accent' has one source of truth.
-  static AccentColors get fallback =>
-      AccentColors.fromTokens(ThemePalette.fallback.tokens, ThemePalette.fallback);
+  static AccentColors get fallback => AccentColors.fromTokens(
+      ThemePalette.fallback.tokens, ThemePalette.fallback);
 
   /// Backwards-compatible alias for [fallback]. Retained so existing callers
   /// (e.g. weekly_bar_chart) keep compiling; now resolves to the active

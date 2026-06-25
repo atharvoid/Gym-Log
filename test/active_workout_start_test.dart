@@ -45,6 +45,7 @@ void main() {
         WorkoutExerciseState(id: 'keep-me', exerciseId: 1, name: 'Bench'),
       ],
     );
-    expect(container.read(activeWorkoutProvider)!.exercises.first.id, 'keep-me');
+    expect(
+        container.read(activeWorkoutProvider)!.exercises.first.id, 'keep-me');
   });
 }

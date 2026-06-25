@@ -110,8 +110,7 @@ class _ProfileAvatarState extends State<ProfileAvatar> {
 
   void _showOptionsSheet() {
     final surface = context.surface;
-    final hasImage =
-        widget.imagePath != null && widget.imagePath!.isNotEmpty;
+    final hasImage = widget.imagePath != null && widget.imagePath!.isNotEmpty;
 
     showModalBottomSheet<void>(
       context: context,
@@ -175,8 +174,7 @@ class _ProfileAvatarState extends State<ProfileAvatar> {
   Widget build(BuildContext context) {
     final accent = context.accent;
     final surface = context.surface;
-    final hasImage =
-        widget.imagePath != null && widget.imagePath!.isNotEmpty;
+    final hasImage = widget.imagePath != null && widget.imagePath!.isNotEmpty;
 
     return GestureDetector(
       onTap: _processing ? null : _showOptionsSheet,
@@ -300,7 +298,10 @@ class _CropScreen extends StatefulWidget {
   final String sourcePath;
   final Color accentBase;
   final Color accentOnAccent;
-  const _CropScreen({required this.sourcePath, required this.accentBase, required this.accentOnAccent});
+  const _CropScreen(
+      {required this.sourcePath,
+      required this.accentBase,
+      required this.accentOnAccent});
   @override
   State<_CropScreen> createState() => _CropScreenState();
 }
@@ -320,11 +321,15 @@ class _CropScreenState extends State<_CropScreen> {
 
   Future<void> _onCropped(CropResult result) async {
     if (result is! CropSuccess) {
-      if (mounted) { setState(() => _saving = false); Navigator.of(context).pop(null); }
+      if (mounted) {
+        setState(() => _saving = false);
+        Navigator.of(context).pop(null);
+      }
       return;
     }
     final dir = await getTemporaryDirectory();
-    final outPath = p.join(dir.path, 'crop_${DateTime.now().millisecondsSinceEpoch}.png');
+    final outPath =
+        p.join(dir.path, 'crop_${DateTime.now().millisecondsSinceEpoch}.png');
     await File(outPath).writeAsBytes(result.croppedImage);
     if (mounted) Navigator.of(context).pop(outPath);
   }
@@ -339,7 +344,8 @@ class _CropScreenState extends State<_CropScreen> {
         foregroundColor: Colors.white,
         elevation: 0,
         centerTitle: true,
-        title: Text('Crop Photo', style: AppText.sheetTitle(color: Colors.white)),
+        title:
+            Text('Crop Photo', style: AppText.sheetTitle(color: Colors.white)),
         leading: IconButton(
           icon: const Icon(Icons.close_rounded),
           onPressed: _saving ? null : () => Navigator.of(context).pop(null),
@@ -353,7 +359,7 @@ class _CropScreenState extends State<_CropScreen> {
                   child: Crop(
                     image: _bytes!,
                     controller: _controller,
-                    aspectRatio: 1,            // square avatar
+                    aspectRatio: 1, // square avatar
                     withCircleUi: false,
                     baseColor: Colors.black,
                     maskColor: Colors.black.withValues(alpha: 0.6),
@@ -366,27 +372,37 @@ class _CropScreenState extends State<_CropScreen> {
                 Text('Pinch to zoom · Drag to reposition',
                     style: AppText.caption(color: Colors.white70)),
                 Padding(
-                  padding: EdgeInsets.fromLTRB(24, 12, 24, 24 + media.viewPadding.bottom),
+                  padding: EdgeInsets.fromLTRB(
+                      24, 12, 24, 24 + media.viewPadding.bottom),
                   child: SizedBox(
                     width: double.infinity,
                     height: 52,
                     child: ElevatedButton(
-                      onPressed: _saving ? null : () {
-                        setState(() => _saving = true);
-                        HapticFeedback.mediumImpact();
-                        _controller.crop(); // triggers onCropped
-                      },
+                      onPressed: _saving
+                          ? null
+                          : () {
+                              setState(() => _saving = true);
+                              HapticFeedback.mediumImpact();
+                              _controller.crop(); // triggers onCropped
+                            },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: widget.accentBase,
                         foregroundColor: widget.accentOnAccent,
                         elevation: 0,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(AppRadius.buttonPrimary),
+                          borderRadius:
+                              BorderRadius.circular(AppRadius.buttonPrimary),
                         ),
                       ),
                       child: _saving
-                          ? SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: widget.accentOnAccent))
-                          : Text('Use Photo', style: AppText.button(color: widget.accentOnAccent)),
+                          ? SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                  strokeWidth: 2, color: widget.accentOnAccent))
+                          : Text('Use Photo',
+                              style:
+                                  AppText.button(color: widget.accentOnAccent)),
                     ),
                   ),
                 ),

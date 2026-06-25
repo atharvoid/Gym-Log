@@ -161,7 +161,10 @@ class _RoutineEditorScreenState extends ConsumerState<RoutineEditorScreen> {
         final isPremium = ref.read(isPremiumProvider);
         final count = await dao.countRoutinesForUser(user.id);
         if (isAtFreeRoutineLimit(isPremium: isPremium, routineCount: count)) {
-          if (mounted) await showPremiumPaywall(context, source: PaywallSource.routineLimit);
+          if (mounted) {
+            await showPremiumPaywall(context,
+                source: PaywallSource.routineLimit);
+          }
           return; // draft stays on screen; nothing saved
         }
 
@@ -219,14 +222,13 @@ class _RoutineEditorScreenState extends ConsumerState<RoutineEditorScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Icon(Icons.add_rounded,
-                    color: AppColors.textPrimary
-                        .withValues(alpha: 0.9),
+                    color: AppColors.textPrimary.withValues(alpha: 0.9),
                     size: 16),
                 const SizedBox(width: 9),
                 Text('Add Exercise',
                     style: AppText.button(
-                            color: AppColors.textPrimary
-                                .withValues(alpha: 0.90))
+                            color:
+                                AppColors.textPrimary.withValues(alpha: 0.90))
                         .copyWith(fontSize: 15)),
               ],
             ),
@@ -307,22 +309,25 @@ class _RoutineEditorScreenState extends ConsumerState<RoutineEditorScreen> {
                         decoration: InputDecoration(
                           hintText: 'Routine name',
                           counterText: '',
-                          hintStyle: AppText.sheetTitle(
-                                  color: AppColors.textSecondary)
-                              .copyWith(fontWeight: FontWeight.w500),
+                          hintStyle:
+                              AppText.sheetTitle(color: AppColors.textSecondary)
+                                  .copyWith(fontWeight: FontWeight.w500),
                           filled: true,
                           fillColor: AppColors.surfaceRaised,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(10),
-                            borderSide: const BorderSide(color: AppColors.borderSubtle),
+                            borderSide:
+                                const BorderSide(color: AppColors.borderSubtle),
                           ),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(10),
-                            borderSide: const BorderSide(color: AppColors.borderSubtle),
+                            borderSide:
+                                const BorderSide(color: AppColors.borderSubtle),
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(10),
-                            borderSide: BorderSide(color: accent.base, width: 1.5),
+                            borderSide:
+                                BorderSide(color: accent.base, width: 1.5),
                           ),
                         ),
                       ),
@@ -356,8 +361,10 @@ class _RoutineEditorScreenState extends ConsumerState<RoutineEditorScreen> {
                                   scale: 1.0 + 0.03 * t,
                                   child: Container(
                                     decoration: BoxDecoration(
-                                      color: Color.lerp(Colors.transparent, AppColors.surface3, t),
-                                      borderRadius: BorderRadius.circular(AppRadius.card),
+                                      color: Color.lerp(Colors.transparent,
+                                          AppColors.surface3, t),
+                                      borderRadius:
+                                          BorderRadius.circular(AppRadius.card),
                                     ),
                                     child: child,
                                   ),
@@ -428,8 +435,7 @@ class _EmptyEditorState extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(Icons.fitness_center_rounded,
-                size: 34,
-                color: AppColors.textPrimary.withValues(alpha: 0.25)),
+                size: 34, color: AppColors.textPrimary.withValues(alpha: 0.25)),
             const SizedBox(height: 14),
             Text(
               'Build your routine',
@@ -456,8 +462,7 @@ class _EmptyEditorState extends StatelessWidget {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.add_rounded,
-                          size: 18, color: accent.onAccent),
+                      Icon(Icons.add_rounded, size: 18, color: accent.onAccent),
                       const SizedBox(width: 6),
                       Text(
                         'Add Exercise',
@@ -589,8 +594,7 @@ class _EditorExerciseCard extends StatelessWidget {
             tooltip: 'Remove ${exercise.name}',
             constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
             icon: Icon(Icons.close_rounded,
-                size: 18,
-                color: AppColors.textPrimary.withValues(alpha: 0.4)),
+                size: 18, color: AppColors.textPrimary.withValues(alpha: 0.4)),
             onPressed: onRemove,
           ),
         ],

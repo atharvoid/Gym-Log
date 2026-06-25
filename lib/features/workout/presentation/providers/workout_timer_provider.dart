@@ -25,7 +25,8 @@ class WorkoutTimer extends _$WorkoutTimer {
     }
 
     // Timer suppression for historical workout edits
-    if (workout.originalSessionId != null && workout.historicalDuration != null) {
+    if (workout.originalSessionId != null &&
+        workout.historicalDuration != null) {
       _timer?.cancel();
       _timer = null;
       return _formatDuration(workout.historicalDuration!);

@@ -20,7 +20,12 @@ class _Item {
 void main() {
   testWidgets('full list renders through a drag and reorders correctly',
       (tester) async {
-    final items = [_Item('Alpha'), _Item('Bravo'), _Item('Charlie'), _Item('Delta')];
+    final items = [
+      _Item('Alpha'),
+      _Item('Bravo'),
+      _Item('Charlie'),
+      _Item('Delta')
+    ];
 
     await tester.pumpWidget(MaterialApp(
       home: Scaffold(

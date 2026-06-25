@@ -103,11 +103,10 @@ void main() {
   group('resolveOnLogin', () {
     test('hydrates local from the backend when a remote profile exists',
         () async {
-      remote.stored =
-          const RemoteProfile(id: userId, displayName: 'Cloud Name', email: email);
+      remote.stored = const RemoteProfile(
+          id: userId, displayName: 'Cloud Name', email: email);
 
-      final res =
-          await service.resolveOnLogin(userId: userId, email: email);
+      final res = await service.resolveOnLogin(userId: userId, email: email);
 
       expect(res, ProfileResolution.ready);
       expect((await db.userDao.getUserOrNull(userId))?.displayName,
@@ -115,8 +114,7 @@ void main() {
     });
 
     test('first-ever user (no remote, no local) needs onboarding', () async {
-      final res =
-          await service.resolveOnLogin(userId: userId, email: email);
+      final res = await service.resolveOnLogin(userId: userId, email: email);
       expect(res, ProfileResolution.needsOnboarding);
     });
 
@@ -125,8 +123,7 @@ void main() {
       await db.userDao
           .upsertProfile(id: userId, email: email, displayName: 'Local Only');
 
-      final res =
-          await service.resolveOnLogin(userId: userId, email: email);
+      final res = await service.resolveOnLogin(userId: userId, email: email);
 
       expect(res, ProfileResolution.ready);
       expect(remote.stored?.displayName, 'Local Only'); // backfilled to backend
@@ -138,16 +135,14 @@ void main() {
           .upsertProfile(id: userId, email: email, displayName: 'Local Only');
       remote.failNext = true;
 
-      final res =
-          await service.resolveOnLogin(userId: userId, email: email);
+      final res = await service.resolveOnLogin(userId: userId, email: email);
       expect(res, ProfileResolution.ready);
     });
 
     test('backend unreachable with no local → onboarding (never blocks)',
         () async {
       remote.failNext = true;
-      final res =
-          await service.resolveOnLogin(userId: userId, email: email);
+      final res = await service.resolveOnLogin(userId: userId, email: email);
       expect(res, ProfileResolution.needsOnboarding);
     });
 

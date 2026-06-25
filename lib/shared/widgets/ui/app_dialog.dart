@@ -34,16 +34,13 @@ Future<bool> showAppConfirmDialog({
     backgroundColor: Colors.transparent,
     builder: (sheetCtx) {
       final accent = sheetCtx.accent;
-      final iconBg = isDestructive
-          ? AppColors.error.withValues(alpha: 0.1)
-          : accent.muted;
+      final iconBg =
+          isDestructive ? AppColors.error.withValues(alpha: 0.1) : accent.muted;
       final iconWidget = isDestructive
           ? const Icon(Icons.delete_outline_rounded,
               size: 36, color: AppColors.error)
-          : Icon(Icons.info_outline_rounded,
-              size: 36, color: accent.light);
-      final confirmBg =
-          isDestructive ? AppColors.error : accent.base;
+          : Icon(Icons.info_outline_rounded, size: 36, color: accent.light);
+      final confirmBg = isDestructive ? AppColors.error : accent.base;
 
       return SafeArea(
         top: false,
@@ -78,7 +75,8 @@ Future<bool> showAppConfirmDialog({
                 ),
                 const SizedBox(height: 16),
                 // Title
-                Text(title, style: AppText.sheetTitle(), textAlign: TextAlign.center),
+                Text(title,
+                    style: AppText.sheetTitle(), textAlign: TextAlign.center),
                 const SizedBox(height: 8),
                 // Message
                 Text(message,
@@ -191,8 +189,7 @@ Future<String?> showAppTextInputDialog({
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: AppRadius.inputAll,
-                      borderSide:
-                          BorderSide(color: accent.light, width: 1.5),
+                      borderSide: BorderSide(color: accent.light, width: 1.5),
                     ),
                   ),
                   onSubmitted: (_) => submit(),

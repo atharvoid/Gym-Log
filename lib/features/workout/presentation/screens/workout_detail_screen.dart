@@ -151,7 +151,8 @@ class WorkoutDetailScreen extends ConsumerWidget {
               ),
             ),
             SliverToBoxAdapter(
-              child: SizedBox(height: 24 + MediaQuery.paddingOf(context).bottom),
+              child:
+                  SizedBox(height: 24 + MediaQuery.paddingOf(context).bottom),
             ),
           ],
         ),

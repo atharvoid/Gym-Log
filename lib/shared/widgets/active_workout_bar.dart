@@ -1,120 +1,111 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text.dart';
 import '../../core/theme/dynamic_accent_theme.dart';
+import '../../features/workout/presentation/providers/active_workout_provider.dart';
+import '../../features/workout/presentation/providers/workout_timer_provider.dart';
 
 /// [active_workout_bar.dart]
-/// Purpose: High-Density Tracker - Active workout indicator with an accent pulse
-/// Dependencies: flutter/material.dart, go_router, app_colors.dart, app_text.dart
-/// Last modified: Phase 7 — gradient wash, glow, and play dot follow the active
-/// accent palette (purple/copper/teal/red) via [BuildContext.accent].
-
-class ActiveWorkoutBar extends StatefulWidget {
+/// Minimized "workout in progress" bar shown above the bottom nav while a
+/// session is live. Hevy-clean: a live elapsed timer + the workout name +
+/// "N exercises · M sets" — no decorative pulse, just the data you need to
+/// decide whether to jump back in. Tapping anywhere expands /workout/active.
+class ActiveWorkoutBar extends ConsumerWidget {
   const ActiveWorkoutBar({super.key});
 
   @override
-  State<ActiveWorkoutBar> createState() => _ActiveWorkoutBarState();
-}
-
-class _ActiveWorkoutBarState extends State<ActiveWorkoutBar>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _glowCtrl;
-  late final Animation<double> _glowAnim;
-
-  @override
-  void initState() {
-    super.initState();
-    _glowCtrl = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1800),
-    )..repeat(reverse: true);
-
-    _glowAnim = Tween<double>(begin: 0.10, end: 0.28).animate(
-      CurvedAnimation(parent: _glowCtrl, curve: Curves.easeInOut),
-    );
-  }
-
-  @override
-  void dispose() {
-    _glowCtrl.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final reduceMotion = MediaQuery.disableAnimationsOf(context);
-
-    if (reduceMotion) {
-      return _buildBar(context, glowAlpha: 0.19, blurRadius: 18);
-    }
-
-    return AnimatedBuilder(
-      animation: _glowAnim,
-      builder: (context, child) =>
-          _buildBar(context, glowAlpha: _glowAnim.value, blurRadius: 12 + _glowAnim.value * 50),
-    );
-  }
-
-  Widget _buildBar(BuildContext context,
-      {required double glowAlpha, required double blurRadius}) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final accent = context.accent;
-    return GestureDetector(
-      onTap: () => context.push('/workout/active'),
-      child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.centerLeft,
-            end: Alignment.centerRight,
-            colors: [accent.muted, AppColors.surface2],
+    final timer = ref.watch(workoutTimerProvider); // "HH:MM:SS", ticks 1/s
+
+    final summary = ref.watch(activeWorkoutProvider.select((s) {
+      if (s == null) return (name: 'Workout', exercises: 0, sets: 0);
+      final raw = s.name?.trim();
+      var done = 0;
+      for (final ex in s.exercises) {
+        for (final set in ex.sets) {
+          if (set.isCompleted) done++;
+        }
+      }
+      return (
+        name: (raw == null || raw.isEmpty) ? 'Workout' : raw,
+        exercises: s.exercises.length,
+        sets: done,
+      );
+    }));
+
+    final detail =
+        '${summary.exercises} exercise${summary.exercises == 1 ? '' : 's'}'
+        ' · ${summary.sets} set${summary.sets == 1 ? '' : 's'}';
+
+    return Semantics(
+      button: true,
+      label: 'Resume workout, elapsed $timer',
+      child: GestureDetector(
+        onTap: () => context.push('/workout/active'),
+        child: Container(
+          margin: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          decoration: BoxDecoration(
+            color: AppColors.surface2,
+            borderRadius: BorderRadius.circular(AppRadius.buttonSecondary),
+            border: Border.all(color: AppColors.borderDefault, width: 1),
           ),
-          borderRadius: BorderRadius.circular(AppRadius.buttonSecondary),
-          border: Border.all(color: AppColors.borderDefault, width: 1),
-          boxShadow: [
-            BoxShadow(
-              color: accent.base.withValues(alpha: glowAlpha),
-              blurRadius: blurRadius,
-              spreadRadius: 0,
-            ),
-          ],
-        ),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        child: Row(
-          children: [
-            // Filled accent play button dot
-            Container(
-              decoration: BoxDecoration(
-                color: accent.base,
-                borderRadius: BorderRadius.circular(6),
+          child: Row(
+            children: [
+              // Live timer pill — the only accent fill; calm, no pulsing glow.
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                decoration: BoxDecoration(
+                  color: accent.muted,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 7,
+                      height: 7,
+                      decoration: BoxDecoration(
+                        color: accent.base,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                    const SizedBox(width: 7),
+                    // HH:MM:SS is fixed-width; add tabular figures if your
+                    // AppText.value font jitters between frames.
+                    Text(timer, style: AppText.value(color: accent.light)),
+                  ],
+                ),
               ),
-              padding: const EdgeInsets.all(8),
-              child: Icon(
-                Icons.play_arrow_rounded,
-                color: accent.onAccent,
-                size: 18,
+              const SizedBox(width: 12),
+              // Name + details
+              Expanded(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      summary.name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: AppText.cardTitle(),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(detail,
+                        style: AppText.meta(color: AppColors.textSecondary)),
+                  ],
+                ),
               ),
-            ),
-            const SizedBox(width: 14),
-            // Two-line label block
-            Expanded(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('Workout in progress', style: AppText.cardTitle()),
-                  Text('Tap to resume',
-                      style: AppText.meta(color: AppColors.textSecondary)),
-                ],
-              ),
-            ),
-            // Right chevron
-            const Icon(
-              Icons.chevron_right_rounded,
-              color: AppColors.textTertiary,
-              size: 22,
-            ),
-          ],
+              const SizedBox(width: 8),
+              Text('Resume', style: AppText.button(color: accent.light)),
+              const Icon(Icons.chevron_right_rounded,
+                  color: AppColors.textTertiary, size: 20),
+            ],
+          ),
         ),
       ),
     );

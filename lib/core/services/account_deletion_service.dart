@@ -102,11 +102,7 @@ class AccountDeletionService {
             .delete()
             .eq('user_id', uid)
             .timeout(_timeout);
-        await _client
-            .from('profiles')
-            .delete()
-            .eq('id', uid)
-            .timeout(_timeout);
+        await _client.from('profiles').delete().eq('id', uid).timeout(_timeout);
         cloudPurged = true; // data gone; authUserDeleted stays false
       } catch (e) {
         note = '${note ?? ''} | direct purge failed: $e';

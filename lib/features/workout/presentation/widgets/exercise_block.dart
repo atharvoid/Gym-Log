@@ -103,11 +103,14 @@ class ExerciseBlock extends ConsumerWidget {
     final exerciseName = exerciseMeta.$2;
     final setsLength = exerciseMeta.$3;
 
-    final catalogById = ref.watch(exerciseCatalogByIdProvider).valueOrNull ?? const <int, Exercise>{};
+    final catalogById = ref.watch(exerciseCatalogByIdProvider).valueOrNull ??
+        const <int, Exercise>{};
     final de = catalogById[exerciseId];
 
     final unit = ref.watch(exerciseUnitProvider(exerciseId));
-    final previousSets = ref.watch(previousSessionSetsProvider(exerciseId)).valueOrNull ?? const [];
+    final previousSets =
+        ref.watch(previousSessionSetsProvider(exerciseId)).valueOrNull ??
+            const [];
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 7),
@@ -132,7 +135,8 @@ class ExerciseBlock extends ConsumerWidget {
                     child: Text(
                       exerciseName,
                       // S3: text-depth shadow on exercise card title
-                      style: AppText.cardTitle(shadows: AppText.depthFor(context)),
+                      style:
+                          AppText.cardTitle(shadows: AppText.depthFor(context)),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -159,14 +163,14 @@ class ExerciseBlock extends ConsumerWidget {
                 SizedBox(
                   width: kSetColW,
                   child: Text('SET',
-                      style: AppText.columnHeader(
-                          color: AppColors.textSecondary)),
+                      style:
+                          AppText.columnHeader(color: AppColors.textSecondary)),
                 ),
                 Expanded(
                   flex: kPrevFlex,
                   child: Text('PREVIOUS',
-                      style: AppText.columnHeader(
-                          color: AppColors.textSecondary)),
+                      style:
+                          AppText.columnHeader(color: AppColors.textSecondary)),
                 ),
                 Expanded(
                   flex: kWeightFlex,
@@ -222,15 +226,19 @@ class ExerciseBlock extends ConsumerWidget {
             return Consumer(
               builder: (context, ref, child) {
                 final setData = ref.watch(activeWorkoutProvider.select((state) {
-                  if (state == null || exerciseIndex >= state.exercises.length) return null;
+                  if (state == null ||
+                      exerciseIndex >= state.exercises.length) {
+                    return null;
+                  }
                   final ex = state.exercises[exerciseIndex];
                   if (setIndex >= ex.sets.length) return null;
                   return ex.sets[setIndex];
                 }));
                 if (setData == null) return const SizedBox.shrink();
 
-                final prevSet =
-                    setIndex < previousSets.length ? previousSets[setIndex] : null;
+                final prevSet = setIndex < previousSets.length
+                    ? previousSets[setIndex]
+                    : null;
 
                 final row = SetRow(
                   key: ValueKey(setData.id),

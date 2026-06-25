@@ -257,7 +257,8 @@ class SyncEngine {
     _setStatus(_status.copyWith(phase: SyncPhase.syncing));
     try {
       while (true) {
-        final batch = await _db.syncOutboxDao.nextBatch(userId, limit: _batchSize);
+        final batch =
+            await _db.syncOutboxDao.nextBatch(userId, limit: _batchSize);
         if (batch.isEmpty) break;
 
         final objects = [
@@ -325,8 +326,8 @@ class SyncEngine {
     final prefs = await _prefs();
     final ms = prefs.getInt(_lastSyncedKey);
     if (ms != null) {
-      _setStatus(_status
-          .copyWith(lastSyncedAt: DateTime.fromMillisecondsSinceEpoch(ms)));
+      _setStatus(_status.copyWith(
+          lastSyncedAt: DateTime.fromMillisecondsSinceEpoch(ms)));
     }
   }
 

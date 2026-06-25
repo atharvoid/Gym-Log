@@ -34,7 +34,8 @@ class ExerciseMatcher {
       _byExact.putIfAbsent(e.name.trim().toLowerCase(), () => e.id);
       final key = movementKey(e.name);
       if (key.isNotEmpty) {
-        (_byMovement[key] ??= <_Cand>[]).add(_Cand(e.id, equipFromName(e.name)));
+        (_byMovement[key] ??= <_Cand>[])
+            .add(_Cand(e.id, equipFromName(e.name)));
       }
     }
   }
@@ -70,27 +71,81 @@ class ExerciseMatcher {
   //    the generated catalog) ─────────────────────────────────────────────
 
   static const _equipTokens = {
-    'barbell', 'dumbbell', 'cable', 'machine', 'smith', 'kettlebell', 'bodyweight',
-    'body', 'weight', 'weighted', 'olympic', 'sled', 'lever', 'leverage', 'band',
-    'resistance', 'plate', 'gymnastic', 'rings', 'stability', 'medicine', 'ez',
-    'assisted', 'trap', 'bar', 'ab', 'wheel', 'ball', 'hand', 'gripper', 'roller',
-    'specialty', 'partner',
+    'barbell',
+    'dumbbell',
+    'cable',
+    'machine',
+    'smith',
+    'kettlebell',
+    'bodyweight',
+    'body',
+    'weight',
+    'weighted',
+    'olympic',
+    'sled',
+    'lever',
+    'leverage',
+    'band',
+    'resistance',
+    'plate',
+    'gymnastic',
+    'rings',
+    'stability',
+    'medicine',
+    'ez',
+    'assisted',
+    'trap',
+    'bar',
+    'ab',
+    'wheel',
+    'ball',
+    'hand',
+    'gripper',
+    'roller',
+    'specialty',
+    'partner',
   };
 
   static const _phrase = <List<String>>[
-    ['pull down', 'pulldown'], ['pull up', 'pullup'], ['chin up', 'chinup'],
-    ['push up', 'pushup'], ['press up', 'pushup'], ['sit up', 'situp'],
-    ['step up', 'stepup'], ['push-up', 'pushup'], ['pull-up', 'pullup'],
-    ['chin-up', 'chinup'], ['sit-up', 'situp'], ['t-bar', 'tbar'], ['t bar', 'tbar'],
+    ['pull down', 'pulldown'],
+    ['pull up', 'pullup'],
+    ['chin up', 'chinup'],
+    ['push up', 'pushup'],
+    ['press up', 'pushup'],
+    ['sit up', 'situp'],
+    ['step up', 'stepup'],
+    ['push-up', 'pushup'],
+    ['pull-up', 'pullup'],
+    ['chin-up', 'chinup'],
+    ['sit-up', 'situp'],
+    ['t-bar', 'tbar'],
+    ['t bar', 'tbar'],
   ];
 
   static const _syn = {
-    'presses': 'press', 'flyes': 'fly', 'flys': 'fly', 'flye': 'fly',
-    'raises': 'raise', 'rows': 'row', 'curls': 'curl', 'extensions': 'extension',
-    'dips': 'dip', 'squats': 'squat', 'lunges': 'lunge', 'pulldowns': 'pulldown',
-    'pushups': 'pushup', 'situps': 'situp', 'chinups': 'chinup', 'pullups': 'pullup',
-    'kickbacks': 'kickback', 'pushdowns': 'pushdown', 'thrusts': 'thrust',
-    'crunches': 'crunch', 'bicep': 'biceps', 'tricep': 'triceps', 'calf': 'calves',
+    'presses': 'press',
+    'flyes': 'fly',
+    'flys': 'fly',
+    'flye': 'fly',
+    'raises': 'raise',
+    'rows': 'row',
+    'curls': 'curl',
+    'extensions': 'extension',
+    'dips': 'dip',
+    'squats': 'squat',
+    'lunges': 'lunge',
+    'pulldowns': 'pulldown',
+    'pushups': 'pushup',
+    'situps': 'situp',
+    'chinups': 'chinup',
+    'pullups': 'pullup',
+    'kickbacks': 'kickback',
+    'pushdowns': 'pushdown',
+    'thrusts': 'thrust',
+    'crunches': 'crunch',
+    'bicep': 'biceps',
+    'tricep': 'triceps',
+    'calf': 'calves',
     'oh': 'overhead',
   };
 
@@ -121,8 +176,10 @@ class ExerciseMatcher {
       final c = _equipClass(paren.group(1)!);
       if (c != 'other') return c;
     }
-    for (final t in name.toLowerCase().replaceAll(RegExp(r'[^a-z ]'), ' ').split(' ')) {
-      if (const ['barbell', 'dumbbell', 'cable', 'kettlebell', 'smith'].contains(t)) {
+    for (final t
+        in name.toLowerCase().replaceAll(RegExp(r'[^a-z ]'), ' ').split(' ')) {
+      if (const ['barbell', 'dumbbell', 'cable', 'kettlebell', 'smith']
+          .contains(t)) {
         return t;
       }
       if (t == 'ez') return 'ez';

@@ -69,7 +69,8 @@ class SupabaseSyncRemote implements SyncRemote {
   Future<List<SyncObject>> pull(String userId) async {
     final rows = await _client
         .from(_table)
-        .select('id, user_id, entity_type, entity_id, updated_at, deleted, payload')
+        .select(
+            'id, user_id, entity_type, entity_id, updated_at, deleted, payload')
         .eq('user_id', userId)
         .order('updated_at');
     return [

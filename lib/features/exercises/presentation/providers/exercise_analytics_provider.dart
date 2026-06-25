@@ -30,4 +30,3 @@ final exerciseAnalyticsProvider =
     since: _sinceForRange(selectedRange),
   );
 });
-

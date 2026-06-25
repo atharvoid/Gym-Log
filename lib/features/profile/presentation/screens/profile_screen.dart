@@ -56,7 +56,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
 
   Future<void> _loadImagePath() async {
     final prefs = await SharedPreferences.getInstance();
-    if (mounted) setState(() => _profileImagePath = prefs.getString(_kProfileImageKey));
+    if (mounted) {
+      setState(() => _profileImagePath = prefs.getString(_kProfileImageKey));
+    }
   }
 
   Future<void> _onImageChanged(String? path) async {
@@ -167,14 +169,15 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     final syncAllowed = ref.watch(isSyncAllowedProvider).valueOrNull ?? true;
     final showSyncPausedBadge = isPremium && !syncAllowed;
 
-    final bottomClearance = BottomNavBar.height +
-        MediaQuery.viewPaddingOf(context).bottom +
-        24;
+    final bottomClearance =
+        BottomNavBar.height + MediaQuery.viewPaddingOf(context).bottom + 24;
 
     final surface = context.surface;
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: surface.isLight ? SystemUiOverlayStyle.dark : SystemUiOverlayStyle.light,
+      value: surface.isLight
+          ? SystemUiOverlayStyle.dark
+          : SystemUiOverlayStyle.light,
       child: Scaffold(
         backgroundColor: surface.bgBase,
         appBar: AppBar(
@@ -211,66 +214,67 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
               child: ListView(
                 padding: EdgeInsets.fromLTRB(16, 4, 16, bottomClearance),
                 children: [
-                _entrance(
-                  index: 0,
-                  child: Semantics(
-                    container: true,
-                    label: 'Profile, $displayName, $email',
-                    child: _IdentityHeader(
-                      displayName: displayName,
-                      email: email,
+                  _entrance(
+                    index: 0,
+                    child: Semantics(
+                      container: true,
+                      label: 'Profile, $displayName, $email',
+                      child: _IdentityHeader(
+                        displayName: displayName,
+                        email: email,
+                        isPremium: isPremium,
+                        showSyncPausedBadge: showSyncPausedBadge,
+                        imagePath: _profileImagePath,
+                        onImageChanged: _onImageChanged,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  _entrance(
+                    index: 1,
+                    child: AppCard(
+                      radius: AppRadius.card,
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: AppSpacing.x1, vertical: AppSpacing.x4),
+                      child: _StatsStrip(
+                        streak: streak,
+                        goal: goal,
+                        workoutCount: workoutCount,
+                        onGoalTap: () => showWeeklyGoalSheet(context, ref),
+                      ),
+                    ),
+                  ),
+                  if (goal > 0 && streak.workoutsThisWeek >= goal) ...[
+                    const SizedBox(height: 10),
+                    _entrance(
+                      index: 2,
+                      slide: false,
+                      child: const _GoalReachedBanner(),
+                    ),
+                  ] else if (!streak.trainedToday) ...[
+                    const SizedBox(height: 10),
+                    _entrance(
+                      index: 2,
+                      slide: false,
+                      child: _StreakReminder(streak: streak),
+                    ),
+                  ],
+                  const SizedBox(height: 28),
+                  _entrance(
+                    index: 3,
+                    child: const _TrainingChartSection(),
+                  ),
+                  const SizedBox(height: 28),
+                  _entrance(
+                    index: 4,
+                    child: _QuickLinks(
                       isPremium: isPremium,
-                      showSyncPausedBadge: showSyncPausedBadge,
-                      imagePath: _profileImagePath,
-                      onImageChanged: _onImageChanged,
+                      onPremiumTap: () =>
+                          _openPremium(context, isPremium: isPremium),
+                      onExerciseLibraryTap: _openExerciseLibrary,
+                      onSettingsTap: _openSettings,
                     ),
                   ),
-                ),
-                const SizedBox(height: 20),
-                _entrance(
-                  index: 1,
-                  child: AppCard(
-                    radius: AppRadius.card,
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: AppSpacing.x1, vertical: AppSpacing.x4),
-                    child: _StatsStrip(
-                      streak: streak,
-                      goal: goal,
-                      workoutCount: workoutCount,
-                      onGoalTap: () => showWeeklyGoalSheet(context, ref),
-                    ),
-                  ),
-                ),
-                if (goal > 0 && streak.workoutsThisWeek >= goal) ...[
-                  const SizedBox(height: 10),
-                  _entrance(
-                    index: 2,
-                    slide: false,
-                    child: const _GoalReachedBanner(),
-                  ),
-                ] else if (!streak.trainedToday) ...[
-                  const SizedBox(height: 10),
-                  _entrance(
-                    index: 2,
-                    slide: false,
-                    child: _StreakReminder(streak: streak),
-                  ),
-                ],
-                const SizedBox(height: 28),
-                _entrance(
-                  index: 3,
-                  child: const _TrainingChartSection(),
-                ),
-                const SizedBox(height: 28),
-                _entrance(
-                  index: 4,
-                  child: _QuickLinks(
-                    isPremium: isPremium,
-                    onPremiumTap: () => _openPremium(context, isPremium: isPremium),
-                    onExerciseLibraryTap: _openExerciseLibrary,
-                    onSettingsTap: _openSettings,
-                  ),
-                ),
                 ],
               ),
             );
@@ -483,13 +487,15 @@ class _StatCell extends StatelessWidget {
             children: [
               leading,
               const SizedBox(width: 6),
-              Text(value, style: AppText.statValue(
-                  color: surface.textPrimary,
-                  shadows: AppText.depthFor(context))),
+              Text(value,
+                  style: AppText.statValue(
+                      color: surface.textPrimary,
+                      shadows: AppText.depthFor(context))),
             ],
           ),
           const SizedBox(height: 5),
-          Text(label, style: AppText.statCellLabel(color: surface.textSecondary)),
+          Text(label,
+              style: AppText.statCellLabel(color: surface.textSecondary)),
         ],
       ),
     );
@@ -735,7 +741,8 @@ class _LoadingBody extends StatelessWidget {
             child: Column(
               children: [
                 for (var i = 0; i < 2; i++) ...[
-                  const SkeletonBox(width: double.infinity, height: 48, radius: 0),
+                  const SkeletonBox(
+                      width: double.infinity, height: 48, radius: 0),
                   if (i < 1) const SizedBox(height: 1),
                 ],
               ],
@@ -785,7 +792,8 @@ class _ErrorBody extends StatelessWidget {
                     foregroundColor: context.accent.onAccent,
                     elevation: 0,
                     shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(AppRadius.buttonPrimary)),
+                        borderRadius:
+                            BorderRadius.circular(AppRadius.buttonPrimary)),
                   ),
                   child: Text('Retry', style: AppText.button()),
                 ),

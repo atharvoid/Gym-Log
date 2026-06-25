@@ -36,8 +36,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 /// thumbnail at 3x — comfortably above anything the static branch renders.
 const _kMaxDecodeWidth = 360;
 
-final gifLastFrameProvider =
-    FutureProvider.autoDispose.family<MemoryImage?, String>((ref, gifUrl) async {
+final gifLastFrameProvider = FutureProvider.autoDispose
+    .family<MemoryImage?, String>((ref, gifUrl) async {
   // Bound memory: keep the decoded frame ~60s after the last watcher detaches
   // (so a quick scroll-back doesn't re-decode), then release it. Re-decode
   // from the shared on-disk cache is cheap. This replaces an unbounded
@@ -106,8 +106,8 @@ final gifLastFrameProvider =
 /// For exercise GIFs frame 0 ≈ the last frame (the rest/start position), so the
 /// still looks identical while skipping the per-frame work — the scrollable
 /// catalog uses this instead.
-final gifFirstFrameProvider =
-    FutureProvider.autoDispose.family<MemoryImage?, String>((ref, gifUrl) async {
+final gifFirstFrameProvider = FutureProvider.autoDispose
+    .family<MemoryImage?, String>((ref, gifUrl) async {
   final link = ref.keepAlive();
   Timer? releaseTimer;
   ref.onDispose(() => releaseTimer?.cancel());

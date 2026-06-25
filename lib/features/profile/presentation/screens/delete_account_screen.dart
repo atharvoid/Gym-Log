@@ -132,7 +132,6 @@ class _DeleteAccountScreenState extends ConsumerState<DeleteAccountScreen> {
                     ),
                   ),
                   const SizedBox(height: 24),
-
                   const _SectionCard(
                     title: 'What will be permanently deleted',
                     tone: AppColors.error,
@@ -154,7 +153,6 @@ class _DeleteAccountScreenState extends ConsumerState<DeleteAccountScreen> {
                           'are your property — they are never touched or removed.',
                     ],
                   ),
-
                   const SizedBox(height: 26),
                   Text(
                     'Type $_confirmWord to confirm',
@@ -182,16 +180,16 @@ class _DeleteAccountScreenState extends ConsumerState<DeleteAccountScreen> {
                           color: AppColors.textDisabled, letterSpacing: 1.5),
                       filled: true,
                       fillColor: AppColors.surfaceRaised,
-                      contentPadding:
-                          const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                      contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 14),
                       enabledBorder: const OutlineInputBorder(
                         borderRadius: BorderRadius.zero,
                         borderSide: BorderSide.none,
                       ),
                       focusedBorder: const OutlineInputBorder(
                         borderRadius: BorderRadius.zero,
-                        borderSide: BorderSide(
-                            color: AppColors.error, width: 1.5),
+                        borderSide:
+                            BorderSide(color: AppColors.error, width: 1.5),
                       ),
                     ),
                   ),
@@ -210,10 +208,12 @@ class _DeleteAccountScreenState extends ConsumerState<DeleteAccountScreen> {
                             Colors.white.withValues(alpha: 0.5),
                         elevation: 0,
                         shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(AppRadius.buttonPrimary)),
+                            borderRadius:
+                                BorderRadius.circular(AppRadius.buttonPrimary)),
                       ),
                       child: _deleting
-                          ? const CupertinoActivityIndicator(color: Colors.white)
+                          ? const CupertinoActivityIndicator(
+                              color: Colors.white)
                           : Text(
                               'Delete my account permanently',
                               style: AppText.button(),

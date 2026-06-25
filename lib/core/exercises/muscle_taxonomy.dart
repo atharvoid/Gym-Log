@@ -7,13 +7,43 @@ library;
 
 abstract final class MuscleTaxonomy {
   /// Parent muscle groups, in display order.
-  static const List<String> parents = ["Chest", "Back", "Shoulders", "Biceps", "Triceps", "Forearms", "Quadriceps", "Hamstrings", "Glutes", "Adductors", "Abductors", "Calves", "Hip Flexors", "Core", "Neck", "Full Body"];
+  static const List<String> parents = [
+    "Chest",
+    "Back",
+    "Shoulders",
+    "Biceps",
+    "Triceps",
+    "Forearms",
+    "Quadriceps",
+    "Hamstrings",
+    "Glutes",
+    "Adductors",
+    "Abductors",
+    "Calves",
+    "Hip Flexors",
+    "Core",
+    "Neck",
+    "Full Body"
+  ];
 
   /// Parent group -> the specific muscles it contains.
   static const Map<String, List<String>> children = {
-    "Chest": ["Chest", "Upper Chest", "Lower Chest", "Pectorals", "Serratus Anterior"],
+    "Chest": [
+      "Chest",
+      "Upper Chest",
+      "Lower Chest",
+      "Pectorals",
+      "Serratus Anterior"
+    ],
     "Back": ["Lats", "Upper Back", "Lower Back", "Traps", "Back", "Spine"],
-    "Shoulders": ["Front Delts", "Side Delts", "Rear Delts", "Shoulders", "Delts", "Rotator Cuff"],
+    "Shoulders": [
+      "Front Delts",
+      "Side Delts",
+      "Rear Delts",
+      "Shoulders",
+      "Delts",
+      "Rotator Cuff"
+    ],
     "Biceps": ["Biceps", "Brachialis"],
     "Triceps": ["Triceps"],
     "Forearms": ["Forearms", "Forearm Flexors", "Forearm Extensors", "Grip"],

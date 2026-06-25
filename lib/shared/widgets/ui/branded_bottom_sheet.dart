@@ -44,11 +44,13 @@ class BrandedBottomSheet extends StatelessWidget {
             ),
             if (title != null) ...[
               const SizedBox(height: 20),
-              Text(title!, style: AppText.sheetTitle(), textAlign: TextAlign.start),
+              Text(title!,
+                  style: AppText.sheetTitle(), textAlign: TextAlign.start),
             ],
             if (subtitle != null) ...[
               const SizedBox(height: 4),
-              Text(subtitle!, style: AppText.body(), textAlign: TextAlign.start),
+              Text(subtitle!,
+                  style: AppText.body(), textAlign: TextAlign.start),
             ],
             if (title != null || subtitle != null) const SizedBox(height: 20),
             child,
@@ -67,7 +69,8 @@ class BrandedBottomSheet extends StatelessWidget {
     return Container(
       decoration: const BoxDecoration(
         color: AppColors.bgSheet,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.sheet)),
+        borderRadius:
+            BorderRadius.vertical(top: Radius.circular(AppRadius.sheet)),
       ),
       child: content,
     );

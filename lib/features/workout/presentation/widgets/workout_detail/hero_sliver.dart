@@ -112,9 +112,9 @@ class WorkoutHeroSliver extends StatelessWidget {
                           children: [
                             Flexible(
                               child: _HeroPip(
-                                  value: durationStr,
-                                  label: 'DURATION',
-                                  shadows: AppText.depthFor(context),
+                                value: durationStr,
+                                label: 'DURATION',
+                                shadows: AppText.depthFor(context),
                               ),
                             ),
                             _HeroPip.dot,
@@ -126,18 +126,18 @@ class WorkoutHeroSliver extends StatelessWidget {
                                     'Volume = weight × reps across all completed '
                                     'sets, warm-ups included.',
                                 child: _HeroPip(
-                                    value: volumeStr,
-                                    label: 'VOLUME',
-                                    shadows: AppText.depthFor(context),
+                                  value: volumeStr,
+                                  label: 'VOLUME',
+                                  shadows: AppText.depthFor(context),
                                 ),
                               ),
                             ),
                             _HeroPip.dot,
                             Flexible(
                               child: _HeroPip(
-                                  value: '$totalSets',
-                                  label: 'SETS',
-                                  shadows: AppText.depthFor(context),
+                                value: '$totalSets',
+                                label: 'SETS',
+                                shadows: AppText.depthFor(context),
                               ),
                             ),
                           ],
@@ -188,7 +188,8 @@ class _HeroPip extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 2),
-          Text(label, style: AppText.columnHeader(color: AppColors.textSecondary)),
+          Text(label,
+              style: AppText.columnHeader(color: AppColors.textSecondary)),
         ],
       ),
     );

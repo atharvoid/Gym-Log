@@ -115,7 +115,9 @@ void main() {
 
   test('codec round-trips and actually compresses repetitive JSON', () {
     final data = {
-      'sets': [for (var i = 0; i < 50; i++) {'weightKg': 80.0, 'reps': 10}]
+      'sets': [
+        for (var i = 0; i < 50; i++) {'weightKg': 80.0, 'reps': 10}
+      ]
     };
     final encoded = SyncCodec.encode(data);
     expect(SyncCodec.decode(encoded), data);
@@ -216,14 +218,13 @@ void main() {
       // Simulate reinstall: delete the routine locally.
       await db.routinesDao.deleteRoutine(routineId);
       // deleteRoutine queued a tombstone — clear it so it doesn't fight pull.
-      await db.syncOutboxDao
-          .deleteByIds((await db.syncOutboxDao.nextBatch(userId)).map((r) => r.id).toList());
+      await db.syncOutboxDao.deleteByIds(
+          (await db.syncOutboxDao.nextBatch(userId)).map((r) => r.id).toList());
       expect(await db.routinesDao.getHydratedRoutineDetail(routineId), isNull);
 
       await engine.pull(userId);
 
-      final restored =
-          await db.routinesDao.getHydratedRoutineDetail(routineId);
+      final restored = await db.routinesDao.getHydratedRoutineDetail(routineId);
       expect(restored, isNotNull);
       expect(restored!.routine.name, 'Push Day');
       expect(restored.exercises.first.config.defaultReps, 8);
@@ -232,9 +233,9 @@ void main() {
     test('deleting a routine queues a tombstone', () async {
       final exId = await insertExercise('Row');
       final routineId = await db.routinesDao.createRoutine(
-          userId: userId, name: 'Pull', exercises: [
-        RoutineDraftExercise(exerciseId: exId)
-      ]);
+          userId: userId,
+          name: 'Pull',
+          exercises: [RoutineDraftExercise(exerciseId: exId)]);
       await engine.syncNow(userId); // upload the create
 
       await db.routinesDao.deleteRoutine(routineId);
@@ -246,8 +247,8 @@ void main() {
 
   test('preferences round-trip restores weight unit + rest seconds', () async {
     // Seed a profile + non-default prefs.
-    await db.userDao.upsertProfile(
-        id: userId, email: 'a@b.com', displayName: 'A');
+    await db.userDao
+        .upsertProfile(id: userId, email: 'a@b.com', displayName: 'A');
     await db.userDao.setWeightUnit(userId, 'lbs');
     await db.userDao.setDefaultRestSeconds(userId, 120);
 

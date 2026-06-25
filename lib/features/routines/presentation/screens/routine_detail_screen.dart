@@ -217,16 +217,18 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
     final sessionStats =
         ref.watch(routineSessionStatsProvider(widget.routineId)).valueOrNull;
 
-    final lastSetsMap = lastSetsAsync.valueOrNull ??
-        const <String, List<LastSessionSetData>>{};
+    final lastSetsMap =
+        lastSetsAsync.valueOrNull ?? const <String, List<LastSessionSetData>>{};
     final isLoadingHistory =
         lastSetsAsync.isLoading && lastSetsAsync.valueOrNull == null;
 
     final exerciseCount = routine.exercises.length;
-    final lastDate = ref.watch(routineDailyVolumeProvider((widget.routineId, '6M'))
-        .select((asyncVal) => asyncVal.valueOrNull == null || asyncVal.valueOrNull!.isEmpty
-            ? null
-            : asyncVal.valueOrNull!.last.day));
+    final lastDate = ref.watch(
+        routineDailyVolumeProvider((widget.routineId, '6M')).select(
+            (asyncVal) =>
+                asyncVal.valueOrNull == null || asyncVal.valueOrNull!.isEmpty
+                    ? null
+                    : asyncVal.valueOrNull!.last.day));
     final bottomInset = MediaQuery.viewPaddingOf(context).bottom;
 
     return Scaffold(
@@ -240,13 +242,12 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
               parent: AlwaysScrollableScrollPhysics()),
           slivers: [
             _appBar(routine),
-
             SliverToBoxAdapter(
               child: _entryFade(
                 interval: const Interval(0.0, 0.32, curve: Curves.easeOutExpo),
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
-                    child: Column(
+                  child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
@@ -264,7 +265,6 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
                 ),
               ),
             ),
-
             SliverToBoxAdapter(
               child: _entryFade(
                 interval: const Interval(0.2, 0.5, curve: Curves.easeOutExpo),
@@ -277,7 +277,6 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
                 ),
               ),
             ),
-
             SliverPadding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               sliver: SliverList(
@@ -311,7 +310,6 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
                 ),
               ),
             ),
-
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(16, 20, 16, 0),
@@ -322,7 +320,6 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
                 ),
               ),
             ),
-
             SliverToBoxAdapter(child: SizedBox(height: 80 + bottomInset)),
           ],
         ),
@@ -492,7 +489,8 @@ class _RoutineVolumeSection extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<_RoutineVolumeSection> createState() => _RoutineVolumeSectionState();
+  ConsumerState<_RoutineVolumeSection> createState() =>
+      _RoutineVolumeSectionState();
 }
 
 class _RoutineVolumeSectionState extends ConsumerState<_RoutineVolumeSection> {
@@ -585,15 +583,22 @@ class _HeroStatStrip extends StatelessWidget {
       child: Row(
         children: [
           Expanded(
-              child: _HeroStat(value: '${stats.count}', label: 'SESSIONS', shadows: AppText.depthFor(context))),
+              child: _HeroStat(
+                  value: '${stats.count}',
+                  label: 'SESSIONS',
+                  shadows: AppText.depthFor(context))),
           const _StatDivider(),
           Expanded(
               child: _HeroStat(
-                  value: groupThousands(stats.bestVolumeKg), label: 'BEST KG', shadows: AppText.depthFor(context))),
+                  value: groupThousands(stats.bestVolumeKg),
+                  label: 'BEST KG',
+                  shadows: AppText.depthFor(context))),
           const _StatDivider(),
           Expanded(
               child: _HeroStat(
-                  value: groupThousands(stats.avgVolumeKg), label: 'AVG KG', shadows: AppText.depthFor(context))),
+                  value: groupThousands(stats.avgVolumeKg),
+                  label: 'AVG KG',
+                  shadows: AppText.depthFor(context))),
         ],
       ),
     );
@@ -603,8 +608,8 @@ class _HeroStatStrip extends StatelessWidget {
 class _StatDivider extends StatelessWidget {
   const _StatDivider();
   @override
-  Widget build(BuildContext context) => Container(
-      width: 1, height: 26, color: AppColors.borderSubtle);
+  Widget build(BuildContext context) =>
+      Container(width: 1, height: 26, color: AppColors.borderSubtle);
 }
 
 class _HeroStat extends StatelessWidget {
@@ -621,10 +626,12 @@ class _HeroStat extends StatelessWidget {
         FittedBox(
           fit: BoxFit.scaleDown,
           alignment: Alignment.centerLeft,
-          child: Text(value, style: AppText.heroStat(shadows: shadows), maxLines: 1),
+          child: Text(value,
+              style: AppText.heroStat(shadows: shadows), maxLines: 1),
         ),
         const SizedBox(height: 3),
-        Text(label, style: AppText.columnHeader(color: AppColors.textSecondary)),
+        Text(label,
+            style: AppText.columnHeader(color: AppColors.textSecondary)),
       ],
     );
   }
@@ -680,13 +687,16 @@ class _StartRoutineButtonState extends State<_StartRoutineButton> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Icon(empty ? Icons.add_rounded : Icons.play_arrow_rounded,
-                  color: empty ? AppColors.textSecondary : context.accent.onAccent,
+                  color:
+                      empty ? AppColors.textSecondary : context.accent.onAccent,
                   size: 22),
               const SizedBox(width: 8),
               Text(
                 empty ? 'Add an exercise' : 'Start Routine',
                 style: AppText.button(
-                    color: empty ? AppColors.textSecondary : context.accent.onAccent),
+                    color: empty
+                        ? AppColors.textSecondary
+                        : context.accent.onAccent),
               ),
             ],
           ),

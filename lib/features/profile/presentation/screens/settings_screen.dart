@@ -65,7 +65,8 @@ Future<void> showWeeklyGoalSheet(BuildContext context, WidgetRef ref) async {
                       color: days == current
                           ? accent.base
                           : AppColors.surfaceRaised,
-                      borderRadius: BorderRadius.circular(AppRadius.buttonSecondary),
+                      borderRadius:
+                          BorderRadius.circular(AppRadius.buttonSecondary),
                     ),
                     child: Text(
                       '$days',
@@ -154,7 +155,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     }
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: surface.isLight ? SystemUiOverlayStyle.dark : SystemUiOverlayStyle.light,
+      value: surface.isLight
+          ? SystemUiOverlayStyle.dark
+          : SystemUiOverlayStyle.light,
       child: Scaffold(
         backgroundColor: surface.bgBase,
         appBar: AppBar(
@@ -168,7 +171,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 size: 18, color: surface.textPrimary),
             onPressed: () => context.pop(),
           ),
-          title: Text('Settings', style: AppText.sheetTitle(color: surface.textPrimary)),
+          title: Text('Settings',
+              style: AppText.sheetTitle(color: surface.textPrimary)),
         ),
         body: SafeArea(
           child: ListView(
@@ -188,14 +192,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         subtitle: isPremium
                             ? 'Active — full history unlocked'
                             : 'Full analytics history & more',
-                        onTap: () => _openPremium(context, isPremium: isPremium),
+                        onTap: () =>
+                            _openPremium(context, isPremium: isPremium),
                       ),
                     ),
                   ],
                 ),
               ),
               const SizedBox(height: 22),
-
               _GroupHeader('PREFERENCES', color: surface.textSecondary),
               AppCard(
                 padding: EdgeInsets.zero,
@@ -205,7 +209,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       icon: Icons.scale_rounded,
                       iconColor: accent.light,
                       title: 'Weight unit',
-                      subtitle: unit == 'kg' ? 'Kilograms (kg)' : 'Pounds (lbs)',
+                      subtitle:
+                          unit == 'kg' ? 'Kilograms (kg)' : 'Pounds (lbs)',
                       onTap: () => _pickWeightUnit(context, ref, unit),
                     ),
                     const AppActionDivider(),
@@ -242,7 +247,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 ),
               ),
               const SizedBox(height: 22),
-
               _GroupHeader('DATA', color: surface.textSecondary),
               AppCard(
                 padding: EdgeInsets.zero,
@@ -272,7 +276,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 ),
               ),
               const SizedBox(height: 22),
-
               _GroupHeader('CLOUD SYNC', color: surface.textSecondary),
               AppCard(
                 padding: EdgeInsets.zero,
@@ -342,7 +345,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 ),
               ),
               const SizedBox(height: 22),
-
               _GroupHeader('HELP', color: surface.textSecondary),
               AppCard(
                 padding: EdgeInsets.zero,
@@ -366,7 +368,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       icon: Icons.gavel_rounded,
                       title: 'Terms of Service',
                       subtitle: 'The short, readable kind',
-                      onTap: () => _openExternalUrl(context, kTermsOfServiceUrl),
+                      onTap: () =>
+                          _openExternalUrl(context, kTermsOfServiceUrl),
                     ),
                     const AppActionDivider(),
                     AppActionRow(
@@ -379,7 +382,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 ),
               ),
               const SizedBox(height: 28),
-
               _SignOutButton(),
               const SizedBox(height: 10),
               Center(
@@ -461,7 +463,8 @@ class _SignOutButton extends ConsumerWidget {
   }
 }
 
-Future<void> _pickWeightUnit(BuildContext context, WidgetRef ref, String unit) async {
+Future<void> _pickWeightUnit(
+    BuildContext context, WidgetRef ref, String unit) async {
   HapticFeedback.lightImpact();
   final selected = await showBrandedPickerSheet<String>(
     context: context,
@@ -489,7 +492,8 @@ Future<void> _pickWeightUnit(BuildContext context, WidgetRef ref, String unit) a
   }
 }
 
-Future<void> _pickRestTimer(BuildContext context, WidgetRef ref, int restSeconds) async {
+Future<void> _pickRestTimer(
+    BuildContext context, WidgetRef ref, int restSeconds) async {
   HapticFeedback.lightImpact();
   final selected = await showBrandedPickerSheet<int>(
     context: context,

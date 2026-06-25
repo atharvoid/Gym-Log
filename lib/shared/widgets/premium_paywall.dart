@@ -15,7 +15,8 @@ enum PaywallSource { generic, routineLimit, chartFilter, timeRange, sync }
 /// Opens the Premium paywall as a modal bottom sheet.
 /// Safe to call when RevenueCat is unconfigured — it renders a graceful
 /// "pricing unavailable" state instead of crashing.
-Future<void> showPremiumPaywall(BuildContext context, {PaywallSource source = PaywallSource.generic}) {
+Future<void> showPremiumPaywall(BuildContext context,
+    {PaywallSource source = PaywallSource.generic}) {
   HapticFeedback.lightImpact();
   return showModalBottomSheet<void>(
     context: context,
@@ -141,20 +142,22 @@ class _PaywallSheetState extends ConsumerState<_PaywallSheet> {
   // "I didn't hire a designer." Filled icons read as intentional.
   static const _features = [
     (
-      Icons.fitness_center,       // filled
+      Icons.fitness_center, // filled
       'Unlimited routines',
       'No more $kFreeRoutineLimit-routine cap',
     ),
     (
-      Icons.sync_rounded,          // filled
+      Icons.sync_rounded, // filled
       'Sync across devices',
       'Your data, on any device',
     ),
-    (Icons.insights,              // filled
+    (
+      Icons.insights, // filled
       'Full analytics history',
       'Every chart, all of it',
     ),
-    (Icons.calendar_month,        // filled
+    (
+      Icons.calendar_month, // filled
       'All time ranges',
       '1Y and All Time unlocked',
     ),
@@ -214,8 +217,7 @@ class _PaywallSheetState extends ConsumerState<_PaywallSheet> {
 
   /// CTA + caption derive from the live offering — never hardcode trial
   /// terms the store may not actually grant.
-  String get _ctaLabel =>
-      _hasFreeTrial ? 'Start Free Trial' : 'Upgrade to Pro';
+  String get _ctaLabel => _hasFreeTrial ? 'Start Free Trial' : 'Upgrade to Pro';
 
   String get _ctaCaption {
     if (!_hasFreeTrial) return 'Cancel anytime.';
@@ -308,8 +310,7 @@ class _PaywallSheetState extends ConsumerState<_PaywallSheet> {
 
   void _snack(String message) {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content:
-          Text(message, style: AppText.body(color: AppColors.textPrimary)),
+      content: Text(message, style: AppText.body(color: AppColors.textPrimary)),
       backgroundColor: AppColors.bgSurface,
       behavior: SnackBarBehavior.floating,
     ));
@@ -355,8 +356,8 @@ class _PaywallSheetState extends ConsumerState<_PaywallSheet> {
         // Hairline border — defines the sheet edge against the black canvas.
         // This is what separates "material" from "grey blob on black."
         border: Border(
-          top:   BorderSide(color: AppColors.surface3, width: 1),
-          left:  BorderSide(color: AppColors.surface3, width: 1),
+          top: BorderSide(color: AppColors.surface3, width: 1),
+          left: BorderSide(color: AppColors.surface3, width: 1),
           right: BorderSide(color: AppColors.surface3, width: 1),
         ),
       ),
@@ -427,15 +428,17 @@ class _PaywallSheetState extends ConsumerState<_PaywallSheet> {
                                 child: ExcludeSemantics(
                                   child: Text(
                                     title,
-                                    style: AppText.body(color: AppColors.textPrimary)
+                                    style: AppText.body(
+                                            color: AppColors.textPrimary)
                                         .copyWith(fontWeight: FontWeight.w600),
                                   ),
                                 ),
                               ),
                               ExcludeSemantics(
                                 child: Text(
-                                  subtitle,           // sentence case — not .toUpperCase()
-                                  style: AppText.label(color: AppColors.textSecondary),
+                                  subtitle, // sentence case — not .toUpperCase()
+                                  style: AppText.label(
+                                      color: AppColors.textSecondary),
                                 ),
                               ),
                             ],
@@ -459,7 +462,9 @@ class _PaywallSheetState extends ConsumerState<_PaywallSheet> {
                           title: 'Yearly',
                           price: _annual!.storeProduct.priceString,
                           caption: _perMonthEquivalent(_annual!) ?? 'per year',
-                          badge: savings != null ? 'SAVE ${savings.round()}%' : null,
+                          badge: savings != null
+                              ? 'SAVE ${savings.round()}%'
+                              : null,
                           selected: _selected == _annual,
                           onTap: () => _selectPackage(_annual!),
                         ),
@@ -478,11 +483,13 @@ class _PaywallSheetState extends ConsumerState<_PaywallSheet> {
                         color: _purchasing
                             ? accent.base.withValues(alpha: 0.85)
                             : accent.base,
-                        borderRadius: BorderRadius.circular(AppRadius.buttonPrimary),
+                        borderRadius:
+                            BorderRadius.circular(AppRadius.buttonPrimary),
                         elevation: 0,
                         child: InkWell(
                           onTap: _purchasing ? null : _purchase,
-                          borderRadius: BorderRadius.circular(AppRadius.buttonPrimary),
+                          borderRadius:
+                              BorderRadius.circular(AppRadius.buttonPrimary),
                           child: Container(
                             height: 52,
                             width: double.infinity,
@@ -492,7 +499,8 @@ class _PaywallSheetState extends ConsumerState<_PaywallSheet> {
                                     width: 20,
                                     height: 20,
                                     child: CircularProgressIndicator(
-                                        color: AppColors.canvas, strokeWidth: 2),
+                                        color: AppColors.canvas,
+                                        strokeWidth: 2),
                                   )
                                 : Text(
                                     _ctaLabel,
@@ -506,7 +514,8 @@ class _PaywallSheetState extends ConsumerState<_PaywallSheet> {
                       Center(
                         child: Text(
                           _ctaCaption,
-                          style: AppText.caption(color: AppColors.textSecondary),
+                          style:
+                              AppText.caption(color: AppColors.textSecondary),
                         ),
                       ),
                     ] else ...[
@@ -522,7 +531,8 @@ class _PaywallSheetState extends ConsumerState<_PaywallSheet> {
                             padding: const EdgeInsets.symmetric(vertical: 12),
                             child: Text(
                               'Pricing unavailable. Tap to retry.',
-                              style: AppText.caption(color: AppColors.textSecondary),
+                              style: AppText.caption(
+                                  color: AppColors.textSecondary),
                               textAlign: TextAlign.center,
                             ),
                           ),
@@ -632,9 +642,7 @@ class _PackageRow extends StatelessWidget {
                         ? Icons.radio_button_checked_rounded
                         : Icons.radio_button_off_rounded,
                     size: 18,
-                    color: selected
-                        ? accent.base
-                        : AppColors.textSecondary,
+                    color: selected ? accent.base : AppColors.textSecondary,
                   ),
                   const SizedBox(width: 12),
                   Text(
@@ -646,8 +654,8 @@ class _PackageRow extends StatelessWidget {
                   if (badge != null) ...[
                     const SizedBox(width: 8),
                     Container(
-                      padding:
-                          const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 7, vertical: 2),
                       decoration: BoxDecoration(
                         color: accent.base.withValues(alpha: 0.16),
                         borderRadius: BorderRadius.circular(AppRadius.badge),
@@ -670,7 +678,8 @@ class _PackageRow extends StatelessWidget {
                     children: [
                       Text(
                         price,
-                        style: AppText.value(color: AppColors.textPrimary).copyWith(
+                        style: AppText.value(color: AppColors.textPrimary)
+                            .copyWith(
                           fontSize: 17,
                         ),
                       ),

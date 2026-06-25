@@ -132,16 +132,13 @@ class _ErrorAction extends StatelessWidget {
           height: 52,
           alignment: Alignment.center,
           decoration: BoxDecoration(
-            color: primary
-                ? AppColors.accentPrimary
-                : Colors.transparent,
+            color: primary ? AppColors.accentPrimary : Colors.transparent,
             borderRadius: primary
                 ? BorderRadius.circular(AppRadius.buttonPrimary)
                 : BorderRadius.circular(AppRadius.buttonSecondary),
             border: primary
                 ? null
-                : Border.all(
-                    color: AppColors.borderSubtle, width: 1),
+                : Border.all(color: AppColors.borderSubtle, width: 1),
           ),
           child: Text(
             label,

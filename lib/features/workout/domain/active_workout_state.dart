@@ -44,27 +44,28 @@ class ActiveWorkoutState with _$ActiveWorkoutState {
 }
 
 /// Seeds [WorkoutExerciseState]s from a saved routine's full detail, preserving
-/// each exercise's configured set count, default weight, and default reps.
-/// Both the routine-detail screen and the routine-card start path use this so
-/// a routine always opens with its saved targets, never a single blank set.
+/// each exercise's configured SET COUNT. Weight and reps stay empty (0) so each
+/// row shows the PREVIOUS session's values as a ghost hint (wired via
+/// previousSessionSetsProvider in ExerciseBlock/SetRow); the user commits it by
+/// ticking. Both the routine-detail screen and the routine-card start path use
+/// this so a routine always opens with the right number of empty rows.
 List<WorkoutExerciseState> seedExercisesFromRoutine(
     HydratedRoutineDetail routine) {
   return routine.exercises.map((he) {
     final c = he.config;
     final count = c.defaultSets > 0 ? c.defaultSets : 1;
-    final sets = List.generate(
-      count,
-      (_) => WorkoutSetState(
-        id: const Uuid().v4(),
-        weightKg: c.defaultWeightKg ?? 0.0,
-        reps: c.defaultReps ?? 0,
-      ),
-    );
+    // Seed only the set COUNT from the routine. Weight/reps stay 0 (empty) so
+    // each row shows the PREVIOUS session's value as a ghost hint (wired via
+    // previousSessionSetsProvider in ExerciseBlock/SetRow); the user commits it
+    // by ticking. Baking c.defaultWeightKg/c.defaultReps here was the source of
+    // the "random reps allocated on start" — those are routine-editor config
+    // defaults, not the user's last performance.
+    final sets = List.generate(count, (_) => WorkoutSetState.create());
     return WorkoutExerciseState(
       id: const Uuid().v4(),
       exerciseId: he.exercise.id,
       name: he.exercise.name,
-      sets: sets.isEmpty ? [WorkoutSetState.create()] : sets,
+      sets: sets,
     );
   }).toList();
 }

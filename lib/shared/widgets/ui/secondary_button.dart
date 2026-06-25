@@ -55,8 +55,9 @@ class SecondaryButton extends StatelessWidget {
         style: ElevatedButton.styleFrom(
           backgroundColor: bg,
           foregroundColor: fg,
-          disabledBackgroundColor:
-              solid ? accentColors.base.withValues(alpha: 0.6) : AppColors.bgSurface,
+          disabledBackgroundColor: solid
+              ? accentColors.base.withValues(alpha: 0.6)
+              : AppColors.bgSurface,
           disabledForegroundColor:
               solid ? accentColors.onAccent : AppColors.textDisabled,
           elevation: 0,

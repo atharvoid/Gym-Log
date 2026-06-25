@@ -157,9 +157,8 @@ class _RestAction extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: emphasized
-          ? accent.withValues(alpha: 0.16)
-          : AppColors.borderSubtle,
+      color:
+          emphasized ? accent.withValues(alpha: 0.16) : AppColors.borderSubtle,
       borderRadius: BorderRadius.circular(AppRadius.buttonSecondary),
       child: InkWell(
         borderRadius: BorderRadius.circular(AppRadius.buttonSecondary),
@@ -187,7 +186,8 @@ class _AmbientPulse extends StatefulWidget {
   final Widget child;
   final BorderRadius radius;
   final Color color;
-  const _AmbientPulse({required this.child, required this.radius, required this.color});
+  const _AmbientPulse(
+      {required this.child, required this.radius, required this.color});
 
   @override
   State<_AmbientPulse> createState() => _AmbientPulseState();

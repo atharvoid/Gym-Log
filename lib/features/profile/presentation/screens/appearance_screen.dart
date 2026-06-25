@@ -127,9 +127,8 @@ class _AccentSwatchTile extends StatelessWidget {
                 color: swatch,
                 shape: BoxShape.circle,
                 border: Border.all(
-                  color: selected
-                      ? AppColors.textPrimary
-                      : AppColors.borderSubtle,
+                  color:
+                      selected ? AppColors.textPrimary : AppColors.borderSubtle,
                   width: selected ? 2.5 : 1,
                 ),
                 boxShadow: selected
@@ -154,9 +153,8 @@ class _AccentSwatchTile extends StatelessWidget {
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
               style: AppText.caption(
-                color: selected
-                    ? AppColors.textPrimary
-                    : AppColors.textSecondary,
+                color:
+                    selected ? AppColors.textPrimary : AppColors.textSecondary,
               ),
             ),
           ],

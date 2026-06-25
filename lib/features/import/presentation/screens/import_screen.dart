@@ -132,17 +132,17 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
     });
     try {
       final result = await ref.read(workoutImportServiceProvider).import(
-            content,
-            userId: userId,
-            assumedStrongUnit: _assumedUnit,
-            onProgress: (done, total) {
-              if (!mounted) return;
-              setState(() {
-                _done = done;
-                _total = total;
-              });
-            },
-          ).timeout(const Duration(minutes: 5));
+        content,
+        userId: userId,
+        assumedStrongUnit: _assumedUnit,
+        onProgress: (done, total) {
+          if (!mounted) return;
+          setState(() {
+            _done = done;
+            _total = total;
+          });
+        },
+      ).timeout(const Duration(minutes: 5));
       if (!mounted) return;
       HapticFeedback.mediumImpact();
       setState(() {
@@ -152,7 +152,8 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
     } on TimeoutException catch (_) {
       if (!mounted) return;
       setState(() {
-        _error = 'The import timed out. Please try again with a smaller file or check your device performance.';
+        _error =
+            'The import timed out. Please try again with a smaller file or check your device performance.';
         _phase = _Phase.preview;
       });
     } catch (_) {
@@ -166,7 +167,8 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
   }
 
   SnackBar _snack(String msg) => SnackBar(
-        content: Text(msg, style: GoogleFonts.inter(color: AppColors.textPrimary)),
+        content:
+            Text(msg, style: GoogleFonts.inter(color: AppColors.textPrimary)),
         backgroundColor: AppColors.bgSurface,
         behavior: SnackBarBehavior.floating,
       );
@@ -207,8 +209,8 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
   Widget _buildBody() => switch (_phase) {
         // Spinner color omitted — inherits the active palette base via
         // app_theme's progressIndicatorTheme.
-        _Phase.loading => _centered(const CircularProgressIndicator(
-            strokeWidth: 2.5)),
+        _Phase.loading =>
+          _centered(const CircularProgressIndicator(strokeWidth: 2.5)),
         _Phase.importing => _buildImporting(),
         _Phase.done => _buildDone(),
         _Phase.preview => _buildPreview(),
@@ -250,12 +252,16 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
           ),
           const SizedBox(height: 16),
         ],
-        _PrimaryButton(label: 'Choose CSV file', icon: Icons.folder_open_rounded, onTap: _pickFile),
+        _PrimaryButton(
+            label: 'Choose CSV file',
+            icon: Icons.folder_open_rounded,
+            onTap: _pickFile),
         const SizedBox(height: 14),
         Text(
           'Your data never leaves your device during import.',
           textAlign: TextAlign.center,
-          style: GoogleFonts.inter(fontSize: 12, color: AppColors.chartAxisLabel),
+          style:
+              GoogleFonts.inter(fontSize: 12, color: AppColors.chartAxisLabel),
         ),
       ],
     );
@@ -308,7 +314,9 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
             _divider(),
             _StatRow(label: 'Exercises', value: '${s.exerciseCount}'),
             _divider(),
-            _StatRow(label: 'Total volume', value: '${groupThousands(s.totalVolumeKg)} kg'),
+            _StatRow(
+                label: 'Total volume',
+                value: '${groupThousands(s.totalVolumeKg)} kg'),
             _divider(),
             _StatRow(label: 'Date range', value: range),
           ]),
@@ -355,7 +363,8 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
           const _Banner(
             icon: Icons.task_alt_rounded,
             color: AppColors.success,
-            text: 'Everything in this file is already in GymLog. Nothing to import.',
+            text:
+                'Everything in this file is already in GymLog. Nothing to import.',
           ),
         const SizedBox(height: 12),
         Center(
@@ -449,7 +458,8 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
           child: Column(children: [
             _StatRow(label: 'Sets logged', value: '${r.setsImported}'),
             _divider(),
-            _StatRow(label: 'Personal records found', value: '${r.prsDetected}'),
+            _StatRow(
+                label: 'Personal records found', value: '${r.prsDetected}'),
             if (r.exercisesCreated.isNotEmpty) ...[
               _divider(),
               _StatRow(
@@ -537,9 +547,8 @@ class _StatRow extends StatelessWidget {
                 style: GoogleFonts.inter(
                     fontSize: emphasize ? 18 : 15,
                     fontWeight: FontWeight.w700,
-                    color: emphasize
-                        ? context.accent.base
-                        : AppColors.textPrimary,
+                    color:
+                        emphasize ? context.accent.base : AppColors.textPrimary,
                     fontFeatures: const [FontFeature.tabularFigures()])),
           ],
         ),
@@ -578,8 +587,7 @@ class _PrimaryButton extends StatelessWidget {
 }
 
 class _Banner extends StatelessWidget {
-  const _Banner(
-      {required this.icon, required this.color, required this.text});
+  const _Banner({required this.icon, required this.color, required this.text});
   final IconData icon;
   final Color color;
   final String text;
@@ -671,12 +679,11 @@ class _DetectedPill extends StatelessWidget {
       decoration: BoxDecoration(
         color: accent.base.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(AppRadius.badge),
-        border: Border.all(
-            color: accent.base.withValues(alpha: 0.30), width: 1),
+        border:
+            Border.all(color: accent.base.withValues(alpha: 0.30), width: 1),
       ),
       child: Row(mainAxisSize: MainAxisSize.min, children: [
-        Icon(Icons.check_circle_rounded,
-            size: 15, color: accent.light),
+        Icon(Icons.check_circle_rounded, size: 15, color: accent.light),
         const SizedBox(width: 7),
         Text('Detected: ${source.label}',
             style: GoogleFonts.inter(
@@ -744,7 +751,8 @@ class _UnitChooser extends StatelessWidget {
             color: Colors.black.withValues(alpha: 0.30),
             borderRadius: BorderRadius.circular(AppRadius.buttonSecondary),
           ),
-          child: Row(children: [chip('kg', 'Kilograms'), chip('lbs', 'Pounds')]),
+          child:
+              Row(children: [chip('kg', 'Kilograms'), chip('lbs', 'Pounds')]),
         ),
       ]),
     );

@@ -176,7 +176,8 @@ class _FinishSummarySheetState extends State<_FinishSummarySheet> {
                   decoration: InputDecoration(
                     labelText: 'Workout name',
                     labelStyle: AppText.caption(),
-                    counterStyle: AppText.caption(color: AppColors.textTertiary),
+                    counterStyle:
+                        AppText.caption(color: AppColors.textTertiary),
                     filled: true,
                     fillColor: AppColors.surface3,
                     contentPadding: const EdgeInsets.symmetric(
@@ -187,8 +188,7 @@ class _FinishSummarySheetState extends State<_FinishSummarySheet> {
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: AppRadius.inputAll,
-                      borderSide:
-                          BorderSide(color: accent.base, width: 1.5),
+                      borderSide: BorderSide(color: accent.base, width: 1.5),
                     ),
                   ),
                   onSubmitted: (_) => _submit(),
@@ -236,7 +236,8 @@ class _Stat extends StatelessWidget {
           child: Text(value, style: AppText.heroStat(), maxLines: 1),
         ),
         const SizedBox(height: 2),
-        Text(label, style: AppText.columnHeader(color: AppColors.textSecondary)),
+        Text(label,
+            style: AppText.columnHeader(color: AppColors.textSecondary)),
       ],
     );
   }

@@ -35,8 +35,7 @@ class PremiumService with WidgetsBindingObserver {
 
   final _customerInfoController = StreamController<CustomerInfo>.broadcast();
 
-  Stream<CustomerInfo> get customerInfoStream =>
-      _customerInfoController.stream;
+  Stream<CustomerInfo> get customerInfoStream => _customerInfoController.stream;
 
   bool get isConfigured => _configured;
 
@@ -148,8 +147,7 @@ class PremiumService with WidgetsBindingObserver {
     if (!_configured) return false;
     try {
       final result =
-          await Purchases.checkTrialOrIntroductoryPriceEligibility(
-              [productId]);
+          await Purchases.checkTrialOrIntroductoryPriceEligibility([productId]);
       final status = result[productId]?.status;
       return status == IntroEligibilityStatus.eligible;
     } catch (e) {

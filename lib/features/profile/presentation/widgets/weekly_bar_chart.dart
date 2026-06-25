@@ -87,12 +87,10 @@ class _WeeklyBarChartState extends State<WeeklyBarChart> {
     // ≥4 filled weeks across 8 weeks still unlock the full chart.
     // The gate only clips which bars render — it must not suppress the
     // threshold check that decides between chart and comparison view.
-    _filledWeeks =
-        widget.aggregates.where((a) => a.workoutCount > 0).length;
+    _filledWeeks = widget.aggregates.where((a) => a.workoutCount > 0).length;
 
-    final maxValue = values.isEmpty
-        ? 0.0
-        : values.reduce((a, b) => a > b ? a : b);
+    final maxValue =
+        values.isEmpty ? 0.0 : values.reduce((a, b) => a > b ? a : b);
 
     _interval = _niceInterval(maxValue, metric);
     _maxY = _axisMax(maxValue, metric, _interval);
@@ -190,8 +188,22 @@ class _WeeklyBarChartState extends State<WeeklyBarChart> {
     }
     // Candidate steps — always results in 3–5 ticks
     const steps = <double>[
-      1, 2, 5, 10, 20, 50, 100, 200, 500,
-      1000, 2000, 5000, 10000, 20000, 50000, 100000,
+      1,
+      2,
+      5,
+      10,
+      20,
+      50,
+      100,
+      200,
+      500,
+      1000,
+      2000,
+      5000,
+      10000,
+      20000,
+      50000,
+      100000,
     ];
     // We aim for max / step ≤ 5 ticks
     for (final step in steps) {
@@ -232,9 +244,11 @@ class _WeeklyBarChartState extends State<WeeklyBarChart> {
   /// Renders when filledWeeks < 4. Shows an honest stat comparison instead of
   /// a broken/half-empty chart sitting under a "data not ready" banner.
   Widget _buildComparisonView() {
-    final filledAggs = _gatedAggregates.where((a) => a.workoutCount > 0).toList();
+    final filledAggs =
+        _gatedAggregates.where((a) => a.workoutCount > 0).toList();
     final latest = filledAggs.isNotEmpty ? filledAggs.last : null;
-    final previous = filledAggs.length >= 2 ? filledAggs[filledAggs.length - 2] : null;
+    final previous =
+        filledAggs.length >= 2 ? filledAggs[filledAggs.length - 2] : null;
 
     final latestValue = latest?.valueFor(widget.metric) ?? 0;
     final prevValue = previous?.valueFor(widget.metric) ?? 0;
@@ -246,16 +260,19 @@ class _WeeklyBarChartState extends State<WeeklyBarChart> {
     const neededWeeks = 4;
     final progressFraction = (_filledWeeks / neededWeeks).clamp(0.0, 1.0);
 
-    final totalLoggedSamples = widget.aggregates.where((a) => a.workoutCount > 0).length;
+    final totalLoggedSamples =
+        widget.aggregates.where((a) => a.workoutCount > 0).length;
     // visibleSamples: use the gated count (how many weeks are actually shown
     // to this user tier) so the banner reflects what IS visible, not total history.
-    final gatedFilledWeeks = _gatedAggregates.where((a) => a.workoutCount > 0).length;
+    final gatedFilledWeeks =
+        _gatedAggregates.where((a) => a.workoutCount > 0).length;
     final bannerText = chartLimitBannerCopy(
           isPremium: widget.isPremium,
           totalLoggedSamples: totalLoggedSamples,
           visibleSamples: gatedFilledWeeks,
           minSamplesForTrend: neededWeeks,
-        ) ?? '';
+        ) ??
+        '';
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -403,8 +420,8 @@ class _WeeklyBarChartState extends State<WeeklyBarChart> {
                     },
                   ),
                 ),
-                rightTitles: const AxisTitles(
-                    sideTitles: SideTitles(showTitles: false)),
+                rightTitles:
+                    const AxisTitles(sideTitles: SideTitles(showTitles: false)),
                 leftTitles: AxisTitles(
                   sideTitles: SideTitles(
                     showTitles: true,
@@ -553,9 +570,9 @@ class _WeeklyBarChartState extends State<WeeklyBarChart> {
         : null;
     String change = '';
     if (previous != null && previous.valueFor(widget.metric) != 0) {
-      final delta = (latest.valueFor(widget.metric) -
-              previous.valueFor(widget.metric)) /
-          previous.valueFor(widget.metric);
+      final delta =
+          (latest.valueFor(widget.metric) - previous.valueFor(widget.metric)) /
+              previous.valueFor(widget.metric);
       final pct = (delta * 100).round().abs();
       final direction = delta >= 0 ? 'up' : 'down';
       change = ', $direction $pct percent from previous week';

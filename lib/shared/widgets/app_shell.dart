@@ -5,6 +5,7 @@ import '../../features/workout/presentation/providers/active_workout_provider.da
 import '../../core/services/workout_draft_store.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text.dart';
+import '../../core/theme/dynamic_accent_theme.dart';
 import 'active_workout_bar.dart';
 import 'bottom_nav_bar.dart';
 
@@ -37,6 +38,8 @@ class _AppShellState extends ConsumerState<AppShell> {
     final store = ref.read(workoutDraftStoreProvider);
     final draft = await store.load(); // null if none / older than 24h
     if (draft == null || !mounted) return;
+
+    final accent = context.accent;
 
     final mins = DateTime.now().difference(draft.startTime).inMinutes;
     final ago = mins < 1
@@ -75,20 +78,19 @@ class _AppShellState extends ConsumerState<AppShell> {
                 // Icon badge
                 Container(
                   decoration: BoxDecoration(
-                    color: AppColors.indigoTint,
+                    color: accent.muted,
                     borderRadius: BorderRadius.circular(10),
                   ),
                   padding: const EdgeInsets.all(12),
-                  child: const Icon(
+                  child: Icon(
                     Icons.fitness_center_rounded,
                     size: 36,
-                    color: AppColors.accentText,
+                    color: accent.light,
                   ),
                 ),
                 const SizedBox(height: 16),
                 Text('Resume Workout?',
-                    style: AppText.sheetTitle(),
-                    textAlign: TextAlign.center),
+                    style: AppText.sheetTitle(), textAlign: TextAlign.center),
                 const SizedBox(height: 8),
                 Text(
                   'You have an unfinished workout started $ago. Continue where you left off.',
@@ -102,14 +104,15 @@ class _AppShellState extends ConsumerState<AppShell> {
                   height: 50,
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.accentPrimary,
-                      foregroundColor: AppColors.textPrimary,
+                      backgroundColor: accent.base,
+                      foregroundColor: accent.onAccent,
                       elevation: 0,
                       shape: const RoundedRectangleBorder(
                           borderRadius: AppRadius.buttonPrimaryAll),
                     ),
                     onPressed: () => Navigator.of(sheetCtx).pop(true),
-                    child: Text('Resume Workout', style: AppText.button()),
+                    child: Text('Resume Workout',
+                        style: AppText.button(color: accent.onAccent)),
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -163,8 +166,9 @@ class _AppShellState extends ConsumerState<AppShell> {
         mainAxisSize: MainAxisSize.min,
         children: [
           AnimatedSwitcher(
-            duration:
-                reduceMotion ? Duration.zero : const Duration(milliseconds: 280),
+            duration: reduceMotion
+                ? Duration.zero
+                : const Duration(milliseconds: 280),
             switchInCurve: Curves.easeOutCubic,
             switchOutCurve: Curves.easeOutCubic,
             transitionBuilder: (child, animation) {

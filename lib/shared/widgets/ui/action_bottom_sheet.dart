@@ -153,7 +153,8 @@ class _ActionSheetItemWidget extends StatelessWidget {
                           // 16/500 — off the standard scale, so derive the family
                           // from AppText.button and pin the medium weight here.
                           style: AppText.button(
-                                  color: item.titleColor ?? AppColors.textPrimary)
+                                  color:
+                                      item.titleColor ?? AppColors.textPrimary)
                               .copyWith(fontWeight: FontWeight.w500),
                         ),
                         if (item.subtitle != null) ...[

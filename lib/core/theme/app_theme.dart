@@ -47,198 +47,173 @@ TextStyle _ct({
 /// The app is AMOLED-dark for every palette — White is a white ACCENT, not a
 /// light theme — so this always returns a [Brightness.dark] ThemeData built
 /// from [SurfaceTokens.dark].
-ThemeData buildAppTheme(ThemePaletteTokens tokens, {ThemePalette palette = ThemePalette.neonPurple}) {
+ThemeData buildAppTheme(ThemePaletteTokens tokens,
+    {ThemePalette palette = ThemePalette.neonPurple}) {
   // AMOLED dark for every palette. White is a white ACCENT, not a light theme.
   const s = SurfaceTokens.dark;
 
   return ThemeData(
-      useMaterial3: true,
-      brightness: Brightness.dark,
-      fontFamily: GoogleFonts.inter().fontFamily,
+    useMaterial3: true,
+    brightness: Brightness.dark,
+    fontFamily: GoogleFonts.inter().fontFamily,
 
-      // Live accent tokens, readable anywhere via `context.accent`.
-      extensions: <ThemeExtension<dynamic>>[
-        AccentColors.fromTokens(tokens, palette),
-      ],
+    // Live accent tokens, readable anywhere via `context.accent`.
+    extensions: <ThemeExtension<dynamic>>[
+      AccentColors.fromTokens(tokens, palette),
+    ],
 
-      colorScheme: ColorScheme.dark(
-        surface: s.bgBase,
-        surfaceContainerHighest: s.bgSurface,
-        primary: tokens.base,
-        onPrimary: tokens.onAccent,
-        secondary: tokens.light,
-        onSecondary: s.bgBase,
-        error: AppColors.error,
-        onSurface: s.textPrimary,
-        onSurfaceVariant: s.textSecondary,
-        outline: s.borderSubtle,
+    colorScheme: ColorScheme.dark(
+      surface: s.bgBase,
+      surfaceContainerHighest: s.bgSurface,
+      primary: tokens.base,
+      onPrimary: tokens.onAccent,
+      secondary: tokens.light,
+      onSecondary: s.bgBase,
+      error: AppColors.error,
+      onSurface: s.textPrimary,
+      onSurfaceVariant: s.textSecondary,
+      outline: s.borderSubtle,
+    ),
+
+    scaffoldBackgroundColor: s.bgBase,
+    cardColor: s.bgSurface,
+    dividerColor: s.borderSubtle,
+
+    appBarTheme: AppBarTheme(
+      backgroundColor: s.bgBase,
+      elevation: 0,
+      scrolledUnderElevation: 0,
+      surfaceTintColor: Colors.transparent,
+      centerTitle: false,
+      systemOverlayStyle: SystemUiOverlayStyle.light
+          .copyWith(statusBarColor: Colors.transparent),
+      iconTheme: IconThemeData(color: s.textPrimary),
+      titleTextStyle: _ct(
+        fontSize: 20,
+        fontWeight: FontWeight.w700,
+        color: s.textPrimary,
       ),
+    ),
 
-      scaffoldBackgroundColor: s.bgBase,
-      cardColor: s.bgSurface,
-      dividerColor: s.borderSubtle,
+    // Bottom sheets → 20px top corners, Surface 2.
+    bottomSheetTheme: BottomSheetThemeData(
+      backgroundColor: s.surface2,
+      elevation: 0,
+      shape: const RoundedRectangleBorder(borderRadius: AppRadius.sheetTop),
+    ),
 
-      appBarTheme: AppBarTheme(
-        backgroundColor: s.bgBase,
-        elevation: 0,
-        scrolledUnderElevation: 0,
-        surfaceTintColor: Colors.transparent,
-        centerTitle: false,
-        systemOverlayStyle: SystemUiOverlayStyle.light.copyWith(statusBarColor: Colors.transparent),
-        iconTheme: IconThemeData(color: s.textPrimary),
-        titleTextStyle: _ct(
-          fontSize: 20,
-          fontWeight: FontWeight.w700,
-          color: s.textPrimary,
-        ),
+    // Cards → 16px radius + 1px subtle border (no shadow).
+    cardTheme: CardThemeData(
+      elevation: 0,
+      color: s.bgSurface,
+      shadowColor: Colors.transparent,
+      shape: RoundedRectangleBorder(
+        borderRadius: AppRadius.cardAll,
+        side: BorderSide(color: s.borderSubtle),
       ),
+    ),
 
-      // Bottom sheets → 20px top corners, Surface 2.
-      bottomSheetTheme: BottomSheetThemeData(
-        backgroundColor: s.surface2,
-        elevation: 0,
-        shape: const RoundedRectangleBorder(borderRadius: AppRadius.sheetTop),
+    // Inputs → Surface 3 fill, border, accent focus ring.
+    inputDecorationTheme: InputDecorationTheme(
+      filled: true,
+      fillColor: s.surface3,
+      border: OutlineInputBorder(
+        borderRadius: AppRadius.inputAll,
+        borderSide: BorderSide(color: s.borderDefault),
       ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: AppRadius.inputAll,
+        borderSide: BorderSide(color: s.borderDefault),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: AppRadius.inputAll,
+        borderSide: BorderSide(color: tokens.base, width: 2),
+      ),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      hintStyle: _ct(
+        fontSize: 16,
+        fontWeight: FontWeight.w400,
+        color: s.textTertiary,
+      ),
+    ),
 
-      // Cards → 16px radius + 1px subtle border (no shadow).
-      cardTheme: CardThemeData(
+    // Primary CTA → 12px slightly rounded, accent fill, on-accent text, 52px.
+    elevatedButtonTheme: ElevatedButtonThemeData(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: tokens.base,
+        foregroundColor: tokens.onAccent,
         elevation: 0,
-        color: s.bgSurface,
         shadowColor: Colors.transparent,
-        shape: RoundedRectangleBorder(
-          borderRadius: AppRadius.cardAll,
-          side: BorderSide(color: s.borderSubtle),
-        ),
+        minimumSize: const Size(0, 52),
+        shape: const RoundedRectangleBorder(
+            borderRadius: AppRadius.buttonPrimaryAll),
+        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 28),
+        textStyle: _ct(fontWeight: FontWeight.w600, fontSize: 16),
       ),
+    ),
 
-      // Inputs → Surface 3 fill, border, accent focus ring.
-      inputDecorationTheme: InputDecorationTheme(
-        filled: true,
-        fillColor: s.surface3,
-        border: OutlineInputBorder(
-          borderRadius: AppRadius.inputAll,
-          borderSide: BorderSide(color: s.borderDefault),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: AppRadius.inputAll,
-          borderSide: BorderSide(color: s.borderDefault),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: AppRadius.inputAll,
-          borderSide: BorderSide(color: tokens.base, width: 2),
-        ),
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        hintStyle: _ct(
-          fontSize: 16,
-          fontWeight: FontWeight.w400,
-          color: s.textTertiary,
-        ),
+    textButtonTheme: TextButtonThemeData(
+      style: TextButton.styleFrom(
+        foregroundColor: tokens.light,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        textStyle: _ct(fontWeight: FontWeight.w600, fontSize: 16),
       ),
+    ),
 
-      // Primary CTA → 12px slightly rounded, accent fill, on-accent text, 52px.
-      elevatedButtonTheme: ElevatedButtonThemeData(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: tokens.base,
-          foregroundColor: tokens.onAccent,
-          elevation: 0,
-          shadowColor: Colors.transparent,
-          minimumSize: const Size(0, 52),
-          shape: const RoundedRectangleBorder(
-              borderRadius: AppRadius.buttonPrimaryAll),
-          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 28),
-          textStyle: _ct(fontWeight: FontWeight.w600, fontSize: 16),
-        ),
+    iconButtonTheme: IconButtonThemeData(
+      style: IconButton.styleFrom(foregroundColor: s.textPrimary),
+    ),
+
+    // Switches default to the accent when on.
+    switchTheme: SwitchThemeData(
+      thumbColor: WidgetStateProperty.resolveWith(
+        (states) =>
+            states.contains(WidgetState.selected) ? tokens.onAccent : null,
       ),
-
-      textButtonTheme: TextButtonThemeData(
-        style: TextButton.styleFrom(
-          foregroundColor: tokens.light,
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          textStyle: _ct(fontWeight: FontWeight.w600, fontSize: 16),
-        ),
+      trackColor: WidgetStateProperty.resolveWith(
+        (states) => states.contains(WidgetState.selected) ? tokens.base : null,
       ),
+    ),
 
-      iconButtonTheme: IconButtonThemeData(
-        style: IconButton.styleFrom(foregroundColor: s.textPrimary),
-      ),
+    // Bare CircularProgressIndicators (no explicit color) follow the accent.
+    progressIndicatorTheme: ProgressIndicatorThemeData(
+      color: tokens.base,
+    ),
 
-      // Switches default to the accent when on.
-      switchTheme: SwitchThemeData(
-        thumbColor: WidgetStateProperty.resolveWith(
-          (states) => states.contains(WidgetState.selected)
-              ? tokens.onAccent
-              : null,
-        ),
-        trackColor: WidgetStateProperty.resolveWith(
-          (states) =>
-              states.contains(WidgetState.selected) ? tokens.base : null,
-        ),
-      ),
+    textTheme: TextTheme(
+      // Headers / titles
+      displayLarge:
+          _ct(fontSize: 32, fontWeight: FontWeight.w700, color: s.textPrimary),
+      headlineLarge:
+          _ct(fontSize: 28, fontWeight: FontWeight.w700, color: s.textPrimary),
+      headlineMedium:
+          _ct(fontSize: 24, fontWeight: FontWeight.w700, color: s.textPrimary),
+      titleLarge:
+          _ct(fontSize: 20, fontWeight: FontWeight.w700, color: s.textPrimary),
 
-      // Bare CircularProgressIndicators (no explicit color) follow the accent.
-      progressIndicatorTheme: ProgressIndicatorThemeData(
-        color: tokens.base,
-      ),
+      // Component labels / values
+      titleMedium:
+          _ct(fontSize: 16, fontWeight: FontWeight.w600, color: s.textPrimary),
+      titleSmall:
+          _ct(fontSize: 14, fontWeight: FontWeight.w600, color: s.textPrimary),
 
-      textTheme: TextTheme(
-        // Headers / titles
-        displayLarge: _ct(
-            fontSize: 32,
-            fontWeight: FontWeight.w700,
-            color: s.textPrimary),
-        headlineLarge: _ct(
-            fontSize: 28,
-            fontWeight: FontWeight.w700,
-            color: s.textPrimary),
-        headlineMedium: _ct(
-            fontSize: 24,
-            fontWeight: FontWeight.w700,
-            color: s.textPrimary),
-        titleLarge: _ct(
-            fontSize: 20,
-            fontWeight: FontWeight.w700,
-            color: s.textPrimary),
+      // Body
+      bodyLarge:
+          _ct(fontSize: 16, fontWeight: FontWeight.w400, color: s.textPrimary),
+      bodyMedium: _ct(
+          fontSize: 15, fontWeight: FontWeight.w400, color: s.textSecondary),
+      bodySmall: _ct(
+          fontSize: 12, fontWeight: FontWeight.w400, color: s.textSecondary),
 
-        // Component labels / values
-        titleMedium: _ct(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-            color: s.textPrimary),
-        titleSmall: _ct(
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-            color: s.textPrimary),
-
-        // Body
-        bodyLarge: _ct(
-            fontSize: 16,
-            fontWeight: FontWeight.w400,
-            color: s.textPrimary),
-        bodyMedium: _ct(
-            fontSize: 15,
-            fontWeight: FontWeight.w400,
-            color: s.textSecondary),
-        bodySmall: _ct(
-            fontSize: 12,
-            fontWeight: FontWeight.w400,
-            color: s.textSecondary),
-
-        // Labels
-        labelLarge: _ct(
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-            color: s.textSecondary),
-        labelMedium: _ct(
-            fontSize: 12,
-            fontWeight: FontWeight.w600,
-            color: s.textSecondary),
-        labelSmall: _ct(
-            fontSize: 11,
-            fontWeight: FontWeight.w600,
-            color: s.textTertiary),
-      ),
-    );
+      // Labels
+      labelLarge: _ct(
+          fontSize: 14, fontWeight: FontWeight.w600, color: s.textSecondary),
+      labelMedium: _ct(
+          fontSize: 12, fontWeight: FontWeight.w600, color: s.textSecondary),
+      labelSmall:
+          _ct(fontSize: 11, fontWeight: FontWeight.w600, color: s.textTertiary),
+    ),
+  );
 }
 
 // ── High-contrast variant ───────────────────────────────────────────────────
@@ -248,7 +223,8 @@ const _hcSecondary = Color(0xFFD2D2D7);
 const _hcBorder = Color(0xFF8A8A8E);
 
 /// High-contrast variant of [buildAppTheme] for the given accent tokens.
-ThemeData buildHighContrastTheme(ThemePaletteTokens tokens, {ThemePalette palette = ThemePalette.neonPurple}) {
+ThemeData buildHighContrastTheme(ThemePaletteTokens tokens,
+    {ThemePalette palette = ThemePalette.neonPurple}) {
   final base = buildAppTheme(tokens, palette: palette);
   const hcSecondary = _hcSecondary;
   const hcBorder = _hcBorder;
@@ -271,6 +247,8 @@ ThemeData buildHighContrastTheme(ThemePaletteTokens tokens, {ThemePalette palett
 /// Default-accent theme. Used by surfaces that build before the provider scope
 /// exists (e.g. the DB-recovery MaterialApp). Normal screens use the reactive
 /// [buildAppTheme] wired in app.dart.
-final appTheme = buildAppTheme(ThemePalette.fallback.tokens, palette: ThemePalette.fallback);
-final appHighContrastTheme =
-    buildHighContrastTheme(ThemePalette.fallback.tokens, palette: ThemePalette.fallback);
+final appTheme =
+    buildAppTheme(ThemePalette.fallback.tokens, palette: ThemePalette.fallback);
+final appHighContrastTheme = buildHighContrastTheme(
+    ThemePalette.fallback.tokens,
+    palette: ThemePalette.fallback);

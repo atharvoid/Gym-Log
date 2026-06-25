@@ -8,7 +8,8 @@ class UserProfiles extends Table {
   BoolColumn get isPremium => boolean().withDefault(const Constant(false))();
   DateTimeColumn get premiumExpiry => dateTime().nullable()();
   TextColumn get weightUnit => text().withDefault(const Constant('kg'))();
-  IntColumn get defaultRestSeconds => integer().withDefault(const Constant(90))();
+  IntColumn get defaultRestSeconds =>
+      integer().withDefault(const Constant(90))();
   DateTimeColumn get createdAt => dateTime()();
 
   @override

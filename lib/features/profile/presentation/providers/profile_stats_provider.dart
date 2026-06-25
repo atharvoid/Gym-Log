@@ -185,12 +185,9 @@ final weeklyAggregatesProvider = Provider<List<WeeklyAggregate>>((ref) {
     for (final week in weeks)
       WeeklyAggregate(
         weekStart: week,
-        volumeKg: byWeek[week]
-                ?.fold<double>(0, (sum, s) => sum + s.volumeKg) ??
-            0,
-        totalReps: byWeek[week]
-                ?.fold<int>(0, (sum, s) => sum + s.reps) ??
-            0,
+        volumeKg:
+            byWeek[week]?.fold<double>(0, (sum, s) => sum + s.volumeKg) ?? 0,
+        totalReps: byWeek[week]?.fold<int>(0, (sum, s) => sum + s.reps) ?? 0,
         duration: Duration(
           minutes: byWeek[week]?.fold<int>(
                 0,
@@ -231,6 +228,7 @@ class ProfileChartMetricNotifier extends StateNotifier<ProfileGraphMetric> {
 }
 
 final profileChartMetricProvider =
-    StateNotifierProvider<ProfileChartMetricNotifier, ProfileGraphMetric>((ref) {
+    StateNotifierProvider<ProfileChartMetricNotifier, ProfileGraphMetric>(
+        (ref) {
   return ProfileChartMetricNotifier();
 });

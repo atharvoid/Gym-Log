@@ -184,58 +184,58 @@ class _PrCelebrationState extends State<_PrCelebration>
                                     '${pr.previousBest1rm > 0 ? ', up from ${_fmtKg(pr.previousBest1rm)} kilograms' : ', first record'}',
                                 excludeSemantics: true,
                                 child: Padding(
-                                padding: const EdgeInsets.only(bottom: 10),
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 14, vertical: 12),
-                                  decoration: const BoxDecoration(
-                                    color: AppColors.borderDefault,
-                                    borderRadius: AppRadius.badgeAll,
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      Expanded(
-                                        child: Column(
+                                  padding: const EdgeInsets.only(bottom: 10),
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 14, vertical: 12),
+                                    decoration: const BoxDecoration(
+                                      color: AppColors.borderDefault,
+                                      borderRadius: AppRadius.badgeAll,
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                pr.exerciseName,
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                                style: AppText.rowLabel(),
+                                              ),
+                                              const SizedBox(height: 2),
+                                              Text(
+                                                '${_fmtKg(pr.weightKg)} kg × ${pr.reps} reps',
+                                                style: AppText.caption(),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        Column(
                                           crossAxisAlignment:
-                                              CrossAxisAlignment.start,
+                                              CrossAxisAlignment.end,
                                           children: [
+                                            // The beaten 1RM — the headline number
+                                            // — in immutable achievement gold.
                                             Text(
-                                              pr.exerciseName,
-                                              maxLines: 1,
-                                              overflow: TextOverflow.ellipsis,
-                                              style: AppText.rowLabel(),
+                                              '${_fmtKg(pr.estimated1rm)} kg',
+                                              style: AppText.value(
+                                                  color: AppColors.rewardGold),
                                             ),
-                                            const SizedBox(height: 2),
                                             Text(
-                                              '${_fmtKg(pr.weightKg)} kg × ${pr.reps} reps',
+                                              pr.previousBest1rm > 0
+                                                  ? 'prev ${_fmtKg(pr.previousBest1rm)} kg'
+                                                  : 'first 1RM',
                                               style: AppText.caption(),
                                             ),
                                           ],
                                         ),
-                                      ),
-                                      Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.end,
-                                        children: [
-                                          // The beaten 1RM — the headline number
-                                          // — in immutable achievement gold.
-                                          Text(
-                                            '${_fmtKg(pr.estimated1rm)} kg',
-                                            style: AppText.value(
-                                                color: AppColors.rewardGold),
-                                          ),
-                                          Text(
-                                            pr.previousBest1rm > 0
-                                                ? 'prev ${_fmtKg(pr.previousBest1rm)} kg'
-                                                : 'first 1RM',
-                                            style: AppText.caption(),
-                                          ),
-                                        ],
-                                      ),
-                                    ],
+                                      ],
+                                    ),
                                   ),
                                 ),
-                              ),
                               ),
                           ],
                         ),

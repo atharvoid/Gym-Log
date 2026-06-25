@@ -157,8 +157,7 @@ class _CreateExerciseDialogState extends ConsumerState<_CreateExerciseDialog> {
     final accent = context.accent;
     return Dialog(
       backgroundColor: AppColors.surface2,
-      shape: const RoundedRectangleBorder(
-          borderRadius: AppRadius.cardAll),
+      shape: const RoundedRectangleBorder(borderRadius: AppRadius.cardAll),
       insetPadding: const EdgeInsets.symmetric(horizontal: 28, vertical: 24),
       child: Padding(
         padding: const EdgeInsets.fromLTRB(22, 20, 22, 14),
@@ -194,8 +193,7 @@ class _CreateExerciseDialogState extends ConsumerState<_CreateExerciseDialog> {
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: AppRadius.inputAll,
-                  borderSide:
-                      BorderSide(color: accent.light, width: 1.5),
+                  borderSide: BorderSide(color: accent.light, width: 1.5),
                 ),
               ),
             ),
@@ -400,13 +398,11 @@ class _OptionRow extends StatelessWidget {
               Expanded(
                 child: Text(label,
                     style: AppText.body(
-                        color: selected
-                            ? accent.light
-                            : AppColors.textPrimary)),
+                        color:
+                            selected ? accent.light : AppColors.textPrimary)),
               ),
               if (selected)
-                Icon(Icons.check_rounded,
-                    size: 18, color: accent.base),
+                Icon(Icons.check_rounded, size: 18, color: accent.base),
             ],
           ),
         ),

@@ -94,8 +94,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       backgroundColor: AppColors.bgBase,
       appBar: _appBar(),
       body: RefreshIndicator(
-        onRefresh: () =>
-            ref.read(workoutHistoryProvider.notifier).refresh(),
+        onRefresh: () => ref.read(workoutHistoryProvider.notifier).refresh(),
         color: AppColors.textPrimary,
         backgroundColor: AppColors.surface2,
         child: ListView.builder(

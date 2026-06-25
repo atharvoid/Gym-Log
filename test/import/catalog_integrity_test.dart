@@ -39,8 +39,12 @@ void main() {
       final hasGif = e['gif'] == true;
       final id = e['id'] as String;
       // Synthetic ids (no GIF yet) are prefixed "g"; real ExerciseDB ids are numeric.
-      if (hasGif) expect(id.startsWith('g'), isFalse, reason: '$id should be real');
-      if (id.startsWith('g')) expect(hasGif, isFalse, reason: '$id must have no GIF');
+      if (hasGif) {
+        expect(id.startsWith('g'), isFalse, reason: '$id should be real');
+      }
+      if (id.startsWith('g')) {
+        expect(hasGif, isFalse, reason: '$id must have no GIF');
+      }
     }
   });
 
@@ -51,13 +55,15 @@ void main() {
         uncovered.add(e['target'] as String);
       }
     }
-    expect(uncovered, isEmpty, reason: 'targets missing from taxonomy: $uncovered');
+    expect(uncovered, isEmpty,
+        reason: 'targets missing from taxonomy: $uncovered');
   });
 
   test('real Hevy/Strong export names LINK to the catalog (no duplicates)', () {
     // Build the matcher exactly as the import service does.
     final matcher = ExerciseMatcher([
-      for (var i = 0; i < ex.length; i++) ExerciseRef(i, ex[i]['name'] as String),
+      for (var i = 0; i < ex.length; i++)
+        ExerciseRef(i, ex[i]['name'] as String),
     ]);
 
     const sampleNames = [
@@ -75,7 +81,8 @@ void main() {
     ];
 
     for (final n in sampleNames) {
-      expect(matcher.match(n), isNotNull, reason: '"$n" should link, not duplicate');
+      expect(matcher.match(n), isNotNull,
+          reason: '"$n" should link, not duplicate');
     }
   });
 }

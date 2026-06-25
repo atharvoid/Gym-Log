@@ -33,7 +33,8 @@ class WorkoutExercises extends Table {
 @DataClassName('WorkoutSet')
 class WorkoutSets extends Table {
   TextColumn get id => text().clientDefault(() => const Uuid().v4())();
-  TextColumn get workoutExerciseId => text().references(WorkoutExercises, #id)();
+  TextColumn get workoutExerciseId =>
+      text().references(WorkoutExercises, #id)();
   IntColumn get exerciseId => integer()();
   IntColumn get orderIndex => integer()();
   TextColumn get setType => text().withDefault(const Constant('normal'))();

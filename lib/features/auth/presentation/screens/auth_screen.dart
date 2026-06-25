@@ -44,8 +44,8 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
   void _snack(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content:
-            Text(message, style: GoogleFonts.inter(color: AppColors.textPrimary)),
+        content: Text(message,
+            style: GoogleFonts.inter(color: AppColors.textPrimary)),
         backgroundColor: AppColors.bgSurface,
         behavior: SnackBarBehavior.floating,
       ),
@@ -53,8 +53,8 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
   }
 
   Future<void> _openUrl(String url) async {
-    final ok = await launchUrl(Uri.parse(url),
-        mode: LaunchMode.externalApplication);
+    final ok =
+        await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
     if (!ok && mounted) _snack("Couldn't open the link.");
   }
 
@@ -81,7 +81,8 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                     minHeight: constraints.maxHeight,
                   ),
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 48),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 24, vertical: 48),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.center,
@@ -105,7 +106,6 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                           ),
                         ),
                         const SizedBox(height: 64),
-                        
                         SizedBox(
                           width: double.infinity,
                           height: 52,
@@ -123,7 +123,8 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                                     height: 20,
                                     child: CircularProgressIndicator(
                                       strokeWidth: 2,
-                                      valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF1F1F1F)),
+                                      valueColor: AlwaysStoppedAnimation<Color>(
+                                          Color(0xFF1F1F1F)),
                                     ),
                                   )
                                 : Row(
@@ -147,14 +148,14 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                           ),
                         ),
                         const SizedBox(height: 24),
-                        
                         Semantics(
                           button: true,
                           child: Wrap(
                             alignment: WrapAlignment.center,
                             crossAxisAlignment: WrapCrossAlignment.center,
                             children: [
-                              Text('By continuing, you agree to our ', style: fine),
+                              Text('By continuing, you agree to our ',
+                                  style: fine),
                               _LegalLink(
                                 label: 'Terms of Service',
                                 onTap: () => _openUrl(kTermsOfServiceUrl),

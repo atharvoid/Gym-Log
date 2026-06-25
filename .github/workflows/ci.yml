@@ -6,9 +6,9 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, 'remediation/**']
   pull_request:
-    branches: [main]
+    branches: [main, 'remediation/**']
 
 # Cancel superseded runs on the same branch to save Actions minutes.
 concurrency:

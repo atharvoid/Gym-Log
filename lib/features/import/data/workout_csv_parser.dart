@@ -39,7 +39,8 @@ abstract final class WorkoutCsvParser {
   /// Parses [text]. [assumedStrongUnit] ('kg' | 'lbs') is used only when a
   /// Strong file omits its "Weight Unit" column. Throws [ImportException] on
   /// an empty or unrecognised file.
-  static ImportParseResult parse(String text, {String assumedStrongUnit = 'kg'}) {
+  static ImportParseResult parse(String text,
+      {String assumedStrongUnit = 'kg'}) {
     if (text.trim().isEmpty) {
       throw ImportException('The file is empty.');
     }
@@ -155,7 +156,8 @@ abstract final class WorkoutCsvParser {
 
       final setOrder = cell('set order').toLowerCase();
       final notes = cell('notes');
-      final isWarmup = setOrder == 'w' || notes.trim().toLowerCase() == 'warmup';
+      final isWarmup =
+          setOrder == 'w' || notes.trim().toLowerCase() == 'warmup';
 
       final duration = _parseDuration(cell('workout duration'));
       builder.add(

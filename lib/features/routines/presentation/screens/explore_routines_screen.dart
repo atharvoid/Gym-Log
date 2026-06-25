@@ -16,7 +16,6 @@ import 'package:gymlog/shared/widgets/premium_paywall.dart';
 import 'package:gymlog/shared/widgets/ui/muscle_glyph.dart';
 import 'package:gymlog/shared/widgets/ui/primary_button.dart';
 
-
 String _dominantMuscle(String focus) {
   final tokens = focus.split(' · ');
   for (final t in tokens) {
@@ -295,7 +294,6 @@ class _ExploreRoutinesScreenState extends ConsumerState<ExploreRoutinesScreen>
               background: _HeroGlow(),
             ),
           ),
-
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(
@@ -324,13 +322,11 @@ class _ExploreRoutinesScreenState extends ConsumerState<ExploreRoutinesScreen>
               ),
             ),
           ),
-
           SliverPersistentHeader(
             pinned: true,
-            delegate: _FilterHeaderDelegate(
-                selected: _filter, onSelect: _setFilter),
+            delegate:
+                _FilterHeaderDelegate(selected: _filter, onSelect: _setFilter),
           ),
-
           SliverPadding(
             padding: EdgeInsets.fromLTRB(
                 AppSpacing.screenH, 8, AppSpacing.screenH, 24 + bottomInset),
@@ -344,8 +340,7 @@ class _ExploreRoutinesScreenState extends ConsumerState<ExploreRoutinesScreen>
                       final imported = _isImported(template, existingIds);
                       final routineId = _routineId(template, existingIds);
                       child = Padding(
-                        padding:
-                            const EdgeInsets.only(bottom: AppSpacing.x5),
+                        padding: const EdgeInsets.only(bottom: AppSpacing.x5),
                         child: _FeaturedCard(
                           template: template,
                           ramp: ramp,
@@ -403,8 +398,8 @@ class _HeroTitle extends StatelessWidget {
   const _HeroTitle();
 
   @override
-  Widget build(BuildContext context) =>
-      Text('Explore', style: AppText.sectionHeading(
+  Widget build(BuildContext context) => Text('Explore',
+      style: AppText.sectionHeading(
           color: context.surface.textPrimary,
           shadows: AppText.depthFor(context)));
 }
@@ -534,7 +529,6 @@ class _FilterChip extends StatelessWidget {
   }
 }
 
-
 class _Reveal extends StatelessWidget {
   final int index;
   final AnimationController controller;
@@ -549,7 +543,8 @@ class _Reveal extends StatelessWidget {
     const span = 0.45;
     final curvedAnimation = CurvedAnimation(
       parent: controller,
-      curve: Interval(start, (start + span).clamp(0.0, 1.0), curve: Curves.easeOutCubic),
+      curve: Interval(start, (start + span).clamp(0.0, 1.0),
+          curve: Curves.easeOutCubic),
     );
     return FadeTransition(
       opacity: curvedAnimation,
@@ -581,7 +576,8 @@ class _SectionHeader extends StatelessWidget {
             Text(label.toUpperCase(),
                 style: AppText.columnHeader(color: surface.textSecondary)),
             const SizedBox(width: 8),
-            Text('$count', style: AppText.statLabel(color: surface.textSecondary)),
+            Text('$count',
+                style: AppText.statLabel(color: surface.textSecondary)),
           ],
         ),
       ),
@@ -693,18 +689,19 @@ class _FeaturedCard extends StatelessWidget {
                               const SizedBox(width: 14),
                               Expanded(
                                 child: Column(
-                                  crossAxisAlignment:
-                                      CrossAxisAlignment.start,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(template.name,
                                         style: AppText.sectionHeading(
                                             color: surface.textPrimary,
-                                            shadows: AppText.depthFor(context))),
+                                            shadows:
+                                                AppText.depthFor(context))),
                                     const SizedBox(height: 3),
                                     Text(template.focus,
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
-                                        style: AppText.meta(color: surface.textSecondary)),
+                                        style: AppText.meta(
+                                            color: surface.textSecondary)),
                                   ],
                                 ),
                               ),
@@ -844,7 +841,8 @@ class _TemplateCard extends StatelessWidget {
                                   Text(template.focus,
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
-                                      style: AppText.meta(color: surface.textSecondary)),
+                                      style: AppText.meta(
+                                          color: surface.textSecondary)),
                                 ],
                               ),
                             ),
@@ -887,8 +885,8 @@ class _TemplateCard extends StatelessWidget {
                               '$preview${extra > 0 ? '  +$extra' : ''}',
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
-                              style: AppText.caption(
-                                  color: surface.textTertiary),
+                              style:
+                                  AppText.caption(color: surface.textTertiary),
                             ),
                           ),
                         ),
@@ -987,7 +985,8 @@ class _ImportPill extends StatelessWidget {
             key: const ValueKey('spin'),
             width: 16,
             height: 16,
-            child: CircularProgressIndicator(strokeWidth: 2, color: surface.textPrimary),
+            child: CircularProgressIndicator(
+                strokeWidth: 2, color: surface.textPrimary),
           )
         : (imported
             // Imported: no icon — just "View".
@@ -1004,7 +1003,8 @@ class _ImportPill extends StatelessWidget {
                   Icon(Icons.download_rounded, size: 16, color: accent.base),
                   const SizedBox(width: 6),
                   // No onAccentHalo shadow — label is on a neutral fill.
-                  Text('Add', style: AppText.statLabel(color: surface.textPrimary)),
+                  Text('Add',
+                      style: AppText.statLabel(color: surface.textPrimary)),
                 ],
               ));
 
@@ -1122,7 +1122,9 @@ class _PreviewSheet extends StatelessWidget {
                                     color: surface.textPrimary,
                                     shadows: AppText.depthFor(context))),
                             const SizedBox(height: 3),
-                            Text(template.focus, style: AppText.meta(color: surface.textSecondary)),
+                            Text(template.focus,
+                                style:
+                                    AppText.meta(color: surface.textSecondary)),
                           ],
                         ),
                       ),
@@ -1147,11 +1149,12 @@ class _PreviewSheet extends StatelessWidget {
                   ),
                   const SizedBox(height: AppSpacing.x4),
                   Text(template.description,
-                      style: AppText.body(color: surface.textSecondary).copyWith(height: 1.45)),
+                      style: AppText.body(color: surface.textSecondary)
+                          .copyWith(height: 1.45)),
                   const SizedBox(height: AppSpacing.x5),
                   Text('EXERCISES',
-                      style: AppText.columnHeader(
-                          color: surface.textSecondary)),
+                      style:
+                          AppText.columnHeader(color: surface.textSecondary)),
                   const SizedBox(height: AppSpacing.x2),
                   for (var i = 0; i < template.slots.length; i++)
                     _PreviewSlotRow(index: i + 1, slot: template.slots[i]),
@@ -1192,7 +1195,8 @@ class _PreviewSlotRow extends StatelessWidget {
         children: [
           SizedBox(
             width: 22,
-            child: Text('$index', style: AppText.statLabel(color: surface.textSecondary)),
+            child: Text('$index',
+                style: AppText.statLabel(color: surface.textSecondary)),
           ),
           const SizedBox(width: AppSpacing.x2),
           Expanded(

@@ -48,7 +48,8 @@ class RoutineCard extends ConsumerWidget {
           color: AppColors.surface3,
           borderRadius: AppRadius.badgeAll,
         ),
-        child: Text(label, style: AppText.badge(color: AppColors.textSecondary)),
+        child:
+            Text(label, style: AppText.badge(color: AppColors.textSecondary)),
       );
 
   @override
@@ -103,8 +104,9 @@ class RoutineCard extends ConsumerWidget {
                           borderRadius: AppRadius.buttonPrimaryAll,
                         ),
                         child: MuscleGlyph(
-                          muscle:
-                              muscleTags.isNotEmpty ? muscleTags.first : 'fullbody',
+                          muscle: muscleTags.isNotEmpty
+                              ? muscleTags.first
+                              : 'fullbody',
                           size: 26,
                           color: _glyphColor,
                         ),
@@ -264,4 +266,3 @@ class RoutineCard extends ConsumerWidget {
     }
   }
 }
-

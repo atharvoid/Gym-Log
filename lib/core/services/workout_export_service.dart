@@ -86,8 +86,7 @@ class WorkoutExportService {
   }
 
   /// 82.5 → "82.5", 80.0 → "80" — no float noise in the export.
-  static String formatNumber(double value) =>
-      value == value.truncateToDouble()
-          ? value.toInt().toString()
-          : value.toString();
+  static String formatNumber(double value) => value == value.truncateToDouble()
+      ? value.toInt().toString()
+      : value.toString();
 }

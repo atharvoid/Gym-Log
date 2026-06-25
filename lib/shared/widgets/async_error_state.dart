@@ -45,8 +45,8 @@ class AsyncErrorState extends StatelessWidget {
               const SizedBox(height: 14),
               TextButton.icon(
                 onPressed: onRetry,
-                icon: Icon(Icons.refresh_rounded,
-                    size: 18, color: accent.light),
+                icon:
+                    Icon(Icons.refresh_rounded, size: 18, color: accent.light),
                 label: Text(
                   'Try again',
                   style: AppText.rowLabel(color: accent.light),

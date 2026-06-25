@@ -72,7 +72,6 @@ String? chartLimitBannerCopy({
   }
 }
 
-
 /// Free-tier routine ceiling. Matches Hevy's free cap (4) and beats Strong (3):
 /// high enough for Push/Pull/Legs + a Full-Body day, low enough that
 /// program-hoppers convert. Pro is unlimited.
@@ -84,5 +83,6 @@ const int kFreeRoutineLimit = 4;
 
 /// True when a free user is at/over the routine cap and must upgrade to add
 /// another. Pro users are never blocked.
-bool isAtFreeRoutineLimit({required bool isPremium, required int routineCount}) =>
+bool isAtFreeRoutineLimit(
+        {required bool isPremium, required int routineCount}) =>
     !isPremium && routineCount >= kFreeRoutineLimit;

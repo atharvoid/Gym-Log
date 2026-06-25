@@ -360,7 +360,8 @@ class _SetRowState extends State<SetRow> {
                               ? null
                               : Border.all(
                                   color: _canComplete
-                                      ? AppColors.success.withValues(alpha: 0.55)
+                                      ? AppColors.success
+                                          .withValues(alpha: 0.55)
                                       : AppColors.textPrimary
                                           .withValues(alpha: 0.15),
                                 ),
@@ -391,16 +392,21 @@ class _SetRowState extends State<SetRow> {
   /// toggles completion. If the user already typed a value, it is preserved.
   void _onToggleComplete() {
     if (!widget.setData.isCompleted) {
-      if (widget.setData.weightKg <= 0 && widget.previousWeight != null) {
-        final kg = widget.previousWeight!;
-        _weightController.text = _formatWeightField(kg);
-        widget.onChanged(widget.setData.copyWith(weightKg: kg));
+      // Commit BOTH previous-session values in ONE mutation. The old code
+      // emitted two onChanged calls, each derived from the STALE widget.setData,
+      // so the second overwrote the first (weight reset to 0, and a multi-digit
+      // value could render as a single leftover digit). Build one updated set
+      // from a single base and emit it once.
+      var next = widget.setData;
+      if (next.weightKg <= 0 && widget.previousWeight != null) {
+        next = next.copyWith(weightKg: widget.previousWeight!);
+        _weightController.text = _formatWeightField(widget.previousWeight!);
       }
-      if (widget.setData.reps <= 0 && widget.previousReps != null) {
-        final reps = widget.previousReps!;
-        _repsController.text = reps.toString();
-        widget.onChanged(widget.setData.copyWith(reps: reps));
+      if (next.reps <= 0 && widget.previousReps != null) {
+        next = next.copyWith(reps: widget.previousReps!);
+        _repsController.text = widget.previousReps!.toString();
       }
+      if (next != widget.setData) widget.onChanged(next);
     }
     widget.onToggleComplete();
   }

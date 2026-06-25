@@ -41,8 +41,8 @@ abstract class MuscleColorService {
           share: entries[i].value / total,
           // Spread N slices across the full ramp so even 2 groups get a
           // clearly dark-vs-light pair. rank 0 = deepest (dominant).
-          color: palette[(n == 1 ? 0 : (i * lastIdx / (n - 1)).round())
-              .clamp(0, lastIdx)],
+          color: palette[
+              (n == 1 ? 0 : (i * lastIdx / (n - 1)).round()).clamp(0, lastIdx)],
         ),
     ];
   }

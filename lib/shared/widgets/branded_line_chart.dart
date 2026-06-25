@@ -227,8 +227,7 @@ class _BrandedLineChartState extends State<BrandedLineChart> {
                           : SideTitleWidget(
                               axisSide: m.axisSide,
                               space: 8,
-                              child: Text(_axisLabel(v),
-                                  style: RDStyles.axis),
+                              child: Text(_axisLabel(v), style: RDStyles.axis),
                             ),
                     ),
                   ),
@@ -393,7 +392,8 @@ class _BrandedLineChartState extends State<BrandedLineChart> {
               crossAxisAlignment: CrossAxisAlignment.baseline,
               textBaseline: TextBaseline.alphabetic,
               children: [
-                Text(widget.valueFormatter(p.value), style: RDStyles.chartValue),
+                Text(widget.valueFormatter(p.value),
+                    style: RDStyles.chartValue),
                 const SizedBox(width: 8),
                 Text(widget.dateFormatter(p.date),
                     style: RDStyles.chartDate.copyWith(color: accent.light)),
@@ -402,8 +402,7 @@ class _BrandedLineChartState extends State<BrandedLineChart> {
             const SizedBox(height: 12),
             Row(
               children: [
-                Icon(Icons.show_chart_rounded,
-                    size: 15, color: accent.light),
+                Icon(Icons.show_chart_rounded, size: 15, color: accent.light),
                 const SizedBox(width: 6),
                 Flexible(
                   child: Text(
@@ -464,7 +463,8 @@ class _BrandedLineChartState extends State<BrandedLineChart> {
           Text(widget.emptyTitle, style: RDStyles.emptyTitle),
           const SizedBox(height: 3),
           Text(widget.emptySubtitle, style: RDStyles.emptySub),
-          if (widget.onEmptyAction != null && widget.emptyActionLabel != null) ...[
+          if (widget.onEmptyAction != null &&
+              widget.emptyActionLabel != null) ...[
             const SizedBox(height: 14),
             TextButton(
               onPressed: widget.onEmptyAction,

@@ -202,8 +202,7 @@ abstract final class Bootstrap {
       final prefs = await SharedPreferences.getInstance();
       return ThemePalette.fromStorage(prefs.getString(kAccentPaletteKey));
     } catch (e) {
-      debugPrint(
-          '[Bootstrap] accent palette load failed — default accent: $e');
+      debugPrint('[Bootstrap] accent palette load failed — default accent: $e');
       return ThemePalette.fallback;
     }
   }

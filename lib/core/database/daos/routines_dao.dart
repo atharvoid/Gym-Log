@@ -348,8 +348,7 @@ class RoutinesDao extends DatabaseAccessor<AppDatabase>
           name: d['name'] as String,
           orderIndex: d['orderIndex'] as int,
         ));
-        for (final e
-            in (d['exercises'] as List).cast<Map<String, dynamic>>()) {
+        for (final e in (d['exercises'] as List).cast<Map<String, dynamic>>()) {
           await into(routineExercises).insert(RoutineExercisesCompanion.insert(
             id: Value(e['id'] as String),
             routineDayId: e['routineDayId'] as String,
@@ -417,8 +416,8 @@ class RoutinesDao extends DatabaseAccessor<AppDatabase>
   /// history must survive routine deletion.
   Future<void> deleteRoutine(String id) async {
     // Capture owner before deletion so we can enqueue a cloud tombstone.
-    final r =
-        await (select(routines)..where((t) => t.id.equals(id))).getSingleOrNull();
+    final r = await (select(routines)..where((t) => t.id.equals(id)))
+        .getSingleOrNull();
     await transaction(() async {
       await customUpdate(
         'DELETE FROM routine_exercises WHERE routine_day_id IN '

@@ -69,7 +69,8 @@ abstract final class Env {
   /// silently drops events (the SDK requires a non-empty DSN to send).
   static const sentryDsn = String.fromEnvironment('SENTRY_DSN');
 
-  static const String sentryAuthToken = String.fromEnvironment('SENTRY_AUTH_TOKEN');
+  static const String sentryAuthToken =
+      String.fromEnvironment('SENTRY_AUTH_TOKEN');
   static const String sentryOrg = String.fromEnvironment('SENTRY_ORG');
   static const String sentryProject = String.fromEnvironment('SENTRY_PROJECT');
 

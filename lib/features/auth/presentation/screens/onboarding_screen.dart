@@ -113,7 +113,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                           child: TextButton(
                             onPressed: _isLoading ? null : _cancel,
                             style: TextButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 8, vertical: 8),
                             ),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
@@ -123,8 +124,11 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                                 const SizedBox(width: 4),
                                 Text(
                                   'Cancel',
-                                  style: AppText.body(color: AppColors.textSecondary)
-                                      .copyWith(fontWeight: FontWeight.w600, fontSize: 14),
+                                  style: AppText.body(
+                                          color: AppColors.textSecondary)
+                                      .copyWith(
+                                          fontWeight: FontWeight.w600,
+                                          fontSize: 14),
                                 ),
                               ],
                             ),
@@ -133,7 +137,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                         const Spacer(),
                         Text(
                           'Welcome to GymLog',
-                          style: AppText.caption(color: AppColors.textSecondary).copyWith(
+                          style: AppText.caption(color: AppColors.textSecondary)
+                              .copyWith(
                             fontSize: 14,
                             fontWeight: FontWeight.w700,
                             letterSpacing: 0.2,
@@ -152,7 +157,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                         const SizedBox(height: 8),
                         Text(
                           'This is how you\'ll show up across GymLog — and it follows you to every device.',
-                          style: AppText.body(color: AppColors.textSecondary).copyWith(
+                          style: AppText.body(color: AppColors.textSecondary)
+                              .copyWith(
                             fontSize: 15,
                             height: 1.4,
                           ),
@@ -174,19 +180,25 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                           decoration: InputDecoration(
                             hintText: 'Your name',
                             counterText: '',
-                            hintStyle: AppText.body(color: AppColors.textSecondary).copyWith(
+                            hintStyle:
+                                AppText.body(color: AppColors.textSecondary)
+                                    .copyWith(
                               fontSize: 18,
                             ),
                             filled: true,
                             fillColor: Colors.transparent,
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                            contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 16, vertical: 16),
                             enabledBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.zero,
-                              borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.06), width: 1),
+                              borderSide: BorderSide(
+                                  color: Colors.white.withValues(alpha: 0.06),
+                                  width: 1),
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.zero,
-                              borderSide: BorderSide(color: accent.light, width: 1),
+                              borderSide:
+                                  BorderSide(color: accent.light, width: 1),
                             ),
                           ),
                         ),
@@ -197,7 +209,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                             final isValid = value.text.trim().isNotEmpty;
                             return PrimaryButton(
                               label: 'Get Started',
-                              onPressed: isValid && !_isLoading ? _submit : null,
+                              onPressed:
+                                  isValid && !_isLoading ? _submit : null,
                               isLoading: _isLoading,
                               icon: Icons.arrow_forward_rounded,
                             );

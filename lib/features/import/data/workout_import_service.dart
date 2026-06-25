@@ -199,7 +199,8 @@ class WorkoutImportService {
 
       // PR detection runs after the session is committed; earlier (older)
       // sessions are already persisted, so historical bests are correct.
-      final found = await _db.workoutsDao.detectAndMarkPrs(sessionId, s.startedAt);
+      final found =
+          await _db.workoutsDao.detectAndMarkPrs(sessionId, s.startedAt);
       prs += found.length;
 
       imported++;

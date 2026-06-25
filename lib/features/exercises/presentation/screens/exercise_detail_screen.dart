@@ -156,9 +156,9 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
                 builder: (_) {
                   final chips = <(String, bool)>[(exercise.target, true)];
                   try {
-                    final sec = (jsonDecode(exercise.secondaryMuscles ?? '[]')
-                            as List)
-                        .cast<String>();
+                    final sec =
+                        (jsonDecode(exercise.secondaryMuscles ?? '[]') as List)
+                            .cast<String>();
                     for (final m in sec) {
                       if (m.trim().isNotEmpty) chips.add((m, false));
                     }
@@ -174,7 +174,8 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
                                 horizontal: 11, vertical: 6),
                             decoration: BoxDecoration(
                               color: AppColors.surface3,
-                              borderRadius: BorderRadius.circular(AppRadius.badge),
+                              borderRadius:
+                                  BorderRadius.circular(AppRadius.badge),
                               border: Border.all(
                                 color: AppColors.borderSubtle,
                                 width: 1,
@@ -298,27 +299,29 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
               button: true,
               selected: isActive,
               child: GestureDetector(
-              onTap: () {
-                HapticFeedback.lightImpact();
-                setState(() => _activeToggleIndex = entry.key);
-              },
-              child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                decoration: BoxDecoration(
-                  color: isActive ? accent.base : AppColors.bgSurface,
-                  borderRadius: BorderRadius.circular(AppRadius.buttonSecondary),
-                ),
-                child: Text(
-                  entry.value,
-                  style: GoogleFonts.inter(
-                    color: isActive ? accent.onAccent : AppColors.textSecondary,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
+                onTap: () {
+                  HapticFeedback.lightImpact();
+                  setState(() => _activeToggleIndex = entry.key);
+                },
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: isActive ? accent.base : AppColors.bgSurface,
+                    borderRadius:
+                        BorderRadius.circular(AppRadius.buttonSecondary),
+                  ),
+                  child: Text(
+                    entry.value,
+                    style: GoogleFonts.inter(
+                      color:
+                          isActive ? accent.onAccent : AppColors.textSecondary,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
               ),
-            ),
             ),
           );
         }).toList(),
@@ -345,7 +348,8 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
       children: [
         Row(
           children: [
-            const Icon(Icons.emoji_events, color: AppColors.rewardGold, size: 20),
+            const Icon(Icons.emoji_events,
+                color: AppColors.rewardGold, size: 20),
             const SizedBox(width: 8),
             Text(
               'Personal Records',

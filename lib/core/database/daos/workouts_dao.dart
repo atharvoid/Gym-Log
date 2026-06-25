@@ -279,7 +279,8 @@ class WorkoutsDao extends DatabaseAccessor<AppDatabase>
             ..where((t) => t.sessionId.equals(sessionId)))
           .go();
 
-      for (final e in (data['exercises'] as List).cast<Map<String, dynamic>>()) {
+      for (final e
+          in (data['exercises'] as List).cast<Map<String, dynamic>>()) {
         await into(workoutExercises).insert(WorkoutExercisesCompanion.insert(
           id: Value(e['id'] as String),
           sessionId: e['sessionId'] as String,

@@ -12,7 +12,6 @@ import 'package:gymlog/features/workout/presentation/providers/workout_timer_pro
 import 'package:gymlog/shared/widgets/ui/primary_button.dart';
 import 'package:gymlog/core/database/database.dart';
 import 'package:gymlog/core/utils/formatters.dart';
-import 'package:gymlog/shared/widgets/ui/action_bottom_sheet.dart';
 import 'package:gymlog/shared/widgets/ui/app_dialog.dart';
 import 'package:gymlog/shared/widgets/ui/time_range_filter.dart';
 import 'package:gymlog/core/theme/app_text.dart';
@@ -209,8 +208,7 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
         child: InkWell(
           borderRadius: AppRadius.buttonSecondaryAll,
           onTap: () async {
-            final selected =
-                await context.push<Exercise>('/exercises/select');
+            final selected = await context.push<Exercise>('/exercises/select');
             if (selected != null && mounted) {
               notifier.addExercise(selected.id, selected.name);
             }
@@ -245,205 +243,222 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final workoutExists = ref.watch(activeWorkoutProvider.select((state) => state != null));
+    final workoutExists =
+        ref.watch(activeWorkoutProvider.select((state) => state != null));
     final notifier = ref.read(activeWorkoutProvider.notifier);
     final restTimer = ref.watch(restTimerProvider);
     final globalUnit = ref.watch(weightUnitProvider);
-    final isEditing = ref.watch(activeWorkoutProvider.select((state) => state?.originalSessionId != null));
+    final isEditing = ref.watch(activeWorkoutProvider
+        .select((state) => state?.originalSessionId != null));
 
-    final exerciseIds = ref.watch(activeWorkoutProvider.select((state) => state?.exercises.map((e) => e.id).toList() ?? const <String>[]));
+    final exerciseIds = ref.watch(activeWorkoutProvider.select((state) =>
+        state?.exercises.map((e) => e.id).toList() ?? const <String>[]));
 
     final surface = context.surface;
 
     return PopScope(
       canPop: true,
       child: Scaffold(
-      backgroundColor: surface.bgBase,
-      body: Column(
-        children: [
-          // ── Header ────────────────────────────────────────────────────
-          Container(
-            decoration: BoxDecoration(
-              color: surface.bgBase,
-              border: Border(
-                bottom: BorderSide(color: surface.borderSubtle, width: 0.5),
+        backgroundColor: surface.bgBase,
+        body: Column(
+          children: [
+            // ── Header — swipe DOWN to minimize; ✕ discard left; Finish right ──
+            GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              // Swipe down anywhere on the header (the timer area) minimizes back to
+              // the ActiveWorkoutBar. Replaces the old minimize chevron button.
+              onVerticalDragEnd: (details) {
+                if ((details.primaryVelocity ?? 0) > 120) context.pop();
+              },
+              child: Container(
+                decoration: BoxDecoration(
+                  color: surface.bgBase,
+                  border: Border(
+                    bottom: BorderSide(color: surface.borderSubtle, width: 0.5),
+                  ),
+                ),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                child: SafeArea(
+                  bottom: false,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Grab handle — hints the swipe-down-to-minimize gesture.
+                      Container(
+                        width: 36,
+                        height: 4,
+                        margin: const EdgeInsets.only(bottom: 8),
+                        decoration: BoxDecoration(
+                          color: surface.borderEmphasis,
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
+                      Row(
+                        children: [
+                          // LEFT: discard cross (reverted to original left position).
+                          IconButton(
+                            tooltip: isEditing ? 'Cancel' : 'Discard workout',
+                            icon: Icon(Icons.close_rounded,
+                                color: surface.textPrimary),
+                            onPressed: isEditing
+                                ? () => context.pop()
+                                : _confirmDiscard,
+                          ),
+                          const Spacer(),
+                          MergeSemantics(
+                            child: Consumer(
+                              builder: (context, ref, child) {
+                                final timer = ref.watch(workoutTimerProvider);
+                                final totals = ref.watch(
+                                    activeWorkoutProvider.select((state) {
+                                  if (state == null) return (0.0, 0);
+                                  double volume = 0;
+                                  int completed = 0;
+                                  for (final ex in state.exercises) {
+                                    for (final set in ex.sets) {
+                                      if (set.isCompleted) {
+                                        volume += set.weightKg * set.reps;
+                                        completed++;
+                                      }
+                                    }
+                                  }
+                                  return (volume, completed);
+                                }));
+                                final volumeKg = totals.$1;
+                                final completedSets = totals.$2;
+
+                                return Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      isEditing ? 'Edit Workout' : timer,
+                                      style: isEditing
+                                          ? AppText.cardTitle(
+                                              color: surface.textPrimary)
+                                          : AppText.heroStat(
+                                              color: surface.textPrimary),
+                                    ),
+                                    const SizedBox(height: 1),
+                                    Text(
+                                      isEditing
+                                          ? timer
+                                          : completedSets == 0
+                                              ? 'Log your first set'
+                                              : '${groupThousands(kgToDisplay(volumeKg, globalUnit))} $globalUnit · $completedSets set${completedSets != 1 ? 's' : ''}',
+                                      style: AppText.statLabel(
+                                          color: surface.textSecondary),
+                                    ),
+                                  ],
+                                );
+                              },
+                            ),
+                          ),
+                          const Spacer(),
+                          // RIGHT: Finish / Save only — the ⋯ overflow is removed.
+                          PrimaryButton(
+                            label: isEditing ? 'Save' : 'Finish',
+                            onPressed: isEditing ? _saveChanges : _finish,
+                            isFullWidth: false,
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
               ),
             ),
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-            child: SafeArea(
-              bottom: false,
-              child: Row(
-                children: [
-                  IconButton(
-                    tooltip: 'Minimize',
-                    icon: Icon(Icons.keyboard_arrow_down_rounded,
-                        color: surface.textPrimary),
-                    onPressed: () => context.pop(),
-                  ),
-                  const Spacer(),
-                  MergeSemantics(
-                    child: Consumer(
-                      builder: (context, ref, child) {
-                        final timer = ref.watch(workoutTimerProvider);
-                        final totals = ref.watch(activeWorkoutProvider.select((state) {
-                          if (state == null) return (0.0, 0);
-                          double volume = 0;
-                          int completed = 0;
-                          for (final ex in state.exercises) {
-                            for (final set in ex.sets) {
-                              if (set.isCompleted) {
-                                volume += set.weightKg * set.reps;
-                                completed++;
-                              }
-                            }
-                          }
-                          return (volume, completed);
-                        }));
-                        final volumeKg = totals.$1;
-                        final completedSets = totals.$2;
 
-                        return Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              isEditing ? 'Edit Workout' : timer,
-                              style: isEditing ? AppText.cardTitle(color: surface.textPrimary) : AppText.heroStat(color: surface.textPrimary),
-                            ),
-                            const SizedBox(height: 1),
-                            Text(
-                              isEditing
-                                  ? timer
-                                  : completedSets == 0
-                                      ? 'Log your first set'
-                                      : '${groupThousands(kgToDisplay(volumeKg, globalUnit))} $globalUnit · $completedSets set${completedSets != 1 ? 's' : ''}',
-                              style: AppText.statLabel(color: surface.textSecondary),
-                            ),
-                          ],
+            Expanded(
+              child: !workoutExists
+                  ? const SizedBox.shrink()
+                  : ListView.builder(
+                      padding: EdgeInsets.only(
+                        top: 8,
+                        bottom:
+                            MediaQuery.viewPaddingOf(context).bottom + 100.0,
+                      ),
+                      itemCount: exerciseIds.length + 1,
+                      itemBuilder: (context, index) {
+                        if (index == exerciseIds.length) {
+                          return _buildAddExerciseButton(notifier);
+                        }
+                        return ExerciseBlock(
+                          key: ValueKey(exerciseIds[index]),
+                          exerciseIndex: index,
+                          onReorderExercises:
+                              exerciseIds.length > 1 ? _showReorderSheet : null,
+                          onRemove: () => notifier.removeExercise(index),
+                          onUnitTap: () => _pickUnit(index),
+                          onReplace: () async {
+                            final selected = await context
+                                .push<Exercise>('/exercises/select');
+                            if (selected != null && mounted) {
+                              notifier.replaceExercise(
+                                  index, selected.id, selected.name);
+                            }
+                          },
+                          onAddSet: () => notifier.addSet(index),
+                          onRemoveSet: (setIdx) =>
+                              notifier.removeSet(index, setIdx),
+                          onSetChanged: (updatedSet) {
+                            final workout = ref.read(activeWorkoutProvider);
+                            if (workout == null ||
+                                index >= workout.exercises.length) {
+                              return;
+                            }
+                            final exercise = workout.exercises[index];
+                            final setIdx = exercise.sets
+                                .indexWhere((s) => s.id == updatedSet.id);
+                            if (setIdx != -1) {
+                              notifier.updateSet(
+                                index,
+                                setIdx,
+                                weight: updatedSet.weightKg,
+                                reps: updatedSet.reps,
+                                type: updatedSet.setType,
+                              );
+                            }
+                          },
+                          onToggleSetCompletion: (setIdx) =>
+                              _toggleSet(index, setIdx, isEditing: isEditing),
                         );
                       },
                     ),
-                  ),
-                  const Spacer(),
-                  PrimaryButton(
-                    label: isEditing ? 'Save' : 'Finish',
-                    onPressed: isEditing ? _saveChanges : _finish,
-                    isFullWidth: false,
-                  ),
-                  IconButton(
-                    tooltip: 'More',
-                    icon: Icon(Icons.more_horiz_rounded,
-                        color: surface.textPrimary),
-                    onPressed: () => showActionBottomSheet(
-                      context: context,
-                      title: 'Workout',
-                      items: [
-                        ActionSheetItem(
-                          icon: Icons.delete_outline_rounded,
-                          iconColor: AppColors.error,
-                          iconBackground:
-                              AppColors.error.withValues(alpha: 0.12),
-                          title: 'Discard Workout',
-                          titleColor: AppColors.error,
-                          subtitle: 'This cannot be undone',
-                          onTap: (ctx) {
-                            Navigator.of(ctx).pop();
-                            _confirmDiscard();
-                          },
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
             ),
-          ),
-
-          Expanded(
-            child: !workoutExists
-                ? const SizedBox.shrink()
-                : ListView.builder(
-                    padding: EdgeInsets.only(
-                      top: 8,
-                      bottom: MediaQuery.viewPaddingOf(context).bottom + 100.0,
-                    ),
-                    itemCount: exerciseIds.length + 1,
-                    itemBuilder: (context, index) {
-                      if (index == exerciseIds.length) {
-                        return _buildAddExerciseButton(notifier);
-                      }
-                      return ExerciseBlock(
-                        key: ValueKey(exerciseIds[index]),
-                        exerciseIndex: index,
-                        onReorderExercises: exerciseIds.length > 1
-                            ? _showReorderSheet
-                            : null,
-                        onRemove: () => notifier.removeExercise(index),
-                        onUnitTap: () => _pickUnit(index),
-                        onReplace: () async {
-                          final selected =
-                              await context.push<Exercise>('/exercises/select');
-                          if (selected != null && mounted) {
-                            notifier.replaceExercise(
-                                index, selected.id, selected.name);
-                          }
-                        },
-                        onAddSet: () => notifier.addSet(index),
-                        onRemoveSet: (setIdx) =>
-                            notifier.removeSet(index, setIdx),
-                        onSetChanged: (updatedSet) {
-                          final workout = ref.read(activeWorkoutProvider);
-                          if (workout == null || index >= workout.exercises.length) return;
-                          final exercise = workout.exercises[index];
-                          final setIdx = exercise.sets
-                              .indexWhere((s) => s.id == updatedSet.id);
-                          if (setIdx != -1) {
-                            notifier.updateSet(
-                              index,
-                              setIdx,
-                              weight: updatedSet.weightKg,
-                              reps: updatedSet.reps,
-                              type: updatedSet.setType,
-                            );
-                          }
-                        },
-                        onToggleSetCompletion: (setIdx) =>
-                            _toggleSet(index, setIdx, isEditing: isEditing),
-                      );
-                    },
+          ],
+        ),
+        bottomNavigationBar: !workoutExists || restTimer == null
+            ? null
+            : Container(
+                decoration: BoxDecoration(
+                  color: surface.bgBase,
+                  border: Border(
+                    top: BorderSide(color: surface.borderSubtle, width: 0.5),
                   ),
                 ),
-        ],
+                child: SafeArea(
+                  top: false,
+                  child: AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 240),
+                    switchInCurve: Curves.easeOutCubic,
+                    switchOutCurve: Curves.easeInCubic,
+                    transitionBuilder: (child, animation) => SizeTransition(
+                      sizeFactor: animation,
+                      child: SlideTransition(
+                        position: Tween<Offset>(
+                          begin: const Offset(0, 1),
+                          end: Offset.zero,
+                        ).animate(animation),
+                        child: child,
+                      ),
+                    ),
+                    child: RestTimerBar(
+                        key: const ValueKey('rest'), state: restTimer),
+                  ),
+                ),
+              ),
       ),
-      bottomNavigationBar: !workoutExists || restTimer == null
-          ? null
-          : Container(
-              decoration: BoxDecoration(
-                color: surface.bgBase,
-                border: Border(
-                  top: BorderSide(color: surface.borderSubtle, width: 0.5),
-                ),
-              ),
-              child: SafeArea(
-                top: false,
-                child: AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 240),
-                  switchInCurve: Curves.easeOutCubic,
-                  switchOutCurve: Curves.easeInCubic,
-                  transitionBuilder: (child, animation) => SizeTransition(
-                    sizeFactor: animation,
-                    child: SlideTransition(
-                      position: Tween<Offset>(
-                        begin: const Offset(0, 1),
-                        end: Offset.zero,
-                      ).animate(animation),
-                      child: child,
-                    ),
-                  ),
-                  child: RestTimerBar(key: const ValueKey('rest'), state: restTimer),
-                ),
-              ),
-            ),
-    ),
     );
   }
 }
@@ -546,7 +561,8 @@ class _ReorderExercisesSheetState extends State<_ReorderExercisesSheet> {
                             ex.name,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: AppText.exerciseName(color: surface.textPrimary),
+                            style: AppText.exerciseName(
+                                color: surface.textPrimary),
                           ),
                         ),
                         ReorderableDragStartListener(

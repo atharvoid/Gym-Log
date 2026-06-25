@@ -19,7 +19,11 @@ import '../providers/premium_provider.dart';
 /// This is the **only** chokepoint. No widget, provider, or DAO may decide
 /// to sync on its own — all sync decisions flow through this gate.
 
-typedef SyncEnabledState = ({bool isSyncAllowed, bool isPremium, bool syncEnabled});
+typedef SyncEnabledState = ({
+  bool isSyncAllowed,
+  bool isPremium,
+  bool syncEnabled
+});
 
 const _kSyncEnabledKey = 'sync_enabled';
 
@@ -39,7 +43,11 @@ class SyncEntitlementGate {
     // Default is ON — a first-time Pro user syncs without fiddling settings.
     final syncEnabled = stored ?? true;
     final isSyncAllowed = isPremium && syncEnabled;
-    return (isSyncAllowed: isSyncAllowed, isPremium: isPremium, syncEnabled: syncEnabled);
+    return (
+      isSyncAllowed: isSyncAllowed,
+      isPremium: isPremium,
+      syncEnabled: syncEnabled
+    );
   }
 
   /// Writes the user toggle. Only meaningful for Pro users.

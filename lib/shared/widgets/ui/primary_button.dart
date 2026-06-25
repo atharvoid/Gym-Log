@@ -63,25 +63,25 @@ class PrimaryButton extends StatelessWidget {
                 height: 20,
                 child: CircularProgressIndicator(
                   strokeWidth: 2,
-                  valueColor:
-                      AlwaysStoppedAnimation<Color>(accent.onAccent),
+                  valueColor: AlwaysStoppedAnimation<Color>(accent.onAccent),
                 ),
               )
             : icon != null
-            ? Row(
-                mainAxisSize: MainAxisSize.min,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(icon, size: 20),
-                  const SizedBox(width: 8),
-                  Text(label, style: AppText.button(color: accent.onAccent)),
-                ],
-              )
-            : Text(
-                label,
-                style: AppText.button(color: accent.onAccent)
-                    .copyWith(fontWeight: FontWeight.w700),
-              ),
+                ? Row(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(icon, size: 20),
+                      const SizedBox(width: 8),
+                      Text(label,
+                          style: AppText.button(color: accent.onAccent)),
+                    ],
+                  )
+                : Text(
+                    label,
+                    style: AppText.button(color: accent.onAccent)
+                        .copyWith(fontWeight: FontWeight.w700),
+                  ),
       ),
     );
 

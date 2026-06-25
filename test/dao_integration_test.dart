@@ -243,12 +243,14 @@ void main() {
     final bench =
         await insertExercise('Bench Press', 'chest', 'barbell', 'pectorals');
 
-    await insertSession('s1', DateTime(2026, 6, 1, 10), sets: [(bench, 100, 1)]);
+    await insertSession('s1', DateTime(2026, 6, 1, 10),
+        sets: [(bench, 100, 1)]);
     final prs1 =
         await db.workoutsDao.detectAndMarkPrs('s1', DateTime(2026, 6, 1, 10));
     expect(prs1.length, 1);
 
-    await insertSession('s2', DateTime(2026, 6, 8, 10), sets: [(bench, 102, 1)]);
+    await insertSession('s2', DateTime(2026, 6, 8, 10),
+        sets: [(bench, 102, 1)]);
     final prs2 =
         await db.workoutsDao.detectAndMarkPrs('s2', DateTime(2026, 6, 8, 10));
     expect(prs2.length, 1, reason: 'a +2kg single over a prior single is a PR');
@@ -296,10 +298,9 @@ void main() {
 
     await db.wipeAllData();
 
-    Future<int> count(String table) async => (await db
-            .customSelect('SELECT COUNT(*) AS c FROM $table')
-            .getSingle())
-        .read<int>('c');
+    Future<int> count(String table) async =>
+        (await db.customSelect('SELECT COUNT(*) AS c FROM $table').getSingle())
+            .read<int>('c');
 
     for (final t in [
       'exercises',

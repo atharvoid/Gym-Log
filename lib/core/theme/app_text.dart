@@ -98,7 +98,10 @@ abstract class AppText {
     List<Shadow>? shadows,
   }) =>
       GoogleFonts.inter(
-          fontSize: 32, fontWeight: FontWeight.w700, color: color, shadows: shadows);
+          fontSize: 32,
+          fontWeight: FontWeight.w700,
+          color: color,
+          shadows: shadows);
 
   /// Section heading: 20 / 700.
   static TextStyle sectionHeading({
@@ -106,7 +109,10 @@ abstract class AppText {
     List<Shadow>? shadows,
   }) =>
       GoogleFonts.inter(
-          fontSize: 20, fontWeight: FontWeight.w700, color: color, shadows: shadows);
+          fontSize: 20,
+          fontWeight: FontWeight.w700,
+          color: color,
+          shadows: shadows);
 
   /// Sheet title (bottom-sheet headings): 18 / 700.
   static TextStyle sheetTitle({
@@ -114,7 +120,10 @@ abstract class AppText {
     List<Shadow>? shadows,
   }) =>
       GoogleFonts.inter(
-          fontSize: 18, fontWeight: FontWeight.w700, color: color, shadows: shadows);
+          fontSize: 18,
+          fontWeight: FontWeight.w700,
+          color: color,
+          shadows: shadows);
 
   /// Profile display name: 19 / 700.
   static TextStyle profileName({
@@ -133,7 +142,11 @@ abstract class AppText {
     Color color = AppColors.textSecondary,
     List<Shadow>? shadows,
   }) =>
-      GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w400, color: color, shadows: shadows);
+      GoogleFonts.inter(
+          fontSize: 13,
+          fontWeight: FontWeight.w400,
+          color: color,
+          shadows: shadows);
 
   /// Stat number (duration, volume, sets): 28 / 700, tabular.
   static TextStyle statNumber({
@@ -177,7 +190,10 @@ abstract class AppText {
     List<Shadow>? shadows,
   }) =>
       GoogleFonts.inter(
-          fontSize: 16, fontWeight: FontWeight.w600, color: color, shadows: shadows);
+          fontSize: 16,
+          fontWeight: FontWeight.w600,
+          color: color,
+          shadows: shadows);
 
   /// Set/rep/weight value in the logging table: 16 / 600, tabular.
   static TextStyle value({
@@ -196,7 +212,11 @@ abstract class AppText {
     Color color = AppColors.textSecondary,
     List<Shadow>? shadows,
   }) =>
-      GoogleFonts.inter(fontSize: 15, fontWeight: FontWeight.w400, color: color, shadows: shadows);
+      GoogleFonts.inter(
+          fontSize: 15,
+          fontWeight: FontWeight.w400,
+          color: color,
+          shadows: shadows);
 
   /// Button label: 16 / 600.
   static TextStyle button({
@@ -204,7 +224,10 @@ abstract class AppText {
     List<Shadow>? shadows,
   }) =>
       GoogleFonts.inter(
-          fontSize: 16, fontWeight: FontWeight.w600, color: color, shadows: shadows);
+          fontSize: 16,
+          fontWeight: FontWeight.w600,
+          color: color,
+          shadows: shadows);
 
   /// Column header (SET / REPS / KG): 11 / 600, +0.8 tracking. The ONLY
   /// all-caps text in the app — uppercase the string at the call site.
@@ -225,7 +248,10 @@ abstract class AppText {
     List<Shadow>? shadows,
   }) =>
       GoogleFonts.inter(
-          fontSize: 12, fontWeight: FontWeight.w400, color: color, shadows: shadows);
+          fontSize: 12,
+          fontWeight: FontWeight.w400,
+          color: color,
+          shadows: shadows);
 
   /// Badge (PR): 11 / 600, amber.
   static TextStyle badge({
@@ -233,7 +259,10 @@ abstract class AppText {
     List<Shadow>? shadows,
   }) =>
       GoogleFonts.inter(
-          fontSize: 11, fontWeight: FontWeight.w600, color: color, shadows: shadows);
+          fontSize: 11,
+          fontWeight: FontWeight.w600,
+          color: color,
+          shadows: shadows);
 
   /// Card title (workout / routine card heading): 16 / 700.
   static TextStyle cardTitle({
@@ -241,7 +270,10 @@ abstract class AppText {
     List<Shadow>? shadows,
   }) =>
       GoogleFonts.inter(
-          fontSize: 16, fontWeight: FontWeight.w700, color: color, shadows: shadows);
+          fontSize: 16,
+          fontWeight: FontWeight.w700,
+          color: color,
+          shadows: shadows);
 
   /// Group header (SETTINGS, ACCOUNT): 11 / 600, +0.8 tracking, textSecondary.
   static TextStyle groupHeader({
@@ -273,7 +305,10 @@ abstract class AppText {
     List<Shadow>? shadows,
   }) =>
       GoogleFonts.inter(
-          fontSize: 14, fontWeight: FontWeight.w600, color: color, shadows: shadows);
+          fontSize: 14,
+          fontWeight: FontWeight.w600,
+          color: color,
+          shadows: shadows);
 
   /// Compact stat value (history-card chips): 13 / 600, tabular.
   static TextStyle statLabel({
@@ -305,7 +340,10 @@ abstract class AppText {
     List<Shadow>? shadows,
   }) =>
       GoogleFonts.inter(
-          fontSize: 13, fontWeight: FontWeight.w400, color: color, shadows: shadows);
+          fontSize: 13,
+          fontWeight: FontWeight.w400,
+          color: color,
+          shadows: shadows);
 
   /// Label / badge style (uppercase subheadlines/badges): 12 / 500.
   static TextStyle label({

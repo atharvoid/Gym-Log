@@ -30,8 +30,11 @@ void main() {
 
   tearDown(() => container.dispose());
 
-  List<String> order() =>
-      container.read(activeWorkoutProvider)!.exercises.map((e) => e.name).toList();
+  List<String> order() => container
+      .read(activeWorkoutProvider)!
+      .exercises
+      .map((e) => e.name)
+      .toList();
 
   test('move first item down (A→index 2): B, C, A, D', () {
     notifier.reorderExercise(0, 2); // onReorderItem newIndex is post-removal

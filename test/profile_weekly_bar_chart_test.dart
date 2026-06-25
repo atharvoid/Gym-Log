@@ -144,7 +144,8 @@ void main() {
       expect(find.textContaining('50%'), findsOneWidget);
     });
 
-    testWidgets('shows neutral dash in delta pill when previous week value is zero',
+    testWidgets(
+        'shows neutral dash in delta pill when previous week value is zero',
         (tester) async {
       // Need ≥4 filled weeks for the pill to appear, with previous=0.
       final withZeroPrevious = [
