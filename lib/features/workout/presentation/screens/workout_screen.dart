@@ -107,13 +107,14 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
               orElse: () => const SizedBox.shrink(),
             ),
 
-            // ── Action row: New (accent) + Explore (neutral) ─────────────
+            // ── Action row: New (solid accent CTA) + Explore (neutral) ─────────────
             Row(
               children: [
                 Expanded(
                   child: SecondaryButton(
                     label: 'New Routine',
                     icon: Icons.add_rounded,
+                    solid: true, // solid accent fill + onAccent label — the one focal CTA
                     onPressed: () => _push('/routines/edit'),
                   ),
                 ),

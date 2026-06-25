@@ -5,17 +5,23 @@ import '../../../core/theme/dynamic_accent_theme.dart';
 
 /// [secondary_button.dart]
 /// Shared secondary button. Neutral by default (dark surface, white label —
-/// used for "+ Add Exercise"); pass [accent] for the accent-outline variant
+/// used for "Add Exercise"); pass [accent] for the accent-outline variant
 /// (palette muted fill + palette hairline + palette-light label), used for
-/// "+ Add Set" / "New Routine". The accent variant tracks the active palette
-/// (purple/copper/teal/red) via [BuildContext.accent] — never a hardcoded hue.
-/// 48dp tall, [AppRadius.buttonSecondary] corners.
+/// "Add Set". Pass [solid] for a single solid accent CTA (palette base fill +
+/// palette onAccent label — used for "New Routine"). The accent variants track
+/// the active palette (purple/copper/teal/red) via [BuildContext.accent] —
+/// never a hardcoded hue. 48dp tall, [AppRadius.buttonSecondary] corners.
 class SecondaryButton extends StatelessWidget {
   final String label;
   final VoidCallback? onPressed;
   final bool isFullWidth;
   final IconData? icon;
   final bool accent;
+
+  /// Solid accent fill + onAccent label — a single focal CTA per view
+  /// (e.g. "New Routine" beside a neutral "Explore"). Rule B: one solid-accent
+  /// action per view; everything else is neutral-raised or tinted.
+  final bool solid;
 
   const SecondaryButton({
     super.key,
@@ -24,12 +30,22 @@ class SecondaryButton extends StatelessWidget {
     this.isFullWidth = true,
     this.icon,
     this.accent = false,
+    this.solid = false,
   });
 
   @override
   Widget build(BuildContext context) {
     final accentColors = context.accent;
-    final fg = accent ? accentColors.light : AppColors.textPrimary;
+
+    final Color bg = solid
+        ? accentColors.base
+        : (accent ? accentColors.muted : AppColors.bgSurface);
+    final Color fg = solid
+        ? accentColors.onAccent
+        : (accent ? accentColors.light : AppColors.textPrimary);
+    final BorderSide side = (accent && !solid)
+        ? BorderSide(color: accentColors.base.withValues(alpha: 0.45))
+        : BorderSide.none;
 
     return SizedBox(
       height: 48,
@@ -37,16 +53,15 @@ class SecondaryButton extends StatelessWidget {
       child: ElevatedButton(
         onPressed: onPressed,
         style: ElevatedButton.styleFrom(
-          backgroundColor: accent ? accentColors.muted : AppColors.bgSurface,
+          backgroundColor: bg,
           foregroundColor: fg,
-          disabledBackgroundColor: AppColors.bgSurface,
-          disabledForegroundColor: AppColors.textDisabled,
+          disabledBackgroundColor:
+              solid ? accentColors.base.withValues(alpha: 0.6) : AppColors.bgSurface,
+          disabledForegroundColor:
+              solid ? accentColors.onAccent : AppColors.textDisabled,
           elevation: 0,
           shadowColor: Colors.transparent,
-          side: accent
-              ? BorderSide(
-                  color: accentColors.base.withValues(alpha: 0.45))
-              : BorderSide.none,
+          side: side,
           shape: const RoundedRectangleBorder(
             borderRadius: AppRadius.buttonSecondaryAll,
           ),

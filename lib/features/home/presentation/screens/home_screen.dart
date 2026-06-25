@@ -5,7 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:gymlog/core/theme/app_colors.dart';
 import 'package:gymlog/core/theme/app_text.dart';
 import 'package:gymlog/shared/widgets/ui/app_card.dart';
-import 'package:gymlog/shared/widgets/ui/primary_button.dart';
+import 'package:gymlog/shared/widgets/ui/start_button.dart';
 import 'package:gymlog/shared/widgets/ui/action_bottom_sheet.dart';
 import 'package:gymlog/shared/widgets/ui/app_dialog.dart';
 import 'package:gymlog/shared/widgets/ui/skeleton.dart';
@@ -145,9 +145,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               child: Text('Quick Start', style: AppText.sectionHeading()),
             ),
             const SizedBox(height: 16),
-            PrimaryButton(
+            StartButton(
               label: 'Start Empty Workout',
               icon: Icons.add_circle_outline,
+              expand: true,
               onPressed: () {
                 // Guard against a double-tap pushing two active-workout
                 // screens (startWorkout sets state synchronously).

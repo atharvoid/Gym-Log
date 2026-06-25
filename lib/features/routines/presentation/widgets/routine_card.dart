@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text.dart';
-import '../../../../core/theme/dynamic_accent_theme.dart';
+import '../../../../shared/widgets/ui/start_button.dart';
 import '../../../../core/services/muscle_color_service.dart';
 import '../../../../core/utils/tap_guard.dart';
 import '../../../../core/utils/relative_time.dart';
@@ -182,9 +182,10 @@ class RoutineCard extends ConsumerWidget {
                         ),
                       ),
                       const SizedBox(width: 12),
-                      _StartPill(
+                      StartButton(
+                        label: 'Start',
                         enabled: exerciseNames.isNotEmpty,
-                        onTap: () {
+                        onPressed: () {
                           // 0-exercise routine: don't silently no-op — tell
                           // the user why nothing happened.
                           if (exerciseNames.isEmpty) {
@@ -264,40 +265,3 @@ class RoutineCard extends ConsumerWidget {
   }
 }
 
-class _StartPill extends StatelessWidget {
-  final VoidCallback onTap;
-  final bool enabled;
-  const _StartPill({required this.onTap, this.enabled = true});
-
-  @override
-  Widget build(BuildContext context) {
-    // Disabled (0-exercise routine): muted surface + tertiary text so it
-    // visibly reads as not-startable; the tap still explains why.
-    // Enabled fill follows the active accent palette.
-    final bg = enabled ? context.accent.base : AppColors.surface3;
-    final fg = enabled ? AppColors.textPrimary : AppColors.textTertiary;
-    return Material(
-      color: bg,
-      borderRadius: AppRadius.buttonPrimaryAll, // 14px CTA, NOT a pill
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: onTap,
-        child: ConstrainedBox(
-          // ≥48dp tappable height (was ~34dp).
-          constraints: const BoxConstraints(minHeight: 48, minWidth: 68),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.play_arrow_rounded, size: 18, color: fg),
-                const SizedBox(width: 5),
-                Text('Start', style: AppText.statLabel(color: fg)),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}

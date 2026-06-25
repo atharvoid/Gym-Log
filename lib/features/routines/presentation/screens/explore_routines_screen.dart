@@ -500,7 +500,6 @@ class _FilterChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final accent = context.accent;
     final surface = context.surface;
     return Semantics(
       button: true,
@@ -508,7 +507,11 @@ class _FilterChip extends StatelessWidget {
       label: label,
       excludeSemantics: true,
       child: Material(
-        color: selected ? accent.base : surface.surface3,
+        // Neutral segmented-selector language (same as SegmentedControl):
+        // surface4 raised fill for selected, surface3 for idle.
+        // Intentionally NOT accent.base — filter chips repeat in a row so
+        // a full-saturation fill on every palette would flood the header.
+        color: selected ? surface.surface4 : surface.surface3,
         borderRadius: BorderRadius.circular(14),
         clipBehavior: Clip.antiAlias,
         child: InkWell(
@@ -519,8 +522,10 @@ class _FilterChip extends StatelessWidget {
             child: Text(
               label,
               style: AppText.statLabel(
-                  color: selected ? accent.onAccent : surface.textSecondary,
-                  shadows: selected ? TextDepth.onAccentHalo(context.accent.palette) : null),
+                color: selected ? surface.textPrimary : surface.textSecondary,
+              ).copyWith(
+                fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
+              ),
             ),
           ),
         ),
@@ -770,7 +775,6 @@ class _TemplateCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final accent = context.accent;
     final surface = context.surface;
     final preview = template.slots.take(3).map((s) => s.name).join(', ');
     final extra = template.slots.length - 3;
@@ -792,14 +796,9 @@ class _TemplateCard extends StatelessWidget {
           color: surface.bgSurface,
           borderRadius: BorderRadius.circular(10),
           border: Border.all(color: surface.borderSubtle),
-          boxShadow: [
-            BoxShadow(
-              color: accent.glow,
-              blurRadius: 8,
-              spreadRadius: -2,
-              offset: const Offset(0, 2),
-            ),
-          ],
+          // No per-card glow — repeated accent halos down a scrolling list
+          // are visually loud and fight each other. Only the single Featured
+          // hero card carries a glow (see _FeaturedCard above).
         ),
         clipBehavior: Clip.antiAlias,
         child: Material(
@@ -976,7 +975,13 @@ class _ImportPill extends StatelessWidget {
   Widget build(BuildContext context) {
     final reduceMotion = MediaQuery.disableAnimationsOf(context);
     final surface = context.surface;
-    final fg = imported ? AppColors.success : surface.textPrimary;
+    final accent = context.accent;
+
+    // Neutral-raised "Add" (Option A): accent only on the glyph, neutral label.
+    // This prevents a column of solid neon pills on every template card.
+    // Imported (green) and importing (spinner) states are unchanged.
+    final iconColor = imported ? AppColors.success : accent.base;
+    final labelColor = imported ? AppColors.success : surface.textPrimary;
 
     final Widget child = importing
         ? SizedBox(
@@ -990,12 +995,11 @@ class _ImportPill extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               Icon(imported ? Icons.check_rounded : Icons.download_rounded,
-                  size: 16, color: fg),
+                  size: 16, color: iconColor),
               const SizedBox(width: 6),
+              // No onAccentHalo shadow — label is no longer on an accent fill.
               Text(imported ? 'View' : 'Add',
-                  style: AppText.statLabel(
-                      color: fg,
-                      shadows: !imported ? TextDepth.onAccentHalo(context.accent.palette) : null)),
+                  style: AppText.statLabel(color: labelColor)),
             ],
           );
 
@@ -1011,8 +1015,13 @@ class _ImportPill extends StatelessWidget {
       child: Material(
         color: imported
             ? AppColors.success.withValues(alpha: 0.14)
-            : context.accent.base,
-        borderRadius: BorderRadius.circular(14),
+            : surface.surface3, // neutral-raised: accent only on the download glyph
+        shape: RoundedRectangleBorder(
+          side: imported
+              ? BorderSide.none
+              : BorderSide(color: surface.borderDefault),
+          borderRadius: BorderRadius.circular(14),
+        ),
         clipBehavior: Clip.antiAlias,
         child: InkWell(
           onTap: onTap,

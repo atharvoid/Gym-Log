@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text.dart';
 import '../../../core/theme/dynamic_accent_theme.dart';
 
@@ -46,11 +45,11 @@ class PrimaryButton extends StatelessWidget {
               },
         style: ElevatedButton.styleFrom(
           backgroundColor: accent.base,
-          foregroundColor: AppColors.textPrimary,
+          foregroundColor: accent.onAccent,
           // Busy state stays on-brand (dimmed accent), not the default gray
           // "disabled" look — it reads as "working", not "unavailable".
           disabledBackgroundColor: accent.base.withValues(alpha: 0.6),
-          disabledForegroundColor: AppColors.textPrimary,
+          disabledForegroundColor: accent.onAccent,
           elevation: 0,
           shadowColor: Colors.transparent,
           shape: const RoundedRectangleBorder(
@@ -59,13 +58,13 @@ class PrimaryButton extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
         ),
         child: isLoading
-            ? const SizedBox(
+            ? SizedBox(
                 width: 20,
                 height: 20,
                 child: CircularProgressIndicator(
                   strokeWidth: 2,
                   valueColor:
-                      AlwaysStoppedAnimation<Color>(AppColors.textPrimary),
+                      AlwaysStoppedAnimation<Color>(accent.onAccent),
                 ),
               )
             : icon != null
@@ -75,12 +74,13 @@ class PrimaryButton extends StatelessWidget {
                 children: [
                   Icon(icon, size: 20),
                   const SizedBox(width: 8),
-                  Text(label, style: AppText.button()),
+                  Text(label, style: AppText.button(color: accent.onAccent)),
                 ],
               )
             : Text(
                 label,
-                style: AppText.button().copyWith(fontWeight: FontWeight.w700),
+                style: AppText.button(color: accent.onAccent)
+                    .copyWith(fontWeight: FontWeight.w700),
               ),
       ),
     );

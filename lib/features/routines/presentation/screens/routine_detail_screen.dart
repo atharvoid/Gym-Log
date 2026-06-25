@@ -698,13 +698,13 @@ class _StartRoutineButtonState extends State<_StartRoutineButton> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Icon(empty ? Icons.add_rounded : Icons.play_arrow_rounded,
-                  color: empty ? AppColors.textSecondary : AppColors.textPrimary,
+                  color: empty ? AppColors.textSecondary : context.accent.onAccent,
                   size: 22),
               const SizedBox(width: 8),
               Text(
                 empty ? 'Add an exercise' : 'Start Routine',
                 style: AppText.button(
-                    color: empty ? AppColors.textSecondary : AppColors.textPrimary),
+                    color: empty ? AppColors.textSecondary : context.accent.onAccent),
               ),
             ],
           ),

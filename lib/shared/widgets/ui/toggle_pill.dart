@@ -45,7 +45,7 @@ class TogglePill extends StatelessWidget {
         child: AnimatedDefaultTextStyle(
           duration: motion,
           style: AppText.rowLabel(
-            color: isActive ? AppColors.textPrimary : AppColors.textSecondary,
+            color: isActive ? context.accent.onAccent : AppColors.textSecondary,
           ).copyWith(
             fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
           ),

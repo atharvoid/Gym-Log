@@ -89,9 +89,9 @@ class _ActiveWorkoutBarState extends State<ActiveWorkoutBar>
                 borderRadius: BorderRadius.circular(6),
               ),
               padding: const EdgeInsets.all(8),
-              child: const Icon(
+              child: Icon(
                 Icons.play_arrow_rounded,
-                color: AppColors.textPrimary,
+                color: accent.onAccent,
                 size: 18,
               ),
             ),
