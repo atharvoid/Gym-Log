@@ -12,6 +12,7 @@ import 'package:gymlog/features/workout/presentation/providers/workout_timer_pro
 import 'package:gymlog/shared/widgets/ui/primary_button.dart';
 import 'package:gymlog/core/database/database.dart';
 import 'package:gymlog/core/utils/formatters.dart';
+import 'package:gymlog/shared/widgets/ui/action_bottom_sheet.dart';
 import 'package:gymlog/shared/widgets/ui/app_dialog.dart';
 import 'package:gymlog/shared/widgets/ui/time_range_filter.dart';
 import 'package:gymlog/core/theme/app_text.dart';
@@ -255,11 +256,7 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
     final surface = context.surface;
 
     return PopScope(
-      canPop: false,
-      onPopInvokedWithResult: (didPop, result) {
-        if (didPop) return;
-        _confirmDiscard();
-      },
+      canPop: true,
       child: Scaffold(
       backgroundColor: surface.bgBase,
       body: Column(
@@ -278,9 +275,10 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
               child: Row(
                 children: [
                   IconButton(
-                    tooltip: 'Discard workout',
-                    icon: Icon(Icons.close, color: surface.textPrimary),
-                    onPressed: _confirmDiscard,
+                    tooltip: 'Minimize',
+                    icon: Icon(Icons.keyboard_arrow_down_rounded,
+                        color: surface.textPrimary),
+                    onPressed: () => context.pop(),
                   ),
                   const Spacer(),
                   MergeSemantics(
@@ -330,6 +328,30 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
                     label: isEditing ? 'Save' : 'Finish',
                     onPressed: isEditing ? _saveChanges : _finish,
                     isFullWidth: false,
+                  ),
+                  IconButton(
+                    tooltip: 'More',
+                    icon: Icon(Icons.more_horiz_rounded,
+                        color: surface.textPrimary),
+                    onPressed: () => showActionBottomSheet(
+                      context: context,
+                      title: 'Workout',
+                      items: [
+                        ActionSheetItem(
+                          icon: Icons.delete_outline_rounded,
+                          iconColor: AppColors.error,
+                          iconBackground:
+                              AppColors.error.withValues(alpha: 0.12),
+                          title: 'Discard Workout',
+                          titleColor: AppColors.error,
+                          subtitle: 'This cannot be undone',
+                          onTap: (ctx) {
+                            Navigator.of(ctx).pop();
+                            _confirmDiscard();
+                          },
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),

@@ -70,6 +70,9 @@ class AccentColors extends ThemeExtension<AccentColors> {
   /// label). White for colored palettes; near-black for the neutral palette.
   final Color onAccent;
 
+  /// 6-step data-viz ramp for the muscle-split bar, index 0 = dominant.
+  final List<Color> muscleSplitRamp;
+
   /// The palette enum that produced these tokens. Used by SurfaceContextX
   /// and TextDepth.onAccentHalo to switch between dark/light surface strategy.
   final ThemePalette palette;
@@ -81,6 +84,7 @@ class AccentColors extends ThemeExtension<AccentColors> {
     required this.muted,
     required this.glow,
     required this.onAccent,
+    required this.muscleSplitRamp,
     required this.palette,
   });
 
@@ -92,6 +96,7 @@ class AccentColors extends ThemeExtension<AccentColors> {
         muted: t.muted,
         glow: t.glow,
         onAccent: t.onAccent,
+        muscleSplitRamp: t.muscleSplitRamp,
         palette: p,
       );
 
@@ -105,20 +110,6 @@ class AccentColors extends ThemeExtension<AccentColors> {
   /// Slightly stronger accent for the border of a selected card/input (~35%).
   Color get selectionBorder => base.withValues(alpha: 0.35);
 
-  /// Generates a 6-step accent ramp, DARKEST → LIGHTEST.
-  /// Index 0 = deepest (for dominant muscle), index 5 = lightest.
-  /// Used by workout-history muscle-split visualization.
-  ///
-  /// This replaces the static [AppColors.muscleSplitPalette] — the ramp now
-  /// follows the active accent palette and is INVERTED from the old order:
-  /// the dominant (largest) muscle gets the darkest/richest color, the
-  /// smallest gets the lightest/most muted.
-  List<Color> get muscleSplitRamp {
-    return [
-      for (int i = 0; i < 6; i++)
-        Color.lerp(dark, light, i / 5)!,
-    ];
-  }
 
   /// Whether this palette drives a light surface hierarchy.
   bool get isLightSurface => palette.isLightSurface;
@@ -143,6 +134,7 @@ class AccentColors extends ThemeExtension<AccentColors> {
     Color? muted,
     Color? glow,
     Color? onAccent,
+    List<Color>? muscleSplitRamp,
     ThemePalette? palette,
   }) =>
       AccentColors(
@@ -152,6 +144,7 @@ class AccentColors extends ThemeExtension<AccentColors> {
         muted: muted ?? this.muted,
         glow: glow ?? this.glow,
         onAccent: onAccent ?? this.onAccent,
+        muscleSplitRamp: muscleSplitRamp ?? this.muscleSplitRamp,
         palette: palette ?? this.palette,
       );
 
@@ -165,6 +158,7 @@ class AccentColors extends ThemeExtension<AccentColors> {
       muted: Color.lerp(muted, other.muted, t)!,
       glow: Color.lerp(glow, other.glow, t)!,
       onAccent: Color.lerp(onAccent, other.onAccent, t)!,
+      muscleSplitRamp: t < 0.5 ? muscleSplitRamp : other.muscleSplitRamp,
       palette: t < 0.5 ? palette : other.palette,
     );
   }

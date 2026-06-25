@@ -1,4 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:gymlog/core/database/daos/routines_dao.dart';
 import 'package:uuid/uuid.dart';
 
 part 'active_workout_state.freezed.dart';
@@ -40,4 +41,30 @@ class ActiveWorkoutState with _$ActiveWorkoutState {
     String? originalSessionId,
     Duration? historicalDuration,
   }) = _ActiveWorkoutState;
+}
+
+/// Seeds [WorkoutExerciseState]s from a saved routine's full detail, preserving
+/// each exercise's configured set count, default weight, and default reps.
+/// Both the routine-detail screen and the routine-card start path use this so
+/// a routine always opens with its saved targets, never a single blank set.
+List<WorkoutExerciseState> seedExercisesFromRoutine(
+    HydratedRoutineDetail routine) {
+  return routine.exercises.map((he) {
+    final c = he.config;
+    final count = c.defaultSets > 0 ? c.defaultSets : 1;
+    final sets = List.generate(
+      count,
+      (_) => WorkoutSetState(
+        id: const Uuid().v4(),
+        weightKg: c.defaultWeightKg ?? 0.0,
+        reps: c.defaultReps ?? 0,
+      ),
+    );
+    return WorkoutExerciseState(
+      id: const Uuid().v4(),
+      exerciseId: he.exercise.id,
+      name: he.exercise.name,
+      sets: sets.isEmpty ? [WorkoutSetState.create()] : sets,
+    );
+  }).toList();
 }

@@ -564,13 +564,13 @@ class _PrimaryButton extends StatelessWidget {
             height: 54,
             alignment: Alignment.center,
             child: Row(mainAxisSize: MainAxisSize.min, children: [
-              Icon(icon, size: 20, color: Colors.white),
+              Icon(icon, size: 20, color: context.accent.onAccent),
               const SizedBox(width: 10),
               Text(label,
                   style: GoogleFonts.inter(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
-                      color: Colors.white)),
+                      color: context.accent.onAccent)),
             ]),
           ),
         ),
@@ -718,7 +718,7 @@ class _UnitChooser extends StatelessWidget {
                 style: GoogleFonts.inter(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
-                    color: active ? Colors.white : AppColors.textSecondary)),
+                    color: active ? accent.onAccent : AppColors.textSecondary)),
           ),
         ),
       );

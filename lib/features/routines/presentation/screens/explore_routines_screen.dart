@@ -15,7 +15,7 @@ import 'package:gymlog/features/routines/presentation/providers/routines_provide
 import 'package:gymlog/shared/widgets/premium_paywall.dart';
 import 'package:gymlog/shared/widgets/ui/muscle_glyph.dart';
 import 'package:gymlog/shared/widgets/ui/primary_button.dart';
-import 'package:gymlog/shared/widgets/ui/segmented_control.dart';
+
 
 String _dominantMuscle(String focus) {
   final tokens = focus.split(' · ');
@@ -468,25 +468,70 @@ class _FilterHeaderDelegate extends SliverPersistentHeaderDelegate {
       BuildContext context, double shrinkOffset, bool overlapsContent) {
     return Container(
       color: context.surface.bgBase,
-      padding: const EdgeInsets.fromLTRB(
-          AppSpacing.screenH, 9, AppSpacing.screenH, 9),
       alignment: Alignment.centerLeft,
-      // SegmentedControl mirrors the Profile selector exactly:
-      // neutral surface4 thumb, white w600 active label, grey w400 idle.
-      // Intentionally NOT an accent fill — filter selectors repeat abreast
-      // and must not dilute the single solid-accent CTA signal.
-      child: SegmentedControl(
-        segments: _LevelFilter.values.map((f) => f.label).toList(),
-        selected: selected.label,
-        onChanged: (label) => onSelect(
-          _LevelFilter.values.firstWhere((f) => f.label == label),
-        ),
+      child: ListView(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.fromLTRB(
+            AppSpacing.screenH, 8, AppSpacing.screenH, 10),
+        children: [
+          for (final f in _LevelFilter.values)
+            Padding(
+              padding: const EdgeInsets.only(right: AppSpacing.x2),
+              child: _FilterChip(
+                label: f.label,
+                selected: f == selected,
+                onTap: () => onSelect(f),
+              ),
+            ),
+        ],
       ),
     );
   }
 
   @override
   bool shouldRebuild(_FilterHeaderDelegate old) => old.selected != selected;
+}
+
+class _FilterChip extends StatelessWidget {
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+  const _FilterChip(
+      {required this.label, required this.selected, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    final surface = context.surface;
+    return Semantics(
+      button: true,
+      selected: selected,
+      label: label,
+      excludeSemantics: true,
+      child: Material(
+        // Neutral segmented-selector language: surface4 raised fill for
+        // selected, surface3 for idle. Intentionally NOT accent.base — filter
+        // chips repeat in a row so a saturated fill would flood the header.
+        color: selected ? surface.surface4 : surface.surface3,
+        borderRadius: BorderRadius.circular(14),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: onTap,
+          child: Container(
+            alignment: Alignment.center,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Text(
+              label,
+              style: AppText.statLabel(
+                color: selected ? surface.textPrimary : surface.textSecondary,
+              ).copyWith(
+                fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 

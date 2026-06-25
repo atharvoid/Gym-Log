@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:uuid/uuid.dart';
 import 'package:gymlog/core/database/daos/routines_dao.dart';
+import 'package:gymlog/core/providers/database_provider.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text.dart';
 import '../../../../core/theme/dynamic_accent_theme.dart';
@@ -34,24 +34,21 @@ class WorkoutScreen extends ConsumerStatefulWidget {
 class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
   bool _routinesExpanded = true;
 
-  void _startRoutine(HydratedRoutine routine) {
+  void _startRoutine(HydratedRoutine routine) async {
     if (routine.exerciseIds.isEmpty) return; // guarded again in the card (with feedback)
     if (!tapGuard()) return;
     HapticFeedback.mediumImpact();
 
-    final exercises = routine.exerciseIds.asMap().entries.map((e) {
-      return WorkoutExerciseState(
-        id: const Uuid().v4(),
-        exerciseId: e.value,
-        name: routine.exerciseNames[e.key],
-        sets: [WorkoutSetState.create()],
-      );
-    }).toList();
+    final detail = await ref
+        .read(databaseProvider)
+        .routinesDao
+        .getHydratedRoutineDetail(routine.routine.id);
+    if (detail == null || !mounted) return;
 
     ref.read(activeWorkoutProvider.notifier).startWorkout(
           routineId: routine.routine.id,
           name: routine.routine.name,
-          initialExercises: exercises,
+          initialExercises: seedExercisesFromRoutine(detail),
         );
     context.push('/workout/active');
   }

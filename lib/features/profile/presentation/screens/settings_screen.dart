@@ -71,7 +71,7 @@ Future<void> showWeeklyGoalSheet(BuildContext context, WidgetRef ref) async {
                       '$days',
                       style: AppText.button(
                         color: days == current
-                            ? AppColors.textPrimary
+                            ? accent.onAccent
                             : AppColors.textPrimary,
                       ),
                     ),

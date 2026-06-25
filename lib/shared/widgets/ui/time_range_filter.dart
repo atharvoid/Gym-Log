@@ -190,6 +190,7 @@ Future<T?> showBrandedPickerSheet<T>({
 
   Widget optionRow(PickerOption<T> opt) {
     final isSelected = selected != null && opt.value == selected;
+    final iconColor = isSelected ? accent.base : opt.color;
     return Semantics(
       button: true,
       selected: isSelected,
@@ -211,10 +212,10 @@ Future<T?> showBrandedPickerSheet<T>({
                   height: 36,
                   alignment: Alignment.center,
                   decoration: BoxDecoration(
-                    color: opt.color.withValues(alpha: 0.14),
+                    color: iconColor.withValues(alpha: 0.14),
                     borderRadius: BorderRadius.circular(AppRadius.badge),
                   ),
-                  child: Icon(opt.icon, size: 18, color: opt.color),
+                  child: Icon(opt.icon, size: 18, color: iconColor),
                 ),
                 const SizedBox(width: 14),
                 Expanded(

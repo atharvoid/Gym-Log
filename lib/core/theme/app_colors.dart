@@ -164,16 +164,12 @@ abstract class AppColors {
   static const profileGraphActiveBarBright = profileGraphCurrentBarBright;
   static const profileGraphPreviousBar     = profileGraphHistoricalBar;
 
-  // Muscle-split data-viz palette — an ORDERED neon-violet ramp, light→dark.
-  // The dominant (largest) muscle is leftmost and lightest; each step darkens.
-  // Same hue family as the neon-purple default = on-brand single-accent viz.
+  // Muscle-split data-viz fallback palette. Matches the live Purple ramp
+  // (index 0 = dominant, index 5 = smallest) for widgets that run before the
+  // reactive theme is available.
   static const muscleSplitPalette = [
-    Color(0xFFE5BDFF), // neon violet 200 — dominant / largest share
-    Color(0xFFD9A6FF), // neon violet 300
-    Color(0xFFBF5AF2), // neon violet 500 — base
-    Color(0xFFA63FE0), // neon violet 600
-    Color(0xFF8A2FC4), // neon violet 700
-    Color(0xFF6E249E), // neon violet 800 — smallest share
+    Color(0xFF7F00FF), Color(0xFF9329FF), Color(0xFFA852FF),
+    Color(0xFFBC7AFF), Color(0xFFD1A3FF), Color(0xFFE5CCFF),
   ];
 }
 

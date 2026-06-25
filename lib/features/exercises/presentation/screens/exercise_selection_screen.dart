@@ -16,7 +16,6 @@ import 'package:gymlog/shared/widgets/ui/skeleton.dart';
 import '../providers/exercises_provider.dart';
 import '../widgets/create_exercise_dialog.dart';
 
-const double _kEstimatedRowHeight = 80;
 const double _kHeaderHeight = 36;
 
 final _recentExerciseIdsProvider = StreamProvider.autoDispose<List<int>>((ref) {
@@ -126,22 +125,6 @@ class _ExerciseSelectionScreenState
     return true;
   }
 
-  static String _initial(String name) {
-    final t = name.trim().toUpperCase();
-    if (t.isEmpty) return '#';
-    final c = t[0];
-    return (c.compareTo('A') >= 0 && c.compareTo('Z') <= 0) ? c : '#';
-  }
-
-  void _jumpToLetter(String letter, Map<String, double> letterOffsets) {
-    final offset = letterOffsets[letter];
-    if (offset == null || !_scrollController.hasClients) return;
-    HapticFeedback.selectionClick();
-    _scrollController.jumpTo(
-      offset.clamp(0.0, _scrollController.position.maxScrollExtent),
-    );
-  }
-
   Future<void> _pickFilter({
     required String title,
     required List<String> options,
@@ -212,7 +195,6 @@ class _ExerciseSelectionScreenState
   ({
     List<Exercise> recent,
     List<Exercise> catalog,
-    Map<String, double> letterOffsets,
     List<_ListItem> items,
   }) _computeList(List<Exercise> exercises, List<int> recentIds) {
     final dataHash = Object.hash(exercises.length, _muscleFilter, _equipmentFilter);
@@ -245,7 +227,6 @@ class _ExerciseSelectionScreenState
           a.name.toLowerCase().compareTo(b.name.toLowerCase()));
 
     final items = <_ListItem>[];
-    final letterIndex = <String, int>{};
     if (recent.isNotEmpty) {
       items.add(const _ListItem.header('RECENT'));
       items.addAll(recent.map(_ListItem.exercise));
@@ -256,25 +237,12 @@ class _ExerciseSelectionScreenState
           : 'ALL EXERCISES · ${catalog.length}'));
     }
     for (final e in catalog) {
-      letterIndex.putIfAbsent(_initial(e.name), () => items.length);
       items.add(_ListItem.exercise(e));
-    }
-
-    final letterOffsets = <String, double>{};
-    var currentOffset = 0.0;
-    for (int i = 0; i < items.length; i++) {
-      final item = items[i];
-      if (!item.isHeader) {
-        final letter = _initial(item.exerciseValue!.name);
-        letterOffsets.putIfAbsent(letter, () => currentOffset);
-      }
-      currentOffset += item.isHeader ? _kHeaderHeight : _kEstimatedRowHeight;
     }
 
     return (
       recent: recent,
       catalog: catalog,
-      letterOffsets: letterOffsets,
       items: items,
     );
   }
@@ -315,7 +283,7 @@ class _ExerciseSelectionScreenState
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 120),
               decoration: BoxDecoration(
-                borderRadius: AppRadius.inputAll,
+                borderRadius: AppRadius.buttonSecondaryAll,
                 boxShadow: _searchFocused
                     ? [
                         BoxShadow(
@@ -351,17 +319,17 @@ class _ExerciseSelectionScreenState
                   filled: true,
                   fillColor: surface.surface3,
                   enabledBorder: OutlineInputBorder(
-                    borderRadius: AppRadius.inputAll,
+                    borderRadius: AppRadius.buttonSecondaryAll,
                     borderSide:
                         BorderSide(color: surface.borderSubtle, width: 1),
                   ),
                   border: OutlineInputBorder(
-                    borderRadius: AppRadius.inputAll,
+                    borderRadius: AppRadius.buttonSecondaryAll,
                     borderSide:
                         BorderSide(color: surface.borderSubtle, width: 1),
                   ),
                   focusedBorder: OutlineInputBorder(
-                    borderRadius: AppRadius.inputAll,
+                    borderRadius: AppRadius.buttonSecondaryAll,
                     borderSide: BorderSide(color: accent.base, width: 1.5),
                   ),
                   contentPadding:
@@ -373,48 +341,57 @@ class _ExerciseSelectionScreenState
 
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                _FilterChipButton(
-                  label: _muscleFilter ?? 'Muscle',
-                  active: _muscleFilter != null,
-                  onTap: () => _pickFilter(
-                    title: 'Muscle Group',
-                    options: _muscleGroups.keys.toList(),
-                    current: _muscleFilter,
-                    onSelected: (v) => setState(() {
-                      _muscleFilter = v;
-                      _cachedFiltered = null;
-                    }),
-                  ),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _FilterChipButton(
+                        label: _muscleFilter ?? 'Muscle',
+                        active: _muscleFilter != null,
+                        onTap: () => _pickFilter(
+                          title: 'Muscle Group',
+                          options: _muscleGroups.keys.toList(),
+                          current: _muscleFilter,
+                          onSelected: (v) => setState(() {
+                            _muscleFilter = v;
+                            _cachedFiltered = null;
+                          }),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: AppSpacing.x3),
+                    Expanded(
+                      child: _FilterChipButton(
+                        label: _equipmentFilter ?? 'Equipment',
+                        active: _equipmentFilter != null,
+                        onTap: () => _pickFilter(
+                          title: 'Equipment',
+                          options: _equipmentGroups.keys.toList(),
+                          current: _equipmentFilter,
+                          onSelected: (v) => setState(() {
+                            _equipmentFilter = v;
+                            _cachedFiltered = null;
+                          }),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(width: 8),
-                _FilterChipButton(
-                  label: _equipmentFilter ?? 'Equipment',
-                  active: _equipmentFilter != null,
-                  onTap: () => _pickFilter(
-                    title: 'Equipment',
-                    options: _equipmentGroups.keys.toList(),
-                    current: _equipmentFilter,
-                    onSelected: (v) => setState(() {
-                      _equipmentFilter = v;
-                      _cachedFiltered = null;
-                    }),
+                if (hasFilters)
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: TextButton(
+                      onPressed: () => setState(() {
+                        _muscleFilter = null;
+                        _equipmentFilter = null;
+                        _cachedFiltered = null;
+                      }),
+                      child: Text('Clear filters',
+                          style: AppText.statLabel(color: accent.light)),
+                    ),
                   ),
-                ),
-                if (hasFilters) ...[
-                  const Spacer(),
-                  TextButton(
-                    onPressed: () => setState(() {
-                      _muscleFilter = null;
-                      _equipmentFilter = null;
-                      _cachedFiltered = null;
-                    }),
-                    child: Text('Clear',
-                        style: AppText.statLabel(color: accent.light)),
-                  ),
-                ],
               ],
             ),
           ),
@@ -441,13 +418,9 @@ class _ExerciseSelectionScreenState
       return _EmptyState(isSearching: _isSearching, onCreate: _createCustom);
     }
 
-    final showRail =
-        !_isSearching && computed.catalog.length >= 15;
-
-    final list = ListView.builder(
+    return ListView.builder(
       controller: _scrollController,
       padding: EdgeInsets.only(
-        right: showRail ? 24 : 0,
         bottom: 32 + MediaQuery.of(context).viewInsets.bottom,
       ),
       itemCount: computed.items.length,
@@ -492,23 +465,6 @@ class _ExerciseSelectionScreenState
           ),
         );
       },
-    );
-
-    if (!showRail) return list;
-
-    return Stack(
-      children: [
-        list,
-        Positioned(
-          top: 4,
-          bottom: 4,
-          right: 0,
-          child: _AlphabetRail(
-            present: computed.letterOffsets.keys.toSet(),
-            onLetter: (l) => _jumpToLetter(l, computed.letterOffsets),
-          ),
-        ),
-      ],
     );
   }
 }
@@ -579,76 +535,6 @@ class _ExerciseRow extends StatelessWidget {
           ),
         ),
       ),
-    );
-  }
-}
-
-class _AlphabetRail extends StatefulWidget {
-  final Set<String> present;
-  final ValueChanged<String> onLetter;
-  const _AlphabetRail({required this.present, required this.onLetter});
-
-  static const _letters = [
-    'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
-    'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
-  ];
-
-  @override
-  State<_AlphabetRail> createState() => _AlphabetRailState();
-}
-
-class _AlphabetRailState extends State<_AlphabetRail> {
-  String? _last;
-
-  void _handle(double dy, double height) {
-    if (height <= 0) return;
-    final i = (dy / height * _AlphabetRail._letters.length)
-        .floor()
-        .clamp(0, _AlphabetRail._letters.length - 1);
-    final letter = _AlphabetRail._letters[i];
-    if (letter == _last) return;
-    _last = letter;
-    if (widget.present.contains(letter)) widget.onLetter(letter);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final accent = context.accent;
-    final surface = context.surface;
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final h = constraints.maxHeight;
-        return GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onTapDown: (d) => _handle(d.localPosition.dy, h),
-          onVerticalDragStart: (d) => _handle(d.localPosition.dy, h),
-          onVerticalDragUpdate: (d) => _handle(d.localPosition.dy, h),
-          onVerticalDragEnd: (_) => _last = null,
-          child: Semantics(
-            label: 'Alphabet scrubber',
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 6),
-              child: FittedBox(
-                fit: BoxFit.fitHeight,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    for (final l in _AlphabetRail._letters)
-                      Text(
-                        l,
-                        style: AppText.columnHeader(
-                          color: widget.present.contains(l)
-                              ? accent.light
-                              : surface.textTertiary,
-                        ),
-                      ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        );
-      },
     );
   }
 }
@@ -812,7 +698,8 @@ class _FilterChipButton extends StatelessWidget {
               borderRadius: BorderRadius.circular(14),
             ),
             child: Row(
-              mainAxisSize: MainAxisSize.min,
+              mainAxisSize: MainAxisSize.max,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(label, style: AppText.statLabel(
                     color: fg,

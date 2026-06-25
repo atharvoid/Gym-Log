@@ -53,6 +53,11 @@ class ThemePaletteTokens {
   /// (Apple's tinted-button treatment) and stays uniform across the picker.
   final Color onAccent;
 
+  /// 6-step data-viz ramp for the muscle-split bar, index 0 = dominant
+  /// (largest share), index 5 = smallest share. Hand-tuned per accent so the
+  /// bar shows clearly distinct tints instead of one flat color.
+  final List<Color> muscleSplitRamp;
+
   const ThemePaletteTokens({
     required this.base,
     required this.light,
@@ -60,6 +65,7 @@ class ThemePaletteTokens {
     required this.muted,
     required this.glow,
     required this.onAccent,
+    required this.muscleSplitRamp,
   });
 }
 
@@ -82,7 +88,7 @@ enum ThemePalette {
         ThemePalette.neonMagenta => 'Magenta',
         ThemePalette.electricIndigo => 'Electric Indigo',
         ThemePalette.white => 'White',
-        ThemePalette.higgsfield => 'Higgsfield',
+        ThemePalette.higgsfield => 'Volt',
       };
 
   /// Accessibility label for the swatch.
@@ -92,20 +98,25 @@ enum ThemePalette {
         ThemePalette.neonMagenta => 'Magenta',
         ThemePalette.electricIndigo => 'Electric indigo',
         ThemePalette.white => 'White',
-        ThemePalette.higgsfield => 'Higgsfield',
+        ThemePalette.higgsfield => 'Volt',
       };
 
   /// The six-token set for this palette. muted = 0x24 (~14%), glow = 0x1F
   /// (~12%) — the dark-mode saturation ladder.
   ThemePaletteTokens get tokens => switch (this) {
-        // 1 — Neon Purple: the app's on-brand default identity.
+        // 1 — Neon Purple: the app's on-brand default identity. Pure violet
+        // #7F00FF for a deeper, more premium CTA presence than orchid.
         ThemePalette.neonPurple => const ThemePaletteTokens(
-            base: Color(0xFFBF5AF2),
-            light: Color(0xFFD9A6FF),
-            dark: Color(0xFF9A3FD0),
-            muted: Color(0x24BF5AF2),
-            glow: Color(0x1FBF5AF2),
+            base: Color(0xFF7F00FF),
+            light: Color(0xFFB973FF),
+            dark: Color(0xFF6300C7),
+            muted: Color(0x247F00FF),
+            glow: Color(0x1F7F00FF),
             onAccent: Color(0xFF0A0A0A), // near-black on every palette — uniform rule
+            muscleSplitRamp: [
+              Color(0xFF7F00FF), Color(0xFF9329FF), Color(0xFFA852FF),
+              Color(0xFFBC7AFF), Color(0xFFD1A3FF), Color(0xFFE5CCFF),
+            ],
           ),
         // 2 — Neon Cyan: bright analytical cyan. Near-black on-accent so a CTA
         // label stays legible on the luminous fill.
@@ -116,6 +127,10 @@ enum ThemePalette {
             muted: Color(0x2400D9FF),
             glow: Color(0x1F00D9FF),
             onAccent: Color(0xFF0A0A0A),
+            muscleSplitRamp: [
+              Color(0xFF00D9FF), Color(0xFF29DFFF), Color(0xFF52E5FF),
+              Color(0xFF7AEBFF), Color(0xFFA3F1FF), Color(0xFFCCF7FF),
+            ],
           ),
         // 3 — Neon Magenta: high-energy magenta-red.
         ThemePalette.neonMagenta => const ThemePaletteTokens(
@@ -125,6 +140,10 @@ enum ThemePalette {
             muted: Color(0x24FF2D55),
             glow: Color(0x1FFF2D55),
             onAccent: Color(0xFF0A0A0A), // near-black on every palette — uniform rule
+            muscleSplitRamp: [
+              Color(0xFFFF2D55), Color(0xFFFF4F70), Color(0xFFFF708B),
+              Color(0xFFFF92A7), Color(0xFFFFB3C2), Color(0xFFFFD5DD),
+            ],
           ),
         // 4 — Electric Indigo: precise, technical blue-purple.
         ThemePalette.electricIndigo => const ThemePaletteTokens(
@@ -137,6 +156,10 @@ enum ThemePalette {
             muted: Color(0x247C7AFF),
             glow: Color(0x1F7C7AFF),
             onAccent: Color(0xFF0A0A0A), // near-black on every palette — uniform rule
+            muscleSplitRamp: [
+              Color(0xFF7C7AFF), Color(0xFF918FFF), Color(0xFFA6A5FF),
+              Color(0xFFBBBAFF), Color(0xFFD0CFFF), Color(0xFFE5E4FF),
+            ],
           ),
         // 5 — White: white ACCENT on the dark AMOLED canvas. Off-white base
         // (not pure #FFFFFF) reads as premium pearl, not a blank void. Near-black
@@ -149,8 +172,12 @@ enum ThemePalette {
             muted: Color(0x24F5F5F7),  // ~14% white tinted fill
             glow: Color(0x1FF5F5F7),   // ~12% white glow
             onAccent: Color(0xFF0A0A0A),// near-black label ON the white fill
+            muscleSplitRamp: [
+              Color(0xFFF5F5F7), Color(0xFFD2D2D4), Color(0xFFB0B0B1),
+              Color(0xFF8D8D8E), Color(0xFF6A6A6B), Color(0xFF474748),
+            ],
           ),
-        // 6 — Higgsfield: deep saturated electric chartreuse-lime. High-luminance
+        // 6 — Volt: deep saturated electric chartreuse-lime. High-luminance
         // base needs near-black onAccent so CTA labels stay crisp.
         ThemePalette.higgsfield => const ThemePaletteTokens(
             base: Color(0xFFC8FF00),
@@ -159,6 +186,10 @@ enum ThemePalette {
             muted: Color(0x24C8FF00),
             glow: Color(0x1FC8FF00),
             onAccent: Color(0xFF0A0A0A),
+            muscleSplitRamp: [
+              Color(0xFFC8FF00), Color(0xFFD1FF29), Color(0xFFDAFF52),
+              Color(0xFFE2FF7A), Color(0xFFEBFFA3), Color(0xFFF4FFCC),
+            ],
           ),
       };
 

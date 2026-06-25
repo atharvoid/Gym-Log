@@ -31,13 +31,18 @@ abstract class MuscleColorService {
     final total = entries.fold<int>(0, (sum, e) => sum + e.value);
     if (total == 0) return const <MuscleSplitSlice>[];
     final palette = ramp ?? AppColors.muscleSplitPalette;
+    final n = entries.length;
+    final lastIdx = palette.length - 1;
     return [
-      for (var i = 0; i < entries.length; i++)
+      for (var i = 0; i < n; i++)
         MuscleSplitSlice(
           muscle: entries[i].key,
           setCount: entries[i].value,
           share: entries[i].value / total,
-          color: palette[i.clamp(0, palette.length - 1)],
+          // Spread N slices across the full ramp so even 2 groups get a
+          // clearly dark-vs-light pair. rank 0 = deepest (dominant).
+          color: palette[(n == 1 ? 0 : (i * lastIdx / (n - 1)).round())
+              .clamp(0, lastIdx)],
         ),
     ];
   }
@@ -46,7 +51,15 @@ abstract class MuscleColorService {
   /// beyond the ramp length clamp to the lightest shade.
   static Color colorForRank(int rank, {List<Color>? ramp}) {
     final palette = ramp ?? AppColors.muscleSplitPalette;
-    return palette[rank.clamp(0, palette.length - 1)];
+    final lastIdx = palette.length - 1;
+    // Map rank into the full ramp, distributing lesser ranks toward the light
+    // end the same way rankedSplit does for N slices.
+    final idx = rank <= 0
+        ? 0
+        : rank >= lastIdx
+            ? lastIdx
+            : (rank * lastIdx / (rank + 1)).round();
+    return palette[idx.clamp(0, lastIdx)];
   }
 
   /// Accent for a SINGLE dominant-muscle glyph (e.g. a routine card), where the

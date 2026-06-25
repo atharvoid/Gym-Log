@@ -111,7 +111,8 @@ class _SetRowState extends State<SetRow> {
   }
 
   bool get _canComplete =>
-      widget.setData.weightKg > 0 && widget.setData.reps > 0;
+      (widget.setData.weightKg > 0 || widget.previousWeight != null) &&
+      (widget.setData.reps > 0 || widget.previousReps != null);
 
   /// Last session's performance for this set index → "15kg x 12".
   String? get _previousLabel {
@@ -169,6 +170,7 @@ class _SetRowState extends State<SetRow> {
     required String semanticLabel,
     required ValueChanged<String> onChanged,
     TextInputAction action = TextInputAction.next,
+    String? hintText,
   }) {
     final completed = widget.setData.isCompleted;
     return Semantics(
@@ -191,8 +193,8 @@ class _SetRowState extends State<SetRow> {
         ],
         style: AppText.value(),
         decoration: InputDecoration(
-          hintText: '–',
-          hintStyle: AppText.value(color: AppColors.textDisabled),
+          hintText: hintText ?? '–',
+          hintStyle: AppText.value(color: AppColors.textTertiary),
           border: InputBorder.none,
           focusedBorder: InputBorder.none,
           enabledBorder: InputBorder.none,
@@ -283,6 +285,9 @@ class _SetRowState extends State<SetRow> {
                 focusNode: _weightFocus,
                 isDecimal: true,
                 semanticLabel: 'Weight in ${widget.unit}',
+                hintText: widget.previousWeight != null
+                    ? _formatWeightField(widget.previousWeight!)
+                    : '–',
                 onChanged: (val) {
                   final parsed = double.tryParse(val);
                   if (parsed != null) {
@@ -303,6 +308,9 @@ class _SetRowState extends State<SetRow> {
                 isDecimal: false,
                 action: TextInputAction.done,
                 semanticLabel: 'Reps',
+                hintText: widget.previousReps != null
+                    ? '${widget.previousReps!}'
+                    : '–',
                 onChanged: (val) {
                   final parsed = int.tryParse(val);
                   if (parsed != null) {
@@ -323,7 +331,7 @@ class _SetRowState extends State<SetRow> {
                   onTap: isCompleted || _canComplete
                       ? () {
                           if (!isCompleted) HapticFeedback.mediumImpact();
-                          widget.onToggleComplete();
+                          _onToggleComplete();
                         }
                       : null,
                   behavior: HitTestBehavior.opaque,
@@ -377,5 +385,23 @@ class _SetRowState extends State<SetRow> {
         ),
       ),
     );
+  }
+
+  /// Commits any available previous-session values into empty fields, then
+  /// toggles completion. If the user already typed a value, it is preserved.
+  void _onToggleComplete() {
+    if (!widget.setData.isCompleted) {
+      if (widget.setData.weightKg <= 0 && widget.previousWeight != null) {
+        final kg = widget.previousWeight!;
+        _weightController.text = _formatWeightField(kg);
+        widget.onChanged(widget.setData.copyWith(weightKg: kg));
+      }
+      if (widget.setData.reps <= 0 && widget.previousReps != null) {
+        final reps = widget.previousReps!;
+        _repsController.text = reps.toString();
+        widget.onChanged(widget.setData.copyWith(reps: reps));
+      }
+    }
+    widget.onToggleComplete();
   }
 }

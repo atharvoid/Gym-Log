@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:share_plus/share_plus.dart';
-import 'package:uuid/uuid.dart';
 
 import 'package:gymlog/core/database/daos/routines_dao.dart';
 import 'package:gymlog/core/database/daos/workouts_dao.dart';
@@ -87,28 +86,11 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
       context.push('/routines/edit?id=${widget.routineId}');
       return;
     }
-    final exercises = routine.exercises.map((he) {
-      final config = he.config;
-      final sets = List.generate(
-        config.defaultSets,
-        (_) => WorkoutSetState(
-          id: const Uuid().v4(),
-          weightKg: config.defaultWeightKg ?? 0.0,
-          reps: config.defaultReps ?? 0,
-        ),
-      );
-      return WorkoutExerciseState(
-        id: const Uuid().v4(),
-        exerciseId: he.exercise.id,
-        name: he.exercise.name,
-        sets: sets.isEmpty ? [WorkoutSetState.create()] : sets,
-      );
-    }).toList();
 
     ref.read(activeWorkoutProvider.notifier).startWorkout(
           routineId: routine.routine.id,
           name: routine.routine.name,
-          initialExercises: exercises,
+          initialExercises: seedExercisesFromRoutine(routine),
         );
     context.push('/workout/active');
   }

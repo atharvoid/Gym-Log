@@ -456,12 +456,12 @@ class _EmptyEditorState extends StatelessWidget {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.add_rounded,
-                          size: 18, color: AppColors.textPrimary),
+                      Icon(Icons.add_rounded,
+                          size: 18, color: accent.onAccent),
                       const SizedBox(width: 6),
                       Text(
                         'Add Exercise',
-                        style: AppText.rowLabel(color: AppColors.textPrimary),
+                        style: AppText.rowLabel(color: accent.onAccent),
                       ),
                     ],
                   ),
