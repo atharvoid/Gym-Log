@@ -44,6 +44,7 @@ class FakeRemote implements SyncRemote {
 }
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
   late AppDatabase db;
   late FakeRemote remote;
   late SyncEngine engine;

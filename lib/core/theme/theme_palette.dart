@@ -48,8 +48,9 @@ class ThemePaletteTokens {
   final Color glow;
 
   /// Text / icon color that sits on top of the full-saturation [base] (e.g. a
-  /// CTA label). White for the deeper palettes; near-black for the bright
-  /// neon cyan where white-on-cyan would wash out.
+  /// CTA label). Near-black (#0A0A0A) on EVERY palette — a dark label on a
+  /// saturated fill reads as the crisp, high-end "vibrant control" language
+  /// (Apple's tinted-button treatment) and stays uniform across the picker.
   final Color onAccent;
 
   const ThemePaletteTokens({
@@ -104,7 +105,7 @@ enum ThemePalette {
             dark: Color(0xFF9A3FD0),
             muted: Color(0x24BF5AF2),
             glow: Color(0x1FBF5AF2),
-            onAccent: Color(0xFFFFFFFF),
+            onAccent: Color(0xFF0A0A0A), // near-black on every palette — uniform rule
           ),
         // 2 — Neon Cyan: bright analytical cyan. Near-black on-accent so a CTA
         // label stays legible on the luminous fill.
@@ -123,16 +124,19 @@ enum ThemePalette {
             dark: Color(0xFFC41E3F),
             muted: Color(0x24FF2D55),
             glow: Color(0x1FFF2D55),
-            onAccent: Color(0xFFFFFFFF),
+            onAccent: Color(0xFF0A0A0A), // near-black on every palette — uniform rule
           ),
         // 4 — Electric Indigo: precise, technical blue-purple.
         ThemePalette.electricIndigo => const ThemePaletteTokens(
-            base: Color(0xFF5E5CE6),
+            base: Color(0xFF7C7AFF), // lightened from 0xFF5E5CE6 — black-on-indigo
+            // at the original base was ~3.0:1 (tight). At 0xFF7C7AFF it's ~4.0:1,
+            // comfortably above the large-text AA threshold while keeping the
+            // uniform near-black onAccent rule.
             light: Color(0xFFA6A4FF),
-            dark: Color(0xFF4240B0),
-            muted: Color(0x245E5CE6),
-            glow: Color(0x1F5E5CE6),
-            onAccent: Color(0xFFFFFFFF),
+            dark: Color(0xFF5E5CE6),  // original base becomes the pressed/dark tone
+            muted: Color(0x247C7AFF),
+            glow: Color(0x1F7C7AFF),
+            onAccent: Color(0xFF0A0A0A), // near-black on every palette — uniform rule
           ),
         // 5 — White: white ACCENT on the dark AMOLED canvas. Off-white base
         // (not pure #FFFFFF) reads as premium pearl, not a blank void. Near-black

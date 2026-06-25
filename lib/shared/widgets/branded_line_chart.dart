@@ -419,58 +419,67 @@ class _BrandedLineChartState extends State<BrandedLineChart> {
     );
   }
 
-  Widget _empty(BuildContext context) => Container(
-        height: 150,
-        decoration: BoxDecoration(
-          gradient: RDStyles.cardGradient,
-          borderRadius: BorderRadius.circular(20),
-          border: RDStyles.hairlineBorder,
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            SizedBox(
-              height: 34,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  for (final h in const [0.40, 0.65, 0.50, 0.80, 0.95])
-                    Container(
-                      width: 6,
-                      height: 34 * h,
-                      margin: const EdgeInsets.symmetric(horizontal: 2.5),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(6),
-                        gradient: const LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [Color(0xFF3A2A55), Color(0xFF1A1A1D)],
-                        ),
+  Widget _empty(BuildContext context) {
+    final accent = context.accent;
+    return Container(
+      height: 150,
+      decoration: BoxDecoration(
+        gradient: RDStyles.cardGradient,
+        borderRadius: BorderRadius.circular(20),
+        border: RDStyles.hairlineBorder,
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          SizedBox(
+            height: 34,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                for (final h in const [0.40, 0.65, 0.50, 0.80, 0.95])
+                  Container(
+                    width: 6,
+                    height: 34 * h,
+                    margin: const EdgeInsets.symmetric(horizontal: 2.5),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(6),
+                      // Accent-derived ghost bars — fade the live accent to
+                      // transparent so these always match the selected palette.
+                      // Previously hardcoded purple [0xFF3A2A55 → 0xFF1A1A1D].
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          accent.base.withValues(alpha: 0.45),
+                          accent.base.withValues(alpha: 0.04),
+                        ],
                       ),
                     ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 10),
-            Text(widget.emptyTitle, style: RDStyles.emptyTitle),
-            const SizedBox(height: 3),
-            Text(widget.emptySubtitle, style: RDStyles.emptySub),
-            if (widget.onEmptyAction != null && widget.emptyActionLabel != null) ...[
-              const SizedBox(height: 14),
-              TextButton(
-                onPressed: widget.onEmptyAction,
-                child: Text(
-                  widget.emptyActionLabel!,
-                  style: GoogleFonts.inter(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    color: context.accent.light,
                   ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 10),
+          Text(widget.emptyTitle, style: RDStyles.emptyTitle),
+          const SizedBox(height: 3),
+          Text(widget.emptySubtitle, style: RDStyles.emptySub),
+          if (widget.onEmptyAction != null && widget.emptyActionLabel != null) ...[
+            const SizedBox(height: 14),
+            TextButton(
+              onPressed: widget.onEmptyAction,
+              child: Text(
+                widget.emptyActionLabel!,
+                style: GoogleFonts.inter(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: context.accent.light,
                 ),
               ),
-            ],
+            ),
           ],
-        ),
-      );
+        ],
+      ),
+    );
+  }
 }
