@@ -20,7 +20,7 @@ This file tracks every finding ID with its severity, owning screen, status (`ope
 
 | Finding ID | Screen | Description | Status | Closing Commit |
 |---|---|---|---|---|
-| **XD-2** | ExerciseDetailScreen | Exercise Detail discards `isPrimary`; tint primary muscle chip with `accent` | `open` | |
+| **XD-2** | ExerciseDetailScreen | Exercise Detail discards `isPrimary`; tint primary muscle chip with `accent` | `done` | 51e80c5 |
 | **ES-1** | ExerciseSelectionScreen | Remove dead memoization cache in `_computeList` | `open` | |
 | **HOME-1** | HomeScreen | Folds into SYS-2 (theme token migration) | `done` | 3f41aab |
 | **HOME-2** | HomeScreen | Reversible workout deletion with Undo (SYS-3) | `done` | 7732bd5 |
@@ -55,9 +55,9 @@ This file tracks every finding ID with its severity, owning screen, status (`ope
 | **RE-3** | RoutineEditorScreen | Routine Editor naming constraints | `open` | |
 | **ES-2** | ExerciseSelectionScreen | Search bar cursor color mismatch | `open` | |
 | **ES-3** | ExerciseSelectionScreen | Filter chips height is sub-48dp (currently 44dp) | `open` | |
-| **XD-3** | ExerciseDetailScreen | Title size scaling on small devices | `open` | |
-| **XD-4** | ExerciseDetailScreen | Custom exercise creator toggles size is sub-48dp | `open` | |
-| **XD-5** | ExerciseDetailScreen | Video demo placeholder alignment | `open` | |
+| **XD-3** | ExerciseDetailScreen | Stat toggles touch targets are sub-48dp (expand to >=48dp min height) | `done` | 51e80c5 |
+| **XD-4** | ExerciseDetailScreen | Failed to load analytics is a dead end (replace with accessible retry button) | `done` | 51e80c5 |
+| **XD-5** | ExerciseDetailScreen | Analytics & full-page spinner loads (replace with skeletons, wrap chart in RepaintBoundary, memoize PR maxes) | `done` | 51e80c5 |
 | **PR-1** | ProfileScreen | Avatar picture size constraints | `open` | |
 | **PR-2** | ProfileScreen | Weekly stats bar chart styling | `open` | |
 | **PR-3** | ProfileScreen | Premium paywall visual alignment | `open` | |

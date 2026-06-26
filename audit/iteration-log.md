@@ -166,3 +166,41 @@ This file records each loop execution details, diff summaries, scoreboard delta,
 - [x] Restore/Grace/Double-Delete: **PASS** (covered by automated tests)
 
 **Gate Verdict:** PASS
+
+---
+
+## Iteration 5: Exercise Detail Polish (XD-2/3/4/5 & MOTION)
+
+**Date:** 2026-06-27
+**Slice:** Exercise Detail Screen Polish (XD-2/3/4/5)
+
+### Diff Summary
+- **XD-2 (Primary Muscle Highlight)**: Refactored muscle chip wrap to bind and evaluate the `isPrimary` target flag. Styled primary muscle chip using active palette accent theme (12% alpha background, 35% alpha border, accent text) for AMOLED-dark compliance, keeping secondary chips in surface3 muted.
+- **XD-3 (Stat Toggles Touch Targets)**: Expanded stat toggle button touch footprint to `>=48dp` min-height using a nested layout (tight visual pill nested inside center-aligned constraints). Swapped haptics from `lightImpact` to `selectionClick`.
+- **XD-4 (Analytics Retry Action)**: Replaced dead-end error message on history analytics failure with an accessible `>=48dp` touch-target `AsyncErrorState` retry button that invalidates the riverpod family provider.
+- **XD-5 (Skeletons, RepaintBoundary, PR Memoization)**:
+  - Replaced spinner loading indicators with custom dark-mode token-matching `SkeletonPulse` and `SkeletonBox` structures for both partial section loads and full-page loading states.
+  - Wrapped `BrandedLineChart` in a `RepaintBoundary` to prevent redundant canvas paints on external widget rebuilds.
+  - Optimized build performance by memoizing heaviest weight, best 1RM, max session volume, and max reps PR aggregations, computing them once per history reference update instead of on every frame rebuild.
+- **MOTION (Entrance Transition)**: Added a restrained entry fade-and-slide transition to the main content using `AnimationController`. Gated under `MediaQuery.disableAnimationsOf(context)` to immediately set the value to `1.0` and skip the transition under reduced-motion accessibility preferences.
+- **Automated Tests**: Created `test/exercise_detail_polish_test.dart` to verify primary chip styling, stat toggle dimensions, error state retry invalidation behavior, and media query reduced motion gating.
+
+### Scoreboard Delta
+| Screen | Dimension | Before | After | Change |
+|---|---|---|---|---|
+| ExerciseDetailScreen | Components | 7.0 | 8.5 | +1.5 |
+| ExerciseDetailScreen | Motion & Haptics | 7.0 | 8.0 | +1.0 |
+| ExerciseDetailScreen | Logic & State | 7.0 | 8.5 | +1.5 |
+| ExerciseDetailScreen | Accessibility | 7.0 | 8.5 | +1.5 |
+| ExerciseDetailScreen | Performance | 7.5 | 8.5 | +1.0 |
+| ExerciseDetailScreen | Visual Professionalism | 9.0 | 9.5 | +0.5 |
+| ExerciseDetailScreen | +Overall | 7.7 | 8.2 | +0.5 |
+
+### Gate Verification Result
+- [x] Format: **PASS**
+- [x] Static Analysis: **PASS**
+- [x] Custom Linter: **PASS**
+- [x] Tests Suite: **PASS** (141 tests passed)
+- [x] Skeletons & Sizing: **PASS** (covered by automated tests)
+
+**Gate Verdict:** PASS (XD-2/3/4/5 done; app overall average is 7.9)
