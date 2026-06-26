@@ -5,7 +5,27 @@
 # Exit on first failure so you fix problems in order.
 $ErrorActionPreference = "Stop"
 
-Write-Host "`n▸ format" -ForegroundColor Cyan
+Write-Host "`n▸ check inline GoogleFonts" -ForegroundColor Cyan
+$gfontMatches = Get-ChildItem -Path lib -Recurse -Filter *.dart | 
+    Where-Object { 
+        $_.FullName -notmatch "app_text\.dart" -and 
+        $_.FullName -notmatch "app_theme\.dart" -and 
+        $_.FullName -notmatch "splash_screen\.dart" -and 
+        $_.FullName -notmatch "weekly_bar_chart\.dart" -and 
+        $_.FullName -notmatch "routine_detail_styles\.dart" -and 
+        $_.FullName -notmatch "app_error_screen\.dart" -and 
+        $_.FullName -notmatch "bottom_nav_bar\.dart" -and 
+        $_.FullName -notmatch "branded_line_chart\.dart"
+    } | 
+    Select-String -Pattern "GoogleFonts\.inter\("
+
+if ($gfontMatches) {
+    Write-Host "✗ Prohibited inline GoogleFonts.inter( usages found at:" -ForegroundColor Red
+    $gfontMatches | ForEach-Object { Write-Host "$($_.Path):$($_.LineNumber): $($_.Line.Trim())" -ForegroundColor Red }
+    exit 1
+}
+
+Write-Host "▸ format" -ForegroundColor Cyan
 dart format --output=none --set-exit-if-changed .
 if ($LASTEXITCODE -ne 0) { Write-Host "✗ format failed" -ForegroundColor Red; exit 1 }
 
