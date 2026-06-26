@@ -67,9 +67,9 @@ class _ExerciseSelectionScreenState
   bool _searchFocused = false;
 
   List<Exercise>? _cachedFiltered;
+  List<Exercise>? _cachedSource;
   String? _cachedMuscleFilter;
   String? _cachedEquipmentFilter;
-  int? _cachedDataHash;
 
   @override
   void initState() {
@@ -198,20 +198,19 @@ class _ExerciseSelectionScreenState
     List<Exercise> catalog,
     List<_ListItem> items,
   }) _computeList(List<Exercise> exercises, List<int> recentIds) {
-    final dataHash =
-        Object.hash(exercises.length, _muscleFilter, _equipmentFilter);
+    final List<Exercise> filtered;
     if (_cachedFiltered != null &&
+        identical(exercises, _cachedSource) &&
         _cachedMuscleFilter == _muscleFilter &&
-        _cachedEquipmentFilter == _equipmentFilter &&
-        _cachedDataHash == dataHash) {
-      // Cache hit — reuse previous computation.
+        _cachedEquipmentFilter == _equipmentFilter) {
+      filtered = _cachedFiltered!;
+    } else {
+      filtered = exercises.where(_matchesFilters).toList();
+      _cachedFiltered = filtered;
+      _cachedSource = exercises;
+      _cachedMuscleFilter = _muscleFilter;
+      _cachedEquipmentFilter = _equipmentFilter;
     }
-
-    final filtered = exercises.where(_matchesFilters).toList();
-    _cachedFiltered = filtered;
-    _cachedMuscleFilter = _muscleFilter;
-    _cachedEquipmentFilter = _equipmentFilter;
-    _cachedDataHash = dataHash;
 
     final recent = <Exercise>[];
     if (!_isSearching && recentIds.isNotEmpty) {
@@ -351,7 +350,6 @@ class _ExerciseSelectionScreenState
                           current: _muscleFilter,
                           onSelected: (v) => setState(() {
                             _muscleFilter = v;
-                            _cachedFiltered = null;
                           }),
                         ),
                       ),
@@ -367,7 +365,6 @@ class _ExerciseSelectionScreenState
                           current: _equipmentFilter,
                           onSelected: (v) => setState(() {
                             _equipmentFilter = v;
-                            _cachedFiltered = null;
                           }),
                         ),
                       ),
@@ -381,7 +378,6 @@ class _ExerciseSelectionScreenState
                       onPressed: () => setState(() {
                         _muscleFilter = null;
                         _equipmentFilter = null;
-                        _cachedFiltered = null;
                       }),
                       child: Text('Clear filters',
                           style: AppText.statLabel(color: accent.light)),
