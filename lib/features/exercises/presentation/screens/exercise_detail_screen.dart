@@ -42,6 +42,33 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
   int _activeToggleIndex = 0;
   String _selectedTimeRange = '6M';
 
+  // For PR memoization
+  List<ExerciseHistoryData>? _lastHistory;
+  double _memoizedMaxWeight = 0.0;
+  double _memoizedMax1RM = 0.0;
+  double _memoizedMaxVolume = 0.0;
+  int _memoizedMaxReps = 0;
+
+  void _updateMemoizedPRs(List<ExerciseHistoryData> history) {
+    if (identical(_lastHistory, history)) return;
+    _lastHistory = history;
+    if (history.isEmpty) {
+      _memoizedMaxWeight = 0.0;
+      _memoizedMax1RM = 0.0;
+      _memoizedMaxVolume = 0.0;
+      _memoizedMaxReps = 0;
+      return;
+    }
+    _memoizedMaxWeight =
+        history.map((e) => e.weight).reduce((a, b) => a > b ? a : b);
+    _memoizedMax1RM =
+        history.map((e) => e.estimated1RM).reduce((a, b) => a > b ? a : b);
+    _memoizedMaxVolume =
+        history.map((e) => e.volume).reduce((a, b) => a > b ? a : b);
+    _memoizedMaxReps =
+        history.map((e) => e.reps).reduce((a, b) => a > b ? a : b);
+  }
+
   static const _toggleLabels = [
     'Heaviest Weight',
     'One Rep Max',
@@ -214,6 +241,7 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
                   ),
                 ),
                 data: (history) {
+                  _updateMemoizedPRs(history);
                   final isPremium = ref.watch(isPremiumProvider);
                   final visible = gateChartSamples(history, isPremium);
                   return Column(
@@ -224,7 +252,7 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
                       _buildStatToggles(surface),
                       if (history.isNotEmpty) ...[
                         const SizedBox(height: 24),
-                        _buildPersonalRecords(history, surface),
+                        _buildPersonalRecords(surface),
                       ],
                       const SizedBox(height: 24),
                       _buildInstructions(exercise, surface),
@@ -266,18 +294,20 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
           ],
         ),
         const SizedBox(height: 12),
-        BrandedLineChart(
-          key: ValueKey(
-              '$_activeToggleIndex|$_selectedTimeRange|${history.length}'),
-          data: [
-            for (final e in history)
-              ChartPoint(e.date, _metricForToggle(e, _activeToggleIndex)),
-          ],
-          valueFormatter: (v) => _activeToggleIndex == 3
-              ? '${groupThousands(v)} kg'
-              : '${v == v.truncateToDouble() ? v.toInt() : v.toStringAsFixed(1)} kg',
-          emptyTitle: 'No data yet',
-          emptySubtitle: 'Log this exercise to see your progress',
+        RepaintBoundary(
+          child: BrandedLineChart(
+            key: ValueKey(
+                '$_activeToggleIndex|$_selectedTimeRange|${history.length}'),
+            data: [
+              for (final e in history)
+                ChartPoint(e.date, _metricForToggle(e, _activeToggleIndex)),
+            ],
+            valueFormatter: (v) => _activeToggleIndex == 3
+                ? '${groupThousands(v)} kg'
+                : '${v == v.truncateToDouble() ? v.toInt() : v.toStringAsFixed(1)} kg',
+            emptyTitle: 'No data yet',
+            emptySubtitle: 'Log this exercise to see your progress',
+          ),
         ),
       ],
     );
@@ -323,21 +353,7 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
     );
   }
 
-  Widget _buildPersonalRecords(
-      List<ExerciseHistoryData> history, SurfaceTokens surface) {
-    final maxWeight = history.isEmpty
-        ? 0.0
-        : history.map((e) => e.weight).reduce((a, b) => a > b ? a : b);
-    final max1RM = history.isEmpty
-        ? 0.0
-        : history.map((e) => e.estimated1RM).reduce((a, b) => a > b ? a : b);
-    final maxVolume = history.isEmpty
-        ? 0.0
-        : history.map((e) => e.volume).reduce((a, b) => a > b ? a : b);
-    final maxReps = history.isEmpty
-        ? 0
-        : history.map((e) => e.reps).reduce((a, b) => a > b ? a : b);
-
+  Widget _buildPersonalRecords(SurfaceTokens surface) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -362,15 +378,16 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
           ),
           child: Column(
             children: [
-              _prRow('Heaviest Weight', '${maxWeight.toStringAsFixed(1)} kg',
+              _prRow('Heaviest Weight',
+                  '${_memoizedMaxWeight.toStringAsFixed(1)} kg', surface),
+              _prDivider(surface),
+              _prRow('Best 1RM', '${_memoizedMax1RM.toStringAsFixed(2)} kg',
                   surface),
               _prDivider(surface),
-              _prRow('Best 1RM', '${max1RM.toStringAsFixed(2)} kg', surface),
+              _prRow('Max Session Volume',
+                  '${_memoizedMaxVolume.toStringAsFixed(0)} kg', surface),
               _prDivider(surface),
-              _prRow('Max Session Volume', '${maxVolume.toStringAsFixed(0)} kg',
-                  surface),
-              _prDivider(surface),
-              _prRow('Max Reps', '$maxReps reps', surface),
+              _prRow('Max Reps', '$_memoizedMaxReps reps', surface),
             ],
           ),
         ),
