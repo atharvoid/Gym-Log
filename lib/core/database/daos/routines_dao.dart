@@ -364,6 +364,16 @@ class RoutinesDao extends DatabaseAccessor<AppDatabase>
     });
   }
 
+  Future<void> restoreRoutine(Map<String, dynamic> data) async {
+    final rj = data['routine'] as Map<String, dynamic>;
+    final routineId = rj['id'] as String;
+    final userId = rj['userId'] as String;
+    await transaction(() async {
+      await importRoutineJson(data);
+    });
+    await _enqueueRoutineUpsert(routineId, userId);
+  }
+
   /// Queues a routine's current state for cloud upload. Called from every
   /// routine mutation below so coverage is guaranteed at the DAO layer — no
   /// UI call site can forget to sync. Best-effort: a serialization hiccup

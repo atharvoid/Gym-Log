@@ -379,4 +379,94 @@ void main() {
         .getSingle();
     expect(days.read<int>('c'), 0);
   });
+
+  test('session and routine restore-after-delete (SYS-3)', () async {
+    final bench =
+        await insertExercise('Bench Press', 'chest', 'barbell', 'Chest');
+
+    // 1. Routine Delete/Restore
+    const rId = 'r-test-1';
+    final now = DateTime.now();
+    await db.routinesDao.insertRoutine(RoutinesCompanion(
+      id: const Value(rId),
+      userId: const Value(userId),
+      name: const Value('Test Routine'),
+      createdAt: Value(now),
+      updatedAt: Value(now),
+    ));
+    await db.routinesDao.insertDay(const RoutineDaysCompanion(
+      id: Value('rd-test-1'),
+      routineId: Value(rId),
+      name: Value('Day 1'),
+      orderIndex: Value(0),
+    ));
+    await db.routinesDao.insertRoutineExercise(RoutineExercisesCompanion(
+      id: const Value('re-test-1'),
+      routineDayId: const Value('rd-test-1'),
+      exerciseId: Value(bench),
+      orderIndex: const Value(0),
+      defaultSets: const Value(3),
+    ));
+
+    // Export JSON before delete
+    final routineData = await db.routinesDao.exportRoutineJson(rId);
+    expect(routineData, isNotNull);
+
+    // Delete
+    await db.routinesDao.deleteRoutine(rId);
+
+    // Verify it is gone
+    final deletedRoutine = await (db.select(db.routines)
+          ..where((t) => t.id.equals(rId)))
+        .getSingleOrNull();
+    expect(deletedRoutine, isNull);
+
+    // Restore
+    await db.routinesDao.restoreRoutine(routineData!);
+
+    // Verify it is back with all children
+    final restoredRoutine = await (db.select(db.routines)
+          ..where((t) => t.id.equals(rId)))
+        .getSingleOrNull();
+    expect(restoredRoutine, isNotNull);
+    expect(restoredRoutine!.name, 'Test Routine');
+
+    final restoredDays = await db.routinesDao.getDaysForRoutine(rId);
+    expect(restoredDays.length, 1);
+    expect(restoredDays.first.id, 'rd-test-1');
+
+    final restoredExs = await db.routinesDao.getExercisesForDay('rd-test-1');
+    expect(restoredExs.length, 1);
+    expect(restoredExs.first.id, 're-test-1');
+
+    // 2. Session Delete/Restore
+    const sId = 's-test-1';
+    await insertSession(sId, DateTime(2026, 6, 1, 10), sets: [(bench, 80, 8)]);
+
+    // Export JSON before delete
+    final sessionData = await db.workoutsDao.exportSessionJson(sId);
+    expect(sessionData, isNotNull);
+
+    // Delete
+    await db.workoutsDao.deleteSession(sId);
+
+    // Verify it is gone
+    final deletedSession = await db.workoutsDao.getSessionOrNull(sId);
+    expect(deletedSession, isNull);
+
+    // Restore
+    await db.workoutsDao.restoreSession(sessionData!);
+
+    // Verify it is back with all children
+    final restoredSession = await db.workoutsDao.getSessionOrNull(sId);
+    expect(restoredSession, isNotNull);
+    expect(restoredSession!.name, isNull);
+
+    final hydrated = await db.workoutsDao.getHydratedWorkout(sId);
+    expect(hydrated, isNotNull);
+    expect(hydrated!.exercises.length, 1);
+    expect(hydrated.exercises.first.workoutExercise.id, 's-test-1-we-0');
+    expect(hydrated.exercises.first.sets.length, 1);
+    expect(hydrated.exercises.first.sets.first.id, 's-test-1-we-0-s-0');
+  });
 }

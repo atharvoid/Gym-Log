@@ -307,6 +307,10 @@ class WorkoutsDao extends DatabaseAccessor<AppDatabase>
     });
   }
 
+  Future<void> restoreSession(Map<String, dynamic> data) async {
+    await importSessionJson(data);
+  }
+
   Future<List<WorkoutSession>> getSessionsForUser(String userId) =>
       (select(workoutSessions)..where((t) => t.userId.equals(userId))).get();
 

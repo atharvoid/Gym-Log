@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gymlog/core/providers/database_provider.dart';
 import 'package:gymlog/core/database/daos/workouts_dao.dart';
 import 'package:gymlog/core/services/sync_engine.dart';
+import 'package:gymlog/core/services/sync_codec.dart';
 import 'package:gymlog/features/auth/presentation/providers/auth_provider.dart';
 
 class WorkoutActionsNotifier extends StateNotifier<AsyncValue<void>> {
@@ -52,6 +53,38 @@ class WorkoutActionsNotifier extends StateNotifier<AsyncValue<void>> {
       }
 
       await db.workoutsDao.deleteSession(sessionId);
+      state = const AsyncValue.data(null);
+    } catch (e, st) {
+      state = AsyncValue.error(e, st);
+    }
+  }
+
+  Future<void> restoreSession(Map<String, dynamic> data) async {
+    state = const AsyncValue.loading();
+    try {
+      final db = _ref.read(databaseProvider);
+      final user = _ref.read(authProvider);
+
+      final sj = data['session'] as Map<String, dynamic>;
+      final sessionId = sj['id'] as String;
+
+      await db.workoutsDao.restoreSession(data);
+
+      if (user != null) {
+        final payload = SyncCodec.encode(data);
+        await db.syncOutboxDao.enqueue(
+          entityType: 'session',
+          entityId: sessionId,
+          userId: user.id,
+          payload: payload,
+          op: 'upsert',
+        );
+        unawaited(
+          _ref
+              .read(syncEngineProvider)
+              .syncNow(user.id, reason: 'workout_restored'),
+        );
+      }
       state = const AsyncValue.data(null);
     } catch (e, st) {
       state = AsyncValue.error(e, st);
