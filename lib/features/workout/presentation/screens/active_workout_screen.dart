@@ -277,21 +277,33 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
                     bottom: BorderSide(color: surface.borderSubtle, width: 0.5),
                   ),
                 ),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                padding: const EdgeInsets.only(left: 12, right: 12, bottom: 10),
                 child: SafeArea(
                   bottom: false,
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       // Grab handle — hints the swipe-down-to-minimize gesture.
-                      Container(
-                        width: 36,
-                        height: 4,
-                        margin: const EdgeInsets.only(bottom: 8),
-                        decoration: BoxDecoration(
-                          color: surface.borderEmphasis,
-                          borderRadius: BorderRadius.circular(2),
+                      // Wrapped in Semantics and GestureDetector with 48dp height to satisfy touch targets (AW-1).
+                      Semantics(
+                        button: true,
+                        label: 'Minimize workout',
+                        child: GestureDetector(
+                          behavior: HitTestBehavior.opaque,
+                          onTap: () => context.pop(),
+                          child: Container(
+                            width: 60,
+                            height: 48,
+                            alignment: Alignment.center,
+                            child: Container(
+                              width: 36,
+                              height: 4,
+                              decoration: BoxDecoration(
+                                color: surface.borderEmphasis,
+                                borderRadius: BorderRadius.circular(2),
+                              ),
+                            ),
+                          ),
                         ),
                       ),
                       Row(
