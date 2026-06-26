@@ -19,6 +19,8 @@ import 'package:gymlog/features/profile/presentation/providers/profile_stats_pro
 import 'package:gymlog/core/utils/formatters.dart';
 import 'package:gymlog/core/database/database.dart';
 import 'package:gymlog/core/providers/database_provider.dart';
+import 'package:gymlog/core/utils/tap_guard.dart';
+import 'package:gymlog/shared/widgets/feedback/undoable_delete.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -287,10 +289,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           subtitle: 'This cannot be undone',
           subtitleColor: AppColors.error.withValues(alpha: 0.7),
           onTap: (sheetContext) async {
+            if (!tapGuard()) return;
             Navigator.of(sheetContext).pop();
-            // Capture the notifier before the async gap (ref is safe to read
-            // now; the widget may unmount while the dialog is open).
+            final db = ref.read(databaseProvider);
             final actions = ref.read(workoutActionsProvider.notifier);
+            final messenger = ScaffoldMessenger.of(context);
+
+            final data = await db.workoutsDao.exportSessionJson(session.id);
+            if (data == null) return;
+
+            if (!mounted) return;
+
             final confirmed = await showAppConfirmDialog(
               context: context,
               title: 'Delete Workout?',
@@ -300,7 +309,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               isDestructive: true,
             );
             if (confirmed) {
+              HapticFeedback.mediumImpact();
               await actions.deleteSession(session.id);
+              showUndoableDelete(
+                messenger: messenger,
+                label: 'Workout deleted',
+                onUndo: () async {
+                  await actions.restoreSession(data);
+                },
+              );
             }
           },
         ),

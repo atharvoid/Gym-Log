@@ -23,6 +23,7 @@ import 'package:gymlog/shared/widgets/premium_paywall.dart';
 import 'package:gymlog/shared/widgets/ui/action_bottom_sheet.dart';
 import 'package:gymlog/shared/widgets/ui/app_card.dart';
 import 'package:gymlog/shared/widgets/ui/app_dialog.dart';
+import 'package:gymlog/shared/widgets/feedback/undoable_delete.dart';
 import 'package:gymlog/shared/widgets/ui/secondary_button.dart';
 import 'package:gymlog/shared/widgets/ui/skeleton.dart';
 import 'package:gymlog/shared/widgets/ui/time_range_filter.dart';
@@ -93,12 +94,6 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
           initialExercises: seedExercisesFromRoutine(routine),
         );
     context.push('/workout/active');
-  }
-
-  Future<void> _deleteRoutine(String routineId) async {
-    final db = ref.read(databaseProvider);
-    context.pop();
-    await db.routinesDao.deleteRoutine(routineId);
   }
 
   void _openEditor() {
@@ -179,6 +174,7 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
   }
 
   Future<void> _confirmDelete(String routineId) async {
+    if (!tapGuard()) return;
     final confirmed = await showAppConfirmDialog(
       context: context,
       title: 'Delete Routine?',
@@ -187,10 +183,32 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
       confirmLabel: 'Delete',
       isDestructive: true,
     );
-    if (confirmed) {
-      HapticFeedback.heavyImpact();
-      await _deleteRoutine(routineId);
-    }
+    if (!confirmed || !mounted) return;
+
+    final db = ref.read(databaseProvider);
+
+    // Capture the JSON representation of the routine before delete
+    final data = await db.routinesDao.exportRoutineJson(routineId);
+    if (data == null) return;
+
+    if (!mounted) return;
+
+    // RD-4 discipline: capture messenger and router BEFORE popping
+    final messenger = ScaffoldMessenger.of(context);
+    final router = GoRouter.of(context);
+
+    HapticFeedback.mediumImpact();
+
+    await db.routinesDao.deleteRoutine(routineId);
+    router.pop();
+
+    showUndoableDelete(
+      messenger: messenger,
+      label: 'Routine deleted',
+      onUndo: () async {
+        await db.routinesDao.restoreRoutine(data);
+      },
+    );
   }
 
   Future<void> _onRefresh() async {

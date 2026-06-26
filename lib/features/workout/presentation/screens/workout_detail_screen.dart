@@ -19,6 +19,8 @@ import 'package:gymlog/features/workout/presentation/widgets/workout_detail/deta
 import '../providers/workout_detail_provider.dart';
 import '../providers/workout_actions_provider.dart';
 import '../providers/active_workout_provider.dart';
+import 'package:gymlog/core/utils/tap_guard.dart';
+import 'package:gymlog/shared/widgets/feedback/undoable_delete.dart';
 
 /// Hoisted, locale-stable date formatter ("Thu, 18 Jun 2026").
 final _kDateFormat = DateFormat('EEE, d MMM yyyy');
@@ -252,6 +254,7 @@ class WorkoutDetailScreen extends ConsumerWidget {
   }
 
   Future<void> _confirmDelete(BuildContext context, WidgetRef ref) async {
+    if (!tapGuard()) return;
     final confirmed = await showAppConfirmDialog(
       context: context,
       title: 'Delete Workout?',
@@ -260,8 +263,32 @@ class WorkoutDetailScreen extends ConsumerWidget {
       isDestructive: true,
     );
     if (!confirmed || !context.mounted) return;
-    await ref.read(workoutActionsProvider.notifier).deleteSession(sessionId);
-    if (context.mounted) context.pop();
+
+    final db = ref.read(databaseProvider);
+    final actions = ref.read(workoutActionsProvider.notifier);
+
+    // Capture the JSON representation of the session before delete
+    final data = await db.workoutsDao.exportSessionJson(sessionId);
+    if (data == null) return;
+
+    if (!context.mounted) return;
+
+    // RD-4 discipline: capture messenger and router BEFORE popping
+    final messenger = ScaffoldMessenger.of(context);
+    final router = GoRouter.of(context);
+
+    HapticFeedback.mediumImpact();
+
+    await actions.deleteSession(sessionId);
+    router.pop();
+
+    showUndoableDelete(
+      messenger: messenger,
+      label: 'Workout deleted',
+      onUndo: () async {
+        await actions.restoreSession(data);
+      },
+    );
   }
 }
 
