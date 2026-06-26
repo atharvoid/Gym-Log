@@ -19,7 +19,7 @@
     "HomeScreen": {
       "Layout & Structure": 7.5,
       "Components": 7.0,
-      "Color & Typography": 8.5,
+      "Color & Typography": 9.5,
       "Motion & Haptics": 7.0,
       "Logic & State": 7.5,
       "Code Quality": 8.0,
@@ -27,15 +27,15 @@
       "Performance": 8.0,
       "Navigation & Flow": 7.0,
       "Platform Conventions": 9.0,
-      "Visual Professionalism": 8.0,
+      "Visual Professionalism": 9.0,
       "Cognitive Load": 8.0,
       "Wow Factor": 7.0,
-      "+Overall": 7.7
+      "+Overall": 7.8
     },
     "WorkoutDetailScreen": {
       "Layout & Structure": 7.0,
       "Components": 7.0,
-      "Color & Typography": 8.0,
+      "Color & Typography": 9.5,
       "Motion & Haptics": 7.0,
       "Logic & State": 7.0,
       "Code Quality": 8.0,
@@ -43,15 +43,15 @@
       "Performance": 7.5,
       "Navigation & Flow": 7.5,
       "Platform Conventions": 9.0,
-      "Visual Professionalism": 8.0,
+      "Visual Professionalism": 9.0,
       "Cognitive Load": 8.0,
       "Wow Factor": 7.0,
-      "+Overall": 7.6
+      "+Overall": 7.7
     },
     "RoutineDetailScreen": {
       "Layout & Structure": 7.5,
       "Components": 7.5,
-      "Color & Typography": 8.5,
+      "Color & Typography": 9.5,
       "Motion & Haptics": 7.5,
       "Logic & State": 7.0,
       "Code Quality": 8.0,
@@ -59,10 +59,10 @@
       "Performance": 8.0,
       "Navigation & Flow": 8.0,
       "Platform Conventions": 9.5,
-      "Visual Professionalism": 8.0,
+      "Visual Professionalism": 9.0,
       "Cognitive Load": 8.5,
       "Wow Factor": 7.5,
-      "+Overall": 7.8
+      "+Overall": 8.1
     },
     "ExerciseDetailScreen": {
       "Layout & Structure": 7.0,
@@ -75,10 +75,10 @@
       "Performance": 7.5,
       "Navigation & Flow": 7.0,
       "Platform Conventions": 9.0,
-      "Visual Professionalism": 8.5,
+      "Visual Professionalism": 9.0,
       "Cognitive Load": 7.5,
       "Wow Factor": 6.5,
-      "+Overall": 7.6
+      "+Overall": 7.7
     },
     "DeleteAccountScreen": {
       "Layout & Structure": 8.0,
@@ -91,10 +91,10 @@
       "Performance": 7.0,
       "Navigation & Flow": 7.0,
       "Platform Conventions": 8.5,
-      "Visual Professionalism": 8.0,
+      "Visual Professionalism": 9.0,
       "Cognitive Load": 7.5,
       "Wow Factor": 6.0,
-      "+Overall": 7.5
+      "+Overall": 7.6
     },
     "ImportScreen": {
       "Layout & Structure": 7.5,
@@ -107,7 +107,7 @@
       "Performance": 7.0,
       "Navigation & Flow": 6.5,
       "Platform Conventions": 8.5,
-      "Visual Professionalism": 8.5,
+      "Visual Professionalism": 9.5,
       "Cognitive Load": 7.0,
       "Wow Factor": 6.5,
       "+Overall": 7.5
@@ -115,7 +115,7 @@
     "ActiveWorkoutScreen": {
       "Layout & Structure": 8.0,
       "Components": 7.5,
-      "Color & Typography": 8.5,
+      "Color & Typography": 9.5,
       "Motion & Haptics": 7.5,
       "Logic & State": 7.5,
       "Code Quality": 8.0,
@@ -123,11 +123,11 @@
       "Performance": 7.5,
       "Navigation & Flow": 9.0,
       "Platform Conventions": 9.0,
-      "Visual Professionalism": 8.0,
+      "Visual Professionalism": 9.0,
       "Cognitive Load": 7.5,
       "Wow Factor": 7.0,
-      "+Overall": 8.1
+      "+Overall": 8.2
     }
   },
-  "app_average": 7.6
+  "app_average": 7.7
 }

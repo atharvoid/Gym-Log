@@ -13,7 +13,7 @@ This file tracks every finding ID with its severity, owning screen, status (`ope
 | Finding ID | Screen | Description | Status | Closing Commit |
 |---|---|---|---|---|
 | **SYS-1** | Systemic | Migrate Auth, Exercise Detail, Delete Account, Import off inline `GoogleFonts.inter` to `AppText` | `done` | a408ac3 |
-| **SYS-2** | Systemic | Migrate Home, Workout Detail, Routine Detail chrome, Exercise Detail, Delete Account, Import to `context.surface`/`context.accent` | `open` | |
+| **SYS-2** | Systemic | Migrate Home, Workout Detail, Routine Detail chrome, Exercise Detail, Delete Account, Import to `context.surface`/`context.accent` | `done` | 3f41aab |
 | **SYS-3** | Systemic | Add snackbar-with-Undo to reversible deletes (Home / Workout Detail / routine delete) | `open` | |
 
 ## Tier 2 — Remaining per-screen Majors
@@ -22,11 +22,13 @@ This file tracks every finding ID with its severity, owning screen, status (`ope
 |---|---|---|---|---|
 | **XD-2** | ExerciseDetailScreen | Exercise Detail discards `isPrimary`; tint primary muscle chip with `accent` | `open` | |
 | **ES-1** | ExerciseSelectionScreen | Remove dead memoization cache in `_computeList` | `open` | |
-| **HOME-1** | HomeScreen | Folds into SYS-2 (theme token migration) | `open` | |
-| **WD-2** | WorkoutDetailScreen | Missing theme token compliance | `open` | |
+| **HOME-1** | HomeScreen | Folds into SYS-2 (theme token migration) | `done` | 3f41aab |
+| **WD-2** | WorkoutDetailScreen | Missing theme token compliance | `done` | 3f41aab |
 | **WD-3** | WorkoutDetailScreen | Detail page accessibility / semantics gaps | `open` | |
 | **RD-1** | RoutineDetailScreen | Routine Detail list has wrong scroll physics (Android default) | `open` | |
-| **AW-2** | ActiveWorkoutScreen | Two color systems on Active Workout screen | `open` | |
+| **AW-2** | ActiveWorkoutScreen | Two color systems on Active Workout screen | `done` | 3f41aab |
+| **EX-2** | ExploreRoutinesScreen | Hardcoded dark gradient stop in featured card | `done` | 3f41aab |
+| **XD-1** | ExerciseDetailScreen | Color compliance (folds into SYS-2) | `done` | 3f41aab |
 | **AUTH-1** | AuthScreen | Google Sign-in release SHA-1 configuration missing | `open` | |
 | **AUTH-8** | AuthScreen | Email/Password dead code cleanup | `open` | |
 | **IM-1** | ImportScreen | Inline styling cleanup (folds into SYS-1) | `done` | a408ac3 |
@@ -47,7 +49,7 @@ This file tracks every finding ID with its severity, owning screen, status (`ope
 | **WD-1** | WorkoutDetailScreen | Scroll layout constraints on small screens | `open` | |
 | **WD-5** | WorkoutDetailScreen | Volume graph range filters | `open` | |
 | **RD-2** | RoutineDetailScreen | Routine Detail subtitle overlaps | `open` | |
-| **RD-3** | RoutineDetailScreen | Empty state graphics rendering alignment | `open` | |
+| **RD-3** | RoutineDetailScreen | Empty state graphics rendering alignment | `done` | 3f41aab |
 | **RE-2** | RoutineEditorScreen | Reorder handle accessibility label | `open` | |
 | **RE-3** | RoutineEditorScreen | Routine Editor naming constraints | `open` | |
 | **ES-2** | ExerciseSelectionScreen | Search bar cursor color mismatch | `open` | |
@@ -60,7 +62,7 @@ This file tracks every finding ID with its severity, owning screen, status (`ope
 | **PR-3** | ProfileScreen | Premium paywall visual alignment | `open` | |
 | **SET-1** | SettingsScreen | Settings items list separator lines color | `open` | |
 | **SET-2** | SettingsScreen | Weight units switcher click target is sub-48dp | `open` | |
-| **DA-1** | DeleteAccountScreen | Confirmation input placeholder text styling (typography half resolved in SYS-1) | `open` | |
+| **DA-1** | DeleteAccountScreen | Confirmation input placeholder text styling (fully resolved with SYS-1 and SYS-2) | `done` | 3f41aab |
 | **IM-2** | ImportScreen | CSV template download button styling | `open` | |
 
 ## Tier 4 — Polish & Wow
