@@ -1,0 +1,82 @@
+# Audit Backlog
+
+This file tracks every finding ID with its severity, owning screen, status (`open | in-progress | done`), and the closing commit.
+
+## Tier 0 — Critical
+
+| Finding ID | Screen | Description | Status | Closing Commit |
+|---|---|---|---|---|
+| **AW-1** | ActiveWorkoutScreen | Active Workout minimize is swipe-only. Make grab handle tap target + Semantics. | `done` | fb09a55 |
+
+## Tier 1 — Systemic Majors
+
+| Finding ID | Screen | Description | Status | Closing Commit |
+|---|---|---|---|---|
+| **SYS-1** | Systemic | Migrate Auth, Exercise Detail, Delete Account, Import off inline `GoogleFonts.inter` to `AppText` | `open` | |
+| **SYS-2** | Systemic | Migrate Home, Workout Detail, Routine Detail chrome, Exercise Detail, Delete Account, Import to `context.surface`/`context.accent` | `open` | |
+| **SYS-3** | Systemic | Add snackbar-with-Undo to reversible deletes (Home / Workout Detail / routine delete) | `open` | |
+
+## Tier 2 — Remaining per-screen Majors
+
+| Finding ID | Screen | Description | Status | Closing Commit |
+|---|---|---|---|---|
+| **XD-2** | ExerciseDetailScreen | Exercise Detail discards `isPrimary`; tint primary muscle chip with `accent` | `open` | |
+| **ES-1** | ExerciseSelectionScreen | Remove dead memoization cache in `_computeList` | `open` | |
+| **HOME-1** | HomeScreen | Folds into SYS-2 (theme token migration) | `open` | |
+| **WD-2** | WorkoutDetailScreen | Missing theme token compliance | `open` | |
+| **WD-3** | WorkoutDetailScreen | Detail page accessibility / semantics gaps | `open` | |
+| **RD-1** | RoutineDetailScreen | Routine Detail list has wrong scroll physics (Android default) | `open` | |
+| **AW-2** | ActiveWorkoutScreen | Two color systems on Active Workout screen | `open` | |
+| **AUTH-1** | AuthScreen | Google Sign-in release SHA-1 configuration missing | `open` | |
+| **AUTH-8** | AuthScreen | Email/Password dead code cleanup | `open` | |
+| **IM-1** | ImportScreen | Inline styling cleanup (folds into SYS-1) | `open` | |
+
+## Tier 3 — Minors
+
+| Finding ID | Screen | Description | Status | Closing Commit |
+|---|---|---|---|---|
+| **SYS-4** | Systemic | Tokenize skeleton border radius to match standard cards | `open` | |
+| **SYS-5** | Systemic | Scroll physics standardizations and skeleton-vs-spinner templates | `open` | |
+| **SYS-6** | Systemic | Sub-48dp interactive controls scan & cleanup | `open` | |
+| **AUTH-4** | AuthScreen | Touch targets for legal links are sub-48dp | `open` | |
+| **HOME-3** | HomeScreen | Goal day buttons touch targets are sub-48dp | `open` | |
+| **HOME-4** | HomeScreen | History card styling discrepancies | `open` | |
+| **HOME-7** | HomeScreen | Performance lag on heavy history feed | `open` | |
+| **AW-3** | ActiveWorkoutScreen | Exercise block spacing and font size inconsistencies | `open` | |
+| **AW-5** | ActiveWorkoutScreen | Finish summary sheet navigation polish | `open` | |
+| **WD-1** | WorkoutDetailScreen | Scroll layout constraints on small screens | `open` | |
+| **WD-5** | WorkoutDetailScreen | Volume graph range filters | `open` | |
+| **RD-2** | RoutineDetailScreen | Routine Detail subtitle overlaps | `open` | |
+| **RD-3** | RoutineDetailScreen | Empty state graphics rendering alignment | `open` | |
+| **RE-2** | RoutineEditorScreen | Reorder handle accessibility label | `open` | |
+| **RE-3** | RoutineEditorScreen | Routine Editor naming constraints | `open` | |
+| **ES-2** | ExerciseSelectionScreen | Search bar cursor color mismatch | `open` | |
+| **ES-3** | ExerciseSelectionScreen | Filter chips height is sub-48dp (currently 44dp) | `open` | |
+| **XD-3** | ExerciseDetailScreen | Title size scaling on small devices | `open` | |
+| **XD-4** | ExerciseDetailScreen | Custom exercise creator toggles size is sub-48dp | `open` | |
+| **XD-5** | ExerciseDetailScreen | Video demo placeholder alignment | `open` | |
+| **PR-1** | ProfileScreen | Avatar picture size constraints | `open` | |
+| **PR-2** | ProfileScreen | Weekly stats bar chart styling | `open` | |
+| **PR-3** | ProfileScreen | Premium paywall visual alignment | `open` | |
+| **SET-1** | SettingsScreen | Settings items list separator lines color | `open` | |
+| **SET-2** | SettingsScreen | Weight units switcher click target is sub-48dp | `open` | |
+| **DA-1** | DeleteAccountScreen | Confirmation input placeholder text styling | `open` | |
+| **IM-2** | ImportScreen | CSV template download button styling | `open` | |
+
+## Tier 4 — Polish & Wow
+
+| Finding ID | Screen | Description | Status | Closing Commit |
+|---|---|---|---|---|
+| **AUTH-2** | AuthScreen | Add signature brand animation moment on login success | `open` | |
+| **AUTH-5** | AuthScreen | Privacy policy / Terms alignment | `open` | |
+| **AUTH-6** | AuthScreen | Legal footer responsiveness | `open` | |
+| **AUTH-7** | AuthScreen | Support link under sign-in card | `open` | |
+| **AUTH-9** | AuthScreen | Web OAuth popup styling | `open` | |
+| **WL-2** | WorkoutList | Scroll jank when scrolling heavy workout list | `open` | |
+| **WL-3** | WorkoutList | Animation transitions when adding new workouts | `open` | |
+| **WD-4** | WorkoutDetailScreen | Share-to-image dynamic layout | `open` | |
+| **RE-1** | RoutineEditorScreen | Drag and drop animations micro-delight | `open` | |
+| **ES-4** | ExerciseSelectionScreen | Hero transition to Exercise Detail screen | `open` | |
+| **AP-1** | AppearanceScreen | OLED theme switcher micro-delights | `open` | |
+| **AP-2** | AppearanceScreen | Live preview card updates | `open` | |
+| **IM-3** | ImportScreen | Import progress bar animations | `open` | |
