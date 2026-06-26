@@ -12,7 +12,7 @@ This file tracks every finding ID with its severity, owning screen, status (`ope
 
 | Finding ID | Screen | Description | Status | Closing Commit |
 |---|---|---|---|---|
-| **SYS-1** | Systemic | Migrate Auth, Exercise Detail, Delete Account, Import off inline `GoogleFonts.inter` to `AppText` | `open` | |
+| **SYS-1** | Systemic | Migrate Auth, Exercise Detail, Delete Account, Import off inline `GoogleFonts.inter` to `AppText` | `done` | a408ac3 |
 | **SYS-2** | Systemic | Migrate Home, Workout Detail, Routine Detail chrome, Exercise Detail, Delete Account, Import to `context.surface`/`context.accent` | `open` | |
 | **SYS-3** | Systemic | Add snackbar-with-Undo to reversible deletes (Home / Workout Detail / routine delete) | `open` | |
 
@@ -29,7 +29,7 @@ This file tracks every finding ID with its severity, owning screen, status (`ope
 | **AW-2** | ActiveWorkoutScreen | Two color systems on Active Workout screen | `open` | |
 | **AUTH-1** | AuthScreen | Google Sign-in release SHA-1 configuration missing | `open` | |
 | **AUTH-8** | AuthScreen | Email/Password dead code cleanup | `open` | |
-| **IM-1** | ImportScreen | Inline styling cleanup (folds into SYS-1) | `open` | |
+| **IM-1** | ImportScreen | Inline styling cleanup (folds into SYS-1) | `done` | a408ac3 |
 
 ## Tier 3 — Minors
 
@@ -60,7 +60,7 @@ This file tracks every finding ID with its severity, owning screen, status (`ope
 | **PR-3** | ProfileScreen | Premium paywall visual alignment | `open` | |
 | **SET-1** | SettingsScreen | Settings items list separator lines color | `open` | |
 | **SET-2** | SettingsScreen | Weight units switcher click target is sub-48dp | `open` | |
-| **DA-1** | DeleteAccountScreen | Confirmation input placeholder text styling | `open` | |
+| **DA-1** | DeleteAccountScreen | Confirmation input placeholder text styling (typography half resolved in SYS-1) | `open` | |
 | **IM-2** | ImportScreen | CSV template download button styling | `open` | |
 
 ## Tier 4 — Polish & Wow

@@ -1,10 +1,7 @@
-
 /build/
 .dart_tool/
 *.apk
 *.aab
-
-/build/
-.dart_tool/
-*.apk
-*.aab
+.env
+android/key.properties
+android/app/upload-keystore.jks

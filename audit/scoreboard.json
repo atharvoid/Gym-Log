@@ -3,7 +3,7 @@
     "AuthScreen": {
       "OLEDCanvas": 7.0,
       "DynamicAccent": 6.5,
-      "TypographyTabular": 7.5,
+      "TypographyTabular": 10.0,
       "TouchTargetSize": 6.0,
       "A11ySemantics": 6.5,
       "HapticFeedback": 6.0,
@@ -11,10 +11,10 @@
       "EmptyStates": 7.5,
       "LoadingStates": 7.0,
       "ErrorResilience": 6.0,
-      "VisualPolish": 6.5,
+      "VisualPolish": 8.5,
       "ScrollPhysics": 7.0,
       "DelightWOW": 6.0,
-      "overall": 6.6
+      "overall": 7.0
     },
     "HomeScreen": {
       "OLEDCanvas": 9.0,
@@ -67,7 +67,7 @@
     "ExerciseDetailScreen": {
       "OLEDCanvas": 9.0,
       "DynamicAccent": 7.5,
-      "TypographyTabular": 8.0,
+      "TypographyTabular": 10.0,
       "TouchTargetSize": 7.0,
       "A11ySemantics": 7.0,
       "HapticFeedback": 7.0,
@@ -75,15 +75,15 @@
       "EmptyStates": 7.0,
       "LoadingStates": 7.0,
       "ErrorResilience": 7.0,
-      "VisualPolish": 7.5,
+      "VisualPolish": 8.5,
       "ScrollPhysics": 8.0,
       "DelightWOW": 6.5,
-      "overall": 7.4
+      "overall": 7.6
     },
     "DeleteAccountScreen": {
       "OLEDCanvas": 8.5,
       "DynamicAccent": 7.5,
-      "TypographyTabular": 8.0,
+      "TypographyTabular": 10.0,
       "TouchTargetSize": 7.0,
       "A11ySemantics": 7.0,
       "HapticFeedback": 6.5,
@@ -91,15 +91,15 @@
       "EmptyStates": 8.0,
       "LoadingStates": 7.0,
       "ErrorResilience": 7.0,
-      "VisualPolish": 7.5,
+      "VisualPolish": 8.0,
       "ScrollPhysics": 8.0,
       "DelightWOW": 6.0,
-      "overall": 7.3
+      "overall": 7.5
     },
     "ImportScreen": {
       "OLEDCanvas": 8.5,
       "DynamicAccent": 7.0,
-      "TypographyTabular": 8.0,
+      "TypographyTabular": 10.0,
       "TouchTargetSize": 6.5,
       "A11ySemantics": 7.0,
       "HapticFeedback": 6.5,
@@ -107,10 +107,10 @@
       "EmptyStates": 7.5,
       "LoadingStates": 7.0,
       "ErrorResilience": 7.0,
-      "VisualPolish": 7.5,
+      "VisualPolish": 8.5,
       "ScrollPhysics": 8.0,
       "DelightWOW": 6.5,
-      "overall": 7.2
+      "overall": 7.5
     },
     "ActiveWorkoutScreen": {
       "OLEDCanvas": 9.0,
@@ -129,5 +129,5 @@
       "overall": 8.1
     }
   },
-  "app_average": 7.5
+  "app_average": 7.6
 }
