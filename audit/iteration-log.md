@@ -122,3 +122,47 @@ This file records each loop execution details, diff summaries, scoreboard delta,
 - [x] Non-semantic AppColors Guard: **PASS** (zero non-semantic AppColors in migrated files)
 
 **Gate Verdict:** PASS (SYS-2 done; awaiting SYS-3 to resolve reversible delete undo support and complete the systemic track)
+
+---
+
+## Iteration 4: SYS-3 (Undoable Reversible Deletes for Workouts and Routines)
+
+**Date:** 2026-06-26
+**Slice:** Undoable Reversible Deletes (SYS-3)
+
+### Diff Summary
+- Added transactional restore methods in DAOs:
+  - `restoreSession(String json)` in `WorkoutsDao` to reconstruct deleted workout sessions, including exercises, sets, and associated mappings with original IDs and sequence ordering preserved.
+  - `restoreRoutine(String json)` in `RoutinesDao` to reconstruct deleted routines, daily templates, exercises, and targets with original IDs and sequence ordering preserved.
+- Implemented a unified `showUndoableDelete` shared helper widget in `lib/shared/widgets/feedback/undoable_delete.dart`. This captures the ScaffoldMessenger State, handles haptic feedback, triggers the Undo action, and commits/fires any cleanup callbacks if allowed to expire.
+- Updated `HomeScreen`, `WorkoutDetailScreen`, and `RoutineDetailScreen` to use the shared helper.
+- For screens that pop (`WorkoutDetailScreen`, `RoutineDetailScreen`), captured the ScaffoldMessenger and GoRouter before the navigation pop to safely present the Undo SnackBar on the landing screen (RD-4 pop discipline).
+- Added medium haptic feedback on delete actions.
+- Guarded against double-deletes/taps using a `tapGuard` mechanism.
+- Created unit tests for the shared helper (`test/undoable_delete_test.dart`) and integration tests for restoring database models (`test/dao_integration_test.dart`).
+
+### Scoreboard Delta
+| Screen | Dimension | Before | After | Change |
+|---|---|---|---|---|
+| HomeScreen | Components | 7.0 | 8.0 | +1.0 |
+| HomeScreen | Motion & Haptics | 7.0 | 7.5 | +0.5 |
+| HomeScreen | Logic & State | 7.5 | 8.0 | +0.5 |
+| HomeScreen | +Overall | 7.8 | 8.0 | +0.2 |
+| WorkoutDetailScreen | Components | 7.0 | 8.0 | +1.0 |
+| WorkoutDetailScreen | Motion & Haptics | 7.0 | 7.5 | +0.5 |
+| WorkoutDetailScreen | Logic & State | 7.0 | 8.0 | +1.0 |
+| WorkoutDetailScreen | Accessibility | 7.0 | 7.5 | +0.5 |
+| WorkoutDetailScreen | +Overall | 7.7 | 8.0 | +0.3 |
+| RoutineDetailScreen | Components | 7.5 | 8.5 | +1.0 |
+| RoutineDetailScreen | Motion & Haptics | 7.5 | 8.0 | +0.5 |
+| RoutineDetailScreen | Logic & State | 7.0 | 8.0 | +1.0 |
+| RoutineDetailScreen | +Overall | 8.1 | 8.3 | +0.2 |
+
+### Gate Verification Result
+- [x] Format: **PASS**
+- [x] Static Analysis: **PASS**
+- [x] Custom Linter: **PASS**
+- [x] Tests Suite: **PASS** (137 tests passed)
+- [x] Restore/Grace/Double-Delete: **PASS** (covered by automated tests)
+
+**Gate Verdict:** PASS

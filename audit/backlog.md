@@ -14,7 +14,7 @@ This file tracks every finding ID with its severity, owning screen, status (`ope
 |---|---|---|---|---|
 | **SYS-1** | Systemic | Migrate Auth, Exercise Detail, Delete Account, Import off inline `GoogleFonts.inter` to `AppText` | `done` | a408ac3 |
 | **SYS-2** | Systemic | Migrate Home, Workout Detail, Routine Detail chrome, Exercise Detail, Delete Account, Import to `context.surface`/`context.accent` | `done` | 3f41aab |
-| **SYS-3** | Systemic | Add snackbar-with-Undo to reversible deletes (Home / Workout Detail / routine delete) | `open` | |
+| **SYS-3** | Systemic | Add snackbar-with-Undo to reversible deletes (Home / Workout Detail / routine delete) | `done` | 7732bd5 |
 
 ## Tier 2 — Remaining per-screen Majors
 
@@ -23,8 +23,9 @@ This file tracks every finding ID with its severity, owning screen, status (`ope
 | **XD-2** | ExerciseDetailScreen | Exercise Detail discards `isPrimary`; tint primary muscle chip with `accent` | `open` | |
 | **ES-1** | ExerciseSelectionScreen | Remove dead memoization cache in `_computeList` | `open` | |
 | **HOME-1** | HomeScreen | Folds into SYS-2 (theme token migration) | `done` | 3f41aab |
+| **HOME-2** | HomeScreen | Reversible workout deletion with Undo (SYS-3) | `done` | 7732bd5 |
 | **WD-2** | WorkoutDetailScreen | Missing theme token compliance | `done` | 3f41aab |
-| **WD-3** | WorkoutDetailScreen | Detail page accessibility / semantics gaps | `open` | |
+| **WD-3** | WorkoutDetailScreen | Detail page accessibility / semantics gaps | `done` | 7732bd5 |
 | **RD-1** | RoutineDetailScreen | Routine Detail list has wrong scroll physics (Android default) | `open` | |
 | **AW-2** | ActiveWorkoutScreen | Two color systems on Active Workout screen | `done` | 3f41aab |
 | **EX-2** | ExploreRoutinesScreen | Hardcoded dark gradient stop in featured card | `done` | 3f41aab |

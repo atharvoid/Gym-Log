@@ -18,10 +18,10 @@
     },
     "HomeScreen": {
       "Layout & Structure": 7.5,
-      "Components": 7.0,
+      "Components": 8.0,
       "Color & Typography": 9.5,
-      "Motion & Haptics": 7.0,
-      "Logic & State": 7.5,
+      "Motion & Haptics": 7.5,
+      "Logic & State": 8.0,
       "Code Quality": 8.0,
       "Accessibility": 7.5,
       "Performance": 8.0,
@@ -30,30 +30,30 @@
       "Visual Professionalism": 9.0,
       "Cognitive Load": 8.0,
       "Wow Factor": 7.0,
-      "+Overall": 7.8
+      "+Overall": 8.0
     },
     "WorkoutDetailScreen": {
       "Layout & Structure": 7.0,
-      "Components": 7.0,
+      "Components": 8.0,
       "Color & Typography": 9.5,
-      "Motion & Haptics": 7.0,
-      "Logic & State": 7.0,
+      "Motion & Haptics": 7.5,
+      "Logic & State": 8.0,
       "Code Quality": 8.0,
-      "Accessibility": 7.0,
+      "Accessibility": 7.5,
       "Performance": 7.5,
       "Navigation & Flow": 7.5,
       "Platform Conventions": 9.0,
       "Visual Professionalism": 9.0,
       "Cognitive Load": 8.0,
       "Wow Factor": 7.0,
-      "+Overall": 7.7
+      "+Overall": 8.0
     },
     "RoutineDetailScreen": {
       "Layout & Structure": 7.5,
-      "Components": 7.5,
+      "Components": 8.5,
       "Color & Typography": 9.5,
-      "Motion & Haptics": 7.5,
-      "Logic & State": 7.0,
+      "Motion & Haptics": 8.0,
+      "Logic & State": 8.0,
       "Code Quality": 8.0,
       "Accessibility": 7.5,
       "Performance": 8.0,
@@ -62,7 +62,7 @@
       "Visual Professionalism": 9.0,
       "Cognitive Load": 8.5,
       "Wow Factor": 7.5,
-      "+Overall": 8.1
+      "+Overall": 8.3
     },
     "ExerciseDetailScreen": {
       "Layout & Structure": 7.0,
@@ -129,5 +129,5 @@
       "+Overall": 8.2
     }
   },
-  "app_average": 7.7
+  "app_average": 7.8
 }
