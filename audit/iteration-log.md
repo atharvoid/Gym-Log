@@ -204,3 +204,27 @@ This file records each loop execution details, diff summaries, scoreboard delta,
 - [x] Skeletons & Sizing: **PASS** (covered by automated tests)
 
 **Gate Verdict:** PASS (XD-2/3/4/5 done; app overall average is 7.9)
+
+---
+
+## Iteration 6: Exercise Selection Filter Cache (ES-1)
+
+**Date:** 2026-06-27
+**Slice:** Exercise Selection Screen Filter Cache (ES-1)
+
+### Diff Summary
+- **ES-1 (Cache-Hit Fix)**: Fixed the dead memoization cache inside `_computeList()` where the cache hit check did nothing and the system unconditionally recompiled filtering `.where(_matchesFilters)` on every frame build.
+- **Identical Source Guard**: Added `List<Exercise>? _cachedSource` to replace the unreliable same-length Content check `_cachedDataHash` and `exercises.length`. A cache hit is now correctly established if and only if: `identical(exercises, _cachedSource) && _cachedMuscleFilter == _muscleFilter && _cachedEquipmentFilter == _equipmentFilter`.
+- **Eliminated Redundancies**: Removed the three redundant `_cachedFiltered = null` cache invalidations in `setState` callbacks because filtering parameters are now robustly tracked in the cache check.
+- **Automated Tests**: Created `test/exercise_selection_polish_test.dart` containing a `SpyingList` wrapper extending `ListMixin<Exercise>` to safely verify filtering correctness and prove cache-hits (preventing redundant runs of `.where()`) on identical list/filter inputs.
+
+### Scoreboard Delta
+No changes to `scoreboard.json` as `ExerciseSelectionScreen` is not scored individually. App average remains at `7.9`.
+
+### Gate Verification Result
+- [x] Format: **PASS**
+- [x] Static Analysis: **PASS**
+- [x] Custom Linter: **PASS**
+- [x] Tests Suite: **PASS** (142 tests passed)
+
+**Gate Verdict:** PASS (ES-1 done)

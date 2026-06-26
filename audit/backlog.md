@@ -21,7 +21,7 @@ This file tracks every finding ID with its severity, owning screen, status (`ope
 | Finding ID | Screen | Description | Status | Closing Commit |
 |---|---|---|---|---|
 | **XD-2** | ExerciseDetailScreen | Exercise Detail discards `isPrimary`; tint primary muscle chip with `accent` | `done` | 51e80c5 |
-| **ES-1** | ExerciseSelectionScreen | Remove dead memoization cache in `_computeList` | `open` | |
+| **ES-1** | ExerciseSelectionScreen | Remove dead memoization cache in `_computeList` | `done` | c474de2 |
 | **HOME-1** | HomeScreen | Folds into SYS-2 (theme token migration) | `done` | 3f41aab |
 | **HOME-2** | HomeScreen | Reversible workout deletion with Undo (SYS-3) | `done` | 7732bd5 |
 | **WD-2** | WorkoutDetailScreen | Missing theme token compliance | `done` | 3f41aab |
