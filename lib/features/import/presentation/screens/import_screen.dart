@@ -8,7 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
+
 import 'package:intl/intl.dart';
 
 import 'package:gymlog/core/theme/app_colors.dart';
@@ -167,8 +167,7 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
   }
 
   SnackBar _snack(String msg) => SnackBar(
-        content:
-            Text(msg, style: GoogleFonts.inter(color: AppColors.textPrimary)),
+        content: Text(msg, style: AppText.body(color: AppColors.textPrimary)),
         backgroundColor: AppColors.bgSurface,
         behavior: SnackBarBehavior.floating,
       );
@@ -193,11 +192,10 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
           ),
           title: Text(
             'Import workouts',
-            style: GoogleFonts.inter(
-              fontWeight: FontWeight.w700,
-              fontSize: 20,
-              letterSpacing: -0.3,
+            style: AppText.sectionHeading(
               color: AppColors.textPrimary,
+            ).copyWith(
+              letterSpacing: -0.3,
             ),
           ),
         ),
@@ -228,18 +226,23 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
         const _IconBadge(icon: Icons.download_rounded),
         const SizedBox(height: 18),
         Text('Bring your history with you',
-            style: GoogleFonts.inter(
-                fontSize: 21,
-                fontWeight: FontWeight.w700,
-                letterSpacing: -0.3,
-                color: AppColors.textPrimary)),
+            style: AppText.sectionHeading(
+              color: AppColors.textPrimary,
+            ).copyWith(
+              fontSize: 21,
+              letterSpacing: -0.3,
+            )),
         const SizedBox(height: 8),
         Text(
           'Import every workout you logged in Hevy or Strong. Export a CSV '
           'from that app, then choose the file here — GymLog detects the '
           'format automatically and converts the units for you.',
-          style: GoogleFonts.inter(
-              fontSize: 14, height: 1.45, color: AppColors.textSecondary),
+          style: AppText.body(
+            color: AppColors.textSecondary,
+          ).copyWith(
+            fontSize: 14,
+            height: 1.45,
+          ),
         ),
         const SizedBox(height: 20),
         const _SourceChips(),
@@ -260,8 +263,7 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
         Text(
           'Your data never leaves your device during import.',
           textAlign: TextAlign.center,
-          style:
-              GoogleFonts.inter(fontSize: 12, color: AppColors.chartAxisLabel),
+          style: AppText.caption(color: AppColors.chartAxisLabel),
         ),
       ],
     );
@@ -289,8 +291,7 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
                   textAlign: TextAlign.right,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.inter(
-                      fontSize: 12, color: AppColors.chartAxisLabel)),
+                  style: AppText.caption(color: AppColors.chartAxisLabel)),
             ),
         ]),
         const SizedBox(height: 16),
@@ -371,10 +372,9 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
           child: TextButton(
             onPressed: _pickFile,
             child: Text('Choose a different file',
-                style: GoogleFonts.inter(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.textSecondary)),
+                style: AppText.rowLabel(
+                  color: AppColors.textSecondary,
+                )),
           ),
         ),
       ],
@@ -407,14 +407,14 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
         ),
         const SizedBox(height: 22),
         Text('Importing your workouts',
-            style: GoogleFonts.inter(
-                fontSize: 16,
-                fontWeight: FontWeight.w700,
-                color: AppColors.textPrimary)),
+            style: AppText.cardTitle(
+              color: AppColors.textPrimary,
+            )),
         const SizedBox(height: 6),
         Text('$_done of $_total',
-            style: GoogleFonts.inter(
-                fontSize: 13, color: AppColors.textSecondary)),
+            style: AppText.meta(
+              color: AppColors.textSecondary,
+            )),
       ]),
     );
   }
@@ -446,11 +446,11 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
                 ? 'Imported ${r.sessionsImported} '
                     'workout${r.sessionsImported == 1 ? '' : 's'}'
                 : 'Nothing new to import',
-            style: GoogleFonts.inter(
-                fontSize: 20,
-                fontWeight: FontWeight.w700,
-                letterSpacing: -0.3,
-                color: AppColors.textPrimary),
+            style: AppText.sectionHeading(
+              color: AppColors.textPrimary,
+            ).copyWith(
+              letterSpacing: -0.3,
+            ),
           ),
         ),
         const SizedBox(height: 20),
@@ -487,10 +487,9 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
           child: TextButton(
             onPressed: () => Navigator.of(context).maybePop(),
             child: Text('Done',
-                style: GoogleFonts.inter(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.textSecondary)),
+                style: AppText.rowLabel(
+                  color: AppColors.textSecondary,
+                )),
           ),
         ),
       ],
@@ -535,21 +534,22 @@ class _StatRow extends StatelessWidget {
           children: [
             Expanded(
               child: Text(label,
-                  style: GoogleFonts.inter(
-                      fontSize: 14,
-                      color: emphasize
-                          ? AppColors.textPrimary
-                          : AppColors.textSecondary,
-                      fontWeight:
-                          emphasize ? FontWeight.w600 : FontWeight.w500)),
+                  style: AppText.body(
+                    color: emphasize
+                        ? AppColors.textPrimary
+                        : AppColors.textSecondary,
+                  ).copyWith(
+                    fontSize: 14,
+                    fontWeight: emphasize ? FontWeight.w600 : FontWeight.w500,
+                  )),
             ),
             Text(value,
-                style: GoogleFonts.inter(
-                    fontSize: emphasize ? 18 : 15,
-                    fontWeight: FontWeight.w700,
-                    color:
-                        emphasize ? context.accent.base : AppColors.textPrimary,
-                    fontFeatures: const [FontFeature.tabularFigures()])),
+                style: (emphasize
+                        ? AppText.sheetTitle(color: context.accent.base)
+                        : AppText.body(color: AppColors.textPrimary).copyWith(
+                            fontWeight: FontWeight.w700,
+                          ))
+                    .copyWith(fontFeatures: kTabular)),
           ],
         ),
       );
@@ -576,10 +576,9 @@ class _PrimaryButton extends StatelessWidget {
               Icon(icon, size: 20, color: context.accent.onAccent),
               const SizedBox(width: 10),
               Text(label,
-                  style: GoogleFonts.inter(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: context.accent.onAccent)),
+                  style: AppText.button(
+                    color: context.accent.onAccent,
+                  )),
             ]),
           ),
         ),
@@ -605,10 +604,11 @@ class _Banner extends StatelessWidget {
           const SizedBox(width: 10),
           Expanded(
             child: Text(text,
-                style: GoogleFonts.inter(
-                    fontSize: 13,
-                    height: 1.4,
-                    color: AppColors.textPrimary.withValues(alpha: 0.92))),
+                style: AppText.meta(
+                  color: AppColors.textPrimary.withValues(alpha: 0.92),
+                ).copyWith(
+                  height: 1.4,
+                )),
           ),
         ]),
       );
@@ -651,18 +651,20 @@ class _SourceChips extends StatelessWidget {
                   size: 15, color: AppColors.textSecondary),
               const SizedBox(width: 8),
               Text(s.label,
-                  style: GoogleFonts.inter(
-                      fontSize: 13.5,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.textPrimary)),
+                  style: AppText.statLabel(
+                    color: AppColors.textPrimary,
+                  ).copyWith(
+                    fontSize: 13.5,
+                  )),
             ]),
           ),
           const SizedBox(width: 10),
         ],
         Expanded(
           child: Text('auto-detected',
-              style: GoogleFonts.inter(
-                  fontSize: 12, color: AppColors.chartAxisLabel)),
+              style: AppText.caption(
+                color: AppColors.chartAxisLabel,
+              )),
         ),
       ]);
 }
@@ -686,10 +688,9 @@ class _DetectedPill extends StatelessWidget {
         Icon(Icons.check_circle_rounded, size: 15, color: accent.light),
         const SizedBox(width: 7),
         Text('Detected: ${source.label}',
-            style: GoogleFonts.inter(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                color: AppColors.textPrimary)),
+            style: AppText.statLabel(
+              color: AppColors.textPrimary,
+            )),
       ]),
     );
   }
@@ -722,10 +723,9 @@ class _UnitChooser extends StatelessWidget {
               borderRadius: BorderRadius.circular(AppRadius.buttonSecondary),
             ),
             child: Text(label,
-                style: GoogleFonts.inter(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: active ? accent.onAccent : AppColors.textSecondary)),
+                style: AppText.rowLabel(
+                  color: active ? accent.onAccent : AppColors.textSecondary,
+                )),
           ),
         ),
       );
@@ -740,10 +740,9 @@ class _UnitChooser extends StatelessWidget {
       ),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Text('This file has no unit — what was it logged in?',
-            style: GoogleFonts.inter(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                color: AppColors.textPrimary)),
+            style: AppText.statLabel(
+              color: AppColors.textPrimary,
+            )),
         const SizedBox(height: 10),
         Container(
           padding: const EdgeInsets.all(3),

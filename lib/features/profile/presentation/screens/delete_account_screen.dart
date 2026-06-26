@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
+
 import 'package:gymlog/core/services/account_deletion_service.dart';
 import 'package:gymlog/core/theme/app_colors.dart';
 import 'package:gymlog/core/theme/app_text.dart';
@@ -168,16 +168,18 @@ class _DeleteAccountScreenState extends ConsumerState<DeleteAccountScreen> {
                     onSubmitted: (_) => _canDelete ? _delete() : null,
                     onChanged: (_) => setState(() {}),
                     cursorColor: AppColors.error,
-                    style: GoogleFonts.inter(
+                    style: AppText.button(
                       color: AppColors.textPrimary,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
+                    ).copyWith(
                       letterSpacing: 1.5,
                     ),
                     decoration: InputDecoration(
                       hintText: _confirmWord,
-                      hintStyle: GoogleFonts.inter(
-                          color: AppColors.textDisabled, letterSpacing: 1.5),
+                      hintStyle: AppText.button(
+                        color: AppColors.textDisabled,
+                      ).copyWith(
+                        letterSpacing: 1.5,
+                      ),
                       filled: true,
                       fillColor: AppColors.surfaceRaised,
                       contentPadding: const EdgeInsets.symmetric(

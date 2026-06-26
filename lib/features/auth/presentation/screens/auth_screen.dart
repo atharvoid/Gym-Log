@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:google_fonts/google_fonts.dart';
+import '../../../../core/theme/app_text.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/config/legal_links.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -44,8 +44,8 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
   void _snack(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(message,
-            style: GoogleFonts.inter(color: AppColors.textPrimary)),
+        content:
+            Text(message, style: AppText.body(color: AppColors.textPrimary)),
         backgroundColor: AppColors.bgSurface,
         behavior: SnackBarBehavior.floating,
       ),
@@ -60,10 +60,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final fine = GoogleFonts.inter(
-      color: AppColors.textSecondary,
-      fontSize: 12,
-      fontWeight: FontWeight.w400,
+    final fine = AppText.caption(color: AppColors.textSecondary).copyWith(
       height: 1.4,
     );
 
@@ -89,20 +86,19 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                       children: [
                         Text(
                           'GymLog',
-                          style: GoogleFonts.inter(
+                          style: AppText.screenTitle(
                             color: AppColors.textPrimary,
-                            fontSize: 32,
-                            fontWeight: FontWeight.w800,
+                          ).copyWith(
                             letterSpacing: -0.5,
                           ),
                         ),
                         const SizedBox(height: 8),
                         Text(
                           'Your gym. Your data.',
-                          style: GoogleFonts.inter(
+                          style: AppText.body(
                             color: AppColors.textSecondary,
+                          ).copyWith(
                             fontSize: 16,
-                            fontWeight: FontWeight.w400,
                           ),
                         ),
                         const SizedBox(height: 64),
@@ -138,10 +134,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                                       const SizedBox(width: 12),
                                       Text(
                                         'Continue with Google',
-                                        style: GoogleFonts.inter(
-                                          fontWeight: FontWeight.w600,
-                                          fontSize: 16,
-                                        ),
+                                        style: AppText.button(),
                                       ),
                                     ],
                                   ),
@@ -204,9 +197,9 @@ class _LegalLink extends StatelessWidget {
         onTap: onTap,
         child: Text(
           label,
-          style: GoogleFonts.inter(
+          style: AppText.caption(
             color: AppColors.textSecondary,
-            fontSize: 12,
+          ).copyWith(
             fontWeight: FontWeight.w600,
             decoration: TextDecoration.underline,
             decorationColor: AppColors.textSecondary,

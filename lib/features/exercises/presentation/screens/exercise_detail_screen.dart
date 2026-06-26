@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
+
 import 'package:gymlog/core/theme/app_colors.dart';
 import 'package:gymlog/core/theme/app_text.dart';
 import 'package:gymlog/core/theme/dynamic_accent_theme.dart';
@@ -98,9 +98,7 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
           appBar: AppBar(
             title: Text(
               exercise.name,
-              style: GoogleFonts.inter(
-                fontWeight: FontWeight.w700,
-                fontSize: 18,
+              style: AppText.sheetTitle(
                 color: AppColors.textPrimary,
               ),
               maxLines: 1,
@@ -128,10 +126,8 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
               // Exercise Name & Metadata
               Text(
                 exercise.name,
-                style: GoogleFonts.inter(
+                style: AppText.titleLarge(
                   color: AppColors.textPrimary,
-                  fontSize: 24,
-                  fontWeight: FontWeight.w800,
                 ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
@@ -144,10 +140,10 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
                       ? exercise.equipment
                       : '$parent  •  ${exercise.equipment}';
                 }(),
-                style: GoogleFonts.inter(
+                style: AppText.body(
                   color: AppColors.textSecondary,
+                ).copyWith(
                   fontSize: 14,
-                  fontWeight: FontWeight.w400,
                 ),
               ),
               const SizedBox(height: 14),
@@ -183,10 +179,10 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
                             ),
                             child: Text(
                               label,
-                              style: GoogleFonts.inter(
-                                fontSize: 12.5,
-                                fontWeight: FontWeight.w500,
+                              style: AppText.label(
                                 color: AppColors.textPrimary,
+                              ).copyWith(
+                                fontSize: 12.5,
                               ),
                             ),
                           ),
@@ -212,7 +208,7 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
                     padding: const EdgeInsets.symmetric(vertical: 60),
                     child: Text(
                       'Failed to load analytics',
-                      style: GoogleFonts.inter(color: AppColors.error),
+                      style: AppText.body(color: AppColors.error),
                     ),
                   ),
                 ),
@@ -313,11 +309,9 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
                   ),
                   child: Text(
                     entry.value,
-                    style: GoogleFonts.inter(
+                    style: AppText.statLabel(
                       color:
                           isActive ? accent.onAccent : AppColors.textSecondary,
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ),
@@ -353,10 +347,8 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
             const SizedBox(width: 8),
             Text(
               'Personal Records',
-              style: GoogleFonts.inter(
+              style: AppText.cardTitle(
                 color: AppColors.textPrimary,
-                fontSize: 16,
-                fontWeight: FontWeight.w700,
               ),
             ),
           ],
@@ -392,18 +384,17 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
           children: [
             Text(
               label,
-              style: GoogleFonts.inter(
+              style: AppText.body(
                 color: AppColors.textSecondary,
+              ).copyWith(
                 fontSize: 14,
               ),
             ),
             const Spacer(),
             Text(
               value,
-              style: GoogleFonts.inter(
+              style: AppText.rowLabel(
                 color: AppColors.textPrimary,
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
               ),
             ),
           ],
@@ -446,10 +437,8 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
             const SizedBox(width: 8),
             Text(
               'How to Perform',
-              style: GoogleFonts.inter(
+              style: AppText.cardTitle(
                 color: AppColors.textPrimary,
-                fontSize: 16,
-                fontWeight: FontWeight.w700,
               ),
             ),
           ],
@@ -480,9 +469,9 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
                           child: Center(
                             child: Text(
                               '${entry.key + 1}',
-                              style: GoogleFonts.inter(
+                              style: AppText.badge(
                                 color: AppColors.textSecondary,
-                                fontSize: 11,
+                              ).copyWith(
                                 fontWeight: FontWeight.w700,
                               ),
                             ),
@@ -492,8 +481,9 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
                         Expanded(
                           child: Text(
                             entry.value,
-                            style: GoogleFonts.inter(
+                            style: AppText.body(
                               color: AppColors.textPrimary,
+                            ).copyWith(
                               fontSize: 14,
                               height: 1.5,
                             ),

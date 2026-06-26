@@ -114,6 +114,17 @@ abstract class AppText {
           color: color,
           shadows: shadows);
 
+  /// Title large (used for large headers/titles, e.g. exercise detail): 24 / 700.
+  static TextStyle titleLarge({
+    Color color = AppColors.textPrimary,
+    List<Shadow>? shadows,
+  }) =>
+      GoogleFonts.inter(
+          fontSize: 24,
+          fontWeight: FontWeight.w700,
+          color: color,
+          shadows: shadows);
+
   /// Sheet title (bottom-sheet headings): 18 / 700.
   static TextStyle sheetTitle({
     Color color = AppColors.textPrimary,
