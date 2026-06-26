@@ -33,11 +33,12 @@ class WorkoutDetailScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final workoutAsync = ref.watch(workoutDetailProvider(sessionId));
+    final surface = context.surface;
 
     return Scaffold(
-      backgroundColor: AppColors.bgBase,
+      backgroundColor: surface.bgBase,
       body: workoutAsync.when(
-        loading: _buildLoading,
+        loading: () => _buildLoading(context),
         error: (e, _) => _buildError(context, ref),
         data: (workout) {
           if (workout == null) return _buildNotFound();
@@ -49,12 +50,12 @@ class WorkoutDetailScreen extends ConsumerWidget {
 
   // ── State shells ───────────────────────────────────────────────────────────
 
-  Widget _buildLoading() => Scaffold(
-        backgroundColor: AppColors.bgBase,
+  Widget _buildLoading(BuildContext context) => Scaffold(
+        backgroundColor: context.surface.bgBase,
         appBar: AppBar(
-          backgroundColor: AppColors.bgBase,
+          backgroundColor: context.surface.bgBase,
           scrolledUnderElevation: 0,
-          leading: const BackButton(color: AppColors.textPrimary),
+          leading: BackButton(color: context.surface.textPrimary),
         ),
         body: SkeletonPulse(
           child: ListView(
@@ -76,11 +77,11 @@ class WorkoutDetailScreen extends ConsumerWidget {
       );
 
   Widget _buildError(BuildContext context, WidgetRef ref) => Scaffold(
-        backgroundColor: AppColors.bgBase,
+        backgroundColor: context.surface.bgBase,
         appBar: AppBar(
-          backgroundColor: AppColors.bgBase,
+          backgroundColor: context.surface.bgBase,
           scrolledUnderElevation: 0,
-          leading: const BackButton(color: AppColors.textPrimary),
+          leading: BackButton(color: context.surface.textPrimary),
         ),
         body: AsyncErrorState(
           message:
@@ -178,11 +179,12 @@ class WorkoutDetailScreen extends ConsumerWidget {
         .read(workoutActionsProvider.notifier)
         .saveWorkoutAsRoutine(workout, defaultName);
     if (context.mounted) {
+      final surface = context.surface;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Saved as "$defaultName"',
-              style: AppText.body(color: AppColors.textPrimary)),
-          backgroundColor: AppColors.surface2,
+              style: AppText.body(color: surface.textPrimary)),
+          backgroundColor: surface.surface2,
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -205,8 +207,8 @@ class WorkoutDetailScreen extends ConsumerWidget {
       items: [
         ActionSheetItem(
           icon: Icons.bookmark_outline_rounded,
-          iconColor: AppColors.textSecondary,
-          iconBackground: AppColors.surface3,
+          iconColor: context.surface.textSecondary,
+          iconBackground: context.surface.surface3,
           title: 'Save as Template',
           subtitle: 'Add to your routine library',
           onTap: (sheetContext) {
@@ -216,8 +218,8 @@ class WorkoutDetailScreen extends ConsumerWidget {
         ),
         ActionSheetItem(
           icon: Icons.edit_outlined,
-          iconColor: AppColors.textSecondary,
-          iconBackground: AppColors.bgBase,
+          iconColor: context.surface.textSecondary,
+          iconBackground: context.surface.bgBase,
           title: 'Edit Workout',
           subtitle: 'Rename or adjust notes',
           onTap: (sheetContext) async {

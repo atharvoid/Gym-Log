@@ -166,26 +166,31 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
     }
   }
 
-  SnackBar _snack(String msg) => SnackBar(
-        content: Text(msg, style: AppText.body(color: AppColors.textPrimary)),
-        backgroundColor: AppColors.bgSurface,
-        behavior: SnackBarBehavior.floating,
-      );
+  SnackBar _snack(String msg) {
+    final surface = context.surface;
+    return SnackBar(
+      content: Text(msg, style: AppText.body(color: surface.textPrimary)),
+      backgroundColor: surface.bgSurface,
+      behavior: SnackBarBehavior.floating,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
+    final surface = context.surface;
+
     return PopScope(
       canPop: _phase != _Phase.importing,
       child: Scaffold(
-        backgroundColor: AppColors.bgBase,
+        backgroundColor: surface.bgBase,
         appBar: AppBar(
-          backgroundColor: AppColors.bgBase,
+          backgroundColor: surface.bgBase,
           scrolledUnderElevation: 0,
           titleSpacing: 0,
           leading: IconButton(
             tooltip: 'Back',
-            icon: const Icon(Icons.arrow_back_ios_new,
-                size: 18, color: AppColors.textPrimary),
+            icon: Icon(Icons.arrow_back_ios_new,
+                size: 18, color: surface.textPrimary),
             onPressed: _phase == _Phase.importing
                 ? null
                 : () => Navigator.of(context).maybePop(),
@@ -193,7 +198,7 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
           title: Text(
             'Import workouts',
             style: AppText.sectionHeading(
-              color: AppColors.textPrimary,
+              color: surface.textPrimary,
             ).copyWith(
               letterSpacing: -0.3,
             ),
@@ -220,6 +225,7 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
   // ── Intro ───────────────────────────────────────────────
 
   Widget _buildIntro() {
+    final surface = context.surface;
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 12, 20, 32),
       children: [
@@ -227,7 +233,7 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
         const SizedBox(height: 18),
         Text('Bring your history with you',
             style: AppText.sectionHeading(
-              color: AppColors.textPrimary,
+              color: surface.textPrimary,
             ).copyWith(
               fontSize: 21,
               letterSpacing: -0.3,
@@ -238,7 +244,7 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
           'from that app, then choose the file here — GymLog detects the '
           'format automatically and converts the units for you.',
           style: AppText.body(
-            color: AppColors.textSecondary,
+            color: surface.textSecondary,
           ).copyWith(
             fontSize: 14,
             height: 1.45,
@@ -263,7 +269,7 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
         Text(
           'Your data never leaves your device during import.',
           textAlign: TextAlign.center,
-          style: AppText.caption(color: AppColors.chartAxisLabel),
+          style: AppText.caption(color: surface.textTertiary),
         ),
       ],
     );
@@ -278,6 +284,7 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
     final range = (s.firstDate != null && s.lastDate != null)
         ? '${df.format(s.firstDate!)} – ${df.format(s.lastDate!)}'
         : '—';
+    final surface = context.surface;
 
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
@@ -291,7 +298,7 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
                   textAlign: TextAlign.right,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: AppText.caption(color: AppColors.chartAxisLabel)),
+                  style: AppText.caption(color: surface.textTertiary)),
             ),
         ]),
         const SizedBox(height: 16),
@@ -373,7 +380,7 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
             onPressed: _pickFile,
             child: Text('Choose a different file',
                 style: AppText.rowLabel(
-                  color: AppColors.textSecondary,
+                  color: surface.textSecondary,
                 )),
           ),
         ),
@@ -394,6 +401,7 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
 
   Widget _buildImporting() {
     final pct = _total == 0 ? null : (_done / _total).clamp(0.0, 1.0);
+    final surface = context.surface;
     return _centered(
       Column(mainAxisSize: MainAxisSize.min, children: [
         SizedBox(
@@ -403,17 +411,19 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
               value: pct,
               color: context.accent.base,
               strokeWidth: 3,
-              backgroundColor: Colors.white.withValues(alpha: 0.08)),
+              backgroundColor: surface.isLight
+                  ? Colors.black.withValues(alpha: 0.08)
+                  : Colors.white.withValues(alpha: 0.08)),
         ),
         const SizedBox(height: 22),
         Text('Importing your workouts',
             style: AppText.cardTitle(
-              color: AppColors.textPrimary,
+              color: surface.textPrimary,
             )),
         const SizedBox(height: 6),
         Text('$_done of $_total',
             style: AppText.meta(
-              color: AppColors.textSecondary,
+              color: surface.textSecondary,
             )),
       ]),
     );
@@ -423,6 +433,7 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
 
   Widget _buildDone() {
     final r = _result!;
+    final surface = context.surface;
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
       children: [
@@ -447,7 +458,7 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
                     'workout${r.sessionsImported == 1 ? '' : 's'}'
                 : 'Nothing new to import',
             style: AppText.sectionHeading(
-              color: AppColors.textPrimary,
+              color: surface.textPrimary,
             ).copyWith(
               letterSpacing: -0.3,
             ),
@@ -488,7 +499,7 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
             onPressed: () => Navigator.of(context).maybePop(),
             child: Text('Done',
                 style: AppText.rowLabel(
-                  color: AppColors.textSecondary,
+                  color: surface.textSecondary,
                 )),
           ),
         ),
@@ -509,15 +520,20 @@ class _Card extends StatelessWidget {
   final Widget child;
 
   @override
-  Widget build(BuildContext context) => Container(
-        decoration: BoxDecoration(
-          gradient: RDStyles.cardGradient,
-          borderRadius: BorderRadius.circular(6.0),
-          border: RDStyles.hairlineBorder,
-        ),
-        clipBehavior: Clip.antiAlias,
-        child: child,
-      );
+  Widget build(BuildContext context) {
+    final surface = context.surface;
+    return Container(
+      decoration: BoxDecoration(
+        gradient: surface.isLight
+            ? AppColors.cardGradientLight
+            : AppColors.cardGradient,
+        borderRadius: BorderRadius.circular(6.0),
+        border: Border.all(color: surface.borderSubtle, width: 1),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: child,
+    );
+  }
 }
 
 class _StatRow extends StatelessWidget {
@@ -528,31 +544,33 @@ class _StatRow extends StatelessWidget {
   final bool emphasize;
 
   @override
-  Widget build(BuildContext context) => Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
-        child: Row(
-          children: [
-            Expanded(
-              child: Text(label,
-                  style: AppText.body(
-                    color: emphasize
-                        ? AppColors.textPrimary
-                        : AppColors.textSecondary,
-                  ).copyWith(
-                    fontSize: 14,
-                    fontWeight: emphasize ? FontWeight.w600 : FontWeight.w500,
-                  )),
-            ),
-            Text(value,
-                style: (emphasize
-                        ? AppText.sheetTitle(color: context.accent.base)
-                        : AppText.body(color: AppColors.textPrimary).copyWith(
-                            fontWeight: FontWeight.w700,
-                          ))
-                    .copyWith(fontFeatures: kTabular)),
-          ],
-        ),
-      );
+  Widget build(BuildContext context) {
+    final surface = context.surface;
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(label,
+                style: AppText.body(
+                  color:
+                      emphasize ? surface.textPrimary : surface.textSecondary,
+                ).copyWith(
+                  fontSize: 14,
+                  fontWeight: emphasize ? FontWeight.w600 : FontWeight.w500,
+                )),
+          ),
+          Text(value,
+              style: (emphasize
+                      ? AppText.sheetTitle(color: context.accent.base)
+                      : AppText.body(color: surface.textPrimary).copyWith(
+                          fontWeight: FontWeight.w700,
+                        ))
+                  .copyWith(fontFeatures: kTabular)),
+        ],
+      ),
+    );
+  }
 }
 
 class _PrimaryButton extends StatelessWidget {
@@ -592,26 +610,29 @@ class _Banner extends StatelessWidget {
   final String text;
 
   @override
-  Widget build(BuildContext context) => Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-        decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.08),
-          borderRadius: BorderRadius.zero,
-          border: Border.all(color: color.withValues(alpha: 0.22), width: 1),
+  Widget build(BuildContext context) {
+    final surface = context.surface;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.zero,
+        border: Border.all(color: color.withValues(alpha: 0.22), width: 1),
+      ),
+      child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Icon(icon, size: 18, color: color),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Text(text,
+              style: AppText.meta(
+                color: surface.textPrimary.withValues(alpha: 0.92),
+              ).copyWith(
+                height: 1.4,
+              )),
         ),
-        child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Icon(icon, size: 18, color: color),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Text(text,
-                style: AppText.meta(
-                  color: AppColors.textPrimary.withValues(alpha: 0.92),
-                ).copyWith(
-                  height: 1.4,
-                )),
-          ),
-        ]),
-      );
+      ]),
+    );
+  }
 }
 
 class _IconBadge extends StatelessWidget {
@@ -637,36 +658,41 @@ class _SourceChips extends StatelessWidget {
   const _SourceChips();
 
   @override
-  Widget build(BuildContext context) => Row(children: [
-        for (final s in ImportSource.values) ...[
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
-            decoration: BoxDecoration(
-              gradient: RDStyles.cardGradient,
-              borderRadius: BorderRadius.circular(6.0),
-              border: RDStyles.hairlineBorder,
-            ),
-            child: Row(children: [
-              const Icon(Icons.fitness_center_rounded,
-                  size: 15, color: AppColors.textSecondary),
-              const SizedBox(width: 8),
-              Text(s.label,
-                  style: AppText.statLabel(
-                    color: AppColors.textPrimary,
-                  ).copyWith(
-                    fontSize: 13.5,
-                  )),
-            ]),
+  Widget build(BuildContext context) {
+    final surface = context.surface;
+    return Row(children: [
+      for (final s in ImportSource.values) ...[
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+          decoration: BoxDecoration(
+            gradient: surface.isLight
+                ? AppColors.cardGradientLight
+                : AppColors.cardGradient,
+            borderRadius: BorderRadius.circular(6.0),
+            border: Border.all(color: surface.borderSubtle, width: 1),
           ),
-          const SizedBox(width: 10),
-        ],
-        Expanded(
-          child: Text('auto-detected',
-              style: AppText.caption(
-                color: AppColors.chartAxisLabel,
-              )),
+          child: Row(children: [
+            Icon(Icons.fitness_center_rounded,
+                size: 15, color: surface.textSecondary),
+            const SizedBox(width: 8),
+            Text(s.label,
+                style: AppText.statLabel(
+                  color: surface.textPrimary,
+                ).copyWith(
+                  fontSize: 13.5,
+                )),
+          ]),
         ),
-      ]);
+        const SizedBox(width: 10),
+      ],
+      Expanded(
+        child: Text('auto-detected',
+            style: AppText.caption(
+              color: surface.textTertiary,
+            )),
+      ),
+    ]);
+  }
 }
 
 class _DetectedPill extends StatelessWidget {
@@ -676,6 +702,7 @@ class _DetectedPill extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final accent = context.accent;
+    final surface = context.surface;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
       decoration: BoxDecoration(
@@ -689,7 +716,7 @@ class _DetectedPill extends StatelessWidget {
         const SizedBox(width: 7),
         Text('Detected: ${source.label}',
             style: AppText.statLabel(
-              color: AppColors.textPrimary,
+              color: surface.textPrimary,
             )),
       ]),
     );
@@ -704,6 +731,7 @@ class _UnitChooser extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final accent = context.accent;
+    final surface = context.surface;
     Widget chip(String value, String label) {
       final active = unit == value;
       return Expanded(
@@ -724,7 +752,7 @@ class _UnitChooser extends StatelessWidget {
             ),
             child: Text(label,
                 style: AppText.rowLabel(
-                  color: active ? accent.onAccent : AppColors.textSecondary,
+                  color: active ? accent.onAccent : surface.textSecondary,
                 )),
           ),
         ),
@@ -734,14 +762,16 @@ class _UnitChooser extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        gradient: RDStyles.cardGradient,
+        gradient: surface.isLight
+            ? AppColors.cardGradientLight
+            : AppColors.cardGradient,
         borderRadius: BorderRadius.circular(6.0),
-        border: RDStyles.hairlineBorder,
+        border: Border.all(color: surface.borderSubtle, width: 1),
       ),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Text('This file has no unit — what was it logged in?',
             style: AppText.statLabel(
-              color: AppColors.textPrimary,
+              color: surface.textPrimary,
             )),
         const SizedBox(height: 10),
         Container(

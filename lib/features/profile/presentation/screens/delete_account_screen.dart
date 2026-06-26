@@ -38,6 +38,7 @@ class _DeleteAccountScreenState extends ConsumerState<DeleteAccountScreen> {
     if (!_canDelete) return;
     HapticFeedback.heavyImpact();
     setState(() => _deleting = true);
+    final surface = context.surface;
 
     final outcome =
         await ref.read(accountDeletionServiceProvider).deleteAccount();
@@ -55,7 +56,7 @@ class _DeleteAccountScreenState extends ConsumerState<DeleteAccountScreen> {
             'Your account and data have been permanently deleted.',
             style: AppText.button(),
           ),
-          backgroundColor: AppColors.bgSurface,
+          backgroundColor: surface.bgSurface,
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -68,7 +69,7 @@ class _DeleteAccountScreenState extends ConsumerState<DeleteAccountScreen> {
             'Deletion failed. Please try again.',
             style: AppText.button(),
           ),
-          backgroundColor: AppColors.bgSurface,
+          backgroundColor: surface.bgSurface,
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -77,21 +78,24 @@ class _DeleteAccountScreenState extends ConsumerState<DeleteAccountScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final surface = context.surface;
     return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: SystemUiOverlayStyle.light,
+      value: surface.isLight
+          ? SystemUiOverlayStyle.dark
+          : SystemUiOverlayStyle.light,
       child: PopScope(
         canPop: !_deleting,
         child: Scaffold(
-          backgroundColor: AppColors.bgBase,
+          backgroundColor: surface.bgBase,
           appBar: AppBar(
-            backgroundColor: AppColors.bgBase,
+            backgroundColor: surface.bgBase,
             scrolledUnderElevation: 0,
             titleSpacing: 0,
             leading: IconButton(
               tooltip: 'Back',
               constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
-              icon: const Icon(Icons.arrow_back_ios_new,
-                  size: 18, color: AppColors.textPrimary),
+              icon: Icon(Icons.arrow_back_ios_new,
+                  size: 18, color: surface.textPrimary),
               onPressed: _deleting ? null : () => context.pop(),
             ),
             title: Text('Delete account', style: AppText.sheetTitle()),
@@ -169,19 +173,19 @@ class _DeleteAccountScreenState extends ConsumerState<DeleteAccountScreen> {
                     onChanged: (_) => setState(() {}),
                     cursorColor: AppColors.error,
                     style: AppText.button(
-                      color: AppColors.textPrimary,
+                      color: surface.textPrimary,
                     ).copyWith(
                       letterSpacing: 1.5,
                     ),
                     decoration: InputDecoration(
                       hintText: _confirmWord,
                       hintStyle: AppText.button(
-                        color: AppColors.textDisabled,
+                        color: surface.textDisabled,
                       ).copyWith(
                         letterSpacing: 1.5,
                       ),
                       filled: true,
-                      fillColor: AppColors.surfaceRaised,
+                      fillColor: surface.surface2,
                       contentPadding: const EdgeInsets.symmetric(
                           horizontal: 16, vertical: 14),
                       enabledBorder: const OutlineInputBorder(
@@ -228,7 +232,7 @@ class _DeleteAccountScreenState extends ConsumerState<DeleteAccountScreen> {
                       onPressed: _deleting ? null : () => context.pop(),
                       child: Text(
                         'Cancel',
-                        style: AppText.button(color: AppColors.textSecondary),
+                        style: AppText.button(color: surface.textSecondary),
                       ),
                     ),
                   ),
@@ -257,10 +261,11 @@ class _SectionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final surface = context.surface;
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
       decoration: BoxDecoration(
-        color: AppColors.surfaceRaised,
+        color: surface.surface2,
         borderRadius: BorderRadius.circular(6),
         border: Border.all(color: tone.withValues(alpha: 0.22)),
       ),
@@ -289,7 +294,7 @@ class _SectionCard extends StatelessWidget {
                       width: 4,
                       height: 4,
                       decoration: BoxDecoration(
-                        color: AppColors.textSecondary,
+                        color: surface.textSecondary,
                         borderRadius: BorderRadius.circular(6),
                       ),
                     ),

@@ -73,18 +73,19 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
         ? AsyncValue.data(widget.exercise!)
         : ref.watch(_exerciseFallbackProvider(widget.exerciseId));
 
+    final surface = context.surface;
+
     return exerciseAsync.when(
-      loading: () => const Scaffold(
-          backgroundColor: AppColors.bgBase,
+      loading: () => Scaffold(
+          backgroundColor: surface.bgBase,
           body: Center(
-              child:
-                  CircularProgressIndicator(color: AppColors.textSecondary))),
+              child: CircularProgressIndicator(color: surface.textSecondary))),
       error: (e, st) => Scaffold(
-        backgroundColor: AppColors.bgBase,
+        backgroundColor: surface.bgBase,
         appBar: AppBar(
-          backgroundColor: AppColors.bgBase,
+          backgroundColor: surface.bgBase,
           scrolledUnderElevation: 0,
-          iconTheme: const IconThemeData(color: AppColors.textPrimary),
+          iconTheme: IconThemeData(color: surface.textPrimary),
         ),
         body: AsyncErrorState(
           message: "Couldn't load this exercise.",
@@ -94,20 +95,20 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
       ),
       data: (exercise) {
         return Scaffold(
-          backgroundColor: AppColors.bgBase,
+          backgroundColor: surface.bgBase,
           appBar: AppBar(
             title: Text(
               exercise.name,
               style: AppText.sheetTitle(
-                color: AppColors.textPrimary,
+                color: surface.textPrimary,
               ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
-            backgroundColor: AppColors.bgBase,
+            backgroundColor: surface.bgBase,
             scrolledUnderElevation: 0,
             titleSpacing: 0,
-            iconTheme: const IconThemeData(color: AppColors.textPrimary),
+            iconTheme: IconThemeData(color: surface.textPrimary),
           ),
           body: ListView(
             padding: const EdgeInsets.all(16),
@@ -127,7 +128,7 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
               Text(
                 exercise.name,
                 style: AppText.titleLarge(
-                  color: AppColors.textPrimary,
+                  color: surface.textPrimary,
                 ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
@@ -141,7 +142,7 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
                       : '$parent  •  ${exercise.equipment}';
                 }(),
                 style: AppText.body(
-                  color: AppColors.textSecondary,
+                  color: surface.textSecondary,
                 ).copyWith(
                   fontSize: 14,
                 ),
@@ -169,18 +170,18 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 11, vertical: 6),
                             decoration: BoxDecoration(
-                              color: AppColors.surface3,
+                              color: surface.surface3,
                               borderRadius:
                                   BorderRadius.circular(AppRadius.badge),
                               border: Border.all(
-                                color: AppColors.borderSubtle,
+                                color: surface.borderSubtle,
                                 width: 1,
                               ),
                             ),
                             child: Text(
                               label,
                               style: AppText.label(
-                                color: AppColors.textPrimary,
+                                color: surface.textPrimary,
                               ).copyWith(
                                 fontSize: 12.5,
                               ),
@@ -195,11 +196,11 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
               const SizedBox(height: 24),
 
               historyAsync.when(
-                loading: () => const Center(
+                loading: () => Center(
                   child: Padding(
-                    padding: EdgeInsets.symmetric(vertical: 60),
+                    padding: const EdgeInsets.symmetric(vertical: 60),
                     child: CircularProgressIndicator(
-                      color: AppColors.textSecondary,
+                      color: surface.textSecondary,
                     ),
                   ),
                 ),
@@ -220,13 +221,13 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
                       _buildGraphSection(visible,
                           showProPill: !isPremium && history.length > 3),
                       const SizedBox(height: 24),
-                      _buildStatToggles(),
+                      _buildStatToggles(surface),
                       if (history.isNotEmpty) ...[
                         const SizedBox(height: 24),
-                        _buildPersonalRecords(history),
+                        _buildPersonalRecords(history, surface),
                       ],
                       const SizedBox(height: 24),
-                      _buildInstructions(exercise),
+                      _buildInstructions(exercise, surface),
                     ],
                   );
                 },
@@ -282,7 +283,7 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
     );
   }
 
-  Widget _buildStatToggles() {
+  Widget _buildStatToggles(SurfaceTokens surface) {
     final accent = context.accent;
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
@@ -303,15 +304,14 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   decoration: BoxDecoration(
-                    color: isActive ? accent.base : AppColors.bgSurface,
+                    color: isActive ? accent.base : surface.bgSurface,
                     borderRadius:
                         BorderRadius.circular(AppRadius.buttonSecondary),
                   ),
                   child: Text(
                     entry.value,
                     style: AppText.statLabel(
-                      color:
-                          isActive ? accent.onAccent : AppColors.textSecondary,
+                      color: isActive ? accent.onAccent : surface.textSecondary,
                     ),
                   ),
                 ),
@@ -323,7 +323,8 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
     );
   }
 
-  Widget _buildPersonalRecords(List<ExerciseHistoryData> history) {
+  Widget _buildPersonalRecords(
+      List<ExerciseHistoryData> history, SurfaceTokens surface) {
     final maxWeight = history.isEmpty
         ? 0.0
         : history.map((e) => e.weight).reduce((a, b) => a > b ? a : b);
@@ -348,27 +349,28 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
             Text(
               'Personal Records',
               style: AppText.cardTitle(
-                color: AppColors.textPrimary,
+                color: surface.textPrimary,
               ),
             ),
           ],
         ),
         const SizedBox(height: 12),
         Container(
-          decoration: const BoxDecoration(
-            color: AppColors.bgSurface,
+          decoration: BoxDecoration(
+            color: surface.bgSurface,
             borderRadius: AppRadius.cardAll,
           ),
           child: Column(
             children: [
-              _prRow('Heaviest Weight', '${maxWeight.toStringAsFixed(1)} kg'),
-              _prDivider(),
-              _prRow('Best 1RM', '${max1RM.toStringAsFixed(2)} kg'),
-              _prDivider(),
-              _prRow(
-                  'Max Session Volume', '${maxVolume.toStringAsFixed(0)} kg'),
-              _prDivider(),
-              _prRow('Max Reps', '$maxReps reps'),
+              _prRow('Heaviest Weight', '${maxWeight.toStringAsFixed(1)} kg',
+                  surface),
+              _prDivider(surface),
+              _prRow('Best 1RM', '${max1RM.toStringAsFixed(2)} kg', surface),
+              _prDivider(surface),
+              _prRow('Max Session Volume', '${maxVolume.toStringAsFixed(0)} kg',
+                  surface),
+              _prDivider(surface),
+              _prRow('Max Reps', '$maxReps reps', surface),
             ],
           ),
         ),
@@ -376,7 +378,7 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
     );
   }
 
-  Widget _prRow(String label, String value) {
+  Widget _prRow(String label, String value, SurfaceTokens surface) {
     return MergeSemantics(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
@@ -385,7 +387,7 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
             Text(
               label,
               style: AppText.body(
-                color: AppColors.textSecondary,
+                color: surface.textSecondary,
               ).copyWith(
                 fontSize: 14,
               ),
@@ -394,7 +396,7 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
             Text(
               value,
               style: AppText.rowLabel(
-                color: AppColors.textPrimary,
+                color: surface.textPrimary,
               ),
             ),
           ],
@@ -403,16 +405,16 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
     );
   }
 
-  Widget _prDivider() {
-    return const Divider(
-      color: AppColors.borderSubtle,
+  Widget _prDivider(SurfaceTokens surface) {
+    return Divider(
+      color: surface.borderSubtle,
       height: 1,
       indent: 16,
       endIndent: 16,
     );
   }
 
-  Widget _buildInstructions(Exercise exercise) {
+  Widget _buildInstructions(Exercise exercise, SurfaceTokens surface) {
     if (exercise.instructions == null || exercise.instructions!.isEmpty) {
       return const SizedBox.shrink();
     }
@@ -432,21 +434,21 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
       children: [
         Row(
           children: [
-            const Icon(Icons.list_alt_rounded,
-                color: AppColors.textSecondary, size: 20),
+            Icon(Icons.list_alt_rounded,
+                color: surface.textSecondary, size: 20),
             const SizedBox(width: 8),
             Text(
               'How to Perform',
               style: AppText.cardTitle(
-                color: AppColors.textPrimary,
+                color: surface.textPrimary,
               ),
             ),
           ],
         ),
         const SizedBox(height: 12),
         Container(
-          decoration: const BoxDecoration(
-            color: AppColors.bgSurface,
+          decoration: BoxDecoration(
+            color: surface.bgSurface,
             borderRadius: AppRadius.cardAll,
           ),
           child: Column(
@@ -462,15 +464,15 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
                         Container(
                           width: 24,
                           height: 24,
-                          decoration: const BoxDecoration(
-                            color: AppColors.surface3,
+                          decoration: BoxDecoration(
+                            color: surface.surface3,
                             borderRadius: AppRadius.badgeAll,
                           ),
                           child: Center(
                             child: Text(
                               '${entry.key + 1}',
                               style: AppText.badge(
-                                color: AppColors.textSecondary,
+                                color: surface.textSecondary,
                               ).copyWith(
                                 fontWeight: FontWeight.w700,
                               ),
@@ -482,7 +484,7 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
                           child: Text(
                             entry.value,
                             style: AppText.body(
-                              color: AppColors.textPrimary,
+                              color: surface.textPrimary,
                             ).copyWith(
                               fontSize: 14,
                               height: 1.5,
@@ -493,8 +495,8 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
                     ),
                   ),
                   if (!isLast)
-                    const Divider(
-                      color: AppColors.borderSubtle,
+                    Divider(
+                      color: surface.borderSubtle,
                       height: 1,
                       indent: 52,
                       endIndent: 16,

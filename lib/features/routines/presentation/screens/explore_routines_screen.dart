@@ -178,12 +178,12 @@ class _ExploreRoutinesScreenState extends ConsumerState<ExploreRoutinesScreen>
 
   void _snack(String message) {
     if (!mounted) return;
+    final surface = context.surface;
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
       ..showSnackBar(SnackBar(
-        content:
-            Text(message, style: AppText.meta(color: AppColors.textPrimary)),
-        backgroundColor: AppColors.surface3,
+        content: Text(message, style: AppText.meta(color: surface.textPrimary)),
+        backgroundColor: surface.surface3,
         behavior: SnackBarBehavior.floating,
       ));
   }
@@ -192,15 +192,16 @@ class _ExploreRoutinesScreenState extends ConsumerState<ExploreRoutinesScreen>
     final msg = missed == 0
         ? '"$name" added to My Routines.'
         : '"$name" added — $missed exercise${missed > 1 ? 's' : ''} not in your library were skipped.';
+    final surface = context.surface;
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
       ..showSnackBar(SnackBar(
-        content: Text(msg, style: AppText.meta(color: AppColors.textPrimary)),
-        backgroundColor: AppColors.surface3,
+        content: Text(msg, style: AppText.meta(color: surface.textPrimary)),
+        backgroundColor: surface.surface3,
         behavior: SnackBarBehavior.floating,
         action: SnackBarAction(
           label: 'View',
-          textColor: AppColors.textPrimary,
+          textColor: surface.textPrimary,
           onPressed: () => context.push('/routines/$id'),
         ),
       ));
@@ -637,9 +638,7 @@ class _FeaturedCard extends StatelessWidget {
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: surface.isLight
-                  ? [surface.surface2, surface.bgSurface]
-                  : [AppColors.surface2, const Color(0xFF0B0B0D)],
+              colors: [surface.surface2, surface.bgSurface],
             ),
             borderRadius: AppRadius.cardAll,
             border: Border.all(color: surface.borderSubtle),
@@ -1074,9 +1073,7 @@ class _PreviewSheet extends StatelessWidget {
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: surface.isLight
-                ? [surface.surface2, surface.bgBase]
-                : [AppColors.surface2, AppColors.bgBase],
+            colors: [surface.surface2, surface.bgBase],
           ),
           borderRadius: AppRadius.sheetTop,
           border: Border(top: BorderSide(color: surface.borderSubtle)),

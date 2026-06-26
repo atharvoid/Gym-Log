@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gymlog/core/theme/app_colors.dart';
 import 'package:gymlog/core/theme/app_text.dart';
+import 'package:gymlog/core/theme/dynamic_accent_theme.dart';
 import 'package:gymlog/shared/widgets/ui/app_card.dart';
 import 'package:gymlog/shared/widgets/ui/start_button.dart';
 import 'package:gymlog/shared/widgets/ui/action_bottom_sheet.dart';
@@ -61,11 +62,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Widget build(BuildContext context) {
     final historyState = ref.watch(workoutHistoryProvider);
     final totalItems = historyState.items.length;
+    final surface = context.surface;
+    final accent = context.accent;
 
     // ── Initial load: skeleton feed (no spinner, no layout jump) ───────────
     if (historyState.isInitialLoad) {
       return Scaffold(
-        backgroundColor: AppColors.bgBase,
+        backgroundColor: surface.bgBase,
         appBar: _appBar(),
         body: SkeletonPulse(
           child: ListView(
@@ -91,12 +94,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final itemCount = 2 + totalItems + 1;
 
     return Scaffold(
-      backgroundColor: AppColors.bgBase,
+      backgroundColor: surface.bgBase,
       appBar: _appBar(),
       body: RefreshIndicator(
         onRefresh: () => ref.read(workoutHistoryProvider.notifier).refresh(),
-        color: AppColors.textPrimary,
-        backgroundColor: AppColors.surface2,
+        color: accent.base,
+        backgroundColor: surface.surface2,
         child: ListView.builder(
           key: const PageStorageKey('home_feed'),
           controller: _scrollController,
@@ -249,6 +252,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       );
 
   void _showWorkoutCardMenu(WorkoutSession session) {
+    final surface = context.surface;
     final name = getWorkoutNameFallback(session.startedAt, session.name);
 
     showActionBottomSheet(
@@ -257,8 +261,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       items: [
         ActionSheetItem(
           icon: Icons.edit_outlined,
-          iconColor: AppColors.textSecondary,
-          iconBackground: AppColors.bgBase,
+          iconColor: surface.textSecondary,
+          iconBackground: surface.bgBase,
           title: 'Edit Workout',
           onTap: (sheetContext) async {
             Navigator.of(sheetContext).pop();
@@ -314,6 +318,7 @@ class _WeekStrip extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final streak = ref.watch(streakStatsProvider);
     final goal = ref.watch(weeklyGoalProvider);
+    final surface = context.surface;
 
     if (streak.currentStreak == 0 && streak.workoutsThisWeek == 0) {
       return const SizedBox.shrink();
@@ -340,19 +345,19 @@ class _WeekStrip extends ConsumerWidget {
             ),
             const SizedBox(width: 3),
             Text('${streak.currentStreak}',
-                style: AppText.statLabel(color: AppColors.textPrimary)),
+                style: AppText.statLabel(color: surface.textPrimary)),
             Text('  ·  ', style: AppText.caption()),
           ],
           Icon(
             goalMet ? Icons.check_circle_rounded : Icons.flag_rounded,
             size: 13,
-            color: goalMet ? AppColors.success : AppColors.textSecondary,
+            color: goalMet ? AppColors.success : surface.textSecondary,
           ),
           const SizedBox(width: 4),
           Text(
             '${streak.workoutsThisWeek}/$goal',
             style: AppText.statLabel(
-              color: goalMet ? AppColors.success : AppColors.textSecondary,
+              color: goalMet ? AppColors.success : surface.textSecondary,
             ),
           ),
         ],

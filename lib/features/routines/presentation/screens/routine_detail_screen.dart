@@ -136,14 +136,15 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
   }
 
   void _showActions(HydratedRoutineDetail routine) {
+    final surface = context.surface;
     showActionBottomSheet(
       context: context,
       title: routine.routine.name,
       items: [
         ActionSheetItem(
           icon: Icons.edit_rounded,
-          iconColor: AppColors.textSecondary,
-          iconBackground: AppColors.bgBase,
+          iconColor: surface.textSecondary,
+          iconBackground: surface.bgBase,
           title: 'Edit Routine',
           onTap: (ctx) {
             Navigator.of(ctx).pop();
@@ -152,8 +153,8 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
         ),
         ActionSheetItem(
           icon: Icons.share_rounded,
-          iconColor: AppColors.textSecondary,
-          iconBackground: AppColors.bgBase,
+          iconColor: surface.textSecondary,
+          iconBackground: surface.bgBase,
           title: 'Share Routine',
           onTap: (ctx) {
             Navigator.of(ctx).pop();
@@ -230,12 +231,13 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
                     ? null
                     : asyncVal.valueOrNull!.last.day));
     final bottomInset = MediaQuery.viewPaddingOf(context).bottom;
+    final surface = context.surface;
 
     return Scaffold(
-      backgroundColor: AppColors.bgBase,
+      backgroundColor: surface.bgBase,
       body: RefreshIndicator(
-        color: AppColors.textPrimary,
-        backgroundColor: AppColors.surface2,
+        color: context.accent.base,
+        backgroundColor: surface.surface2,
         onRefresh: _onRefresh,
         child: CustomScrollView(
           physics: const BouncingScrollPhysics(
@@ -343,10 +345,11 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
   }
 
   Widget _appBar(HydratedRoutineDetail routine) {
+    final surface = context.surface;
     return SliverAppBar(
       pinned: true,
       toolbarHeight: 56,
-      backgroundColor: AppColors.bgBase,
+      backgroundColor: surface.bgBase,
       surfaceTintColor: Colors.transparent,
       scrolledUnderElevation: 0,
       elevation: 0,
@@ -362,8 +365,8 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
       ),
       leading: IconButton(
         tooltip: 'Back',
-        icon: const Icon(Icons.arrow_back_rounded,
-            size: 24, color: AppColors.textPrimary),
+        icon: Icon(Icons.arrow_back_rounded,
+            size: 24, color: surface.textPrimary),
         constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
         onPressed: () => context.pop(),
       ),
@@ -371,8 +374,8 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
         // S13: standardized to more_horiz_rounded + showActionBottomSheet
         IconButton(
           tooltip: 'More options',
-          icon: const Icon(Icons.more_horiz_rounded,
-              size: 24, color: AppColors.textPrimary),
+          icon: Icon(Icons.more_horiz_rounded,
+              size: 24, color: surface.textPrimary),
           constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
           onPressed: () => _showActions(routine),
         ),
@@ -400,22 +403,23 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
   // ── Loading / error / not-found ──────────────────────────────────────────────
 
   Widget _buildSkeleton() {
+    final surface = context.surface;
     return SkeletonPulse(
       child: Scaffold(
-        backgroundColor: AppColors.bgBase,
+        backgroundColor: surface.bgBase,
         body: CustomScrollView(
           physics: const NeverScrollableScrollPhysics(),
           slivers: [
-            const SliverAppBar(
+            SliverAppBar(
               pinned: true,
               toolbarHeight: 56,
-              backgroundColor: AppColors.bgBase,
+              backgroundColor: surface.bgBase,
               surfaceTintColor: Colors.transparent,
               scrolledUnderElevation: 0,
               elevation: 0,
               automaticallyImplyLeading: false,
               titleSpacing: 0,
-              title: SizedBox.shrink(),
+              title: const SizedBox.shrink(),
             ),
             SliverToBoxAdapter(
               child: Padding(
@@ -451,15 +455,15 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
   }
 
   Widget _buildError() {
+    final surface = context.surface;
     return Scaffold(
-      backgroundColor: AppColors.bgBase,
+      backgroundColor: surface.bgBase,
       appBar: AppBar(
-        backgroundColor: AppColors.bgBase,
+        backgroundColor: surface.bgBase,
         scrolledUnderElevation: 0,
         leading: IconButton(
           tooltip: 'Back',
-          icon: const Icon(Icons.arrow_back_rounded,
-              color: AppColors.textPrimary),
+          icon: Icon(Icons.arrow_back_rounded, color: surface.textPrimary),
           constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
           onPressed: () => context.pop(),
         ),
@@ -547,9 +551,9 @@ class _RoutineVolumeSectionState extends ConsumerState<_RoutineVolumeSection> {
             loading: () => Container(
               height: 198,
               decoration: AppCard.decoration(radius: AppRadius.card),
-              child: const Center(
-                child:
-                    CircularProgressIndicator(color: AppColors.textSecondary),
+              child: Center(
+                child: CircularProgressIndicator(
+                    color: context.surface.textSecondary),
               ),
             ),
             error: (_, __) => const RoutineVolumeGraph(data: []),
@@ -609,7 +613,7 @@ class _StatDivider extends StatelessWidget {
   const _StatDivider();
   @override
   Widget build(BuildContext context) =>
-      Container(width: 1, height: 26, color: AppColors.borderSubtle);
+      Container(width: 1, height: 26, color: context.surface.borderSubtle);
 }
 
 class _HeroStat extends StatelessWidget {
@@ -631,7 +635,7 @@ class _HeroStat extends StatelessWidget {
         ),
         const SizedBox(height: 3),
         Text(label,
-            style: AppText.columnHeader(color: AppColors.textSecondary)),
+            style: AppText.columnHeader(color: context.surface.textSecondary)),
       ],
     );
   }
@@ -666,6 +670,8 @@ class _StartRoutineButtonState extends State<_StartRoutineButton> {
   @override
   Widget build(BuildContext context) {
     final empty = widget.empty;
+    final surface = context.surface;
+    final accent = context.accent;
     return GestureDetector(
       onTapDown: _onTapDown,
       onTapUp: _onTapUp,
@@ -679,7 +685,7 @@ class _StartRoutineButtonState extends State<_StartRoutineButton> {
           height: 52,
           width: double.infinity,
           decoration: BoxDecoration(
-            color: empty ? AppColors.surface3 : context.accent.base,
+            color: empty ? surface.surface3 : accent.base,
             borderRadius: AppRadius.buttonPrimaryAll,
           ),
           alignment: Alignment.center,
@@ -687,16 +693,13 @@ class _StartRoutineButtonState extends State<_StartRoutineButton> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Icon(empty ? Icons.add_rounded : Icons.play_arrow_rounded,
-                  color:
-                      empty ? AppColors.textSecondary : context.accent.onAccent,
+                  color: empty ? surface.textSecondary : accent.onAccent,
                   size: 22),
               const SizedBox(width: 8),
               Text(
                 empty ? 'Add an exercise' : 'Start Routine',
                 style: AppText.button(
-                    color: empty
-                        ? AppColors.textSecondary
-                        : context.accent.onAccent),
+                    color: empty ? surface.textSecondary : accent.onAccent),
               ),
             ],
           ),
@@ -721,6 +724,7 @@ class _RoutineProgressPill extends StatelessWidget {
 
     final delta = ((latest - first) / first * 100).round();
     final isUp = delta >= 0;
+    final surface = context.surface;
 
     return Padding(
       padding: const EdgeInsets.only(top: 14),
@@ -729,10 +733,10 @@ class _RoutineProgressPill extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 6),
           decoration: BoxDecoration(
-            color: AppColors.surface3,
+            color: surface.surface3,
             borderRadius: BorderRadius.circular(AppRadius.badge),
             border: Border.all(
-              color: AppColors.borderSubtle,
+              color: surface.borderSubtle,
               width: 1,
             ),
           ),
@@ -742,14 +746,14 @@ class _RoutineProgressPill extends StatelessWidget {
               Icon(
                 isUp ? Icons.trending_up_rounded : Icons.trending_down_rounded,
                 size: 14,
-                color: AppColors.textSecondary,
+                color: surface.textSecondary,
               ),
               const SizedBox(width: 6),
               Text(
                 isUp
                     ? 'Volume up $delta% since ${_monthDay.format(samples.first.day)}'
                     : 'Volume down ${-delta}% since ${_monthDay.format(samples.first.day)}',
-                style: AppText.statLabel(color: AppColors.textSecondary),
+                style: AppText.statLabel(color: surface.textSecondary),
               ),
             ],
           ),

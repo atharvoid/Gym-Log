@@ -108,7 +108,7 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
         SnackBar(
           content: Text(
             "Couldn't save the workout — your session is safe. Try again.",
-            style: AppText.body(color: AppColors.textPrimary),
+            style: AppText.body(color: context.surface.textPrimary),
           ),
           backgroundColor: AppColors.error.withValues(alpha: 0.92),
           behavior: SnackBarBehavior.floating,
@@ -165,31 +165,32 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
     final exerciseId = workout.exercises[exerciseIndex].exerciseId;
     final globalUnit = ref.read(weightUnitProvider);
     final current = ref.read(exerciseUnitProvider(exerciseId));
+    final surface = context.surface;
     final selected = await showBrandedPickerSheet<String>(
       context: context,
       title: 'Weight Unit',
       selected: current,
       options: [
-        const PickerOption(
+        PickerOption(
           value: 'kg',
           label: 'Kilograms',
           subtitle: 'kg',
           icon: Icons.fitness_center_rounded,
-          color: AppColors.textPrimary,
+          color: surface.textPrimary,
         ),
-        const PickerOption(
+        PickerOption(
           value: 'lbs',
           label: 'Pounds',
           subtitle: 'lbs',
           icon: Icons.fitness_center_rounded,
-          color: AppColors.textPrimary,
+          color: surface.textPrimary,
         ),
         PickerOption(
           value: '_default',
           label: 'Use app default',
           subtitle: 'Currently $globalUnit — change in Settings',
           icon: Icons.settings_backup_restore_rounded,
-          color: AppColors.textSecondary,
+          color: surface.textSecondary,
         ),
       ],
     );
@@ -200,10 +201,11 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
   }
 
   Widget _buildAddExerciseButton(ActiveWorkoutNotifier notifier) {
+    final surface = context.surface;
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
       child: Material(
-        color: AppColors.surface3,
+        color: surface.surface3,
         borderRadius: AppRadius.buttonSecondaryAll,
         child: InkWell(
           borderRadius: AppRadius.buttonSecondaryAll,
@@ -217,21 +219,21 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
             height: 48,
             alignment: Alignment.center,
             decoration: BoxDecoration(
-              border: Border.all(color: AppColors.borderSubtle),
+              border: Border.all(color: surface.borderSubtle),
               borderRadius: AppRadius.buttonSecondaryAll,
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(
+                Icon(
                   Icons.add_rounded,
-                  color: AppColors.textPrimary,
+                  color: surface.textPrimary,
                   size: 18,
                 ),
                 const SizedBox(width: 8),
                 Text(
                   'Add Exercise',
-                  style: AppText.button(color: AppColors.textPrimary),
+                  style: AppText.button(color: surface.textPrimary),
                 ),
               ],
             ),
@@ -586,9 +588,7 @@ class _ReorderExercisesSheetState extends State<_ReorderExercisesSheet> {
                             child: Icon(
                               Icons.drag_handle_rounded,
                               size: 22,
-                              color: surface.isLight
-                                  ? Colors.black.withValues(alpha: 0.4)
-                                  : Colors.white.withValues(alpha: 0.4),
+                              color: surface.textSecondary,
                             ),
                           ),
                         ),
