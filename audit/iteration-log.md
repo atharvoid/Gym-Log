@@ -435,3 +435,35 @@ App overall average remains at `7.9`.
 - [x] Tests Suite: **PASS** (157 tests passed)
 
 **Gate Verdict:** PASS
+
+---
+
+## Iteration 13: Cleanup Sweep & Consistency Close-out
+
+**Date:** 2026-06-27
+**Slice:** Cleanup Sweep (OnboardingScreen & Paywall)
+
+### Diff Summary
+- **Task 1 (Paywall Stragglers)**: Migrated the remaining four static `AppColors.textSecondary` occurrences in `_PaywallSheet` inside `premium_paywall.dart` to `surface.textSecondary`. Removed the `const` declaration from the dot separator Container's BoxDecoration to enable resolving its color dynamically off context.
+- **Task 2 (Onboarding Screen Dynamics)**: Fully transitioned `OnboardingScreen` to dynamically support light and dark surface theme variations post-auth. Resolved Scaffold background, back button icons/labels, captions, subtitles, input styles, hint text styles, and text field enabled borders to dynamic `context.surface` tokens. Replaced the static hardcoded white enabled border (which was invisible in dark mode and broken in light mode) with `surface.borderSubtle`. Dynamically set status bar overlays depending on `surface.isLight` brightness.
+- **Task 3 (AUTH-8 verification)**: Grepped the codebase for password-based auth methods and verified that the auth system is Google OAuth-only with no email/password logic at this tip, resolving `AUTH-8` as stale.
+- **Task 4 (Backlog Bookkeeping)**: Filled blank closing commits in `backlog.md` for `SYS-8`, `HOME-4`, `SET-1`, and `RD-2` with their refactor commit SHA `5591cf5`. Marked `AUTH-8` as `done / stale`.
+- **Automated Tests**: Extended `profile_cluster_polish_test.dart` to verify onboarding screen text colors, background colors, and dynamic borders under both light and dark theme mocks, and assert correct dynamic resolution of paywall secondary action link and dot separator colors.
+
+### Scoreboard Delta
+| Screen | Dimension | Before | After | Change |
+|---|---|---|---|---|
+| OnboardingScreen | Color & Typography | 6.5 | 10.0 | +3.5 |
+| OnboardingScreen | Code Quality | 7.0 | 8.5 | +1.5 |
+| OnboardingScreen | Visual Professionalism | 8.0 | 9.5 | +1.5 |
+| OnboardingScreen | +Overall | 7.1 | 7.7 | +0.6 |
+
+App overall average rises to `8.0` (computed as: `sum(14 screens) / 14 = 111.3 / 14 = 7.95`, rounding to `8.0`).
+
+### Gate Verification Result
+- [x] Format: **PASS**
+- [x] Static Analysis: **PASS**
+- [x] Custom Linter: **PASS**
+- [x] Tests Suite: **PASS** (159 tests passed)
+
+**Gate Verdict:** PASS

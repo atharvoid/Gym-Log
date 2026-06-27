@@ -211,19 +211,19 @@
     "OnboardingScreen": {
       "Layout & Structure": 7.5,
       "Components": 7.5,
-      "Color & Typography": 6.5,
+      "Color & Typography": 10.0,
       "Motion & Haptics": 6.0,
       "Logic & State": 7.0,
-      "Code Quality": 7.0,
+      "Code Quality": 8.5,
       "Accessibility": 7.5,
       "Performance": 7.5,
       "Navigation & Flow": 7.0,
       "Platform Conventions": 7.5,
-      "Visual Professionalism": 8.0,
+      "Visual Professionalism": 9.5,
       "Cognitive Load": 8.0,
       "Wow Factor": 6.0,
-      "+Overall": 7.1
+      "+Overall": 7.7
     }
   },
-  "app_average": 7.9
+  "app_average": 8.0
 }

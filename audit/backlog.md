@@ -15,7 +15,7 @@ This file tracks every finding ID with its severity, owning screen, status (`ope
 | **SYS-1** | Systemic | Migrate Auth, Exercise Detail, Delete Account, Import off inline `GoogleFonts.inter` to `AppText` | `done` | a408ac3 |
 | **SYS-2** | Systemic | Migrate Home, Workout Detail, Routine Detail chrome, Exercise Detail, Delete Account, Import to `context.surface`/`context.accent` | `done` | 3f41aab |
 | **SYS-3** | Systemic | Add snackbar-with-Undo to reversible deletes (Home / Workout Detail / routine delete) | `done` | 7732bd5 |
-| **SYS-8** | Systemic | Dynamic Chrome theme migration batch (folds in SET-1, HOME-4, and verifies RE-2 / RE-3 / ES-2 / RD-2) | `done` | b764941 |
+| **SYS-8** | Systemic | Dynamic Chrome theme migration batch (folds in SET-1, HOME-4, and verifies RE-2 / RE-3 / ES-2 / RD-2) | `done` | 5591cf5 |
 
 ## Tier 2 — Remaining per-screen Majors
 
@@ -32,7 +32,7 @@ This file tracks every finding ID with its severity, owning screen, status (`ope
 | **EX-2** | ExploreRoutinesScreen | Hardcoded dark gradient stop in featured card | `done` | 3f41aab |
 | **XD-1** | ExerciseDetailScreen | Color compliance (folds into SYS-2) | `done` | 3f41aab |
 | **AUTH-1** | AuthScreen | Google Sign-in release SHA-1 configuration missing | `open` | |
-| **AUTH-8** | AuthScreen | Email/Password dead code cleanup | `open` | |
+| **AUTH-8** | AuthScreen | Email/Password dead code cleanup | `done` | stale |
 | **IM-1** | ImportScreen | Inline styling cleanup (folds into SYS-1) | `done` | a408ac3 |
 
 ## Tier 3 — Minors
@@ -45,13 +45,13 @@ This file tracks every finding ID with its severity, owning screen, status (`ope
 | **SYS-7** | Systemic | Retokenize real card/button/input/sheet/badge surface radii to AppRadius tokens | `done` | d4c250b |
 | **AUTH-4** | AuthScreen | Touch targets for legal links are sub-48dp | `done` | b0e2fe9 |
 | **HOME-3** | HomeScreen | Goal day buttons touch targets are sub-48dp | `done` | stale |
-| **HOME-4** | HomeScreen | History card styling discrepancies | `done` | |
+| **HOME-4** | HomeScreen | History card styling discrepancies | `done` | 5591cf5 |
 | **HOME-7** | HomeScreen | Performance lag on heavy history feed | `open` | |
 | **AW-3** | ActiveWorkoutScreen | Exercise block spacing and font size inconsistencies | `open` | |
 | **AW-5** | ActiveWorkoutScreen | Finish summary sheet navigation polish | `open` | |
 | **WD-1** | WorkoutDetailScreen | Scroll layout constraints on small screens | `open` | |
 | **WD-5** | WorkoutDetailScreen | Volume graph range filters | `open` | |
-| **RD-2** | RoutineDetailScreen | Routine Detail subtitle overlaps | `done` | |
+| **RD-2** | RoutineDetailScreen | Routine Detail subtitle overlaps | `done` | 5591cf5 |
 | **RD-3** | RoutineDetailScreen | Empty state graphics rendering alignment | `done` | 3f41aab |
 | **RE-2** | RoutineEditorScreen | Reorder handle accessibility label | `done` | stale |
 | **RE-3** | RoutineEditorScreen | Routine Editor naming constraints | `done` | stale |
@@ -63,7 +63,7 @@ This file tracks every finding ID with its severity, owning screen, status (`ope
 | **PR-1** | ProfileScreen | Avatar picture size constraints | `done` | ddf948e |
 | **PR-2** | ProfileScreen | Weekly stats bar chart styling | `done` | ddf948e |
 | **PR-3** | ProfileScreen | Premium paywall visual alignment | `done` | ddf948e |
-| **SET-1** | SettingsScreen | Settings items list separator lines color | `done` | |
+| **SET-1** | SettingsScreen | Settings items list separator lines color | `done` | 5591cf5 |
 | **SET-2** | SettingsScreen | Weight units switcher click target is sub-48dp | `done` | stale |
 | **DA-1** | DeleteAccountScreen | Confirmation input placeholder text styling (fully resolved with SYS-1 and SYS-2) | `done` | 3f41aab |
 | **IM-2** | ImportScreen | CSV template download button styling | `open` | |
