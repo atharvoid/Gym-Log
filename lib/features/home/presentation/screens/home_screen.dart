@@ -71,65 +71,70 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     if (historyState.isInitialLoad) {
       return Scaffold(
         backgroundColor: surface.bgBase,
-        appBar: _appBar(),
-        body: SkeletonPulse(
-          child: ListView(
-            physics: const NeverScrollableScrollPhysics(),
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
-            children: const [
-              SkeletonBox(height: 124, radius: AppRadius.card),
-              SizedBox(height: 16),
-              SkeletonBox(width: 150, height: 18),
-              SizedBox(height: 12),
-              WorkoutHistoryCardSkeleton(),
-              SizedBox(height: 8),
-              WorkoutHistoryCardSkeleton(),
-              SizedBox(height: 8),
-              WorkoutHistoryCardSkeleton(),
-            ],
+        body: SafeArea(
+          child: SkeletonPulse(
+            child: ListView(
+              physics: const NeverScrollableScrollPhysics(),
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+              children: const [
+                SkeletonBox(height: 96, radius: AppRadius.card),
+                SizedBox(height: 20),
+                SkeletonBox(height: 124, radius: AppRadius.card),
+                SizedBox(height: 16),
+                SkeletonBox(width: 150, height: 18),
+                SizedBox(height: 12),
+                WorkoutHistoryCardSkeleton(),
+                SizedBox(height: 8),
+                WorkoutHistoryCardSkeleton(),
+                SizedBox(height: 8),
+                WorkoutHistoryCardSkeleton(),
+              ],
+            ),
           ),
         ),
       );
     }
 
-    // itemCount: [QuickStart] + [Header+WeekStrip] + [N cards] + [footer]
-    final itemCount = 2 + totalItems + 1;
+    // itemCount: [HeaderBand] + [QuickStart] + [Header] + [N cards] + [footer]
+    final itemCount = 3 + totalItems + 1;
 
     return Scaffold(
       backgroundColor: surface.bgBase,
-      appBar: _appBar(),
-      body: RefreshIndicator(
-        onRefresh: () => ref.read(workoutHistoryProvider.notifier).refresh(),
-        color: accent.base,
-        backgroundColor: surface.surface2,
-        child: ListView.builder(
-          key: const PageStorageKey('home_feed'),
-          controller: _scrollController,
-          physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
-          itemCount: itemCount,
-          itemBuilder: (context, index) {
-            if (index == 0) return _quickStart();
-            if (index == 1) return _header();
+      body: SafeArea(
+        child: RefreshIndicator(
+          onRefresh: () => ref.read(workoutHistoryProvider.notifier).refresh(),
+          color: accent.base,
+          backgroundColor: surface.surface2,
+          child: ListView.builder(
+            key: const PageStorageKey('home_feed'),
+            controller: _scrollController,
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+            itemCount: itemCount,
+            itemBuilder: (context, index) {
+              if (index == 0) return const _HomeHeaderBand();
+              if (index == 1) return _quickStart();
+              if (index == 2) return _header();
 
-            final historyIndex = index - 2;
-            if (historyIndex < totalItems) {
-              final preview = historyState.items[historyIndex];
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 8),
-                child: WorkoutHistoryCard(
-                  key: ValueKey(preview.session.id),
-                  preview: preview,
-                  onMenuPressed: () {
-                    HapticFeedback.selectionClick();
-                    _showWorkoutCardMenu(preview.session);
-                  },
-                ),
-              );
-            }
+              final historyIndex = index - 3;
+              if (historyIndex < totalItems) {
+                final preview = historyState.items[historyIndex];
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: WorkoutHistoryCard(
+                    key: ValueKey(preview.session.id),
+                    preview: preview,
+                    onMenuPressed: () {
+                      HapticFeedback.selectionClick();
+                      _showWorkoutCardMenu(preview.session);
+                    },
+                  ),
+                );
+              }
 
-            return _footer(historyState);
-          },
+              return _footer(historyState);
+            },
+          ),
         ),
       ),
     );
@@ -167,26 +172,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  // ── Section header + week-at-a-glance ──────────────────────────────
+  // ── Section header ──────────────────────────────
   Widget _header() {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Expanded(
-            child: Semantics(
-              header: true,
-              child: Text(
-                'Workout History',
-                style: AppText.sectionHeading(),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-          ),
-          const _WeekStrip(),
-        ],
+      child: Semantics(
+        header: true,
+        child: Text(
+          'Workout History',
+          style: AppText.sectionHeading(),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
       ),
     );
   }
@@ -246,13 +243,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  PreferredSizeWidget _appBar() => AppBar(
-        title: Semantics(
-          header: true,
-          child: Text('Home', style: AppText.screenTitle()),
-        ),
-      );
-
   void _showWorkoutCardMenu(WorkoutSession session) {
     final surface = context.surface;
     final name = getWorkoutNameFallback(session.startedAt, session.name);
@@ -272,8 +262,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             final hydrated =
                 await db.workoutsDao.getHydratedWorkout(session.id);
             if (hydrated == null) return;
-            // State.context guarded by the State's own `mounted` (not
-            // context.mounted) — required by use_build_context_synchronously.
             if (!mounted) return;
             HapticFeedback.selectionClick();
             ref.read(activeWorkoutProvider.notifier).loadForEdit(hydrated);
@@ -326,59 +314,117 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 }
 
-/// Week-at-a-glance chip living inside the Workout History header — clear
-/// hierarchy, no orphaned strips. Hidden until the first completed workout.
-class _WeekStrip extends ConsumerWidget {
-  const _WeekStrip();
+class _HomeHeaderBand extends ConsumerWidget {
+  const _HomeHeaderBand();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final streak = ref.watch(streakStatsProvider);
     final goal = ref.watch(weeklyGoalProvider);
     final surface = context.surface;
+    final accent = context.accent;
 
-    if (streak.currentStreak == 0 && streak.workoutsThisWeek == 0) {
-      return const SizedBox.shrink();
-    }
-
+    final hasActivity = streak.currentStreak > 0 || streak.workoutsThisWeek > 0;
     final goalMet = streak.workoutsThisWeek >= goal;
+    final progress =
+        goal > 0 ? (streak.workoutsThisWeek / goal).clamp(0.0, 1.0) : 0.0;
 
-    // Goal-met is shown on screen by icon shape + color; give screen readers a
-    // single spoken summary and hide the fragmented row pieces.
-    return Semantics(
-      container: true,
-      excludeSemantics: true,
-      label: 'This week: ${streak.workoutsThisWeek} of $goal workouts'
-          '${goalMet ? ', goal met' : ''}'
-          '${streak.currentStreak > 0 ? '. ${streak.currentStreak} day streak' : ''}',
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (streak.currentStreak > 0) ...[
-            const Icon(
-              Icons.local_fire_department_rounded,
-              size: 14,
-              color: AppColors.warning,
+          // Identity (always present — top is never empty)
+          Text(_greeting(DateTime.now().hour),
+              style: AppText.screenTitle(color: surface.textPrimary)
+                  .copyWith(letterSpacing: -0.5)),
+          const SizedBox(height: 4),
+          Text('Ready to train?',
+              style: AppText.body(color: surface.textSecondary)),
+
+          // Promoted week stats (only once there's activity)
+          if (hasActivity) ...[
+            const SizedBox(height: 20),
+            AppCard(
+              radius: AppRadius.card,
+              child: Semantics(
+                container: true,
+                excludeSemantics: true,
+                label: 'This week: ${streak.workoutsThisWeek} of $goal workouts'
+                    '${goalMet ? ', goal met' : ''}'
+                    '${streak.currentStreak > 0 ? '. ${streak.currentStreak} day streak' : ''}',
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text('This week',
+                                  style: AppText.meta(
+                                      color: surface.textSecondary)),
+                              const SizedBox(height: 2),
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.baseline,
+                                textBaseline: TextBaseline.alphabetic,
+                                children: [
+                                  Text('${streak.workoutsThisWeek}',
+                                      style: AppText.heroStat(
+                                          color: goalMet
+                                              ? accent.base
+                                              : surface.textPrimary)),
+                                  Text(' / $goal',
+                                      style: AppText.statLabel(
+                                          color: surface.textSecondary)),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                        if (streak.currentStreak > 0)
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.local_fire_department_rounded,
+                                  size: 18,
+                                  color: AppColors.warning), // allow-listed
+                              const SizedBox(width: 4),
+                              Text('${streak.currentStreak}',
+                                  style: AppText.statLabel(
+                                      color: surface.textPrimary)),
+                              const SizedBox(width: 4),
+                              Text('day streak',
+                                  style: AppText.meta(
+                                      color: surface.textSecondary)),
+                            ],
+                          ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(99),
+                      child: LinearProgressIndicator(
+                        value: progress,
+                        minHeight: 6,
+                        backgroundColor: surface.surface2,
+                        valueColor: AlwaysStoppedAnimation<Color>(accent.base),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
-            const SizedBox(width: 3),
-            Text('${streak.currentStreak}',
-                style: AppText.statLabel(color: surface.textPrimary)),
-            Text('  ·  ', style: AppText.caption()),
           ],
-          Icon(
-            goalMet ? Icons.check_circle_rounded : Icons.flag_rounded,
-            size: 13,
-            color: goalMet ? AppColors.success : surface.textSecondary,
-          ),
-          const SizedBox(width: 4),
-          Text(
-            '${streak.workoutsThisWeek}/$goal',
-            style: AppText.statLabel(
-              color: goalMet ? AppColors.success : surface.textSecondary,
-            ),
-          ),
         ],
       ),
     );
+  }
+
+  String _greeting(int hour) {
+    if (hour < 12) return 'Good morning';
+    if (hour < 17) return 'Good afternoon';
+    return 'Good evening';
   }
 }
