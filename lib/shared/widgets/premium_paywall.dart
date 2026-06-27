@@ -39,7 +39,7 @@ class _SheetHandle extends StatelessWidget {
         height: 4,
         decoration: BoxDecoration(
           // Slightly more visible than textSecondary — machined feel.
-          color: AppColors.borderEmphasis,
+          color: context.surface.borderEmphasis,
           borderRadius: BorderRadius.circular(6),
         ),
       ),
@@ -309,9 +309,10 @@ class _PaywallSheetState extends ConsumerState<_PaywallSheet> {
   }
 
   void _snack(String message) {
+    final surface = context.surface;
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text(message, style: AppText.body(color: AppColors.textPrimary)),
-      backgroundColor: AppColors.bgSurface,
+      content: Text(message, style: AppText.body(color: surface.textPrimary)),
+      backgroundColor: surface.bgSurface,
       behavior: SnackBarBehavior.floating,
     ));
   }
@@ -349,16 +350,17 @@ class _PaywallSheetState extends ConsumerState<_PaywallSheet> {
         break;
     }
 
+    final surface = context.surface;
     return Container(
-      decoration: const BoxDecoration(
-        color: AppColors.bgSheet,
+      decoration: BoxDecoration(
+        color: surface.surface2,
         borderRadius: AppRadius.sheetTop,
         // Hairline border — defines the sheet edge against the black canvas.
         // This is what separates "material" from "grey blob on black."
         border: Border(
-          top: BorderSide(color: AppColors.surface3, width: 1),
-          left: BorderSide(color: AppColors.surface3, width: 1),
-          right: BorderSide(color: AppColors.surface3, width: 1),
+          top: BorderSide(color: surface.surface3, width: 1),
+          left: BorderSide(color: surface.surface3, width: 1),
+          right: BorderSide(color: surface.surface3, width: 1),
         ),
       ),
       child: SafeArea(
@@ -398,15 +400,12 @@ class _PaywallSheetState extends ConsumerState<_PaywallSheet> {
                     const SizedBox(height: 14),
                     Text(
                       headline,
-                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.textPrimary,
-                          ),
+                      style: AppText.sheetTitle(color: surface.textPrimary),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       subheadline,
-                      style: AppText.body(color: AppColors.textSecondary),
+                      style: AppText.body(color: surface.textSecondary),
                     ),
                     const SizedBox(height: 20),
 
@@ -429,7 +428,7 @@ class _PaywallSheetState extends ConsumerState<_PaywallSheet> {
                                   child: Text(
                                     title,
                                     style: AppText.body(
-                                            color: AppColors.textPrimary)
+                                            color: surface.textPrimary)
                                         .copyWith(fontWeight: FontWeight.w600),
                                   ),
                                 ),
@@ -438,7 +437,7 @@ class _PaywallSheetState extends ConsumerState<_PaywallSheet> {
                                 child: Text(
                                   subtitle, // sentence case — not .toUpperCase()
                                   style: AppText.label(
-                                      color: AppColors.textSecondary),
+                                      color: surface.textSecondary),
                                 ),
                               ),
                             ],
@@ -449,11 +448,11 @@ class _PaywallSheetState extends ConsumerState<_PaywallSheet> {
 
                     // ── Pricing ─────────────────────────────────────────
                     if (_loading)
-                      const Center(
+                      Center(
                         child: Padding(
-                          padding: EdgeInsets.symmetric(vertical: 24),
+                          padding: const EdgeInsets.symmetric(vertical: 24),
                           child: CircularProgressIndicator(
-                              color: AppColors.textPrimary, strokeWidth: 2),
+                              color: surface.textPrimary, strokeWidth: 2),
                         ),
                       )
                     else if (_storeReady) ...[
@@ -495,12 +494,11 @@ class _PaywallSheetState extends ConsumerState<_PaywallSheet> {
                             width: double.infinity,
                             alignment: Alignment.center,
                             child: _purchasing
-                                ? const SizedBox(
+                                ? SizedBox(
                                     width: 20,
                                     height: 20,
                                     child: CircularProgressIndicator(
-                                        color: AppColors.canvas,
-                                        strokeWidth: 2),
+                                        color: accent.onAccent, strokeWidth: 2),
                                   )
                                 : Text(
                                     _ctaLabel,
@@ -514,8 +512,7 @@ class _PaywallSheetState extends ConsumerState<_PaywallSheet> {
                       Center(
                         child: Text(
                           _ctaCaption,
-                          style:
-                              AppText.caption(color: AppColors.textSecondary),
+                          style: AppText.caption(color: surface.textSecondary),
                         ),
                       ),
                     ] else ...[
@@ -609,6 +606,7 @@ class _PackageRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final accent = context.accent;
+    final surface = context.surface;
     return Semantics(
       button: true,
       selected: selected,
@@ -624,7 +622,7 @@ class _PackageRow extends StatelessWidget {
               : Colors.transparent,
           borderRadius: BorderRadius.circular(AppRadius.buttonSecondary),
           border: Border.all(
-            color: selected ? accent.base : AppColors.borderDefault,
+            color: selected ? accent.base : surface.borderDefault,
             width: 1,
           ),
         ),
@@ -642,12 +640,12 @@ class _PackageRow extends StatelessWidget {
                         ? Icons.radio_button_checked_rounded
                         : Icons.radio_button_off_rounded,
                     size: 18,
-                    color: selected ? accent.base : AppColors.textSecondary,
+                    color: selected ? accent.base : surface.textSecondary,
                   ),
                   const SizedBox(width: 12),
                   Text(
                     title,
-                    style: AppText.body(color: AppColors.textPrimary).copyWith(
+                    style: AppText.body(color: surface.textPrimary).copyWith(
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -678,14 +676,14 @@ class _PackageRow extends StatelessWidget {
                     children: [
                       Text(
                         price,
-                        style: AppText.value(color: AppColors.textPrimary)
-                            .copyWith(
+                        style:
+                            AppText.value(color: surface.textPrimary).copyWith(
                           fontSize: 17,
                         ),
                       ),
                       Text(
                         caption,
-                        style: AppText.caption(color: AppColors.textSecondary),
+                        style: AppText.caption(color: surface.textSecondary),
                       ),
                     ],
                   ),

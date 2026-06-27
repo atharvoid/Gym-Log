@@ -151,7 +151,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
           'You are on GymLog Pro. Thanks for the support!',
           style: AppText.button(),
         ),
-        backgroundColor: AppColors.bgSurface,
+        backgroundColor: context.surface.bgSurface,
         behavior: SnackBarBehavior.floating,
       ));
     } else {
@@ -419,7 +419,7 @@ class _StatsStrip extends StatelessWidget {
               size: iconSize,
               color: streak.currentStreak > 0
                   ? AppColors.warning
-                  : AppColors.textTertiary,
+                  : context.surface.textTertiary,
             ),
           ),
         ),
@@ -451,10 +451,10 @@ class _StatsStrip extends StatelessWidget {
           child: _StatCell(
             value: '$workoutCount',
             label: 'WORKOUTS',
-            leading: const Icon(
+            leading: Icon(
               Icons.fitness_center_rounded,
               size: iconSize,
-              color: AppColors.textSecondary,
+              color: context.surface.textSecondary,
             ),
           ),
         ),

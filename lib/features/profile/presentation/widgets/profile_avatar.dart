@@ -174,6 +174,7 @@ class _ProfileAvatarState extends State<ProfileAvatar> {
   Widget build(BuildContext context) {
     final accent = context.accent;
     final surface = context.surface;
+    final dpr = MediaQuery.devicePixelRatioOf(context);
     final hasImage = widget.imagePath != null && widget.imagePath!.isNotEmpty;
 
     return GestureDetector(
@@ -213,6 +214,8 @@ class _ProfileAvatarState extends State<ProfileAvatar> {
                             fit: BoxFit.cover,
                             width: widget.size,
                             height: widget.size,
+                            cacheWidth: (widget.size * dpr).round(),
+                            cacheHeight: (widget.size * dpr).round(),
                           )
                         : Container(
                             color: surface.surface2,

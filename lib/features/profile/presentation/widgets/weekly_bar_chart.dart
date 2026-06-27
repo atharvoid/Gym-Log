@@ -3,7 +3,6 @@ import 'dart:math' show pi, max;
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:gymlog/core/theme/app_colors.dart';
 import 'package:gymlog/core/theme/app_text.dart';
 import 'package:gymlog/core/theme/dynamic_accent_theme.dart';
@@ -315,8 +314,8 @@ class _WeeklyBarChartState extends State<WeeklyBarChart> {
 
   Widget _buildDeltaIndicator(double? fraction) {
     if (fraction == null) {
-      return const Icon(Icons.arrow_forward_rounded,
-          size: 18, color: AppColors.textTertiary);
+      return Icon(Icons.arrow_forward_rounded,
+          size: 18, color: context.surface.textTertiary);
     }
     final isUp = fraction >= 0;
     final pct = (fraction * 100).round().abs();
@@ -331,10 +330,9 @@ class _WeeklyBarChartState extends State<WeeklyBarChart> {
         ),
         Text(
           '$pct%',
-          style: GoogleFonts.inter(
+          style: AppText.caption(color: color).copyWith(
             fontSize: 11,
             fontWeight: FontWeight.w600,
-            color: color,
           ),
         ),
       ],
@@ -348,6 +346,7 @@ class _WeeklyBarChartState extends State<WeeklyBarChart> {
     final reduceMotion = MediaQuery.disableAnimationsOf(context);
     final boldText = MediaQuery.boldTextOf(context);
     final accent = context.accent;
+    final surface = context.surface;
 
     if (_barGroups.isEmpty) return const SizedBox.shrink();
 
@@ -407,12 +406,13 @@ class _WeeklyBarChartState extends State<WeeklyBarChart> {
                         space: 4,
                         child: Text(
                           _yAxisLabel(v),
-                          style: GoogleFonts.inter(
-                            fontSize: 9,
-                            fontWeight: FontWeight.w600,
+                          style: AppText.caption(
                             color: index == _gatedAggregates.length - 1
                                 ? accent.light
-                                : AppColors.textTertiary,
+                                : surface.textTertiary,
+                          ).copyWith(
+                            fontSize: 9,
+                            fontWeight: FontWeight.w600,
                             fontFeatures: const [FontFeature.tabularFigures()],
                           ),
                         ),
@@ -432,11 +432,12 @@ class _WeeklyBarChartState extends State<WeeklyBarChart> {
                       space: 8,
                       child: Text(
                         _yAxisLabel(value),
-                        style: GoogleFonts.inter(
+                        style: AppText.caption(
+                                color: AppColors.profileGraphAxisLabel)
+                            .copyWith(
                           fontSize: 10,
                           fontWeight:
                               boldText ? FontWeight.w600 : FontWeight.w500,
-                          color: AppColors.profileGraphAxisLabel,
                           fontFeatures: const [FontFeature.tabularFigures()],
                         ),
                       ),
@@ -461,12 +462,13 @@ class _WeeklyBarChartState extends State<WeeklyBarChart> {
                         child: labelAngle == 0.0
                             ? Text(
                                 label,
-                                style: GoogleFonts.inter(
+                                style: AppText.caption(
+                                        color: AppColors.profileGraphAxisLabel)
+                                    .copyWith(
                                   fontSize: 11,
                                   fontWeight: boldText
                                       ? FontWeight.w600
                                       : FontWeight.w400,
-                                  color: AppColors.profileGraphAxisLabel,
                                 ),
                               )
                             : Transform.rotate(
@@ -474,12 +476,14 @@ class _WeeklyBarChartState extends State<WeeklyBarChart> {
                                 alignment: Alignment.bottomCenter,
                                 child: Text(
                                   label,
-                                  style: GoogleFonts.inter(
+                                  style: AppText.caption(
+                                          color:
+                                              AppColors.profileGraphAxisLabel)
+                                      .copyWith(
                                     fontSize: 11,
                                     fontWeight: boldText
                                         ? FontWeight.w600
                                         : FontWeight.w400,
-                                    color: AppColors.profileGraphAxisLabel,
                                   ),
                                 ),
                               ),
@@ -502,28 +506,27 @@ class _WeeklyBarChartState extends State<WeeklyBarChart> {
                     final value = aggregate.valueFor(widget.metric);
                     return BarTooltipItem(
                       '${_weekRangeLabel(aggregate.weekStart)}\n',
-                      GoogleFonts.inter(
+                      AppText.caption(color: surface.textSecondary).copyWith(
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
-                        color: AppColors.textSecondary,
                         height: 1.4,
                       ),
                       children: [
                         TextSpan(
                           text: _valueLabel(value),
-                          style: GoogleFonts.inter(
+                          style: AppText.caption(color: surface.textPrimary)
+                              .copyWith(
                             fontSize: 14,
                             fontWeight: FontWeight.w700,
-                            color: AppColors.textPrimary,
                           ),
                         ),
                         TextSpan(
                           text:
                               '\n${aggregate.workoutCount} workout${aggregate.workoutCount == 1 ? '' : 's'}',
-                          style: GoogleFonts.inter(
+                          style: AppText.caption(color: surface.textSecondary)
+                              .copyWith(
                             fontSize: 11,
                             fontWeight: FontWeight.w400,
-                            color: AppColors.textSecondary,
                           ),
                         ),
                       ],
@@ -597,24 +600,24 @@ class _StatBlock extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final surface = context.surface;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           label,
           style: AppText.caption(
-            color: dim ? AppColors.textTertiary : AppColors.textSecondary,
+            color: dim ? surface.textTertiary : surface.textSecondary,
           ),
         ),
         const SizedBox(height: 4),
         Text(
           value,
-          style: GoogleFonts.inter(
-            fontSize: 22,
-            fontWeight: FontWeight.w700,
-            color: dim ? AppColors.textSecondary : AppColors.textPrimary,
+          style: AppText.heroStat(
+            color: dim ? surface.textSecondary : surface.textPrimary,
+          ).copyWith(
             letterSpacing: -0.5,
-            fontFeatures: const [FontFeature.tabularFigures()],
+            fontWeight: FontWeight.w700,
           ),
         ),
       ],
@@ -633,6 +636,7 @@ class _UnlockProgress extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final surface = context.surface;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -642,7 +646,7 @@ class _UnlockProgress extends StatelessWidget {
           child: LinearProgressIndicator(
             value: progressFraction,
             minHeight: 4,
-            backgroundColor: AppColors.surface3,
+            backgroundColor: surface.surface3,
             valueColor: AlwaysStoppedAnimation<Color>(
               context.accent.base,
             ),
@@ -651,13 +655,13 @@ class _UnlockProgress extends StatelessWidget {
         const SizedBox(height: 8),
         Row(
           children: [
-            const Icon(Icons.lock_outline_rounded,
-                size: 13, color: AppColors.textTertiary),
+            Icon(Icons.lock_outline_rounded,
+                size: 13, color: surface.textTertiary),
             const SizedBox(width: 5),
             Expanded(
               child: Text(
                 bannerText,
-                style: AppText.caption(color: AppColors.textTertiary),
+                style: AppText.caption(color: surface.textTertiary),
               ),
             ),
           ],
