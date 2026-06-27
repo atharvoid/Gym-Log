@@ -10,6 +10,8 @@ import 'package:purchases_flutter/purchases_flutter.dart';
 import 'package:gymlog/features/profile/presentation/widgets/profile_avatar.dart';
 import 'package:gymlog/features/profile/presentation/widgets/weekly_bar_chart.dart';
 import 'package:gymlog/features/profile/presentation/providers/profile_stats_provider.dart';
+import 'package:gymlog/features/auth/presentation/providers/auth_provider.dart';
+import 'package:gymlog/features/auth/presentation/screens/onboarding_screen.dart';
 import 'package:gymlog/shared/widgets/premium_paywall.dart';
 
 class MockAccentColors extends AccentColors {
@@ -225,5 +227,113 @@ void main() {
     final headlineText = tester.widget<Text>(find.text('Long-term trends'));
     // Under light surface, textPrimary should resolve to light token textPrimary
     expect(headlineText.style?.color, AppColors.textPrimaryLight);
+
+    // Verify secondary action buttons exist and have correct colors
+    expect(find.text('Maybe Later'), findsOneWidget);
+    final maybeLaterText = tester.widget<Text>(find.text('Maybe Later'));
+    expect(maybeLaterText.style?.color, AppColors.textSecondaryLight);
+
+    expect(find.text('Restore Purchases'), findsOneWidget);
+    final restoreText = tester.widget<Text>(find.text('Restore Purchases'));
+    expect(restoreText.style?.color, AppColors.textSecondaryLight);
+
+    // Verify dot separator exists and uses correct color
+    final dotFinder = find.byWidgetPredicate((w) =>
+        w is Container &&
+        w.decoration is BoxDecoration &&
+        (w.decoration as BoxDecoration).color == AppColors.textSecondaryLight &&
+        (w.decoration as BoxDecoration).shape == BoxShape.circle &&
+        w.constraints?.maxWidth == 3 &&
+        w.constraints?.maxHeight == 3);
+    expect(dotFinder, findsOneWidget);
+  });
+
+  testWidgets('OnboardingScreen resolves colors and borders under dark theme',
+      (tester) async {
+    final mockDark = MockAccentColors(
+      base: Colors.purple,
+      light: Colors.purple.shade200,
+      dark: Colors.purple.shade800,
+      muted: Colors.purple.withValues(alpha: 0.14),
+      glow: Colors.purple.withValues(alpha: 0.12),
+      onAccent: Colors.white,
+      muscleSplitRamp: const [],
+      palette: ThemePalette.neonPurple,
+      isLightSurface: false,
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          authProvider.overrideWithValue(null),
+        ],
+        child: MaterialApp(
+          theme: ThemeData.dark().copyWith(extensions: [mockDark]),
+          home: const OnboardingScreen(),
+        ),
+      ),
+    );
+
+    await tester.pump();
+
+    // Verify background color is dynamic surface.bgBase
+    final scaffoldFinder = find.byType(Scaffold);
+    expect(scaffoldFinder, findsOneWidget);
+    final scaffold = tester.widget<Scaffold>(scaffoldFinder);
+    expect(scaffold.backgroundColor, AppColors.bgBase); // bgBase for dark mode
+
+    // Verify cancel text is present
+    expect(find.text('Cancel'), findsOneWidget);
+    final cancelText = tester.widget<Text>(find.text('Cancel'));
+    expect(cancelText.style?.color, AppColors.textSecondary);
+  });
+
+  testWidgets('OnboardingScreen resolves colors and borders under light theme',
+      (tester) async {
+    final mockLight = MockAccentColors(
+      base: Colors.purple,
+      light: Colors.purple.shade200,
+      dark: Colors.purple.shade800,
+      muted: Colors.purple.withValues(alpha: 0.14),
+      glow: Colors.purple.withValues(alpha: 0.12),
+      onAccent: Colors.white,
+      muscleSplitRamp: const [],
+      palette: ThemePalette.neonPurple,
+      isLightSurface: true,
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          authProvider.overrideWithValue(null),
+        ],
+        child: MaterialApp(
+          theme: ThemeData.dark().copyWith(extensions: [mockLight]),
+          home: const OnboardingScreen(),
+        ),
+      ),
+    );
+
+    await tester.pump();
+
+    // Verify background color is dynamic surface.bgBase -> bgBaseLight
+    final scaffoldFinder = find.byType(Scaffold);
+    expect(scaffoldFinder, findsOneWidget);
+    final scaffold = tester.widget<Scaffold>(scaffoldFinder);
+    expect(scaffold.backgroundColor, AppColors.bgBaseLight);
+
+    // Verify cancel text is present
+    expect(find.text('Cancel'), findsOneWidget);
+    final cancelText = tester.widget<Text>(find.text('Cancel'));
+    expect(cancelText.style?.color, AppColors.textSecondaryLight);
+
+    // Verify text field enabled border uses surface.borderSubtle -> borderSubtleLight
+    final textFieldFinder = find.byType(TextField);
+    expect(textFieldFinder, findsOneWidget);
+    final textField = tester.widget<TextField>(textFieldFinder);
+    final decoration = textField.decoration;
+    expect(decoration?.enabledBorder, isA<OutlineInputBorder>());
+    final border = decoration?.enabledBorder as OutlineInputBorder;
+    expect(border.borderSide.color, AppColors.borderSubtleLight);
   });
 }

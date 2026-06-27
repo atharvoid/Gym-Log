@@ -528,8 +528,8 @@ class _PaywallSheetState extends ConsumerState<_PaywallSheet> {
                             padding: const EdgeInsets.symmetric(vertical: 12),
                             child: Text(
                               'Pricing unavailable. Tap to retry.',
-                              style: AppText.caption(
-                                  color: AppColors.textSecondary),
+                              style:
+                                  AppText.caption(color: surface.textSecondary),
                               textAlign: TextAlign.center,
                             ),
                           ),
@@ -551,14 +551,14 @@ class _PaywallSheetState extends ConsumerState<_PaywallSheet> {
                           ),
                           child: Text(
                             'Maybe Later',
-                            style: AppText.body(color: AppColors.textSecondary),
+                            style: AppText.body(color: surface.textSecondary),
                           ),
                         ),
                         Container(
                           width: 3,
                           height: 3,
-                          decoration: const BoxDecoration(
-                            color: AppColors.textSecondary,
+                          decoration: BoxDecoration(
+                            color: surface.textSecondary,
                             shape: BoxShape.circle,
                           ),
                         ),
@@ -570,7 +570,7 @@ class _PaywallSheetState extends ConsumerState<_PaywallSheet> {
                           ),
                           child: Text(
                             _restoring ? 'Restoring…' : 'Restore Purchases',
-                            style: AppText.body(color: AppColors.textSecondary),
+                            style: AppText.body(color: surface.textSecondary),
                           ),
                         ),
                       ],

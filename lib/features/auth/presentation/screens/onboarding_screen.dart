@@ -87,8 +87,11 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   @override
   Widget build(BuildContext context) {
     final accent = context.accent;
+    final surface = context.surface;
     return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: SystemUiOverlayStyle.light,
+      value: surface.isLight
+          ? SystemUiOverlayStyle.dark
+          : SystemUiOverlayStyle.light,
       child: PopScope(
         canPop: false,
         onPopInvokedWithResult: (didPop, _) {
@@ -96,7 +99,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           _cancel();
         },
         child: Scaffold(
-          backgroundColor: AppColors.bgBase,
+          backgroundColor: surface.bgBase,
           body: SafeArea(
             child: CustomScrollView(
               physics: const ClampingScrollPhysics(),
@@ -119,16 +122,16 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                const Icon(Icons.arrow_back_rounded,
-                                    size: 18, color: AppColors.textSecondary),
+                                Icon(Icons.arrow_back_rounded,
+                                    size: 18, color: surface.textSecondary),
                                 const SizedBox(width: 4),
                                 Text(
                                   'Cancel',
-                                  style: AppText.body(
-                                          color: AppColors.textSecondary)
-                                      .copyWith(
-                                          fontWeight: FontWeight.w600,
-                                          fontSize: 14),
+                                  style:
+                                      AppText.body(color: surface.textSecondary)
+                                          .copyWith(
+                                              fontWeight: FontWeight.w600,
+                                              fontSize: 14),
                                 ),
                               ],
                             ),
@@ -137,7 +140,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                         const Spacer(),
                         Text(
                           'Welcome to GymLog',
-                          style: AppText.caption(color: AppColors.textSecondary)
+                          style: AppText.caption(color: surface.textSecondary)
                               .copyWith(
                             fontSize: 14,
                             fontWeight: FontWeight.w700,
@@ -147,7 +150,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                         const SizedBox(height: 10),
                         Text(
                           'What should we\ncall you?',
-                          style: AppText.screenTitle().copyWith(
+                          style: AppText.screenTitle(color: surface.textPrimary)
+                              .copyWith(
                             fontSize: 32,
                             fontWeight: FontWeight.w800,
                             letterSpacing: -0.5,
@@ -157,7 +161,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                         const SizedBox(height: 8),
                         Text(
                           'This is how you\'ll show up across GymLog — and it follows you to every device.',
-                          style: AppText.body(color: AppColors.textSecondary)
+                          style: AppText.body(color: surface.textSecondary)
                               .copyWith(
                             fontSize: 15,
                             height: 1.4,
@@ -170,7 +174,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                           autofocus: _shouldAutofocus,
                           maxLength: 40,
                           cursorColor: accent.base,
-                          style: AppText.body().copyWith(
+                          style:
+                              AppText.body(color: surface.textPrimary).copyWith(
                             fontSize: 18,
                             fontWeight: FontWeight.w600,
                           ),
@@ -181,7 +186,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                             hintText: 'Your name',
                             counterText: '',
                             hintStyle:
-                                AppText.body(color: AppColors.textSecondary)
+                                AppText.body(color: surface.textSecondary)
                                     .copyWith(
                               fontSize: 18,
                             ),
@@ -192,8 +197,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                             enabledBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.zero,
                               borderSide: BorderSide(
-                                  color: Colors.white.withValues(alpha: 0.06),
-                                  width: 1),
+                                  color: surface.borderSubtle, width: 1),
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.zero,
