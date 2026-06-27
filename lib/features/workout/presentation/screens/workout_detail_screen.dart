@@ -123,6 +123,12 @@ class WorkoutDetailScreen extends ConsumerWidget {
       muscleSetCounts[target] = (muscleSetCounts[target] ?? 0) + ex.sets.length;
     }
 
+    final seen = <int>{};
+    final heroEnabledList = <bool>[];
+    for (final ex in workout.exercises) {
+      heroEnabledList.add(seen.add(ex.exerciseMetadata.id));
+    }
+
     // ConstrainedBox keeps the column readable on tablets/foldables (this
     // screen is pushed outside the shell, which caps width at 600 elsewhere).
     return Center(
@@ -149,6 +155,7 @@ class WorkoutDetailScreen extends ConsumerWidget {
                 (context, i) => DetailExerciseCard(
                   key: ValueKey(workout.exercises[i].workoutExercise.id),
                   hydratedExercise: workout.exercises[i],
+                  enableHero: heroEnabledList[i],
                 ),
                 childCount: workout.exercises.length,
               ),

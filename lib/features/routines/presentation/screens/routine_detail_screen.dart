@@ -250,6 +250,12 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
     final bottomInset = MediaQuery.viewPaddingOf(context).bottom;
     final surface = context.surface;
 
+    final seen = <int>{};
+    final heroEnabledList = <bool>[];
+    for (final exercise in routine.exercises) {
+      heroEnabledList.add(seen.add(exercise.exercise.id));
+    }
+
     return Scaffold(
       backgroundColor: surface.bgBase,
       body: RefreshIndicator(
@@ -321,6 +327,7 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
                         },
                         isLoadingHistory: isLoadingHistory,
                         isLast: index == routine.exercises.length - 1,
+                        enableHero: heroEnabledList[index],
                       ),
                     );
                   },

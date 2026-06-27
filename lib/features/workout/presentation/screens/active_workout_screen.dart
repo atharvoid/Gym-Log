@@ -256,6 +256,17 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
     final exerciseIds = ref.watch(activeWorkoutProvider.select((state) =>
         state?.exercises.map((e) => e.id).toList() ?? const <String>[]));
 
+    final exerciseTemplateIds = ref.watch(activeWorkoutProvider.select(
+        (state) =>
+            state?.exercises.map((e) => e.exerciseId).toList() ??
+            const <int>[]));
+
+    final seen = <int>{};
+    final heroEnabledList = <bool>[];
+    for (final id in exerciseTemplateIds) {
+      heroEnabledList.add(seen.add(id));
+    }
+
     final surface = context.surface;
 
     return PopScope(
@@ -400,6 +411,7 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
                         return ExerciseBlock(
                           key: ValueKey(exerciseIds[index]),
                           exerciseIndex: index,
+                          enableHero: heroEnabledList[index],
                           onReorderExercises:
                               exerciseIds.length > 1 ? _showReorderSheet : null,
                           onRemove: () => notifier.removeExercise(index),

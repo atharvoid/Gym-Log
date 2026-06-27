@@ -8,6 +8,7 @@ import 'package:gymlog/core/database/database.dart';
 import 'package:gymlog/features/workout/domain/active_workout_state.dart';
 import 'package:gymlog/shared/widgets/ui/app_card.dart';
 import 'package:gymlog/shared/widgets/ui/exercise_thumbnail.dart';
+import 'package:gymlog/shared/widgets/exercise_hero_thumb.dart';
 import 'package:gymlog/shared/widgets/ui/secondary_button.dart';
 import 'package:gymlog/shared/widgets/ui/action_bottom_sheet.dart';
 import 'package:gymlog/core/providers/settings_provider.dart';
@@ -33,6 +34,7 @@ class ExerciseBlock extends ConsumerWidget {
   final void Function(int setIndex) onRemoveSet;
   final ValueChanged<WorkoutSetState> onSetChanged;
   final void Function(int setIndex) onToggleSetCompletion;
+  final bool enableHero;
 
   const ExerciseBlock({
     super.key,
@@ -45,6 +47,7 @@ class ExerciseBlock extends ConsumerWidget {
     required this.onRemoveSet,
     required this.onSetChanged,
     required this.onToggleSetCompletion,
+    this.enableHero = true,
   });
 
   void _showMenu(BuildContext context, String exerciseName) {
@@ -124,7 +127,13 @@ class ExerciseBlock extends ConsumerWidget {
             padding: const EdgeInsets.fromLTRB(16, 14, 4, 0),
             child: Row(
               children: [
-                ExerciseThumbnail(gifUrl: de?.gifUrl, size: 44),
+                de != null
+                    ? ExerciseHeroThumb(
+                        exercise: de,
+                        size: 44,
+                        enableHero: enableHero,
+                      )
+                    : const ExerciseThumbnail(gifUrl: null, size: 44),
                 const SizedBox(width: 12),
                 Expanded(
                   child: GestureDetector(

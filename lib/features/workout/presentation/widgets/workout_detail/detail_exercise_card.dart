@@ -6,7 +6,7 @@ import 'package:gymlog/core/theme/app_text.dart';
 import 'package:gymlog/core/database/daos/workouts_dao.dart';
 import 'package:gymlog/core/database/database.dart';
 import 'package:gymlog/shared/widgets/ui/app_card.dart';
-import 'package:gymlog/shared/widgets/ui/exercise_thumbnail.dart';
+import 'package:gymlog/shared/widgets/exercise_hero_thumb.dart';
 
 const _kAccentPos = AppColors.success;
 
@@ -26,8 +26,13 @@ bool _navThrottle() {
 /// + name + equipment) and a set table. Tapping opens the exercise detail.
 class DetailExerciseCard extends StatelessWidget {
   final HydratedWorkoutExercise hydratedExercise;
+  final bool enableHero;
 
-  const DetailExerciseCard({super.key, required this.hydratedExercise});
+  const DetailExerciseCard({
+    super.key,
+    required this.hydratedExercise,
+    this.enableHero = true,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -49,7 +54,7 @@ class DetailExerciseCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _ExerciseCardHeader(exercise: exercise),
+            _ExerciseCardHeader(exercise: exercise, enableHero: enableHero),
             const SizedBox(height: 12),
             _SetTableHeader(hasPrevHistory: hasPrevHistory),
             const SizedBox(height: 4),
@@ -78,8 +83,9 @@ class DetailExerciseCard extends StatelessWidget {
 
 class _ExerciseCardHeader extends StatelessWidget {
   final Exercise exercise;
+  final bool enableHero;
 
-  const _ExerciseCardHeader({required this.exercise});
+  const _ExerciseCardHeader({required this.exercise, this.enableHero = true});
 
   @override
   Widget build(BuildContext context) {
@@ -88,7 +94,12 @@ class _ExerciseCardHeader extends StatelessWidget {
       child: Row(
         children: [
           // Static last-frame thumbnail on a light tile — see ExerciseThumbnail.
-          ExcludeSemantics(child: ExerciseThumbnail(gifUrl: exercise.gifUrl)),
+          ExcludeSemantics(
+            child: ExerciseHeroThumb(
+              exercise: exercise,
+              enableHero: enableHero,
+            ),
+          ),
           const SizedBox(width: 12),
           Expanded(
             child: Column(

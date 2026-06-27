@@ -4,7 +4,7 @@ import 'package:gymlog/core/theme/app_text.dart';
 import 'package:gymlog/core/theme/set_type.dart';
 import 'package:gymlog/core/database/daos/routines_dao.dart';
 import 'package:gymlog/core/database/daos/workouts_dao.dart';
-import 'package:gymlog/shared/widgets/ui/exercise_thumbnail.dart';
+import 'package:gymlog/shared/widgets/exercise_hero_thumb.dart';
 
 /// One exercise inside a routine. Sits directly on the black background (no gray
 /// card) — grouping comes from spacing + the set-table hairlines. Shows the
@@ -16,6 +16,7 @@ class RoutineExerciseBlock extends StatelessWidget {
   final VoidCallback? onTap;
   final bool isLoadingHistory;
   final bool isLast;
+  final bool enableHero;
 
   const RoutineExerciseBlock({
     super.key,
@@ -24,6 +25,7 @@ class RoutineExerciseBlock extends StatelessWidget {
     this.onTap,
     this.isLoadingHistory = false,
     this.isLast = false,
+    this.enableHero = true,
   });
 
   String _fmtKg(double? w) => w == null
@@ -77,8 +79,10 @@ class RoutineExerciseBlock extends StatelessWidget {
                   borderRadius: AppRadius.thumbnailAll,
                   child: Row(
                     children: [
-                      ExerciseThumbnail(
-                          gifUrl: hydratedExercise.exercise.gifUrl),
+                      ExerciseHeroThumb(
+                        exercise: hydratedExercise.exercise,
+                        enableHero: enableHero,
+                      ),
                       const SizedBox(width: 14),
                       Expanded(
                         child: Column(

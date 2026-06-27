@@ -11,8 +11,7 @@ import 'package:gymlog/core/theme/app_text.dart';
 import 'package:gymlog/core/theme/dynamic_accent_theme.dart';
 import 'package:gymlog/features/auth/presentation/providers/auth_provider.dart';
 import 'package:gymlog/shared/widgets/async_error_state.dart';
-import 'package:gymlog/shared/widgets/ui/exercise_thumbnail.dart';
-import 'package:gymlog/shared/providers/gif_last_frame_provider.dart';
+import 'package:gymlog/shared/widgets/exercise_hero_thumb.dart';
 import 'package:gymlog/shared/widgets/ui/skeleton.dart';
 import '../providers/exercises_provider.dart';
 import '../widgets/create_exercise_dialog.dart';
@@ -485,55 +484,12 @@ class _ExerciseRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final surface = context.surface;
-    final bool useHero = browse && !MediaQuery.disableAnimationsOf(context);
-    final Widget thumbnail = ExerciseThumbnail(
-      gifUrl: exercise.gifUrl,
+    final Widget thumbnailWidget = ExerciseHeroThumb(
+      exercise: exercise,
       size: 52,
       fastFrame: true,
+      enableHero: browse,
     );
-    final Widget thumbnailWidget = useHero
-        ? Hero(
-            tag: 'exercise-hero-${exercise.id}',
-            flightShuttleBuilder: (
-              BuildContext flightContext,
-              Animation<double> animation,
-              HeroFlightDirection flightDirection,
-              BuildContext fromHeroContext,
-              BuildContext toHeroContext,
-            ) {
-              return Consumer(
-                builder: (context, ref, child) {
-                  final lastFrameVal = ref
-                      .watch(gifLastFrameProvider(exercise.gifUrl ?? ''))
-                      .valueOrNull;
-                  final firstFrameVal = ref
-                      .watch(gifFirstFrameProvider(exercise.gifUrl ?? ''))
-                      .valueOrNull;
-                  final img = lastFrameVal ?? firstFrameVal;
-                  return ClipRRect(
-                    borderRadius: AppRadius.cardAll,
-                    child: Container(
-                      color: AppColors.thumbTile,
-                      child: img != null
-                          ? Image(
-                              image: img,
-                              fit: BoxFit.cover,
-                            )
-                          : const Center(
-                              child: Icon(
-                                Icons.fitness_center_rounded,
-                                color: AppColors.thumbIcon,
-                                size: 52 * 0.42,
-                              ),
-                            ),
-                    ),
-                  );
-                },
-              );
-            },
-            child: thumbnail,
-          )
-        : thumbnail;
 
     return Material(
       color: Colors.transparent,
