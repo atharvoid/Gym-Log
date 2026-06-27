@@ -195,13 +195,24 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen>
               padding: const EdgeInsets.all(16),
               children: [
                 // Exercise GIF — loads from Supabase, cached permanently offline
-                ExerciseGifWidget(
-                  gifUrl: exercise.gifUrl,
-                  width: double.infinity,
-                  height: 220,
-                  fit: BoxFit.contain,
-                  borderRadius: AppRadius.cardAll,
-                ),
+                MediaQuery.disableAnimationsOf(context)
+                    ? ExerciseGifWidget(
+                        gifUrl: exercise.gifUrl,
+                        width: double.infinity,
+                        height: 220,
+                        fit: BoxFit.contain,
+                        borderRadius: AppRadius.cardAll,
+                      )
+                    : Hero(
+                        tag: 'exercise-hero-${exercise.id}',
+                        child: ExerciseGifWidget(
+                          gifUrl: exercise.gifUrl,
+                          width: double.infinity,
+                          height: 220,
+                          fit: BoxFit.contain,
+                          borderRadius: AppRadius.cardAll,
+                        ),
+                      ),
 
                 const SizedBox(height: 16),
 

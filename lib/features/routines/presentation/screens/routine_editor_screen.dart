@@ -1,3 +1,4 @@
+// ignore_for_file: deprecated_member_use
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -349,28 +350,47 @@ class _RoutineEditorScreenState extends ConsumerState<RoutineEditorScreen> {
                             buildDefaultDragHandles: false,
                             onReorderStart: (_) =>
                                 HapticFeedback.selectionClick(),
-                            proxyDecorator: (child, index, animation) =>
-                                AnimatedBuilder(
-                              animation: animation,
-                              child: child,
-                              builder: (context, child) {
-                                final t =
-                                    Curves.easeInOut.transform(animation.value);
-                                return Transform.scale(
-                                  scale: 1.0 + 0.03 * t,
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                      color: Color.lerp(Colors.transparent,
-                                          context.surface.surface3, t),
-                                      borderRadius:
-                                          BorderRadius.circular(AppRadius.card),
+                            proxyDecorator: (child, index, animation) {
+                              if (MediaQuery.disableAnimationsOf(context)) {
+                                return child;
+                              }
+                              return AnimatedBuilder(
+                                animation: animation,
+                                child: child,
+                                builder: (context, child) {
+                                  final t =
+                                      Curves.easeOut.transform(animation.value);
+                                  final accent = context.accent;
+                                  return Transform.scale(
+                                    scale: 1.0 + 0.04 * t,
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(
+                                            AppRadius.card),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: accent.base
+                                                .withValues(alpha: 0.18 * t),
+                                            blurRadius: 16 * t,
+                                            spreadRadius: 2 * t,
+                                            offset: Offset(0, 4 * t),
+                                          ),
+                                        ],
+                                        border: Border.all(
+                                          color: Color.lerp(
+                                            context.surface.borderSubtle,
+                                            context.surface.borderEmphasis,
+                                            t,
+                                          )!,
+                                          width: 1.0,
+                                        ),
+                                      ),
+                                      child: child,
                                     ),
-                                    child: child,
-                                  ),
-                                );
-                              },
-                            ),
-                            // ignore: deprecated_member_use
+                                  );
+                                },
+                              );
+                            },
                             onReorder: (oldIndex, newIndex) {
                               // Last slot is the non-reorderable "Add Exercise" footer.
                               if (oldIndex >= _exercises.length) return;
