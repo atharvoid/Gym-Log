@@ -228,3 +228,29 @@ No changes to `scoreboard.json` as `ExerciseSelectionScreen` is not scored indiv
 - [x] Tests Suite: **PASS** (142 tests passed)
 
 **Gate Verdict:** PASS (ES-1 done)
+
+---
+
+## Iteration 7: Systemic Skeleton Radii Tokenization (SYS-4)
+
+**Date:** 2026-06-27
+**Slice:** Systemic Skeleton Radii Tokenization (SYS-4)
+
+### Diff Summary
+- **SYS-4 (Radii Tokenization)**: Replaced all hardcoded skeleton radii magic numbers (such as `6.0`, `14.0`, or `0.0`) with standard semantic `AppRadius` tokens (`card`, `thumbnail`, `buttonPrimary`, `segmentedOuter`, `badge`, `input`).
+- **SkeletonBox Default Radius**: Tokenized `SkeletonBox` default radius inside `lib/shared/widgets/ui/skeleton.dart` to use `AppRadius.badge` (preserving the default value of `8.0`).
+- **Real Component Alignment**: To prevent layout pops on content load, updated the real card widgets (`WorkoutHistoryCard`, `DetailExerciseCard`, `_EmptyRoutines`) and their skeleton card container decorations to standard `AppRadius.card` (10.0) from their previous hardcoded `6.0`.
+- **Bookkeeping (RD-1)**: Marked stale `RD-1` backlog item `done` (was already resolved at commit `8a96a01`).
+- **Automated Tests**: Created `test/skeleton_radii_test.dart` to verify skeleton box radii on `WorkoutHistoryCardSkeleton`, `RoutineDetailScreen` skeleton, and `WorkoutScreen` skeleton.
+
+### Scoreboard Delta
+No changes to `scoreboard.json`. The visual average and individual scores are left unchanged because the visual delta of this subtle skeleton pop fix is negligible on a 0-10 scale. App average remains at `7.9`.
+
+### Gate Verification Result
+- [x] Format: **PASS**
+- [x] Static Analysis: **PASS**
+- [x] Custom Linter: **PASS**
+- [x] Tests Suite: **PASS** (145 tests passed)
+
+**Gate Verdict:** PASS (SYS-4 done)
+

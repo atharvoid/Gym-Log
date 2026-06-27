@@ -26,7 +26,7 @@ This file tracks every finding ID with its severity, owning screen, status (`ope
 | **HOME-2** | HomeScreen | Reversible workout deletion with Undo (SYS-3) | `done` | 7732bd5 |
 | **WD-2** | WorkoutDetailScreen | Missing theme token compliance | `done` | 3f41aab |
 | **WD-3** | WorkoutDetailScreen | Detail page accessibility / semantics gaps | `done` | 7732bd5 |
-| **RD-1** | RoutineDetailScreen | Routine Detail list has wrong scroll physics (Android default) | `open` | |
+| **RD-1** | RoutineDetailScreen | Routine Detail list has wrong scroll physics (Android default) | `done` | 8a96a01 |
 | **AW-2** | ActiveWorkoutScreen | Two color systems on Active Workout screen | `done` | 3f41aab |
 | **EX-2** | ExploreRoutinesScreen | Hardcoded dark gradient stop in featured card | `done` | 3f41aab |
 | **XD-1** | ExerciseDetailScreen | Color compliance (folds into SYS-2) | `done` | 3f41aab |
@@ -38,7 +38,7 @@ This file tracks every finding ID with its severity, owning screen, status (`ope
 
 | Finding ID | Screen | Description | Status | Closing Commit |
 |---|---|---|---|---|
-| **SYS-4** | Systemic | Tokenize skeleton border radius to match standard cards | `open` | |
+| **SYS-4** | Systemic | Tokenize skeleton border radius to match standard cards | `done` | 2561ef0 |
 | **SYS-5** | Systemic | Scroll physics standardizations and skeleton-vs-spinner templates | `open` | |
 | **SYS-6** | Systemic | Sub-48dp interactive controls scan & cleanup | `open` | |
 | **AUTH-4** | AuthScreen | Touch targets for legal links are sub-48dp | `open` | |
