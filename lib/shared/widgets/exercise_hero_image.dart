@@ -69,9 +69,9 @@ class _ExerciseHeroImageState extends ConsumerState<ExerciseHeroImage> {
             borderRadius: AppRadius.cardAll,
             child: Container(
               // Letterbox fill: the square GIF is shown CONTAIN, so the empty
-              // left/right gutters read as a clean light tile (GIFs are baked
-              // on white). Matches the thumbnail tile + the flight shuttle.
-              color: AppColors.thumbTile,
+              // left/right gutters must read as the SAME pure white the GIFs are
+              // baked on (#FFFFFF). thumbTile (#F5F5F5) leaves a visible seam.
+              color: AppColors.gifCanvas,
               child: Stack(
                 fit: StackFit.expand,
                 children: [

@@ -108,6 +108,8 @@ abstract class AppColors {
   static const thumbBorder =
       Color(0x14FFFFFF); // white 8%  — exercise thumbnail frame
   static const thumbTile = Color(0xFFF5F5F5); // light tile background
+  static const gifCanvas = Color(
+      0xFFFFFFFF); // exercise-GIF baked backing (pure white) — seamless contain letterbox fill
   static const thumbIcon = Color(0xFF9E9E9E); // neutral icon on light tile
 
   // ── Brand accent DEFAULT fallback (reactive truth is context.accent.*) ───

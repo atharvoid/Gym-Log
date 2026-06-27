@@ -40,7 +40,7 @@ class ExerciseHeroThumb extends StatelessWidget {
           return ClipRRect(
             borderRadius: AppRadius.cardAll,
             child: Container(
-              color: AppColors.thumbTile,
+              color: AppColors.gifCanvas,
               child: img != null
                   ? Image(image: img, fit: BoxFit.contain)
                   : const Center(
