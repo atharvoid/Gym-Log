@@ -67,29 +67,34 @@ class _ExerciseHeroImageState extends ConsumerState<ExerciseHeroImage> {
           height: widget.height,
           child: ClipRRect(
             borderRadius: AppRadius.cardAll,
-            child: Stack(
-              fit: StackFit.expand,
-              children: [
-                _Poster(gifUrl: widget.gifUrl),
-                if (showAnimated &&
-                    widget.gifUrl != null &&
-                    widget.gifUrl!.isNotEmpty)
-                  AnimatedOpacity(
-                    opacity: 1,
-                    duration: Duration(milliseconds: reduceMotion ? 0 : 220),
-                    curve: Curves.easeOut,
-                    child: CachedNetworkImage(
-                      imageUrl: widget.gifUrl!,
-                      fit: BoxFit.cover,
-                      memCacheWidth:
-                          720, // 400 is too low for a full-width banner
-                      fadeInDuration: Duration.zero,
-                      // Poster shows underneath — never a spinner on this path.
-                      placeholder: (_, __) => const SizedBox.shrink(),
-                      errorWidget: (_, __, ___) => const SizedBox.shrink(),
+            child: Container(
+              // Letterbox fill: the square GIF is shown CONTAIN, so the empty
+              // left/right gutters read as a clean light tile (GIFs are baked
+              // on white). Matches the thumbnail tile + the flight shuttle.
+              color: AppColors.thumbTile,
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  _Poster(gifUrl: widget.gifUrl),
+                  if (showAnimated &&
+                      widget.gifUrl != null &&
+                      widget.gifUrl!.isNotEmpty)
+                    AnimatedOpacity(
+                      opacity: 1,
+                      duration: Duration(milliseconds: reduceMotion ? 0 : 220),
+                      curve: Curves.easeOut,
+                      child: CachedNetworkImage(
+                        imageUrl: widget.gifUrl!,
+                        fit: BoxFit.contain, // was BoxFit.cover
+                        memCacheWidth: 720,
+                        fadeInDuration: Duration.zero,
+                        // Poster shows underneath — never a spinner on this path.
+                        placeholder: (_, __) => const SizedBox.shrink(),
+                        errorWidget: (_, __, ___) => const SizedBox.shrink(),
+                      ),
                     ),
-                  ),
-              ],
+                ],
+              ),
             ),
           ),
         );
@@ -109,17 +114,13 @@ class _Poster extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final url = gifUrl;
-    if (url == null || url.isEmpty) return _fill(const _FallbackIcon());
+    if (url == null || url.isEmpty) {
+      return const Center(child: _FallbackIcon());
+    }
     final frame = ref.watch(gifLastFrameProvider(url)).valueOrNull;
-    if (frame == null) return _fill(null);
-    return Image(image: frame, fit: BoxFit.cover, gaplessPlayback: true);
+    if (frame == null) return const SizedBox.shrink();
+    return Image(image: frame, fit: BoxFit.contain, gaplessPlayback: true);
   }
-
-  Widget _fill(Widget? child) => Container(
-        color:
-            AppColors.thumbTile, // intentional constant light tile (Hevy-style)
-        child: child == null ? null : Center(child: child),
-      );
 }
 
 class _FallbackIcon extends StatelessWidget {

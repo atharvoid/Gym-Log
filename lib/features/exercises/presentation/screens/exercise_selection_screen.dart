@@ -294,7 +294,7 @@ class _ExerciseSelectionScreenState
               child: TextField(
                 controller: _searchController,
                 focusNode: _searchFocus,
-                autofocus: true,
+                autofocus: !widget.browse,
                 style: AppText.body(color: surface.textPrimary),
                 cursorColor: accent.base,
                 textInputAction: TextInputAction.search,
