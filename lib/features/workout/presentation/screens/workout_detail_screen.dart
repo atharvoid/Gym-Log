@@ -68,7 +68,7 @@ class WorkoutDetailScreen extends ConsumerWidget {
               SizedBox(height: 8),
               SkeletonBox(width: 120, height: 13),
               SizedBox(height: 24),
-              SkeletonBox(height: 8, radius: 6),
+              SkeletonBox(height: 8, radius: AppRadius.badge),
               SizedBox(height: 20),
               _DetailCardSkeleton(),
               SizedBox(height: 12),
@@ -301,13 +301,13 @@ class _DetailCardSkeleton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(16),
-      decoration: AppCard.decoration(radius: 6.0),
+      decoration: AppCard.decoration(radius: AppRadius.card),
       child: const Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              SkeletonBox(width: 52, height: 52, radius: 0),
+              SkeletonBox(width: 52, height: 52, radius: AppRadius.thumbnail),
               SizedBox(width: 12),
               Expanded(child: SkeletonBox(height: 16, width: 160)),
             ],

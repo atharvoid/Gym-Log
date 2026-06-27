@@ -588,7 +588,7 @@ class _LoadingList extends StatelessWidget {
           padding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           child: Row(
             children: [
-              SkeletonBox(width: 52, height: 52, radius: 0),
+              SkeletonBox(width: 52, height: 52, radius: AppRadius.thumbnail),
               SizedBox(width: 16),
               Expanded(
                 child: Column(

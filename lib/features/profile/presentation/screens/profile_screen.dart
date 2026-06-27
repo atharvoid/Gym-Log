@@ -687,15 +687,18 @@ class _LoadingBody extends StatelessWidget {
         children: [
           const Row(
             children: [
-              SkeletonBox(width: 56, height: 56, radius: 14),
+              SkeletonBox(
+                  width: 56, height: 56, radius: AppRadius.buttonPrimary),
               SizedBox(width: 14),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    SkeletonBox(width: 140, height: 19, radius: 0),
+                    SkeletonBox(
+                        width: 140, height: 19, radius: AppRadius.input),
                     SizedBox(height: 6),
-                    SkeletonBox(width: 180, height: 13, radius: 0),
+                    SkeletonBox(
+                        width: 180, height: 13, radius: AppRadius.input),
                   ],
                 ),
               ),
@@ -710,9 +713,11 @@ class _LoadingBody extends StatelessWidget {
                   const Expanded(
                     child: Column(
                       children: [
-                        SkeletonBox(width: 50, height: 17, radius: 0),
+                        SkeletonBox(
+                            width: 50, height: 17, radius: AppRadius.input),
                         SizedBox(height: 5),
-                        SkeletonBox(width: 56, height: 10, radius: 0),
+                        SkeletonBox(
+                            width: 56, height: 10, radius: AppRadius.input),
                       ],
                     ),
                   ),
@@ -727,11 +732,17 @@ class _LoadingBody extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                SkeletonBox(width: 120, height: 16, radius: 0),
+                SkeletonBox(width: 120, height: 16, radius: AppRadius.input),
                 SizedBox(height: 12),
-                SkeletonBox(width: double.infinity, height: 150, radius: 6),
+                SkeletonBox(
+                    width: double.infinity,
+                    height: 150,
+                    radius: AppRadius.card),
                 SizedBox(height: 14),
-                SkeletonBox(width: double.infinity, height: 36, radius: 0),
+                SkeletonBox(
+                    width: double.infinity,
+                    height: 36,
+                    radius: AppRadius.segmentedOuter),
               ],
             ),
           ),
@@ -742,7 +753,9 @@ class _LoadingBody extends StatelessWidget {
               children: [
                 for (var i = 0; i < 2; i++) ...[
                   const SkeletonBox(
-                      width: double.infinity, height: 48, radius: 0),
+                      width: double.infinity,
+                      height: 48,
+                      radius: AppRadius.input),
                   if (i < 1) const SizedBox(height: 1),
                 ],
               ],

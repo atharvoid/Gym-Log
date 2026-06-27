@@ -45,7 +45,7 @@ class WorkoutHistoryCard extends StatelessWidget {
 
     return AppCard(
       padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
-      radius: 6.0,
+      radius: AppRadius.card,
       onTap: () {
         // Navigation/selection feedback — parity with every other tap.
         HapticFeedback.selectionClick();

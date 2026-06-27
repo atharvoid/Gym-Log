@@ -447,13 +447,13 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
                   children: [
                     const SkeletonBox(width: 200, height: 16),
                     const SizedBox(height: 24),
-                    const SkeletonBox(height: 198, radius: 6),
+                    const SkeletonBox(height: 198, radius: AppRadius.card),
                     const SizedBox(height: 24),
                     ...List.generate(
                       3,
                       (i) => const Padding(
                         padding: EdgeInsets.only(bottom: 12),
-                        child: SkeletonBox(height: 120, radius: 6),
+                        child: SkeletonBox(height: 120, radius: AppRadius.card),
                       ),
                     ),
                   ],
@@ -465,7 +465,7 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
         bottomNavigationBar: const SafeArea(
           child: Padding(
             padding: EdgeInsets.fromLTRB(16, 8, 16, 10),
-            child: SkeletonBox(height: 52, radius: 6),
+            child: SkeletonBox(height: 52, radius: AppRadius.buttonPrimary),
           ),
         ),
       ),

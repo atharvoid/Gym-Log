@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_text.dart';
 import 'app_card.dart';
 
 /// Soft-pulsing skeleton bone. One shared animation phase per subtree via
@@ -50,7 +51,7 @@ class SkeletonBox extends StatelessWidget {
     super.key,
     this.width,
     required this.height,
-    this.radius = 8,
+    this.radius = AppRadius.badge,
   });
 
   @override
@@ -93,7 +94,8 @@ class WorkoutHistoryCardSkeleton extends StatelessWidget {
               padding: const EdgeInsets.only(bottom: 8),
               child: Row(
                 children: [
-                  const SkeletonBox(width: 52, height: 52, radius: 14),
+                  const SkeletonBox(
+                      width: 52, height: 52, radius: AppRadius.thumbnail),
                   const SizedBox(width: 12),
                   Expanded(
                     child: SkeletonBox(height: 13, width: i == 0 ? 170 : 130),

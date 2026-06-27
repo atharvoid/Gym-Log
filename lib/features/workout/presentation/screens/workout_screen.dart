@@ -253,13 +253,14 @@ class _RoutineCardSkeleton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(15),
-      decoration: AppCard.decoration(radius: 6.0),
+      decoration: AppCard.decoration(radius: AppRadius.card),
       child: const Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              SkeletonBox(width: 44, height: 44, radius: 0),
+              SkeletonBox(
+                  width: 44, height: 44, radius: AppRadius.buttonPrimary),
               SizedBox(width: 13),
               Expanded(
                 child: Column(
@@ -280,7 +281,8 @@ class _RoutineCardSkeleton extends StatelessWidget {
             children: [
               Expanded(child: SkeletonBox(height: 12)),
               SizedBox(width: 12),
-              SkeletonBox(width: 68, height: 32, radius: 999),
+              SkeletonBox(
+                  width: 68, height: 32, radius: AppRadius.buttonPrimary),
             ],
           ),
         ],
@@ -298,7 +300,7 @@ class _EmptyRoutines extends StatelessWidget {
   Widget build(BuildContext context) {
     final accent = context.accent;
     return AppCard(
-      radius: 6.0,
+      radius: AppRadius.card,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
