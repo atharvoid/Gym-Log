@@ -15,6 +15,7 @@ This file tracks every finding ID with its severity, owning screen, status (`ope
 | **SYS-1** | Systemic | Migrate Auth, Exercise Detail, Delete Account, Import off inline `GoogleFonts.inter` to `AppText` | `done` | a408ac3 |
 | **SYS-2** | Systemic | Migrate Home, Workout Detail, Routine Detail chrome, Exercise Detail, Delete Account, Import to `context.surface`/`context.accent` | `done` | 3f41aab |
 | **SYS-3** | Systemic | Add snackbar-with-Undo to reversible deletes (Home / Workout Detail / routine delete) | `done` | 7732bd5 |
+| **SYS-8** | Systemic | Dynamic Chrome theme migration batch (folds in SET-1, HOME-4, and verifies RE-2 / RE-3 / ES-2 / RD-2) | `done` | |
 
 ## Tier 2 — Remaining per-screen Majors
 
@@ -44,17 +45,17 @@ This file tracks every finding ID with its severity, owning screen, status (`ope
 | **SYS-7** | Systemic | Retokenize real card/button/input/sheet/badge surface radii to AppRadius tokens | `done` | d4c250b |
 | **AUTH-4** | AuthScreen | Touch targets for legal links are sub-48dp | `done` | b0e2fe9 |
 | **HOME-3** | HomeScreen | Goal day buttons touch targets are sub-48dp | `done` | stale |
-| **HOME-4** | HomeScreen | History card styling discrepancies | `open` | |
+| **HOME-4** | HomeScreen | History card styling discrepancies | `done` | |
 | **HOME-7** | HomeScreen | Performance lag on heavy history feed | `open` | |
 | **AW-3** | ActiveWorkoutScreen | Exercise block spacing and font size inconsistencies | `open` | |
 | **AW-5** | ActiveWorkoutScreen | Finish summary sheet navigation polish | `open` | |
 | **WD-1** | WorkoutDetailScreen | Scroll layout constraints on small screens | `open` | |
 | **WD-5** | WorkoutDetailScreen | Volume graph range filters | `open` | |
-| **RD-2** | RoutineDetailScreen | Routine Detail subtitle overlaps | `open` | |
+| **RD-2** | RoutineDetailScreen | Routine Detail subtitle overlaps | `done` | |
 | **RD-3** | RoutineDetailScreen | Empty state graphics rendering alignment | `done` | 3f41aab |
-| **RE-2** | RoutineEditorScreen | Reorder handle accessibility label | `open` | |
-| **RE-3** | RoutineEditorScreen | Routine Editor naming constraints | `open` | |
-| **ES-2** | ExerciseSelectionScreen | Search bar cursor color mismatch | `open` | |
+| **RE-2** | RoutineEditorScreen | Reorder handle accessibility label | `done` | stale |
+| **RE-3** | RoutineEditorScreen | Routine Editor naming constraints | `done` | stale |
+| **ES-2** | ExerciseSelectionScreen | Search bar cursor color mismatch | `done` | stale |
 | **ES-3** | ExerciseSelectionScreen | Filter chips height is sub-48dp (currently 44dp) | `done` | b0e2fe9 |
 | **XD-3** | ExerciseDetailScreen | Stat toggles touch targets are sub-48dp (expand to >=48dp min height) | `done` | 51e80c5 |
 | **XD-4** | ExerciseDetailScreen | Failed to load analytics is a dead end (replace with accessible retry button) | `done` | 51e80c5 |
@@ -62,7 +63,7 @@ This file tracks every finding ID with its severity, owning screen, status (`ope
 | **PR-1** | ProfileScreen | Avatar picture size constraints | `open` | |
 | **PR-2** | ProfileScreen | Weekly stats bar chart styling | `open` | |
 | **PR-3** | ProfileScreen | Premium paywall visual alignment | `open` | |
-| **SET-1** | SettingsScreen | Settings items list separator lines color | `open` | |
+| **SET-1** | SettingsScreen | Settings items list separator lines color | `done` | |
 | **SET-2** | SettingsScreen | Weight units switcher click target is sub-48dp | `done` | stale |
 | **DA-1** | DeleteAccountScreen | Confirmation input placeholder text styling (fully resolved with SYS-1 and SYS-2) | `done` | 3f41aab |
 | **IM-2** | ImportScreen | CSV template download button styling | `open` | |

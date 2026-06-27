@@ -351,6 +351,45 @@ App overall average remains at `7.9`.
 
 **Gate Verdict:** PASS (SYS-7 completed)
 
+---
+
+## Iteration 11: Dynamic Chrome Colors (SYS-8)
+
+**Date:** 2026-06-27
+**Slice:** Dynamic Chrome Colors (SYS-8)
+
+### Diff Summary
+- **Shared Widgets**: Migrated `AppActionRow` and `AppActionDivider` chevron, fallback icon, and divider colors from static `AppColors` constants to dynamic `context.surface` tokens.
+- **Home Feed**: Migrated `WorkoutHistoryCard` options menu button, card separator divider line, and stat chip icon colors to dynamic `context.surface` tokens.
+- **Profile / Settings Screen**: Migrated `showWeeklyGoalSheet` unselected goal chip background to `context.surface.surface2` and text to `context.surface.textPrimary`. Snipped Snackbars in Settings and external URL links to use `context.surface.bgSurface` without triggering async gap warnings.
+- **Routine Editor Screen**: Migrated background canvas, close button, titles, spinners, input field borders/fills, list item borders, drag indicators, set counter labels, remove buttons, and stepper buttons to use dynamic `context.surface` tokens.
+- **Routine Detail Screen**: Normalized `_RoutineProgressPill` border radius to `AppRadius.badgeAll`.
+- **Automated Tests**: Created `test/dynamic_chrome_test.dart` to assert that both `AppActionDivider` and `WorkoutHistoryCard` divider colors update dynamically across light and dark surface modes using a custom `AccentColors` test extension that overrides `isLightSurface`.
+
+### Scoreboard Delta
+| Screen | Dimension | Before | After | Change |
+|---|---|---|---|---|
+| SettingsScreen | Color & Typography | - | 10.0 | Backfill |
+| SettingsScreen | Visual Professionalism | - | 9.0 | Backfill |
+| SettingsScreen | +Overall | - | 8.0 | Backfill |
+| ProfileScreen | Color & Typography | - | 10.0 | Backfill |
+| ProfileScreen | Visual Professionalism | - | 9.0 | Backfill |
+| ProfileScreen | +Overall | - | 8.0 | Backfill |
+| RoutineEditorScreen | Color & Typography | - | 10.0 | Backfill |
+| RoutineEditorScreen | Visual Professionalism | - | 9.0 | Backfill |
+| RoutineEditorScreen | +Overall | - | 8.1 | Backfill |
+
+App overall average remains at `7.9`.
+
+### Gate Verification Result
+- [x] Format: **PASS**
+- [x] Static Analysis: **PASS**
+- [x] Custom Linter: **PASS**
+- [x] Tests Suite: **PASS** (154 tests passed)
+
+**Gate Verdict:** PASS (SYS-8 completed)
+
+
 
 
 
