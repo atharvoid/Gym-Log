@@ -467,3 +467,44 @@ App overall average rises to `8.0` (computed as: `sum(14 screens) / 14 = 111.3 /
 - [x] Tests Suite: **PASS** (159 tests passed)
 
 **Gate Verdict:** PASS
+
+---
+
+## P0 Hotfix: Routine Editor Compilation & Drag Reorder Crash Fix
+
+**Date:** 2026-06-27
+**Slice:** P0 Hotfix (RoutineEditorScreen)
+
+### Diff Summary
+- **Task 1 (onReorder rename & index correction)**:
+  - Renamed the invalid `onReorderItem` parameter in `ReorderableListView.builder` inside `routine_editor_screen.dart` to the correct required parameter `onReorder`.
+  - Re-introduced the standard `newIndex` adjustment logic (`newIndex -= 1` when `newIndex > oldIndex`) needed for Flutter's `ReorderableListView`.
+  - Added boundary guards to ensure that the trailing "Add Exercise" footer (at the last index) can neither be dragged nor have an exercise dropped past it.
+- **Task 2 (Reorder Contract & Screen-Level Widget Tests)**:
+  - Corrected the mock reorder list test in `routine_editor_reorder_test.dart` to use `onReorder` instead of `onReorderItem` and perform the standard index adjustment.
+  - Implemented a complete integration-level widget test `RoutineEditorScreen reorders exercises and respects bounds` that mocks Drift, Supabase, and Auth providers, pumps the `RoutineEditorScreen`, and verifies the reordering Y coordinate order before and after simulated touch gestures.
+- **Task 3 (BorderRadius Decoration Crash Fix)**:
+  - Fixed a latent Flutter rendering crash in `_EditorExerciseCard` where a curved card decoration (`borderRadius`) was combined with a non-uniform border (`left` side tinted with `accent` color while others were `borderSubtle`). Refactored the card decoration to use a uniform `Border.all` and overlayed the left accent-colored bar via a `Stack` and `Positioned` widget.
+  - Cleaned up pending GoTrue auto-refresh timers in the reorder tests by calling `supabaseClient.auth.stopAutoRefresh()` in the teardown.
+- **Task 4 (Cleanups & Verification)**:
+  - Removed the unused `AppColors` imports in `premium_paywall.dart`, `onboarding_screen.dart`, and `routine_editor_screen.dart` to satisfy the strict custom linter.
+  - Verified that all analysis, linter, formatting, and unit/widget tests pass cleanly.
+
+### Scoreboard Delta
+| Screen | Dimension | Before | After | Change |
+|---|---|---|---|---|
+| RoutineEditorScreen | Logic & State | 8.0 | 9.0 | +1.0 |
+| RoutineEditorScreen | Code Quality | 8.5 | 9.0 | +0.5 |
+| RoutineEditorScreen | Platform Conventions | 9.0 | 9.5 | +0.5 |
+| RoutineEditorScreen | Visual Professionalism | 9.0 | 9.5 | +0.5 |
+| RoutineEditorScreen | +Overall | 8.1 | 8.5 | +0.4 |
+
+App overall average rises to `8.0` (computed as: `sum(14 screens) / 14 = 111.7 / 14 = 7.978`, rounding to `8.0`).
+
+### Gate Verification Result
+- [x] Format: **PASS**
+- [x] Static Analysis: **PASS**
+- [x] Custom Linter: **PASS**
+- [x] Tests Suite: **PASS** (160 tests passed)
+
+**Gate Verdict:** PASS (Routine Editor fully compiles, paints, and reorders successfully)
