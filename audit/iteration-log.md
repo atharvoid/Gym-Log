@@ -551,3 +551,33 @@ App overall average rises to `8.0` (specifically `8.01` computed as: `sum(14 scr
 - [x] Tests Suite: **PASS** (164 tests passed)
 
 **Gate Verdict:** PASS (Tier-4 Wow delights fully verified and integrated)
+
+---
+
+## Iteration (ES-4 Artifact Fix): Hero Transition Polish
+
+**Date:** 2026-06-27
+**Commit:** `5cb0563`
+**Branch:** `remediation/8-phase`
+
+### Problem
+Three compounding defects made the Exercise Library → Exercise Detail Hero transition visually broken (cover→contain jump on landing, spinner flash at handoff, Hero clipped by FadeTransition).
+
+### Diff Summary
+Single-file change: `lib/features/exercises/presentation/screens/exercise_detail_screen.dart`
+
+- **Import added**: `gif_last_frame_provider.dart`
+- **State added**: `_gifAnimated` (bool), `_routeListenerAdded` (bool)
+- **`didChangeDependencies` extended**: second guarded block attaches a `ModalRoute.of(context)?.animation` status listener; flips `_gifAnimated = true` synchronously when already completed (home route / test context), else via `setState` on `AnimationStatus.completed`
+- **`_buildGifContent` added**: `SizedBox(220) > AnimatedSwitcher > {poster Consumer | animated ExerciseGifWidget}`. Poster shows a static `MemoryImage` (from `gifLastFrameProvider` / `gifFirstFrameProvider`) while `_gifAnimated == false`. After flip, cross-fades (220ms) to live animated GIF. All paths use `BoxFit.cover`
+- **`build()` restructured**: `gifSection` (Hero wrapping `_buildGifContent`) is first child of `ListView` directly — completely outside `_entryFade`. Only text content below fades in
+- **Reduced-motion path**: `disableAnimations=true` → `ExerciseGifWidget(animate: false, fit: BoxFit.cover)`, no Hero, no AnimatedSwitcher
+- **No-Hero path (other entry points)**: Routine Detail, Exercise Block, Detail Exercise Card all push to `/exercise/detail/` with `extra: exercise`; since the Hero source tag is only present in `ExerciseSelectionScreen(browse:true)` and `ExerciseDetailScreen`, there is no duplicate tag risk at other entry points
+
+### Gate Verification Result
+- [x] Format: **PASS**
+- [x] Static Analysis: **PASS** (`flutter analyze --fatal-infos --fatal-warnings` — No issues found)
+- [x] Custom Linter: **PASS**
+- [x] Tests Suite: **PASS** (164/164 tests passed — all Hero transition tests and detail polish tests unchanged)
+
+**Gate Verdict:** PASS
