@@ -7,14 +7,14 @@
       "Motion & Haptics": 6.0,
       "Logic & State": 6.0,
       "Code Quality": 7.0,
-      "Accessibility": 6.5,
+      "Accessibility": 7.5,
       "Performance": 6.5,
       "Navigation & Flow": 6.0,
-      "Platform Conventions": 7.0,
+      "Platform Conventions": 7.5,
       "Visual Professionalism": 8.5,
       "Cognitive Load": 6.5,
       "Wow Factor": 6.0,
-      "+Overall": 7.0
+      "+Overall": 7.1
     },
     "HomeScreen": {
       "Layout & Structure": 7.5,

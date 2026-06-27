@@ -283,4 +283,38 @@ App overall average remains at `7.9`.
 
 **Gate Verdict:** PASS (SYS-5 done)
 
+---
+
+## Iteration 9: Accessibility Tap Targets (SYS-6)
+
+**Date:** 2026-06-27
+**Slice:** Accessibility Tap Targets (SYS-6)
+
+### Diff Summary
+- **ES-3 (Filter Chip Button)**: Increased `minHeight` constraint of `_FilterChipButton` inside `ExerciseSelectionScreen` from `44` to `48` to meet the minimum platform touch target size.
+- **AUTH-4 (Legal Links)**: Expanded the touch target of inline legal links ("Terms of Service" and "Privacy Policy") inside `AuthScreen` to `>=48dp` tall by wrapping the inner text in `Padding(vertical: 16, horizontal: 2)` and setting the GestureDetector's behavior to `opaque`. Combined with `WrapCrossAlignment.center` on the parent `Wrap`, the connective text remains centered and visually inline.
+- **AppActionRow (General Fix)**: Added `constraints: const BoxConstraints(minHeight: 48)` inside `AppActionRow`'s `InkWell` child to guarantee that even single-line settings/profile items without subtitles measure at least 48dp tall.
+- **Verify-or-Stale-Close (HOME-3 & SET-2)**:
+  - **HOME-3**: Verified that `_WeekStrip` on the Home screen contains only read-only static text and icons (no tap targets), so `HOME-3` is marked stale/already-compliant.
+  - **SET-2**: Checked that the weight unit switcher `AppActionRow` (height 61) and the branded picker option-row (height 62) are already `>=48` height, so `SET-2` is marked stale/already-compliant.
+- **Automated Tests**: Created `test/accessibility_target_size_test.dart` to assert that filter buttons in `ExerciseSelectionScreen` and legal links in `AuthScreen` measure `>=48dp` in height.
+
+### Scoreboard Delta
+| Screen | Dimension | Before | After | Change |
+|---|---|---|---|---|
+| AuthScreen | Accessibility | 6.5 | 7.5 | +1.0 |
+| AuthScreen | Platform Conventions | 7.0 | 7.5 | +0.5 |
+| AuthScreen | +Overall | 7.0 | 7.1 | +0.1 |
+
+App overall average remains at `7.9`.
+
+### Gate Verification Result
+- [x] Format: **PASS**
+- [x] Static Analysis: **PASS**
+- [x] Custom Linter: **PASS**
+- [x] Tests Suite: **PASS** (149 tests passed)
+
+**Gate Verdict:** PASS (SYS-6 done)
+
+
 

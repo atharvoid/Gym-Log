@@ -40,9 +40,9 @@ This file tracks every finding ID with its severity, owning screen, status (`ope
 |---|---|---|---|---|
 | **SYS-4** | Systemic | Tokenize skeleton border radius to match standard cards | `done` | 2561ef0 |
 | **SYS-5** | Systemic | Scroll physics standardizations and skeleton-vs-spinner templates | `done` | 3cfbc0f |
-| **SYS-6** | Systemic | Sub-48dp interactive controls scan & cleanup | `open` | |
-| **AUTH-4** | AuthScreen | Touch targets for legal links are sub-48dp | `open` | |
-| **HOME-3** | HomeScreen | Goal day buttons touch targets are sub-48dp | `open` | |
+| **SYS-6** | Systemic | Sub-48dp interactive controls scan & cleanup | `done` | b0e2fe9 |
+| **AUTH-4** | AuthScreen | Touch targets for legal links are sub-48dp | `done` | b0e2fe9 |
+| **HOME-3** | HomeScreen | Goal day buttons touch targets are sub-48dp | `done` | stale |
 | **HOME-4** | HomeScreen | History card styling discrepancies | `open` | |
 | **HOME-7** | HomeScreen | Performance lag on heavy history feed | `open` | |
 | **AW-3** | ActiveWorkoutScreen | Exercise block spacing and font size inconsistencies | `open` | |
@@ -54,7 +54,7 @@ This file tracks every finding ID with its severity, owning screen, status (`ope
 | **RE-2** | RoutineEditorScreen | Reorder handle accessibility label | `open` | |
 | **RE-3** | RoutineEditorScreen | Routine Editor naming constraints | `open` | |
 | **ES-2** | ExerciseSelectionScreen | Search bar cursor color mismatch | `open` | |
-| **ES-3** | ExerciseSelectionScreen | Filter chips height is sub-48dp (currently 44dp) | `open` | |
+| **ES-3** | ExerciseSelectionScreen | Filter chips height is sub-48dp (currently 44dp) | `done` | b0e2fe9 |
 | **XD-3** | ExerciseDetailScreen | Stat toggles touch targets are sub-48dp (expand to >=48dp min height) | `done` | 51e80c5 |
 | **XD-4** | ExerciseDetailScreen | Failed to load analytics is a dead end (replace with accessible retry button) | `done` | 51e80c5 |
 | **XD-5** | ExerciseDetailScreen | Analytics & full-page spinner loads (replace with skeletons, wrap chart in RepaintBoundary, memoize PR maxes) | `done` | 51e80c5 |
@@ -62,7 +62,7 @@ This file tracks every finding ID with its severity, owning screen, status (`ope
 | **PR-2** | ProfileScreen | Weekly stats bar chart styling | `open` | |
 | **PR-3** | ProfileScreen | Premium paywall visual alignment | `open` | |
 | **SET-1** | SettingsScreen | Settings items list separator lines color | `open` | |
-| **SET-2** | SettingsScreen | Weight units switcher click target is sub-48dp | `open` | |
+| **SET-2** | SettingsScreen | Weight units switcher click target is sub-48dp | `done` | stale |
 | **DA-1** | DeleteAccountScreen | Confirmation input placeholder text styling (fully resolved with SYS-1 and SYS-2) | `done` | 3f41aab |
 | **IM-2** | ImportScreen | CSV template download button styling | `open` | |
 
