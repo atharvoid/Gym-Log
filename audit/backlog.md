@@ -41,6 +41,7 @@ This file tracks every finding ID with its severity, owning screen, status (`ope
 | **SYS-4** | Systemic | Tokenize skeleton border radius to match standard cards | `done` | 2561ef0 |
 | **SYS-5** | Systemic | Scroll physics standardizations and skeleton-vs-spinner templates | `done` | 3cfbc0f |
 | **SYS-6** | Systemic | Sub-48dp interactive controls scan & cleanup | `done` | b0e2fe9 |
+| **SYS-7** | Systemic | Retokenize real card/button/input/sheet/badge surface radii to AppRadius tokens | `done` | d4c250b |
 | **AUTH-4** | AuthScreen | Touch targets for legal links are sub-48dp | `done` | b0e2fe9 |
 | **HOME-3** | HomeScreen | Goal day buttons touch targets are sub-48dp | `done` | stale |
 | **HOME-4** | HomeScreen | History card styling discrepancies | `open` | |

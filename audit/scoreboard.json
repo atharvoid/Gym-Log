@@ -82,19 +82,19 @@
     },
     "DeleteAccountScreen": {
       "Layout & Structure": 8.0,
-      "Components": 7.0,
+      "Components": 8.0,
       "Color & Typography": 10.0,
       "Motion & Haptics": 6.5,
       "Logic & State": 7.0,
-      "Code Quality": 8.0,
+      "Code Quality": 9.0,
       "Accessibility": 7.0,
       "Performance": 7.0,
       "Navigation & Flow": 7.0,
       "Platform Conventions": 8.5,
-      "Visual Professionalism": 9.0,
+      "Visual Professionalism": 9.5,
       "Cognitive Load": 7.5,
       "Wow Factor": 6.0,
-      "+Overall": 7.6
+      "+Overall": 7.8
     },
     "ImportScreen": {
       "Layout & Structure": 7.5,

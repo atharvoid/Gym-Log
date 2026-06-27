@@ -316,5 +316,41 @@ App overall average remains at `7.9`.
 
 **Gate Verdict:** PASS (SYS-6 done)
 
+---
+
+## Iteration 10: Retokenize Surface Radii (SYS-7)
+
+**Date:** 2026-06-27
+**Slice:** Retokenize Surface Radii (SYS-7)
+
+### Diff Summary
+- **Card/Container Surfaces**: Migrated hardcoded border radius `circular(6)` / `circular(10)` / `circular(20)` to `AppRadius.cardAll` / `AppRadius.card` in `DeleteAccountScreen` (cards), `ExerciseDetailScreen` (GIF widget), `ExploreRoutinesScreen` (program cards), `RoutineEditorScreen` (name input field), `ImportScreen` (gradient card containers), and `BrandedLineChart` (chart container card).
+- **Primary Buttons**: Migrated hardcoded border radius `circular(14)` to `AppRadius.buttonPrimaryAll` on `DeleteAccountScreen`'s danger-icon chip.
+- **Secondary Buttons & Chips**: Migrated hardcoded border radius `circular(14)` to `AppRadius.buttonSecondaryAll` on `ExerciseSelectionScreen` (filter chips) and `ExploreRoutinesScreen` (segmented controls and Add/View buttons).
+- **Bottom Sheets**: Migrated hardcoded top corner radius `vertical(top: Radius.circular(20))` to `AppRadius.sheetTop` on the custom premium paywall bottom sheet.
+- **Badges**: Migrated hardcoded border radius `circular(8)` to `AppRadius.badgeAll` on `ActiveWorkoutBar` (timer pill), `PremiumPaywall` (ProLockPill), `ProfileGraphLowDataBanner` (warning banner), and `ImportScreen` (selection tags).
+- **Thumbnails**: Migrated hardcoded border radius `circular(10)` to `AppRadius.thumbnailAll` on `AppShell` and `AppDialog` icon badges.
+- **Skeleton Box**: Migrated initial load header skeleton box radius from `6.0` to `AppRadius.card` in `HomeScreen` to prevent layout corner pops.
+- **Automated Tests**: Created `test/radius_token_test.dart` to assert correct radius tokens are styled on `DeleteAccountScreen`, `ExerciseSelectionScreen`, and `HomeScreen` skeletons.
+
+### Scoreboard Delta
+| Screen | Dimension | Before | After | Change |
+|---|---|---|---|---|
+| DeleteAccountScreen | Components | 7.0 | 8.0 | +1.0 |
+| DeleteAccountScreen | Code Quality | 8.0 | 9.0 | +1.0 |
+| DeleteAccountScreen | Visual Professionalism | 9.0 | 9.5 | +0.5 |
+| DeleteAccountScreen | +Overall | 7.6 | 7.8 | +0.2 |
+
+App overall average remains at `7.9`.
+
+### Gate Verification Result
+- [x] Format: **PASS**
+- [x] Static Analysis: **PASS**
+- [x] Custom Linter: **PASS**
+- [x] Tests Suite: **PASS** (152 tests passed)
+
+**Gate Verdict:** PASS (SYS-7 completed)
+
+
 
 
