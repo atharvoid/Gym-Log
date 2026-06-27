@@ -79,10 +79,10 @@ class WorkoutHistoryCard extends StatelessWidget {
                 // S13: standardized to more_horiz_rounded
                 IconButton(
                   tooltip: 'More options',
-                  icon: const Icon(
+                  icon: Icon(
                     Icons.more_horiz_rounded,
                     size: 20,
-                    color: AppColors.textSecondary,
+                    color: context.surface.textSecondary,
                   ),
                   constraints: const BoxConstraints(
                     minWidth: 48,
@@ -112,7 +112,7 @@ class WorkoutHistoryCard extends StatelessWidget {
           ],
 
           const SizedBox(height: 11),
-          Container(height: 1, color: AppColors.borderSubtle),
+          Container(height: 1, color: context.surface.borderSubtle),
           const SizedBox(height: 11),
 
           _StatsRow(preview: preview, durationStr: durationStr),
@@ -243,7 +243,7 @@ class _StatChip extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(icon, size: 14, color: AppColors.textSecondary),
+        Icon(icon, size: 14, color: context.surface.textSecondary),
         const SizedBox(width: 5),
         Text(label, style: AppText.statLabel()),
       ],

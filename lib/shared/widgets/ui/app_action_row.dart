@@ -31,9 +31,10 @@ class AppActionRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final surface = context.surface;
     final trailing = onTap != null && showChevron
-        ? const Icon(Icons.chevron_right_rounded,
-            size: 20, color: AppColors.textTertiary)
+        ? Icon(Icons.chevron_right_rounded,
+            size: 20, color: surface.textTertiary)
         : null;
 
     final child = Material(
@@ -48,7 +49,7 @@ class AppActionRow extends StatelessWidget {
               SizedBox(
                 width: 28,
                 child: Icon(icon,
-                    size: 20, color: iconColor ?? AppColors.textSecondary),
+                    size: 20, color: iconColor ?? surface.textSecondary),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -97,9 +98,10 @@ class AppActionDivider extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final surface = context.surface;
     return Padding(
       padding: const EdgeInsets.only(left: 56),
-      child: Container(height: 1, color: AppColors.borderSubtle),
+      child: Container(height: 1, color: surface.borderSubtle),
     );
   }
 }

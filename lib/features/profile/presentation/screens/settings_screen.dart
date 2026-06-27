@@ -32,6 +32,7 @@ Future<void> showWeeklyGoalSheet(BuildContext context, WidgetRef ref) async {
   final current = ref.read(weeklyGoalProvider);
   HapticFeedback.lightImpact();
   final accent = context.accent;
+  final surface = context.surface;
 
   await showBrandedBottomSheet<void>(
     context: context,
@@ -62,9 +63,7 @@ Future<void> showWeeklyGoalSheet(BuildContext context, WidgetRef ref) async {
                     height: 48,
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
-                      color: days == current
-                          ? accent.base
-                          : AppColors.surfaceRaised,
+                      color: days == current ? accent.base : surface.surface2,
                       borderRadius:
                           BorderRadius.circular(AppRadius.buttonSecondary),
                     ),
@@ -73,7 +72,7 @@ Future<void> showWeeklyGoalSheet(BuildContext context, WidgetRef ref) async {
                       style: AppText.button(
                         color: days == current
                             ? accent.onAccent
-                            : AppColors.textPrimary,
+                            : surface.textPrimary,
                       ),
                     ),
                   ),
@@ -524,7 +523,7 @@ void _openPremium(BuildContext context, {required bool isPremium}) {
         'You are on GymLog Pro. Thanks for the support!',
         style: AppText.button(),
       ),
-      backgroundColor: AppColors.bgSurface,
+      backgroundColor: context.surface.bgSurface,
       behavior: SnackBarBehavior.floating,
     ));
   } else {
@@ -536,6 +535,7 @@ Future<void> _exportWorkouts(BuildContext context, WidgetRef ref, String userId,
     String displayName) async {
   HapticFeedback.lightImpact();
   final messenger = ScaffoldMessenger.of(context);
+  final bgSurface = context.surface.bgSurface;
   try {
     final service = WorkoutExportService(ref.read(databaseProvider));
     final file = await service.writeCsvFile(userId);
@@ -551,7 +551,7 @@ Future<void> _exportWorkouts(BuildContext context, WidgetRef ref, String userId,
         'Export failed. Please try again.',
         style: AppText.button(),
       ),
-      backgroundColor: AppColors.bgSurface,
+      backgroundColor: bgSurface,
       behavior: SnackBarBehavior.floating,
     ));
   }
@@ -575,6 +575,7 @@ void _showDataInfo(BuildContext context) {
 Future<void> _openExternalUrl(BuildContext context, String url) async {
   HapticFeedback.lightImpact();
   final messenger = ScaffoldMessenger.of(context);
+  final bgSurface = context.surface.bgSurface;
   final ok = await launchUrl(
     Uri.parse(url),
     mode: LaunchMode.externalApplication,
@@ -585,7 +586,7 @@ Future<void> _openExternalUrl(BuildContext context, String url) async {
         'Could not open link.',
         style: AppText.button(),
       ),
-      backgroundColor: AppColors.bgSurface,
+      backgroundColor: bgSurface,
       behavior: SnackBarBehavior.floating,
     ));
   }
