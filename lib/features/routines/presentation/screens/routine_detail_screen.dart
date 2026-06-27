@@ -21,7 +21,6 @@ import 'package:gymlog/features/workout/presentation/providers/active_workout_pr
 import 'package:gymlog/shared/widgets/async_error_state.dart';
 import 'package:gymlog/shared/widgets/premium_paywall.dart';
 import 'package:gymlog/shared/widgets/ui/action_bottom_sheet.dart';
-import 'package:gymlog/shared/widgets/ui/app_card.dart';
 import 'package:gymlog/shared/widgets/ui/app_dialog.dart';
 import 'package:gymlog/shared/widgets/feedback/undoable_delete.dart';
 import 'package:gymlog/shared/widgets/ui/secondary_button.dart';
@@ -258,8 +257,7 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
         backgroundColor: surface.surface2,
         onRefresh: _onRefresh,
         child: CustomScrollView(
-          physics: const BouncingScrollPhysics(
-              parent: AlwaysScrollableScrollPhysics()),
+          physics: const AlwaysScrollableScrollPhysics(),
           slivers: [
             _appBar(routine),
             SliverToBoxAdapter(
@@ -566,12 +564,10 @@ class _RoutineVolumeSectionState extends ConsumerState<_RoutineVolumeSection> {
         const SizedBox(height: 12),
         RepaintBoundary(
           child: volumeAsync.when(
-            loading: () => Container(
-              height: 198,
-              decoration: AppCard.decoration(radius: AppRadius.card),
-              child: Center(
-                child: CircularProgressIndicator(
-                    color: context.surface.textSecondary),
+            loading: () => const SkeletonPulse(
+              child: SkeletonBox(
+                height: 198,
+                radius: AppRadius.card,
               ),
             ),
             error: (_, __) => const RoutineVolumeGraph(data: []),
