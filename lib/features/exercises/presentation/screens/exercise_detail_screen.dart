@@ -20,6 +20,7 @@ import 'package:gymlog/shared/widgets/ui/time_range_filter.dart';
 import 'package:gymlog/core/providers/database_provider.dart';
 import 'package:gymlog/shared/widgets/ui/skeleton.dart';
 import '../providers/exercise_analytics_provider.dart';
+import 'package:gymlog/shared/providers/gif_last_frame_provider.dart';
 
 class ExerciseDetailScreen extends ConsumerStatefulWidget {
   final int exerciseId;
@@ -54,6 +55,11 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen>
   // Entry motion animation controller
   late final AnimationController _entryController;
   bool _entryStarted = false;
+  // Flips to true once the route animation completes; until then the Hero
+  // destination renders a static poster frame so there is no spinner flash
+  // when the shuttle hands off to the destination widget.
+  bool _gifAnimated = false;
+  bool _routeListenerAdded = false;
 
   static const _toggleLabels = [
     'Heaviest Weight',
@@ -74,12 +80,40 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen>
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    if (_entryStarted) return;
-    _entryStarted = true;
-    if (MediaQuery.disableAnimationsOf(context)) {
-      _entryController.value = 1.0;
-    } else {
-      _entryController.forward();
+    // Entry fade controller — run once.
+    if (!_entryStarted) {
+      _entryStarted = true;
+      if (MediaQuery.disableAnimationsOf(context)) {
+        _entryController.value = 1.0;
+      } else {
+        _entryController.forward();
+      }
+    }
+    // Route-animation listener — run once.
+    // Flips _gifAnimated → true when the push animation settles so the Hero
+    // destination can cross-fade from poster to live GIF after landing.
+    if (!_routeListenerAdded) {
+      _routeListenerAdded = true;
+      if (MediaQuery.disableAnimationsOf(context)) {
+        // Reduced-motion: no Hero flight, go straight to static frame.
+        _gifAnimated = true;
+      } else {
+        final anim = ModalRoute.of(context)?.animation;
+        if (anim == null || anim.isCompleted) {
+          // Already settled (e.g. initial home route — no push transition).
+          _gifAnimated = true;
+        } else {
+          void onStatus(AnimationStatus status) {
+            if (!mounted) return;
+            if (status == AnimationStatus.completed) {
+              anim.removeStatusListener(onStatus);
+              setState(() => _gifAnimated = true);
+            }
+          }
+
+          anim.addStatusListener(onStatus);
+        }
+      }
     }
   }
 
@@ -102,6 +136,64 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen>
           end: Offset.zero,
         ).animate(curvedAnimation),
         child: child,
+      ),
+    );
+  }
+
+  /// Poster-to-GIF cross-fade for the Hero destination.
+  ///
+  /// While [_gifAnimated] is false (route animation in progress) the shuttle
+  /// covers the destination anyway, but the destination still renders a static
+  /// [MemoryImage] poster — identical pixels to the shuttle — so there is
+  /// zero discontinuity the instant the shuttle hands off.
+  ///
+  /// Once [_gifAnimated] flips true, [AnimatedSwitcher] cross-fades to the
+  /// live [ExerciseGifWidget] (animated GIF via [CachedNetworkImage]).
+  /// [BoxFit.cover] is used throughout to match the thumbnail source.
+  Widget _buildGifContent(String? gifUrl) {
+    return SizedBox(
+      width: double.infinity,
+      height: 220,
+      child: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 220),
+        child: _gifAnimated
+            ? ExerciseGifWidget(
+                key: const ValueKey('gif_a'),
+                gifUrl: gifUrl,
+                width: double.infinity,
+                height: 220,
+                fit: BoxFit.cover,
+                borderRadius: AppRadius.cardAll,
+              )
+            : Consumer(
+                key: const ValueKey('gif_p'),
+                builder: (ctx, ref, _) {
+                  final surface = ctx.surface;
+                  final frame = gifUrl == null || gifUrl.isEmpty
+                      ? null
+                      : (ref.watch(gifLastFrameProvider(gifUrl)).valueOrNull ??
+                          ref.watch(gifFirstFrameProvider(gifUrl)).valueOrNull);
+                  return ClipRRect(
+                    borderRadius: AppRadius.cardAll,
+                    child: Container(
+                      color: surface.bgSurface,
+                      child: frame != null
+                          ? Image(
+                              image: frame,
+                              fit: BoxFit.cover,
+                              gaplessPlayback: true,
+                            )
+                          : Center(
+                              child: Icon(
+                                Icons.fitness_center_rounded,
+                                color: surface.textSecondary,
+                                size: 48,
+                              ),
+                            ),
+                    ),
+                  );
+                },
+              ),
       ),
     );
   }
@@ -173,6 +265,26 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen>
         ),
       ),
       data: (exercise) {
+        final disableAnims = MediaQuery.disableAnimationsOf(context);
+
+        // GIF section — sits OUTSIDE _entryFade so the Hero widget is never
+        // clipped by the FadeTransition. For reduced-motion users: a static
+        // frame with no Hero. BoxFit.cover matches the thumbnail source and
+        // the flightShuttleBuilder in exercise_selection_screen.dart.
+        final Widget gifSection = disableAnims
+            ? ExerciseGifWidget(
+                gifUrl: exercise.gifUrl,
+                width: double.infinity,
+                height: 220,
+                fit: BoxFit.cover,
+                borderRadius: AppRadius.cardAll,
+                animate: false,
+              )
+            : Hero(
+                tag: 'exercise-hero-${exercise.id}',
+                child: _buildGifContent(exercise.gifUrl),
+              );
+
         return Scaffold(
           backgroundColor: surface.bgBase,
           appBar: AppBar(
@@ -189,167 +301,159 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen>
             titleSpacing: 0,
             iconTheme: IconThemeData(color: surface.textPrimary),
           ),
-          body: _entryFade(
-            interval: const Interval(0.0, 1.0, curve: Curves.easeOutCubic),
-            child: ListView(
-              padding: const EdgeInsets.all(16),
-              children: [
-                // Exercise GIF — loads from Supabase, cached permanently offline
-                MediaQuery.disableAnimationsOf(context)
-                    ? ExerciseGifWidget(
-                        gifUrl: exercise.gifUrl,
-                        width: double.infinity,
-                        height: 220,
-                        fit: BoxFit.contain,
-                        borderRadius: AppRadius.cardAll,
-                      )
-                    : Hero(
-                        tag: 'exercise-hero-${exercise.id}',
-                        child: ExerciseGifWidget(
-                          gifUrl: exercise.gifUrl,
-                          width: double.infinity,
-                          height: 220,
-                          fit: BoxFit.contain,
-                          borderRadius: AppRadius.cardAll,
-                        ),
+          body: ListView(
+            padding: const EdgeInsets.all(16),
+            children: [
+              // GIF/Hero lives outside _entryFade so the Hero can fly without
+              // being wrapped in a FadeTransition (which would make the shuttle
+              // fade in instead of flying).
+              gifSection,
+
+              const SizedBox(height: 16),
+
+              // Text content and analytics fade in via the entry animation.
+              _entryFade(
+                interval: const Interval(0.0, 1.0, curve: Curves.easeOutCubic),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Exercise Name & Metadata
+                    Text(
+                      exercise.name,
+                      style: AppText.titleLarge(
+                        color: surface.textPrimary,
                       ),
-
-                const SizedBox(height: 16),
-
-                // Exercise Name & Metadata
-                Text(
-                  exercise.name,
-                  style: AppText.titleLarge(
-                    color: surface.textPrimary,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  () {
-                    final parent = MuscleTaxonomy.parentOf(exercise.target);
-                    return parent == exercise.target || parent == 'Other'
-                        ? exercise.equipment
-                        : '$parent  •  ${exercise.equipment}';
-                  }(),
-                  style: AppText.body(
-                    color: surface.textSecondary,
-                  ).copyWith(
-                    fontSize: 14,
-                  ),
-                ),
-                const SizedBox(height: 14),
-                // Worked muscles: primary (accent) + secondary (muted) chips.
-                Builder(
-                  builder: (_) {
-                    final chips = <(String, bool)>[(exercise.target, true)];
-                    try {
-                      final sec = (jsonDecode(exercise.secondaryMuscles ?? '[]')
-                              as List)
-                          .cast<String>();
-                      for (final m in sec) {
-                        if (m.trim().isNotEmpty) chips.add((m, false));
-                      }
-                    } catch (_) {/* malformed JSON — show primary only */}
-                    final accent = context.accent;
-                    return Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: [
-                        for (final (label, isPrimary) in chips)
-                          MergeSemantics(
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 11, vertical: 6),
-                              decoration: BoxDecoration(
-                                color: isPrimary
-                                    ? accent.base.withValues(alpha: 0.12)
-                                    : surface.surface3,
-                                borderRadius:
-                                    BorderRadius.circular(AppRadius.badge),
-                                border: Border.all(
-                                  color: isPrimary
-                                      ? accent.base.withValues(alpha: 0.35)
-                                      : surface.borderSubtle,
-                                  width: 1,
-                                ),
-                              ),
-                              child: Text(
-                                label,
-                                style: AppText.label(
-                                  color: isPrimary
-                                      ? accent.base
-                                      : surface.textPrimary,
-                                ).copyWith(
-                                  fontSize: 12.5,
-                                ),
-                              ),
-                            ),
-                          ),
-                      ],
-                    );
-                  },
-                ),
-
-                const SizedBox(height: 24),
-
-                historyAsync.when(
-                  loading: () => _wrapPulse(
-                    child: const Column(
-                      children: [
-                        SkeletonBox(height: 198, radius: AppRadius.card),
-                        SizedBox(height: 24),
-                        Row(
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      () {
+                        final parent = MuscleTaxonomy.parentOf(exercise.target);
+                        return parent == exercise.target || parent == 'Other'
+                            ? exercise.equipment
+                            : '$parent  •  ${exercise.equipment}';
+                      }(),
+                      style: AppText.body(
+                        color: surface.textSecondary,
+                      ).copyWith(
+                        fontSize: 14,
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+                    // Worked muscles: primary (accent) + secondary (muted) chips.
+                    Builder(
+                      builder: (_) {
+                        final chips = <(String, bool)>[(exercise.target, true)];
+                        try {
+                          final sec =
+                              (jsonDecode(exercise.secondaryMuscles ?? '[]')
+                                      as List)
+                                  .cast<String>();
+                          for (final m in sec) {
+                            if (m.trim().isNotEmpty) chips.add((m, false));
+                          }
+                        } catch (_) {/* malformed JSON — show primary only */}
+                        final accent = context.accent;
+                        return Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
                           children: [
-                            SkeletonBox(
-                                width: 120,
-                                height: 36,
-                                radius: AppRadius.buttonSecondary),
-                            SizedBox(width: 8),
-                            SkeletonBox(
-                                width: 100,
-                                height: 36,
-                                radius: AppRadius.buttonSecondary),
-                            SizedBox(width: 8),
-                            SkeletonBox(
-                                width: 90,
-                                height: 36,
-                                radius: AppRadius.buttonSecondary),
+                            for (final (label, isPrimary) in chips)
+                              MergeSemantics(
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 11, vertical: 6),
+                                  decoration: BoxDecoration(
+                                    color: isPrimary
+                                        ? accent.base.withValues(alpha: 0.12)
+                                        : surface.surface3,
+                                    borderRadius:
+                                        BorderRadius.circular(AppRadius.badge),
+                                    border: Border.all(
+                                      color: isPrimary
+                                          ? accent.base.withValues(alpha: 0.35)
+                                          : surface.borderSubtle,
+                                      width: 1,
+                                    ),
+                                  ),
+                                  child: Text(
+                                    label,
+                                    style: AppText.label(
+                                      color: isPrimary
+                                          ? accent.base
+                                          : surface.textPrimary,
+                                    ).copyWith(
+                                      fontSize: 12.5,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                          ],
+                        );
+                      },
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    historyAsync.when(
+                      loading: () => _wrapPulse(
+                        child: const Column(
+                          children: [
+                            SkeletonBox(height: 198, radius: AppRadius.card),
+                            SizedBox(height: 24),
+                            Row(
+                              children: [
+                                SkeletonBox(
+                                    width: 120,
+                                    height: 36,
+                                    radius: AppRadius.buttonSecondary),
+                                SizedBox(width: 8),
+                                SkeletonBox(
+                                    width: 100,
+                                    height: 36,
+                                    radius: AppRadius.buttonSecondary),
+                                SizedBox(width: 8),
+                                SkeletonBox(
+                                    width: 90,
+                                    height: 36,
+                                    radius: AppRadius.buttonSecondary),
+                              ],
+                            ),
+                            SizedBox(height: 24),
+                            SkeletonBox(height: 150, radius: AppRadius.card),
                           ],
                         ),
-                        SizedBox(height: 24),
-                        SkeletonBox(height: 150, radius: AppRadius.card),
-                      ],
+                      ),
+                      error: (err, _) => AsyncErrorState(
+                        message: 'Failed to load analytics',
+                        onRetry: () => ref.invalidate(exerciseAnalyticsProvider(
+                            (widget.exerciseId, _selectedTimeRange))),
+                      ),
+                      data: (history) {
+                        _updateMemoizedPRs(history);
+                        final isPremium = ref.watch(isPremiumProvider);
+                        final visible = gateChartSamples(history, isPremium);
+                        return Column(
+                          children: [
+                            _buildGraphSection(visible,
+                                showProPill: !isPremium && history.length > 3),
+                            const SizedBox(height: 24),
+                            _buildStatToggles(surface),
+                            if (history.isNotEmpty) ...[
+                              const SizedBox(height: 24),
+                              _buildPersonalRecords(surface),
+                            ],
+                            const SizedBox(height: 24),
+                            _buildInstructions(exercise, surface),
+                          ],
+                        );
+                      },
                     ),
-                  ),
-                  error: (err, _) => AsyncErrorState(
-                    message: 'Failed to load analytics',
-                    onRetry: () => ref.invalidate(exerciseAnalyticsProvider(
-                        (widget.exerciseId, _selectedTimeRange))),
-                  ),
-                  data: (history) {
-                    _updateMemoizedPRs(history);
-                    final isPremium = ref.watch(isPremiumProvider);
-                    final visible = gateChartSamples(history, isPremium);
-                    return Column(
-                      children: [
-                        _buildGraphSection(visible,
-                            showProPill: !isPremium && history.length > 3),
-                        const SizedBox(height: 24),
-                        _buildStatToggles(surface),
-                        if (history.isNotEmpty) ...[
-                          const SizedBox(height: 24),
-                          _buildPersonalRecords(surface),
-                        ],
-                        const SizedBox(height: 24),
-                        _buildInstructions(exercise, surface),
-                      ],
-                    );
-                  },
+                  ],
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         );
       },
