@@ -6,7 +6,7 @@ import 'package:purchases_flutter/purchases_flutter.dart'
     show IntroductoryPrice, Offerings, Package, PackageType, PeriodUnit;
 
 import '../../core/providers/premium_provider.dart';
-import '../../core/theme/app_colors.dart';
+import '../../core/theme/app_colors.dart' show SurfaceContextX;
 import '../../core/theme/app_text.dart';
 import '../../core/theme/dynamic_accent_theme.dart';
 

@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gymlog/core/services/profile_sync_service.dart';
-import 'package:gymlog/core/theme/app_colors.dart';
+import 'package:gymlog/core/theme/app_colors.dart' show SurfaceContextX;
 import 'package:gymlog/core/theme/app_text.dart';
 import 'package:gymlog/core/theme/dynamic_accent_theme.dart';
 import 'package:gymlog/features/auth/presentation/providers/auth_provider.dart';

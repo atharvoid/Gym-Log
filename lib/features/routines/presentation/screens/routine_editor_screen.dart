@@ -370,13 +370,19 @@ class _RoutineEditorScreenState extends ConsumerState<RoutineEditorScreen> {
                                 );
                               },
                             ),
-                            // onReorderItem (Flutter 3.44+) pre-adjusts
-                            // newIndex for the removed item — no manual
-                            // decrement needed.
-                            onReorderItem: (oldIndex, newIndex) {
-                              HapticFeedback.mediumImpact(); // satisfying drop
+                            // ignore: deprecated_member_use
+                            onReorder: (oldIndex, newIndex) {
+                              // Last slot is the non-reorderable "Add Exercise" footer.
+                              if (oldIndex >= _exercises.length) return;
+                              HapticFeedback.mediumImpact();
                               setState(() {
                                 _dirty = true;
+                                // Standard ReorderableListView adjustment when moving down.
+                                if (newIndex > oldIndex) newIndex -= 1;
+                                // Clamp so an exercise can't be dropped past the footer.
+                                if (newIndex > _exercises.length - 1) {
+                                  newIndex = _exercises.length - 1;
+                                }
                                 final item = _exercises.removeAt(oldIndex);
                                 _exercises.insert(newIndex, item);
                               });
@@ -496,109 +502,124 @@ class _EditorExerciseCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final accent = context.accent;
-    return Container(
-      decoration: BoxDecoration(
-        gradient: AppColors.cardGradient,
-        borderRadius: BorderRadius.circular(AppRadius.card),
-        // S10: accent-tinted left border for exercise cards.
-        border: Border(
-          left: BorderSide(
-            color: accent.base.withValues(alpha: 0.35),
-            width: 2,
-          ),
-          top: BorderSide(color: context.surface.borderSubtle),
-          right: BorderSide(color: context.surface.borderSubtle),
-          bottom: BorderSide(color: context.surface.borderSubtle),
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(AppRadius.card),
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: AppColors.cardGradient,
+          border: Border.all(color: context.surface.borderSubtle),
+          borderRadius: BorderRadius.circular(AppRadius.card),
         ),
-      ),
-      padding: const EdgeInsets.fromLTRB(12, 12, 4, 12),
-      child: Row(
-        children: [
-          ReorderableDragStartListener(
-            index: index,
-            child: Semantics(
-              label: 'Reorder ${exercise.name}',
+        child: Stack(
+          children: [
+            // Left accent bar
+            Positioned(
+              left: 0,
+              top: 0,
+              bottom: 0,
+              width: 2,
               child: Container(
-                width: 32,
-                height: 48,
-                alignment: Alignment.center,
-                child: Icon(
-                  Icons.drag_indicator_rounded,
-                  size: 20,
-                  color: context.surface.textPrimary.withValues(alpha: 0.30),
-                ),
+                color: accent.base.withValues(alpha: 0.35),
               ),
             ),
-          ),
-          ClipRRect(
-            borderRadius: AppRadius.thumbnailAll,
-            child: ExerciseGifWidget(
-              gifUrl: exercise.gifUrl,
-              width: 44,
-              height: 44,
-              fit: BoxFit.cover,
-              animate: false,
-              borderRadius: AppRadius.thumbnailAll,
+            Padding(
+              padding: const EdgeInsets.fromLTRB(12, 12, 4, 12),
+              child: Row(
+                children: [
+                  ReorderableDragStartListener(
+                    index: index,
+                    child: Semantics(
+                      label: 'Reorder ${exercise.name}',
+                      child: Container(
+                        width: 32,
+                        height: 48,
+                        alignment: Alignment.center,
+                        child: Icon(
+                          Icons.drag_indicator_rounded,
+                          size: 20,
+                          color: context.surface.textPrimary
+                              .withValues(alpha: 0.30),
+                        ),
+                      ),
+                    ),
+                  ),
+                  ClipRRect(
+                    borderRadius: AppRadius.thumbnailAll,
+                    child: ExerciseGifWidget(
+                      gifUrl: exercise.gifUrl,
+                      width: 44,
+                      height: 44,
+                      fit: BoxFit.cover,
+                      animate: false,
+                      borderRadius: AppRadius.thumbnailAll,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          exercise.name,
+                          // Two lines before truncating — the trailing stepper + remove
+                          // controls squeeze this column hard, and "Barbell Ben…" at
+                          // ~12 chars made rows ambiguous (three barbell presses in a
+                          // row were indistinguishable).
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: AppText.rowLabel(
+                                  color: context.surface.textPrimary)
+                              .copyWith(fontSize: 14.5, height: 1.2),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          '${exercise.sets} set${exercise.sets != 1 ? 's' : ''}'
+                          '${(exercise.equipment ?? '').isNotEmpty ? ' · ${exercise.equipment}' : ''}',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: AppText.caption(
+                              color: context.surface.textSecondary),
+                        ),
+                      ],
+                    ),
+                  ),
+                  // Sets stepper
+                  _StepperButton(
+                    icon: Icons.remove_rounded,
+                    label: 'Decrease sets',
+                    enabled: exercise.sets > 1,
+                    onTap: () => onSetsChanged(exercise.sets - 1),
+                  ),
+                  SizedBox(
+                    width: 22,
+                    child: Text(
+                      '${exercise.sets}',
+                      textAlign: TextAlign.center,
+                      style: AppText.body(color: context.surface.textPrimary)
+                          .copyWith(fontWeight: FontWeight.w700),
+                    ),
+                  ),
+                  _StepperButton(
+                    icon: Icons.add_rounded,
+                    label: 'Increase sets',
+                    enabled: exercise.sets < 10,
+                    onTap: () => onSetsChanged(exercise.sets + 1),
+                  ),
+                  IconButton(
+                    tooltip: 'Remove ${exercise.name}',
+                    constraints:
+                        const BoxConstraints(minWidth: 48, minHeight: 48),
+                    icon: Icon(Icons.close_rounded,
+                        size: 18,
+                        color:
+                            context.surface.textPrimary.withValues(alpha: 0.4)),
+                    onPressed: onRemove,
+                  ),
+                ],
+              ),
             ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  exercise.name,
-                  // Two lines before truncating — the trailing stepper + remove
-                  // controls squeeze this column hard, and "Barbell Ben…" at
-                  // ~12 chars made rows ambiguous (three barbell presses in a
-                  // row were indistinguishable).
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: AppText.rowLabel(color: context.surface.textPrimary)
-                      .copyWith(fontSize: 14.5, height: 1.2),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  '${exercise.sets} set${exercise.sets != 1 ? 's' : ''}'
-                  '${(exercise.equipment ?? '').isNotEmpty ? ' · ${exercise.equipment}' : ''}',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: AppText.caption(color: context.surface.textSecondary),
-                ),
-              ],
-            ),
-          ),
-          // Sets stepper
-          _StepperButton(
-            icon: Icons.remove_rounded,
-            label: 'Decrease sets',
-            enabled: exercise.sets > 1,
-            onTap: () => onSetsChanged(exercise.sets - 1),
-          ),
-          SizedBox(
-            width: 22,
-            child: Text(
-              '${exercise.sets}',
-              textAlign: TextAlign.center,
-              style: AppText.body(color: context.surface.textPrimary)
-                  .copyWith(fontWeight: FontWeight.w700),
-            ),
-          ),
-          _StepperButton(
-            icon: Icons.add_rounded,
-            label: 'Increase sets',
-            enabled: exercise.sets < 10,
-            onTap: () => onSetsChanged(exercise.sets + 1),
-          ),
-          IconButton(
-            tooltip: 'Remove ${exercise.name}',
-            constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
-            icon: Icon(Icons.close_rounded,
-                size: 18,
-                color: context.surface.textPrimary.withValues(alpha: 0.4)),
-            onPressed: onRemove,
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
