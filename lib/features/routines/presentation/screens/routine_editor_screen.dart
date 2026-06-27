@@ -1,4 +1,3 @@
- // ignore: deprecated_member_use
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -391,6 +390,7 @@ class _RoutineEditorScreenState extends ConsumerState<RoutineEditorScreen> {
                                 },
                               );
                             },
+                            // ignore: deprecated_member_use
                             onReorder: (oldIndex, newIndex) {
                               // Last slot is the non-reorderable "Add Exercise" footer.
                               if (oldIndex >= _exercises.length) return;
