@@ -39,7 +39,7 @@ This file tracks every finding ID with its severity, owning screen, status (`ope
 | Finding ID | Screen | Description | Status | Closing Commit |
 |---|---|---|---|---|
 | **SYS-4** | Systemic | Tokenize skeleton border radius to match standard cards | `done` | 2561ef0 |
-| **SYS-5** | Systemic | Scroll physics standardizations and skeleton-vs-spinner templates | `open` | |
+| **SYS-5** | Systemic | Scroll physics standardizations and skeleton-vs-spinner templates | `done` | 3cfbc0f |
 | **SYS-6** | Systemic | Sub-48dp interactive controls scan & cleanup | `open` | |
 | **AUTH-4** | AuthScreen | Touch targets for legal links are sub-48dp | `open` | |
 | **HOME-3** | HomeScreen | Goal day buttons touch targets are sub-48dp | `open` | |

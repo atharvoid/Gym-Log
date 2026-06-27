@@ -254,3 +254,33 @@ No changes to `scoreboard.json`. The visual average and individual scores are le
 
 **Gate Verdict:** PASS (SYS-4 done)
 
+---
+
+## Iteration 8: Scroll Physics & Loading Skeletons (SYS-5)
+
+**Date:** 2026-06-27
+**Slice:** Scroll Physics & Loading Skeletons (SYS-5)
+
+### Diff Summary
+- **SYS-5 (Scroll Physics)**: Standardized CustomScrollView scroll physics on `RoutineDetailScreen` to use `AlwaysScrollableScrollPhysics` instead of a hardcoded `BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics())` wrapper. This keeps pull-to-refresh functioning correctly while leaving the scroll physics platform-aware (iOS bounce, Android stretch).
+- **SYS-5 (Spinner to Skeleton)**: Replaced a centered `CircularProgressIndicator` content placeholder inside the loading state of `_RoutineVolumeSection` with `SkeletonPulse(child: SkeletonBox(height: 198, radius: AppRadius.card))`. This ensures the volume graph's loading state visually aligns with the loaded card layout.
+- **Automated Tests**: Created `test/routine_detail_scroll_and_loading_test.dart` to assert that `RoutineDetailScreen` loaded view uses `AlwaysScrollableScrollPhysics` and `_RoutineVolumeSection` loading view presents a `SkeletonBox` rather than a spinner.
+
+### Scoreboard Delta
+| Screen | Dimension | Before | After | Change |
+|---|---|---|---|---|
+| RoutineDetailScreen | Motion & Haptics | 8.0 | 8.5 | +0.5 |
+| RoutineDetailScreen | Platform Conventions | 9.5 | 10.0 | +0.5 |
+| RoutineDetailScreen | +Overall | 8.3 | 8.3 | 0.0 |
+
+App overall average remains at `7.9`.
+
+### Gate Verification Result
+- [x] Format: **PASS**
+- [x] Static Analysis: **PASS**
+- [x] Custom Linter: **PASS**
+- [x] Tests Suite: **PASS** (147 tests passed)
+
+**Gate Verdict:** PASS (SYS-5 done)
+
+
