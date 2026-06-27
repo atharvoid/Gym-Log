@@ -40,7 +40,8 @@ class AppActionRow extends StatelessWidget {
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        child: Padding(
+        child: Container(
+          constraints: const BoxConstraints(minHeight: 48),
           padding: padding,
           child: Row(
             children: [

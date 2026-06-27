@@ -195,14 +195,18 @@ class _LegalLink extends StatelessWidget {
       label: label,
       child: GestureDetector(
         onTap: onTap,
-        child: Text(
-          label,
-          style: AppText.caption(
-            color: AppColors.textSecondary,
-          ).copyWith(
-            fontWeight: FontWeight.w600,
-            decoration: TextDecoration.underline,
-            decorationColor: AppColors.textSecondary,
+        behavior: HitTestBehavior.opaque,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 2),
+          child: Text(
+            label,
+            style: AppText.caption(
+              color: AppColors.textSecondary,
+            ).copyWith(
+              fontWeight: FontWeight.w600,
+              decoration: TextDecoration.underline,
+              decorationColor: AppColors.textSecondary,
+            ),
           ),
         ),
       ),
