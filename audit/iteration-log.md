@@ -389,7 +389,49 @@ App overall average remains at `7.9`.
 
 **Gate Verdict:** PASS (SYS-8 completed)
 
+---
 
+## Iteration 12: Profile Cluster Polish & Scoreboard Completion (PR-1/2/3)
 
+**Date:** 2026-06-27
+**Slice:** Profile Cluster Polish (PR-1/2/3)
 
+### Diff Summary
+- **PR-1 (Avatar Memory Optimization)**: Captures the device pixel ratio (`MediaQuery.devicePixelRatioOf(context)`) in `ProfileAvatar` to apply `cacheWidth` and `cacheHeight` constraints to the loaded image file. This bounds image decoding to the exact physical pixels needed, saving GPU memory.
+- **PR-2 (Weekly Bar Chart Typography & Chrome)**:
+  - Eliminated the last inline `GoogleFonts.inter` call sites inside `weekly_bar_chart.dart` (axis labels, tooltip titles/values, delta indicator) and replaced them with standard `AppText` configurations.
+  - Migrated hardcoded graph labels, progress track fill, unlock banner text, lock icon, and delta neutral-arrow colors to dynamic `context.surface` tokens.
+- **PR-3 (Premium Paywall Sheet title & Dynamic colors)**:
+  - Aligned premium paywall headline title text style to `AppText.sheetTitle` (matching settings/routine-editor sheet titles).
+  - Migrated sheet fills (`AppColors.bgSheet` -> `context.surface.surface2`) and borders (`AppColors.surface3` -> `context.surface.surface3`) to dynamic tokens, preserving AMOLED contrast against the black overlay.
+  - Migrated unselected card borders, loading spinners, handle, body text, and features checklist labels to dynamic tokens.
+  - Set purchase button spinner color to `accent.onAccent` for premium contrast on fully saturated backgrounds.
+- **Profile Screen Icon & SnackBar Polish**:
+  - Migrated dumbbell and fire icon fallback colors in `_StatsStrip` to dynamic `context.surface` tokens.
+  - Resolved `_openPremium()` SnackBar background color dynamically to `context.surface.bgSurface`.
+- **Scoreboard Backfill**:
+  - Added new rows scoring `ExerciseSelectionScreen`, `ExploreRoutinesScreen`, and `OnboardingScreen` (which exists under `auth/presentation/screens/onboarding_screen.dart`).
+  - Rescored `ProfileScreen` honestly after PR-1/2/3 refactoring (increasing Code Quality, Performance, and Visual Professionalism).
+  - Recomputed the average app rating across all 14 screens.
+- **Automated Tests**: Created `test/profile_cluster_polish_test.dart` containing widget tests that pump `ProfileAvatar`, `WeeklyBarChart` (low-data), and `PremiumPaywall` sheets under light/dark surface configurations to assert correct theme resolution.
 
+### Scoreboard Delta
+| Screen | Dimension | Before | After | Change |
+|---|---|---|---|---|
+| ProfileScreen | Code Quality | 8.5 | 9.0 | +0.5 |
+| ProfileScreen | Performance | 7.5 | 8.5 | +1.0 |
+| ProfileScreen | Visual Professionalism | 9.0 | 9.5 | +0.5 |
+| ProfileScreen | +Overall | 8.0 | 8.2 | +0.2 |
+| ExerciseSelectionScreen | +Overall | - | 8.2 | Backfill |
+| ExploreRoutinesScreen | +Overall | - | 8.0 | Backfill |
+| OnboardingScreen | +Overall | - | 7.1 | Backfill |
+
+App overall average remains at `7.9`.
+
+### Gate Verification Result
+- [x] Format: **PASS**
+- [x] Static Analysis: **PASS**
+- [x] Custom Linter: **PASS**
+- [x] Tests Suite: **PASS** (157 tests passed)
+
+**Gate Verdict:** PASS

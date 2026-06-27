@@ -15,7 +15,7 @@ This file tracks every finding ID with its severity, owning screen, status (`ope
 | **SYS-1** | Systemic | Migrate Auth, Exercise Detail, Delete Account, Import off inline `GoogleFonts.inter` to `AppText` | `done` | a408ac3 |
 | **SYS-2** | Systemic | Migrate Home, Workout Detail, Routine Detail chrome, Exercise Detail, Delete Account, Import to `context.surface`/`context.accent` | `done` | 3f41aab |
 | **SYS-3** | Systemic | Add snackbar-with-Undo to reversible deletes (Home / Workout Detail / routine delete) | `done` | 7732bd5 |
-| **SYS-8** | Systemic | Dynamic Chrome theme migration batch (folds in SET-1, HOME-4, and verifies RE-2 / RE-3 / ES-2 / RD-2) | `done` | |
+| **SYS-8** | Systemic | Dynamic Chrome theme migration batch (folds in SET-1, HOME-4, and verifies RE-2 / RE-3 / ES-2 / RD-2) | `done` | b764941 |
 
 ## Tier 2 — Remaining per-screen Majors
 
@@ -60,9 +60,9 @@ This file tracks every finding ID with its severity, owning screen, status (`ope
 | **XD-3** | ExerciseDetailScreen | Stat toggles touch targets are sub-48dp (expand to >=48dp min height) | `done` | 51e80c5 |
 | **XD-4** | ExerciseDetailScreen | Failed to load analytics is a dead end (replace with accessible retry button) | `done` | 51e80c5 |
 | **XD-5** | ExerciseDetailScreen | Analytics & full-page spinner loads (replace with skeletons, wrap chart in RepaintBoundary, memoize PR maxes) | `done` | 51e80c5 |
-| **PR-1** | ProfileScreen | Avatar picture size constraints | `open` | |
-| **PR-2** | ProfileScreen | Weekly stats bar chart styling | `open` | |
-| **PR-3** | ProfileScreen | Premium paywall visual alignment | `open` | |
+| **PR-1** | ProfileScreen | Avatar picture size constraints | `done` | ddf948e |
+| **PR-2** | ProfileScreen | Weekly stats bar chart styling | `done` | ddf948e |
+| **PR-3** | ProfileScreen | Premium paywall visual alignment | `done` | ddf948e |
 | **SET-1** | SettingsScreen | Settings items list separator lines color | `done` | |
 | **SET-2** | SettingsScreen | Weight units switcher click target is sub-48dp | `done` | stale |
 | **DA-1** | DeleteAccountScreen | Confirmation input placeholder text styling (fully resolved with SYS-1 and SYS-2) | `done` | 3f41aab |
