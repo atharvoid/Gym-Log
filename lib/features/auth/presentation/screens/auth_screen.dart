@@ -6,6 +6,7 @@ import '../../../../core/theme/app_text.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/config/legal_links.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/dynamic_accent_theme.dart';
 import '../providers/auth_provider.dart';
 
 const String _googleIconSvg = '''
@@ -42,11 +43,11 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
   }
 
   void _snack(String message) {
+    final surface = context.surface;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content:
-            Text(message, style: AppText.body(color: AppColors.textPrimary)),
-        backgroundColor: AppColors.bgSurface,
+        content: Text(message, style: AppText.body(color: surface.textPrimary)),
+        backgroundColor: surface.surface2,
         behavior: SnackBarBehavior.floating,
       ),
     );
@@ -60,14 +61,26 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final fine = AppText.caption(color: AppColors.textSecondary).copyWith(
+    final surface = context.surface;
+    final accent = context.accent;
+    final fine = AppText.caption(color: surface.textSecondary).copyWith(
       height: 1.4,
     );
 
+    final overlay = (surface.isLight
+            ? SystemUiOverlayStyle.dark // dark icons on a light bg
+            : SystemUiOverlayStyle.light) // light icons on AMOLED
+        .copyWith(
+      statusBarColor: Colors.transparent,
+      systemNavigationBarColor: surface.bgBase,
+      systemNavigationBarIconBrightness:
+          surface.isLight ? Brightness.dark : Brightness.light,
+    );
+
     return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: SystemUiOverlayStyle.light,
+      value: overlay,
       child: Scaffold(
-        backgroundColor: AppColors.bgBase,
+        backgroundColor: surface.bgBase,
         body: SafeArea(
           child: LayoutBuilder(
             builder: (context, constraints) {
@@ -78,95 +91,126 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                     minHeight: constraints.maxHeight,
                   ),
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 24, vertical: 48),
+                    padding: const EdgeInsets.fromLTRB(24, 40, 24, 32),
                     child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          'GymLog',
-                          style: AppText.screenTitle(
-                            color: AppColors.textPrimary,
-                          ).copyWith(
-                            letterSpacing: -0.5,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Your gym. Your data.',
-                          style: AppText.body(
-                            color: AppColors.textSecondary,
-                          ).copyWith(
-                            fontSize: 16,
-                          ),
-                        ),
-                        const SizedBox(height: 64),
-                        SizedBox(
-                          width: double.infinity,
-                          height: 52,
-                          child: ElevatedButton(
-                            onPressed: _signIn,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.white,
-                              foregroundColor: const Color(0xFF1F1F1F),
-                              elevation: 0,
-                              shape: const StadiumBorder(),
+                        // ── TOP: brand + value prop (anchors content to the top) ──
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              width: 56,
+                              height: 56,
+                              decoration: BoxDecoration(
+                                color: accent.tint,
+                                borderRadius: AppRadius.cardAll,
+                              ),
+                              child: Icon(
+                                Icons.fitness_center_rounded,
+                                color: accent.base,
+                                size: 28,
+                              ),
                             ),
-                            child: _isSigningIn
-                                ? const SizedBox(
-                                    width: 20,
-                                    height: 20,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      valueColor: AlwaysStoppedAnimation<Color>(
-                                          Color(0xFF1F1F1F)),
-                                    ),
-                                  )
-                                : Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      SvgPicture.string(
-                                        _googleIconSvg,
+                            const SizedBox(height: 28),
+                            Text(
+                              'GymLog',
+                              style: AppText.screenTitle(
+                                      color: surface.textPrimary)
+                                  .copyWith(letterSpacing: -0.5),
+                            ),
+                            const SizedBox(height: 10),
+                            Text(
+                              'Track every rep.\nOwn every byte.',
+                              style:
+                                  AppText.heroStat(color: surface.textPrimary)
+                                      .copyWith(height: 1.05),
+                            ),
+                            const SizedBox(height: 12),
+                            Text(
+                              'A fast, private workout log — your data stays yours.',
+                              style: AppText.body(color: surface.textSecondary)
+                                  .copyWith(fontSize: 16, height: 1.4),
+                            ),
+                          ],
+                        ),
+                        // ── BOTTOM: CTA + legal (pinned) ──
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            SizedBox(
+                              width: double.infinity,
+                              height: 52,
+                              child: ElevatedButton(
+                                onPressed: _signIn,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.white,
+                                  foregroundColor: const Color(0xFF1F1F1F),
+                                  elevation: 0,
+                                  shape: const StadiumBorder(),
+                                  side: surface.isLight
+                                      ? BorderSide(color: surface.borderDefault)
+                                      : BorderSide.none,
+                                ),
+                                child: _isSigningIn
+                                    ? const SizedBox(
                                         width: 20,
                                         height: 20,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          valueColor:
+                                              AlwaysStoppedAnimation<Color>(
+                                                  Color(0xFF1F1F1F)),
+                                        ),
+                                      )
+                                    : Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          SvgPicture.string(
+                                            _googleIconSvg,
+                                            width: 20,
+                                            height: 20,
+                                          ),
+                                          const SizedBox(width: 12),
+                                          Text(
+                                            'Continue with Google',
+                                            style: AppText.button(),
+                                          ),
+                                        ],
                                       ),
-                                      const SizedBox(width: 12),
-                                      Text(
-                                        'Continue with Google',
-                                        style: AppText.button(),
-                                      ),
-                                    ],
+                              ),
+                            ),
+                            const SizedBox(height: 24),
+                            Semantics(
+                              button: true,
+                              child: Wrap(
+                                alignment: WrapAlignment.center,
+                                crossAxisAlignment: WrapCrossAlignment.center,
+                                children: [
+                                  Text('By continuing, you agree to our ',
+                                      style: fine),
+                                  _LegalLink(
+                                    label: 'Terms of Service',
+                                    onTap: () => _openUrl(kTermsOfServiceUrl),
                                   ),
-                          ),
-                        ),
-                        const SizedBox(height: 24),
-                        Semantics(
-                          button: true,
-                          child: Wrap(
-                            alignment: WrapAlignment.center,
-                            crossAxisAlignment: WrapCrossAlignment.center,
-                            children: [
-                              Text('By continuing, you agree to our ',
-                                  style: fine),
-                              _LegalLink(
-                                label: 'Terms of Service',
-                                onTap: () => _openUrl(kTermsOfServiceUrl),
+                                  Text(' and ', style: fine),
+                                  _LegalLink(
+                                    label: 'Privacy Policy',
+                                    onTap: () => _openUrl(kPrivacyPolicyUrl),
+                                  ),
+                                  Text('.', style: fine),
+                                ],
                               ),
-                              Text(' and ', style: fine),
-                              _LegalLink(
-                                label: 'Privacy Policy',
-                                onTap: () => _openUrl(kPrivacyPolicyUrl),
-                              ),
-                              Text('.', style: fine),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-                        Text(
-                          'Free to use. Sign in with Google to sync across your devices.',
-                          style: fine,
-                          textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 10),
+                            Text(
+                              'Free to use. Sign in with Google to sync across your devices.',
+                              style: fine,
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
                         ),
                       ],
                     ),
@@ -189,6 +233,7 @@ class _LegalLink extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final surface = context.surface;
     return Semantics(
       link: true,
       button: true,
@@ -201,11 +246,11 @@ class _LegalLink extends StatelessWidget {
           child: Text(
             label,
             style: AppText.caption(
-              color: AppColors.textSecondary,
+              color: surface.textSecondary,
             ).copyWith(
               fontWeight: FontWeight.w600,
               decoration: TextDecoration.underline,
-              decorationColor: AppColors.textSecondary,
+              decorationColor: surface.textSecondary,
             ),
           ),
         ),
