@@ -12,7 +12,7 @@ class ProfileGraphLowDataBanner extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
         color: AppColors.surface4,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: AppRadius.badgeAll,
         border: Border.all(color: AppColors.borderSubtle),
       ),
       child: Row(

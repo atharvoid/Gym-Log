@@ -77,7 +77,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             physics: const NeverScrollableScrollPhysics(),
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
             children: const [
-              SkeletonBox(height: 124, radius: 6.0),
+              SkeletonBox(height: 124, radius: AppRadius.card),
               SizedBox(height: 16),
               SkeletonBox(width: 150, height: 18),
               SizedBox(height: 12),

@@ -79,7 +79,7 @@ class _AppShellState extends ConsumerState<AppShell> {
                 Container(
                   decoration: BoxDecoration(
                     color: accent.muted,
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: AppRadius.thumbnailAll,
                   ),
                   padding: const EdgeInsets.all(12),
                   child: Icon(

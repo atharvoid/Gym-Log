@@ -508,7 +508,7 @@ class _FilterChip extends StatelessWidget {
         // selected, surface3 for idle. Intentionally NOT accent.base — filter
         // chips repeat in a row so a saturated fill would flood the header.
         color: selected ? surface.surface4 : surface.surface3,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: AppRadius.buttonSecondaryAll,
         clipBehavior: Clip.antiAlias,
         child: InkWell(
           onTap: onTap,
@@ -791,7 +791,7 @@ class _TemplateCard extends StatelessWidget {
       child: Container(
         decoration: BoxDecoration(
           color: surface.bgSurface,
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: AppRadius.cardAll,
           border: Border.all(color: surface.borderSubtle),
           // No per-card glow — repeated accent halos down a scrolling list
           // are visually loud and fight each other. Only the single Featured
@@ -1021,7 +1021,7 @@ class _ImportPill extends StatelessWidget {
         color: surface.surface3,
         shape: RoundedRectangleBorder(
           side: BorderSide(color: surface.borderDefault),
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: AppRadius.buttonSecondaryAll,
         ),
         clipBehavior: Clip.antiAlias,
         child: InkWell(

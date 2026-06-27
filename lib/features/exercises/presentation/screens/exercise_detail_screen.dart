@@ -200,7 +200,7 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen>
                   width: double.infinity,
                   height: 220,
                   fit: BoxFit.contain,
-                  borderRadius: BorderRadius.circular(6),
+                  borderRadius: AppRadius.cardAll,
                 ),
 
                 const SizedBox(height: 16),

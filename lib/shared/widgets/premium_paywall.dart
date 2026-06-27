@@ -92,7 +92,7 @@ class ProLockPill extends StatelessWidget {
       label: 'Premium feature. Double tap to learn more.',
       child: Material(
         color: Colors.transparent,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: AppRadius.badgeAll,
         clipBehavior: Clip.antiAlias,
         child: InkWell(
           onTap: () => showPremiumPaywall(context),
@@ -100,7 +100,7 @@ class ProLockPill extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
             decoration: BoxDecoration(
               color: accent.muted,
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: AppRadius.badgeAll,
               border: Border.all(
                 color: accent.base.withValues(alpha: 0.3),
                 width: 1,
@@ -352,7 +352,7 @@ class _PaywallSheetState extends ConsumerState<_PaywallSheet> {
     return Container(
       decoration: const BoxDecoration(
         color: AppColors.bgSheet,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: AppRadius.sheetTop,
         // Hairline border — defines the sheet edge against the black canvas.
         // This is what separates "material" from "grey blob on black."
         border: Border(

@@ -527,7 +527,7 @@ class _Card extends StatelessWidget {
         gradient: surface.isLight
             ? AppColors.cardGradientLight
             : AppColors.cardGradient,
-        borderRadius: BorderRadius.circular(6.0),
+        borderRadius: AppRadius.cardAll,
         border: Border.all(color: surface.borderSubtle, width: 1),
       ),
       clipBehavior: Clip.antiAlias,
@@ -668,7 +668,7 @@ class _SourceChips extends StatelessWidget {
             gradient: surface.isLight
                 ? AppColors.cardGradientLight
                 : AppColors.cardGradient,
-            borderRadius: BorderRadius.circular(6.0),
+            borderRadius: AppRadius.badgeAll,
             border: Border.all(color: surface.borderSubtle, width: 1),
           ),
           child: Row(children: [
@@ -765,7 +765,7 @@ class _UnitChooser extends StatelessWidget {
         gradient: surface.isLight
             ? AppColors.cardGradientLight
             : AppColors.cardGradient,
-        borderRadius: BorderRadius.circular(6.0),
+        borderRadius: AppRadius.cardAll,
         border: Border.all(color: surface.borderSubtle, width: 1),
       ),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [

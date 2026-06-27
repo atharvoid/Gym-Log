@@ -61,7 +61,7 @@ class ActiveWorkoutBar extends ConsumerWidget {
                     const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                 decoration: BoxDecoration(
                   color: accent.muted,
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: AppRadius.badgeAll,
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,

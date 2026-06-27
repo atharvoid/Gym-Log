@@ -314,18 +314,18 @@ class _RoutineEditorScreenState extends ConsumerState<RoutineEditorScreen> {
                                   .copyWith(fontWeight: FontWeight.w500),
                           filled: true,
                           fillColor: AppColors.surfaceRaised,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
+                          border: const OutlineInputBorder(
+                            borderRadius: AppRadius.cardAll,
                             borderSide:
-                                const BorderSide(color: AppColors.borderSubtle),
+                                BorderSide(color: AppColors.borderSubtle),
                           ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
+                          enabledBorder: const OutlineInputBorder(
+                            borderRadius: AppRadius.cardAll,
                             borderSide:
-                                const BorderSide(color: AppColors.borderSubtle),
+                                BorderSide(color: AppColors.borderSubtle),
                           ),
                           focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
+                            borderRadius: AppRadius.cardAll,
                             borderSide:
                                 BorderSide(color: accent.base, width: 1.5),
                           ),

@@ -674,7 +674,7 @@ class _FilterChipButton extends StatelessWidget {
       excludeSemantics: true,
       child: Material(
         color: active ? accent.base : surface.surface3,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: AppRadius.buttonSecondaryAll,
         clipBehavior: Clip.antiAlias,
         child: InkWell(
           onTap: onTap,
@@ -682,8 +682,8 @@ class _FilterChipButton extends StatelessWidget {
             duration: const Duration(milliseconds: 150),
             constraints: const BoxConstraints(minHeight: 48),
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(14),
+            decoration: const BoxDecoration(
+              borderRadius: AppRadius.buttonSecondaryAll,
             ),
             child: Row(
               mainAxisSize: MainAxisSize.max,

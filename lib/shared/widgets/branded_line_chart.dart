@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:gymlog/core/theme/app_colors.dart';
 import 'package:gymlog/core/theme/dynamic_accent_theme.dart';
+import 'package:gymlog/core/theme/app_text.dart';
 import 'package:gymlog/features/routines/presentation/widgets/routine_detail_styles.dart';
 
 /// One data point on a [BrandedLineChart].
@@ -160,7 +161,7 @@ class _BrandedLineChartState extends State<BrandedLineChart> {
       padding: const EdgeInsets.fromLTRB(14, 16, 14, 8),
       decoration: BoxDecoration(
         gradient: RDStyles.cardGradient,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: AppRadius.cardAll,
         border: RDStyles.hairlineBorder,
       ),
       child: Column(
@@ -381,7 +382,7 @@ class _BrandedLineChartState extends State<BrandedLineChart> {
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           gradient: RDStyles.cardGradient,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: AppRadius.cardAll,
           border: RDStyles.hairlineBorder,
         ),
         child: Column(
@@ -424,7 +425,7 @@ class _BrandedLineChartState extends State<BrandedLineChart> {
       height: 150,
       decoration: BoxDecoration(
         gradient: RDStyles.cardGradient,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: AppRadius.cardAll,
         border: RDStyles.hairlineBorder,
       ),
       child: Column(

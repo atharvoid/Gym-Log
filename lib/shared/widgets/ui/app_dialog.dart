@@ -68,7 +68,7 @@ Future<bool> showAppConfirmDialog({
                 Container(
                   decoration: BoxDecoration(
                     color: iconBg,
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: AppRadius.thumbnailAll,
                   ),
                   padding: const EdgeInsets.all(12),
                   child: iconWidget,

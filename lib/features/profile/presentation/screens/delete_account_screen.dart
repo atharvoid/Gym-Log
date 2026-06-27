@@ -112,7 +112,7 @@ class _DeleteAccountScreenState extends ConsumerState<DeleteAccountScreen> {
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
                       color: AppColors.error.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(14),
+                      borderRadius: AppRadius.buttonPrimaryAll,
                     ),
                     child: const Icon(Icons.delete_forever_rounded,
                         color: AppColors.error, size: 26),
@@ -266,7 +266,7 @@ class _SectionCard extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
       decoration: BoxDecoration(
         color: surface.surface2,
-        borderRadius: BorderRadius.circular(6),
+        borderRadius: AppRadius.cardAll,
         border: Border.all(color: tone.withValues(alpha: 0.22)),
       ),
       child: Column(
