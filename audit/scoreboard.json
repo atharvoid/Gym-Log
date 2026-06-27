@@ -68,7 +68,7 @@
       "Layout & Structure": 7.0,
       "Components": 8.5,
       "Color & Typography": 10.0,
-      "Motion & Haptics": 8.0,
+      "Motion & Haptics": 9.0,
       "Logic & State": 8.5,
       "Code Quality": 8.0,
       "Accessibility": 8.5,
@@ -77,8 +77,8 @@
       "Platform Conventions": 9.0,
       "Visual Professionalism": 9.5,
       "Cognitive Load": 7.5,
-      "Wow Factor": 7.0,
-      "+Overall": 8.2
+      "Wow Factor": 8.5,
+      "+Overall": 8.4
     },
     "DeleteAccountScreen": {
       "Layout & Structure": 8.0,
@@ -164,7 +164,7 @@
       "Layout & Structure": 7.5,
       "Components": 8.0,
       "Color & Typography": 10.0,
-      "Motion & Haptics": 7.5,
+      "Motion & Haptics": 9.0,
       "Logic & State": 9.0,
       "Code Quality": 9.0,
       "Accessibility": 8.0,
@@ -173,14 +173,14 @@
       "Platform Conventions": 9.5,
       "Visual Professionalism": 9.5,
       "Cognitive Load": 8.0,
-      "Wow Factor": 7.5,
+      "Wow Factor": 8.5,
       "+Overall": 8.5
     },
     "ExerciseSelectionScreen": {
       "Layout & Structure": 7.5,
       "Components": 8.0,
       "Color & Typography": 9.5,
-      "Motion & Haptics": 7.5,
+      "Motion & Haptics": 9.0,
       "Logic & State": 8.5,
       "Code Quality": 8.5,
       "Accessibility": 8.5,
@@ -189,8 +189,8 @@
       "Platform Conventions": 9.0,
       "Visual Professionalism": 9.0,
       "Cognitive Load": 8.0,
-      "Wow Factor": 7.0,
-      "+Overall": 8.2
+      "Wow Factor": 8.5,
+      "+Overall": 8.5
     },
     "ExploreRoutinesScreen": {
       "Layout & Structure": 7.5,

@@ -80,8 +80,8 @@ This file tracks every finding ID with its severity, owning screen, status (`ope
 | **WL-2** | WorkoutList | Scroll jank when scrolling heavy workout list | `open` | |
 | **WL-3** | WorkoutList | Animation transitions when adding new workouts | `open` | |
 | **WD-4** | WorkoutDetailScreen | Share-to-image dynamic layout | `open` | |
-| **RE-1** | RoutineEditorScreen | Drag and drop animations micro-delight | `open` | |
-| **ES-4** | ExerciseSelectionScreen | Hero transition to Exercise Detail screen | `open` | |
+| **RE-1** | RoutineEditorScreen | Drag and drop animations micro-delight | `done` | |
+| **ES-4** | ExerciseSelectionScreen | Hero transition to Exercise Detail screen | `done` | |
 | **AP-1** | AppearanceScreen | OLED theme switcher micro-delights | `open` | |
 | **AP-2** | AppearanceScreen | Live preview card updates | `open` | |
 | **IM-3** | ImportScreen | Import progress bar animations | `open` | |

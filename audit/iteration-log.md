@@ -508,3 +508,46 @@ App overall average rises to `8.0` (computed as: `sum(14 screens) / 14 = 111.7 /
 - [x] Tests Suite: **PASS** (160 tests passed)
 
 **Gate Verdict:** PASS (Routine Editor fully compiles, paints, and reorders successfully)
+
+---
+
+## Iteration 14: Tier-4 Wow #1 Delights (RE-1 & ES-4)
+
+**Date:** 2026-06-27
+**Slice:** Motion, Delights & Wow (RoutineEditorScreen, ExerciseSelectionScreen & ExerciseDetailScreen)
+
+### Diff Summary
+- **Task 1 (RE-1 Drag-and-Drop proxyDecorator)**:
+  - Added a premium custom `proxyDecorator` to the `ReorderableListView.builder` inside `routine_editor_screen.dart` that dynamically scales up the dragged exercise card (`scale: 1.03`), applies a smooth scale transition, adds a high-contrast dynamic bottom card border (`surface.borderEmphasis` instead of `borderSubtle`), and tints the drag handle/icon using `context.accent`.
+- **Task 2 (ES-4 Hero Transition - Exercise Library -> Detail)**:
+  - Implemented the `Hero` widget around the thumbnail of the browse-mode row in `exercise_selection_screen.dart` and around the `ExerciseGifWidget` in `exercise_detail_screen.dart`.
+  - Added a custom `flightShuttleBuilder` that performs a clean cross-fade transition during flight using a `Tween<double>` over the flight animation, avoiding any distortion from aspect ratio changes.
+- **Task 3 (Frame Caching & Preheating)**:
+  - Added Riverpod providers `gifFirstFrameProvider` and `gifLastFrameProvider` in `exercises_provider.dart` utilizing `flutter_cache_manager` and isolate-driven frame decoding with `package:image/image.dart` to fetch, decode, and cache the first/last frames in memory.
+  - Preheated the first/last frames inside `_ExerciseRow` layout constructor to guarantee immediate availability before transition start.
+- **Task 4 (Automated Tests & Cleanups)**:
+  - Created `test/exercise_hero_transition_test.dart` to test the browse-mode Hero rendering constraints, duplicate tag safety guards, and detail screen Hero tag matching, keeping the suite independent of Supabase auth initialization.
+  - Verified that all linter rules, analysis, formatting, and unit/widget tests pass cleanly.
+
+### Scoreboard Delta
+| Screen | Dimension | Before | After | Change |
+|---|---|---|---|---|
+| RoutineEditorScreen | Motion & Haptics | 7.5 | 9.0 | +1.5 |
+| RoutineEditorScreen | Wow Factor | 7.5 | 8.5 | +1.0 |
+| RoutineEditorScreen | +Overall | 8.5 | 8.5 | +0.0 |
+| ExerciseSelectionScreen | Motion & Haptics | 7.5 | 9.0 | +1.5 |
+| ExerciseSelectionScreen | Wow Factor | 7.0 | 8.5 | +1.5 |
+| ExerciseSelectionScreen | +Overall | 8.2 | 8.5 | +0.3 |
+| ExerciseDetailScreen | Motion & Haptics | 8.0 | 9.0 | +1.0 |
+| ExerciseDetailScreen | Wow Factor | 7.0 | 8.5 | +1.5 |
+| ExerciseDetailScreen | +Overall | 8.2 | 8.4 | +0.2 |
+
+App overall average rises to `8.0` (specifically `8.01` computed as: `sum(14 screens) / 14 = 112.2 / 14 = 8.01`).
+
+### Gate Verification Result
+- [x] Format: **PASS**
+- [x] Static Analysis: **PASS**
+- [x] Custom Linter: **PASS**
+- [x] Tests Suite: **PASS** (164 tests passed)
+
+**Gate Verdict:** PASS (Tier-4 Wow delights fully verified and integrated)
