@@ -78,107 +78,110 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
   Widget build(BuildContext context) {
     final routinesAsync = ref.watch(hydratedRoutinesProvider);
     final reduceMotion = MediaQuery.disableAnimationsOf(context);
+    final surface = context.surface;
 
     return Scaffold(
-      backgroundColor: AppColors.bgBase,
-      appBar: AppBar(
-        backgroundColor: AppColors.bgBase,
-        elevation: 0,
-        scrolledUnderElevation: 0,
-        title: Semantics(
-          header: true,
-          child: Text('Routines', style: AppText.screenTitle()),
-        ),
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // ── Recency summary ─────────────────────────────────
-            routinesAsync.maybeWhen(
-              data: (routines) => routines.isEmpty
-                  ? const SizedBox.shrink()
-                  : Padding(
-                      padding: const EdgeInsets.only(bottom: 16),
-                      child:
-                          Text(_summaryLine(routines), style: AppText.meta()),
-                    ),
-              orElse: () => const SizedBox.shrink(),
-            ),
-
-            // ── Action row: New (solid accent CTA) + Explore (neutral) ─────────────
-            Row(
-              children: [
-                Expanded(
-                  child: SecondaryButton(
-                    label: 'New Routine',
-                    icon: Icons.add_rounded,
-                    solid:
-                        true, // solid accent fill + onAccent label — the one focal CTA
-                    onPressed: () => _push('/routines/edit'),
-                  ),
+      backgroundColor: surface.bgBase,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Identity header (replaces AppBar — matches Home's no-AppBar chrome)
+              Semantics(
+                header: true,
+                child: Text(
+                  'Routines',
+                  style: AppText.screenTitle(color: surface.textPrimary)
+                      .copyWith(letterSpacing: -0.5),
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: SecondaryButton(
-                    label: 'Explore',
-                    icon: Icons.explore_rounded,
-                    onPressed: () => _push('/routines/explore'),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 22),
-
-            // ── Collapsible section header ──────────────────────────
-            _collapsibleHeader(routinesAsync, reduceMotion),
-            const SizedBox(height: 10),
-
-            // ── Routine list — smooth height collapse ──────────────────
-            AnimatedSize(
-              duration: reduceMotion
-                  ? Duration.zero
-                  : const Duration(milliseconds: 220),
-              curve: Curves.easeInOut,
-              alignment: Alignment.topCenter,
-              child: !_routinesExpanded
-                  ? const SizedBox(width: double.infinity)
-                  : routinesAsync.when(
-                      loading: () => const _RoutinesLoading(),
-                      error: (e, _) => Semantics(
-                        liveRegion: true,
-                        child: AsyncErrorState(
-                          message: "Couldn't load your routines.",
-                          onRetry: () =>
-                              ref.invalidate(hydratedRoutinesProvider),
-                        ),
+              ),
+              routinesAsync.maybeWhen(
+                data: (routines) => routines.isEmpty
+                    ? const SizedBox.shrink()
+                    : Padding(
+                        padding: const EdgeInsets.only(top: 4),
+                        child: Text(_summaryLine(routines),
+                            style: AppText.body(color: surface.textSecondary)),
                       ),
-                      data: (routines) {
-                        if (routines.isEmpty) {
-                          return _EmptyRoutines(
-                              onNew: () => _push('/routines/edit'));
-                        }
-                        return Column(
-                          children: [
-                            for (final routine in routines)
-                              Padding(
-                                padding: const EdgeInsets.only(bottom: 12),
-                                child: RoutineCard(
-                                  routineId: routine.routine.id,
-                                  routineName: routine.routine.name,
-                                  exerciseNames: routine.exerciseNames,
-                                  muscleTags: routine.muscleTags,
-                                  lastTrained: routine.lastTrained,
-                                  onStartTap: () => _startRoutine(routine),
-                                ),
-                              ),
-                          ],
-                        );
-                      },
+                orElse: () => const SizedBox.shrink(),
+              ),
+              const SizedBox(height: 20),
+
+              // ── Action row: New (solid accent CTA) + Explore (neutral) ─────────────
+              Row(
+                children: [
+                  Expanded(
+                    child: SecondaryButton(
+                      label: 'New Routine',
+                      icon: Icons.add_rounded,
+                      solid:
+                          true, // solid accent fill + onAccent label — the one focal CTA
+                      onPressed: () => _push('/routines/edit'),
                     ),
-            ),
-          ],
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: SecondaryButton(
+                      label: 'Explore',
+                      icon: Icons.explore_rounded,
+                      onPressed: () => _push('/routines/explore'),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 22),
+
+              // ── Collapsible section header ──────────────────────────
+              _collapsibleHeader(routinesAsync, reduceMotion),
+              const SizedBox(height: 10),
+
+              // ── Routine list — smooth height collapse ──────────────────
+              AnimatedSize(
+                duration: reduceMotion
+                    ? Duration.zero
+                    : const Duration(milliseconds: 220),
+                curve: Curves.easeInOut,
+                alignment: Alignment.topCenter,
+                child: !_routinesExpanded
+                    ? const SizedBox(width: double.infinity)
+                    : routinesAsync.when(
+                        loading: () => const _RoutinesLoading(),
+                        error: (e, _) => Semantics(
+                          liveRegion: true,
+                          child: AsyncErrorState(
+                            message: "Couldn't load your routines.",
+                            onRetry: () =>
+                                ref.invalidate(hydratedRoutinesProvider),
+                          ),
+                        ),
+                        data: (routines) {
+                          if (routines.isEmpty) {
+                            return _EmptyRoutines(
+                                onNew: () => _push('/routines/edit'));
+                          }
+                          return Column(
+                            children: [
+                              for (final routine in routines)
+                                Padding(
+                                  padding: const EdgeInsets.only(bottom: 12),
+                                  child: RoutineCard(
+                                    routineId: routine.routine.id,
+                                    routineName: routine.routine.name,
+                                    exerciseNames: routine.exerciseNames,
+                                    muscleTags: routine.muscleTags,
+                                    lastTrained: routine.lastTrained,
+                                    onStartTap: () => _startRoutine(routine),
+                                  ),
+                                ),
+                            ],
+                          );
+                        },
+                      ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -208,8 +211,8 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
                 duration: reduceMotion
                     ? Duration.zero
                     : const Duration(milliseconds: 200),
-                child: const Icon(Icons.keyboard_arrow_down_rounded,
-                    color: AppColors.textSecondary, size: 20),
+                child: Icon(Icons.keyboard_arrow_down_rounded,
+                    color: context.surface.textSecondary, size: 20),
               ),
               const SizedBox(width: 4),
               routinesAsync.maybeWhen(
