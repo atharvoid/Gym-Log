@@ -3,8 +3,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_text.dart';
 import '../../../../core/providers/premium_provider.dart';
 import '../../../../core/services/profile_sync_service.dart';
 import '../../../../core/services/sync_engine.dart';
@@ -75,8 +75,9 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final surface = context.surface;
     return Scaffold(
-      backgroundColor: AppColors.bgBase,
+      backgroundColor: surface.bgBase,
       body: Center(
         child: TweenAnimationBuilder<double>(
           tween: Tween<double>(begin: 0.0, end: 1.0),
@@ -97,14 +98,14 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
                   width: 80,
                   height: 80,
                   decoration: BoxDecoration(
-                    color: AppColors.surface3,
+                    color: surface.surface3,
                     borderRadius: BorderRadius.circular(6),
                   ),
-                  child: const Center(
+                  child: Center(
                     child: Icon(
                       Icons.fitness_center,
                       size: 40,
-                      color: AppColors.textPrimary,
+                      color: surface.textPrimary,
                     ),
                   ),
                 ),
@@ -112,23 +113,18 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
               const SizedBox(height: 24),
               Text(
                 'GymLog',
-                style: GoogleFonts.inter(
-                  color: AppColors.textPrimary,
-                  fontSize: 32,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: -0.5,
-                ),
+                style: AppText.screenTitle(color: surface.textPrimary),
               ),
               const SizedBox(height: 32),
               Semantics(
                 label: 'Loading Gymlog...',
-                child: const SizedBox(
+                child: SizedBox(
                   width: 24,
                   height: 24,
                   child: CircularProgressIndicator(
                     strokeWidth: 2,
                     valueColor:
-                        AlwaysStoppedAnimation<Color>(AppColors.textSecondary),
+                        AlwaysStoppedAnimation<Color>(surface.textSecondary),
                   ),
                 ),
               ),

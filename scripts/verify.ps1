@@ -10,7 +10,6 @@ $gfontMatches = Get-ChildItem -Path lib -Recurse -Filter *.dart |
     Where-Object { 
         $_.FullName -notmatch "app_text\.dart" -and 
         $_.FullName -notmatch "app_theme\.dart" -and 
-        $_.FullName -notmatch "splash_screen\.dart" -and 
         $_.FullName -notmatch "weekly_bar_chart\.dart" -and 
         $_.FullName -notmatch "routine_detail_styles\.dart" -and 
         $_.FullName -notmatch "app_error_screen\.dart" -and 
@@ -39,7 +38,8 @@ $migratedFiles = @(
     "lib/features/workout/presentation/screens/workout_screen.dart",
     "lib/features/auth/presentation/screens/onboarding_screen.dart",
     "lib/features/profile/presentation/screens/profile_screen.dart",
-    "lib/features/profile/presentation/screens/appearance_screen.dart"
+    "lib/features/profile/presentation/screens/appearance_screen.dart",
+    "lib/features/auth/presentation/screens/splash_screen.dart"
 )
 
 $appColorMatches = @()
