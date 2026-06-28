@@ -21,7 +21,7 @@ if (hasReleaseKeystore) {
 }
 
 android {
-    namespace = "com.drifs.gymlog"
+    namespace = "com.gym_log"
     compileSdk = 36
     ndkVersion = flutter.ndkVersion
 
@@ -32,7 +32,7 @@ android {
 
     defaultConfig {
         // Must match the OAuth configuration in Google Cloud Console.
-        applicationId = "com.drifs.gymlog"
+        applicationId = "com.gym_log"
 
         minSdk = flutter.minSdkVersion
         // Play requires new submissions/updates to target API 35+.

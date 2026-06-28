@@ -96,7 +96,7 @@ The release fingerprints are:
 ## Step 3: Add to Google Cloud Console
 
 1. Go to [Google Cloud Console Credentials](https://console.cloud.google.com/apis/credentials)
-2. Find the **OAuth 2.0 Client ID** for Android (package name `com.drifs.gymlog`)
+2. Find the **OAuth 2.0 Client ID** for Android (package name `com.gym_log`)
 3. Click **Edit** (pencil icon)
 4. Under **Restrictions** → **Android apps**, click **Add fingerprint** for each of:
    - **Local Debug SHA-1** (needed for development builds):
