@@ -62,7 +62,13 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
     context.push(path);
   }
 
+  List<HydratedRoutine>? _prevRoutines;
+  String? _cachedSummary;
+
   String _summaryLine(List<HydratedRoutine> routines) {
+    if (identical(_prevRoutines, routines) && _cachedSummary != null) {
+      return _cachedSummary!;
+    }
     final count = routines.length;
     final label = count == 1 ? 'routine' : 'routines';
     DateTime? maxLast;
@@ -70,9 +76,11 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
       final d = r.lastTrained;
       if (d != null && (maxLast == null || d.isAfter(maxLast))) maxLast = d;
     }
-    return maxLast == null
+    _prevRoutines = routines;
+    _cachedSummary = maxLast == null
         ? '$count $label'
         : '$count $label  ·  Last trained ${relativeDay(maxLast)}';
+    return _cachedSummary!;
   }
 
   @override
