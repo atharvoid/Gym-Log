@@ -121,7 +121,9 @@ class _AccentSwatchTile extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             AnimatedContainer(
-              duration: const Duration(milliseconds: 180),
+              duration: MediaQuery.disableAnimationsOf(context)
+                  ? Duration.zero
+                  : const Duration(milliseconds: 180),
               curve: Curves.easeOut,
               width: 64,
               height: 64,
