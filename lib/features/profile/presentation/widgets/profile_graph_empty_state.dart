@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:gymlog/core/theme/app_colors.dart';
 import 'package:gymlog/core/theme/app_text.dart';
+import 'package:gymlog/core/theme/dynamic_accent_theme.dart';
+import 'package:gymlog/shared/widgets/motion/pressable_scale.dart';
 
 /// Empty state for the Profile weekly bar chart when no workouts exist.
 class ProfileGraphEmptyState extends StatelessWidget {
@@ -11,44 +13,51 @@ class ProfileGraphEmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final surface = context.surface;
+    final accent = context.accent;
+
     return Column(
       mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        const Icon(
+        Icon(
           Icons.bar_chart_outlined,
           size: 48,
-          color: Color(0xFF3A3A4A),
+          color: surface.textTertiary,
         ),
         const SizedBox(height: 16),
         Text(
           'No workouts yet',
-          style: AppText.sheetTitle(),
+          style: AppText.sheetTitle(color: surface.textPrimary),
         ),
         const SizedBox(height: 6),
         Text(
           'Log your first workout to see your weekly progress.',
           textAlign: TextAlign.center,
-          style: AppText.body(),
+          style: AppText.body(color: surface.textSecondary),
         ),
         const SizedBox(height: 20),
         SizedBox(
+          width: double.infinity,
           height: 48,
-          child: ElevatedButton(
-            onPressed: () {
-              HapticFeedback.mediumImpact();
-              onStartWorkout?.call();
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.profileGraphActiveBar,
-              foregroundColor: AppColors.bgBase,
-              elevation: 0,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(AppRadius.buttonPrimary),
+          child: PressableScale(
+            child: ElevatedButton(
+              onPressed: () {
+                HapticFeedback.mediumImpact();
+                onStartWorkout?.call();
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: accent.base,
+                foregroundColor: accent.onAccent,
+                elevation: 0,
+                shape: const RoundedRectangleBorder(
+                  borderRadius: AppRadius.buttonPrimaryAll,
+                ),
               ),
-            ),
-            child: Text(
-              'Start Workout',
-              style: AppText.button(color: AppColors.bgBase),
+              child: Text(
+                'Start Workout',
+                style: AppText.button(color: accent.onAccent),
+              ),
             ),
           ),
         ),
