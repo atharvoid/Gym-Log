@@ -27,17 +27,18 @@ class AppearanceScreen extends ConsumerWidget {
     // Reactive: rebuilds the selected-state ring the instant the accent flips.
     final selected = ref.watch(dynamicAccentThemeProvider);
     final bottomInset = MediaQuery.viewPaddingOf(context).bottom;
+    final surface = context.surface;
 
     return Scaffold(
-      backgroundColor: AppColors.bgBase,
+      backgroundColor: surface.bgBase,
       appBar: AppBar(
-        backgroundColor: AppColors.bgBase,
+        backgroundColor: surface.bgBase,
         surfaceTintColor: Colors.transparent,
         scrolledUnderElevation: 0,
         leading: IconButton(
           tooltip: 'Back',
-          icon: const Icon(Icons.arrow_back_rounded,
-              size: 24, color: AppColors.textPrimary),
+          icon: Icon(Icons.arrow_back_rounded,
+              size: 24, color: surface.textPrimary),
           constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
           onPressed: () {
             if (context.canPop()) context.pop();
@@ -52,13 +53,13 @@ class AppearanceScreen extends ConsumerWidget {
           Semantics(
             header: true,
             child: Text('ACCENT COLOR',
-                style: AppText.columnHeader(color: AppColors.textSecondary)),
+                style: AppText.columnHeader(color: surface.textSecondary)),
           ),
           const SizedBox(height: 8),
           Text(
             'Sets the accent used across buttons, the active tab, charts, and '
             'highlights. Tap a color — it applies instantly.',
-            style: AppText.caption(color: AppColors.textTertiary)
+            style: AppText.caption(color: surface.textTertiary)
                 .copyWith(height: 1.45),
           ),
           const SizedBox(height: 22),
@@ -107,6 +108,7 @@ class _AccentSwatchTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final swatch = palette.swatch;
+    final surface = context.surface;
     return Semantics(
       button: true,
       selected: selected,
@@ -127,8 +129,7 @@ class _AccentSwatchTile extends StatelessWidget {
                 color: swatch,
                 shape: BoxShape.circle,
                 border: Border.all(
-                  color:
-                      selected ? AppColors.textPrimary : AppColors.borderSubtle,
+                  color: selected ? surface.textPrimary : surface.borderSubtle,
                   width: selected ? 2.5 : 1,
                 ),
                 boxShadow: selected
@@ -153,8 +154,7 @@ class _AccentSwatchTile extends StatelessWidget {
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
               style: AppText.caption(
-                color:
-                    selected ? AppColors.textPrimary : AppColors.textSecondary,
+                color: selected ? surface.textPrimary : surface.textSecondary,
               ),
             ),
           ],
