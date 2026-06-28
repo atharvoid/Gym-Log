@@ -390,15 +390,13 @@ class _RoutineEditorScreenState extends ConsumerState<RoutineEditorScreen> {
                                 },
                               );
                             },
-                            // ignore: deprecated_member_use
-                            onReorder: (oldIndex, newIndex) {
+                            onReorderItem: (oldIndex, newIndex) {
                               // Last slot is the non-reorderable "Add Exercise" footer.
                               if (oldIndex >= _exercises.length) return;
                               HapticFeedback.mediumImpact();
                               setState(() {
                                 _dirty = true;
-                                // Standard ReorderableListView adjustment when moving down.
-                                if (newIndex > oldIndex) newIndex -= 1;
+                                // onReorderItem delivers a pre-adjusted newIndex — no manual -1.
                                 // Clamp so an exercise can't be dropped past the footer.
                                 if (newIndex > _exercises.length - 1) {
                                   newIndex = _exercises.length - 1;

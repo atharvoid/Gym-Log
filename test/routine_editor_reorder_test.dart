@@ -1,4 +1,3 @@
-// ignore_for_file: deprecated_member_use
 // Reorder contract for the routine editor list.
 //
 // Reproduces the editor's ReorderableListView configuration — a UUID key per
@@ -64,9 +63,8 @@ void main() {
           builder: (context, setState) => ReorderableListView.builder(
             itemCount: items.length,
             buildDefaultDragHandles: false, // single custom handle only
-            onReorder: (oldIndex, newIndex) {
+            onReorderItem: (oldIndex, newIndex) {
               setState(() {
-                if (newIndex > oldIndex) newIndex -= 1;
                 final it = items.removeAt(oldIndex);
                 items.insert(newIndex, it);
               });

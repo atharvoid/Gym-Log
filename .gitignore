@@ -5,3 +5,4 @@
 .env
 android/key.properties
 android/app/upload-keystore.jks
+custom_lint.log

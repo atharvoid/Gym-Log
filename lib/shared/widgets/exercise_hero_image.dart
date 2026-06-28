@@ -6,8 +6,8 @@ import 'package:gymlog/core/theme/app_text.dart';
 import 'package:gymlog/shared/providers/gif_last_frame_provider.dart';
 
 /// Detail-screen exercise banner with a stable Hero contract:
-///  - Poster (static last frame, BoxFit.cover) is the ONLY thing in the Hero
-///    flight → matches the source tile exactly (cover → cover, no resize).
+///  - Poster (static last frame, BoxFit.contain) is the ONLY thing in the Hero
+///    flight → matches the source tile exactly (contain → contain, no resize).
 ///  - The animated GIF cross-fades IN over the poster only after the route
 ///    transition completes, in the same finite box → no spinner, no reflow.
 class ExerciseHeroImage extends ConsumerStatefulWidget {
