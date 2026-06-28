@@ -9,6 +9,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/config/legal_links.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/dynamic_accent_theme.dart';
+import '../../../../shared/widgets/motion/entrance_fade.dart';
 import '../providers/auth_provider.dart';
 
 const String _googleIconSvg = '''
@@ -32,6 +33,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
 
   Future<void> _signIn() async {
     if (_isSigningIn) return;
+    HapticFeedback.lightImpact();
     setState(() => _isSigningIn = true);
     try {
       await ref.read(authRepositoryProvider).signInWithGoogle();
@@ -91,143 +93,147 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
       value: overlay,
       child: Scaffold(
         backgroundColor: surface.bgBase,
-        body: SafeArea(
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              return SingleChildScrollView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(
-                    minHeight: constraints.maxHeight,
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(24, 40, 24, 32),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // ── TOP: brand + value prop (anchors content to the top) ──
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Container(
-                              width: 56,
-                              height: 56,
-                              decoration: BoxDecoration(
-                                color: accent.tint,
-                                borderRadius: AppRadius.cardAll,
-                              ),
-                              child: Icon(
-                                Icons.fitness_center_rounded,
-                                color: accent.base,
-                                size: 28,
-                              ),
-                            ),
-                            const SizedBox(height: 28),
-                            Text(
-                              'GymLog',
-                              style: AppText.screenTitle(
-                                      color: surface.textPrimary)
-                                  .copyWith(letterSpacing: -0.5),
-                            ),
-                            const SizedBox(height: 10),
-                            Text(
-                              'Track every rep.\nOwn every byte.',
-                              style:
-                                  AppText.heroStat(color: surface.textPrimary)
-                                      .copyWith(height: 1.05),
-                            ),
-                            const SizedBox(height: 12),
-                            Text(
-                              'A fast, private workout log — your data stays yours.',
-                              style: AppText.body(color: surface.textSecondary)
-                                  .copyWith(fontSize: 16, height: 1.4),
-                            ),
-                          ],
-                        ),
-                        // ── BOTTOM: CTA + legal (pinned) ──
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            SizedBox(
-                              width: double.infinity,
-                              height: 52,
-                              child: ElevatedButton(
-                                onPressed: _signIn,
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.white,
-                                  foregroundColor: const Color(0xFF1F1F1F),
-                                  elevation: 0,
-                                  shape: const StadiumBorder(),
-                                  side: surface.isLight
-                                      ? BorderSide(color: surface.borderDefault)
-                                      : BorderSide.none,
+        body: EntranceFade(
+          child: SafeArea(
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                return SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      minHeight: constraints.maxHeight,
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(24, 40, 24, 32),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // ── TOP: brand + value prop (anchors content to the top) ──
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Container(
+                                width: 56,
+                                height: 56,
+                                decoration: BoxDecoration(
+                                  color: accent.tint,
+                                  borderRadius: AppRadius.cardAll,
                                 ),
-                                child: _isSigningIn
-                                    ? const SizedBox(
-                                        width: 20,
-                                        height: 20,
-                                        child: CircularProgressIndicator(
-                                          strokeWidth: 2,
-                                          valueColor:
-                                              AlwaysStoppedAnimation<Color>(
-                                                  Color(0xFF1F1F1F)),
+                                child: Icon(
+                                  Icons.fitness_center_rounded,
+                                  color: accent.base,
+                                  size: 28,
+                                ),
+                              ),
+                              const SizedBox(height: 28),
+                              Text(
+                                'GymLog',
+                                style: AppText.screenTitle(
+                                        color: surface.textPrimary)
+                                    .copyWith(letterSpacing: -0.5),
+                              ),
+                              const SizedBox(height: 10),
+                              Text(
+                                'Track every rep.\nOwn every byte.',
+                                style:
+                                    AppText.heroStat(color: surface.textPrimary)
+                                        .copyWith(height: 1.05),
+                              ),
+                              const SizedBox(height: 12),
+                              Text(
+                                'A fast, private workout log — your data stays yours.',
+                                style:
+                                    AppText.body(color: surface.textSecondary)
+                                        .copyWith(fontSize: 16, height: 1.4),
+                              ),
+                            ],
+                          ),
+                          // ── BOTTOM: CTA + legal (pinned) ──
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              SizedBox(
+                                width: double.infinity,
+                                height: 52,
+                                child: ElevatedButton(
+                                  onPressed: _signIn,
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.white,
+                                    foregroundColor: const Color(0xFF1F1F1F),
+                                    elevation: 0,
+                                    shape: const StadiumBorder(),
+                                    side: surface.isLight
+                                        ? BorderSide(
+                                            color: surface.borderDefault)
+                                        : BorderSide.none,
+                                  ),
+                                  child: _isSigningIn
+                                      ? const SizedBox(
+                                          width: 20,
+                                          height: 20,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                            valueColor:
+                                                AlwaysStoppedAnimation<Color>(
+                                                    Color(0xFF1F1F1F)),
+                                          ),
+                                        )
+                                      : Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            SvgPicture.string(
+                                              _googleIconSvg,
+                                              width: 20,
+                                              height: 20,
+                                            ),
+                                            const SizedBox(width: 12),
+                                            Text(
+                                              'Continue with Google',
+                                              style: AppText.button(),
+                                            ),
+                                          ],
                                         ),
-                                      )
-                                    : Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                          SvgPicture.string(
-                                            _googleIconSvg,
-                                            width: 20,
-                                            height: 20,
-                                          ),
-                                          const SizedBox(width: 12),
-                                          Text(
-                                            'Continue with Google',
-                                            style: AppText.button(),
-                                          ),
-                                        ],
-                                      ),
+                                ),
                               ),
-                            ),
-                            const SizedBox(height: 24),
-                            Semantics(
-                              button: true,
-                              child: Wrap(
-                                alignment: WrapAlignment.center,
-                                crossAxisAlignment: WrapCrossAlignment.center,
-                                children: [
-                                  Text('By continuing, you agree to our ',
-                                      style: fine),
-                                  _LegalLink(
-                                    label: 'Terms of Service',
-                                    onTap: () => _openUrl(kTermsOfServiceUrl),
-                                  ),
-                                  Text(' and ', style: fine),
-                                  _LegalLink(
-                                    label: 'Privacy Policy',
-                                    onTap: () => _openUrl(kPrivacyPolicyUrl),
-                                  ),
-                                  Text('.', style: fine),
-                                ],
+                              const SizedBox(height: 24),
+                              Semantics(
+                                button: true,
+                                child: Wrap(
+                                  alignment: WrapAlignment.center,
+                                  crossAxisAlignment: WrapCrossAlignment.center,
+                                  children: [
+                                    Text('By continuing, you agree to our ',
+                                        style: fine),
+                                    _LegalLink(
+                                      label: 'Terms of Service',
+                                      onTap: () => _openUrl(kTermsOfServiceUrl),
+                                    ),
+                                    Text(' and ', style: fine),
+                                    _LegalLink(
+                                      label: 'Privacy Policy',
+                                      onTap: () => _openUrl(kPrivacyPolicyUrl),
+                                    ),
+                                    Text('.', style: fine),
+                                  ],
+                                ),
                               ),
-                            ),
-                            const SizedBox(height: 10),
-                            Text(
-                              'Free to use. Sign in with Google to sync across your devices.',
-                              style: fine,
-                              textAlign: TextAlign.center,
-                            ),
-                          ],
-                        ),
-                      ],
+                              const SizedBox(height: 10),
+                              Text(
+                                'Free to use. Sign in with Google to sync across your devices.',
+                                style: fine,
+                                textAlign: TextAlign.center,
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                ),
-              );
-            },
+                );
+              },
+            ),
           ),
         ),
       ),
