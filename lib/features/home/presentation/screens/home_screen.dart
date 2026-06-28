@@ -229,8 +229,25 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             Text('No workouts yet', style: AppText.exerciseName()),
             const SizedBox(height: 3),
             Text(
-              'Your history lives here. Start your first workout above.',
+              'Your history lives here.',
               style: AppText.meta(),
+            ),
+            const SizedBox(height: 12),
+            TextButton(
+              onPressed: () {
+                if (ref.read(activeWorkoutProvider) != null) return;
+                ref.read(activeWorkoutProvider.notifier).startWorkout();
+                context.push('/workout/active');
+              },
+              style: TextButton.styleFrom(
+                padding: EdgeInsets.zero,
+                minimumSize: const Size(0, 36),
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              ),
+              child: Text(
+                'Start your first workout →',
+                style: AppText.label(color: context.accent.base),
+              ),
             ),
           ],
         ),
