@@ -21,6 +21,7 @@ import '../providers/workout_actions_provider.dart';
 import '../providers/active_workout_provider.dart';
 import 'package:gymlog/core/utils/tap_guard.dart';
 import 'package:gymlog/shared/widgets/feedback/undoable_delete.dart';
+import 'package:gymlog/shared/widgets/motion/entrance_fade.dart';
 
 /// Hoisted, locale-stable date formatter ("Thu, 18 Jun 2026").
 final _kDateFormat = DateFormat('EEE, d MMM yyyy');
@@ -147,18 +148,24 @@ class WorkoutDetailScreen extends ConsumerWidget {
               onMoreTap: () => _showActions(context, ref, workout),
             ),
             SliverToBoxAdapter(
-              child: MuscleSplitSection(muscleSetCounts: muscleSetCounts),
+              child: EntranceFade(
+                index: 0,
+                child: MuscleSplitSection(muscleSetCounts: muscleSetCounts),
+              ),
             ),
             const SliverToBoxAdapter(child: SizedBox(height: 12)),
             SliverList(
-              delegate: SliverChildBuilderDelegate(
-                (context, i) => DetailExerciseCard(
-                  key: ValueKey(workout.exercises[i].workoutExercise.id),
-                  hydratedExercise: workout.exercises[i],
-                  enableHero: heroEnabledList[i],
-                ),
-                childCount: workout.exercises.length,
-              ),
+              delegate: SliverChildListDelegate([
+                for (int i = 0; i < workout.exercises.length; i++)
+                  EntranceFade(
+                    key: ValueKey(workout.exercises[i].workoutExercise.id),
+                    index: 1 + i,
+                    child: DetailExerciseCard(
+                      hydratedExercise: workout.exercises[i],
+                      enableHero: heroEnabledList[i],
+                    ),
+                  ),
+              ]),
             ),
             SliverToBoxAdapter(
               child:

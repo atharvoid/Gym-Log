@@ -20,6 +20,7 @@ import 'package:gymlog/core/providers/database_provider.dart';
 import 'package:gymlog/shared/widgets/ui/skeleton.dart';
 import '../providers/exercise_analytics_provider.dart';
 import 'package:gymlog/shared/widgets/exercise_hero_image.dart';
+import 'package:gymlog/shared/widgets/motion/entrance_fade.dart';
 
 class ExerciseDetailScreen extends ConsumerStatefulWidget {
   final int exerciseId;
@@ -39,8 +40,7 @@ final _exerciseFallbackProvider =
   return db.exercisesDao.getExerciseById(id);
 });
 
-class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen>
-    with SingleTickerProviderStateMixin {
+class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
   int _activeToggleIndex = 0;
   String _selectedTimeRange = '6M';
 
@@ -51,62 +51,12 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen>
   double _memoizedMaxVolume = 0.0;
   int _memoizedMaxReps = 0;
 
-  // Entry motion animation controller
-  late final AnimationController _entryController;
-  bool _entryStarted = false;
-
   static const _toggleLabels = [
     'Heaviest Weight',
     'One Rep Max',
     'Best Set',
     'Session Volume',
   ];
-
-  @override
-  void initState() {
-    super.initState();
-    _entryController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 320),
-    );
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    // Entry fade controller — run once.
-    if (!_entryStarted) {
-      _entryStarted = true;
-      if (MediaQuery.disableAnimationsOf(context)) {
-        _entryController.value = 1.0;
-      } else {
-        _entryController.forward();
-      }
-    }
-  }
-
-  @override
-  void dispose() {
-    _entryController.dispose();
-    super.dispose();
-  }
-
-  Widget _entryFade({required Interval interval, required Widget child}) {
-    final curvedAnimation = CurvedAnimation(
-      parent: _entryController,
-      curve: interval,
-    );
-    return FadeTransition(
-      opacity: curvedAnimation,
-      child: SlideTransition(
-        position: Tween<Offset>(
-          begin: const Offset(0, 0.05),
-          end: Offset.zero,
-        ).animate(curvedAnimation),
-        child: child,
-      ),
-    );
-  }
 
   Widget _wrapPulse({required Widget child}) {
     if (MediaQuery.disableAnimationsOf(context)) return child;
@@ -215,8 +165,7 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen>
               const SizedBox(height: 16),
 
               // Text content and analytics fade in via the entry animation.
-              _entryFade(
-                interval: const Interval(0.0, 1.0, curve: Curves.easeOutCubic),
+              EntranceFade(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
