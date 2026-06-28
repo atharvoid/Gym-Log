@@ -180,105 +180,118 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
           : SystemUiOverlayStyle.light,
       child: Scaffold(
         backgroundColor: surface.bgBase,
-        appBar: AppBar(
-          backgroundColor: surface.bgBase,
-          scrolledUnderElevation: 0,
-          title: Text('Profile',
-              style: AppText.screenTitle(
-                  color: surface.textPrimary,
-                  shadows: AppText.depthFor(context))),
-          actions: [
-            IconButton(
-              tooltip: 'Settings',
-              constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
-              icon: Icon(Icons.settings_outlined,
-                  size: 22, color: surface.textPrimary),
-              onPressed: _openSettings,
+        body: SafeArea(
+          child: profileAsync.when(
+            loading: () => _LoadingBody(bottomClearance: bottomClearance),
+            error: (e, _) => _ErrorBody(
+              bottomClearance: bottomClearance,
+              onRetry: () => ref.invalidate(currentUserProfileProvider),
             ),
-          ],
-        ),
-        body: profileAsync.when(
-          loading: () => _LoadingBody(bottomClearance: bottomClearance),
-          error: (e, _) => _ErrorBody(
-            bottomClearance: bottomClearance,
-            onRetry: () => ref.invalidate(currentUserProfileProvider),
-          ),
-          data: (profile) {
-            final displayName = profile?.displayName ?? 'Athlete';
-            final email = profile?.email ?? '';
+            data: (profile) {
+              final displayName = profile?.displayName ?? 'Athlete';
+              final email = profile?.email ?? '';
 
-            return RefreshIndicator(
-              color: surface.textPrimary,
-              backgroundColor: surface.bgSurface,
-              onRefresh: _onRefresh,
-              child: ListView(
-                padding: EdgeInsets.fromLTRB(16, 4, 16, bottomClearance),
-                children: [
-                  _entrance(
-                    index: 0,
-                    child: Semantics(
-                      container: true,
-                      label: 'Profile, $displayName, $email',
-                      child: _IdentityHeader(
-                        displayName: displayName,
-                        email: email,
+              return RefreshIndicator(
+                color: surface.textPrimary,
+                backgroundColor: surface.bgSurface,
+                onRefresh: _onRefresh,
+                child: ListView(
+                  padding: EdgeInsets.fromLTRB(16, 4, 16, bottomClearance),
+                  children: [
+                    _entrance(
+                      index: 0,
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Semantics(
+                              header: true,
+                              child: Text(
+                                'Profile',
+                                style: AppText.screenTitle(
+                                  color: surface.textPrimary,
+                                  shadows: AppText.depthFor(context),
+                                ),
+                              ),
+                            ),
+                          ),
+                          IconButton(
+                            tooltip: 'Settings',
+                            constraints: const BoxConstraints(
+                                minWidth: 48, minHeight: 48),
+                            icon: Icon(Icons.settings_outlined,
+                                size: 22, color: surface.textPrimary),
+                            onPressed: _openSettings,
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    _entrance(
+                      index: 0,
+                      child: Semantics(
+                        container: true,
+                        label: 'Profile, $displayName, $email',
+                        child: _IdentityHeader(
+                          displayName: displayName,
+                          email: email,
+                          isPremium: isPremium,
+                          showSyncPausedBadge: showSyncPausedBadge,
+                          imagePath: _profileImagePath,
+                          onImageChanged: _onImageChanged,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    _entrance(
+                      index: 1,
+                      child: AppCard(
+                        radius: AppRadius.card,
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: AppSpacing.x1, vertical: AppSpacing.x4),
+                        child: _StatsStrip(
+                          streak: streak,
+                          goal: goal,
+                          workoutCount: workoutCount,
+                          onGoalTap: () => showWeeklyGoalSheet(context, ref),
+                        ),
+                      ),
+                    ),
+                    if (goal > 0 && streak.workoutsThisWeek >= goal) ...[
+                      const SizedBox(height: 10),
+                      _entrance(
+                        index: 2,
+                        slide: false,
+                        child: const _GoalReachedBanner(),
+                      ),
+                    ] else if (!streak.trainedToday) ...[
+                      const SizedBox(height: 10),
+                      _entrance(
+                        index: 2,
+                        slide: false,
+                        child: _StreakReminder(streak: streak),
+                      ),
+                    ],
+                    const SizedBox(height: 28),
+                    _entrance(
+                      index: 3,
+                      child: const _TrainingChartSection(),
+                    ),
+                    const SizedBox(height: 28),
+                    _entrance(
+                      index: 4,
+                      child: _QuickLinks(
                         isPremium: isPremium,
-                        showSyncPausedBadge: showSyncPausedBadge,
-                        imagePath: _profileImagePath,
-                        onImageChanged: _onImageChanged,
+                        onPremiumTap: () =>
+                            _openPremium(context, isPremium: isPremium),
+                        onExerciseLibraryTap: _openExerciseLibrary,
+                        onSettingsTap: _openSettings,
                       ),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  _entrance(
-                    index: 1,
-                    child: AppCard(
-                      radius: AppRadius.card,
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: AppSpacing.x1, vertical: AppSpacing.x4),
-                      child: _StatsStrip(
-                        streak: streak,
-                        goal: goal,
-                        workoutCount: workoutCount,
-                        onGoalTap: () => showWeeklyGoalSheet(context, ref),
-                      ),
-                    ),
-                  ),
-                  if (goal > 0 && streak.workoutsThisWeek >= goal) ...[
-                    const SizedBox(height: 10),
-                    _entrance(
-                      index: 2,
-                      slide: false,
-                      child: const _GoalReachedBanner(),
-                    ),
-                  ] else if (!streak.trainedToday) ...[
-                    const SizedBox(height: 10),
-                    _entrance(
-                      index: 2,
-                      slide: false,
-                      child: _StreakReminder(streak: streak),
                     ),
                   ],
-                  const SizedBox(height: 28),
-                  _entrance(
-                    index: 3,
-                    child: const _TrainingChartSection(),
-                  ),
-                  const SizedBox(height: 28),
-                  _entrance(
-                    index: 4,
-                    child: _QuickLinks(
-                      isPremium: isPremium,
-                      onPremiumTap: () =>
-                          _openPremium(context, isPremium: isPremium),
-                      onExerciseLibraryTap: _openExerciseLibrary,
-                      onSettingsTap: _openSettings,
-                    ),
-                  ),
-                ],
-              ),
-            );
-          },
+                ),
+              );
+            },
+          ),
         ),
       ),
     );
