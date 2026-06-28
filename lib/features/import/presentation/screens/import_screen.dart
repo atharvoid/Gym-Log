@@ -546,28 +546,32 @@ class _StatRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final surface = context.surface;
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
-      child: Row(
-        children: [
-          Expanded(
-            child: Text(label,
-                style: AppText.body(
-                  color:
-                      emphasize ? surface.textPrimary : surface.textSecondary,
-                ).copyWith(
-                  fontSize: 14,
-                  fontWeight: emphasize ? FontWeight.w600 : FontWeight.w500,
-                )),
-          ),
-          Text(value,
-              style: (emphasize
-                      ? AppText.sheetTitle(color: context.accent.base)
-                      : AppText.body(color: surface.textPrimary).copyWith(
-                          fontWeight: FontWeight.w700,
-                        ))
-                  .copyWith(fontFeatures: kTabular)),
-        ],
+    return Semantics(
+      label: '$label: $value',
+      container: true,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
+        child: Row(
+          children: [
+            Expanded(
+              child: Text(label,
+                  style: AppText.body(
+                    color:
+                        emphasize ? surface.textPrimary : surface.textSecondary,
+                  ).copyWith(
+                    fontSize: 14,
+                    fontWeight: emphasize ? FontWeight.w600 : FontWeight.w500,
+                  )),
+            ),
+            Text(value,
+                style: (emphasize
+                        ? AppText.sheetTitle(color: context.accent.base)
+                        : AppText.body(color: surface.textPrimary).copyWith(
+                            fontWeight: FontWeight.w700,
+                          ))
+                    .copyWith(fontFeatures: kTabular)),
+          ],
+        ),
       ),
     );
   }
@@ -612,25 +616,29 @@ class _Banner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final surface = context.surface;
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.zero,
-        border: Border.all(color: color.withValues(alpha: 0.22), width: 1),
-      ),
-      child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Icon(icon, size: 18, color: color),
-        const SizedBox(width: 10),
-        Expanded(
-          child: Text(text,
-              style: AppText.meta(
-                color: surface.textPrimary.withValues(alpha: 0.92),
-              ).copyWith(
-                height: 1.4,
-              )),
+    return Semantics(
+      label: 'Notification: $text',
+      container: true,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.08),
+          borderRadius: AppRadius.cardAll,
+          border: Border.all(color: color.withValues(alpha: 0.22), width: 1),
         ),
-      ]),
+        child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Icon(icon, size: 18, color: color),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(text,
+                style: AppText.meta(
+                  color: surface.textPrimary.withValues(alpha: 0.92),
+                ).copyWith(
+                  height: 1.4,
+                )),
+          ),
+        ]),
+      ),
     );
   }
 }
@@ -735,55 +743,89 @@ class _UnitChooser extends StatelessWidget {
     Widget chip(String value, String label) {
       final active = unit == value;
       return Expanded(
-        child: GestureDetector(
-          onTap: () {
-            if (!active) {
-              HapticFeedback.selectionClick();
-              onChanged(value);
-            }
-          },
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 150),
-            height: 40,
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              color: active ? accent.base : Colors.transparent,
-              borderRadius: BorderRadius.circular(AppRadius.buttonSecondary),
+        child: Semantics(
+          button: true,
+          selected: active,
+          label: label,
+          child: GestureDetector(
+            onTap: () {
+              if (!active) {
+                HapticFeedback.selectionClick();
+                onChanged(value);
+              }
+            },
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 150),
+              height: 48,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: active ? accent.base : Colors.transparent,
+                borderRadius: BorderRadius.circular(AppRadius.buttonSecondary),
+              ),
+              child: Text(label,
+                  style: AppText.rowLabel(
+                    color: active ? accent.onAccent : surface.textSecondary,
+                  )),
             ),
-            child: Text(label,
-                style: AppText.rowLabel(
-                  color: active ? accent.onAccent : surface.textSecondary,
-                )),
           ),
         ),
       );
     }
 
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        gradient: surface.isLight
-            ? AppColors.cardGradientLight
-            : AppColors.cardGradient,
-        borderRadius: AppRadius.cardAll,
-        border: Border.all(color: surface.borderSubtle, width: 1),
-      ),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text('This file has no unit — what was it logged in?',
-            style: AppText.statLabel(
-              color: surface.textPrimary,
-            )),
-        const SizedBox(height: 10),
-        Container(
-          padding: const EdgeInsets.all(3),
-          decoration: BoxDecoration(
-            color: Colors.black.withValues(alpha: 0.30),
-            borderRadius: BorderRadius.circular(AppRadius.buttonSecondary),
-          ),
-          child:
-              Row(children: [chip('kg', 'Kilograms'), chip('lbs', 'Pounds')]),
+    return Semantics(
+      container: true,
+      label: 'Unit Selection. This file has no unit — what was it logged in?',
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          gradient: surface.isLight
+              ? AppColors.cardGradientLight
+              : AppColors.cardGradient,
+          borderRadius: AppRadius.cardAll,
+          border: Border.all(color: surface.borderSubtle, width: 1),
         ),
-      ]),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text('This file has no unit — what was it logged in?',
+              style: AppText.statLabel(
+                color: surface.textPrimary,
+              )),
+          const SizedBox(height: 10),
+          Container(
+            padding: const EdgeInsets.all(3),
+            decoration: BoxDecoration(
+              color: surface.surface3,
+              borderRadius: BorderRadius.circular(AppRadius.buttonSecondary),
+            ),
+            child:
+                Row(children: [chip('kg', 'Kilograms'), chip('lbs', 'Pounds')]),
+          ),
+        ]),
+      ),
     );
+  }
+}
+
+class ImportTestHelper {
+  static Widget buildBanner({
+    required IconData icon,
+    required Color color,
+    required String text,
+  }) {
+    return _Banner(icon: icon, color: color, text: text);
+  }
+
+  static Widget buildStatRow({
+    required String label,
+    required String value,
+    bool emphasize = false,
+  }) {
+    return _StatRow(label: label, value: value, emphasize: emphasize);
+  }
+
+  static Widget buildUnitChooser({
+    required String unit,
+    required ValueChanged<String> onChanged,
+  }) {
+    return _UnitChooser(unit: unit, onChanged: onChanged);
   }
 }
