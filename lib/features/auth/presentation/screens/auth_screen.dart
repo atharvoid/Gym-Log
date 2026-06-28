@@ -21,6 +21,13 @@ const String _googleIconSvg = '''
 </svg>
 ''';
 
+// Parsed once at module load — avoids re-parsing the SVG XML on every build.
+final Widget _googleIcon = SvgPicture.string(
+  _googleIconSvg,
+  width: 20,
+  height: 20,
+);
+
 class AuthScreen extends ConsumerStatefulWidget {
   const AuthScreen({super.key});
 
@@ -127,11 +134,14 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                                 ),
                               ),
                               const SizedBox(height: 28),
-                              Text(
-                                'GymLog',
-                                style: AppText.screenTitle(
-                                        color: surface.textPrimary)
-                                    .copyWith(letterSpacing: -0.5),
+                              Semantics(
+                                header: true,
+                                child: Text(
+                                  'GymLog',
+                                  style: AppText.screenTitle(
+                                          color: surface.textPrimary)
+                                      .copyWith(letterSpacing: -0.5),
+                                ),
                               ),
                               const SizedBox(height: 10),
                               Text(
@@ -153,9 +163,9 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
-                              SizedBox(
-                                width: double.infinity,
-                                height: 52,
+                              ConstrainedBox(
+                                constraints:
+                                    const BoxConstraints(minHeight: 52),
                                 child: ElevatedButton(
                                   onPressed: _signIn,
                                   style: ElevatedButton.styleFrom(
@@ -183,11 +193,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                                           mainAxisAlignment:
                                               MainAxisAlignment.center,
                                           children: [
-                                            SvgPicture.string(
-                                              _googleIconSvg,
-                                              width: 20,
-                                              height: 20,
-                                            ),
+                                            _googleIcon,
                                             const SizedBox(width: 12),
                                             Text(
                                               'Continue with Google',
@@ -258,7 +264,7 @@ class _LegalLink extends StatelessWidget {
         onTap: onTap,
         behavior: HitTestBehavior.opaque,
         child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 2),
+          padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 2),
           child: Text(
             label,
             style: AppText.caption(
