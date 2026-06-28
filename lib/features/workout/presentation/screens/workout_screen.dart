@@ -13,6 +13,7 @@ import '../../../../shared/widgets/async_error_state.dart';
 import '../../../../shared/widgets/ui/app_card.dart';
 import '../../../../shared/widgets/ui/secondary_button.dart';
 import '../../../../shared/widgets/ui/skeleton.dart';
+import '../../../../shared/widgets/motion/entrance_fade.dart';
 import '../../../routines/presentation/widgets/routine_card.dart';
 import '../../../routines/presentation/providers/routines_provider.dart';
 import '../../domain/active_workout_state.dart';
@@ -89,52 +90,67 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Identity header (replaces AppBar — matches Home's no-AppBar chrome)
-              Semantics(
-                header: true,
-                child: Text(
-                  'Routines',
-                  style: AppText.screenTitle(color: surface.textPrimary)
-                      .copyWith(letterSpacing: -0.5),
-                ),
-              ),
-              routinesAsync.maybeWhen(
-                data: (routines) => routines.isEmpty
-                    ? const SizedBox.shrink()
-                    : Padding(
-                        padding: const EdgeInsets.only(top: 4),
-                        child: Text(_summaryLine(routines),
-                            style: AppText.body(color: surface.textSecondary)),
+              EntranceFade(
+                index: 0,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Semantics(
+                      header: true,
+                      child: Text(
+                        'Routines',
+                        style: AppText.screenTitle(color: surface.textPrimary)
+                            .copyWith(letterSpacing: -0.5),
                       ),
-                orElse: () => const SizedBox.shrink(),
+                    ),
+                    routinesAsync.maybeWhen(
+                      data: (routines) => routines.isEmpty
+                          ? const SizedBox.shrink()
+                          : Padding(
+                              padding: const EdgeInsets.only(top: 4),
+                              child: Text(_summaryLine(routines),
+                                  style: AppText.body(
+                                      color: surface.textSecondary)),
+                            ),
+                      orElse: () => const SizedBox.shrink(),
+                    ),
+                  ],
+                ),
               ),
               const SizedBox(height: 20),
 
               // ── Action row: New (solid accent CTA) + Explore (neutral) ─────────────
-              Row(
-                children: [
-                  Expanded(
-                    child: SecondaryButton(
-                      label: 'New Routine',
-                      icon: Icons.add_rounded,
-                      solid:
-                          true, // solid accent fill + onAccent label — the one focal CTA
-                      onPressed: () => _push('/routines/edit'),
+              EntranceFade(
+                index: 1,
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: SecondaryButton(
+                        label: 'New Routine',
+                        icon: Icons.add_rounded,
+                        solid:
+                            true, // solid accent fill + onAccent label — the one focal CTA
+                        onPressed: () => _push('/routines/edit'),
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: SecondaryButton(
-                      label: 'Explore',
-                      icon: Icons.explore_rounded,
-                      onPressed: () => _push('/routines/explore'),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: SecondaryButton(
+                        label: 'Explore',
+                        icon: Icons.explore_rounded,
+                        onPressed: () => _push('/routines/explore'),
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
               const SizedBox(height: 22),
 
               // ── Collapsible section header ──────────────────────────
-              _collapsibleHeader(routinesAsync, reduceMotion),
+              EntranceFade(
+                index: 2,
+                child: _collapsibleHeader(routinesAsync, reduceMotion),
+              ),
               const SizedBox(height: 10),
 
               // ── Routine list — smooth height collapse ──────────────────
@@ -163,16 +179,20 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
                           }
                           return Column(
                             children: [
-                              for (final routine in routines)
-                                Padding(
-                                  padding: const EdgeInsets.only(bottom: 12),
-                                  child: RoutineCard(
-                                    routineId: routine.routine.id,
-                                    routineName: routine.routine.name,
-                                    exerciseNames: routine.exerciseNames,
-                                    muscleTags: routine.muscleTags,
-                                    lastTrained: routine.lastTrained,
-                                    onStartTap: () => _startRoutine(routine),
+                              for (int i = 0; i < routines.length; i++)
+                                EntranceFade(
+                                  index: 3 + i,
+                                  child: Padding(
+                                    padding: const EdgeInsets.only(bottom: 12),
+                                    child: RoutineCard(
+                                      routineId: routines[i].routine.id,
+                                      routineName: routines[i].routine.name,
+                                      exerciseNames: routines[i].exerciseNames,
+                                      muscleTags: routines[i].muscleTags,
+                                      lastTrained: routines[i].lastTrained,
+                                      onStartTap: () =>
+                                          _startRoutine(routines[i]),
+                                    ),
                                   ),
                                 ),
                             ],
