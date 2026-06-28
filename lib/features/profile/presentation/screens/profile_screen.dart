@@ -24,6 +24,7 @@ import '../providers/profile_stats_provider.dart';
 import '../widgets/graph_kpi_header.dart';
 import '../widgets/profile_avatar.dart';
 import '../widgets/profile_graph_empty_state.dart';
+import 'package:gymlog/features/workout/presentation/providers/active_workout_provider.dart';
 
 import '../widgets/weekly_bar_chart.dart';
 import 'settings_screen.dart';
@@ -544,6 +545,9 @@ class _TrainingChartSectionState extends ConsumerState<_TrainingChartSection> {
     void onStartWorkout() {
       if (!tapGuard()) return;
       HapticFeedback.mediumImpact();
+      if (ref.read(activeWorkoutProvider) == null) {
+        ref.read(activeWorkoutProvider.notifier).startWorkout();
+      }
       context.push('/workout/active');
     }
 

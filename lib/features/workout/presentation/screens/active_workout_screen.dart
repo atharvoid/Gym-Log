@@ -34,6 +34,16 @@ class ActiveWorkoutScreen extends ConsumerStatefulWidget {
 }
 
 class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (ref.read(activeWorkoutProvider) == null) {
+        ref.read(activeWorkoutProvider.notifier).startWorkout();
+      }
+    });
+  }
+
   Future<void> _confirmDiscard() async {
     final confirmed = await showAppConfirmDialog(
       context: context,
