@@ -30,3 +30,49 @@ final exerciseAnalyticsProvider =
     since: _sinceForRange(selectedRange),
   );
 });
+
+class PersonalRecords {
+  final double maxWeight;
+  final double max1RM;
+  final double maxVolume;
+  final int maxReps;
+
+  const PersonalRecords({
+    required this.maxWeight,
+    required this.max1RM,
+    required this.maxVolume,
+    required this.maxReps,
+  });
+
+  static const empty = PersonalRecords(
+    maxWeight: 0.0,
+    max1RM: 0.0,
+    maxVolume: 0.0,
+    maxReps: 0,
+  );
+}
+
+final exercisePersonalRecordsProvider =
+    Provider.family<PersonalRecords, (int, String)>((ref, args) {
+  final historyAsync = ref.watch(exerciseAnalyticsProvider(args));
+  return historyAsync.maybeWhen(
+    data: (history) {
+      if (history.isEmpty) return PersonalRecords.empty;
+      final maxWeight =
+          history.map((e) => e.weight).reduce((a, b) => a > b ? a : b);
+      final max1RM =
+          history.map((e) => e.estimated1RM).reduce((a, b) => a > b ? a : b);
+      final maxVolume =
+          history.map((e) => e.volume).reduce((a, b) => a > b ? a : b);
+      final maxReps =
+          history.map((e) => e.reps).reduce((a, b) => a > b ? a : b);
+      return PersonalRecords(
+        maxWeight: maxWeight,
+        max1RM: max1RM,
+        maxVolume: maxVolume,
+        maxReps: maxReps,
+      );
+    },
+    orElse: () => PersonalRecords.empty,
+  );
+});
