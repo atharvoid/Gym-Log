@@ -88,6 +88,7 @@ class _ProfileAvatarState extends State<ProfileAvatar> {
     try {
       final compressed = await _compress(croppedPath);
       if (compressed != null && mounted) {
+        await FileImage(File(compressed)).evict();
         HapticFeedback.mediumImpact();
         widget.onImageChanged(compressed);
       }

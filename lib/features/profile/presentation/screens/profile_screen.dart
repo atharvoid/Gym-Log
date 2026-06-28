@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -57,6 +59,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   Future<void> _onImageChanged(String? path) async {
     final prefs = await SharedPreferences.getInstance();
     if (path != null) {
+      await FileImage(File(path)).evict();
       await prefs.setString(_kProfileImageKey, path);
     } else {
       await prefs.remove(_kProfileImageKey);
