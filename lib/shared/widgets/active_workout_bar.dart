@@ -7,11 +7,9 @@ import '../../core/theme/dynamic_accent_theme.dart';
 import '../../features/workout/presentation/providers/active_workout_provider.dart';
 import '../../features/workout/presentation/providers/workout_timer_provider.dart';
 
-/// [active_workout_bar.dart]
 /// Minimized "workout in progress" bar shown above the bottom nav while a
-/// session is live. Hevy-clean: a live elapsed timer + the workout name +
-/// "N exercises · M sets" — no decorative pulse, just the data you need to
-/// decide whether to jump back in. Tapping anywhere expands /workout/active.
+/// session is live. Decluttered & compact: a pulsing active indicator,
+/// the workout name, and the elapsed timer. Tapping anywhere expands /workout/active.
 class ActiveWorkoutBar extends ConsumerWidget {
   const ActiveWorkoutBar({super.key});
 
@@ -20,25 +18,11 @@ class ActiveWorkoutBar extends ConsumerWidget {
     final accent = context.accent;
     final timer = ref.watch(workoutTimerProvider); // "HH:MM:SS", ticks 1/s
 
-    final summary = ref.watch(activeWorkoutProvider.select((s) {
-      if (s == null) return (name: 'Workout', exercises: 0, sets: 0);
+    final workoutName = ref.watch(activeWorkoutProvider.select((s) {
+      if (s == null) return 'Workout';
       final raw = s.name?.trim();
-      var done = 0;
-      for (final ex in s.exercises) {
-        for (final set in ex.sets) {
-          if (set.isCompleted) done++;
-        }
-      }
-      return (
-        name: (raw == null || raw.isEmpty) ? 'Workout' : raw,
-        exercises: s.exercises.length,
-        sets: done,
-      );
+      return (raw == null || raw.isEmpty) ? 'Workout' : raw;
     }));
-
-    final detail =
-        '${summary.exercises} exercise${summary.exercises == 1 ? '' : 's'}'
-        ' · ${summary.sets} set${summary.sets == 1 ? '' : 's'}';
 
     return Semantics(
       button: true,
@@ -55,59 +39,84 @@ class ActiveWorkoutBar extends ConsumerWidget {
           ),
           child: Row(
             children: [
-              // Live timer pill — the only accent fill; calm, no pulsing glow.
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                decoration: BoxDecoration(
-                  color: accent.muted,
-                  borderRadius: AppRadius.badgeAll,
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(
-                      width: 7,
-                      height: 7,
-                      decoration: BoxDecoration(
-                        color: accent.base,
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                    const SizedBox(width: 7),
-                    // HH:MM:SS is fixed-width; add tabular figures if your
-                    // AppText.value font jitters between frames.
-                    Text(timer, style: AppText.value(color: accent.light)),
-                  ],
+              // Subtle pulsing active indicator
+              _ActiveIndicator(color: accent.base),
+              const SizedBox(width: 12),
+              // Workout Title
+              Expanded(
+                child: Text(
+                  workoutName,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppText.cardTitle(),
                 ),
               ),
               const SizedBox(width: 12),
-              // Name + details
-              Expanded(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      summary.name,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: AppText.cardTitle(),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(detail,
-                        style: AppText.meta(color: AppColors.textSecondary)),
-                  ],
-                ),
+              // Elapsed duration/timer
+              Text(
+                timer,
+                style: AppText.value(color: accent.light),
               ),
-              const SizedBox(width: 8),
-              Text('Resume', style: AppText.button(color: accent.light)),
-              const Icon(Icons.chevron_right_rounded,
-                  color: AppColors.textTertiary, size: 20),
             ],
           ),
         ),
       ),
+    );
+  }
+}
+
+class _ActiveIndicator extends StatefulWidget {
+  final Color color;
+  const _ActiveIndicator({required this.color});
+
+  @override
+  State<_ActiveIndicator> createState() => _ActiveIndicatorState();
+}
+
+class _ActiveIndicatorState extends State<_ActiveIndicator>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _animation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 2),
+    )..repeat(reverse: true);
+    _animation = Tween<double>(begin: 0.4, end: 1.0).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _animation,
+      builder: (context, child) {
+        return Container(
+          width: 8,
+          height: 8,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: widget.color.withValues(alpha: _animation.value),
+            boxShadow: [
+              BoxShadow(
+                color: widget.color.withValues(alpha: 0.4 * _animation.value),
+                blurRadius: 6,
+                spreadRadius: 2 * _animation.value,
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }
