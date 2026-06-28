@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../../../../core/theme/app_text.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' show AuthException;
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/config/legal_links.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -34,9 +36,17 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     try {
       await ref.read(authRepositoryProvider).signInWithGoogle();
     } catch (e, s) {
-      debugPrint("Error signing in with Google: $e\n$s");
+      debugPrint('[AuthScreen] Sign-in error: $e\n$s');
       if (!mounted) return;
-      _snack("Couldn't sign in. Please try again.");
+      if (e is SocketException ||
+          e.toString().contains('SocketException') ||
+          e.toString().contains('NetworkException')) {
+        _snack('No connection. Check your internet and try again.');
+      } else if (e is AuthException) {
+        _snack('Sign-in unavailable. Please try again later.');
+      } else {
+        _snack("Couldn't sign in. Please try again.");
+      }
     } finally {
       if (mounted) setState(() => _isSigningIn = false);
     }
