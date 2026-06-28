@@ -137,7 +137,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                             ),
                           ),
                         ),
-                        const Spacer(),
+                        const SizedBox(height: 36),
                         Text(
                           'Welcome to GymLog',
                           style: AppText.caption(color: surface.textSecondary)

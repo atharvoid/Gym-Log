@@ -36,7 +36,8 @@ $migratedFiles = @(
     "lib/features/workout/presentation/screens/active_workout_screen.dart",
     "lib/features/routines/presentation/screens/explore_routines_screen.dart",
     "lib/features/auth/presentation/screens/auth_screen.dart",
-    "lib/features/workout/presentation/screens/workout_screen.dart"
+    "lib/features/workout/presentation/screens/workout_screen.dart",
+    "lib/features/auth/presentation/screens/onboarding_screen.dart"
 )
 
 $appColorMatches = @()
