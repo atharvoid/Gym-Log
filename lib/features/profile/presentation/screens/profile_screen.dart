@@ -12,6 +12,7 @@ import '../../../../core/theme/app_text.dart';
 import '../../../../core/theme/dynamic_accent_theme.dart';
 import '../../../../core/utils/tap_guard.dart';
 import '../../../../shared/widgets/bottom_nav_bar.dart';
+import '../../../../shared/widgets/motion/entrance_fade.dart';
 import '../../../../shared/widgets/premium_paywall.dart';
 import '../../../../shared/widgets/ui/app_action_row.dart';
 import '../../../../shared/widgets/ui/app_card.dart';
@@ -36,22 +37,13 @@ class ProfileScreen extends ConsumerStatefulWidget {
   ConsumerState<ProfileScreen> createState() => _ProfileScreenState();
 }
 
-class _ProfileScreenState extends ConsumerState<ProfileScreen>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _entranceController = AnimationController(
-    vsync: this,
-    duration: const Duration(milliseconds: 600),
-  );
-
+class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   String? _profileImagePath;
 
   @override
   void initState() {
     super.initState();
     _loadImagePath();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) _entranceController.forward();
-    });
   }
 
   Future<void> _loadImagePath() async {
@@ -79,44 +71,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     } else {
       await syncService.deleteRemoteIfEntitled(isPremium: isPremium);
     }
-  }
-
-  @override
-  void dispose() {
-    _entranceController.dispose();
-    super.dispose();
-  }
-
-  Widget _entrance({
-    required Widget child,
-    required int index,
-    bool slide = true,
-  }) {
-    final reduceMotion = MediaQuery.disableAnimationsOf(context);
-    if (reduceMotion) return child;
-
-    final delay = index * 0.06;
-    final animation = CurvedAnimation(
-      parent: _entranceController,
-      curve: Interval(delay.clamp(0.0, 0.82), 1.0, curve: Curves.easeOutCubic),
-    );
-
-    final Widget fadeChild = FadeTransition(
-      opacity: animation,
-      child: child,
-    );
-
-    if (slide) {
-      return SlideTransition(
-        position: Tween<Offset>(
-          begin: const Offset(0, 0.05),
-          end: Offset.zero,
-        ).animate(animation),
-        child: fadeChild,
-      );
-    }
-
-    return fadeChild;
   }
 
   void _openSettings() {
@@ -198,7 +152,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                 child: ListView(
                   padding: EdgeInsets.fromLTRB(16, 4, 16, bottomClearance),
                   children: [
-                    _entrance(
+                    EntranceFade(
                       index: 0,
                       child: Row(
                         children: [
@@ -226,7 +180,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                       ),
                     ),
                     const SizedBox(height: 12),
-                    _entrance(
+                    EntranceFade(
                       index: 0,
                       child: Semantics(
                         container: true,
@@ -242,7 +196,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                       ),
                     ),
                     const SizedBox(height: 20),
-                    _entrance(
+                    EntranceFade(
                       index: 1,
                       child: AppCard(
                         radius: AppRadius.card,
@@ -258,26 +212,26 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                     ),
                     if (goal > 0 && streak.workoutsThisWeek >= goal) ...[
                       const SizedBox(height: 10),
-                      _entrance(
+                      const EntranceFade(
                         index: 2,
-                        slide: false,
-                        child: const _GoalReachedBanner(),
+                        offset: Offset.zero,
+                        child: _GoalReachedBanner(),
                       ),
                     ] else if (!streak.trainedToday) ...[
                       const SizedBox(height: 10),
-                      _entrance(
+                      EntranceFade(
                         index: 2,
-                        slide: false,
+                        offset: Offset.zero,
                         child: _StreakReminder(streak: streak),
                       ),
                     ],
                     const SizedBox(height: 28),
-                    _entrance(
+                    const EntranceFade(
                       index: 3,
-                      child: const _TrainingChartSection(),
+                      child: _TrainingChartSection(),
                     ),
                     const SizedBox(height: 28),
-                    _entrance(
+                    EntranceFade(
                       index: 4,
                       child: _QuickLinks(
                         isPremium: isPremium,
