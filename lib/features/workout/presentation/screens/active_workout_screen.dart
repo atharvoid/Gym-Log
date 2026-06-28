@@ -20,6 +20,7 @@ import '../widgets/exercise_block.dart';
 import '../widgets/pr_celebration_overlay.dart';
 import '../widgets/rest_timer_bar.dart';
 import '../widgets/finish_summary_sheet.dart';
+import 'package:gymlog/shared/widgets/motion/entrance_fade.dart';
 
 const double _minSwipeVelocity = 120.0;
 const double _bottomListPadding = 100.0;
@@ -410,60 +411,99 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
           Expanded(
             child: !workoutExists
                 ? const SizedBox.shrink()
-                : ListView.builder(
-                    padding: EdgeInsets.only(
-                      top: 8,
-                      bottom: MediaQuery.viewPaddingOf(context).bottom +
-                          _bottomListPadding,
-                    ),
-                    itemCount: exerciseIds.length + 1,
-                    itemBuilder: (context, index) {
-                      if (index == exerciseIds.length) {
-                        return _buildAddExerciseButton(notifier);
-                      }
-                      return ExerciseBlock(
-                        key: ValueKey(exerciseIds[index]),
-                        exerciseIndex: index,
-                        enableHero: heroEnabledList[index],
-                        onReorderExercises:
-                            exerciseIds.length > 1 ? _showReorderSheet : null,
-                        onRemove: () => notifier.removeExercise(index),
-                        onUnitTap: () => _pickUnit(index),
-                        onReplace: () async {
-                          final selected =
-                              await context.push<Exercise>('/exercises/select');
-                          if (selected != null && mounted) {
-                            notifier.replaceExercise(
-                                index, selected.id, selected.name);
+                : exerciseIds.isEmpty
+                    ? EntranceFade(
+                        child: Center(
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 24),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.fitness_center_rounded,
+                                  size: 48,
+                                  color: surface.textTertiary,
+                                ),
+                                const SizedBox(height: 16),
+                                Text(
+                                  'Add your first exercise',
+                                  style: AppText.sheetTitle(
+                                      color: surface.textPrimary),
+                                  textAlign: TextAlign.center,
+                                ),
+                                const SizedBox(height: 6),
+                                Text(
+                                  'Choose from our library or build a custom move.',
+                                  style: AppText.body(
+                                      color: surface.textSecondary),
+                                  textAlign: TextAlign.center,
+                                ),
+                                const SizedBox(height: 24),
+                                SizedBox(
+                                  width: 200,
+                                  child: _buildAddExerciseButton(notifier),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      )
+                    : ListView.builder(
+                        padding: EdgeInsets.only(
+                          top: 8,
+                          bottom: MediaQuery.viewPaddingOf(context).bottom +
+                              _bottomListPadding,
+                        ),
+                        itemCount: exerciseIds.length + 1,
+                        itemBuilder: (context, index) {
+                          if (index == exerciseIds.length) {
+                            return _buildAddExerciseButton(notifier);
                           }
+                          return ExerciseBlock(
+                            key: ValueKey(exerciseIds[index]),
+                            exerciseIndex: index,
+                            enableHero: heroEnabledList[index],
+                            onReorderExercises: exerciseIds.length > 1
+                                ? _showReorderSheet
+                                : null,
+                            onRemove: () => notifier.removeExercise(index),
+                            onUnitTap: () => _pickUnit(index),
+                            onReplace: () async {
+                              final selected = await context
+                                  .push<Exercise>('/exercises/select');
+                              if (selected != null && mounted) {
+                                notifier.replaceExercise(
+                                    index, selected.id, selected.name);
+                              }
+                            },
+                            onAddSet: () => notifier.addSet(index),
+                            onRemoveSet: (setIdx) =>
+                                notifier.removeSet(index, setIdx),
+                            onSetChanged: (updatedSet) {
+                              final workout = ref.read(activeWorkoutProvider);
+                              if (workout == null ||
+                                  index >= workout.exercises.length) {
+                                return;
+                              }
+                              final exercise = workout.exercises[index];
+                              final setIdx = exercise.sets
+                                  .indexWhere((s) => s.id == updatedSet.id);
+                              if (setIdx != -1) {
+                                notifier.updateSet(
+                                  index,
+                                  setIdx,
+                                  weight: updatedSet.weightKg,
+                                  reps: updatedSet.reps,
+                                  type: updatedSet.setType,
+                                );
+                              }
+                            },
+                            onToggleSetCompletion: (setIdx) =>
+                                _toggleSet(index, setIdx, isEditing: isEditing),
+                          );
                         },
-                        onAddSet: () => notifier.addSet(index),
-                        onRemoveSet: (setIdx) =>
-                            notifier.removeSet(index, setIdx),
-                        onSetChanged: (updatedSet) {
-                          final workout = ref.read(activeWorkoutProvider);
-                          if (workout == null ||
-                              index >= workout.exercises.length) {
-                            return;
-                          }
-                          final exercise = workout.exercises[index];
-                          final setIdx = exercise.sets
-                              .indexWhere((s) => s.id == updatedSet.id);
-                          if (setIdx != -1) {
-                            notifier.updateSet(
-                              index,
-                              setIdx,
-                              weight: updatedSet.weightKg,
-                              reps: updatedSet.reps,
-                              type: updatedSet.setType,
-                            );
-                          }
-                        },
-                        onToggleSetCompletion: (setIdx) =>
-                            _toggleSet(index, setIdx, isEditing: isEditing),
-                      );
-                    },
-                  ),
+                      ),
           ),
         ],
       ),
