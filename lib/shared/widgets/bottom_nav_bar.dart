@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter/services.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/dynamic_accent_theme.dart';
+import '../../core/theme/app_text.dart';
 
 /// [bottom_nav_bar.dart]
 /// 3-tab navigation (Home, Routines, Profile). Driven by the parent
@@ -94,9 +94,9 @@ class _NavButton extends StatelessWidget {
             const SizedBox(height: 2),
             Text(
               item.label,
-              style: GoogleFonts.inter(
+              style: AppText.rowLabel(
                 color: color,
-                fontWeight: FontWeight.w600,
+              ).copyWith(
                 fontSize: 11,
               ),
             ),

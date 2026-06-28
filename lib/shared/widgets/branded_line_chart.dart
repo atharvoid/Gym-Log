@@ -1,7 +1,6 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:gymlog/core/theme/app_colors.dart';
 import 'package:gymlog/core/theme/dynamic_accent_theme.dart';
@@ -471,11 +470,9 @@ class _BrandedLineChartState extends State<BrandedLineChart> {
               onPressed: widget.onEmptyAction,
               child: Text(
                 widget.emptyActionLabel!,
-                style: GoogleFonts.inter(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
+                style: AppText.rowLabel(
                   color: context.accent.light,
-                ),
+                ).copyWith(fontSize: 13),
               ),
             ),
           ],

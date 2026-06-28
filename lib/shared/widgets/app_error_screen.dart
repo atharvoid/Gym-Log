@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../../core/router/router.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text.dart';
@@ -65,10 +64,11 @@ class AppErrorScreen extends StatelessWidget {
                 Text(
                   'Something went wrong',
                   textAlign: TextAlign.center,
-                  style: GoogleFonts.inter(
+                  style: AppText.cardTitle(
+                    color: AppColors.textPrimary,
+                  ).copyWith(
                     fontSize: 17,
                     fontWeight: FontWeight.w700,
-                    color: AppColors.textPrimary,
                     decoration: TextDecoration.none,
                   ),
                 ),
@@ -77,11 +77,12 @@ class AppErrorScreen extends StatelessWidget {
                   'Your workout data is safe on this device.\n'
                   'Restart GymLog or head back home.',
                   textAlign: TextAlign.center,
-                  style: GoogleFonts.inter(
+                  style: AppText.body(
+                    color: AppColors.textSecondary,
+                  ).copyWith(
                     fontSize: 13.5,
                     height: 1.5,
                     fontWeight: FontWeight.w400,
-                    color: AppColors.textSecondary,
                     decoration: TextDecoration.none,
                   ),
                 ),
@@ -142,10 +143,11 @@ class _ErrorAction extends StatelessWidget {
           ),
           child: Text(
             label,
-            style: GoogleFonts.inter(
+            style: AppText.rowLabel(
+              color: primary ? Colors.white : AppColors.textPrimary,
+            ).copyWith(
               fontSize: 15,
               fontWeight: FontWeight.w700,
-              color: primary ? Colors.white : AppColors.textPrimary,
               decoration: TextDecoration.none,
             ),
           ),

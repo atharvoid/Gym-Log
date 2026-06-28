@@ -10,13 +10,7 @@ void main() {
       final path = file.path.replaceAll('\\', '/');
       return path.endsWith('.dart') &&
           !path.contains('lib/core/theme/app_text.dart') &&
-          !path.contains('lib/core/theme/app_theme.dart') &&
-          !path.contains('splash_screen.dart') &&
-          !path.contains('weekly_bar_chart.dart') &&
-          !path.contains('routine_detail_styles.dart') &&
-          !path.contains('app_error_screen.dart') &&
-          !path.contains('bottom_nav_bar.dart') &&
-          !path.contains('branded_line_chart.dart');
+          !path.contains('lib/core/theme/app_theme.dart');
     });
 
     final List<String> failures = [];

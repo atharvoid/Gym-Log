@@ -9,12 +9,7 @@ Write-Host "`n▸ check inline GoogleFonts" -ForegroundColor Cyan
 $gfontMatches = Get-ChildItem -Path lib -Recurse -Filter *.dart | 
     Where-Object { 
         $_.FullName -notmatch "app_text\.dart" -and 
-        $_.FullName -notmatch "app_theme\.dart" -and 
-        $_.FullName -notmatch "weekly_bar_chart\.dart" -and 
-        $_.FullName -notmatch "routine_detail_styles\.dart" -and 
-        $_.FullName -notmatch "app_error_screen\.dart" -and 
-        $_.FullName -notmatch "bottom_nav_bar\.dart" -and 
-        $_.FullName -notmatch "branded_line_chart\.dart"
+        $_.FullName -notmatch "app_theme\.dart"
     } | 
     Select-String -Pattern "GoogleFonts\.inter\("
 

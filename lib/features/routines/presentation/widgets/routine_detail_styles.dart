@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:gymlog/core/theme/app_colors.dart';
+import 'package:gymlog/core/theme/app_text.dart';
 
 /// Single source of truth for the Routine Detail screen's typography and
 /// surface tokens. Every component pulls from here so the screen stays
@@ -19,93 +19,98 @@ import 'package:gymlog/core/theme/app_colors.dart';
 /// `style.copyWith(color: context.accent.light)`.
 class RDStyles {
   // ── Header / AppBar ────────────────────────────
-  static TextStyle title = GoogleFonts.inter(
-      fontSize: 22,
-      fontWeight: FontWeight.w700,
-      color: AppColors.textPrimary,
-      height: 1.15,
-      letterSpacing: -0.2);
-  static TextStyle subtitle =
-      GoogleFonts.inter(fontSize: 13, color: AppColors.textSecondary);
+  static TextStyle title =
+      AppText.heroStat(color: AppColors.textPrimary).copyWith(
+    height: 1.15,
+    letterSpacing: -0.2,
+  );
+  static TextStyle subtitle = AppText.meta(color: AppColors.textSecondary);
 
   // ── Buttons ─────────────────────────
-  static TextStyle startBtn = GoogleFonts.inter(
-      fontSize: 16, fontWeight: FontWeight.w600, color: Colors.white);
-  static TextStyle editBtn = GoogleFonts.inter(
-      fontSize: 14,
-      fontWeight: FontWeight.w500,
-      color: Colors.white.withValues(alpha: 0.86));
-  static TextStyle addBtn = GoogleFonts.inter(
-      fontSize: 15,
-      fontWeight: FontWeight.w600,
-      color: Colors.white.withValues(alpha: 0.90));
+  static TextStyle startBtn = AppText.button(color: Colors.white);
+  static TextStyle editBtn = AppText.rowLabel(
+    color: Colors.white.withValues(alpha: 0.86),
+  );
+  static TextStyle addBtn = AppText.body(
+    color: Colors.white.withValues(alpha: 0.90),
+  ).copyWith(
+    fontWeight: FontWeight.w600,
+  );
 
   // ── Section header + range pill ────────────────────
-  static TextStyle sectionLabel = GoogleFonts.inter(
-      fontSize: 15, fontWeight: FontWeight.w600, color: AppColors.textPrimary);
-  static TextStyle sectionUnit = GoogleFonts.inter(
-      fontSize: 13,
-      fontWeight: FontWeight.w500,
-      color: AppColors.textSecondary);
-  static TextStyle rangePill = GoogleFonts.inter(
-      fontSize: 13,
-      fontWeight: FontWeight.w500,
-      color: Colors.white.withValues(alpha: 0.86));
+  static TextStyle sectionLabel = AppText.body(
+    color: AppColors.textPrimary,
+  ).copyWith(
+    fontWeight: FontWeight.w600,
+  );
+  static TextStyle sectionUnit = AppText.meta(
+    color: AppColors.textSecondary,
+  );
+  static TextStyle rangePill = AppText.meta(
+    color: Colors.white.withValues(alpha: 0.86),
+  );
 
   // ── Chart ────────────────────────
-  static TextStyle chartValue = GoogleFonts.inter(
-      fontSize: 22, fontWeight: FontWeight.w700, color: Colors.white);
+  static TextStyle chartValue = AppText.heroStat(
+    color: Colors.white,
+  );
   // NEUTRAL base — the chart's selected-date header is accent-colored, so the
   // consumer applies `chartDate.copyWith(color: context.accent.light)`. Never
   // bake an accent here: a static style is frozen at first load and was the
   // exact cause of the hardcoded-purple date axis.
-  static TextStyle chartDate = GoogleFonts.inter(
-      fontSize: 15,
-      fontWeight: FontWeight.w600,
-      color: AppColors.textSecondary);
-  static TextStyle axis = GoogleFonts.inter(
-      fontSize: 10,
-      fontWeight: FontWeight.w500,
-      color: AppColors.chartAxisLabel,
-      fontFeatures: const [FontFeature.tabularFigures()]);
+  static TextStyle chartDate = AppText.body(
+    color: AppColors.textSecondary,
+  ).copyWith(
+    fontWeight: FontWeight.w600,
+  );
+  static TextStyle axis = AppText.statCellLabel(
+    color: AppColors.chartAxisLabel,
+  ).copyWith(
+    letterSpacing: 0.0,
+    fontFeatures: const [FontFeature.tabularFigures()],
+  );
   // NEUTRAL base — apply the live accent at the call site if an accent-colored
   // delta is desired (`deltaPill.copyWith(color: context.accent.light)`).
-  static TextStyle deltaPill = GoogleFonts.inter(
-      fontSize: 12.5,
-      fontWeight: FontWeight.w600,
-      color: AppColors.textSecondary);
+  static TextStyle deltaPill = AppText.caption(
+    color: AppColors.textSecondary,
+  ).copyWith(
+    fontSize: 12.5,
+    fontWeight: FontWeight.w600,
+  );
 
   // ── Exercise block ───────────────────────────
-  static TextStyle exName = GoogleFonts.inter(
-      fontSize: 17,
-      fontWeight: FontWeight.w600,
-      color: AppColors.textPrimary,
-      letterSpacing: -0.2);
-  static TextStyle exLast =
-      GoogleFonts.inter(fontSize: 13, color: AppColors.textSecondary);
-  static TextStyle tableHeader = GoogleFonts.inter(
-      fontSize: 11,
-      fontWeight: FontWeight.w600,
-      color: AppColors.chartAxisLabel,
-      letterSpacing: 0.6);
-  static TextStyle setNo = GoogleFonts.inter(
-      fontSize: 15,
-      fontWeight: FontWeight.w600,
-      color: Colors.white.withValues(alpha: 0.90),
-      fontFeatures: const [FontFeature.tabularFigures()]);
-  static TextStyle numCell = GoogleFonts.inter(
-      fontSize: 17,
-      fontWeight: FontWeight.w600,
-      color: Colors.white.withValues(alpha: 0.92),
-      fontFeatures: const [FontFeature.tabularFigures()]);
+  static TextStyle exName = AppText.exerciseName(
+    color: AppColors.textPrimary,
+  ).copyWith(
+    fontSize: 17,
+    letterSpacing: -0.2,
+  );
+  static TextStyle exLast = AppText.meta(color: AppColors.textSecondary);
+  static TextStyle tableHeader = AppText.columnHeader(
+    color: AppColors.chartAxisLabel,
+  ).copyWith(
+    letterSpacing: 0.6,
+  );
+  static TextStyle setNo = AppText.body(
+    color: Colors.white.withValues(alpha: 0.90),
+  ).copyWith(
+    fontWeight: FontWeight.w600,
+    fontFeatures: const [FontFeature.tabularFigures()],
+  );
+  static TextStyle numCell = AppText.statValue(
+    color: Colors.white.withValues(alpha: 0.92),
+  ).copyWith(
+    fontWeight: FontWeight.w600,
+  );
 
   // ── Empty state ─────────────────────────
-  static TextStyle emptyTitle = GoogleFonts.inter(
-      fontSize: 13.5,
-      fontWeight: FontWeight.w500,
-      color: AppColors.textSecondary);
-  static TextStyle emptySub =
-      GoogleFonts.inter(fontSize: 12, color: AppColors.chartAxisLabel);
+  static TextStyle emptyTitle = AppText.meta(
+    color: AppColors.textSecondary,
+  ).copyWith(
+    fontSize: 13.5,
+    fontWeight: FontWeight.w600,
+  );
+  static TextStyle emptySub = AppText.caption(color: AppColors.chartAxisLabel);
 
   // ── Surfaces (tokenized: alias AppColors so no feature owns a private surface) ──
   static const cardGradient = AppColors.cardGradient;
