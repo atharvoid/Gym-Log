@@ -25,6 +25,7 @@ import 'package:gymlog/shared/widgets/ui/app_dialog.dart';
 import 'package:gymlog/shared/widgets/feedback/undoable_delete.dart';
 import 'package:gymlog/shared/widgets/ui/secondary_button.dart';
 import 'package:gymlog/shared/widgets/ui/skeleton.dart';
+import 'package:gymlog/shared/widgets/motion/pressable_scale.dart';
 import 'package:gymlog/shared/widgets/ui/time_range_filter.dart';
 import '../providers/routines_provider.dart';
 import '../widgets/routine_exercise_block.dart';
@@ -662,46 +663,30 @@ class _HeroStat extends StatelessWidget {
   }
 }
 
-class _StartRoutineButton extends StatefulWidget {
+class _StartRoutineButton extends StatelessWidget {
   final VoidCallback onTap;
   final bool empty;
 
   const _StartRoutineButton({required this.onTap, required this.empty});
 
-  @override
-  State<_StartRoutineButton> createState() => _StartRoutineButtonState();
-}
-
-class _StartRoutineButtonState extends State<_StartRoutineButton> {
-  double _scale = 1.0;
-
-  void _onTapDown(TapDownDetails _) => setState(() => _scale = 0.97);
-  void _onTapUp(TapUpDetails _) => setState(() => _scale = 1.0);
-  void _onTapCancel() => setState(() => _scale = 1.0);
-
   void _onTap() {
-    if (widget.empty) {
+    // Dominant launchpad CTA → heavy impact for the real start; light when the
+    // routine is empty (the tap just routes to the editor).
+    if (empty) {
       HapticFeedback.lightImpact();
     } else {
       HapticFeedback.heavyImpact();
     }
-    widget.onTap();
+    onTap();
   }
 
   @override
   Widget build(BuildContext context) {
-    final empty = widget.empty;
     final surface = context.surface;
     final accent = context.accent;
-    return GestureDetector(
-      onTapDown: _onTapDown,
-      onTapUp: _onTapUp,
-      onTapCancel: _onTapCancel,
-      onTap: _onTap,
-      child: AnimatedScale(
-        scale: _scale,
-        duration: const Duration(milliseconds: 150),
-        curve: Curves.easeOutQuint,
+    return PressableScale(
+      child: GestureDetector(
+        onTap: _onTap,
         child: Container(
           height: 52,
           width: double.infinity,

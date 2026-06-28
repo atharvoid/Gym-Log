@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text.dart';
 import '../../../core/theme/dynamic_accent_theme.dart';
+import '../motion/pressable_scale.dart';
 
 /// [start_button.dart]
 /// Calm "Start" control (Option A — neutral-raised). Emphasis comes from
@@ -46,7 +47,7 @@ class StartButton extends StatelessWidget {
     final labelColor = on ? AppColors.textPrimary : AppColors.textTertiary;
     final glyphColor = on ? accent.base : AppColors.textTertiary;
 
-    return SizedBox(
+    final button = SizedBox(
       height: expand ? 52 : 48,
       width: expand ? double.infinity : null,
       child: Material(
@@ -90,6 +91,11 @@ class StartButton extends StatelessWidget {
           ),
         ),
       ),
+    );
+
+    return PressableScale(
+      enabled: on,
+      child: button,
     );
   }
 }
