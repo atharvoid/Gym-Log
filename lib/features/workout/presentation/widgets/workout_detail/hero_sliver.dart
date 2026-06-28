@@ -9,6 +9,7 @@ import 'package:gymlog/core/theme/app_text.dart';
 /// expanded height scales with the OS font size so large Dynamic Type can't
 /// clip the metrics (the global text-scale clamp caps the factor at 1.4).
 class WorkoutHeroSliver extends StatelessWidget {
+  final String? workoutId;
   final String name;
   final String dateStr;
   final String durationStr;
@@ -18,6 +19,7 @@ class WorkoutHeroSliver extends StatelessWidget {
 
   const WorkoutHeroSliver({
     super.key,
+    this.workoutId,
     required this.name,
     required this.dateStr,
     required this.durationStr,
@@ -95,14 +97,29 @@ class WorkoutHeroSliver extends StatelessWidget {
                     children: [
                       Semantics(
                         header: true,
-                        child: Text(
-                          name,
-                          // S3: text-depth shadow on hero heading
-                          style: AppText.sectionHeading(
-                              shadows: AppText.depthFor(context)),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
+                        child: workoutId == null || reduceMotion
+                            ? Text(
+                                name,
+                                // S3: text-depth shadow on hero heading
+                                style: AppText.sectionHeading(
+                                    shadows: AppText.depthFor(context)),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              )
+                            : Hero(
+                                tag: 'workout-hero-$workoutId',
+                                child: Material(
+                                  type: MaterialType.transparency,
+                                  child: Text(
+                                    name,
+                                    // S3: text-depth shadow on hero heading
+                                    style: AppText.sectionHeading(
+                                        shadows: AppText.depthFor(context)),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ),
                       ),
                       const SizedBox(height: 2),
                       Text(dateStr, style: AppText.caption()),

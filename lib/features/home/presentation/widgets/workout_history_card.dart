@@ -28,11 +28,13 @@ final _kDayMonth = DateFormat('MMM d');
 class WorkoutHistoryCard extends StatelessWidget {
   final WorkoutSessionPreview preview;
   final VoidCallback? onMenuPressed;
+  final bool enableHero;
 
   const WorkoutHistoryCard({
     super.key,
     required this.preview,
     this.onMenuPressed,
+    this.enableHero = true,
   });
 
   @override
@@ -64,12 +66,26 @@ class WorkoutHistoryCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(
-                      name,
-                      style: AppText.cardTitle(),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
+                    if (!enableHero || MediaQuery.disableAnimationsOf(context))
+                      Text(
+                        name,
+                        style: AppText.cardTitle(),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      )
+                    else
+                      Hero(
+                        tag: 'workout-hero-${session.id}',
+                        child: Material(
+                          type: MaterialType.transparency,
+                          child: Text(
+                            name,
+                            style: AppText.cardTitle(),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ),
                     const SizedBox(height: 2),
                     Text(dateStr, style: AppText.caption()),
                   ],

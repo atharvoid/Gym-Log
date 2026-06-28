@@ -140,6 +140,7 @@ class WorkoutDetailScreen extends ConsumerWidget {
         child: CustomScrollView(
           slivers: [
             WorkoutHeroSliver(
+              workoutId: session.id,
               name: name,
               dateStr: dateStr,
               durationStr: durationStr,

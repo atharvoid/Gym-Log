@@ -99,6 +99,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     // itemCount: [HeaderBand] + [QuickStart] + [Header] + [N cards] + [footer]
     final itemCount = 3 + totalItems + 1;
 
+    final seenSessionIds = <String>{};
+
     return Scaffold(
       backgroundColor: surface.bgBase,
       body: SafeArea(
@@ -121,11 +123,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 final historyIndex = index - 3;
                 if (historyIndex < totalItems) {
                   final preview = historyState.items[historyIndex];
+                  final enableHero = seenSessionIds.add(preview.session.id);
                   return Padding(
                     padding: const EdgeInsets.only(bottom: 8),
                     child: WorkoutHistoryCard(
                       key: ValueKey(preview.session.id),
                       preview: preview,
+                      enableHero: enableHero,
                       onMenuPressed: () {
                         HapticFeedback.selectionClick();
                         _showWorkoutCardMenu(preview.session);
