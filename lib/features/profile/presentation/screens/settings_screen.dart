@@ -189,7 +189,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         iconColor: accent.light,
                         title: isPremium ? 'GymLog Pro' : 'Upgrade to Pro',
                         subtitle: isPremium
-                            ? 'Active — full history unlocked'
+                            ? 'Active (full history unlocked)'
                             : 'Full analytics history & more',
                         onTap: () =>
                             _openPremium(context, isPremium: isPremium),
@@ -266,7 +266,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       AppActionRow(
                         icon: Icons.ios_share_rounded,
                         title: 'Export workouts',
-                        subtitle: 'CSV of every set — yours to keep',
+                        subtitle: 'CSV of every set, yours to keep',
                         onTap: () => _exportWorkouts(
                             context, ref, profile.id, profile.displayName),
                       ),
@@ -539,7 +539,7 @@ Future<void> _exportWorkouts(BuildContext context, WidgetRef ref, String userId,
   try {
     final service = WorkoutExportService(ref.read(databaseProvider));
     final file = await service.writeCsvFile(userId);
-    final who = displayName.trim().isEmpty ? '' : ' — ${displayName.trim()}';
+    final who = displayName.trim().isEmpty ? '' : ' (${displayName.trim()})';
     await SharePlus.instance.share(ShareParams(
       files: [XFile(file.path, mimeType: 'text/csv')],
       subject: 'GymLog workout export$who',

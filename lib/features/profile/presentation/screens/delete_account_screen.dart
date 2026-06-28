@@ -129,7 +129,7 @@ class _DeleteAccountScreenState extends ConsumerState<DeleteAccountScreen> {
                         const SizedBox(height: 6),
                         Text(
                           'Deleting your account cannot be undone. Once you confirm, your '
-                          'data will be permanently deleted — there is no recovery.',
+                          'data will be permanently deleted. There is no recovery.',
                           style: AppText.body(),
                         ),
                       ],
@@ -154,7 +154,7 @@ class _DeleteAccountScreenState extends ConsumerState<DeleteAccountScreen> {
                     icon: Icons.check_circle_outline_rounded,
                     lines: [
                       'Any CSV files you exported to your phone (Downloads / Files) '
-                          'are your property — they are never touched or removed.',
+                          'are your property. They are never touched or removed.',
                     ],
                   ),
                   const SizedBox(height: 26),

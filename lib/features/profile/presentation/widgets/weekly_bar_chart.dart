@@ -235,7 +235,7 @@ class _WeeklyBarChartState extends State<WeeklyBarChart> {
 
   String _weekRangeLabel(DateTime start) {
     final end = start.add(const Duration(days: 6));
-    return '${DateFormat('MMM d').format(start)} — ${DateFormat('MMM d').format(end)}';
+    return '${DateFormat('MMM d').format(start)} - ${DateFormat('MMM d').format(end)}';
   }
 
   // ── Low-data comparison view ─────────────────────────────────────────────────
@@ -295,7 +295,7 @@ class _WeeklyBarChartState extends State<WeeklyBarChart> {
             Expanded(
               child: _StatBlock(
                 label: 'This week',
-                value: latest != null ? _valueLabel(latestValue) : '—',
+                value: latest != null ? _valueLabel(latestValue) : '0',
                 dim: false,
               ),
             ),

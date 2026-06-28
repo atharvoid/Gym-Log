@@ -122,7 +122,7 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            "Couldn't save the workout — your session is safe. Try again.",
+            "Couldn't save the workout; your session is safe. Try again.",
             style: AppText.body(color: context.surface.textPrimary),
           ),
           backgroundColor: AppColors.error.withValues(alpha: 0.92),
@@ -203,7 +203,7 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
         PickerOption(
           value: '_default',
           label: 'Use app default',
-          subtitle: 'Currently $globalUnit — change in Settings',
+          subtitle: 'Currently $globalUnit, change in Settings',
           icon: Icons.settings_backup_restore_rounded,
           color: surface.textSecondary,
         ),

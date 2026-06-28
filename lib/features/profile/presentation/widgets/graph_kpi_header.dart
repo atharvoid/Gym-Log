@@ -38,7 +38,7 @@ class GraphKpiHeader extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                latest == null ? '—' : _formatValue(latest.valueFor(metric)),
+                latest == null ? '0' : _formatValue(latest.valueFor(metric)),
                 style: AppText.statNumber(),
               ),
               const SizedBox(height: 2),

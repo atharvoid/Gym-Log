@@ -26,7 +26,7 @@ void main() {
     expect(find.text('15kg x 12'), findsOneWidget);
   });
 
-  testWidgets('PREVIOUS shows a dash when there is no prior data',
+  testWidgets('PREVIOUS shows blank when there is no prior data',
       (tester) async {
     await tester.pumpWidget(host(SetRow(
       setIndex: 0,
@@ -35,7 +35,9 @@ void main() {
       onToggleComplete: () {},
     )));
 
-    expect(find.text('—'), findsOneWidget);
+    final textWidgets = tester.widgetList<Text>(find.byType(Text));
+    final emptyTexts = textWidgets.where((t) => t.data == '');
+    expect(emptyTexts.length, 1);
   });
 
   testWidgets('SET column renders the type letter, never a number, for warmup',

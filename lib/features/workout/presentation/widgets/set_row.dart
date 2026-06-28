@@ -193,7 +193,7 @@ class _SetRowState extends State<SetRow> {
         ],
         style: AppText.value(),
         decoration: InputDecoration(
-          hintText: hintText ?? '–',
+          hintText: hintText ?? '0',
           hintStyle: AppText.value(color: AppColors.textTertiary),
           border: InputBorder.none,
           focusedBorder: InputBorder.none,
@@ -266,7 +266,7 @@ class _SetRowState extends State<SetRow> {
                   fit: BoxFit.scaleDown,
                   alignment: Alignment.centerLeft,
                   child: Text(
-                    prev ?? '—',
+                    prev ?? '',
                     style: AppText.statLabel(
                       color: prev != null
                           ? AppColors.textSecondary
@@ -287,7 +287,7 @@ class _SetRowState extends State<SetRow> {
                 semanticLabel: 'Weight in ${widget.unit}',
                 hintText: widget.previousWeight != null
                     ? _formatWeightField(widget.previousWeight!)
-                    : '–',
+                    : '0',
                 onChanged: (val) {
                   final parsed = double.tryParse(val);
                   if (parsed != null) {
@@ -310,7 +310,7 @@ class _SetRowState extends State<SetRow> {
                 semanticLabel: 'Reps',
                 hintText: widget.previousReps != null
                     ? '${widget.previousReps!}'
-                    : '–',
+                    : '0',
                 onChanged: (val) {
                   final parsed = int.tryParse(val);
                   if (parsed != null) {

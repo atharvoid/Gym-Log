@@ -628,7 +628,7 @@ class _QuickLinks extends StatelessWidget {
             iconColor: context.accent.light,
             title: isPremium ? 'GymLog Pro' : 'Upgrade to Pro',
             subtitle: isPremium
-                ? 'Active — full history unlocked'
+                ? 'Active (full history unlocked)'
                 : 'Full analytics history & more',
             onTap: onPremiumTap,
           ),
