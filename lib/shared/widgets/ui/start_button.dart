@@ -38,22 +38,23 @@ class StartButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final accent = context.accent;
+    final surface = context.surface;
     final on = enabled && onPressed != null;
 
     // Neutral-raised surface — one elevation step above the card background.
     // Full-saturation accent.base is reserved for LIVE states (active workout
     // bar, rest timer), NOT entry buttons.
-    final bg = on ? AppColors.surface3 : AppColors.surface2;
-    final labelColor = on ? AppColors.textPrimary : AppColors.textTertiary;
-    final glyphColor = on ? accent.base : AppColors.textTertiary;
+    final bg = on ? surface.surface3 : surface.surface2;
+    final labelColor = on ? surface.textPrimary : surface.textTertiary;
+    final glyphColor = on ? accent.base : surface.textTertiary;
 
     final button = SizedBox(
       height: expand ? 52 : 48,
       width: expand ? double.infinity : null,
       child: Material(
         color: bg,
-        shape: const RoundedRectangleBorder(
-          side: BorderSide(color: AppColors.borderDefault),
+        shape: RoundedRectangleBorder(
+          side: BorderSide(color: surface.borderDefault),
           borderRadius: AppRadius.buttonPrimaryAll,
         ),
         clipBehavior: Clip.antiAlias,
