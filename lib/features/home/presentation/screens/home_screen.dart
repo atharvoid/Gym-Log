@@ -36,6 +36,12 @@ class HomeScreen extends ConsumerStatefulWidget {
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   final GlobalKey _findProgramKey = GlobalKey();
+
+  /// Used by the step-4 tour spotlight — attached to the weekly-stats card
+  /// inside [_HomeHeaderBand]. Hoisted here so the overlay (mounted in this
+  /// State's Stack) can reference the same key.
+  final GlobalKey _weeklyStatsKey = GlobalKey();
+
   // Pagination is driven from real scroll position — NOT scheduled as a
   // side-effect inside itemBuilder (which fired a microtask on every rebuild).
   final ScrollController _scrollController = ScrollController();
@@ -127,7 +133,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
                   itemCount: itemCount,
                   itemBuilder: (context, index) {
-                    if (index == 0) return const _HomeHeaderBand();
+                    if (index == 0) {
+                      return _HomeHeaderBand(weeklyStatsKey: _weeklyStatsKey);
+                    }
                     if (showFindProgram) {
                       if (index == 1) return _findProgramCard();
                       if (index == 2) return _quickStart();
@@ -167,6 +175,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 description:
                     'Choose a trainer-built routine. Tap "Explore Programs" to browse workouts tailored for your experience level.',
                 step: 0,
+              ),
+
+            // Step 4 — Weekly stats spotlight.
+            // Guard: only render when Home is the active top route so the
+            // mask cannot leak through to another screen.
+            if (tourStep == 4 && (ModalRoute.of(context)?.isCurrent ?? false))
+              SpotlightTourOverlay(
+                targetKey: _weeklyStatsKey,
+                title: 'Your weekly progress',
+                description:
+                    'This card tracks workouts toward your weekly goal and your current streak. Tap the ring to adjust your target — stay consistent and keep that streak alive!',
+                step: 4,
               ),
           ],
         ),
@@ -407,7 +427,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 }
 
 class _HomeHeaderBand extends ConsumerWidget {
-  const _HomeHeaderBand();
+  /// Key attached to the weekly-stats AppCard so the step-4 tour spotlight
+  /// can locate its position on screen.
+  final GlobalKey? weeklyStatsKey;
+
+  const _HomeHeaderBand({this.weeklyStatsKey});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -438,6 +462,7 @@ class _HomeHeaderBand extends ConsumerWidget {
           if (hasActivity) ...[
             const SizedBox(height: 20),
             AppCard(
+              key: weeklyStatsKey,
               radius: AppRadius.card,
               child: Semantics(
                 container: true,
