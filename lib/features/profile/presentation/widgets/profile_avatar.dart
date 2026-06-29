@@ -55,6 +55,8 @@ class _ProfileAvatarState extends State<ProfileAvatar> {
   Future<void> _pickImage(ImageSource source) async {
     HapticFeedback.selectionClick();
     XFile? picked;
+    final messenger = ScaffoldMessenger.of(context);
+    final bgSurface = context.surface.bgSurface;
     try {
       picked = await ImagePicker().pickImage(
         source: source,
@@ -62,8 +64,18 @@ class _ProfileAvatarState extends State<ProfileAvatar> {
         maxHeight: 2048,
         imageQuality: 95,
       );
-    } catch (_) {
-      return; // permission denied / cancelled
+    } catch (e, st) {
+      debugPrint('[ProfileAvatar] Failed to pick image: $e\n$st');
+      final isCamera = source == ImageSource.camera;
+      final msg = isCamera
+          ? "Couldn't open the camera. Check permissions in Settings."
+          : "Couldn't open the photo library. Check permissions in Settings.";
+      messenger.showSnackBar(SnackBar(
+        content: Text(msg, style: AppText.button()),
+        backgroundColor: bgSurface,
+        behavior: SnackBarBehavior.floating,
+      ));
+      return;
     }
     if (picked == null || !mounted) return;
 
@@ -92,8 +104,14 @@ class _ProfileAvatarState extends State<ProfileAvatar> {
         HapticFeedback.mediumImpact();
         widget.onImageChanged(compressed);
       }
-    } catch (_) {
-      // Silently fail — the user can retry.
+    } catch (e, st) {
+      debugPrint('[ProfileAvatar] Failed to compress/save image: $e\n$st');
+      messenger.showSnackBar(SnackBar(
+        content: Text("Couldn't save that photo. Try again.",
+            style: AppText.button()),
+        backgroundColor: bgSurface,
+        behavior: SnackBarBehavior.floating,
+      ));
     } finally {
       if (mounted) setState(() => _processing = false);
     }
