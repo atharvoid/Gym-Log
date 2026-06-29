@@ -382,9 +382,10 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
           scaffold,
           SpotlightTourOverlay(
             targetKey: _startRoutineButtonKey,
-            title: 'Start your workout',
+            title: 'Your program',
             description:
-                'Tap "Start Routine" to open the workout logger and begin your training session!',
+                'This is your training hub — exercises, sets, and your personal '
+                'records all live here. Tap Next to finish setup.',
             step: 2,
           ),
         ],
