@@ -306,15 +306,29 @@ class _IdentityHeader extends ConsumerWidget {
                           maxLength: 40,
                         );
                         if (newName != null && newName.trim().isNotEmpty) {
+                          if (!context.mounted) return;
                           final user = ref.read(authProvider);
                           if (user != null) {
-                            await ref
+                            final messenger = ScaffoldMessenger.of(context);
+                            final bgSurface = context.surface.bgSurface;
+                            final success = await ref
                                 .read(profileSyncProvider)
                                 .submitDisplayName(
                                   userId: user.id,
                                   email: user.email ?? '',
                                   name: newName,
                                 );
+                            if (success) {
+                              ref.invalidate(currentUserProfileProvider);
+                            } else {
+                              messenger.showSnackBar(SnackBar(
+                                content: Text(
+                                    "Couldn't save your name. Try again.",
+                                    style: AppText.button()),
+                                backgroundColor: bgSurface,
+                                behavior: SnackBarBehavior.floating,
+                              ));
+                            }
                           }
                         }
                       },

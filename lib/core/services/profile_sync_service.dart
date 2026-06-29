@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -51,21 +52,31 @@ class ProfileSyncService {
   /// Onboarding submit: persist the chosen name locally at once, then push to
   /// the backend (queued + retried on failure). Returns as soon as the local
   /// write is done — the remote leg never blocks the welcome flow.
-  Future<void> submitDisplayName({
+  Future<bool> submitDisplayName({
     required String userId,
     required String email,
     required String name,
   }) async {
     final clean = name.trim();
-    if (clean.isEmpty) return;
+    if (clean.isEmpty) return false;
 
-    // 1. Local mirror — instant.
-    await _db.userDao
-        .upsertProfile(id: userId, email: email, displayName: clean);
+    try {
+      // 1. Local mirror — instant.
+      await _db.userDao
+          .upsertProfile(id: userId, email: email, displayName: clean);
+    } catch (e, st) {
+      debugPrint('[ProfileSyncService] Local upsert failed: $e\n$st');
+    }
 
     // 2. Queue the remote intent, then attempt to flush it immediately.
     await _queue(userId, clean, email);
-    await _flushPending(userId);
+    try {
+      await _flushPendingOrThrow(userId);
+      return true;
+    } catch (e, st) {
+      debugPrint('[ProfileSyncService] Remote sync failed: $e\n$st');
+      return false;
+    }
   }
 
   /// Login-time resolution. Flushes any queued write, then makes the backend
@@ -127,23 +138,27 @@ class ProfileSyncService {
   }
 
   Future<void> _flushPending(String userId) async {
+    try {
+      await _flushPendingOrThrow(userId);
+    } catch (_) {
+      // Keep it queued; the next launch / submit will retry.
+    }
+  }
+
+  Future<void> _flushPendingOrThrow(String userId) async {
     final prefs = await _prefs();
     final raw = prefs.getString(_pendingKey(userId));
     if (raw == null) return;
 
-    try {
-      final m = jsonDecode(raw) as Map<String, dynamic>;
-      await _remote
-          .upsert(
-            userId: userId,
-            displayName: m['name'] as String,
-            email: m['email'] as String?,
-          )
-          .timeout(_timeout);
-      await prefs.remove(_pendingKey(userId)); // delivered — drop the queue
-    } catch (_) {
-      // Keep it queued; the next launch / submit will retry.
-    }
+    final m = jsonDecode(raw) as Map<String, dynamic>;
+    await _remote
+        .upsert(
+          userId: userId,
+          displayName: m['name'] as String,
+          email: m['email'] as String?,
+        )
+        .timeout(_timeout);
+    await prefs.remove(_pendingKey(userId)); // delivered — drop the queue
   }
 }
 
