@@ -97,14 +97,14 @@ class ExerciseBlock extends ConsumerWidget {
     final exerciseMeta = ref.watch(activeWorkoutProvider.select((state) {
       if (state == null || exerciseIndex >= state.exercises.length) return null;
       final ex = state.exercises[exerciseIndex];
-      return (ex.exerciseId, ex.name, ex.sets.length);
+      return (ex.exerciseId, ex.name, ex.sets.map((s) => s.id).toList());
     }));
 
     if (exerciseMeta == null) return const SizedBox.shrink();
 
     final exerciseId = exerciseMeta.$1;
     final exerciseName = exerciseMeta.$2;
-    final setsLength = exerciseMeta.$3;
+    final setIds = exerciseMeta.$3;
 
     final catalogById = ref.watch(exerciseCatalogByIdProvider).valueOrNull ??
         const <int, Exercise>{};
@@ -231,8 +231,11 @@ class ExerciseBlock extends ConsumerWidget {
           const SizedBox(height: 4),
 
           // ── Sets — swipe left to delete (locked once completed) ──
-          ...Iterable<int>.generate(setsLength).map((setIndex) {
+          ...setIds.asMap().entries.map((entry) {
+            final setIndex = entry.key;
+            final setId = entry.value;
             return Consumer(
+              key: ValueKey(setId),
               builder: (context, ref, child) {
                 final setData = ref.watch(activeWorkoutProvider.select((state) {
                   if (state == null ||
@@ -260,16 +263,11 @@ class ExerciseBlock extends ConsumerWidget {
                   onToggleComplete: () => onToggleSetCompletion(setIndex),
                 );
 
-                if (setData.isCompleted) {
-                  return KeyedSubtree(
-                    key: ValueKey('locked_${setData.id}'),
-                    child: row,
-                  );
-                }
-
                 return Dismissible(
-                  key: ValueKey('dismiss_${setData.id}'),
-                  direction: DismissDirection.endToStart,
+                  key: ValueKey(setData.id),
+                  direction: setData.isCompleted
+                      ? DismissDirection.none
+                      : DismissDirection.endToStart,
                   confirmDismiss: (_) async {
                     HapticFeedback.heavyImpact(); // feel the danger first
                     return true;

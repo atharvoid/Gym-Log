@@ -6,8 +6,9 @@ part 'active_workout_state.freezed.dart';
 
 @freezed
 class WorkoutSetState with _$WorkoutSetState {
+  @Assert("id != ''", 'Set ID must not be empty')
   const factory WorkoutSetState({
-    @Default('') String id,
+    required String id,
     @Default('normal') String setType,
     @Default(0.0) double weightKg,
     @Default(0) int reps,

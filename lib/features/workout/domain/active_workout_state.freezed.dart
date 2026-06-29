@@ -160,15 +160,15 @@ class __$$WorkoutSetStateImplCopyWithImpl<$Res>
 
 class _$WorkoutSetStateImpl implements _WorkoutSetState {
   const _$WorkoutSetStateImpl(
-      {this.id = '',
+      {required this.id,
       this.setType = 'normal',
       this.weightKg = 0.0,
       this.reps = 0,
       this.isCompleted = false,
-      this.completedAt});
+      this.completedAt})
+      : assert(id != '', 'Set ID must not be empty');
 
   @override
-  @JsonKey()
   final String id;
   @override
   @JsonKey()
@@ -220,7 +220,7 @@ class _$WorkoutSetStateImpl implements _WorkoutSetState {
 
 abstract class _WorkoutSetState implements WorkoutSetState {
   const factory _WorkoutSetState(
-      {final String id,
+      {required final String id,
       final String setType,
       final double weightKg,
       final int reps,
