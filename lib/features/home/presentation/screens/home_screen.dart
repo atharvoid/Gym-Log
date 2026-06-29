@@ -42,6 +42,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   /// State's Stack) can reference the same key.
   final GlobalKey _weeklyStatsKey = GlobalKey();
 
+  /// Fallback target for the step-4 tour spotlight on fresh installs where the
+  /// weekly-stats card has not yet rendered.
+  final GlobalKey _homeHeaderKey = GlobalKey();
+
   // Pagination is driven from real scroll position — NOT scheduled as a
   // side-effect inside itemBuilder (which fired a microtask on every rebuild).
   final ScrollController _scrollController = ScrollController();
@@ -80,6 +84,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
     final routines = ref.watch(hydratedRoutinesProvider).valueOrNull ?? [];
     final tourStep = ref.watch(firstRunTourProvider);
+    final streak = ref.watch(streakStatsProvider);
+    final hasActivity = streak.currentStreak > 0 || streak.workoutsThisWeek > 0;
     final hasNoRoutines = routines.isEmpty;
     final showFindProgram = hasNoRoutines || tourStep == 0;
 
@@ -134,7 +140,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   itemCount: itemCount,
                   itemBuilder: (context, index) {
                     if (index == 0) {
-                      return _HomeHeaderBand(weeklyStatsKey: _weeklyStatsKey);
+                      return _HomeHeaderBand(
+                        bandKey: _homeHeaderKey,
+                        weeklyStatsKey: _weeklyStatsKey,
+                      );
                     }
                     if (showFindProgram) {
                       if (index == 1) return _findProgramCard();
@@ -177,15 +186,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 step: 0,
               ),
 
-            // Step 4 — Weekly stats spotlight.
+            // Step 4 — Weekly stats spotlight when activity exists; otherwise
+            // fall back to the always-present header band so the tour never
+            // strands on a fresh install.
             // Guard: only render when Home is the active top route so the
             // mask cannot leak through to another screen.
             if (tourStep == 4 && (ModalRoute.of(context)?.isCurrent ?? false))
               SpotlightTourOverlay(
-                targetKey: _weeklyStatsKey,
-                title: 'Your weekly progress',
-                description:
-                    'This card tracks workouts toward your weekly goal and your current streak. Tap the ring to adjust your target — stay consistent and keep that streak alive!',
+                targetKey: hasActivity ? _weeklyStatsKey : _homeHeaderKey,
+                title: hasActivity ? 'Your weekly progress' : "You're all set",
+                description: hasActivity
+                    ? 'This card tracks workouts toward your weekly goal and your current streak. Tap the ring to adjust your target — stay consistent and keep that streak alive!'
+                    : 'Your weekly progress lives here — start logging workouts to fill it in. Tap Got it to finish the tour.',
                 step: 4,
               ),
           ],
@@ -427,11 +439,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 }
 
 class _HomeHeaderBand extends ConsumerWidget {
+  /// Key attached to this band so the step-4 tour spotlight can anchor on a
+  /// day-one element when the weekly-stats card is not yet rendered.
+  final GlobalKey? bandKey;
+
   /// Key attached to the weekly-stats AppCard so the step-4 tour spotlight
   /// can locate its position on screen.
   final GlobalKey? weeklyStatsKey;
 
-  const _HomeHeaderBand({this.weeklyStatsKey});
+  const _HomeHeaderBand({this.bandKey, this.weeklyStatsKey});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -446,6 +462,7 @@ class _HomeHeaderBand extends ConsumerWidget {
         goal > 0 ? (streak.workoutsThisWeek / goal).clamp(0.0, 1.0) : 0.0;
 
     return Padding(
+      key: bandKey,
       padding: const EdgeInsets.only(bottom: 20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
