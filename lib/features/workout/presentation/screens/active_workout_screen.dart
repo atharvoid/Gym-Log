@@ -350,21 +350,7 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
                           child: Consumer(
                             builder: (context, ref, child) {
                               final timer = ref.watch(workoutTimerProvider);
-                              final totals = ref
-                                  .watch(activeWorkoutProvider.select((state) {
-                                if (state == null) return (0.0, 0);
-                                double volume = 0;
-                                int completed = 0;
-                                for (final ex in state.exercises) {
-                                  for (final set in ex.sets) {
-                                    if (set.isCompleted) {
-                                      volume += set.weightKg * set.reps;
-                                      completed++;
-                                    }
-                                  }
-                                }
-                                return (volume, completed);
-                              }));
+                              final totals = ref.watch(sessionTotalsProvider);
                               final volumeKg = totals.$1;
                               final completedSets = totals.$2;
 
