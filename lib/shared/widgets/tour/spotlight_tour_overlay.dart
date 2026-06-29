@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gymlog/core/theme/app_colors.dart';
 import 'package:gymlog/core/theme/app_text.dart';
@@ -26,13 +27,27 @@ class SpotlightTourOverlay extends ConsumerStatefulWidget {
       _SpotlightTourOverlayState();
 }
 
-class _SpotlightTourOverlayState extends ConsumerState<SpotlightTourOverlay> {
+class _SpotlightTourOverlayState extends ConsumerState<SpotlightTourOverlay>
+    with SingleTickerProviderStateMixin {
   Rect? _targetRect;
+  late final AnimationController _fadeCtrl;
+  late final Animation<double> _fadeAnim;
 
   @override
   void initState() {
     super.initState();
+    _fadeCtrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 280),
+    );
+    _fadeAnim = CurvedAnimation(parent: _fadeCtrl, curve: Curves.easeOut);
     WidgetsBinding.instance.addPostFrameCallback((_) => _updateRect());
+  }
+
+  @override
+  void dispose() {
+    _fadeCtrl.dispose();
+    super.dispose();
   }
 
   void _updateRect() {
@@ -48,6 +63,11 @@ class _SpotlightTourOverlayState extends ConsumerState<SpotlightTourOverlay> {
       setState(() {
         _targetRect = offset & renderBox.size;
       });
+      if (!MediaQuery.disableAnimationsOf(context)) {
+        _fadeCtrl.forward();
+      } else {
+        _fadeCtrl.value = 1.0;
+      }
     } else {
       Future.delayed(const Duration(milliseconds: 100), _updateRect);
     }
@@ -63,6 +83,7 @@ class _SpotlightTourOverlayState extends ConsumerState<SpotlightTourOverlay> {
     final surface = context.surface;
     final accent = context.accent;
     final size = MediaQuery.sizeOf(context);
+    final isLastStep = widget.step >= FirstRunTourNotifier.totalSteps - 1;
 
     // Padding inflation around target
     final target = _targetRect!.inflate(6);
@@ -71,140 +92,191 @@ class _SpotlightTourOverlayState extends ConsumerState<SpotlightTourOverlay> {
     final targetCenterY = target.center.dy;
     final isBalloonBelow = targetCenterY < size.height * 0.55;
 
-    return Stack(
-      children: [
-        // Custom Painter for the dark mask and circular cut-out
-        Positioned.fill(
-          child: IgnorePointer(
-            child: CustomPaint(
-              painter: _SpotlightMaskPainter(
-                targetRect: target,
-                overlayColor: Colors.black.withValues(alpha: 0.75),
-              ),
-            ),
-          ),
-        ),
-
-        // Touch interceptor: top block
-        Positioned(
-          left: 0,
-          right: 0,
-          top: 0,
-          height: target.top > 0 ? target.top : 0,
-          child: GestureDetector(
-            behavior: HitTestBehavior.opaque,
-            onTap: () {},
-          ),
-        ),
-        // Touch interceptor: bottom block
-        Positioned(
-          left: 0,
-          right: 0,
-          top: target.bottom < size.height ? target.bottom : size.height,
-          bottom: 0,
-          child: GestureDetector(
-            behavior: HitTestBehavior.opaque,
-            onTap: () {},
-          ),
-        ),
-        // Touch interceptor: left block
-        Positioned(
-          left: 0,
-          width: target.left > 0 ? target.left : 0,
-          top: target.top,
-          height: target.height,
-          child: GestureDetector(
-            behavior: HitTestBehavior.opaque,
-            onTap: () {},
-          ),
-        ),
-        // Touch interceptor: right block
-        Positioned(
-          left: target.right < size.width ? target.right : size.width,
-          right: 0,
-          top: target.top,
-          height: target.height,
-          child: GestureDetector(
-            behavior: HitTestBehavior.opaque,
-            onTap: () {},
-          ),
-        ),
-
-        // Balloon Card Positioned
-        Positioned(
-          left: 20,
-          right: 20,
-          top: isBalloonBelow ? target.bottom + 16 : null,
-          bottom: !isBalloonBelow ? (size.height - target.top) + 16 : null,
-          child: Material(
-            color: Colors.transparent,
-            child: Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: surface.surface2,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(
-                  color: accent.light.withValues(alpha: 0.25),
-                  width: 1.5,
+    return FadeTransition(
+      opacity: _fadeAnim,
+      child: Stack(
+        children: [
+          // Custom Painter for the dark mask and circular cut-out
+          Positioned.fill(
+            child: IgnorePointer(
+              child: CustomPaint(
+                painter: _SpotlightMaskPainter(
+                  targetRect: target,
+                  overlayColor: Colors.black.withValues(alpha: 0.75),
                 ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.5),
-                    blurRadius: 24,
-                    offset: const Offset(0, 8),
-                  ),
-                ],
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'STEP ${widget.step + 1} OF 3',
-                        style: AppText.caption(color: accent.light).copyWith(
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: 1.0,
-                        ),
-                      ),
-                      TextButton(
-                        onPressed: () {
-                          ref.read(firstRunTourProvider.notifier).skipOrEnd();
-                        },
-                        style: TextButton.styleFrom(
-                          padding: EdgeInsets.zero,
-                          minimumSize: Size.zero,
-                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        ),
-                        child: Text(
-                          'Skip tour',
-                          style: AppText.caption(color: surface.textTertiary),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    widget.title,
-                    style: AppText.body(color: surface.textPrimary).copyWith(
-                      fontWeight: FontWeight.w700,
-                      fontSize: 17,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    widget.description,
-                    style: AppText.caption(color: surface.textSecondary)
-                        .copyWith(height: 1.35),
-                  ),
-                ],
               ),
             ),
           ),
-        ),
-      ],
+
+          // Touch interceptor: top block
+          Positioned(
+            left: 0,
+            right: 0,
+            top: 0,
+            height: target.top > 0 ? target.top : 0,
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: () {},
+            ),
+          ),
+          // Touch interceptor: bottom block
+          Positioned(
+            left: 0,
+            right: 0,
+            top: target.bottom < size.height ? target.bottom : size.height,
+            bottom: 0,
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: () {},
+            ),
+          ),
+          // Touch interceptor: left block
+          Positioned(
+            left: 0,
+            width: target.left > 0 ? target.left : 0,
+            top: target.top,
+            height: target.height,
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: () {},
+            ),
+          ),
+          // Touch interceptor: right block
+          Positioned(
+            left: target.right < size.width ? target.right : size.width,
+            right: 0,
+            top: target.top,
+            height: target.height,
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: () {},
+            ),
+          ),
+
+          // Balloon Card
+          Positioned(
+            left: 20,
+            right: 20,
+            top: isBalloonBelow ? target.bottom + 16 : null,
+            bottom: !isBalloonBelow ? (size.height - target.top) + 16 : null,
+            child: Material(
+              color: Colors.transparent,
+              child: Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: surface.surface2,
+                  borderRadius: BorderRadius.circular(18),
+                  border: Border.all(
+                    color: accent.light.withValues(alpha: 0.22),
+                    width: 1.5,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.55),
+                      blurRadius: 32,
+                      offset: const Offset(0, 10),
+                    ),
+                    BoxShadow(
+                      color: accent.glow.withValues(alpha: 0.08),
+                      blurRadius: 48,
+                      spreadRadius: -4,
+                    ),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // ── Top row: step pill + Skip ──────────────────────────
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        // Step indicator pill
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: accent.base.withValues(alpha: 0.14),
+                            borderRadius: BorderRadius.circular(99),
+                          ),
+                          child: Text(
+                            'STEP ${widget.step + 1} OF ${FirstRunTourNotifier.totalSteps}',
+                            style:
+                                AppText.caption(color: accent.light).copyWith(
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: 0.8,
+                              fontSize: 10,
+                            ),
+                          ),
+                        ),
+                        // Skip tour
+                        TextButton(
+                          onPressed: () {
+                            HapticFeedback.selectionClick();
+                            ref.read(firstRunTourProvider.notifier).skipOrEnd();
+                          },
+                          style: TextButton.styleFrom(
+                            padding: EdgeInsets.zero,
+                            minimumSize: Size.zero,
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          ),
+                          child: Text(
+                            'Skip tour',
+                            style: AppText.caption(color: surface.textTertiary),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+
+                    // ── Title ──────────────────────────────────────────────
+                    Text(
+                      widget.title,
+                      style: AppText.body(color: surface.textPrimary).copyWith(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 17,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+
+                    // ── Description ───────────────────────────────────────
+                    Text(
+                      widget.description,
+                      style: AppText.caption(color: surface.textSecondary)
+                          .copyWith(height: 1.40),
+                    ),
+                    const SizedBox(height: 16),
+
+                    // ── Next / Got it button ───────────────────────────────
+                    SizedBox(
+                      width: double.infinity,
+                      height: 44,
+                      child: Material(
+                        color: accent.base,
+                        borderRadius: BorderRadius.circular(12),
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(12),
+                          onTap: () {
+                            HapticFeedback.selectionClick();
+                            ref.read(firstRunTourProvider.notifier).nextStep();
+                          },
+                          child: Center(
+                            child: Text(
+                              isLastStep ? 'Got it' : 'Next',
+                              style: AppText.button(color: accent.onAccent)
+                                  .copyWith(fontWeight: FontWeight.w700),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

@@ -4,6 +4,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 class FirstRunTourNotifier extends StateNotifier<int> {
   static const _key = 'first_run_tour_step';
 
+  /// Single source of truth for tour length.
+  /// Tasks A–C keep this at 5: Explore → Add → View/Start → Rest → Stats.
+  static const int totalSteps = 5;
+
   FirstRunTourNotifier() : super(-1) {
     _load();
   }
@@ -25,7 +29,7 @@ class FirstRunTourNotifier extends StateNotifier<int> {
 
   Future<void> nextStep() async {
     if (state == -1) return;
-    if (state >= 2) {
+    if (state >= totalSteps - 1) {
       await setStep(-1); // Tour completed!
     } else {
       await setStep(state + 1);
