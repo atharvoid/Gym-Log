@@ -8,7 +8,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../../core/providers/premium_provider.dart';
 import '../../../../core/services/profile_image_sync_service.dart';
+import '../../../../core/services/profile_sync_service.dart';
 import '../../../../core/services/sync_entitlement_gate.dart';
+import '../../../../features/auth/presentation/providers/auth_provider.dart';
+import '../../../../shared/widgets/ui/app_dialog.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text.dart';
 import '../../../../core/theme/dynamic_accent_theme.dart';
@@ -256,7 +259,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   }
 }
 
-class _IdentityHeader extends StatelessWidget {
+class _IdentityHeader extends ConsumerWidget {
   final String displayName;
   final String email;
   final bool isPremium;
@@ -274,7 +277,7 @@ class _IdentityHeader extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final surface = context.surface;
     return Row(
       children: [
@@ -292,13 +295,50 @@ class _IdentityHeader extends StatelessWidget {
               Row(
                 children: [
                   Flexible(
-                    child: Text(
-                      displayName,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: AppText.profileName(
-                          color: surface.textPrimary,
-                          shadows: AppText.depthFor(context)),
+                    child: GestureDetector(
+                      onTap: () async {
+                        HapticFeedback.lightImpact();
+                        final newName = await showAppTextInputDialog(
+                          context: context,
+                          title: 'Change name',
+                          hint: 'Display name',
+                          initialValue: displayName,
+                          maxLength: 40,
+                        );
+                        if (newName != null && newName.trim().isNotEmpty) {
+                          final user = ref.read(authProvider);
+                          if (user != null) {
+                            await ref
+                                .read(profileSyncProvider)
+                                .submitDisplayName(
+                                  userId: user.id,
+                                  email: user.email ?? '',
+                                  name: newName,
+                                );
+                          }
+                        }
+                      },
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Flexible(
+                            child: Text(
+                              displayName,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: AppText.profileName(
+                                  color: surface.textPrimary,
+                                  shadows: AppText.depthFor(context)),
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          Icon(
+                            Icons.edit_rounded,
+                            size: 13,
+                            color: surface.textTertiary,
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                   if (showSyncPausedBadge) ...[

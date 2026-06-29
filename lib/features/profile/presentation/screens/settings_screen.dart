@@ -10,6 +10,7 @@ import 'package:gymlog/core/providers/settings_provider.dart';
 import 'package:gymlog/core/services/sync_engine.dart';
 import 'package:gymlog/core/services/sync_entitlement_gate.dart';
 import 'package:gymlog/core/services/workout_export_service.dart';
+import 'package:gymlog/core/services/profile_sync_service.dart';
 import 'package:gymlog/core/theme/app_colors.dart';
 import 'package:gymlog/core/theme/app_text.dart';
 import 'package:gymlog/core/theme/dynamic_accent_theme.dart';
@@ -182,6 +183,42 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 padding: EdgeInsets.zero,
                 child: Column(
                   children: [
+                    if (profile != null) ...[
+                      AppActionRow(
+                        icon: Icons.person_outline_rounded,
+                        iconColor: accent.light,
+                        title: 'Display name',
+                        subtitle: profile.displayName.trim().isEmpty
+                            ? 'Athlete'
+                            : profile.displayName,
+                        onTap: () async {
+                          if (!tapGuard()) return;
+                          HapticFeedback.lightImpact();
+                          final newName = await showAppTextInputDialog(
+                            context: context,
+                            title: 'Change name',
+                            hint: 'Display name',
+                            initialValue: profile.displayName,
+                            maxLength: 40,
+                          );
+                          if (newName != null &&
+                              newName.trim().isNotEmpty &&
+                              mounted) {
+                            final user = ref.read(authProvider);
+                            if (user != null) {
+                              await ref
+                                  .read(profileSyncProvider)
+                                  .submitDisplayName(
+                                    userId: user.id,
+                                    email: user.email ?? '',
+                                    name: newName,
+                                  );
+                            }
+                          }
+                        },
+                      ),
+                      const AppActionDivider(),
+                    ],
                     Semantics(
                       hint: "Navigates to paywall",
                       child: AppActionRow(
