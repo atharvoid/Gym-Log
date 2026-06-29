@@ -27,6 +27,7 @@ import 'package:gymlog/shared/widgets/ui/app_dialog.dart';
 import 'package:gymlog/shared/widgets/ui/branded_bottom_sheet.dart';
 import 'package:gymlog/shared/widgets/ui/time_range_filter.dart';
 import 'package:gymlog/core/config/legal_links.dart';
+import 'package:gymlog/shared/widgets/tour/spotlight_tour_overlay.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -98,6 +99,10 @@ class SettingsScreen extends ConsumerStatefulWidget {
 
 class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   bool? _syncEnabled;
+
+  /// Key attached to the Rest timer row — used by the step-3 tour spotlight
+  /// so the overlay can locate its screen position from the Settings route.
+  final GlobalKey _restTimerRowKey = GlobalKey();
 
   @override
   void initState() {
@@ -177,361 +182,389 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               style: AppText.sheetTitle(color: surface.textPrimary)),
         ),
         body: SafeArea(
-          child: ListView(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+          child: Stack(
             children: [
-              _GroupHeader('ACCOUNT', color: surface.textSecondary),
-              AppCard(
-                padding: EdgeInsets.zero,
-                child: Column(
-                  children: [
-                    if (profile != null) ...[
-                      AppActionRow(
-                        icon: Icons.person_outline_rounded,
-                        iconColor: accent.light,
-                        title: 'Display name',
-                        subtitle: profile.displayName.trim().isEmpty
-                            ? 'Athlete'
-                            : profile.displayName,
-                        onTap: () async {
-                          if (!tapGuard()) return;
-                          HapticFeedback.lightImpact();
-                          final newName = await showAppTextInputDialog(
-                            context: context,
-                            title: 'Change name',
-                            hint: 'Display name',
-                            initialValue: profile.displayName,
-                            maxLength: 40,
-                          );
-                          if (newName != null && newName.trim().isNotEmpty) {
-                            if (!context.mounted) return;
-                            final user = ref.read(authProvider);
-                            if (user != null) {
+              ListView(
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+                children: [
+                  _GroupHeader('ACCOUNT', color: surface.textSecondary),
+                  AppCard(
+                    padding: EdgeInsets.zero,
+                    child: Column(
+                      children: [
+                        if (profile != null) ...[
+                          AppActionRow(
+                            icon: Icons.person_outline_rounded,
+                            iconColor: accent.light,
+                            title: 'Display name',
+                            subtitle: profile.displayName.trim().isEmpty
+                                ? 'Athlete'
+                                : profile.displayName,
+                            onTap: () async {
+                              if (!tapGuard()) return;
+                              HapticFeedback.lightImpact();
+                              final newName = await showAppTextInputDialog(
+                                context: context,
+                                title: 'Change name',
+                                hint: 'Display name',
+                                initialValue: profile.displayName,
+                                maxLength: 40,
+                              );
+                              if (newName != null &&
+                                  newName.trim().isNotEmpty) {
+                                if (!context.mounted) return;
+                                final user = ref.read(authProvider);
+                                if (user != null) {
+                                  final messenger =
+                                      ScaffoldMessenger.of(context);
+                                  final bgSurface = context.surface.bgSurface;
+                                  final success = await ref
+                                      .read(profileSyncProvider)
+                                      .submitDisplayName(
+                                        userId: user.id,
+                                        email: user.email ?? '',
+                                        name: newName,
+                                      );
+                                  if (success) {
+                                    ref.invalidate(currentUserProfileProvider);
+                                  } else {
+                                    messenger.showSnackBar(SnackBar(
+                                      content: Text(
+                                          "Couldn't save your name. Try again.",
+                                          style: AppText.button()),
+                                      backgroundColor: bgSurface,
+                                      behavior: SnackBarBehavior.floating,
+                                    ));
+                                  }
+                                }
+                              }
+                            },
+                          ),
+                          const AppActionDivider(),
+                        ],
+                        Semantics(
+                          hint: "Navigates to paywall",
+                          child: AppActionRow(
+                            icon: Icons.workspace_premium_rounded,
+                            iconColor: accent.light,
+                            title: isPremium ? 'GymLog Pro' : 'Upgrade to Pro',
+                            subtitle: isPremium
+                                ? 'Active (full history unlocked)'
+                                : 'Full analytics history & more',
+                            onTap: () =>
+                                _openPremium(context, isPremium: isPremium),
+                          ),
+                        ),
+                        if (isPremium) ...[
+                          const AppActionDivider(),
+                          AppActionRow(
+                            icon: Icons.card_membership_rounded,
+                            iconColor: accent.light,
+                            title: 'Manage subscription',
+                            subtitle: 'Change plans or cancel',
+                            onTap: () async {
+                              if (!tapGuard()) return;
+                              HapticFeedback.lightImpact();
                               final messenger = ScaffoldMessenger.of(context);
-                              final bgSurface = context.surface.bgSurface;
-                              final success = await ref
-                                  .read(profileSyncProvider)
-                                  .submitDisplayName(
-                                    userId: user.id,
-                                    email: user.email ?? '',
-                                    name: newName,
-                                  );
-                              if (success) {
-                                ref.invalidate(currentUserProfileProvider);
+                              final service = ref.read(premiumServiceProvider);
+                              final info = await service.getCustomerInfo();
+                              final urlString = info?.managementURL;
+                              if (urlString != null) {
+                                final Uri url = Uri.parse(urlString);
+                                if (await canLaunchUrl(url)) {
+                                  await launchUrl(url,
+                                      mode: LaunchMode.externalApplication);
+                                }
+                              } else {
+                                messenger.showSnackBar(
+                                  const SnackBar(
+                                    content:
+                                        Text('No active subscription found.'),
+                                  ),
+                                );
+                              }
+                            },
+                          ),
+                        ],
+                        const AppActionDivider(),
+                        AppActionRow(
+                          icon: Icons.restore_rounded,
+                          iconColor: accent.light,
+                          title: 'Restore purchases',
+                          subtitle: 'Re-verify your Pro status',
+                          onTap: () async {
+                            if (!tapGuard()) return;
+                            HapticFeedback.lightImpact();
+                            final messenger = ScaffoldMessenger.of(context);
+                            final bgSurface = context.surface.bgSurface;
+                            try {
+                              final service = ref.read(premiumServiceProvider);
+                              final info = await service.restorePurchases();
+                              if (info != null &&
+                                  info.entitlements.active.containsKey(
+                                      PremiumService.entitlementId)) {
+                                messenger.showSnackBar(SnackBar(
+                                  content: Text(
+                                      'Purchases restored successfully. You are now Pro!',
+                                      style: AppText.button()),
+                                  backgroundColor: bgSurface,
+                                  behavior: SnackBarBehavior.floating,
+                                ));
                               } else {
                                 messenger.showSnackBar(SnackBar(
                                   content: Text(
-                                      "Couldn't save your name. Try again.",
+                                      'No active purchases found to restore.',
                                       style: AppText.button()),
                                   backgroundColor: bgSurface,
                                   behavior: SnackBarBehavior.floating,
                                 ));
                               }
+                            } catch (e) {
+                              messenger.showSnackBar(SnackBar(
+                                content: Text(
+                                    'Restore failed. Please try again.',
+                                    style: AppText.button()),
+                                backgroundColor: bgSurface,
+                                behavior: SnackBarBehavior.floating,
+                              ));
                             }
-                          }
-                        },
-                      ),
-                      const AppActionDivider(),
-                    ],
-                    Semantics(
-                      hint: "Navigates to paywall",
-                      child: AppActionRow(
-                        icon: Icons.workspace_premium_rounded,
-                        iconColor: accent.light,
-                        title: isPremium ? 'GymLog Pro' : 'Upgrade to Pro',
-                        subtitle: isPremium
-                            ? 'Active (full history unlocked)'
-                            : 'Full analytics history & more',
-                        onTap: () =>
-                            _openPremium(context, isPremium: isPremium),
-                      ),
+                          },
+                        ),
+                      ],
                     ),
-                    if (isPremium) ...[
-                      const AppActionDivider(),
-                      AppActionRow(
-                        icon: Icons.card_membership_rounded,
-                        iconColor: accent.light,
-                        title: 'Manage subscription',
-                        subtitle: 'Change plans or cancel',
-                        onTap: () async {
-                          if (!tapGuard()) return;
-                          HapticFeedback.lightImpact();
-                          final messenger = ScaffoldMessenger.of(context);
-                          final service = ref.read(premiumServiceProvider);
-                          final info = await service.getCustomerInfo();
-                          final urlString = info?.managementURL;
-                          if (urlString != null) {
-                            final Uri url = Uri.parse(urlString);
-                            if (await canLaunchUrl(url)) {
-                              await launchUrl(url,
-                                  mode: LaunchMode.externalApplication);
-                            }
-                          } else {
-                            messenger.showSnackBar(
-                              const SnackBar(
-                                content: Text('No active subscription found.'),
-                              ),
-                            );
-                          }
-                        },
-                      ),
-                    ],
-                    const AppActionDivider(),
-                    AppActionRow(
-                      icon: Icons.restore_rounded,
-                      iconColor: accent.light,
-                      title: 'Restore purchases',
-                      subtitle: 'Re-verify your Pro status',
-                      onTap: () async {
-                        if (!tapGuard()) return;
-                        HapticFeedback.lightImpact();
-                        final messenger = ScaffoldMessenger.of(context);
-                        final bgSurface = context.surface.bgSurface;
-                        try {
-                          final service = ref.read(premiumServiceProvider);
-                          final info = await service.restorePurchases();
-                          if (info != null &&
-                              info.entitlements.active
-                                  .containsKey(PremiumService.entitlementId)) {
-                            messenger.showSnackBar(SnackBar(
-                              content: Text(
-                                  'Purchases restored successfully. You are now Pro!',
-                                  style: AppText.button()),
-                              backgroundColor: bgSurface,
-                              behavior: SnackBarBehavior.floating,
-                            ));
-                          } else {
-                            messenger.showSnackBar(SnackBar(
-                              content: Text(
-                                  'No active purchases found to restore.',
-                                  style: AppText.button()),
-                              backgroundColor: bgSurface,
-                              behavior: SnackBarBehavior.floating,
-                            ));
-                          }
-                        } catch (e) {
-                          messenger.showSnackBar(SnackBar(
-                            content: Text('Restore failed. Please try again.',
-                                style: AppText.button()),
-                            backgroundColor: bgSurface,
-                            behavior: SnackBarBehavior.floating,
-                          ));
-                        }
-                      },
+                  ),
+                  const SizedBox(height: 22),
+                  _GroupHeader('PREFERENCES', color: surface.textSecondary),
+                  AppCard(
+                    padding: EdgeInsets.zero,
+                    child: Column(
+                      children: [
+                        AppActionRow(
+                          icon: Icons.scale_rounded,
+                          iconColor: accent.light,
+                          title: 'Weight unit',
+                          subtitle:
+                              unit == 'kg' ? 'Kilograms (kg)' : 'Pounds (lbs)',
+                          onTap: () => _pickWeightUnit(context, ref, unit),
+                        ),
+                        const AppActionDivider(),
+                        AppActionRow(
+                          icon: Icons.flag_rounded,
+                          iconColor: accent.light,
+                          title: 'Weekly goal',
+                          subtitle:
+                              '$goal workout${goal != 1 ? 's' : ''} per week',
+                          onTap: () => showWeeklyGoalSheet(context, ref),
+                        ),
+                        const AppActionDivider(),
+                        AppActionRow(
+                          key: _restTimerRowKey,
+                          icon: Icons.timer_outlined,
+                          iconColor: accent.light,
+                          title: 'Rest timer',
+                          subtitle: restSeconds == 0
+                              ? 'Off'
+                              : '$restSeconds seconds between sets',
+                          onTap: () =>
+                              _pickRestTimer(context, ref, restSeconds),
+                        ),
+                        const AppActionDivider(),
+                        AppActionRow(
+                          icon: Icons.palette_outlined,
+                          iconColor: accent.light,
+                          title: 'Appearance',
+                          subtitle: 'Accent color',
+                          onTap: () {
+                            if (!tapGuard()) return;
+                            HapticFeedback.lightImpact();
+                            context.push('/settings/appearance');
+                          },
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 22),
-              _GroupHeader('PREFERENCES', color: surface.textSecondary),
-              AppCard(
-                padding: EdgeInsets.zero,
-                child: Column(
-                  children: [
-                    AppActionRow(
-                      icon: Icons.scale_rounded,
-                      iconColor: accent.light,
-                      title: 'Weight unit',
-                      subtitle:
-                          unit == 'kg' ? 'Kilograms (kg)' : 'Pounds (lbs)',
-                      onTap: () => _pickWeightUnit(context, ref, unit),
+                  ),
+                  const SizedBox(height: 22),
+                  _GroupHeader('DATA', color: surface.textSecondary),
+                  AppCard(
+                    padding: EdgeInsets.zero,
+                    child: Column(
+                      children: [
+                        AppActionRow(
+                          icon: Icons.download_rounded,
+                          title: 'Import workouts',
+                          subtitle: 'From Hevy or Strong (CSV)',
+                          onTap: () {
+                            if (!tapGuard()) return;
+                            HapticFeedback.lightImpact();
+                            context.push('/settings/import');
+                          },
+                        ),
+                        if (profile != null) ...[
+                          const AppActionDivider(),
+                          AppActionRow(
+                            icon: Icons.ios_share_rounded,
+                            title: 'Export workouts',
+                            subtitle: 'CSV of every set, yours to keep',
+                            onTap: () => _exportWorkouts(
+                                context, ref, profile.id, profile.displayName),
+                          ),
+                        ],
+                      ],
                     ),
-                    const AppActionDivider(),
-                    AppActionRow(
-                      icon: Icons.flag_rounded,
-                      iconColor: accent.light,
-                      title: 'Weekly goal',
-                      subtitle: '$goal workout${goal != 1 ? 's' : ''} per week',
-                      onTap: () => showWeeklyGoalSheet(context, ref),
-                    ),
-                    const AppActionDivider(),
-                    AppActionRow(
-                      icon: Icons.timer_outlined,
-                      iconColor: accent.light,
-                      title: 'Rest timer',
-                      subtitle: restSeconds == 0
-                          ? 'Off'
-                          : '$restSeconds seconds between sets',
-                      onTap: () => _pickRestTimer(context, ref, restSeconds),
-                    ),
-                    const AppActionDivider(),
-                    AppActionRow(
-                      icon: Icons.palette_outlined,
-                      iconColor: accent.light,
-                      title: 'Appearance',
-                      subtitle: 'Accent color',
-                      onTap: () {
-                        if (!tapGuard()) return;
-                        HapticFeedback.lightImpact();
-                        context.push('/settings/appearance');
-                      },
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 22),
-              _GroupHeader('DATA', color: surface.textSecondary),
-              AppCard(
-                padding: EdgeInsets.zero,
-                child: Column(
-                  children: [
-                    AppActionRow(
-                      icon: Icons.download_rounded,
-                      title: 'Import workouts',
-                      subtitle: 'From Hevy or Strong (CSV)',
-                      onTap: () {
-                        if (!tapGuard()) return;
-                        HapticFeedback.lightImpact();
-                        context.push('/settings/import');
-                      },
-                    ),
-                    if (profile != null) ...[
-                      const AppActionDivider(),
-                      AppActionRow(
-                        icon: Icons.ios_share_rounded,
-                        title: 'Export workouts',
-                        subtitle: 'CSV of every set, yours to keep',
-                        onTap: () => _exportWorkouts(
-                            context, ref, profile.id, profile.displayName),
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-              const SizedBox(height: 22),
-              _GroupHeader('CLOUD SYNC', color: surface.textSecondary),
-              AppCard(
-                padding: EdgeInsets.zero,
-                child: Semantics(
-                  button: !isPremium,
-                  label: isPremium
-                      ? 'Sync workout data to cloud. Currently ${_syncEnabled == false ? "off" : "on"}.'
-                      : 'Upgrade to Pro to sync across devices',
-                  child: Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      onTap: isPremium
-                          ? null
-                          : () {
-                              if (!tapGuard()) return;
-                              showPremiumPaywall(context,
-                                  source: PaywallSource.sync);
-                            },
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 14),
-                        child: Row(
-                          children: [
-                            Icon(
-                              Icons.sync_rounded,
-                              size: 20,
-                              color: surface.textSecondary,
-                            ),
-                            const SizedBox(width: 14),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
+                  ),
+                  const SizedBox(height: 22),
+                  _GroupHeader('CLOUD SYNC', color: surface.textSecondary),
+                  AppCard(
+                    padding: EdgeInsets.zero,
+                    child: Semantics(
+                      button: !isPremium,
+                      label: isPremium
+                          ? 'Sync workout data to cloud. Currently ${_syncEnabled == false ? "off" : "on"}.'
+                          : 'Upgrade to Pro to sync across devices',
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          onTap: isPremium
+                              ? null
+                              : () {
+                                  if (!tapGuard()) return;
+                                  showPremiumPaywall(context,
+                                      source: PaywallSource.sync);
+                                },
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 16, vertical: 14),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons.sync_rounded,
+                                  size: 20,
+                                  color: surface.textSecondary,
+                                ),
+                                const SizedBox(width: 14),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
-                                      Text(
-                                        'Sync workout data to cloud',
-                                        style: AppText.rowLabel(
-                                            color: surface.textPrimary),
+                                      Row(
+                                        children: [
+                                          Text(
+                                            'Sync workout data to cloud',
+                                            style: AppText.rowLabel(
+                                                color: surface.textPrimary),
+                                          ),
+                                          if (!isPremium) ...[
+                                            const SizedBox(width: 8),
+                                            const ProLockPill(),
+                                          ],
+                                        ],
                                       ),
-                                      if (!isPremium) ...[
-                                        const SizedBox(width: 8),
-                                        const ProLockPill(),
-                                      ],
+                                      const SizedBox(height: 2),
+                                      Text(
+                                        syncSubtitle,
+                                        style: AppText.meta(
+                                            color: surface.textSecondary),
+                                      ),
                                     ],
                                   ),
-                                  const SizedBox(height: 2),
-                                  Text(
-                                    syncSubtitle,
-                                    style: AppText.meta(
-                                        color: surface.textSecondary),
+                                ),
+                                if (isPremium)
+                                  Switch.adaptive(
+                                    value: _syncEnabled ?? true,
+                                    onChanged: (v) => _toggleSync(v),
+                                    activeTrackColor: accent.base,
                                   ),
-                                ],
-                              ),
+                              ],
                             ),
-                            if (isPremium)
-                              Switch.adaptive(
-                                value: _syncEnabled ?? true,
-                                onChanged: (v) => _toggleSync(v),
-                                activeTrackColor: accent.base,
-                              ),
-                          ],
+                          ),
                         ),
                       ),
                     ),
                   ),
-                ),
-              ),
-              const SizedBox(height: 22),
-              _GroupHeader('HELP', color: surface.textSecondary),
-              AppCard(
-                padding: EdgeInsets.zero,
-                child: Column(
-                  children: [
-                    AppActionRow(
-                      icon: Icons.shield_outlined,
-                      title: 'Your data',
-                      subtitle: 'Stored on-device, backed up to your account',
-                      onTap: () => _showDataInfo(context),
+                  const SizedBox(height: 22),
+                  _GroupHeader('HELP', color: surface.textSecondary),
+                  AppCard(
+                    padding: EdgeInsets.zero,
+                    child: Column(
+                      children: [
+                        AppActionRow(
+                          icon: Icons.shield_outlined,
+                          title: 'Your data',
+                          subtitle:
+                              'Stored on-device, backed up to your account',
+                          onTap: () => _showDataInfo(context),
+                        ),
+                        const AppActionDivider(),
+                        AppActionRow(
+                          icon: Icons.privacy_tip_outlined,
+                          title: 'Privacy Policy',
+                          subtitle: 'Local-first. No tracking.',
+                          onTap: () =>
+                              _openExternalUrl(context, kPrivacyPolicyUrl),
+                        ),
+                        const AppActionDivider(),
+                        AppActionRow(
+                          icon: Icons.gavel_rounded,
+                          title: 'Terms of Service',
+                          subtitle: 'The short, readable kind',
+                          onTap: () =>
+                              _openExternalUrl(context, kTermsOfServiceUrl),
+                        ),
+                        const AppActionDivider(),
+                        AppActionRow(
+                          icon: Icons.tour_outlined,
+                          title: 'Replay app tour',
+                          subtitle: 'Walk through the basics again',
+                          onTap: () {
+                            if (!tapGuard()) return;
+                            HapticFeedback.lightImpact();
+                            ref.read(firstRunTourProvider.notifier).reset();
+                            context.go('/');
+                          },
+                        ),
+                        const AppActionDivider(),
+                        AppActionRow(
+                          icon: Icons.info_outline_rounded,
+                          title: 'Version',
+                          subtitle: 'GymLog $version',
+                          showChevron: false,
+                        ),
+                      ],
                     ),
-                    const AppActionDivider(),
-                    AppActionRow(
-                      icon: Icons.privacy_tip_outlined,
-                      title: 'Privacy Policy',
-                      subtitle: 'Local-first. No tracking.',
-                      onTap: () => _openExternalUrl(context, kPrivacyPolicyUrl),
-                    ),
-                    const AppActionDivider(),
-                    AppActionRow(
-                      icon: Icons.gavel_rounded,
-                      title: 'Terms of Service',
-                      subtitle: 'The short, readable kind',
-                      onTap: () =>
-                          _openExternalUrl(context, kTermsOfServiceUrl),
-                    ),
-                    const AppActionDivider(),
-                    AppActionRow(
-                      icon: Icons.tour_outlined,
-                      title: 'Replay app tour',
-                      subtitle: 'Walk through the basics again',
-                      onTap: () {
-                        if (!tapGuard()) return;
-                        HapticFeedback.lightImpact();
-                        ref.read(firstRunTourProvider.notifier).reset();
-                        context.go('/');
-                      },
-                    ),
-                    const AppActionDivider(),
-                    AppActionRow(
-                      icon: Icons.info_outline_rounded,
-                      title: 'Version',
-                      subtitle: 'GymLog $version',
-                      showChevron: false,
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 28),
-              _SignOutButton(),
-              const SizedBox(height: 10),
-              Center(
-                child: TextButton(
-                  onPressed: () {
-                    if (!tapGuard()) return;
-                    HapticFeedback.selectionClick();
-                    context.push('/settings/delete-account');
-                  },
-                  child: Text(
-                    'Delete account',
-                    style: AppText.button(color: AppColors.error),
                   ),
-                ),
+                  const SizedBox(height: 28),
+                  _SignOutButton(),
+                  const SizedBox(height: 10),
+                  Center(
+                    child: TextButton(
+                      onPressed: () {
+                        if (!tapGuard()) return;
+                        HapticFeedback.selectionClick();
+                        context.push('/settings/delete-account');
+                      },
+                      child: Text(
+                        'Delete account',
+                        style: AppText.button(color: AppColors.error),
+                      ),
+                    ),
+                  ),
+                ],
               ),
+
+              // Step 3 — Rest-timer spotlight (framing C-b: Settings row).
+              // Guard: only show when Settings is the active top route.
+              if (ref.watch(firstRunTourProvider) == 3 &&
+                  (ModalRoute.of(context)?.isCurrent ?? false))
+                SpotlightTourOverlay(
+                  targetKey: _restTimerRowKey,
+                  title: 'Automatic rest timer',
+                  description:
+                      'GymLog starts a countdown after every completed set. '
+                      'Set your preferred rest duration here — 90 seconds is '
+                      'great for compound lifts, 60 s for isolation work.',
+                  step: 3,
+                ),
             ],
           ),
         ),
