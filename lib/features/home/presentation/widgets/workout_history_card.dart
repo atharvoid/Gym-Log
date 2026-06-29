@@ -178,14 +178,13 @@ class _ExerciseRow extends ConsumerWidget {
       inner = frameAsync.when(
         loading: () => const SizedBox.shrink(),
         error: (_, __) => _iconFallback(),
-        data: (memoryImage) => memoryImage == null
+        data: (img) => img == null
             ? _iconFallback()
-            : Image(
-                image: memoryImage,
+            : RawImage(
+                image: img,
                 width: 52,
                 height: 52,
                 fit: BoxFit.cover,
-                gaplessPlayback: true,
               ),
       );
     }

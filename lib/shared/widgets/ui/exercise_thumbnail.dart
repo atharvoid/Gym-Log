@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gymlog/core/theme/app_colors.dart';
 import 'package:gymlog/core/theme/app_text.dart';
@@ -40,21 +41,20 @@ class ExerciseThumbnail extends ConsumerWidget {
 
     Widget inner;
     if (url == null || url.isEmpty) {
-      inner = _fallback();
+      inner = _fallback(ref);
     } else {
       final frameAsync = ref.watch(
           fastFrame ? gifFirstFrameProvider(url) : gifLastFrameProvider(url));
       inner = frameAsync.when(
         loading: () => Container(color: surface.surface3),
-        error: (_, __) => _fallback(),
+        error: (_, __) => _fallback(ref),
         data: (img) => img == null
-            ? _fallback()
-            : Image(
+            ? _fallback(ref)
+            : RawImage(
                 image: img,
                 width: size,
                 height: size,
                 fit: BoxFit.cover,
-                gaplessPlayback: true,
               ),
       );
     }
@@ -73,11 +73,21 @@ class ExerciseThumbnail extends ConsumerWidget {
     );
   }
 
-  Widget _fallback() => Center(
-        child: Icon(
-          Icons.fitness_center_rounded,
-          color: AppColors.thumbIcon,
-          size: size * 0.42,
+  Widget _fallback(WidgetRef ref) => GestureDetector(
+        onTap: () {
+          HapticFeedback.lightImpact();
+          if (gifUrl != null && gifUrl!.isNotEmpty) {
+            ref.invalidate(fastFrame
+                ? gifFirstFrameProvider(gifUrl!)
+                : gifLastFrameProvider(gifUrl!));
+          }
+        },
+        child: Center(
+          child: Icon(
+            Icons.fitness_center_rounded,
+            color: AppColors.thumbIcon,
+            size: size * 0.42,
+          ),
         ),
       );
 }

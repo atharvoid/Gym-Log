@@ -75,14 +75,13 @@ class ExerciseGifWidget extends StatelessWidget {
           child: frameAsync.when(
             loading: () => _buildPlaceholder(),
             error: (_, __) => _buildFallback(),
-            data: (memoryImage) {
-              if (memoryImage == null) return _buildFallback();
-              return Image(
-                image: memoryImage,
+            data: (img) {
+              if (img == null) return _buildFallback();
+              return RawImage(
+                image: img,
                 width: width,
                 height: height,
                 fit: fit,
-                gaplessPlayback: true,
               );
             },
           ),

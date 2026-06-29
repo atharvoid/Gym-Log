@@ -42,7 +42,7 @@ class ExerciseHeroThumb extends StatelessWidget {
             child: Container(
               color: AppColors.gifCanvas,
               child: img != null
-                  ? Image(image: img, fit: BoxFit.contain)
+                  ? RawImage(image: img, fit: BoxFit.contain)
                   : const Center(
                       child: Icon(Icons.fitness_center_rounded,
                           color: AppColors.thumbIcon)),

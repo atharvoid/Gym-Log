@@ -118,7 +118,7 @@ class _Poster extends ConsumerWidget {
     }
     final frame = ref.watch(gifLastFrameProvider(url)).valueOrNull;
     if (frame == null) return const SizedBox.shrink();
-    return Image(image: frame, fit: BoxFit.contain, gaplessPlayback: true);
+    return RawImage(image: frame, fit: BoxFit.contain);
   }
 }
 
