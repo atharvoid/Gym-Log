@@ -11,6 +11,7 @@ import 'core/router/router.dart';
 import 'core/services/sync_engine.dart';
 import 'features/auth/presentation/providers/auth_provider.dart';
 import 'shared/widgets/database_recovery_screen.dart';
+import 'shared/widgets/tour/tour_navigation_orchestrator.dart';
 
 class GymLogApp extends ConsumerStatefulWidget {
   /// When true, the local database failed its integrity check during
@@ -140,7 +141,7 @@ class _GymLogAppState extends ConsumerState<GymLogApp> {
           data: mq.copyWith(
             textScaler: mq.textScaler.clamp(maxScaleFactor: 1.4),
           ),
-          child: child!,
+          child: TourNavigationOrchestrator(child: child!),
         );
       },
     );
