@@ -44,11 +44,14 @@ class _StepCompletionState extends ConsumerState<StepCompletion> {
       if (user != null) {
         final draft = ref.read(onboardingDraftProvider);
 
-        // 1. Submit display name (local write + background remote sync)
+        // 1. Submit display name (local write + background remote sync).
+        //    Mark onboarding complete remotely so future logins treat this
+        //    profile authoritatively as finished.
         await ref.read(profileSyncProvider).submitDisplayName(
               userId: user.id,
               email: user.email ?? '',
               name: draft.name,
+              onboardingComplete: true,
             );
 
         // 2. Set age in local DB if present

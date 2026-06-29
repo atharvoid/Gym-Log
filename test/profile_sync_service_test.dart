@@ -32,10 +32,16 @@ class FakeRemote implements ProfileRemote {
     required String userId,
     required String displayName,
     String? email,
+    bool onboardingComplete = false,
   }) async {
     upsertCalls++;
     if (failNext) throw Exception('offline');
-    stored = RemoteProfile(id: userId, displayName: displayName, email: email);
+    stored = RemoteProfile(
+      id: userId,
+      displayName: displayName,
+      email: email,
+      onboardingComplete: onboardingComplete,
+    );
   }
 }
 
@@ -78,6 +84,17 @@ void main() {
       expect(remote.upsertCalls, 1);
     });
 
+    test('onboarding completion marks remote flag true', () async {
+      await service.submitDisplayName(
+        userId: userId,
+        email: email,
+        name: 'Atharva',
+        onboardingComplete: true,
+      );
+
+      expect(remote.stored?.onboardingComplete, isTrue);
+    });
+
     test('keeps local + queues when remote is offline, retry delivers later',
         () async {
       remote.failNext = true;
@@ -104,13 +121,48 @@ void main() {
     test('hydrates local from the backend when a remote profile exists',
         () async {
       remote.stored = const RemoteProfile(
-          id: userId, displayName: 'Cloud Name', email: email);
+        id: userId,
+        displayName: 'Cloud Name',
+        email: email,
+        onboardingComplete: true,
+      );
 
       final res = await service.resolveOnLogin(userId: userId, email: email);
 
       expect(res, ProfileResolution.ready);
       expect((await db.userDao.getUserOrNull(userId))?.displayName,
           'Cloud Name'); // backend won
+    });
+
+    test('remote profile with name but no completion flag needs onboarding',
+        () async {
+      remote.stored = const RemoteProfile(
+        id: userId,
+        displayName: 'Cloud Name',
+        email: email,
+        onboardingComplete: false,
+      );
+
+      final res = await service.resolveOnLogin(userId: userId, email: email);
+
+      expect(res, ProfileResolution.needsOnboarding);
+    });
+
+    test('remote incomplete but local complete still ready (backfill compat)',
+        () async {
+      remote.stored = const RemoteProfile(
+        id: userId,
+        displayName: 'Cloud Name',
+        email: email,
+        onboardingComplete: false,
+      );
+      await db.userDao
+          .upsertProfile(id: userId, email: email, displayName: 'Cloud Name');
+      await db.userDao.setOnboardingComplete(userId, complete: true);
+
+      final res = await service.resolveOnLogin(userId: userId, email: email);
+
+      expect(res, ProfileResolution.ready);
     });
 
     test('first-ever user (no remote, no local) needs onboarding', () async {
@@ -154,8 +206,12 @@ void main() {
           .upsertProfile(id: userId, email: email, displayName: 'Old');
       await db.userDao.setWeightUnit(userId, 'lbs');
 
-      remote.stored =
-          const RemoteProfile(id: userId, displayName: 'New', email: email);
+      remote.stored = const RemoteProfile(
+        id: userId,
+        displayName: 'New',
+        email: email,
+        onboardingComplete: true,
+      );
       await service.resolveOnLogin(userId: userId, email: email);
 
       final local = await db.userDao.getUserOrNull(userId);

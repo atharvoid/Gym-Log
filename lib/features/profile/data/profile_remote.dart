@@ -6,10 +6,16 @@ class RemoteProfile {
   final String displayName;
   final String? email;
 
+  /// Whether the user has completed onboarding. This is the authoritative
+  /// cross-device signal; a profile with only a display name but no completed
+  /// flag should still be sent through onboarding.
+  final bool onboardingComplete;
+
   const RemoteProfile({
     required this.id,
     required this.displayName,
     this.email,
+    this.onboardingComplete = false,
   });
 }
 
@@ -25,6 +31,7 @@ abstract class ProfileRemote {
     required String userId,
     required String displayName,
     String? email,
+    bool onboardingComplete = false,
   });
 }
 
@@ -42,7 +49,7 @@ class SupabaseProfileRemote implements ProfileRemote {
   Future<RemoteProfile?> fetch(String userId) async {
     final row = await _client
         .from(_table)
-        .select('id, display_name, email')
+        .select('id, display_name, email, onboarding_complete')
         .eq('id', userId)
         .maybeSingle();
     if (row == null) return null;
@@ -50,6 +57,7 @@ class SupabaseProfileRemote implements ProfileRemote {
       id: row['id'] as String,
       displayName: (row['display_name'] as String?) ?? '',
       email: row['email'] as String?,
+      onboardingComplete: row['onboarding_complete'] as bool? ?? false,
     );
   }
 
@@ -58,11 +66,13 @@ class SupabaseProfileRemote implements ProfileRemote {
     required String userId,
     required String displayName,
     String? email,
+    bool onboardingComplete = false,
   }) async {
     await _client.from(_table).upsert({
       'id': userId,
       'display_name': displayName,
       if (email != null) 'email': email,
+      'onboarding_complete': onboardingComplete,
       'updated_at': DateTime.now().toUtc().toIso8601String(),
     });
   }

@@ -115,6 +115,10 @@ class AccountDeletionService {
     if (kDebugMode) {
       debugPrint('[AccountDeletion] cloud=$cloudPurged auth=$authUserDeleted '
           'local=$localWiped note=$note');
+      if (!authUserDeleted) {
+        debugPrint('[AccountDeletion] WARNING: auth.users identity survived — '
+            're-login will reuse the same uid unless the Edge Function deletes it.');
+      }
     }
 
     return AccountDeletionOutcome(

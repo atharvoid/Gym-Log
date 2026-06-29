@@ -52,10 +52,14 @@ class ProfileSyncService {
   /// Onboarding submit: persist the chosen name locally at once, then push to
   /// the backend (queued + retried on failure). Returns as soon as the local
   /// write is done — the remote leg never blocks the welcome flow.
+  ///
+  /// When [onboardingComplete] is true, the remote profile is marked as
+  /// fully onboarded, which is the authoritative gate for future logins.
   Future<bool> submitDisplayName({
     required String userId,
     required String email,
     required String name,
+    bool onboardingComplete = false,
   }) async {
     final clean = name.trim();
     if (clean.isEmpty) return false;
@@ -69,7 +73,7 @@ class ProfileSyncService {
     }
 
     // 2. Queue the remote intent, then attempt to flush it immediately.
-    await _queue(userId, clean, email);
+    await _queue(userId, clean, email, onboardingComplete: onboardingComplete);
     try {
       await _flushPendingOrThrow(userId);
       return true;
@@ -99,8 +103,26 @@ class ProfileSyncService {
           email: remote.email ?? email,
           displayName: remote.displayName.trim(),
         );
-        await _db.userDao.setOnboardingComplete(userId, complete: true);
-        return ProfileResolution.ready;
+
+        // Authoritative gate: only treat the profile as ready if the remote
+        // row explicitly says onboarding is complete. A name alone (e.g. from
+        // a pre-flag row, or a row left over after a partial delete) must not
+        // skip onboarding.
+        if (remote.onboardingComplete) {
+          await _db.userDao.setOnboardingComplete(userId, complete: true);
+          return ProfileResolution.ready;
+        }
+
+        // Remote has a name but is not marked complete. Trust local state if
+        // it says the user already finished onboarding (migration/backfill).
+        final local = await _db.userDao.getUserOrNull(userId);
+        if (local != null &&
+            local.onboardingComplete &&
+            local.displayName.trim().isNotEmpty) {
+          return ProfileResolution.ready;
+        }
+
+        return ProfileResolution.needsOnboarding;
       }
 
       // No remote row. If we have a local name and onboarding is complete,
@@ -133,11 +155,20 @@ class ProfileSyncService {
 
   // ── internals ────────────────────────────────────────────────────────────
 
-  Future<void> _queue(String userId, String name, String? email) async {
+  Future<void> _queue(
+    String userId,
+    String name,
+    String? email, {
+    bool onboardingComplete = false,
+  }) async {
     final prefs = await _prefs();
     await prefs.setString(
       _pendingKey(userId),
-      jsonEncode({'name': name, 'email': email}),
+      jsonEncode({
+        'name': name,
+        'email': email,
+        'onboardingComplete': onboardingComplete,
+      }),
     );
   }
 
@@ -160,6 +191,7 @@ class ProfileSyncService {
           userId: userId,
           displayName: m['name'] as String,
           email: m['email'] as String?,
+          onboardingComplete: m['onboardingComplete'] as bool? ?? false,
         )
         .timeout(_timeout);
     await prefs.remove(_pendingKey(userId)); // delivered — drop the queue
