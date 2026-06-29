@@ -122,6 +122,7 @@ void main() {
         () async {
       await db.userDao
           .upsertProfile(id: userId, email: email, displayName: 'Local Only');
+      await db.userDao.setOnboardingComplete(userId, complete: true);
 
       final res = await service.resolveOnLogin(userId: userId, email: email);
 
@@ -133,6 +134,7 @@ void main() {
         () async {
       await db.userDao
           .upsertProfile(id: userId, email: email, displayName: 'Local Only');
+      await db.userDao.setOnboardingComplete(userId, complete: true);
       remote.failNext = true;
 
       final res = await service.resolveOnLogin(userId: userId, email: email);

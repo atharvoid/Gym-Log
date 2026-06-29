@@ -11,6 +11,11 @@ class UserProfiles extends Table {
   IntColumn get defaultRestSeconds =>
       integer().withDefault(const Constant(90))();
   DateTimeColumn get createdAt => dateTime()();
+  IntColumn get age => integer().nullable()();
+  TextColumn get experienceLevel =>
+      text().nullable()(); // 'beginner'|'intermediate'|'advanced'
+  BoolColumn get onboardingComplete =>
+      boolean().withDefault(const Constant(false))();
 
   @override
   Set<Column> get primaryKey => {id};

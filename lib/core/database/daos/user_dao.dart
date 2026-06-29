@@ -90,4 +90,22 @@ class UserDao extends DatabaseAccessor<AppDatabase> with _$UserDaoMixin {
     return (update(userProfiles)..where((t) => t.id.equals(id)))
         .write(UserProfilesCompanion(defaultRestSeconds: Value(seconds)));
   }
+
+  /// Set the user's age.
+  Future<void> setAge(String id, int? age) {
+    return (update(userProfiles)..where((t) => t.id.equals(id)))
+        .write(UserProfilesCompanion(age: Value(age)));
+  }
+
+  /// Set the user's experience level ('beginner' | 'intermediate' | 'advanced').
+  Future<void> setExperienceLevel(String id, String? level) {
+    return (update(userProfiles)..where((t) => t.id.equals(id)))
+        .write(UserProfilesCompanion(experienceLevel: Value(level)));
+  }
+
+  /// Set the user's onboarding completion status.
+  Future<void> setOnboardingComplete(String id, {required bool complete}) {
+    return (update(userProfiles)..where((t) => t.id.equals(id)))
+        .write(UserProfilesCompanion(onboardingComplete: Value(complete)));
+  }
 }

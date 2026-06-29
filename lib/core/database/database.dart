@@ -40,7 +40,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.executor);
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -50,6 +50,14 @@ class AppDatabase extends _$AppDatabase {
           // and the upgrade is non-destructive.
           if (from < 2) {
             await m.createTable(syncOutbox);
+          }
+          if (from < 3) {
+            await m.addColumn(userProfiles, userProfiles.age);
+            await m.addColumn(userProfiles, userProfiles.experienceLevel);
+            await m.addColumn(userProfiles, userProfiles.onboardingComplete);
+            // backfill: existing named users are already "done"
+            await customStatement(
+                "UPDATE user_profiles SET onboarding_complete = 1 WHERE display_name <> ''");
           }
         },
         beforeOpen: (details) async {

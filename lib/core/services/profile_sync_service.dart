@@ -99,14 +99,16 @@ class ProfileSyncService {
           email: remote.email ?? email,
           displayName: remote.displayName.trim(),
         );
+        await _db.userDao.setOnboardingComplete(userId, complete: true);
         return ProfileResolution.ready;
       }
 
-      // No remote row. If we have a local name (e.g. a user who onboarded
-      // before this feature, or right after the table was created), push it
-      // up so it becomes the cross-device source of truth.
+      // No remote row. If we have a local name and onboarding is complete,
+      // push it up so it becomes the cross-device source of truth.
       final local = await _db.userDao.getUserOrNull(userId);
-      if (local != null && local.displayName.trim().isNotEmpty) {
+      if (local != null &&
+          local.onboardingComplete &&
+          local.displayName.trim().isNotEmpty) {
         await _queue(userId, local.displayName.trim(), local.email);
         await _flushPending(userId);
         return ProfileResolution.ready;
@@ -115,9 +117,11 @@ class ProfileSyncService {
       return ProfileResolution.needsOnboarding;
     } catch (_) {
       // Backend unreachable (offline, or table not provisioned yet). Trust
-      // local state; if there's a name, proceed — otherwise greet them.
+      // local state; if there's a name and onboarding is complete, proceed — otherwise greet them.
       final local = await _db.userDao.getUserOrNull(userId);
-      return (local != null && local.displayName.trim().isNotEmpty)
+      return (local != null &&
+              local.onboardingComplete &&
+              local.displayName.trim().isNotEmpty)
           ? ProfileResolution.ready
           : ProfileResolution.needsOnboarding;
     }
