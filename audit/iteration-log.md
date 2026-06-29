@@ -581,3 +581,43 @@ Single-file change: `lib/features/exercises/presentation/screens/exercise_detail
 - [x] Tests Suite: **PASS** (164/164 tests passed — all Hero transition tests and detail polish tests unchanged)
 
 **Gate Verdict:** PASS
+
+---
+
+## FIX-P3: Defer First-Run Tour Until First Program or Workout
+
+**Date:** 2026-06-29
+**Commit:** `639126b`
+**Branch:** `fix-sha1-auth-issue`
+
+### Problem
+Completing onboarding immediately launched the spotlight tour on an empty Home screen. The step-0 "Find a program" target existed, but the rest of the tour pointed at UI that had no real content yet, making the walkthrough confusing and visually broken.
+
+### Diff Summary
+- Introduced a `deferredStep = -2` sentinel in `FirstRunTourNotifier` so "take the tour" can be accepted but not started.
+- `OnboardingScreen` now defers the tour when the user taps **Start Tour**, landing them on Home without a spotlight.
+- `HomeScreen` watches `hydratedRoutinesProvider` and `streakStatsProvider`; when deferred state is detected and a routine or workout exists, it silently advances the tour to step 0 and renders the spotlight.
+- Step-0 spotlight now anchors on `Quick Start` when the user already has routines, with a "Ready to train?" tooltip instead of the empty-state "Find a program" copy.
+- Added tour-provider tests covering the deferred sentinel, no-op `nextStep`, exit via `setStep(0)`, and skip from deferred state.
+
+### Files Changed
+- `lib/features/auth/presentation/providers/tour_provider.dart`
+- `lib/features/auth/presentation/screens/onboarding_screen.dart`
+- `lib/features/home/presentation/screens/home_screen.dart`
+- `test/tour_sequencing_test.dart`
+
+### Scoreboard Delta
+No visual scoreboard rescore; this is a behavioral/flow fix.
+
+### Gate Verification Result
+- [x] Format: **PASS**
+- [x] Static Analysis: **PASS** (`flutter analyze --fatal-infos --fatal-warnings` — No issues found)
+- [x] Custom Linter: **PASS**
+- [x] Tests Suite: **PASS** (198 tests passed)
+
+### Device Verification
+- Built and installed a fresh debug APK on both wireless Android devices.
+- Confirmed clean launch from cold start (Supabase init + exercise hydration complete, no crashes).
+- Manual fresh-install onboarding/deferred-tour interaction checks remain pending because the devices are asleep/locked and `adb shell input` injection is disabled.
+
+**Gate Verdict:** PASS (automated gates green; awaiting human interactive confirmation)
