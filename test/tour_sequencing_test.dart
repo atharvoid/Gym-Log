@@ -110,5 +110,31 @@ void main() {
       }
       expect(notifier.state, equals(-1));
     });
+
+    // ── Deferred tour (P3) ───────────────────────────────────────────────────
+    test('deferredStep sentinel is -2', () {
+      expect(FirstRunTourNotifier.deferredStep, equals(-2));
+    });
+
+    test('nextStep from deferredStep is a no-op', () async {
+      final notifier = FirstRunTourNotifier();
+      await notifier.setStep(FirstRunTourNotifier.deferredStep);
+      await notifier.nextStep();
+      expect(notifier.state, equals(FirstRunTourNotifier.deferredStep));
+    });
+
+    test('setStep(0) exits deferred state and starts the tour', () async {
+      final notifier = FirstRunTourNotifier();
+      await notifier.setStep(FirstRunTourNotifier.deferredStep);
+      await notifier.setStep(0);
+      expect(notifier.state, equals(0));
+    });
+
+    test('skipOrEnd from deferredStep completes the tour', () async {
+      final notifier = FirstRunTourNotifier();
+      await notifier.setStep(FirstRunTourNotifier.deferredStep);
+      await notifier.skipOrEnd();
+      expect(notifier.state, equals(-1));
+    });
   });
 }

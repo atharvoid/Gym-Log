@@ -8,6 +8,11 @@ class FirstRunTourNotifier extends StateNotifier<int> {
   /// Tasks A–C keep this at 5: Explore → Add → View/Start → Rest → Stats.
   static const int totalSteps = 5;
 
+  /// Sentinel value meaning "the user chose 'Take the tour' but the app is
+  /// still empty, so the masked walkthrough is deferred until real content
+  /// (a routine or workout) exists." Stored under the same prefs key as step.
+  static const int deferredStep = -2;
+
   FirstRunTourNotifier() : super(-1) {
     _load();
   }
@@ -28,7 +33,7 @@ class FirstRunTourNotifier extends StateNotifier<int> {
   }
 
   Future<void> nextStep() async {
-    if (state == -1) return;
+    if (state == -1 || state == deferredStep) return;
     if (state >= totalSteps - 1) {
       await setStep(-1); // Tour completed!
     } else {

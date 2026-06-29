@@ -7,6 +7,7 @@ import 'package:gymlog/core/theme/app_text.dart';
 import 'package:gymlog/core/theme/dynamic_accent_theme.dart';
 import 'package:gymlog/features/auth/presentation/providers/auth_provider.dart';
 import 'package:gymlog/features/auth/presentation/providers/onboarding_draft_provider.dart';
+import 'package:gymlog/features/auth/presentation/providers/tour_provider.dart';
 import 'package:gymlog/features/auth/presentation/widgets/onboarding/step_name.dart';
 import 'package:gymlog/features/auth/presentation/widgets/onboarding/step_age.dart';
 import 'package:gymlog/features/auth/presentation/widgets/onboarding/step_gender.dart';
@@ -88,7 +89,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
   Future<void> _handleStartTour() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setInt('first_run_tour_step', 0); // Start tour at step 0
+    // Defer the masked tour until the user has real content (a routine or a
+    // logged workout) so spotlights never land on empty placeholder UI.
+    await prefs.setInt(
+        'first_run_tour_step', FirstRunTourNotifier.deferredStep);
     if (mounted) {
       context.go('/');
     }

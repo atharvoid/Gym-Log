@@ -46,6 +46,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   /// weekly-stats card has not yet rendered.
   final GlobalKey _homeHeaderKey = GlobalKey();
 
+  /// Target for the step-0 tour spotlight when the user already has routines
+  /// (deferred tour start) and the "Find a program" card is not shown.
+  final GlobalKey _quickStartKey = GlobalKey();
+
   // Pagination is driven from real scroll position — NOT scheduled as a
   // side-effect inside itemBuilder (which fired a microtask on every rebuild).
   final ScrollController _scrollController = ScrollController();
@@ -87,7 +91,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final streak = ref.watch(streakStatsProvider);
     final hasActivity = streak.currentStreak > 0 || streak.workoutsThisWeek > 0;
     final hasNoRoutines = routines.isEmpty;
-    final showFindProgram = hasNoRoutines || tourStep == 0;
+    final showFindProgram = hasNoRoutines ||
+        tourStep == 0 ||
+        tourStep == FirstRunTourNotifier.deferredStep;
+
+    // If the tour is deferred and the user now has real content, kick it off.
+    if (tourStep == FirstRunTourNotifier.deferredStep &&
+        (routines.isNotEmpty || hasActivity)) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        ref.read(firstRunTourProvider.notifier).setStep(0);
+      });
+    }
 
     // ── Initial load: skeleton feed (no spinner, no layout jump) ───────────
     if (historyState.isInitialLoad) {
@@ -177,15 +191,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 ),
               ),
             ),
-            // Step 0 — Find a program spotlight.
+            // Step 0 — Find a program spotlight (or Quick Start if the user
+            // already has routines and the tour was deferred).
             // Guard: only render when Home is the active top route so the
             // mask cannot leak through to another screen during transitions.
             if (tourStep == 0 && (ModalRoute.of(context)?.isCurrent ?? false))
               SpotlightTourOverlay(
-                targetKey: _findProgramKey,
-                title: 'Find a training program',
-                description:
-                    'Choose a trainer-built routine. Tap "Explore Programs" to browse workouts tailored for your experience level.',
+                targetKey: hasNoRoutines ? _findProgramKey : _quickStartKey,
+                title: hasNoRoutines
+                    ? 'Find a training program'
+                    : 'Ready to train?',
+                description: hasNoRoutines
+                    ? 'Choose a trainer-built routine. Tap "Explore Programs" to browse workouts tailored for your experience level.'
+                    : 'Tap "Start Empty Workout" to log a session, or browse your routine library for a structured program.',
                 step: 0,
               ),
 
@@ -220,16 +238,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Find a training program', style: AppText.exerciseName()),
+            Text('Import your first program', style: AppText.exerciseName()),
             const SizedBox(height: 3),
             Text(
-              'Choose from our curated programs designed for your experience level.',
+              'Browse trainer-built routines and add one to your library to get started.',
               style: AppText.meta(),
             ),
             const SizedBox(height: 12),
             TextButton(
               onPressed: () {
-                if (tourStep == 0) {
+                if (tourStep == 0 ||
+                    tourStep == FirstRunTourNotifier.deferredStep) {
                   ref.read(firstRunTourProvider.notifier).setStep(1);
                 }
                 context.push('/routines/explore');
@@ -240,7 +259,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
               ),
               child: Text(
-                'Explore Programs →',
+                'Browse programs →',
                 style: AppText.label(color: context.accent.base),
               ),
             ),
@@ -255,6 +274,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     return Padding(
       padding: const EdgeInsets.only(bottom: 20),
       child: AppCard(
+        key: _quickStartKey,
         radius: AppRadius.card,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
