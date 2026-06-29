@@ -183,14 +183,6 @@ class _ProfileAvatarState extends State<ProfileAvatar> {
                   _pickImage(ImageSource.gallery);
                 },
               ),
-              _SheetOption(
-                icon: Icons.camera_alt_rounded,
-                label: 'Take Photo',
-                onTap: () {
-                  Navigator.of(sheetCtx).pop();
-                  _pickImage(ImageSource.camera);
-                },
-              ),
               if (hasImage)
                 _SheetOption(
                   icon: Icons.delete_outline_rounded,

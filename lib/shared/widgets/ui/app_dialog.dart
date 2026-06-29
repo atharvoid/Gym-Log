@@ -139,83 +139,127 @@ Future<String?> showAppTextInputDialog({
   int maxLength = 50,
 }) {
   HapticFeedback.selectionClick();
-  final controller = TextEditingController(text: initialValue);
-
-  // Dispose the controller once the dialog closes (confirm OR dismiss) —
-  // otherwise every invocation leaks a TextEditingController + focus node.
   return showDialog<String>(
     context: context,
     useRootNavigator: true,
     builder: (dialogCtx) {
-      final accent = dialogCtx.accent;
-      void submit() {
-        final value = controller.text.trim();
-        if (value.isEmpty) return;
-        Navigator.of(dialogCtx).pop(value);
-      }
-
-      return Dialog(
-        backgroundColor: AppColors.surface2,
-        shape: const RoundedRectangleBorder(borderRadius: AppRadius.cardAll),
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(24, 24, 16, 12),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(title, style: AppText.sectionHeading()),
-              const SizedBox(height: 14),
-              Padding(
-                padding: const EdgeInsets.only(right: 8),
-                child: TextField(
-                  controller: controller,
-                  autofocus: true,
-                  maxLength: maxLength,
-                  textCapitalization: TextCapitalization.words,
-                  cursorColor: accent.base,
-                  style: AppText.value(),
-                  decoration: InputDecoration(
-                    hintText: hint,
-                    hintStyle: AppText.body(color: AppColors.textTertiary),
-                    counterStyle:
-                        AppText.caption(color: AppColors.textTertiary),
-                    filled: true,
-                    fillColor: AppColors.surface3,
-                    contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 14, vertical: 12),
-                    enabledBorder: const OutlineInputBorder(
-                      borderRadius: AppRadius.inputAll,
-                      borderSide: BorderSide.none,
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: AppRadius.inputAll,
-                      borderSide: BorderSide(color: accent.light, width: 1.5),
-                    ),
-                  ),
-                  onSubmitted: (_) => submit(),
-                ),
-              ),
-              const SizedBox(height: 10),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  TextButton(
-                    onPressed: () => Navigator.of(dialogCtx).pop(null),
-                    child: Text('Cancel',
-                        style: AppText.button(color: AppColors.textSecondary)),
-                  ),
-                  const SizedBox(width: 4),
-                  TextButton(
-                    onPressed: submit,
-                    child: Text(confirmLabel,
-                        style: AppText.button(color: accent.light)),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
+      return _AppTextInputDialogContent(
+        title: title,
+        hint: hint,
+        initialValue: initialValue,
+        confirmLabel: confirmLabel,
+        maxLength: maxLength,
       );
     },
-  ).whenComplete(controller.dispose);
+  );
+}
+
+class _AppTextInputDialogContent extends StatefulWidget {
+  final String title;
+  final String hint;
+  final String? initialValue;
+  final String confirmLabel;
+  final int maxLength;
+
+  const _AppTextInputDialogContent({
+    required this.title,
+    required this.hint,
+    required this.initialValue,
+    required this.confirmLabel,
+    required this.maxLength,
+  });
+
+  @override
+  State<_AppTextInputDialogContent> createState() =>
+      _AppTextInputDialogContentState();
+}
+
+class _AppTextInputDialogContentState
+    extends State<_AppTextInputDialogContent> {
+  late final TextEditingController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(text: widget.initialValue);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _submit() {
+    final value = _controller.text.trim();
+    if (value.isEmpty) return;
+    Navigator.of(context).pop(value);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final accent = context.accent;
+
+    return Dialog(
+      backgroundColor: AppColors.surface2,
+      shape: const RoundedRectangleBorder(borderRadius: AppRadius.cardAll),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(24, 24, 16, 12),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(widget.title, style: AppText.sectionHeading()),
+            const SizedBox(height: 14),
+            Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: TextField(
+                controller: _controller,
+                autofocus: true,
+                maxLength: widget.maxLength,
+                textCapitalization: TextCapitalization.words,
+                cursorColor: accent.base,
+                style: AppText.value(),
+                decoration: InputDecoration(
+                  hintText: widget.hint,
+                  hintStyle: AppText.body(color: AppColors.textTertiary),
+                  counterStyle: AppText.caption(color: AppColors.textTertiary),
+                  filled: true,
+                  fillColor: AppColors.surface3,
+                  contentPadding:
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                  enabledBorder: const OutlineInputBorder(
+                    borderRadius: AppRadius.inputAll,
+                    borderSide: BorderSide.none,
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: AppRadius.inputAll,
+                    borderSide: BorderSide(color: accent.light, width: 1.5),
+                  ),
+                ),
+                onSubmitted: (_) => _submit(),
+              ),
+            ),
+            const SizedBox(height: 10),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(null),
+                  child: Text('Cancel',
+                      style: AppText.button(color: AppColors.textSecondary)),
+                ),
+                const SizedBox(width: 4),
+                TextButton(
+                  onPressed: _submit,
+                  child: Text(widget.confirmLabel,
+                      style: AppText.button(color: accent.light)),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
