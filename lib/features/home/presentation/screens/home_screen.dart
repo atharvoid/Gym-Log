@@ -177,7 +177,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 ),
               ),
             ),
-            if (tourStep == 0)
+            // Step 0 — Find a program spotlight.
+            // Guard: only render when Home is the active top route so the
+            // mask cannot leak through to another screen during transitions.
+            if (tourStep == 0 && (ModalRoute.of(context)?.isCurrent ?? false))
               SpotlightTourOverlay(
                 targetKey: _findProgramKey,
                 title: 'Find a training program',

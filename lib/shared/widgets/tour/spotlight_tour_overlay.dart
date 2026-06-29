@@ -13,6 +13,10 @@ class SpotlightTourOverlay extends ConsumerStatefulWidget {
   final int step;
   final Axis balloonPosition; // Force balloon to be top or bottom if needed
 
+  /// Radius of the rounded cut-out around the target. Match the target widget
+  /// (e.g. [AppRadius.card] for cards) so the spotlight reads as a crisp focus.
+  final double borderRadius;
+
   const SpotlightTourOverlay({
     super.key,
     required this.targetKey,
@@ -20,6 +24,7 @@ class SpotlightTourOverlay extends ConsumerStatefulWidget {
     required this.description,
     required this.step,
     this.balloonPosition = Axis.vertical,
+    this.borderRadius = 12,
   });
 
   @override
@@ -41,8 +46,9 @@ class _SpotlightTourOverlayState extends ConsumerState<SpotlightTourOverlay>
   bool _autoAdvanced = false;
 
   /// Maximum time to wait for a target to layout before auto-advancing the tour
-  /// so the user is never stranded under a full-black mask.
-  static const _maxResolveAttempts = 25;
+  /// so the user is never stranded under a full-black mask. ~1s is long enough
+  /// for a normal frame to settle; anything longer is perceived as a hang.
+  static const _maxResolveAttempts = 10;
 
   @override
   void initState() {
@@ -120,7 +126,9 @@ class _SpotlightTourOverlayState extends ConsumerState<SpotlightTourOverlay>
               child: CustomPaint(
                 painter: _SpotlightMaskPainter(
                   targetRect: target,
-                  overlayColor: Colors.black.withValues(alpha: 0.75),
+                  overlayColor: Colors.black.withValues(alpha: 0.55),
+                  borderRadius: widget.borderRadius,
+                  accentColor: accent.base,
                 ),
               ),
             ),
@@ -302,15 +310,21 @@ class _SpotlightTourOverlayState extends ConsumerState<SpotlightTourOverlay>
 class _SpotlightMaskPainter extends CustomPainter {
   final Rect targetRect;
   final Color overlayColor;
+  final double borderRadius;
+  final Color accentColor;
 
   const _SpotlightMaskPainter({
     required this.targetRect,
     required this.overlayColor,
+    required this.borderRadius,
+    required this.accentColor,
   });
 
   @override
   void paint(Canvas canvas, Size size) {
-    canvas.saveLayer(null, Paint());
+    // Bound the offscreen layer to the widget size to avoid the unbounded
+    // saveLayer perf/flicker foot-gun.
+    canvas.saveLayer(Offset.zero & size, Paint());
 
     // 1. Draw solid overlay
     canvas.drawRect(
@@ -321,7 +335,7 @@ class _SpotlightMaskPainter extends CustomPainter {
     // 2. Cut out rounded rectangle representing target
     final rrect = RRect.fromRectAndRadius(
       targetRect,
-      const Radius.circular(8),
+      Radius.circular(borderRadius),
     );
     canvas.drawRRect(
       rrect,
@@ -330,12 +344,24 @@ class _SpotlightMaskPainter extends CustomPainter {
         ..color = Colors.white,
     );
 
+    // 3. Subtle accent ring around the spotlight edge so the highlighted
+    // element is obvious even against a lighter scrim.
+    canvas.drawRRect(
+      rrect,
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..color = accentColor
+        ..strokeWidth = 2,
+    );
+
     canvas.restore();
   }
 
   @override
   bool shouldRepaint(covariant _SpotlightMaskPainter oldDelegate) {
     return oldDelegate.targetRect != targetRect ||
-        oldDelegate.overlayColor != overlayColor;
+        oldDelegate.overlayColor != overlayColor ||
+        oldDelegate.borderRadius != borderRadius ||
+        oldDelegate.accentColor != accentColor;
   }
 }
