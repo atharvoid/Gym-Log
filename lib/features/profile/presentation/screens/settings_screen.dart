@@ -11,6 +11,7 @@ import 'package:gymlog/core/services/sync_engine.dart';
 import 'package:gymlog/core/services/sync_entitlement_gate.dart';
 import 'package:gymlog/core/services/workout_export_service.dart';
 import 'package:gymlog/core/services/profile_sync_service.dart';
+import 'package:gymlog/core/services/premium_service.dart';
 import 'package:gymlog/core/theme/app_colors.dart';
 import 'package:gymlog/core/theme/app_text.dart';
 import 'package:gymlog/core/theme/dynamic_accent_theme.dart';
@@ -231,6 +232,79 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         onTap: () =>
                             _openPremium(context, isPremium: isPremium),
                       ),
+                    ),
+                    if (isPremium) ...[
+                      const AppActionDivider(),
+                      AppActionRow(
+                        icon: Icons.card_membership_rounded,
+                        iconColor: accent.light,
+                        title: 'Manage subscription',
+                        subtitle: 'Change plans or cancel',
+                        onTap: () async {
+                          if (!tapGuard()) return;
+                          HapticFeedback.lightImpact();
+                          final messenger = ScaffoldMessenger.of(context);
+                          final service = ref.read(premiumServiceProvider);
+                          final info = await service.getCustomerInfo();
+                          final urlString = info?.managementURL;
+                          if (urlString != null) {
+                            final Uri url = Uri.parse(urlString);
+                            if (await canLaunchUrl(url)) {
+                              await launchUrl(url,
+                                  mode: LaunchMode.externalApplication);
+                            }
+                          } else {
+                            messenger.showSnackBar(
+                              const SnackBar(
+                                content: Text('No active subscription found.'),
+                              ),
+                            );
+                          }
+                        },
+                      ),
+                    ],
+                    const AppActionDivider(),
+                    AppActionRow(
+                      icon: Icons.restore_rounded,
+                      iconColor: accent.light,
+                      title: 'Restore purchases',
+                      subtitle: 'Re-verify your Pro status',
+                      onTap: () async {
+                        if (!tapGuard()) return;
+                        HapticFeedback.lightImpact();
+                        final messenger = ScaffoldMessenger.of(context);
+                        final bgSurface = context.surface.bgSurface;
+                        try {
+                          final service = ref.read(premiumServiceProvider);
+                          final info = await service.restorePurchases();
+                          if (info != null &&
+                              info.entitlements.active
+                                  .containsKey(PremiumService.entitlementId)) {
+                            messenger.showSnackBar(SnackBar(
+                              content: Text(
+                                  'Purchases restored successfully. You are now Pro!',
+                                  style: AppText.button()),
+                              backgroundColor: bgSurface,
+                              behavior: SnackBarBehavior.floating,
+                            ));
+                          } else {
+                            messenger.showSnackBar(SnackBar(
+                              content: Text(
+                                  'No active purchases found to restore.',
+                                  style: AppText.button()),
+                              backgroundColor: bgSurface,
+                              behavior: SnackBarBehavior.floating,
+                            ));
+                          }
+                        } catch (e) {
+                          messenger.showSnackBar(SnackBar(
+                            content: Text('Restore failed. Please try again.',
+                                style: AppText.button()),
+                            backgroundColor: bgSurface,
+                            behavior: SnackBarBehavior.floating,
+                          ));
+                        }
+                      },
                     ),
                   ],
                 ),
