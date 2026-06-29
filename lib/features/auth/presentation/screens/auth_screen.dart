@@ -1,14 +1,14 @@
+import 'dart:io';
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import '../../../../core/theme/app_text.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' show AuthException;
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/config/legal_links.dart';
 import '../../../../core/theme/app_colors.dart';
-import '../../../../core/theme/dynamic_accent_theme.dart';
+import '../../../../core/theme/app_text.dart';
 import '../../../../shared/widgets/motion/entrance_fade.dart';
 import '../providers/auth_provider.dart';
 
@@ -35,8 +35,38 @@ class AuthScreen extends ConsumerStatefulWidget {
   ConsumerState<AuthScreen> createState() => _AuthScreenState();
 }
 
-class _AuthScreenState extends ConsumerState<AuthScreen> {
+class _AuthScreenState extends ConsumerState<AuthScreen>
+    with SingleTickerProviderStateMixin {
   bool _isSigningIn = false;
+  late AnimationController _driftController;
+
+  @override
+  void initState() {
+    super.initState();
+    _driftController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 8),
+    );
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final disableAnimations = MediaQuery.disableAnimationsOf(context);
+    if (disableAnimations) {
+      _driftController.stop();
+    } else {
+      if (!_driftController.isAnimating) {
+        _driftController.repeat();
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _driftController.dispose();
+    super.dispose();
+  }
 
   Future<void> _signIn() async {
     if (_isSigningIn) return;
@@ -81,7 +111,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
   @override
   Widget build(BuildContext context) {
     final surface = context.surface;
-    final accent = context.accent;
+    const voltBase = Color(0xFFC8FF00); // Volt tokens directly
     final fine = AppText.caption(color: surface.textSecondary).copyWith(
       height: 1.4,
     );
@@ -96,154 +126,269 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
           surface.isLight ? Brightness.dark : Brightness.light,
     );
 
+    final disableAnimations = MediaQuery.disableAnimationsOf(context);
+
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: overlay,
       child: Scaffold(
         backgroundColor: surface.bgBase,
-        body: EntranceFade(
-          child: SafeArea(
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                return SingleChildScrollView(
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(
-                      minHeight: constraints.maxHeight,
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(24, 40, 24, 32),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // ── TOP: brand + value prop (anchors content to the top) ──
-                          Column(
+        body: Stack(
+          children: [
+            // ── Background Ambient Drift ──
+            if (!disableAnimations)
+              Positioned.fill(
+                child: RepaintBoundary(
+                  child: AnimatedBuilder(
+                    animation: _driftController,
+                    builder: (context, _) {
+                      return CustomPaint(
+                        painter: _AmbientDriftPainter(_driftController.value),
+                      );
+                    },
+                  ),
+                ),
+              ),
+
+            // ── Screen Content ──
+            Positioned.fill(
+              child: SafeArea(
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    return SingleChildScrollView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      child: ConstrainedBox(
+                        constraints: BoxConstraints(
+                          minHeight: constraints.maxHeight,
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.fromLTRB(24, 48, 24, 32),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Container(
-                                width: 56,
-                                height: 56,
-                                decoration: BoxDecoration(
-                                  color: accent.tint,
-                                  borderRadius: AppRadius.cardAll,
-                                ),
-                                child: Icon(
-                                  Icons.fitness_center_rounded,
-                                  color: accent.base,
-                                  size: 28,
-                                ),
-                              ),
-                              const SizedBox(height: 28),
-                              Semantics(
-                                header: true,
-                                child: Text(
-                                  'GymLog',
-                                  style: AppText.screenTitle(
-                                          color: surface.textPrimary)
-                                      .copyWith(letterSpacing: -0.5),
-                                ),
-                              ),
-                              const SizedBox(height: 10),
-                              Text(
-                                'Track every rep.\nOwn every byte.',
-                                style:
-                                    AppText.heroStat(color: surface.textPrimary)
-                                        .copyWith(height: 1.05),
-                              ),
-                              const SizedBox(height: 12),
-                              Text(
-                                'A fast, private workout log — your data stays yours.',
-                                style:
-                                    AppText.body(color: surface.textSecondary)
-                                        .copyWith(fontSize: 16, height: 1.4),
-                              ),
-                            ],
-                          ),
-                          // ── BOTTOM: CTA + legal (pinned) ──
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              ConstrainedBox(
-                                constraints:
-                                    const BoxConstraints(minHeight: 52),
-                                child: ElevatedButton(
-                                  onPressed: _signIn,
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.white,
-                                    foregroundColor: const Color(0xFF1F1F1F),
-                                    elevation: 0,
-                                    shape: const StadiumBorder(),
-                                    side: surface.isLight
-                                        ? BorderSide(
-                                            color: surface.borderDefault)
-                                        : BorderSide.none,
-                                  ),
-                                  child: _isSigningIn
-                                      ? const SizedBox(
-                                          width: 20,
-                                          height: 20,
-                                          child: CircularProgressIndicator(
-                                            strokeWidth: 2,
-                                            valueColor:
-                                                AlwaysStoppedAnimation<Color>(
-                                                    Color(0xFF1F1F1F)),
-                                          ),
-                                        )
-                                      : Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          children: [
-                                            _googleIcon,
-                                            const SizedBox(width: 12),
-                                            Text(
-                                              'Continue with Google',
-                                              style: AppText.button(),
-                                            ),
-                                          ],
+                              // ── TOP: brand + value prop ──
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  EntranceFade(
+                                    index: 0,
+                                    child: Container(
+                                      width: 56,
+                                      height: 56,
+                                      decoration: BoxDecoration(
+                                        color: surface.surface3,
+                                        borderRadius: AppRadius.cardAll,
+                                        border: Border.all(
+                                          color:
+                                              voltBase.withValues(alpha: 0.15),
+                                          width: 1,
                                         ),
-                                ),
-                              ),
-                              const SizedBox(height: 24),
-                              Semantics(
-                                button: true,
-                                child: Wrap(
-                                  alignment: WrapAlignment.center,
-                                  crossAxisAlignment: WrapCrossAlignment.center,
-                                  children: [
-                                    Text('By continuing, you agree to our ',
-                                        style: fine),
-                                    _LegalLink(
-                                      label: 'Terms of Service',
-                                      onTap: () => _openUrl(kTermsOfServiceUrl),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: voltBase.withValues(
+                                                alpha: 0.08),
+                                            blurRadius: 12,
+                                          ),
+                                        ],
+                                      ),
+                                      child: const Icon(
+                                        Icons.fitness_center_rounded,
+                                        color: voltBase,
+                                        size: 28,
+                                      ),
                                     ),
-                                    Text(' and ', style: fine),
-                                    _LegalLink(
-                                      label: 'Privacy Policy',
-                                      onTap: () => _openUrl(kPrivacyPolicyUrl),
+                                  ),
+                                  const SizedBox(height: 28),
+                                  EntranceFade(
+                                    index: 1,
+                                    child: Semantics(
+                                      header: true,
+                                      child: Text(
+                                        'GymLog',
+                                        style: AppText.screenTitle(
+                                                color: surface.textPrimary)
+                                            .copyWith(letterSpacing: -0.5),
+                                      ),
                                     ),
-                                    Text('.', style: fine),
-                                  ],
-                                ),
+                                  ),
+                                  const SizedBox(height: 12),
+                                  EntranceFade(
+                                    index: 2,
+                                    child: Text(
+                                      'Track every rep.\nOwn every byte.',
+                                      style: AppText.heroStat(
+                                              color: surface.textPrimary)
+                                          .copyWith(
+                                        height: 1.05,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 12),
+                                  EntranceFade(
+                                    index: 3,
+                                    child: Text(
+                                      'A fast, private workout log — your data stays yours.',
+                                      style: AppText.body(
+                                              color: surface.textSecondary)
+                                          .copyWith(fontSize: 16, height: 1.4),
+                                    ),
+                                  ),
+                                ],
                               ),
-                              const SizedBox(height: 10),
-                              Text(
-                                'Free to use. Sign in with Google to sync across your devices.',
-                                style: fine,
-                                textAlign: TextAlign.center,
+
+                              // ── BOTTOM: CTA + legal (pinned) ──
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  EntranceFade(
+                                    index: 4,
+                                    child: ConstrainedBox(
+                                      constraints:
+                                          const BoxConstraints(minHeight: 52),
+                                      child: ElevatedButton(
+                                        onPressed: _signIn,
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: Colors.white,
+                                          foregroundColor:
+                                              const Color(0xFF1F1F1F),
+                                          elevation: 0,
+                                          shape: const StadiumBorder(),
+                                          side: surface.isLight
+                                              ? BorderSide(
+                                                  color: surface.borderDefault)
+                                              : BorderSide.none,
+                                        ),
+                                        child: _isSigningIn
+                                            ? const SizedBox(
+                                                width: 20,
+                                                height: 20,
+                                                child:
+                                                    CircularProgressIndicator(
+                                                  strokeWidth: 2,
+                                                  valueColor:
+                                                      AlwaysStoppedAnimation<
+                                                              Color>(
+                                                          Color(0xFF1F1F1F)),
+                                                ),
+                                              )
+                                            : Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.center,
+                                                children: [
+                                                  _googleIcon,
+                                                  const SizedBox(width: 12),
+                                                  Text(
+                                                    'Continue with Google',
+                                                    style: AppText.button(),
+                                                  ),
+                                                ],
+                                              ),
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 24),
+                                  EntranceFade(
+                                    index: 5,
+                                    child: Semantics(
+                                      button: true,
+                                      child: Wrap(
+                                        alignment: WrapAlignment.center,
+                                        crossAxisAlignment:
+                                            WrapCrossAlignment.center,
+                                        children: [
+                                          Text(
+                                              'By continuing, you agree to our ',
+                                              style: fine),
+                                          _LegalLink(
+                                            label: 'Terms of Service',
+                                            onTap: () =>
+                                                _openUrl(kTermsOfServiceUrl),
+                                          ),
+                                          Text(' and ', style: fine),
+                                          _LegalLink(
+                                            label: 'Privacy Policy',
+                                            onTap: () =>
+                                                _openUrl(kPrivacyPolicyUrl),
+                                          ),
+                                          Text('.', style: fine),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 10),
+                                  EntranceFade(
+                                    index: 6,
+                                    child: Text(
+                                      'Free to use. Sign in with Google to sync across your devices.',
+                                      style: fine,
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ],
                           ),
-                        ],
+                        ),
                       ),
-                    ),
-                  ),
-                );
-              },
+                    );
+                  },
+                ),
+              ),
             ),
-          ),
+          ],
         ),
       ),
     );
+  }
+}
+
+class _AmbientDriftPainter extends CustomPainter {
+  final double animationValue;
+
+  _AmbientDriftPainter(this.animationValue);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint1 = Paint()
+      ..shader = RadialGradient(
+        colors: [
+          const Color(0xFFC8FF00).withValues(alpha: 0.05),
+          const Color(0xFFC8FF00).withValues(alpha: 0.0),
+        ],
+      ).createShader(
+        Rect.fromCircle(
+          center: Offset(
+            size.width * (0.3 + 0.1 * math.sin(animationValue * 2 * math.pi)),
+            size.height * (0.4 + 0.1 * math.cos(animationValue * 2 * math.pi)),
+          ),
+          radius: size.width * 0.7,
+        ),
+      );
+
+    final paint2 = Paint()
+      ..shader = RadialGradient(
+        colors: [
+          const Color(0xFFC8FF00).withValues(alpha: 0.04),
+          const Color(0xFFC8FF00).withValues(alpha: 0.0),
+        ],
+      ).createShader(
+        Rect.fromCircle(
+          center: Offset(
+            size.width * (0.7 + 0.1 * math.cos(animationValue * 2 * math.pi)),
+            size.height * (0.6 + 0.1 * math.sin(animationValue * 2 * math.pi)),
+          ),
+          radius: size.width * 0.8,
+        ),
+      );
+
+    canvas.drawRect(Offset.zero & size, paint1);
+    canvas.drawRect(Offset.zero & size, paint2);
+  }
+
+  @override
+  bool shouldRepaint(covariant _AmbientDriftPainter oldDelegate) {
+    return oldDelegate.animationValue != animationValue;
   }
 }
 
