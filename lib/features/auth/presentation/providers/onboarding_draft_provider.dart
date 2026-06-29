@@ -4,6 +4,7 @@ import 'package:gymlog/core/theme/theme_palette.dart';
 class OnboardingDraft {
   final String name;
   final int? age;
+  final String? gender; // 'male' | 'female' | 'prefer_not_to_say' (or null)
   final String unit; // 'kg' | 'lbs'
   final String level; // 'beginner' | 'intermediate' | 'advanced'
   final int weeklyGoal; // 1–7
@@ -12,6 +13,7 @@ class OnboardingDraft {
   const OnboardingDraft({
     this.name = '',
     this.age,
+    this.gender,
     this.unit = 'kg',
     this.level = 'beginner',
     this.weeklyGoal = 3,
@@ -22,6 +24,8 @@ class OnboardingDraft {
     String? name,
     int? age,
     bool clearAge = false,
+    String? gender,
+    bool clearGender = false,
     String? unit,
     String? level,
     int? weeklyGoal,
@@ -30,6 +34,7 @@ class OnboardingDraft {
     return OnboardingDraft(
       name: name ?? this.name,
       age: clearAge ? null : (age ?? this.age),
+      gender: clearGender ? null : (gender ?? this.gender),
       unit: unit ?? this.unit,
       level: level ?? this.level,
       weeklyGoal: weeklyGoal ?? this.weeklyGoal,
@@ -50,6 +55,14 @@ class OnboardingDraftNotifier extends StateNotifier<OnboardingDraft> {
       state = state.copyWith(clearAge: true);
     } else {
       state = state.copyWith(age: age);
+    }
+  }
+
+  void updateGender(String? gender) {
+    if (gender == null) {
+      state = state.copyWith(clearGender: true);
+    } else {
+      state = state.copyWith(gender: gender);
     }
   }
 

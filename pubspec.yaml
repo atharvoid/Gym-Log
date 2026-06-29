@@ -87,6 +87,9 @@ flutter:
   assets:
     - assets/db/exercises.json
     - assets/icons/muscles/
+    - assets/icons/muscles/male/
+    - assets/icons/muscles/female/
+    - assets/icons/muscles/neutral/
     - assets/google_fonts/
 
 sentry:

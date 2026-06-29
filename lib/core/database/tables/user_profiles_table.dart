@@ -14,6 +14,7 @@ class UserProfiles extends Table {
   IntColumn get age => integer().nullable()();
   TextColumn get experienceLevel =>
       text().nullable()(); // 'beginner'|'intermediate'|'advanced'
+  TextColumn get gender => text().nullable()(); // 'male'|'female'
   BoolColumn get onboardingComplete =>
       boolean().withDefault(const Constant(false))();
 

@@ -108,4 +108,10 @@ class UserDao extends DatabaseAccessor<AppDatabase> with _$UserDaoMixin {
     return (update(userProfiles)..where((t) => t.id.equals(id)))
         .write(UserProfilesCompanion(onboardingComplete: Value(complete)));
   }
+
+  /// Set the user's gender.
+  Future<void> setGender(String id, String? gender) {
+    return (update(userProfiles)..where((t) => t.id.equals(id)))
+        .write(UserProfilesCompanion(gender: Value(gender)));
+  }
 }

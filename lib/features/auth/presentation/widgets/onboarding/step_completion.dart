@@ -56,6 +56,14 @@ class _StepCompletionState extends ConsumerState<StepCompletion> {
           await ref.read(databaseProvider).userDao.setAge(user.id, draft.age);
         }
 
+        // Set gender in local DB
+        final genderValue =
+            draft.gender == 'prefer_not_to_say' ? null : draft.gender;
+        await ref
+            .read(databaseProvider)
+            .userDao
+            .setGender(user.id, genderValue);
+
         // 3. Set experience level in local DB
         await ref
             .read(databaseProvider)

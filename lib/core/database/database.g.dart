@@ -74,6 +74,11 @@ class $UserProfilesTable extends UserProfiles
   late final GeneratedColumn<String> experienceLevel = GeneratedColumn<String>(
       'experience_level', aliasedName, true,
       type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _genderMeta = const VerificationMeta('gender');
+  @override
+  late final GeneratedColumn<String> gender = GeneratedColumn<String>(
+      'gender', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
   static const VerificationMeta _onboardingCompleteMeta =
       const VerificationMeta('onboardingComplete');
   @override
@@ -96,6 +101,7 @@ class $UserProfilesTable extends UserProfiles
         createdAt,
         age,
         experienceLevel,
+        gender,
         onboardingComplete
       ];
   @override
@@ -165,6 +171,10 @@ class $UserProfilesTable extends UserProfiles
           experienceLevel.isAcceptableOrUnknown(
               data['experience_level']!, _experienceLevelMeta));
     }
+    if (data.containsKey('gender')) {
+      context.handle(_genderMeta,
+          gender.isAcceptableOrUnknown(data['gender']!, _genderMeta));
+    }
     if (data.containsKey('onboarding_complete')) {
       context.handle(
           _onboardingCompleteMeta,
@@ -200,6 +210,8 @@ class $UserProfilesTable extends UserProfiles
           .read(DriftSqlType.int, data['${effectivePrefix}age']),
       experienceLevel: attachedDatabase.typeMapping.read(
           DriftSqlType.string, data['${effectivePrefix}experience_level']),
+      gender: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}gender']),
       onboardingComplete: attachedDatabase.typeMapping.read(
           DriftSqlType.bool, data['${effectivePrefix}onboarding_complete'])!,
     );
@@ -222,6 +234,7 @@ class UserProfile extends DataClass implements Insertable<UserProfile> {
   final DateTime createdAt;
   final int? age;
   final String? experienceLevel;
+  final String? gender;
   final bool onboardingComplete;
   const UserProfile(
       {required this.id,
@@ -234,6 +247,7 @@ class UserProfile extends DataClass implements Insertable<UserProfile> {
       required this.createdAt,
       this.age,
       this.experienceLevel,
+      this.gender,
       required this.onboardingComplete});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -253,6 +267,9 @@ class UserProfile extends DataClass implements Insertable<UserProfile> {
     }
     if (!nullToAbsent || experienceLevel != null) {
       map['experience_level'] = Variable<String>(experienceLevel);
+    }
+    if (!nullToAbsent || gender != null) {
+      map['gender'] = Variable<String>(gender);
     }
     map['onboarding_complete'] = Variable<bool>(onboardingComplete);
     return map;
@@ -274,6 +291,8 @@ class UserProfile extends DataClass implements Insertable<UserProfile> {
       experienceLevel: experienceLevel == null && nullToAbsent
           ? const Value.absent()
           : Value(experienceLevel),
+      gender:
+          gender == null && nullToAbsent ? const Value.absent() : Value(gender),
       onboardingComplete: Value(onboardingComplete),
     );
   }
@@ -292,6 +311,7 @@ class UserProfile extends DataClass implements Insertable<UserProfile> {
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       age: serializer.fromJson<int?>(json['age']),
       experienceLevel: serializer.fromJson<String?>(json['experienceLevel']),
+      gender: serializer.fromJson<String?>(json['gender']),
       onboardingComplete: serializer.fromJson<bool>(json['onboardingComplete']),
     );
   }
@@ -309,6 +329,7 @@ class UserProfile extends DataClass implements Insertable<UserProfile> {
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'age': serializer.toJson<int?>(age),
       'experienceLevel': serializer.toJson<String?>(experienceLevel),
+      'gender': serializer.toJson<String?>(gender),
       'onboardingComplete': serializer.toJson<bool>(onboardingComplete),
     };
   }
@@ -324,6 +345,7 @@ class UserProfile extends DataClass implements Insertable<UserProfile> {
           DateTime? createdAt,
           Value<int?> age = const Value.absent(),
           Value<String?> experienceLevel = const Value.absent(),
+          Value<String?> gender = const Value.absent(),
           bool? onboardingComplete}) =>
       UserProfile(
         id: id ?? this.id,
@@ -339,6 +361,7 @@ class UserProfile extends DataClass implements Insertable<UserProfile> {
         experienceLevel: experienceLevel.present
             ? experienceLevel.value
             : this.experienceLevel,
+        gender: gender.present ? gender.value : this.gender,
         onboardingComplete: onboardingComplete ?? this.onboardingComplete,
       );
   UserProfile copyWithCompanion(UserProfilesCompanion data) {
@@ -361,6 +384,7 @@ class UserProfile extends DataClass implements Insertable<UserProfile> {
       experienceLevel: data.experienceLevel.present
           ? data.experienceLevel.value
           : this.experienceLevel,
+      gender: data.gender.present ? data.gender.value : this.gender,
       onboardingComplete: data.onboardingComplete.present
           ? data.onboardingComplete.value
           : this.onboardingComplete,
@@ -380,6 +404,7 @@ class UserProfile extends DataClass implements Insertable<UserProfile> {
           ..write('createdAt: $createdAt, ')
           ..write('age: $age, ')
           ..write('experienceLevel: $experienceLevel, ')
+          ..write('gender: $gender, ')
           ..write('onboardingComplete: $onboardingComplete')
           ..write(')'))
         .toString();
@@ -397,6 +422,7 @@ class UserProfile extends DataClass implements Insertable<UserProfile> {
       createdAt,
       age,
       experienceLevel,
+      gender,
       onboardingComplete);
   @override
   bool operator ==(Object other) =>
@@ -412,6 +438,7 @@ class UserProfile extends DataClass implements Insertable<UserProfile> {
           other.createdAt == this.createdAt &&
           other.age == this.age &&
           other.experienceLevel == this.experienceLevel &&
+          other.gender == this.gender &&
           other.onboardingComplete == this.onboardingComplete);
 }
 
@@ -426,6 +453,7 @@ class UserProfilesCompanion extends UpdateCompanion<UserProfile> {
   final Value<DateTime> createdAt;
   final Value<int?> age;
   final Value<String?> experienceLevel;
+  final Value<String?> gender;
   final Value<bool> onboardingComplete;
   final Value<int> rowid;
   const UserProfilesCompanion({
@@ -439,6 +467,7 @@ class UserProfilesCompanion extends UpdateCompanion<UserProfile> {
     this.createdAt = const Value.absent(),
     this.age = const Value.absent(),
     this.experienceLevel = const Value.absent(),
+    this.gender = const Value.absent(),
     this.onboardingComplete = const Value.absent(),
     this.rowid = const Value.absent(),
   });
@@ -453,6 +482,7 @@ class UserProfilesCompanion extends UpdateCompanion<UserProfile> {
     required DateTime createdAt,
     this.age = const Value.absent(),
     this.experienceLevel = const Value.absent(),
+    this.gender = const Value.absent(),
     this.onboardingComplete = const Value.absent(),
     this.rowid = const Value.absent(),
   })  : id = Value(id),
@@ -470,6 +500,7 @@ class UserProfilesCompanion extends UpdateCompanion<UserProfile> {
     Expression<DateTime>? createdAt,
     Expression<int>? age,
     Expression<String>? experienceLevel,
+    Expression<String>? gender,
     Expression<bool>? onboardingComplete,
     Expression<int>? rowid,
   }) {
@@ -485,6 +516,7 @@ class UserProfilesCompanion extends UpdateCompanion<UserProfile> {
       if (createdAt != null) 'created_at': createdAt,
       if (age != null) 'age': age,
       if (experienceLevel != null) 'experience_level': experienceLevel,
+      if (gender != null) 'gender': gender,
       if (onboardingComplete != null) 'onboarding_complete': onboardingComplete,
       if (rowid != null) 'rowid': rowid,
     });
@@ -501,6 +533,7 @@ class UserProfilesCompanion extends UpdateCompanion<UserProfile> {
       Value<DateTime>? createdAt,
       Value<int?>? age,
       Value<String?>? experienceLevel,
+      Value<String?>? gender,
       Value<bool>? onboardingComplete,
       Value<int>? rowid}) {
     return UserProfilesCompanion(
@@ -514,6 +547,7 @@ class UserProfilesCompanion extends UpdateCompanion<UserProfile> {
       createdAt: createdAt ?? this.createdAt,
       age: age ?? this.age,
       experienceLevel: experienceLevel ?? this.experienceLevel,
+      gender: gender ?? this.gender,
       onboardingComplete: onboardingComplete ?? this.onboardingComplete,
       rowid: rowid ?? this.rowid,
     );
@@ -552,6 +586,9 @@ class UserProfilesCompanion extends UpdateCompanion<UserProfile> {
     if (experienceLevel.present) {
       map['experience_level'] = Variable<String>(experienceLevel.value);
     }
+    if (gender.present) {
+      map['gender'] = Variable<String>(gender.value);
+    }
     if (onboardingComplete.present) {
       map['onboarding_complete'] = Variable<bool>(onboardingComplete.value);
     }
@@ -574,6 +611,7 @@ class UserProfilesCompanion extends UpdateCompanion<UserProfile> {
           ..write('createdAt: $createdAt, ')
           ..write('age: $age, ')
           ..write('experienceLevel: $experienceLevel, ')
+          ..write('gender: $gender, ')
           ..write('onboardingComplete: $onboardingComplete, ')
           ..write('rowid: $rowid')
           ..write(')'))
@@ -4082,6 +4120,7 @@ typedef $$UserProfilesTableCreateCompanionBuilder = UserProfilesCompanion
   required DateTime createdAt,
   Value<int?> age,
   Value<String?> experienceLevel,
+  Value<String?> gender,
   Value<bool> onboardingComplete,
   Value<int> rowid,
 });
@@ -4097,6 +4136,7 @@ typedef $$UserProfilesTableUpdateCompanionBuilder = UserProfilesCompanion
   Value<DateTime> createdAt,
   Value<int?> age,
   Value<String?> experienceLevel,
+  Value<String?> gender,
   Value<bool> onboardingComplete,
   Value<int> rowid,
 });
@@ -4141,6 +4181,9 @@ class $$UserProfilesTableFilterComposer
   ColumnFilters<String> get experienceLevel => $composableBuilder(
       column: $table.experienceLevel,
       builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get gender => $composableBuilder(
+      column: $table.gender, builder: (column) => ColumnFilters(column));
 
   ColumnFilters<bool> get onboardingComplete => $composableBuilder(
       column: $table.onboardingComplete,
@@ -4189,6 +4232,9 @@ class $$UserProfilesTableOrderingComposer
       column: $table.experienceLevel,
       builder: (column) => ColumnOrderings(column));
 
+  ColumnOrderings<String> get gender => $composableBuilder(
+      column: $table.gender, builder: (column) => ColumnOrderings(column));
+
   ColumnOrderings<bool> get onboardingComplete => $composableBuilder(
       column: $table.onboardingComplete,
       builder: (column) => ColumnOrderings(column));
@@ -4233,6 +4279,9 @@ class $$UserProfilesTableAnnotationComposer
   GeneratedColumn<String> get experienceLevel => $composableBuilder(
       column: $table.experienceLevel, builder: (column) => column);
 
+  GeneratedColumn<String> get gender =>
+      $composableBuilder(column: $table.gender, builder: (column) => column);
+
   GeneratedColumn<bool> get onboardingComplete => $composableBuilder(
       column: $table.onboardingComplete, builder: (column) => column);
 }
@@ -4273,6 +4322,7 @@ class $$UserProfilesTableTableManager extends RootTableManager<
             Value<DateTime> createdAt = const Value.absent(),
             Value<int?> age = const Value.absent(),
             Value<String?> experienceLevel = const Value.absent(),
+            Value<String?> gender = const Value.absent(),
             Value<bool> onboardingComplete = const Value.absent(),
             Value<int> rowid = const Value.absent(),
           }) =>
@@ -4287,6 +4337,7 @@ class $$UserProfilesTableTableManager extends RootTableManager<
             createdAt: createdAt,
             age: age,
             experienceLevel: experienceLevel,
+            gender: gender,
             onboardingComplete: onboardingComplete,
             rowid: rowid,
           ),
@@ -4301,6 +4352,7 @@ class $$UserProfilesTableTableManager extends RootTableManager<
             required DateTime createdAt,
             Value<int?> age = const Value.absent(),
             Value<String?> experienceLevel = const Value.absent(),
+            Value<String?> gender = const Value.absent(),
             Value<bool> onboardingComplete = const Value.absent(),
             Value<int> rowid = const Value.absent(),
           }) =>
@@ -4315,6 +4367,7 @@ class $$UserProfilesTableTableManager extends RootTableManager<
             createdAt: createdAt,
             age: age,
             experienceLevel: experienceLevel,
+            gender: gender,
             onboardingComplete: onboardingComplete,
             rowid: rowid,
           ),

@@ -40,7 +40,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.executor);
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 4;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -58,6 +58,9 @@ class AppDatabase extends _$AppDatabase {
             // backfill: existing named users are already "done"
             await customStatement(
                 "UPDATE user_profiles SET onboarding_complete = 1 WHERE display_name <> ''");
+          }
+          if (from < 4) {
+            await m.addColumn(userProfiles, userProfiles.gender);
           }
         },
         beforeOpen: (details) async {

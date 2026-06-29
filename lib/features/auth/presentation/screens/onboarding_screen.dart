@@ -9,6 +9,7 @@ import 'package:gymlog/features/auth/presentation/providers/auth_provider.dart';
 import 'package:gymlog/features/auth/presentation/providers/onboarding_draft_provider.dart';
 import 'package:gymlog/features/auth/presentation/widgets/onboarding/step_name.dart';
 import 'package:gymlog/features/auth/presentation/widgets/onboarding/step_age.dart';
+import 'package:gymlog/features/auth/presentation/widgets/onboarding/step_gender.dart';
 import 'package:gymlog/features/auth/presentation/widgets/onboarding/step_units.dart';
 import 'package:gymlog/features/auth/presentation/widgets/onboarding/step_experience.dart';
 import 'package:gymlog/features/auth/presentation/widgets/onboarding/step_weekly_goal.dart';
@@ -106,7 +107,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     final surface = context.surface;
     final accent = context.accent;
 
-    const int totalSteps = 7;
+    const int totalSteps = 8;
     final progress = (_currentPageIndex + 1) / totalSteps;
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
@@ -181,7 +182,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                             value: progress,
                             backgroundColor: surface.surface3,
                             valueColor: AlwaysStoppedAnimation<Color>(
-                              _currentPageIndex == 6
+                              _currentPageIndex == 7
                                   ? AppColors.success
                                   : accent.base,
                             ),
@@ -212,10 +213,11 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             children: [
               StepName(onNext: () => _goToPage(1)),
               StepAge(onNext: () => _goToPage(2)),
-              StepUnits(onNext: () => _goToPage(3)),
-              StepExperience(onNext: () => _goToPage(4)),
-              StepWeeklyGoal(onNext: () => _goToPage(5)),
-              StepTheme(onNext: () => _goToPage(6)),
+              StepGender(onNext: () => _goToPage(3)),
+              StepUnits(onNext: () => _goToPage(4)),
+              StepExperience(onNext: () => _goToPage(5)),
+              StepWeeklyGoal(onNext: () => _goToPage(6)),
+              StepTheme(onNext: () => _goToPage(7)),
               StepCompletion(
                 onStartTour: _handleStartTour,
                 onSkipTour: _handleSkipTour,

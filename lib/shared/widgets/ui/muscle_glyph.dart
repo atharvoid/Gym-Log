@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:gymlog/core/theme/dynamic_accent_theme.dart';
+import 'package:gymlog/features/profile/presentation/providers/profile_provider.dart';
 
 /// [muscle_glyph.dart]
 /// Renders a muscle-group icon for a routine's DOMINANT muscle, tinted via
@@ -18,7 +20,14 @@ import 'package:gymlog/core/theme/dynamic_accent_theme.dart';
 /// polished pack (e.g. a purchased Flaticon "muscles" set), drop the SVGs at
 /// the SAME paths/filenames — zero code change. Do NOT commit a licensed pack
 /// into the repo; keep it under your own license.
-class MuscleGlyph extends StatelessWidget {
+
+/// The single resolver helper to locate the dynamic gender-specific asset path.
+String genderedSvg(String baseName, {String? gender}) {
+  final g = (gender == 'male' || gender == 'female') ? gender : 'neutral';
+  return 'assets/icons/muscles/$g/$baseName';
+}
+
+class MuscleGlyph extends ConsumerWidget {
   /// Raw bodyPart / muscle string (any case) — normalized to a group below.
   final String muscle;
   final double size;
@@ -71,7 +80,7 @@ class MuscleGlyph extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final group = groupFor(muscle);
     final name = _groups.contains(group) ? group : 'fullbody';
 
@@ -79,8 +88,14 @@ class MuscleGlyph extends StatelessWidget {
     // The default tint reads context.accent.light (theme-reactive).
     final tint = color ?? context.accent.light;
 
+    // Get current user's profile and gender
+    final profile = ref.watch(currentUserProfileProvider).valueOrNull;
+    final gender = profile?.gender;
+
+    final resolvedPath = genderedSvg('$name.svg', gender: gender);
+
     return SvgPicture.asset(
-      'assets/icons/muscles/$name.svg',
+      resolvedPath,
       width: size,
       height: size,
       colorFilter: ColorFilter.mode(tint, BlendMode.srcIn),
