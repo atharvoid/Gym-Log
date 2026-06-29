@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
+import 'package:gymlog/core/router/router.dart';
 import 'package:gymlog/features/auth/presentation/providers/tour_provider.dart';
 
 /// Listens to [firstRunTourProvider] and routes the user to each step's screen.
@@ -15,7 +15,8 @@ class TourNavigationOrchestrator extends ConsumerWidget {
   final Widget child;
 
   /// Step index → route path. A null entry means the step is manually navigated.
-  static const _stepRoutes = <int, String>{
+  @visibleForTesting
+  static const stepRoutes = <int, String>{
     0: '/',
     1: '/routines/explore',
     3: '/settings',
@@ -30,10 +31,10 @@ class TourNavigationOrchestrator extends ConsumerWidget {
       if (previous == next) return;
       if (next < 0) return;
 
-      final target = _stepRoutes[next];
+      final target = stepRoutes[next];
       if (target == null) return;
 
-      final router = GoRouter.of(context);
+      final router = ref.read(routerProvider);
       final currentPath = router.routeInformationProvider.value.uri.path;
       if (currentPath != target) {
         router.go(target);
