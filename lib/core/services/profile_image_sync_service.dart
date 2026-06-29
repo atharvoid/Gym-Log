@@ -38,7 +38,7 @@ class ProfileImageSyncService {
     required String localPath,
   }) async {
     final userId = _userId;
-    if (!isPremium || userId == null) return;
+    if (userId == null) return;
 
     try {
       final file = File(localPath);
@@ -64,7 +64,7 @@ class ProfileImageSyncService {
   /// Returns the local file path, or null if nothing was downloaded.
   Future<String?> downloadIfEntitled({required bool isPremium}) async {
     final userId = _userId;
-    if (!isPremium || userId == null) return null;
+    if (userId == null) return null;
 
     try {
       final listing = await _client.storage.from(_bucket).list(path: userId);
@@ -85,7 +85,7 @@ class ProfileImageSyncService {
   /// Attempt any queued upload (e.g. from the splash/auth listener).
   Future<void> retryPendingUpload({required bool isPremium}) async {
     final userId = _userId;
-    if (!isPremium || userId == null) return;
+    if (userId == null) return;
 
     final prefs = await _prefs();
     final queued = prefs.getString(_pendingUploadKey);
@@ -114,7 +114,7 @@ class ProfileImageSyncService {
   /// Delete the remote copy (e.g. when the user removes their photo).
   Future<void> deleteRemoteIfEntitled({required bool isPremium}) async {
     final userId = _userId;
-    if (!isPremium || userId == null) return;
+    if (userId == null) return;
     try {
       await _client.storage.from(_bucket).remove([_objectPath(userId)]);
     } catch (_) {

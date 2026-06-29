@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../../../../core/services/profile_image_sync_service.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text.dart';
 import '../../../../core/providers/premium_provider.dart';
@@ -69,7 +71,18 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
     if (resolution == ProfileResolution.needsOnboarding) {
       context.go('/onboarding');
     } else {
-      context.go('/');
+      // Restore profile image if it doesn't exist locally
+      final prefs = await SharedPreferences.getInstance();
+      final localImage = prefs.getString('profile_image_path');
+      if (localImage == null || localImage.isEmpty) {
+        final imagePath = await ref
+            .read(profileImageSyncProvider)
+            .downloadIfEntitled(isPremium: isPremium);
+        if (imagePath != null) {
+          await prefs.setString('profile_image_path', imagePath);
+        }
+      }
+      if (mounted) context.go('/');
     }
   }
 

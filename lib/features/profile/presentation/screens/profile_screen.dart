@@ -69,8 +69,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     }
     if (mounted) setState(() => _profileImagePath = path);
 
-    // Silent cloud backup — Pro only, no visible paywall or prompt. The
-    // service no-ops for free users and resolves the user id internally.
+    // Silent cloud backup — enabled for all users. The service resolves the user
+    // id internally.
     final isPremium = ref.read(isPremiumProvider);
     final syncService = ref.read(profileImageSyncProvider);
     if (path != null) {
