@@ -351,6 +351,18 @@ class ActiveWorkoutNotifier extends StateNotifier<ActiveWorkoutState?> {
     state = state!.copyWith(exercises: exercises);
   }
 
+  void insertSet(int exerciseIndex, int setIndex, WorkoutSetState set) {
+    if (state == null) return;
+    final exercises = [...state!.exercises];
+    if (exerciseIndex < 0 || exerciseIndex >= exercises.length) return;
+    final exercise = exercises[exerciseIndex];
+    final sets = [...exercise.sets];
+    if (setIndex < 0 || setIndex > sets.length) return;
+    sets.insert(setIndex, set);
+    exercises[exerciseIndex] = exercise.copyWith(sets: sets);
+    state = state!.copyWith(exercises: exercises);
+  }
+
   void reorderExercise(int oldIndex, int newIndex) {
     if (state == null) return;
     final exercises = [...state!.exercises];

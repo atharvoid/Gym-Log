@@ -268,6 +268,9 @@ class ExerciseBlock extends ConsumerWidget {
                   direction: setData.isCompleted
                       ? DismissDirection.none
                       : DismissDirection.endToStart,
+                  dismissThresholds: const {
+                    DismissDirection.endToStart: 0.55,
+                  },
                   confirmDismiss: (_) async {
                     HapticFeedback.heavyImpact(); // feel the danger first
                     return true;

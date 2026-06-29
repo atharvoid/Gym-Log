@@ -15,6 +15,7 @@ import 'package:gymlog/core/utils/formatters.dart';
 import 'package:gymlog/shared/widgets/ui/app_dialog.dart';
 import 'package:gymlog/shared/widgets/ui/time_range_filter.dart';
 import 'package:gymlog/core/theme/app_text.dart';
+import 'package:gymlog/core/theme/dynamic_accent_theme.dart';
 import 'package:gymlog/core/utils/tap_guard.dart';
 import '../widgets/exercise_block.dart';
 import '../widgets/pr_celebration_overlay.dart';
@@ -478,8 +479,39 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
                               }
                             },
                             onAddSet: () => notifier.addSet(index),
-                            onRemoveSet: (setIdx) =>
-                                notifier.removeSet(index, setIdx),
+                            onRemoveSet: (setIdx) {
+                              final workout = ref.read(activeWorkoutProvider);
+                              if (workout == null ||
+                                  index >= workout.exercises.length) {
+                                return;
+                              }
+                              final ex = workout.exercises[index];
+                              if (setIdx < 0 || setIdx >= ex.sets.length) {
+                                return;
+                              }
+                              final removedSet = ex.sets[setIdx];
+
+                              notifier.removeSet(index, setIdx);
+
+                              final messenger = ScaffoldMessenger.of(context);
+                              messenger.clearSnackBars();
+                              messenger.showSnackBar(SnackBar(
+                                content: Text('Set removed',
+                                    style: AppText.button()),
+                                action: SnackBarAction(
+                                  label: 'Undo',
+                                  textColor: context.accent.light,
+                                  onPressed: () {
+                                    ref
+                                        .read(activeWorkoutProvider.notifier)
+                                        .insertSet(index, setIdx, removedSet);
+                                  },
+                                ),
+                                behavior: SnackBarBehavior.floating,
+                                backgroundColor: context.surface.bgSurface,
+                                duration: const Duration(seconds: 4),
+                              ));
+                            },
                             onSetChanged: (updatedSet) {
                               final workout = ref.read(activeWorkoutProvider);
                               if (workout == null ||
