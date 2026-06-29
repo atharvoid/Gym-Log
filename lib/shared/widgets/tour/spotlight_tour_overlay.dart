@@ -33,6 +33,17 @@ class _SpotlightTourOverlayState extends ConsumerState<SpotlightTourOverlay>
   late final AnimationController _fadeCtrl;
   late final Animation<double> _fadeAnim;
 
+  /// Retry counter for locating the target render box.
+  int _resolveAttempts = 0;
+
+  /// Guards against calling [nextStep()] more than once if the target never
+  /// mounts. Once true, the overlay stops retrying and lets the tour advance.
+  bool _autoAdvanced = false;
+
+  /// Maximum time to wait for a target to layout before auto-advancing the tour
+  /// so the user is never stranded under a full-black mask.
+  static const _maxResolveAttempts = 25;
+
   @override
   void initState() {
     super.initState();
@@ -52,25 +63,32 @@ class _SpotlightTourOverlayState extends ConsumerState<SpotlightTourOverlay>
 
   void _updateRect() {
     if (!mounted) return;
+    _resolveAttempts++;
+
     final context = widget.targetKey.currentContext;
-    if (context == null) {
-      Future.delayed(const Duration(milliseconds: 100), _updateRect);
-      return;
-    }
-    final renderBox = context.findRenderObject() as RenderBox?;
+    final renderBox = context?.findRenderObject() as RenderBox?;
     if (renderBox != null && renderBox.hasSize) {
       final offset = renderBox.localToGlobal(Offset.zero);
       setState(() {
         _targetRect = offset & renderBox.size;
       });
-      if (!MediaQuery.disableAnimationsOf(context)) {
+      if (!MediaQuery.disableAnimationsOf(context!)) {
         _fadeCtrl.forward();
       } else {
         _fadeCtrl.value = 1.0;
       }
-    } else {
-      Future.delayed(const Duration(milliseconds: 100), _updateRect);
+      return;
     }
+
+    if (_resolveAttempts >= _maxResolveAttempts) {
+      if (!_autoAdvanced) {
+        _autoAdvanced = true;
+        ref.read(firstRunTourProvider.notifier).nextStep();
+      }
+      return;
+    }
+
+    Future.delayed(const Duration(milliseconds: 100), _updateRect);
   }
 
   @override
