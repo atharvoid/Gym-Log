@@ -37,11 +37,24 @@ class ProfileAvatar extends StatefulWidget {
 class _ProfileAvatarState extends State<ProfileAvatar> {
   bool _processing = false;
 
-  static const _fileName = 'profile_image.jpg';
-
   Future<String?> _compress(String sourcePath) async {
     final dir = await getApplicationDocumentsDirectory();
-    final outPath = p.join(dir.path, _fileName);
+
+    // Clean up any old files starting with profile_ and ending with .jpg
+    try {
+      final List<FileSystemEntity> entities = dir.listSync();
+      for (final entity in entities) {
+        if (entity is File) {
+          final name = p.basename(entity.path);
+          if (name.startsWith('profile_') && name.endsWith('.jpg')) {
+            await entity.delete();
+          }
+        }
+      }
+    } catch (_) {}
+
+    final timestamp = DateTime.now().millisecondsSinceEpoch;
+    final outPath = p.join(dir.path, 'profile_$timestamp.jpg');
     final compressed = await FlutterImageCompress.compressAndGetFile(
       sourcePath,
       outPath,
@@ -121,8 +134,15 @@ class _ProfileAvatarState extends State<ProfileAvatar> {
     HapticFeedback.lightImpact();
     try {
       final dir = await getApplicationDocumentsDirectory();
-      final file = File(p.join(dir.path, _fileName));
-      if (await file.exists()) await file.delete();
+      final List<FileSystemEntity> entities = dir.listSync();
+      for (final entity in entities) {
+        if (entity is File) {
+          final name = p.basename(entity.path);
+          if (name.startsWith('profile_') && name.endsWith('.jpg')) {
+            await entity.delete();
+          }
+        }
+      }
     } catch (_) {/* best-effort cleanup */}
     if (mounted) widget.onImageChanged(null);
   }

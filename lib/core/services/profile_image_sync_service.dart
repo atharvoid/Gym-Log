@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart' as path_provider;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -74,7 +75,22 @@ class ProfileImageSyncService {
           await _client.storage.from(_bucket).download(_objectPath(userId));
 
       final docDir = await path_provider.getApplicationDocumentsDirectory();
-      final localPath = '${docDir.path}/profile_image.jpg';
+
+      // Clean up any old files starting with profile_ and ending with .jpg
+      try {
+        final List<FileSystemEntity> entities = docDir.listSync();
+        for (final entity in entities) {
+          if (entity is File) {
+            final name = p.basename(entity.path);
+            if (name.startsWith('profile_') && name.endsWith('.jpg')) {
+              await entity.delete();
+            }
+          }
+        }
+      } catch (_) {}
+
+      final timestamp = DateTime.now().millisecondsSinceEpoch;
+      final localPath = p.join(docDir.path, 'profile_$timestamp.jpg');
       await File(localPath).writeAsBytes(bytes);
       return localPath;
     } catch (_) {
