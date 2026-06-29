@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -61,6 +62,13 @@ ThemeData buildAppTheme(ThemePaletteTokens tokens,
     extensions: <ThemeExtension<dynamic>>[
       AccentColors.fromTokens(tokens, palette),
     ],
+
+    pageTransitionsTheme: const PageTransitionsTheme(
+      builders: <TargetPlatform, PageTransitionsBuilder>{
+        TargetPlatform.android: FadeForwardsPageTransitionsBuilder(),
+        TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
+      },
+    ),
 
     colorScheme: ColorScheme.dark(
       surface: s.bgBase,
