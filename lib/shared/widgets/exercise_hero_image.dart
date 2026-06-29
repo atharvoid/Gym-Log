@@ -86,7 +86,6 @@ class _ExerciseHeroImageState extends ConsumerState<ExerciseHeroImage> {
                       child: CachedNetworkImage(
                         imageUrl: widget.gifUrl!,
                         fit: BoxFit.contain, // was BoxFit.cover
-                        memCacheWidth: 720,
                         fadeInDuration: Duration.zero,
                         // Poster shows underneath — never a spinner on this path.
                         placeholder: (_, __) => const SizedBox.shrink(),
