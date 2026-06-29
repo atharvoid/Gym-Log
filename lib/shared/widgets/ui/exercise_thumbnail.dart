@@ -36,6 +36,7 @@ class ExerciseThumbnail extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final url = gifUrl;
+    final surface = context.surface;
 
     Widget inner;
     if (url == null || url.isEmpty) {
@@ -44,7 +45,7 @@ class ExerciseThumbnail extends ConsumerWidget {
       final frameAsync = ref.watch(
           fastFrame ? gifFirstFrameProvider(url) : gifLastFrameProvider(url));
       inner = frameAsync.when(
-        loading: () => const SizedBox.shrink(),
+        loading: () => Container(color: surface.surface3),
         error: (_, __) => _fallback(),
         data: (img) => img == null
             ? _fallback()

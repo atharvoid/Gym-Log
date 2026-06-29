@@ -54,7 +54,9 @@ final gifLastFrameProvider = FutureProvider.autoDispose
   try {
     // ── 1. Pull bytes from the shared on-disk cache ───────────────────────
     // getSingleFile returns the cached file if available, otherwise downloads.
-    final file = await DefaultCacheManager().getSingleFile(gifUrl);
+    final file = await DefaultCacheManager()
+        .getSingleFile(gifUrl)
+        .timeout(const Duration(seconds: 12));
     final Uint8List bytes = await file.readAsBytes();
 
     // ── 2. Decode with dart:ui codec, capped at thumbnail scale ───────────
@@ -118,7 +120,9 @@ final gifFirstFrameProvider = FutureProvider.autoDispose
   ui.Codec? codec;
   ui.Image? frame;
   try {
-    final file = await DefaultCacheManager().getSingleFile(gifUrl);
+    final file = await DefaultCacheManager()
+        .getSingleFile(gifUrl)
+        .timeout(const Duration(seconds: 12));
     final Uint8List bytes = await file.readAsBytes();
     codec = await ui.instantiateImageCodec(
       bytes,
