@@ -17,6 +17,7 @@ import 'package:gymlog/core/theme/app_text.dart';
 import 'package:gymlog/core/theme/dynamic_accent_theme.dart';
 import 'package:gymlog/core/utils/tap_guard.dart';
 import 'package:gymlog/features/auth/presentation/providers/auth_provider.dart';
+import 'package:gymlog/features/auth/presentation/providers/tour_provider.dart';
 import 'package:gymlog/features/profile/presentation/providers/profile_provider.dart';
 import 'package:gymlog/features/profile/presentation/providers/profile_stats_provider.dart';
 import 'package:gymlog/shared/widgets/premium_paywall.dart';
@@ -492,6 +493,18 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       subtitle: 'The short, readable kind',
                       onTap: () =>
                           _openExternalUrl(context, kTermsOfServiceUrl),
+                    ),
+                    const AppActionDivider(),
+                    AppActionRow(
+                      icon: Icons.tour_outlined,
+                      title: 'Replay app tour',
+                      subtitle: 'Walk through the basics again',
+                      onTap: () {
+                        if (!tapGuard()) return;
+                        HapticFeedback.lightImpact();
+                        ref.read(firstRunTourProvider.notifier).reset();
+                        context.go('/');
+                      },
                     ),
                     const AppActionDivider(),
                     AppActionRow(

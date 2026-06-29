@@ -23,6 +23,9 @@ import 'package:gymlog/core/providers/database_provider.dart';
 import 'package:gymlog/core/utils/tap_guard.dart';
 import 'package:gymlog/shared/widgets/feedback/undoable_delete.dart';
 import '../../../../shared/widgets/motion/entrance_fade.dart';
+import 'package:gymlog/features/auth/presentation/providers/tour_provider.dart';
+import 'package:gymlog/features/routines/presentation/providers/routines_provider.dart';
+import 'package:gymlog/shared/widgets/tour/spotlight_tour_overlay.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -32,6 +35,7 @@ class HomeScreen extends ConsumerStatefulWidget {
 }
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
+  final GlobalKey _findProgramKey = GlobalKey();
   // Pagination is driven from real scroll position — NOT scheduled as a
   // side-effect inside itemBuilder (which fired a microtask on every rebuild).
   final ScrollController _scrollController = ScrollController();
@@ -68,6 +72,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final totalItems = historyState.items.length;
     final surface = context.surface;
 
+    final routines = ref.watch(hydratedRoutinesProvider).valueOrNull ?? [];
+    final tourStep = ref.watch(firstRunTourProvider);
+    final hasNoRoutines = routines.isEmpty;
+    final showFindProgram = hasNoRoutines || tourStep == 0;
+
     // ── Initial load: skeleton feed (no spinner, no layout jump) ───────────
     if (historyState.isInitialLoad) {
       return Scaffold(
@@ -96,50 +105,111 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       );
     }
 
-    // itemCount: [HeaderBand] + [QuickStart] + [Header] + [N cards] + [footer]
-    final itemCount = 3 + totalItems + 1;
+    // itemCount: [HeaderBand] + [FindProgram]? + [QuickStart] + [Header] + [N cards] + [footer]
+    final int baseCount = showFindProgram ? 4 : 3;
+    final itemCount = baseCount + totalItems + 1;
 
     final seenSessionIds = <String>{};
 
     return Scaffold(
       backgroundColor: surface.bgBase,
       body: SafeArea(
-        child: AppRefreshIndicator(
-          onRefresh: () => ref.read(workoutHistoryProvider.notifier).refresh(),
-          child: EntranceFade(
-            child: ListView.builder(
-              key: const PageStorageKey('home_feed'),
-              controller: _scrollController,
-              physics: const AlwaysScrollableScrollPhysics(),
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
-              itemCount: itemCount,
-              itemBuilder: (context, index) {
-                if (index == 0) return const _HomeHeaderBand();
-                if (index == 1) return _quickStart();
-                if (index == 2) return _header();
+        child: Stack(
+          children: [
+            AppRefreshIndicator(
+              onRefresh: () =>
+                  ref.read(workoutHistoryProvider.notifier).refresh(),
+              child: EntranceFade(
+                child: ListView.builder(
+                  key: const PageStorageKey('home_feed'),
+                  controller: _scrollController,
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+                  itemCount: itemCount,
+                  itemBuilder: (context, index) {
+                    if (index == 0) return const _HomeHeaderBand();
+                    if (showFindProgram) {
+                      if (index == 1) return _findProgramCard();
+                      if (index == 2) return _quickStart();
+                      if (index == 3) return _header();
+                    } else {
+                      if (index == 1) return _quickStart();
+                      if (index == 2) return _header();
+                    }
 
-                final historyIndex = index - 3;
-                if (historyIndex < totalItems) {
-                  final preview = historyState.items[historyIndex];
-                  final enableHero = seenSessionIds.add(preview.session.id);
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 8),
-                    child: WorkoutHistoryCard(
-                      key: ValueKey(preview.session.id),
-                      preview: preview,
-                      enableHero: enableHero,
-                      onMenuPressed: () {
-                        HapticFeedback.selectionClick();
-                        _showWorkoutCardMenu(preview.session);
-                      },
-                    ),
-                  );
-                }
+                    final historyIndex = index - baseCount;
+                    if (historyIndex < totalItems) {
+                      final preview = historyState.items[historyIndex];
+                      final enableHero = seenSessionIds.add(preview.session.id);
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 8),
+                        child: WorkoutHistoryCard(
+                          key: ValueKey(preview.session.id),
+                          preview: preview,
+                          enableHero: enableHero,
+                          onMenuPressed: () {
+                            HapticFeedback.selectionClick();
+                            _showWorkoutCardMenu(preview.session);
+                          },
+                        ),
+                      );
+                    }
 
-                return _footer(historyState);
-              },
+                    return _footer(historyState);
+                  },
+                ),
+              ),
             ),
-          ),
+            if (tourStep == 0)
+              SpotlightTourOverlay(
+                targetKey: _findProgramKey,
+                title: 'Find a training program',
+                description:
+                    'Choose a trainer-built routine. Tap "Explore Programs" to browse workouts tailored for your experience level.',
+                step: 0,
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _findProgramCard() {
+    final tourStep = ref.read(firstRunTourProvider);
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 20),
+      child: AppCard(
+        key: _findProgramKey,
+        radius: AppRadius.card,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Find a training program', style: AppText.exerciseName()),
+            const SizedBox(height: 3),
+            Text(
+              'Choose from our curated programs designed for your experience level.',
+              style: AppText.meta(),
+            ),
+            const SizedBox(height: 12),
+            TextButton(
+              onPressed: () {
+                if (tourStep == 0) {
+                  ref.read(firstRunTourProvider.notifier).setStep(1);
+                }
+                context.push('/routines/explore');
+              },
+              style: TextButton.styleFrom(
+                padding: EdgeInsets.zero,
+                minimumSize: const Size(0, 36),
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              ),
+              child: Text(
+                'Explore Programs →',
+                style: AppText.label(color: context.accent.base),
+              ),
+            ),
+          ],
         ),
       ),
     );

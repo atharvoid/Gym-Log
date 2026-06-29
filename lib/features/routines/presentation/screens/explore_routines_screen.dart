@@ -10,9 +10,12 @@ import 'package:gymlog/core/theme/app_colors.dart';
 import 'package:gymlog/core/theme/app_text.dart';
 import 'package:gymlog/core/theme/dynamic_accent_theme.dart';
 import 'package:gymlog/features/auth/presentation/providers/auth_provider.dart';
+import 'package:gymlog/features/auth/presentation/providers/tour_provider.dart';
+import 'package:gymlog/features/profile/presentation/providers/profile_provider.dart';
 import 'package:gymlog/features/routines/presentation/data/explore_catalog.dart';
 import 'package:gymlog/features/routines/presentation/providers/routines_provider.dart';
 import 'package:gymlog/shared/widgets/premium_paywall.dart';
+import 'package:gymlog/shared/widgets/tour/spotlight_tour_overlay.dart';
 import 'package:gymlog/shared/widgets/ui/muscle_glyph.dart';
 import 'package:gymlog/shared/widgets/ui/primary_button.dart';
 
@@ -84,11 +87,42 @@ class _ExploreRoutinesScreenState extends ConsumerState<ExploreRoutinesScreen>
   final Set<String> _imported = {};
   final Map<String, String> _importedIds = {};
   _LevelFilter _filter = _LevelFilter.all;
+  final GlobalKey _importButtonKey = GlobalKey();
 
-  late final AnimationController _reveal = AnimationController(
-    vsync: this,
-    duration: const Duration(milliseconds: 640),
-  )..forward();
+  late final AnimationController _reveal;
+  bool _initializedFilter = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _reveal = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 640),
+    )..forward();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_initializedFilter) {
+      _initializedFilter = true;
+      final tourStep = ref.read(firstRunTourProvider);
+      if (tourStep == 1 || tourStep == 2) {
+        final profile = ref.read(currentUserProfileProvider).valueOrNull;
+        final level = profile?.experienceLevel;
+        if (level != null) {
+          final filter = _LevelFilter.values.firstWhere(
+            (f) => f.name == level,
+            orElse: () => _LevelFilter.all,
+          );
+          if (filter != _LevelFilter.all) {
+            _filter = filter;
+            _reveal.forward(from: 0);
+          }
+        }
+      }
+    }
+  }
 
   static final RoutineTemplate _featured = exploreTemplates.firstWhere(
     (t) => t.featured,
@@ -169,6 +203,11 @@ class _ExploreRoutinesScreenState extends ConsumerState<ExploreRoutinesScreen>
         _imported.add(template.name);
         _importedIds[template.name] = id;
       });
+
+      if (ref.read(firstRunTourProvider) == 1) {
+        ref.read(firstRunTourProvider.notifier).setStep(2);
+      }
+
       HapticFeedback.heavyImpact();
       _snackImported(template.name, id, missed);
     } finally {
@@ -249,6 +288,7 @@ class _ExploreRoutinesScreenState extends ConsumerState<ExploreRoutinesScreen>
   Widget build(BuildContext context) {
     final ramp = context.accent.muscleSplitRamp;
     final surface = context.surface;
+    final tourStep = ref.watch(firstRunTourProvider);
 
     final existing = ref.watch(hydratedRoutinesProvider).valueOrNull ??
         const <HydratedRoutine>[];
@@ -267,122 +307,165 @@ class _ExploreRoutinesScreenState extends ConsumerState<ExploreRoutinesScreen>
       ],
     ];
 
+    RoutineTemplate? targetTemplate;
+    for (final row in rows) {
+      if (row is _FeaturedRow) {
+        targetTemplate = row.template;
+        break;
+      } else if (row is _CardRow) {
+        targetTemplate = row.template;
+        break;
+      }
+    }
+
     final bottomInset = MediaQuery.viewPaddingOf(context).bottom;
 
     return Scaffold(
       backgroundColor: surface.bgBase,
-      body: CustomScrollView(
-        slivers: [
-          SliverAppBar(
-            pinned: true,
-            expandedHeight: 150,
-            backgroundColor: surface.bgBase,
-            surfaceTintColor: Colors.transparent,
-            scrolledUnderElevation: 0,
-            leading: IconButton(
-              tooltip: 'Back',
-              icon: Icon(Icons.arrow_back_rounded,
-                  size: 24, color: surface.textPrimary),
-              constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
-              onPressed: () {
-                if (context.canPop()) context.pop();
-              },
-            ),
-            flexibleSpace: const FlexibleSpaceBar(
-              titlePadding: EdgeInsetsDirectional.only(start: 56, bottom: 15),
-              expandedTitleScale: 1.6,
-              title: _HeroTitle(),
-              background: _HeroGlow(),
-            ),
-          ),
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(
-                  AppSpacing.screenH, 6, AppSpacing.screenH, 10),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Trainer-built programs, ready to train. Import one and '
-                    'make it yours.',
-                    style: AppText.body(color: surface.textSecondary),
-                  ),
-                  const SizedBox(height: 12),
-                  Row(
+      body: Stack(
+        children: [
+          CustomScrollView(
+            slivers: [
+              SliverAppBar(
+                pinned: true,
+                expandedHeight: 150,
+                backgroundColor: surface.bgBase,
+                surfaceTintColor: Colors.transparent,
+                scrolledUnderElevation: 0,
+                leading: IconButton(
+                  tooltip: 'Back',
+                  icon: Icon(Icons.arrow_back_rounded,
+                      size: 24, color: surface.textPrimary),
+                  constraints:
+                      const BoxConstraints(minWidth: 48, minHeight: 48),
+                  onPressed: () {
+                    if (context.canPop()) context.pop();
+                  },
+                ),
+                flexibleSpace: const FlexibleSpaceBar(
+                  titlePadding:
+                      EdgeInsetsDirectional.only(start: 56, bottom: 15),
+                  expandedTitleScale: 1.6,
+                  title: _HeroTitle(),
+                  background: _HeroGlow(),
+                ),
+              ),
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(
+                      AppSpacing.screenH, 6, AppSpacing.screenH, 10),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _CredChip(
-                          icon: Icons.list_alt_rounded,
-                          label: '${exploreTemplates.length} programs'),
-                      const SizedBox(width: AppSpacing.x2),
-                      _CredChip(
-                          icon: Icons.category_rounded,
-                          label: '${exploreCategoryOrder.length} splits'),
+                      Text(
+                        'Trainer-built programs, ready to train. Import one and '
+                        'make it yours.',
+                        style: AppText.body(color: surface.textSecondary),
+                      ),
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          _CredChip(
+                              icon: Icons.list_alt_rounded,
+                              label: '${exploreTemplates.length} programs'),
+                          const SizedBox(width: AppSpacing.x2),
+                          _CredChip(
+                              icon: Icons.category_rounded,
+                              label: '${exploreCategoryOrder.length} splits'),
+                        ],
+                      ),
                     ],
                   ),
-                ],
+                ),
               ),
-            ),
-          ),
-          SliverPersistentHeader(
-            pinned: true,
-            delegate:
-                _FilterHeaderDelegate(selected: _filter, onSelect: _setFilter),
-          ),
-          SliverPadding(
-            padding: EdgeInsets.fromLTRB(
-                AppSpacing.screenH, 8, AppSpacing.screenH, 24 + bottomInset),
-            sliver: SliverList(
-              delegate: SliverChildBuilderDelegate(
-                (context, i) {
-                  final row = rows[i];
-                  final Widget child;
-                  switch (row) {
-                    case _FeaturedRow(:final template):
-                      final imported = _isImported(template, existingIds);
-                      final routineId = _routineId(template, existingIds);
-                      child = Padding(
-                        padding: const EdgeInsets.only(bottom: AppSpacing.x5),
-                        child: _FeaturedCard(
-                          template: template,
-                          ramp: ramp,
-                          importing: _importing.contains(template.name),
-                          imported: imported,
-                          onImport: () => _import(template),
-                          onView: routineId == null
-                              ? null
-                              : () => context.push('/routines/$routineId'),
-                          onPreview: () => _showPreview(template,
-                              imported: imported, routineId: routineId),
-                        ),
-                      );
-                    case _HeaderRow(:final label, :final count):
-                      child = _SectionHeader(label: label, count: count);
-                    case _CardRow(:final template):
-                      final imported = _isImported(template, existingIds);
-                      final routineId = _routineId(template, existingIds);
-                      child = Padding(
-                        padding: const EdgeInsets.only(
-                            bottom: AppSpacing.sectionGap),
-                        child: _TemplateCard(
-                          template: template,
-                          ramp: ramp,
-                          importing: _importing.contains(template.name),
-                          imported: imported,
-                          onImport: () => _import(template),
-                          onView: routineId == null
-                              ? null
-                              : () => context.push('/routines/$routineId'),
-                          onPreview: () => _showPreview(template,
-                              imported: imported, routineId: routineId),
-                        ),
-                      );
-                  }
-                  return _Reveal(index: i, controller: _reveal, child: child);
-                },
-                childCount: rows.length,
+              SliverPersistentHeader(
+                pinned: true,
+                delegate: _FilterHeaderDelegate(
+                    selected: _filter, onSelect: _setFilter),
               ),
-            ),
+              SliverPadding(
+                padding: EdgeInsets.fromLTRB(AppSpacing.screenH, 8,
+                    AppSpacing.screenH, 24 + bottomInset),
+                sliver: SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                    (context, i) {
+                      final row = rows[i];
+                      final Widget child;
+                      switch (row) {
+                        case _FeaturedRow(:final template):
+                          final imported = _isImported(template, existingIds);
+                          final routineId = _routineId(template, existingIds);
+                          final isTarget = targetTemplate != null &&
+                              template.name == targetTemplate.name;
+                          child = Padding(
+                            padding:
+                                const EdgeInsets.only(bottom: AppSpacing.x5),
+                            child: _FeaturedCard(
+                              template: template,
+                              ramp: ramp,
+                              importing: _importing.contains(template.name),
+                              imported: imported,
+                              onImport: () => _import(template),
+                              onView: routineId == null
+                                  ? null
+                                  : () => context.push('/routines/$routineId'),
+                              onPreview: () => _showPreview(template,
+                                  imported: imported, routineId: routineId),
+                              importButtonKey:
+                                  isTarget ? _importButtonKey : null,
+                            ),
+                          );
+                        case _HeaderRow(:final label, :final count):
+                          child = _SectionHeader(label: label, count: count);
+                        case _CardRow(:final template):
+                          final imported = _isImported(template, existingIds);
+                          final routineId = _routineId(template, existingIds);
+                          final isTarget = targetTemplate != null &&
+                              template.name == targetTemplate.name;
+                          child = Padding(
+                            padding: const EdgeInsets.only(
+                                bottom: AppSpacing.sectionGap),
+                            child: _TemplateCard(
+                              template: template,
+                              ramp: ramp,
+                              importing: _importing.contains(template.name),
+                              imported: imported,
+                              onImport: () => _import(template),
+                              onView: routineId == null
+                                  ? null
+                                  : () => context.push('/routines/$routineId'),
+                              onPreview: () => _showPreview(template,
+                                  imported: imported, routineId: routineId),
+                              importButtonKey:
+                                  isTarget ? _importButtonKey : null,
+                            ),
+                          );
+                      }
+                      return _Reveal(
+                          index: i, controller: _reveal, child: child);
+                    },
+                    childCount: rows.length,
+                  ),
+                ),
+              ),
+            ],
           ),
+          if (tourStep == 1)
+            SpotlightTourOverlay(
+              targetKey: _importButtonKey,
+              title: 'Import your program',
+              description:
+                  'Tap "Add" on this program to import it into your routines library.',
+              step: 1,
+            ),
+          if (tourStep == 2)
+            SpotlightTourOverlay(
+              targetKey: _importButtonKey,
+              title: 'View your program',
+              description:
+                  'Awesome! The program has been added. Now tap "View" to check the details and start your workout.',
+              step: 2,
+            ),
         ],
       ),
     );
@@ -594,6 +677,7 @@ class _FeaturedCard extends StatelessWidget {
   final VoidCallback onImport;
   final VoidCallback? onView;
   final VoidCallback onPreview;
+  final GlobalKey? importButtonKey;
 
   const _FeaturedCard({
     required this.template,
@@ -603,6 +687,7 @@ class _FeaturedCard extends StatelessWidget {
     required this.onImport,
     required this.onView,
     required this.onPreview,
+    this.importButtonKey,
   });
 
   @override
@@ -731,6 +816,7 @@ class _FeaturedCard extends StatelessWidget {
                       children: [
                         Expanded(
                           child: _ImportPill(
+                            key: importButtonKey,
                             importing: importing,
                             imported: imported,
                             onTap: importing
@@ -759,6 +845,7 @@ class _TemplateCard extends StatelessWidget {
   final VoidCallback onImport;
   final VoidCallback? onView;
   final VoidCallback onPreview;
+  final GlobalKey? importButtonKey;
 
   const _TemplateCard({
     required this.template,
@@ -768,6 +855,7 @@ class _TemplateCard extends StatelessWidget {
     required this.onImport,
     required this.onView,
     required this.onPreview,
+    this.importButtonKey,
   });
 
   @override
@@ -891,6 +979,7 @@ class _TemplateCard extends StatelessWidget {
                         ),
                         const SizedBox(width: AppSpacing.x3),
                         _ImportPill(
+                          key: importButtonKey,
                           importing: importing,
                           imported: imported,
                           onTap: importing
@@ -964,6 +1053,7 @@ class _ImportPill extends StatelessWidget {
   final VoidCallback? onTap;
 
   const _ImportPill({
+    super.key,
     required this.importing,
     required this.imported,
     required this.onTap,

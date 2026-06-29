@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:gymlog/features/auth/presentation/providers/tour_provider.dart';
+import 'package:gymlog/shared/widgets/tour/spotlight_tour_overlay.dart';
 
 import 'package:gymlog/core/database/daos/routines_dao.dart';
 import 'package:gymlog/core/database/daos/workouts_dao.dart';
@@ -52,6 +54,7 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
     with SingleTickerProviderStateMixin {
   late final AnimationController _entryController;
   bool _entryStarted = false;
+  final GlobalKey _startRoutineButtonKey = GlobalKey();
 
   @override
   void initState() {
@@ -87,6 +90,10 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
     if (routine.exercises.isEmpty) {
       context.push('/routines/edit?id=${widget.routineId}');
       return;
+    }
+
+    if (ref.read(firstRunTourProvider) == 2) {
+      ref.read(firstRunTourProvider.notifier).skipOrEnd();
     }
 
     ref.read(activeWorkoutProvider.notifier).startWorkout(
@@ -258,7 +265,9 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
       heroEnabledList.add(seen.add(exercise.exercise.id));
     }
 
-    return Scaffold(
+    final tourStep = ref.watch(firstRunTourProvider);
+
+    final scaffold = Scaffold(
       backgroundColor: surface.bgBase,
       body: AppRefreshIndicator(
         onRefresh: _onRefresh,
@@ -358,6 +367,7 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
                 ? 'Add an exercise to start'
                 : 'Start Routine',
             child: _StartRoutineButton(
+              key: _startRoutineButtonKey,
               empty: routine.exercises.isEmpty,
               onTap: () => _startRoutine(routine),
             ),
@@ -365,6 +375,23 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
         ),
       ),
     );
+
+    if (tourStep == 2) {
+      return Stack(
+        children: [
+          scaffold,
+          SpotlightTourOverlay(
+            targetKey: _startRoutineButtonKey,
+            title: 'Start your workout',
+            description:
+                'Tap "Start Routine" to open the workout logger and begin your training session!',
+            step: 2,
+          ),
+        ],
+      );
+    }
+
+    return scaffold;
   }
 
   Widget _appBar(HydratedRoutineDetail routine) {
@@ -666,7 +693,11 @@ class _StartRoutineButton extends StatelessWidget {
   final VoidCallback onTap;
   final bool empty;
 
-  const _StartRoutineButton({required this.onTap, required this.empty});
+  const _StartRoutineButton({
+    super.key,
+    required this.onTap,
+    required this.empty,
+  });
 
   void _onTap() {
     // Dominant launchpad CTA → heavy impact for the real start; light when the
