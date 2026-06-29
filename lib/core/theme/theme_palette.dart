@@ -227,7 +227,7 @@ enum ThemePalette {
   Color get swatch => tokens.base;
 
   /// The single default accent — the app's designed identity.
-  static ThemePalette get fallback => ThemePalette.neonPurple;
+  static ThemePalette get fallback => ThemePalette.higgsfield;
 
   /// Whether this palette has a light base surface. The app is AMOLED-dark for
   /// EVERY palette — White is a white ACCENT on the dark canvas, not a light

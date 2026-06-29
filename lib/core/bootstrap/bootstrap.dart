@@ -200,6 +200,16 @@ abstract final class Bootstrap {
   static Future<ThemePalette> _initAccentPalette() async {
     try {
       final prefs = await SharedPreferences.getInstance();
+      const migrationFlag = 'accent_default_migrated_v1';
+      if (!prefs.containsKey(migrationFlag)) {
+        // If user had no explicit choice, seed the current effective palette (neonPurple)
+        // so flipping the fallback doesn't yank their accent.
+        if (!prefs.containsKey(kAccentPaletteKey)) {
+          await prefs.setString(
+              kAccentPaletteKey, ThemePalette.neonPurple.storageKey);
+        }
+        await prefs.setBool(migrationFlag, true);
+      }
       return ThemePalette.fromStorage(prefs.getString(kAccentPaletteKey));
     } catch (e) {
       debugPrint('[Bootstrap] accent palette load failed — default accent: $e');
