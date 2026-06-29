@@ -24,6 +24,9 @@ class SplashScreen extends ConsumerStatefulWidget {
 
 class _SplashScreenState extends ConsumerState<SplashScreen>
     with TickerProviderStateMixin {
+  /// True once this process has already done an initial route resolution.
+  /// On re-login we skip the brand pause so the second sign-in feels instant.
+  static bool _hasResolvedOnce = false;
   late AnimationController _glowController;
   late AnimationController _introController;
   late AnimationController _exitController;
@@ -105,9 +108,12 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
   }
 
   Future<void> _resolveInitialRoute() async {
-    // Brand pause, not a toll booth — long enough to register, short
-    // enough to never feel like loading.
-    await Future.delayed(const Duration(milliseconds: 1200));
+    // Brand pause on cold start; instant on re-login so the user isn't
+    // stalled after signing back in (e.g. delete-account → re-login).
+    if (!_hasResolvedOnce) {
+      await Future.delayed(const Duration(milliseconds: 1200));
+    }
+    _hasResolvedOnce = true;
     if (!mounted) return;
 
     final user = ref.read(authProvider);

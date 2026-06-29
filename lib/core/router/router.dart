@@ -71,8 +71,9 @@ final routerProvider = Provider<GoRouter>((ref) {
       // Redirect unauthenticated users to auth
       if (!isSignedIn && !isAuthRoute) return '/auth';
 
-      // Redirect authenticated users away from auth screen
-      if (isSignedIn && isAuthRoute) return '/';
+      // Redirect authenticated users away from auth screen, but always send
+      // them through /splash first so the onboarding gate can evaluate them.
+      if (isSignedIn && isAuthRoute) return '/splash';
 
       return null;
     },
