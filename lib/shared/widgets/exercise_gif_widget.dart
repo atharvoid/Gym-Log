@@ -60,8 +60,6 @@ class ExerciseGifWidget extends StatelessWidget {
             );
             return _buildFallback();
           },
-          // Shrink the in-memory footprint: max 400px wide in memory
-          memCacheWidth: 400,
         ),
       );
     }
