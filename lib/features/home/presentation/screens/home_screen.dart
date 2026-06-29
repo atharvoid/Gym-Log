@@ -6,6 +6,7 @@ import 'package:gymlog/core/theme/app_colors.dart';
 import 'package:gymlog/core/theme/app_text.dart';
 import 'package:gymlog/core/theme/dynamic_accent_theme.dart';
 import 'package:gymlog/shared/widgets/ui/app_card.dart';
+import 'package:gymlog/shared/widgets/ui/app_refresh_indicator.dart';
 import 'package:gymlog/shared/widgets/ui/start_button.dart';
 import 'package:gymlog/shared/widgets/ui/action_bottom_sheet.dart';
 import 'package:gymlog/shared/widgets/ui/app_dialog.dart';
@@ -66,7 +67,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final historyState = ref.watch(workoutHistoryProvider);
     final totalItems = historyState.items.length;
     final surface = context.surface;
-    final accent = context.accent;
 
     // ── Initial load: skeleton feed (no spinner, no layout jump) ───────────
     if (historyState.isInitialLoad) {
@@ -104,10 +104,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     return Scaffold(
       backgroundColor: surface.bgBase,
       body: SafeArea(
-        child: RefreshIndicator(
+        child: AppRefreshIndicator(
           onRefresh: () => ref.read(workoutHistoryProvider.notifier).refresh(),
-          color: accent.base,
-          backgroundColor: surface.surface2,
           child: EntranceFade(
             child: ListView.builder(
               key: const PageStorageKey('home_feed'),

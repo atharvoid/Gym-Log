@@ -22,6 +22,7 @@ import '../../../../shared/widgets/premium_paywall.dart';
 import '../../../../shared/widgets/ui/app_action_row.dart';
 import '../../../../shared/widgets/ui/app_card.dart';
 import '../../../../shared/widgets/ui/goal_ring.dart';
+import '../../../../shared/widgets/ui/app_refresh_indicator.dart';
 import '../../../../shared/widgets/ui/segmented_control.dart';
 import '../../../../shared/widgets/ui/skeleton.dart';
 import '../providers/profile_provider.dart';
@@ -152,9 +153,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               final displayName = profile?.displayName ?? 'Athlete';
               final email = profile?.email ?? '';
 
-              return RefreshIndicator(
-                color: surface.textPrimary,
-                backgroundColor: surface.bgSurface,
+              return AppRefreshIndicator(
                 onRefresh: _onRefresh,
                 child: ListView(
                   padding: EdgeInsets.fromLTRB(16, 4, 16, bottomClearance),
