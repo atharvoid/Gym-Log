@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:gymlog/core/database/daos/workouts_dao.dart';
 import 'package:gymlog/core/theme/app_colors.dart';
 import 'package:gymlog/core/theme/app_text.dart';
+import 'package:gymlog/core/theme/dynamic_accent_theme.dart';
 
 /// Full-screen celebration shown when a finished workout contains PRs.
 /// Turns a silent `is_pr = 1` database write into the app's best moment:
@@ -93,6 +94,8 @@ class _PrCelebrationState extends State<_PrCelebration>
     final title = prs.length == 1
         ? 'New Personal Record!'
         : '${prs.length} New Personal Records!';
+    final accent = context.accent;
+    final surface = context.surface;
 
     return Stack(
       children: [
@@ -119,10 +122,12 @@ class _PrCelebrationState extends State<_PrCelebration>
                 constraints: const BoxConstraints(maxWidth: 380),
                 padding: const EdgeInsets.fromLTRB(24, 28, 24, 20),
                 decoration: BoxDecoration(
-                  gradient: AppColors.cardGradient,
+                  gradient: surface.isLight
+                      ? AppColors.cardGradientLight
+                      : AppColors.cardGradient,
                   borderRadius: AppRadius.cardAll,
                   border: Border.all(
-                    color: AppColors.borderSubtle,
+                    color: surface.borderSubtle,
                     width: 1,
                   ),
                 ),
@@ -135,16 +140,13 @@ class _PrCelebrationState extends State<_PrCelebration>
                       alignment: Alignment.center,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        // Fixed reward magenta ring + ambient magenta halo —
-                        // the celebration identity, palette-independent.
-                        color: AppColors.accentReward.withValues(alpha: 0.16),
+                        color: accent.base.withValues(alpha: 0.16),
                         border: Border.all(
-                          color: AppColors.accentReward.withValues(alpha: 0.4),
+                          color: accent.base.withValues(alpha: 0.4),
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color:
-                                AppColors.accentReward.withValues(alpha: 0.28),
+                            color: accent.base.withValues(alpha: 0.28),
                             blurRadius: 28,
                             spreadRadius: 4,
                           ),
@@ -161,12 +163,12 @@ class _PrCelebrationState extends State<_PrCelebration>
                     Text(
                       title,
                       textAlign: TextAlign.center,
-                      style: AppText.sectionHeading(),
+                      style: AppText.sectionHeading(color: surface.textPrimary),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       'Stronger than every session before it.',
-                      style: AppText.meta(),
+                      style: AppText.meta(color: surface.textSecondary),
                     ),
                     const SizedBox(height: 20),
 
@@ -188,8 +190,8 @@ class _PrCelebrationState extends State<_PrCelebration>
                                   child: Container(
                                     padding: const EdgeInsets.symmetric(
                                         horizontal: 14, vertical: 12),
-                                    decoration: const BoxDecoration(
-                                      color: AppColors.borderDefault,
+                                    decoration: BoxDecoration(
+                                      color: surface.surface3,
                                       borderRadius: AppRadius.badgeAll,
                                     ),
                                     child: Row(
@@ -203,12 +205,15 @@ class _PrCelebrationState extends State<_PrCelebration>
                                                 pr.exerciseName,
                                                 maxLines: 1,
                                                 overflow: TextOverflow.ellipsis,
-                                                style: AppText.rowLabel(),
+                                                style: AppText.rowLabel(
+                                                    color: surface.textPrimary),
                                               ),
                                               const SizedBox(height: 2),
                                               Text(
                                                 '${_fmtKg(pr.weightKg)} kg × ${pr.reps} reps',
-                                                style: AppText.caption(),
+                                                style: AppText.caption(
+                                                    color:
+                                                        surface.textSecondary),
                                               ),
                                             ],
                                           ),
@@ -218,17 +223,18 @@ class _PrCelebrationState extends State<_PrCelebration>
                                               CrossAxisAlignment.end,
                                           children: [
                                             // The beaten 1RM — the headline number
-                                            // — in immutable achievement gold.
+                                            // — in active accent.
                                             Text(
                                               '${_fmtKg(pr.estimated1rm)} kg',
                                               style: AppText.value(
-                                                  color: AppColors.rewardGold),
+                                                  color: accent.base),
                                             ),
                                             Text(
                                               pr.previousBest1rm > 0
                                                   ? 'prev ${_fmtKg(pr.previousBest1rm)} kg'
                                                   : 'first 1RM',
-                                              style: AppText.caption(),
+                                              style: AppText.caption(
+                                                  color: surface.textSecondary),
                                             ),
                                           ],
                                         ),
@@ -252,8 +258,8 @@ class _PrCelebrationState extends State<_PrCelebration>
                           Navigator.of(context).pop();
                         },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.rewardGold,
-                          foregroundColor: const Color(0xFF1C1C1E),
+                          backgroundColor: accent.base,
+                          foregroundColor: accent.onAccent,
                           elevation: 0,
                           shape: const RoundedRectangleBorder(
                             borderRadius: AppRadius.buttonPrimaryAll,
@@ -261,7 +267,7 @@ class _PrCelebrationState extends State<_PrCelebration>
                         ),
                         child: Text(
                           'Keep Going',
-                          style: AppText.button(color: const Color(0xFF1C1C1E)),
+                          style: AppText.button(color: accent.onAccent),
                         ),
                       ),
                     ),
