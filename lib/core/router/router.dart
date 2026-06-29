@@ -155,9 +155,31 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/workout/active',
-        pageBuilder: (context, state) => const MaterialPage(
+        pageBuilder: (context, state) => CustomTransitionPage<void>(
+          key: state.pageKey,
           fullscreenDialog: true,
-          child: ActiveWorkoutScreen(),
+          child: const ActiveWorkoutScreen(),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            final disableAnimations = MediaQuery.disableAnimationsOf(context);
+            if (disableAnimations) {
+              return child;
+            }
+            final curve = animation.status == AnimationStatus.reverse
+                ? Curves.easeInCubic
+                : Curves.easeOutCubic;
+            return SlideTransition(
+              position: Tween<Offset>(
+                begin: const Offset(0.0, 1.0),
+                end: Offset.zero,
+              ).animate(CurvedAnimation(
+                parent: animation,
+                curve: curve,
+              )),
+              child: child,
+            );
+          },
+          transitionDuration: const Duration(milliseconds: 320),
+          reverseTransitionDuration: const Duration(milliseconds: 250),
         ),
       ),
       GoRoute(
