@@ -14,7 +14,6 @@ import 'package:gymlog/features/auth/presentation/widgets/onboarding/step_gender
 import 'package:gymlog/features/auth/presentation/widgets/onboarding/step_units.dart';
 import 'package:gymlog/features/auth/presentation/widgets/onboarding/step_experience.dart';
 import 'package:gymlog/features/auth/presentation/widgets/onboarding/step_weekly_goal.dart';
-import 'package:gymlog/features/auth/presentation/widgets/onboarding/step_theme.dart';
 import 'package:gymlog/features/auth/presentation/widgets/onboarding/step_completion.dart';
 import 'package:gymlog/shared/widgets/ui/app_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -111,7 +110,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     final surface = context.surface;
     final accent = context.accent;
 
-    const int totalSteps = 8;
+    const int totalSteps = 7;
     final progress = (_currentPageIndex + 1) / totalSteps;
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
@@ -186,7 +185,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                             value: progress,
                             backgroundColor: surface.surface3,
                             valueColor: AlwaysStoppedAnimation<Color>(
-                              _currentPageIndex == 7
+                              _currentPageIndex == 6
                                   ? AppColors.success
                                   : accent.base,
                             ),
@@ -221,7 +220,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               StepUnits(onNext: () => _goToPage(4)),
               StepExperience(onNext: () => _goToPage(5)),
               StepWeeklyGoal(onNext: () => _goToPage(6)),
-              StepTheme(onNext: () => _goToPage(7)),
               StepCompletion(
                 onStartTour: _handleStartTour,
                 onSkipTour: _handleSkipTour,
