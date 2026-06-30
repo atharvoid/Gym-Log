@@ -194,6 +194,18 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       children: [
                         if (profile != null) ...[
                           AppActionRow(
+                            icon: Icons.badge_outlined,
+                            iconColor: accent.light,
+                            title: 'Personal details',
+                            subtitle: 'Age, gender, experience & more',
+                            onTap: () {
+                              if (!tapGuard()) return;
+                              HapticFeedback.lightImpact();
+                              context.push('/settings/personal');
+                            },
+                          ),
+                          const AppActionDivider(),
+                          AppActionRow(
                             icon: Icons.person_outline_rounded,
                             iconColor: accent.light,
                             title: 'Display name',

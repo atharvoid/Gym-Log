@@ -8,7 +8,6 @@ import '../../shared/widgets/app_shell.dart';
 import '../../features/auth/presentation/screens/splash_screen.dart';
 import '../../features/auth/presentation/screens/auth_screen.dart';
 import '../../features/auth/presentation/screens/onboarding_screen.dart';
-import '../../features/auth/presentation/providers/auth_provider.dart';
 import '../../features/home/presentation/screens/home_screen.dart';
 import '../../features/workout/presentation/screens/workout_screen.dart';
 import '../../features/profile/presentation/screens/profile_screen.dart';
@@ -16,6 +15,7 @@ import '../../features/workout/presentation/screens/active_workout_screen.dart';
 import '../../features/exercises/presentation/screens/exercise_selection_screen.dart';
 import '../../features/exercises/presentation/screens/exercise_detail_screen.dart';
 import '../../features/profile/presentation/screens/settings_screen.dart';
+import '../../features/profile/presentation/screens/personal_details_screen.dart';
 import '../../features/profile/presentation/screens/appearance_screen.dart';
 import '../../features/profile/presentation/screens/delete_account_screen.dart';
 import '../../features/import/presentation/screens/import_screen.dart';
@@ -65,7 +65,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       // Allow splash and onboarding to run without interference
       if (location == '/splash' || location == '/onboarding') return null;
 
-      final isSignedIn = ref.read(authProvider) != null;
+      final isSignedIn = Supabase.instance.client.auth.currentSession != null;
       final isAuthRoute = location == '/auth';
 
       // Redirect unauthenticated users to auth
@@ -134,6 +134,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/settings',
         builder: (c, s) => const SettingsScreen(),
+      ),
+      GoRoute(
+        path: '/settings/personal',
+        builder: (c, s) => const PersonalDetailsScreen(),
       ),
       GoRoute(
         path: '/settings/appearance',

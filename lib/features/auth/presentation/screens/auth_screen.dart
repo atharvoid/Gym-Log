@@ -134,20 +134,22 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
         backgroundColor: surface.bgBase,
         body: Stack(
           children: [
-            // ── Background Ambient Drift ──
-            if (!disableAnimations)
-              Positioned.fill(
-                child: RepaintBoundary(
-                  child: AnimatedBuilder(
-                    animation: _driftController,
-                    builder: (context, _) {
-                      return CustomPaint(
-                        painter: _AmbientDriftPainter(_driftController.value),
-                      );
-                    },
-                  ),
+            // ── Background flowing-wave loop ──
+            Positioned.fill(
+              child: RepaintBoundary(
+                child: AnimatedBuilder(
+                  animation: _driftController,
+                  builder: (context, _) {
+                    return CustomPaint(
+                      painter: _FlowingWavePainter(
+                        disableAnimations ? 0.0 : _driftController.value,
+                        isLight: surface.isLight,
+                      ),
+                    );
+                  },
                 ),
               ),
+            ),
 
             // ── Screen Content ──
             Positioned.fill(
@@ -198,7 +200,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
                                       ),
                                     ),
                                   ),
-                                  const SizedBox(height: 28),
+                                  const SizedBox(height: 16),
                                   EntranceFade(
                                     index: 1,
                                     child: Semantics(
@@ -211,7 +213,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
                                       ),
                                     ),
                                   ),
-                                  const SizedBox(height: 12),
+                                  const SizedBox(height: 8),
                                   EntranceFade(
                                     index: 2,
                                     child: Text(
@@ -224,7 +226,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
                                       ),
                                     ),
                                   ),
-                                  const SizedBox(height: 12),
+                                  const SizedBox(height: 8),
                                   EntranceFade(
                                     index: 3,
                                     child: Text(
@@ -280,7 +282,10 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
                                                   const SizedBox(width: 12),
                                                   Text(
                                                     'Continue with Google',
-                                                    style: AppText.button(),
+                                                    style: AppText.button(
+                                                      color: const Color(
+                                                          0xFF111111),
+                                                    ),
                                                   ),
                                                 ],
                                               ),
@@ -343,52 +348,115 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
   }
 }
 
-class _AmbientDriftPainter extends CustomPainter {
+class _FlowingWavePainter extends CustomPainter {
   final double animationValue;
+  final bool isLight;
 
-  _AmbientDriftPainter(this.animationValue);
+  _FlowingWavePainter(this.animationValue, {required this.isLight});
 
   @override
   void paint(Canvas canvas, Size size) {
+    const voltColor = Color(0xFFC8FF00);
+
+    // Smooth vertical background gradient so waves blend into the screen.
+    final bgGradient = LinearGradient(
+      begin: Alignment.topCenter,
+      end: Alignment.bottomCenter,
+      colors: [
+        Colors.transparent,
+        isLight
+            ? voltColor.withValues(alpha: 0.02)
+            : voltColor.withValues(alpha: 0.01),
+        isLight
+            ? voltColor.withValues(alpha: 0.08)
+            : voltColor.withValues(alpha: 0.03),
+      ],
+    );
+
+    final bgPaint = Paint()
+      ..shader = bgGradient.createShader(Offset.zero & size);
+    canvas.drawRect(Offset.zero & size, bgPaint);
+
+    final path1 = Path();
+    final path2 = Path();
+    final path3 = Path();
+
+    final double midY = size.height * 0.85;
+
+    path1.moveTo(0, size.height);
+    path2.moveTo(0, size.height);
+    path3.moveTo(0, size.height);
+
+    for (double x = 0; x <= size.width; x++) {
+      // Wave 1: slower, taller wave
+      final y1 = midY + 22 * math.sin(x * 0.008 + animationValue * 2 * math.pi);
+      path1.lineTo(x, y1);
+
+      // Wave 2: medium wave, offset phase
+      final y2 = midY +
+          8 +
+          14 * math.sin(x * 0.012 - animationValue * 2 * math.pi + math.pi / 3);
+      path2.lineTo(x, y2);
+
+      // Wave 3: faster, shorter wave
+      final y3 = midY -
+          6 +
+          8 * math.sin(x * 0.016 + animationValue * 4 * math.pi + math.pi / 6);
+      path3.lineTo(x, y3);
+    }
+
+    path1.lineTo(size.width, size.height);
+    path2.lineTo(size.width, size.height);
+    path3.lineTo(size.width, size.height);
+
+    final gradient1 = LinearGradient(
+      begin: Alignment.topCenter,
+      end: Alignment.bottomCenter,
+      colors: [
+        voltColor.withValues(alpha: 0.08),
+        voltColor.withValues(alpha: 0.02),
+      ],
+    );
     final paint1 = Paint()
-      ..shader = RadialGradient(
-        colors: [
-          const Color(0xFFC8FF00).withValues(alpha: 0.05),
-          const Color(0xFFC8FF00).withValues(alpha: 0.0),
-        ],
-      ).createShader(
-        Rect.fromCircle(
-          center: Offset(
-            size.width * (0.3 + 0.1 * math.sin(animationValue * 2 * math.pi)),
-            size.height * (0.4 + 0.1 * math.cos(animationValue * 2 * math.pi)),
-          ),
-          radius: size.width * 0.7,
-        ),
-      );
+      ..shader = gradient1
+          .createShader(Rect.fromLTRB(0, midY - 30, size.width, size.height))
+      ..style = PaintingStyle.fill;
 
+    final gradient2 = LinearGradient(
+      begin: Alignment.topCenter,
+      end: Alignment.bottomCenter,
+      colors: [
+        voltColor.withValues(alpha: 0.05),
+        voltColor.withValues(alpha: 0.01),
+      ],
+    );
     final paint2 = Paint()
-      ..shader = RadialGradient(
-        colors: [
-          const Color(0xFFC8FF00).withValues(alpha: 0.04),
-          const Color(0xFFC8FF00).withValues(alpha: 0.0),
-        ],
-      ).createShader(
-        Rect.fromCircle(
-          center: Offset(
-            size.width * (0.7 + 0.1 * math.cos(animationValue * 2 * math.pi)),
-            size.height * (0.6 + 0.1 * math.sin(animationValue * 2 * math.pi)),
-          ),
-          radius: size.width * 0.8,
-        ),
-      );
+      ..shader = gradient2
+          .createShader(Rect.fromLTRB(0, midY - 20, size.width, size.height))
+      ..style = PaintingStyle.fill;
 
-    canvas.drawRect(Offset.zero & size, paint1);
-    canvas.drawRect(Offset.zero & size, paint2);
+    final gradient3 = LinearGradient(
+      begin: Alignment.topCenter,
+      end: Alignment.bottomCenter,
+      colors: [
+        voltColor.withValues(alpha: 0.03),
+        voltColor.withValues(alpha: 0.005),
+      ],
+    );
+    final paint3 = Paint()
+      ..shader = gradient3
+          .createShader(Rect.fromLTRB(0, midY - 15, size.width, size.height))
+      ..style = PaintingStyle.fill;
+
+    canvas.drawPath(path3, paint3);
+    canvas.drawPath(path2, paint2);
+    canvas.drawPath(path1, paint1);
   }
 
   @override
-  bool shouldRepaint(covariant _AmbientDriftPainter oldDelegate) {
-    return oldDelegate.animationValue != animationValue;
+  bool shouldRepaint(covariant _FlowingWavePainter oldDelegate) {
+    return oldDelegate.animationValue != animationValue ||
+        oldDelegate.isLight != oldDelegate.isLight;
   }
 }
 

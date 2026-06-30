@@ -39,16 +39,12 @@ class _SpotlightTourOverlayState extends ConsumerState<SpotlightTourOverlay>
   late final AnimationController _fadeCtrl;
   late final Animation<double> _fadeAnim;
 
-  /// Retry counter for locating the target render box.
   int _resolveAttempts = 0;
-
-  /// Guards against calling [nextStep()] more than once if the target never
-  /// mounts. Once true, the overlay stops retrying and lets the tour advance.
+  int _loadingAttempts = 0;
+  bool _scrolledToVisible = false;
   bool _autoAdvanced = false;
+  bool _isLooping = false;
 
-  /// Maximum time to wait for a target to layout before auto-advancing the tour
-  /// so the user is never stranded under a full-black mask. ~1s is long enough
-  /// for a normal frame to settle; anything longer is perceived as a hang.
   static const _maxResolveAttempts = 10;
 
   @override
@@ -59,7 +55,16 @@ class _SpotlightTourOverlayState extends ConsumerState<SpotlightTourOverlay>
       duration: const Duration(milliseconds: 280),
     );
     _fadeAnim = CurvedAnimation(parent: _fadeCtrl, curve: Curves.easeOut);
-    WidgetsBinding.instance.addPostFrameCallback((_) => _updateRect());
+    _startLoopIfNeeded();
+  }
+
+  @override
+  void didUpdateWidget(SpotlightTourOverlay oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final activeStep = ref.read(firstRunTourProvider);
+    if (activeStep == widget.step) {
+      _startLoopIfNeeded();
+    }
   }
 
   @override
@@ -68,11 +73,63 @@ class _SpotlightTourOverlayState extends ConsumerState<SpotlightTourOverlay>
     super.dispose();
   }
 
-  void _updateRect() {
-    if (!mounted) return;
-    _resolveAttempts++;
+  void _startLoopIfNeeded() {
+    if (!_isLooping && mounted) {
+      _isLooping = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) => _loop());
+    }
+  }
+
+  void _loop() {
+    if (!mounted) {
+      _isLooping = false;
+      return;
+    }
+
+    final activeStep = ref.read(firstRunTourProvider);
+    if (activeStep != widget.step) {
+      _scrolledToVisible = false;
+      _resolveAttempts = 0;
+      _autoAdvanced = false;
+      if (_targetRect != null) {
+        setState(() {
+          _targetRect = null;
+        });
+      }
+      if (activeStep > widget.step) {
+        _isLooping = false;
+        return; // Stop looping when tour completed past this step
+      }
+      if (activeStep == -1) {
+        _loadingAttempts++;
+        if (_loadingAttempts >= 5) {
+          _isLooping = false;
+          return; // Stop looping after 500ms of actual -1 (completed/skipped)
+        }
+        Future.delayed(const Duration(milliseconds: 100), _loop);
+        return;
+      }
+      _isLooping = false;
+      return;
+    }
+
+    // Reset loading attempts when active
+    _loadingAttempts = 0;
 
     final targetCtx = widget.targetKey.currentContext;
+    if (targetCtx != null) {
+      if (!_scrolledToVisible) {
+        _scrolledToVisible = true;
+        final disableAnim = MediaQuery.disableAnimationsOf(targetCtx);
+        Scrollable.ensureVisible(
+          targetCtx,
+          duration:
+              disableAnim ? Duration.zero : const Duration(milliseconds: 250),
+          alignment: 0.5,
+        );
+      }
+    }
+
     final targetBox = targetCtx?.findRenderObject() as RenderBox?;
     final selfBox = context.findRenderObject() as RenderBox?;
     if (targetBox != null &&
@@ -81,31 +138,40 @@ class _SpotlightTourOverlayState extends ConsumerState<SpotlightTourOverlay>
         selfBox.hasSize) {
       final globalTopLeft = targetBox.localToGlobal(Offset.zero);
       final localTopLeft = selfBox.globalToLocal(globalTopLeft);
-      setState(() {
-        _targetRect = localTopLeft & targetBox.size;
-      });
-      if (!MediaQuery.disableAnimationsOf(context)) {
-        _fadeCtrl.forward();
-      } else {
-        _fadeCtrl.value = 1.0;
+      final newRect = localTopLeft & targetBox.size;
+      if (newRect != _targetRect) {
+        setState(() {
+          _targetRect = newRect;
+        });
+        if (_fadeCtrl.status == AnimationStatus.dismissed) {
+          if (!MediaQuery.disableAnimationsOf(context)) {
+            _fadeCtrl.forward();
+          } else {
+            _fadeCtrl.value = 1.0;
+          }
+        }
       }
-      return;
-    }
-
-    if (_resolveAttempts >= _maxResolveAttempts) {
-      if (!_autoAdvanced) {
-        _autoAdvanced = true;
-        ref.read(firstRunTourProvider.notifier).nextStep();
+      WidgetsBinding.instance.addPostFrameCallback((_) => _loop());
+    } else {
+      _resolveAttempts++;
+      if (_resolveAttempts >= _maxResolveAttempts) {
+        if (!_autoAdvanced) {
+          _autoAdvanced = true;
+          _isLooping = false;
+          ref.read(firstRunTourProvider.notifier).nextStep();
+        }
+        return;
       }
-      return;
+      Future.delayed(const Duration(milliseconds: 100), _loop);
     }
-
-    Future.delayed(const Duration(milliseconds: 100), _updateRect);
   }
 
   @override
   Widget build(BuildContext context) {
     final activeStep = ref.watch(firstRunTourProvider);
+    if (activeStep == widget.step) {
+      _startLoopIfNeeded();
+    }
     if (activeStep != widget.step || _targetRect == null) {
       return const SizedBox.shrink();
     }

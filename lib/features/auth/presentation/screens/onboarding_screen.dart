@@ -56,6 +56,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   }
 
   void _goToPage(int page) {
+    FocusManager.instance.primaryFocus?.unfocus();
     if (MediaQuery.disableAnimationsOf(context)) {
       _pageController.jumpToPage(page);
       setState(() => _currentPageIndex = page);
@@ -121,6 +122,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         canPop: false,
         onPopInvokedWithResult: (didPop, _) {
           if (didPop) return;
+          FocusManager.instance.primaryFocus?.unfocus();
           if (_currentPageIndex > 0) {
             _goToPage(_currentPageIndex - 1);
           } else {
@@ -209,6 +211,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             physics:
                 const NeverScrollableScrollPhysics(), // Control via CTAs only
             onPageChanged: (index) {
+              FocusManager.instance.primaryFocus?.unfocus();
               setState(() {
                 _currentPageIndex = index;
               });
