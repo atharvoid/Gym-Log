@@ -2,9 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:gymlog/core/exercises/muscle_taxonomy.dart';
-import 'package:gymlog/shared/widgets/body/muscle_map_thumb.dart';
-import 'package:gymlog/features/profile/presentation/providers/profile_provider.dart';
+import 'package:gymlog/core/theme/dynamic_accent_theme.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text.dart';
 import '../../../../shared/widgets/ui/start_button.dart';
@@ -37,28 +35,25 @@ class RoutineCard extends ConsumerWidget {
     this.lastTrained,
   });
 
-  Widget _tag(String label) => Container(
+  Widget _tag(
+    String label, {
+    Color? backgroundColor,
+    Color? textColor,
+  }) =>
+      Container(
         padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3),
-        decoration: const BoxDecoration(
-          color: AppColors.surface3,
+        decoration: BoxDecoration(
+          color: backgroundColor ?? AppColors.surface3,
           borderRadius: AppRadius.badgeAll,
         ),
-        child:
-            Text(label, style: AppText.badge(color: AppColors.textSecondary)),
+        child: Text(label,
+            style: AppText.badge(color: textColor ?? AppColors.textSecondary)),
       );
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final accent = context.accent;
     final count = exerciseNames.length;
-    final gender =
-        ref.watch(currentUserProfileProvider).valueOrNull?.gender ?? 'male';
-    // Map the routine's muscle tags to parent groups for the body map.
-    // Empty/unknown → light the whole figure (full-body fallback).
-    final tagGroups = muscleTags
-        .map(MuscleTaxonomy.parentOf)
-        .where((g) => g != 'Other')
-        .toSet();
-    final primaryGroups = tagGroups.isEmpty ? <String>{'Full Body'} : tagGroups;
 
     final exLabel = count == 1 ? 'exercise' : 'exercises';
     final meta = lastTrained == null
@@ -93,74 +88,58 @@ class RoutineCard extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // ── Header: muscle map + name/meta/tags + menu ──────────────
+                // ── Header: title/meta + menu ─────────────────────────────
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    ExcludeSemantics(
-                      child: MuscleMapThumb(
-                        primaryGroups: primaryGroups,
-                        gender: gender,
-                        size: 108,
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.only(top: 2),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(routineName,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: AppText.cardTitle()),
+                            const SizedBox(height: 3),
+                            Text(meta,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: AppText.caption()),
+                          ],
+                        ),
                       ),
                     ),
-                    const SizedBox(width: 14),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Expanded(
-                                child: Padding(
-                                  padding: const EdgeInsets.only(top: 2),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(routineName,
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: AppText.cardTitle()),
-                                      const SizedBox(height: 3),
-                                      Text(meta,
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: AppText.caption()),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                              IconButton(
-                                tooltip: 'More options',
-                                padding: EdgeInsets.zero,
-                                constraints: const BoxConstraints(
-                                    minWidth: 48, minHeight: 48),
-                                iconSize: 20,
-                                icon: const Icon(Icons.more_horiz_rounded,
-                                    color: AppColors.textSecondary),
-                                onPressed: () => _showOptions(context, ref),
-                              ),
-                            ],
-                          ),
-                          if (tags.isNotEmpty)
-                            Padding(
-                              padding: const EdgeInsets.only(top: 10),
-                              child: Wrap(
-                                spacing: 6,
-                                runSpacing: 6,
-                                children: [
-                                  for (final t in tags) _tag(t),
-                                  if (extraTags > 0) _tag('+$extraTags'),
-                                ],
-                              ),
-                            ),
-                        ],
-                      ),
+                    IconButton(
+                      tooltip: 'More options',
+                      padding: EdgeInsets.zero,
+                      constraints:
+                          const BoxConstraints(minWidth: 48, minHeight: 48),
+                      iconSize: 20,
+                      icon: const Icon(Icons.more_horiz_rounded,
+                          color: AppColors.textSecondary),
+                      onPressed: () => _showOptions(context, ref),
                     ),
                   ],
                 ),
+
+                // ── Muscle tags (first accent, rest neutral) ───────────────
+                if (tags.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 10),
+                    child: Wrap(
+                      spacing: 6,
+                      runSpacing: 6,
+                      children: [
+                        _tag(tags.first,
+                            backgroundColor: accent.muted,
+                            textColor: accent.base),
+                        for (final t in tags.skip(1)) _tag(t),
+                        if (extraTags > 0) _tag('+$extraTags'),
+                      ],
+                    ),
+                  ),
 
                 // ── Divider ───────────────────────────────
                 Padding(

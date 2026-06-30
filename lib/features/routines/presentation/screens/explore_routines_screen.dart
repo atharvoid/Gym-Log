@@ -11,7 +11,6 @@ import 'package:gymlog/core/theme/app_colors.dart';
 import 'package:gymlog/core/theme/app_text.dart';
 import 'package:gymlog/core/theme/dynamic_accent_theme.dart';
 import 'package:gymlog/shared/widgets/body/muscle_map.dart';
-import 'package:gymlog/shared/widgets/body/muscle_map_thumb.dart';
 import 'package:gymlog/features/auth/presentation/providers/auth_provider.dart';
 import 'package:gymlog/features/auth/presentation/providers/tour_provider.dart';
 import 'package:gymlog/features/profile/presentation/providers/profile_provider.dart';
@@ -35,6 +34,18 @@ Set<String> _focusGroups(String focus) {
       })
       .where((group) => group != 'Other')
       .toSet();
+}
+
+/// The first muscle-like token of the focus string mapped to its parent group.
+/// Returns `null` when no token resolves (e.g. pure-strength focus).
+String? _primaryFocusGroup(String focus) {
+  for (final token in focus.split(' · ')) {
+    final trimmed = token.trim();
+    if (trimmed.toLowerCase() == 'total body') return 'Full Body';
+    final group = MuscleTaxonomy.parentOf(trimmed);
+    if (group != 'Other') return group;
+  }
+  return null;
 }
 
 enum _LevelFilter {
@@ -294,8 +305,6 @@ class _ExploreRoutinesScreenState extends ConsumerState<ExploreRoutinesScreen>
 
   @override
   Widget build(BuildContext context) {
-    final gender =
-        ref.watch(currentUserProfileProvider).valueOrNull?.gender ?? 'male';
     final surface = context.surface;
     final tourStep = ref.watch(firstRunTourProvider);
 
@@ -411,7 +420,6 @@ class _ExploreRoutinesScreenState extends ConsumerState<ExploreRoutinesScreen>
                                 const EdgeInsets.only(bottom: AppSpacing.x5),
                             child: _FeaturedCard(
                               template: template,
-                              gender: gender,
                               importing: _importing.contains(template.name),
                               imported: imported,
                               onImport: () => _import(template),
@@ -436,7 +444,6 @@ class _ExploreRoutinesScreenState extends ConsumerState<ExploreRoutinesScreen>
                                 bottom: AppSpacing.sectionGap),
                             child: _TemplateCard(
                               template: template,
-                              gender: gender,
                               importing: _importing.contains(template.name),
                               imported: imported,
                               onImport: () => _import(template),
@@ -680,7 +687,6 @@ class _SectionHeader extends StatelessWidget {
 
 class _FeaturedCard extends StatelessWidget {
   final RoutineTemplate template;
-  final String gender;
   final bool importing;
   final bool imported;
   final VoidCallback onImport;
@@ -690,7 +696,6 @@ class _FeaturedCard extends StatelessWidget {
 
   const _FeaturedCard({
     required this.template,
-    required this.gender,
     required this.importing,
     required this.imported,
     required this.onImport,
@@ -761,41 +766,25 @@ class _FeaturedCard extends StatelessWidget {
                             ],
                           ),
                           const SizedBox(height: 14),
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              MuscleMapThumb(
-                                primaryGroups: _focusGroups(template.focus),
-                                gender: gender,
-                                size: 132,
-                              ),
-                              const SizedBox(width: 14),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(template.name,
-                                        style: AppText.sectionHeading(
-                                            color: surface.textPrimary,
-                                            shadows:
-                                                AppText.depthFor(context))),
-                                    const SizedBox(height: 3),
-                                    Text(template.focus,
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: AppText.meta(
-                                            color: surface.textSecondary)),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
+                          Text(template.name,
+                              style: AppText.sectionHeading(
+                                  color: surface.textPrimary,
+                                  shadows: AppText.depthFor(context))),
+                          const SizedBox(height: 3),
+                          Text(template.focus,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style:
+                                  AppText.meta(color: surface.textSecondary)),
                           const SizedBox(height: 14),
                           Wrap(
                             spacing: AppSpacing.x2,
                             runSpacing: 6,
                             crossAxisAlignment: WrapCrossAlignment.center,
                             children: [
+                              if (_primaryFocusGroup(template.focus)
+                                  case final primary?)
+                                _AccentPill(label: primary),
                               _LevelPill(
                                   label: template.levelLabel,
                                   color: template.levelColor),
@@ -838,7 +827,6 @@ class _FeaturedCard extends StatelessWidget {
 
 class _TemplateCard extends StatelessWidget {
   final RoutineTemplate template;
-  final String gender;
   final bool importing;
   final bool imported;
   final VoidCallback onImport;
@@ -848,7 +836,6 @@ class _TemplateCard extends StatelessWidget {
 
   const _TemplateCard({
     required this.template,
-    required this.gender,
     required this.importing,
     required this.imported,
     required this.onImport,
@@ -898,59 +885,41 @@ class _TemplateCard extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                        Text(template.name,
+                            style: AppText.cardTitle(
+                                color: surface.textPrimary,
+                                shadows: AppText.depthFor(context))),
+                        const SizedBox(height: 3),
+                        Text(template.focus,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: AppText.meta(color: surface.textSecondary)),
+                        const SizedBox(height: AppSpacing.x3),
+                        Wrap(
+                          spacing: AppSpacing.x2,
+                          runSpacing: 6,
+                          crossAxisAlignment: WrapCrossAlignment.center,
                           children: [
-                            MuscleMapThumb(
-                              primaryGroups: _focusGroups(template.focus),
-                              gender: gender,
-                              size: 104,
-                            ),
-                            const SizedBox(width: AppSpacing.x3),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(template.name,
-                                      style: AppText.cardTitle(
-                                          color: surface.textPrimary,
-                                          shadows: AppText.depthFor(context))),
-                                  const SizedBox(height: 3),
-                                  Text(template.focus,
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: AppText.meta(
-                                          color: surface.textSecondary)),
-                                  const SizedBox(height: AppSpacing.x3),
-                                  Wrap(
-                                    spacing: AppSpacing.x2,
-                                    runSpacing: 6,
-                                    crossAxisAlignment:
-                                        WrapCrossAlignment.center,
-                                    children: [
-                                      _LevelPill(
-                                          label: template.levelLabel,
-                                          color: template.levelColor),
-                                      _MetaChip(
-                                          icon: Icons.schedule_rounded,
-                                          label: '~${template.estMinutes} min'),
-                                      _MetaChip(
-                                          icon: Icons.fitness_center_rounded,
-                                          label:
-                                              '${template.slots.length} exercises'),
-                                    ],
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.only(top: 13),
-                                    child: Divider(
-                                        height: 1,
-                                        thickness: 1,
-                                        color: surface.borderSubtle),
-                                  ),
-                                ],
-                              ),
-                            ),
+                            if (_primaryFocusGroup(template.focus)
+                                case final primary?)
+                              _AccentPill(label: primary),
+                            _LevelPill(
+                                label: template.levelLabel,
+                                color: template.levelColor),
+                            _MetaChip(
+                                icon: Icons.schedule_rounded,
+                                label: '~${template.estMinutes} min'),
+                            _MetaChip(
+                                icon: Icons.fitness_center_rounded,
+                                label: '${template.slots.length} exercises'),
                           ],
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.only(top: 13),
+                          child: Divider(
+                              height: 1,
+                              thickness: 1,
+                              color: surface.borderSubtle),
                         ),
                       ],
                     ),
@@ -988,6 +957,24 @@ class _TemplateCard extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _AccentPill extends StatelessWidget {
+  final String label;
+  const _AccentPill({required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    final accent = context.accent;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+      decoration: BoxDecoration(
+        color: accent.muted,
+        borderRadius: AppRadius.badgeAll,
+      ),
+      child: Text(label, style: AppText.badge(color: accent.base)),
     );
   }
 }
