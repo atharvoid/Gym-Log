@@ -32,8 +32,8 @@ class BootstrapResult {
   final bool cloudAvailable;
 
   /// The accent palette persisted by the user (or [ThemePalette.fallback] —
-  /// Deep Spectral Violet — on a fresh install). Read before the first frame
-  /// so there is no accent flash.
+  /// Volt — on a fresh install). Read before the first frame so there is no
+  /// accent flash.
   final ThemePalette accentPalette;
 
   const BootstrapResult({
@@ -195,20 +195,20 @@ abstract final class Bootstrap {
   // ── Stage 4b helper ───────────────────────────────────
 
   /// Reads the user's saved accent palette. Never throws — any failure falls
-  /// back to the default accent ([ThemePalette.fallback], Deep Spectral Violet)
-  /// so startup is never blocked by preferences.
+  /// back to the default accent ([ThemePalette.fallback], Volt) so startup is
+  /// never blocked by preferences.
   static Future<ThemePalette> _initAccentPalette() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      const migrationFlag = 'accent_default_migrated_v1';
-      if (!prefs.containsKey(migrationFlag)) {
-        // If user had no explicit choice, seed the current effective palette (neonPurple)
-        // so flipping the fallback doesn't yank their accent.
-        if (!prefs.containsKey(kAccentPaletteKey)) {
-          await prefs.setString(
-              kAccentPaletteKey, ThemePalette.neonPurple.storageKey);
+      const seedFlagV1 = 'accent_default_migrated_v1';
+      const resetFlagV2 = 'accent_default_volt_v2';
+      if (!prefs.containsKey(resetFlagV2)) {
+        final stored = prefs.getString(kAccentPaletteKey);
+        if (prefs.getBool(seedFlagV1) == true &&
+            stored == ThemePalette.neonPurple.storageKey) {
+          await prefs.remove(kAccentPaletteKey);
         }
-        await prefs.setBool(migrationFlag, true);
+        await prefs.setBool(resetFlagV2, true);
       }
       return ThemePalette.fromStorage(prefs.getString(kAccentPaletteKey));
     } catch (e) {
