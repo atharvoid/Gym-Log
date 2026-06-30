@@ -149,9 +149,22 @@ final Map<String, String> _muscleLowerToGroup = {
       child.toLowerCase(): parent,
 };
 
-/// Parent group for a raw catalog muscle string, case-insensitive.
-String _groupForMuscle(String muscle) =>
-    _muscleLowerToGroup[muscle.trim().toLowerCase()] ?? 'Other';
+/// free-exercise-db (yuhonas) catalog synonyms with no exact child in the
+/// generated MuscleTaxonomy. The catalog emits a fixed primary/secondary
+/// muscle vocabulary; every value resolves through _muscleLowerToGroup EXCEPT
+/// these, which would otherwise fall to 'Other' and silently drop from the
+/// body map. Lowercase keys (resolution is case-insensitive).
+const Map<String, String> _muscleAliases = {
+  'middle back': 'Back', // taxonomy has Upper/Lower Back, not "Middle Back"
+  'neck': 'Neck', // taxonomy has Neck Flexors/Extensors, not bare "neck"
+};
+
+/// Parent group for a raw catalog muscle string, case-insensitive, with
+/// catalog-synonym fallback.
+String _groupForMuscle(String muscle) {
+  final key = muscle.trim().toLowerCase();
+  return _muscleLowerToGroup[key] ?? _muscleAliases[key] ?? 'Other';
+}
 
 /// Resolves primary/secondary muscle strings to parent groups, keeping the
 /// primary group out of the secondary set.

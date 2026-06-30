@@ -40,6 +40,14 @@ void main() {
       expect(result.primary, {'Chest'});
       expect(result.secondary, {'Triceps', 'Shoulders'});
     });
+
+    test('maps free-exercise-db synonyms middle back + neck', () {
+      expect(
+          workedGroupsFor(target: 'middle back', secondary: const []).primary,
+          {'Back'});
+      expect(workedGroupsFor(target: 'neck', secondary: const []).primary,
+          {'Neck'});
+    });
   });
 
   group('kGroupToParts covers every taxonomy parent', () {
