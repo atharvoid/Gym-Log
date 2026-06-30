@@ -6,11 +6,16 @@
 -- ════════════════════════════════════════════════════════════════════════
 
 create table if not exists public.profiles (
-  id           uuid        primary key references auth.users (id) on delete cascade,
-  display_name text        not null,
-  email        text,
-  created_at   timestamptz not null default now(),
-  updated_at   timestamptz not null default now()
+  id                  uuid        primary key references auth.users (id) on delete cascade,
+  display_name        text        not null,
+  email               text,
+  -- Authoritative first-run gate: set to true by the client once the
+  -- onboarding wizard completes. Backfill existing named users via:
+  --   update public.profiles set onboarding_complete = true
+  --    where coalesce(trim(display_name), '') <> '';
+  onboarding_complete boolean     not null default false,
+  created_at          timestamptz not null default now(),
+  updated_at          timestamptz not null default now()
 );
 
 -- Row-Level Security: a user may only ever see and write their OWN row.
