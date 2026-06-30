@@ -621,3 +621,35 @@ No visual scoreboard rescore; this is a behavioral/flow fix.
 - Manual fresh-install onboarding/deferred-tour interaction checks remain pending because the devices are asleep/locked and `adb shell input` injection is disabled.
 
 **Gate Verdict:** PASS (automated gates green; awaiting human interactive confirmation)
+
+---
+
+## FIX-P3b: Step 4 Always Anchors on the Real Weekly-Stats Card
+
+**Date:** 2026-06-29
+**Commit:** `e619822`
+**Branch:** `fix-sha1-auth-issue`
+
+### Problem
+When the deferred tour reached step 4 for a user who had added a routine but not yet logged a workout, the spotlight fell back to the empty greeting band with "You're all set" copy. The weekly goal set during onboarding is real, personalized content, so the spotlight should land on the actual weekly-stats card even when it shows `0 / {goal}`.
+
+### Diff Summary
+- Added a pure, `@visibleForTesting` predicate `showWeeklyStatsCard({hasActivity, tourStep})` in `home_screen.dart`.
+- The predicate returns `true` whenever the user has activity **or** the tour is at step 4.
+- `_HomeHeaderBand` now accepts `showWeeklyStats` and renders the weekly-stats card when the predicate is true, leaving the card body (progress bar, streak chip gating) unchanged.
+- Step-4 `SpotlightTourOverlay` now always targets `_weeklyStatsKey` and uses state-aware copy:
+  - With activity: encourages growing the streak.
+  - Without activity: explains the card is ready and will fill after the first workout.
+- Added unit tests for the predicate covering step 4, other steps, and activity states.
+
+### Files Changed
+- `lib/features/home/presentation/screens/home_screen.dart`
+- `test/tour_sequencing_test.dart`
+
+### Gate Verification Result
+- [x] Format: **PASS**
+- [x] Static Analysis: **PASS** (`flutter analyze --fatal-infos --fatal-warnings` — No issues found)
+- [x] Custom Linter: **PASS**
+- [x] Tests Suite: **PASS** (201 tests passed)
+
+**Gate Verdict:** PASS
