@@ -2,16 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:gymlog/core/exercises/muscle_taxonomy.dart';
+import 'package:gymlog/core/theme/dynamic_accent_theme.dart';
+import 'package:gymlog/shared/widgets/body/muscle_map.dart';
+import 'package:gymlog/features/profile/presentation/providers/profile_provider.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text.dart';
 import '../../../../shared/widgets/ui/start_button.dart';
-import '../../../../core/services/muscle_color_service.dart';
 import '../../../../core/utils/tap_guard.dart';
 import '../../../../core/utils/relative_time.dart';
 import '../../../../core/providers/database_provider.dart';
 import '../../../../shared/widgets/ui/action_bottom_sheet.dart';
 import '../../../../shared/widgets/ui/app_dialog.dart';
-import '../../../../shared/widgets/ui/muscle_glyph.dart';
 
 /// Premium routine card for the Routines list.
 /// - Tapping the body opens the routine detail (`/routines/:id`).
@@ -36,12 +38,6 @@ class RoutineCard extends ConsumerWidget {
     this.lastTrained,
   });
 
-  /// Dominant-muscle accent, sourced from the shared [MuscleColorService] so the
-  /// routine glyph follows the same "dominant = brightest" rule as the muscle-
-  /// split bar (replaces the previous ad-hoc per-name hashCode tint).
-  Color get _glyphColor => MuscleColorService.glyphColorFor(
-      muscleTags.isNotEmpty ? muscleTags.first : null);
-
   Widget _tag(String label) => Container(
         padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3),
         decoration: const BoxDecoration(
@@ -55,6 +51,16 @@ class RoutineCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final count = exerciseNames.length;
+    final gender =
+        ref.watch(currentUserProfileProvider).valueOrNull?.gender ?? 'male';
+    // Map the routine's muscle tags to parent groups for the body map.
+    // Empty/unknown → light the whole figure (full-body fallback).
+    final tagGroups = muscleTags
+        .map(MuscleTaxonomy.parentOf)
+        .where((g) => g != 'Other')
+        .toSet();
+    final primaryGroups = tagGroups.isEmpty ? <String>{'Full Body'} : tagGroups;
+
     final exLabel = count == 1 ? 'exercise' : 'exercises';
     final meta = lastTrained == null
         ? '$count $exLabel'
@@ -93,22 +99,25 @@ class RoutineCard extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // Muscle-group glyph for the dominant muscle, in a square
-                    // tinted by the same muscle. Decorative — name carries it.
+                    // tinted by the live accent. Decorative — name carries it.
                     ExcludeSemantics(
                       child: Container(
                         width: 44,
                         height: 44,
                         alignment: Alignment.center,
+                        padding: const EdgeInsets.symmetric(vertical: 4),
                         decoration: BoxDecoration(
-                          color: _glyphColor.withValues(alpha: 0.15),
+                          // Live accent tint — follows the chosen palette (cyan,
+                          // etc.), never the old static purple.
+                          color: context.accent.base.withValues(alpha: 0.15),
                           borderRadius: AppRadius.buttonPrimaryAll,
                         ),
-                        child: MuscleGlyph(
-                          muscle: muscleTags.isNotEmpty
-                              ? muscleTags.first
-                              : 'fullbody',
-                          size: 26,
-                          color: _glyphColor,
+                        child: MuscleMap(
+                          primaryGroups: primaryGroups,
+                          gender: gender,
+                          showBack:
+                              false, // compact front-only for the small tile
+                          showLegend: false,
                         ),
                       ),
                     ),

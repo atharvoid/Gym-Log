@@ -1262,11 +1262,22 @@ class _PreviewSheet extends StatelessWidget {
                       style: AppText.body(color: surface.textSecondary)
                           .copyWith(height: 1.45)),
                   const SizedBox(height: AppSpacing.x5),
-                  MuscleMap(
-                    primaryGroups: _focusGroups(template.focus),
-                    gender: gender,
-                    showBack: false,
-                    showLegend: false,
+                  Semantics(
+                    header: true,
+                    child: Text('Muscles Worked',
+                        style: AppText.cardTitle(color: surface.textPrimary)),
+                  ),
+                  const SizedBox(height: AppSpacing.x2),
+                  Center(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 260),
+                      child: MuscleMap(
+                        primaryGroups: _focusGroups(template.focus),
+                        gender: gender,
+                        showBack: true,
+                        showLegend: true,
+                      ),
+                    ),
                   ),
                   const SizedBox(height: AppSpacing.x5),
                   Text('EXERCISES',
