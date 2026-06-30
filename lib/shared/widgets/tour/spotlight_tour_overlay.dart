@@ -71,14 +71,19 @@ class _SpotlightTourOverlayState extends ConsumerState<SpotlightTourOverlay>
     if (!mounted) return;
     _resolveAttempts++;
 
-    final context = widget.targetKey.currentContext;
-    final renderBox = context?.findRenderObject() as RenderBox?;
-    if (renderBox != null && renderBox.hasSize) {
-      final offset = renderBox.localToGlobal(Offset.zero);
+    final targetCtx = widget.targetKey.currentContext;
+    final targetBox = targetCtx?.findRenderObject() as RenderBox?;
+    final selfBox = context.findRenderObject() as RenderBox?;
+    if (targetBox != null &&
+        targetBox.hasSize &&
+        selfBox != null &&
+        selfBox.hasSize) {
+      final globalTopLeft = targetBox.localToGlobal(Offset.zero);
+      final localTopLeft = selfBox.globalToLocal(globalTopLeft);
       setState(() {
-        _targetRect = offset & renderBox.size;
+        _targetRect = localTopLeft & targetBox.size;
       });
-      if (!MediaQuery.disableAnimationsOf(context!)) {
+      if (!MediaQuery.disableAnimationsOf(context)) {
         _fadeCtrl.forward();
       } else {
         _fadeCtrl.value = 1.0;
@@ -110,7 +115,7 @@ class _SpotlightTourOverlayState extends ConsumerState<SpotlightTourOverlay>
     final isLastStep = widget.step >= FirstRunTourNotifier.totalSteps - 1;
 
     // Padding inflation around target
-    final target = _targetRect!.inflate(6);
+    final target = _targetRect!.inflate(8);
 
     // Determine vertical balloon placement
     final targetCenterY = target.center.dy;

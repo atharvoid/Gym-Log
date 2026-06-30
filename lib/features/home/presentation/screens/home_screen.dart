@@ -218,6 +218,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     ? 'Choose a trainer-built routine. Tap "Explore Programs" to browse workouts tailored for your experience level.'
                     : 'Tap "Start Empty Workout" to log a session, or browse your routine library for a structured program.',
                 step: 0,
+                borderRadius: AppRadius.card,
               ),
 
             // Step 4 — Weekly stats spotlight. The card is forced to render
@@ -233,6 +234,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     ? 'This card tracks your workouts toward your weekly goal and your current streak. Keep it up to grow that streak!'
                     : 'This is where your weekly progress lives. Log your first workout to start filling the ring toward your goal.',
                 step: 4,
+                borderRadius: AppRadius.card,
               ),
           ],
         ),
