@@ -10,7 +10,6 @@ import 'package:gymlog/core/providers/settings_provider.dart';
 import 'package:gymlog/core/services/sync_engine.dart';
 import 'package:gymlog/core/services/sync_entitlement_gate.dart';
 import 'package:gymlog/core/services/workout_export_service.dart';
-import 'package:gymlog/core/services/profile_sync_service.dart';
 import 'package:gymlog/core/services/premium_service.dart';
 import 'package:gymlog/core/theme/app_colors.dart';
 import 'package:gymlog/core/theme/app_text.dart';
@@ -204,55 +203,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                               context.push('/settings/personal');
                             },
                           ),
-                          const AppActionDivider(),
-                          AppActionRow(
-                            icon: Icons.person_outline_rounded,
-                            iconColor: accent.light,
-                            title: 'Display name',
-                            subtitle: profile.displayName.trim().isEmpty
-                                ? 'Athlete'
-                                : profile.displayName,
-                            onTap: () async {
-                              if (!tapGuard()) return;
-                              HapticFeedback.lightImpact();
-                              final newName = await showAppTextInputDialog(
-                                context: context,
-                                title: 'Change name',
-                                hint: 'Display name',
-                                initialValue: profile.displayName,
-                                maxLength: 40,
-                              );
-                              if (newName != null &&
-                                  newName.trim().isNotEmpty) {
-                                if (!context.mounted) return;
-                                final user = ref.read(authProvider);
-                                if (user != null) {
-                                  final messenger =
-                                      ScaffoldMessenger.of(context);
-                                  final bgSurface = context.surface.bgSurface;
-                                  final success = await ref
-                                      .read(profileSyncProvider)
-                                      .submitDisplayName(
-                                        userId: user.id,
-                                        email: user.email ?? '',
-                                        name: newName,
-                                      );
-                                  if (success) {
-                                    ref.invalidate(currentUserProfileProvider);
-                                  } else {
-                                    messenger.showSnackBar(SnackBar(
-                                      content: Text(
-                                          "Couldn't save your name. Try again.",
-                                          style: AppText.button()),
-                                      backgroundColor: bgSurface,
-                                      behavior: SnackBarBehavior.floating,
-                                    ));
-                                  }
-                                }
-                              }
-                            },
-                          ),
-                          const AppActionDivider(),
                         ],
                         Semantics(
                           hint: "Navigates to paywall",
