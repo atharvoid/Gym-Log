@@ -137,6 +137,22 @@ const Map<String, Map<BodySide, Set<String>>> _knownSlugs = {
   },
 };
 
+/// Case-insensitive child-muscle -> parent-group index, built ONCE from the
+/// generated [MuscleTaxonomy]. The exercise catalog (ExerciseDB) stores
+/// `target` / `secondaryMuscles` lowercase ("pectorals", "lats", "delts"),
+/// but MuscleTaxonomy's keys are Title Case and `parentOf()` is a
+/// case-sensitive map lookup — so raw catalog strings always fell through to
+/// 'Other' and the Routine Detail map rendered nothing. Normalize both sides.
+final Map<String, String> _muscleLowerToGroup = {
+  for (final parent in MuscleTaxonomy.parents)
+    for (final child in MuscleTaxonomy.childrenOf(parent))
+      child.toLowerCase(): parent,
+};
+
+/// Parent group for a raw catalog muscle string, case-insensitive.
+String _groupForMuscle(String muscle) =>
+    _muscleLowerToGroup[muscle.trim().toLowerCase()] ?? 'Other';
+
 /// Resolves primary/secondary muscle strings to parent groups, keeping the
 /// primary group out of the secondary set.
 ({Set<String> primary, Set<String> secondary}) workedGroupsFor({
@@ -144,14 +160,14 @@ const Map<String, Map<BodySide, Set<String>>> _knownSlugs = {
   required List<String> secondary,
 }) {
   final primary = <String>{};
-  final primaryGroup = MuscleTaxonomy.parentOf(target);
+  final primaryGroup = _groupForMuscle(target);
   if (primaryGroup != 'Other') {
     primary.add(primaryGroup);
   }
 
   final secondarySet = <String>{};
   for (final m in secondary) {
-    final group = MuscleTaxonomy.parentOf(m);
+    final group = _groupForMuscle(m);
     if (group != 'Other' && !primary.contains(group)) {
       secondarySet.add(group);
     }

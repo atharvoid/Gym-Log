@@ -31,6 +31,15 @@ void main() {
       expect(result.primary, isEmpty);
       expect(result.secondary, isEmpty);
     });
+
+    test('resolves lowercase catalog muscle strings', () {
+      final result = workedGroupsFor(
+        target: 'pectorals',
+        secondary: ['triceps', 'delts'],
+      );
+      expect(result.primary, {'Chest'});
+      expect(result.secondary, {'Triceps', 'Shoulders'});
+    });
   });
 
   group('kGroupToParts covers every taxonomy parent', () {
