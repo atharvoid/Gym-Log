@@ -27,6 +27,14 @@ import 'package:gymlog/features/auth/presentation/providers/tour_provider.dart';
 import 'package:gymlog/features/routines/presentation/providers/routines_provider.dart';
 import 'package:gymlog/shared/widgets/tour/spotlight_tour_overlay.dart';
 
+/// Whether the weekly-stats card should be rendered. Normally it is shown only
+/// once the user has logged at least one workout; during the step-4 spotlight
+/// we force it so the tour always anchors on a real, personalized card
+/// (showing "0 / {goal}" if necessary) rather than a placeholder band.
+@visibleForTesting
+bool showWeeklyStatsCard({required bool hasActivity, required int tourStep}) =>
+    hasActivity || tourStep == 4;
+
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
@@ -90,6 +98,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final tourStep = ref.watch(firstRunTourProvider);
     final streak = ref.watch(streakStatsProvider);
     final hasActivity = streak.currentStreak > 0 || streak.workoutsThisWeek > 0;
+    final showStats = showWeeklyStatsCard(
+      hasActivity: hasActivity,
+      tourStep: tourStep,
+    );
     final hasNoRoutines = routines.isEmpty;
     final showFindProgram = hasNoRoutines ||
         tourStep == 0 ||
@@ -157,6 +169,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       return _HomeHeaderBand(
                         bandKey: _homeHeaderKey,
                         weeklyStatsKey: _weeklyStatsKey,
+                        showWeeklyStats: showStats,
                       );
                     }
                     if (showFindProgram) {
@@ -207,18 +220,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 step: 0,
               ),
 
-            // Step 4 — Weekly stats spotlight when activity exists; otherwise
-            // fall back to the always-present header band so the tour never
-            // strands on a fresh install.
+            // Step 4 — Weekly stats spotlight. The card is forced to render
+            // while step 4 is active (even with zero activity) so the spotlight
+            // always lands on a real, personalized weekly-goal card.
             // Guard: only render when Home is the active top route so the
             // mask cannot leak through to another screen.
             if (tourStep == 4 && (ModalRoute.of(context)?.isCurrent ?? false))
               SpotlightTourOverlay(
-                targetKey: hasActivity ? _weeklyStatsKey : _homeHeaderKey,
-                title: hasActivity ? 'Your weekly progress' : "You're all set",
+                targetKey: _weeklyStatsKey,
+                title: 'Your weekly progress',
                 description: hasActivity
-                    ? 'This card tracks workouts toward your weekly goal and your current streak. Tap the ring to adjust your target — stay consistent and keep that streak alive!'
-                    : 'Your weekly progress lives here — start logging workouts to fill it in. Tap Got it to finish the tour.',
+                    ? 'This card tracks your workouts toward your weekly goal and your current streak. Keep it up to grow that streak!'
+                    : 'This is where your weekly progress lives. Log your first workout to start filling the ring toward your goal.',
                 step: 4,
               ),
           ],
@@ -470,7 +483,16 @@ class _HomeHeaderBand extends ConsumerWidget {
   /// can locate its position on screen.
   final GlobalKey? weeklyStatsKey;
 
-  const _HomeHeaderBand({this.bandKey, this.weeklyStatsKey});
+  /// When true, force the weekly-stats card to render even if the user has
+  /// not yet logged a workout. Used only so the step-4 spotlight has a real
+  /// target (showing "0 / {goal}") rather than a placeholder band.
+  final bool showWeeklyStats;
+
+  const _HomeHeaderBand({
+    this.bandKey,
+    this.weeklyStatsKey,
+    this.showWeeklyStats = false,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -479,7 +501,6 @@ class _HomeHeaderBand extends ConsumerWidget {
     final surface = context.surface;
     final accent = context.accent;
 
-    final hasActivity = streak.currentStreak > 0 || streak.workoutsThisWeek > 0;
     final goalMet = streak.workoutsThisWeek >= goal;
     final progress =
         goal > 0 ? (streak.workoutsThisWeek / goal).clamp(0.0, 1.0) : 0.0;
@@ -498,8 +519,9 @@ class _HomeHeaderBand extends ConsumerWidget {
           Text('Ready to train?',
               style: AppText.body(color: surface.textSecondary)),
 
-          // Promoted week stats (only once there's activity)
-          if (hasActivity) ...[
+          // Promoted week stats (only once there's activity, or forced during
+          // the step-4 tour so the spotlight anchors on a real card).
+          if (showWeeklyStats) ...[
             const SizedBox(height: 20),
             AppCard(
               key: weeklyStatsKey,

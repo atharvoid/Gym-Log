@@ -8,6 +8,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:gymlog/features/auth/presentation/providers/tour_provider.dart';
+import 'package:gymlog/features/home/presentation/screens/home_screen.dart';
 
 void main() {
   setUp(() {
@@ -135,6 +136,34 @@ void main() {
       await notifier.setStep(FirstRunTourNotifier.deferredStep);
       await notifier.skipOrEnd();
       expect(notifier.state, equals(-1));
+    });
+
+    // ── Weekly-stats card visibility for step-4 spotlight (P3b) ─────────────
+    test('showWeeklyStatsCard forces card at step 4 even with no activity', () {
+      expect(showWeeklyStatsCard(hasActivity: false, tourStep: 4), isTrue);
+    });
+
+    test('showWeeklyStatsCard hides card at other tour steps with no activity',
+        () {
+      for (final step in [0, 1, 2, 3, -1, -2]) {
+        expect(
+          showWeeklyStatsCard(hasActivity: false, tourStep: step),
+          isFalse,
+          reason: 'step $step should not force the stats card',
+        );
+      }
+    });
+
+    test(
+        'showWeeklyStatsCard shows card when activity exists regardless of tour',
+        () {
+      for (final step in [4, 0, 1, -1, -2]) {
+        expect(
+          showWeeklyStatsCard(hasActivity: true, tourStep: step),
+          isTrue,
+          reason: 'step $step should keep the stats card when active',
+        );
+      }
     });
   });
 }
