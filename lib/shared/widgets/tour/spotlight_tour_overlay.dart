@@ -5,6 +5,7 @@ import 'package:gymlog/core/theme/app_colors.dart';
 import 'package:gymlog/core/theme/app_text.dart';
 import 'package:gymlog/core/theme/dynamic_accent_theme.dart';
 import 'package:gymlog/features/auth/presentation/providers/tour_provider.dart';
+import 'package:gymlog/shared/widgets/motion/pressable_scale.dart';
 
 class SpotlightTourOverlay extends ConsumerStatefulWidget {
   final GlobalKey targetKey;
@@ -190,118 +191,126 @@ class _SpotlightTourOverlayState extends ConsumerState<SpotlightTourOverlay>
             right: 20,
             top: isBalloonBelow ? target.bottom + 16 : null,
             bottom: !isBalloonBelow ? (size.height - target.top) + 16 : null,
-            child: Material(
-              color: Colors.transparent,
-              child: Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: surface.surface2,
-                  borderRadius: BorderRadius.circular(18),
-                  border: Border.all(
-                    color: accent.light.withValues(alpha: 0.22),
-                    width: 1.5,
+            child: PressableScale(
+              child: Material(
+                color: Colors.transparent,
+                child: Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: surface.surface2,
+                    borderRadius: BorderRadius.circular(18),
+                    border: Border.all(
+                      color: accent.light.withValues(alpha: 0.22),
+                      width: 1.5,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.55),
+                        blurRadius: 32,
+                        offset: const Offset(0, 10),
+                      ),
+                      BoxShadow(
+                        color: accent.glow.withValues(alpha: 0.08),
+                        blurRadius: 48,
+                        spreadRadius: -4,
+                      ),
+                    ],
                   ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.55),
-                      blurRadius: 32,
-                      offset: const Offset(0, 10),
-                    ),
-                    BoxShadow(
-                      color: accent.glow.withValues(alpha: 0.08),
-                      blurRadius: 48,
-                      spreadRadius: -4,
-                    ),
-                  ],
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // ── Top row: step pill + Skip ──────────────────────────
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        // Step indicator pill
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 10, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: accent.base.withValues(alpha: 0.14),
-                            borderRadius: BorderRadius.circular(99),
-                          ),
-                          child: Text(
-                            'STEP ${widget.step + 1} OF ${FirstRunTourNotifier.totalSteps}',
-                            style:
-                                AppText.caption(color: accent.light).copyWith(
-                              fontWeight: FontWeight.w800,
-                              letterSpacing: 0.8,
-                              fontSize: 10,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // ── Top row: step pill + Skip ──────────────────────────
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          // Step indicator pill
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 10, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: accent.base.withValues(alpha: 0.14),
+                              borderRadius: BorderRadius.circular(99),
                             ),
-                          ),
-                        ),
-                        // Skip tour
-                        TextButton(
-                          onPressed: () {
-                            HapticFeedback.selectionClick();
-                            ref.read(firstRunTourProvider.notifier).skipOrEnd();
-                          },
-                          style: TextButton.styleFrom(
-                            padding: EdgeInsets.zero,
-                            minimumSize: Size.zero,
-                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                          ),
-                          child: Text(
-                            'Skip tour',
-                            style: AppText.caption(color: surface.textTertiary),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-
-                    // ── Title ──────────────────────────────────────────────
-                    Text(
-                      widget.title,
-                      style: AppText.body(color: surface.textPrimary).copyWith(
-                        fontWeight: FontWeight.w700,
-                        fontSize: 17,
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-
-                    // ── Description ───────────────────────────────────────
-                    Text(
-                      widget.description,
-                      style: AppText.caption(color: surface.textSecondary)
-                          .copyWith(height: 1.40),
-                    ),
-                    const SizedBox(height: 16),
-
-                    // ── Next / Got it button ───────────────────────────────
-                    SizedBox(
-                      width: double.infinity,
-                      height: 44,
-                      child: Material(
-                        color: accent.base,
-                        borderRadius: BorderRadius.circular(12),
-                        child: InkWell(
-                          borderRadius: BorderRadius.circular(12),
-                          onTap: () {
-                            HapticFeedback.selectionClick();
-                            ref.read(firstRunTourProvider.notifier).nextStep();
-                          },
-                          child: Center(
                             child: Text(
-                              isLastStep ? 'Got it' : 'Next',
-                              style: AppText.button(color: accent.onAccent)
-                                  .copyWith(fontWeight: FontWeight.w700),
+                              'STEP ${widget.step + 1} OF ${FirstRunTourNotifier.totalSteps}',
+                              style:
+                                  AppText.caption(color: accent.light).copyWith(
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: 0.8,
+                                fontSize: 10,
+                              ),
+                            ),
+                          ),
+                          // Skip tour
+                          TextButton(
+                            onPressed: () {
+                              HapticFeedback.selectionClick();
+                              ref
+                                  .read(firstRunTourProvider.notifier)
+                                  .skipOrEnd();
+                            },
+                            style: TextButton.styleFrom(
+                              padding: EdgeInsets.zero,
+                              minimumSize: Size.zero,
+                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            ),
+                            child: Text(
+                              'Skip tour',
+                              style:
+                                  AppText.caption(color: surface.textTertiary),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+
+                      // ── Title ──────────────────────────────────────────────
+                      Text(
+                        widget.title,
+                        style:
+                            AppText.body(color: surface.textPrimary).copyWith(
+                          fontWeight: FontWeight.w700,
+                          fontSize: 17,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+
+                      // ── Description ───────────────────────────────────────
+                      Text(
+                        widget.description,
+                        style: AppText.caption(color: surface.textSecondary)
+                            .copyWith(height: 1.40),
+                      ),
+                      const SizedBox(height: 16),
+
+                      // ── Next / Got it button ───────────────────────────────
+                      SizedBox(
+                        width: double.infinity,
+                        height: 44,
+                        child: Material(
+                          color: accent.base,
+                          borderRadius: BorderRadius.circular(12),
+                          child: InkWell(
+                            borderRadius: BorderRadius.circular(12),
+                            onTap: () {
+                              HapticFeedback.selectionClick();
+                              ref
+                                  .read(firstRunTourProvider.notifier)
+                                  .nextStep();
+                            },
+                            child: Center(
+                              child: Text(
+                                isLastStep ? 'Got it' : 'Next',
+                                style: AppText.button(color: accent.onAccent)
+                                    .copyWith(fontWeight: FontWeight.w700),
+                              ),
                             ),
                           ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),

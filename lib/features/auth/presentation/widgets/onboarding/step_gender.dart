@@ -6,6 +6,7 @@ import 'package:gymlog/core/theme/app_colors.dart';
 import 'package:gymlog/core/theme/app_text.dart';
 import 'package:gymlog/core/theme/dynamic_accent_theme.dart';
 import 'package:gymlog/features/auth/presentation/providers/onboarding_draft_provider.dart';
+import 'package:gymlog/shared/widgets/motion/pressable_scale.dart';
 import 'package:gymlog/shared/widgets/ui/primary_button.dart';
 
 class StepGender extends ConsumerWidget {
@@ -121,81 +122,85 @@ class _GenderCard extends StatelessWidget {
     return Semantics(
       button: true,
       selected: selected,
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 16),
-        decoration: BoxDecoration(
-          gradient: AppColors.cardGradient,
-          borderRadius: BorderRadius.circular(AppRadius.card),
-          border: Border.all(
-            color: selected ? accent.base : surface.borderSubtle,
-            width: selected ? 2.0 : 1.0,
-          ),
-          boxShadow: selected
-              ? [
-                  BoxShadow(
-                    color: accent.base.withValues(alpha: 0.1),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  )
-                ]
-              : null,
-        ),
-        clipBehavior: Clip.antiAlias,
-        child: Material(
-          color: Colors.transparent,
-          child: InkWell(
-            onTap: () {
-              HapticFeedback.selectionClick();
-              onTap();
-            },
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
-              child: Row(
-                children: [
-                  Container(
-                    width: 44,
-                    height: 44,
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      color: tint.withValues(alpha: 0.12),
-                      borderRadius: AppRadius.thumbnailAll,
-                    ),
-                    child: SvgPicture.asset(
-                      assetPath,
-                      width: 24,
-                      height: 24,
-                      colorFilter: ColorFilter.mode(tint, BlendMode.srcIn),
-                      placeholderBuilder: (_) => Icon(
-                        Icons.person_rounded,
-                        size: 24,
-                        color: tint,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Text(
-                      title,
-                      style: AppText.body(color: surface.textPrimary).copyWith(
-                        fontWeight: FontWeight.w700,
-                        fontSize: 16,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  if (selected)
-                    Icon(
-                      Icons.check_circle_rounded,
-                      color: accent.base,
-                      size: 24,
+      child: PressableScale(
+        child: Container(
+          margin: const EdgeInsets.only(bottom: 16),
+          decoration: BoxDecoration(
+            gradient: AppColors.cardGradient,
+            borderRadius: BorderRadius.circular(AppRadius.card),
+            border: Border.all(
+              color: selected ? accent.base : surface.borderSubtle,
+              width: selected ? 2.0 : 1.0,
+            ),
+            boxShadow: selected
+                ? [
+                    BoxShadow(
+                      color: accent.base.withValues(alpha: 0.1),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
                     )
-                  else
-                    Icon(
-                      Icons.circle_outlined,
-                      color: surface.textSecondary.withValues(alpha: 0.4),
-                      size: 24,
+                  ]
+                : null,
+          ),
+          clipBehavior: Clip.antiAlias,
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: () {
+                HapticFeedback.selectionClick();
+                onTap();
+              },
+              child: Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 44,
+                      height: 44,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: tint.withValues(alpha: 0.12),
+                        borderRadius: AppRadius.thumbnailAll,
+                      ),
+                      child: SvgPicture.asset(
+                        assetPath,
+                        width: 24,
+                        height: 24,
+                        colorFilter: ColorFilter.mode(tint, BlendMode.srcIn),
+                        placeholderBuilder: (_) => Icon(
+                          Icons.person_rounded,
+                          size: 24,
+                          color: tint,
+                        ),
+                      ),
                     ),
-                ],
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Text(
+                        title,
+                        style:
+                            AppText.body(color: surface.textPrimary).copyWith(
+                          fontWeight: FontWeight.w700,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    if (selected)
+                      Icon(
+                        Icons.check_circle_rounded,
+                        color: accent.base,
+                        size: 24,
+                      )
+                    else
+                      Icon(
+                        Icons.circle_outlined,
+                        color: surface.textSecondary.withValues(alpha: 0.4),
+                        size: 24,
+                      ),
+                  ],
+                ),
               ),
             ),
           ),
