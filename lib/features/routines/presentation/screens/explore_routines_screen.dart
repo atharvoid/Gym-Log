@@ -4,11 +4,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gymlog/core/database/database.dart';
 import 'package:gymlog/core/database/daos/routines_dao.dart';
+import 'package:gymlog/core/exercises/muscle_taxonomy.dart';
 import 'package:gymlog/core/providers/database_provider.dart';
 import 'package:gymlog/core/providers/premium_provider.dart';
 import 'package:gymlog/core/theme/app_colors.dart';
 import 'package:gymlog/core/theme/app_text.dart';
 import 'package:gymlog/core/theme/dynamic_accent_theme.dart';
+import 'package:gymlog/shared/widgets/body/muscle_map.dart';
 import 'package:gymlog/features/auth/presentation/providers/auth_provider.dart';
 import 'package:gymlog/features/auth/presentation/providers/tour_provider.dart';
 import 'package:gymlog/features/profile/presentation/providers/profile_provider.dart';
@@ -25,6 +27,22 @@ String _dominantMuscle(String focus) {
     if (MuscleGlyph.groupFor(t) != 'fullbody') return t;
   }
   return tokens.isNotEmpty ? tokens.first : 'fullbody';
+}
+
+/// Parses the human-readable [focus] string into parent muscle groups suitable
+/// for [MuscleMap]. Non-muscle tokens (e.g. "Strength", "45 min") are dropped,
+/// and "Total Body" is mapped to the full-body sentinel so the entire figure
+/// lights up.
+Set<String> _focusGroups(String focus) {
+  return focus
+      .split(' · ')
+      .map((token) {
+        final trimmed = token.trim();
+        if (trimmed.toLowerCase() == 'total body') return 'Full Body';
+        return MuscleTaxonomy.parentOf(trimmed);
+      })
+      .where((group) => group != 'Other')
+      .toSet();
 }
 
 Color _glyphColor(String muscle, List<Color> ramp) {
@@ -248,6 +266,8 @@ class _ExploreRoutinesScreenState extends ConsumerState<ExploreRoutinesScreen>
 
   void _showPreview(RoutineTemplate t,
       {required bool imported, String? routineId}) {
+    final gender =
+        ref.read(currentUserProfileProvider).valueOrNull?.gender ?? 'male';
     showModalBottomSheet<void>(
       context: context,
       useRootNavigator: true,
@@ -256,6 +276,7 @@ class _ExploreRoutinesScreenState extends ConsumerState<ExploreRoutinesScreen>
       builder: (sheetCtx) => _PreviewSheet(
         template: t,
         imported: imported,
+        gender: gender,
         onAdd: () {
           Navigator.of(sheetCtx).pop();
           _import(t);
@@ -1136,12 +1157,14 @@ class _ImportPill extends StatelessWidget {
 class _PreviewSheet extends StatelessWidget {
   final RoutineTemplate template;
   final bool imported;
+  final String gender;
   final VoidCallback onAdd;
   final VoidCallback? onView;
 
   const _PreviewSheet({
     required this.template,
     required this.imported,
+    required this.gender,
     required this.onAdd,
     required this.onView,
   });
@@ -1238,6 +1261,13 @@ class _PreviewSheet extends StatelessWidget {
                   Text(template.description,
                       style: AppText.body(color: surface.textSecondary)
                           .copyWith(height: 1.45)),
+                  const SizedBox(height: AppSpacing.x5),
+                  MuscleMap(
+                    primaryGroups: _focusGroups(template.focus),
+                    gender: gender,
+                    showBack: false,
+                    showLegend: false,
+                  ),
                   const SizedBox(height: AppSpacing.x5),
                   Text('EXERCISES',
                       style:

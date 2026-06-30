@@ -1,10 +1,15 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:gymlog/core/exercises/body_map.dart';
 import 'package:gymlog/features/auth/presentation/providers/tour_provider.dart';
+import 'package:gymlog/features/profile/presentation/providers/profile_provider.dart';
+import 'package:gymlog/shared/widgets/body/muscle_map.dart';
 import 'package:gymlog/shared/widgets/tour/spotlight_tour_overlay.dart';
 
 import 'package:gymlog/core/database/daos/routines_dao.dart';
@@ -293,6 +298,7 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
                         _HeroStatStrip(stats: sessionStats),
                       ],
                       const SizedBox(height: 16),
+                      _MusclesWorkedMap(routine: routine),
                     ],
                   ),
                 ),
@@ -530,6 +536,56 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
     return const AppNotFoundScreen(
       title: 'Routine not found',
       message: 'It may have been deleted.',
+    );
+  }
+}
+
+({Set<String> primary, Set<String> secondary}) _workedGroupsForRoutine(
+    HydratedRoutineDetail routine) {
+  final primary = <String>{};
+  final secondary = <String>{};
+  for (final he in routine.exercises) {
+    final ex = he.exercise;
+    final sec =
+        (jsonDecode(ex.secondaryMuscles ?? '[]') as List).cast<String>();
+    final groups = workedGroupsFor(target: ex.target, secondary: sec);
+    primary.addAll(groups.primary);
+    secondary.addAll(groups.secondary);
+  }
+  secondary.removeAll(primary);
+  return (primary: primary, secondary: secondary);
+}
+
+class _MusclesWorkedMap extends ConsumerWidget {
+  final HydratedRoutineDetail routine;
+  const _MusclesWorkedMap({required this.routine});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final groups = _workedGroupsForRoutine(routine);
+    if (groups.primary.isEmpty && groups.secondary.isEmpty) {
+      return const SizedBox.shrink();
+    }
+    final gender =
+        ref.watch(currentUserProfileProvider).valueOrNull?.gender ?? 'male';
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Semantics(
+          header: true,
+          child: Text('Muscles Worked',
+              style: AppText.cardTitle(color: context.surface.textPrimary)),
+        ),
+        const SizedBox(height: 10),
+        MuscleMap(
+          primaryGroups: groups.primary,
+          secondaryGroups: groups.secondary,
+          gender: gender,
+          showBack: true,
+          showLegend: true,
+        ),
+        const SizedBox(height: 16),
+      ],
     );
   }
 }
