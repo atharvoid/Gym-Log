@@ -90,6 +90,7 @@ flutter:
     - assets/icons/muscles/male/
     - assets/icons/muscles/female/
     - assets/icons/muscles/neutral/
+    - assets/icons/gender/
     - assets/google_fonts/
 
 sentry:

@@ -59,7 +59,7 @@ class StepGender extends ConsumerWidget {
             title: 'Female',
             genderKey: 'female',
             selected: selectedGender == 'female',
-            assetPath: 'assets/icons/muscles/female/fullbody.svg',
+            assetPath: 'assets/icons/gender/female.svg',
             onTap: () {
               ref.read(onboardingDraftProvider.notifier).updateGender('female');
             },
@@ -68,7 +68,7 @@ class StepGender extends ConsumerWidget {
             title: 'Male',
             genderKey: 'male',
             selected: selectedGender == 'male',
-            assetPath: 'assets/icons/muscles/male/fullbody.svg',
+            assetPath: 'assets/icons/gender/male.svg',
             onTap: () {
               ref.read(onboardingDraftProvider.notifier).updateGender('male');
             },
@@ -77,7 +77,7 @@ class StepGender extends ConsumerWidget {
             title: 'Prefer not to say',
             genderKey: 'prefer_not_to_say',
             selected: selectedGender == 'prefer_not_to_say',
-            assetPath: 'assets/icons/muscles/neutral/fullbody.svg',
+            assetPath: 'assets/icons/gender/prefer_not_to_say.svg',
             onTap: () {
               ref
                   .read(onboardingDraftProvider.notifier)
