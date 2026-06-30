@@ -1,0 +1,496 @@
+{
+  "source": {
+    "repo": "react-native-body-highlighter",
+    "commit": "15df9e2",
+    "license": "MIT",
+    "author": "ELABBASSI Hicham"
+  },
+  "viewBoxes": {
+    "male": {
+      "front": "0 0 724 1448",
+      "back": "724 0 724 1448"
+    },
+    "female": {
+      "front": "-50 -40 734 1538",
+      "back": "756 0 774 1448"
+    }
+  },
+  "parts": [
+    {
+      "slug": "chest",
+      "view": "front",
+      "gender": "male",
+      "file": "parts/front/male/chest.svg",
+      "subPathCount": 2
+    },
+    {
+      "slug": "obliques",
+      "view": "front",
+      "gender": "male",
+      "file": "parts/front/male/obliques.svg",
+      "subPathCount": 16
+    },
+    {
+      "slug": "abs",
+      "view": "front",
+      "gender": "male",
+      "file": "parts/front/male/abs.svg",
+      "subPathCount": 8
+    },
+    {
+      "slug": "biceps",
+      "view": "front",
+      "gender": "male",
+      "file": "parts/front/male/biceps.svg",
+      "subPathCount": 2
+    },
+    {
+      "slug": "triceps",
+      "view": "front",
+      "gender": "male",
+      "file": "parts/front/male/triceps.svg",
+      "subPathCount": 2
+    },
+    {
+      "slug": "neck",
+      "view": "front",
+      "gender": "male",
+      "file": "parts/front/male/neck.svg",
+      "subPathCount": 5
+    },
+    {
+      "slug": "trapezius",
+      "view": "front",
+      "gender": "male",
+      "file": "parts/front/male/trapezius.svg",
+      "subPathCount": 2
+    },
+    {
+      "slug": "deltoids",
+      "view": "front",
+      "gender": "male",
+      "file": "parts/front/male/deltoids.svg",
+      "subPathCount": 2
+    },
+    {
+      "slug": "adductors",
+      "view": "front",
+      "gender": "male",
+      "file": "parts/front/male/adductors.svg",
+      "subPathCount": 6
+    },
+    {
+      "slug": "quadriceps",
+      "view": "front",
+      "gender": "male",
+      "file": "parts/front/male/quadriceps.svg",
+      "subPathCount": 6
+    },
+    {
+      "slug": "knees",
+      "view": "front",
+      "gender": "male",
+      "file": "parts/front/male/knees.svg",
+      "subPathCount": 4
+    },
+    {
+      "slug": "tibialis",
+      "view": "front",
+      "gender": "male",
+      "file": "parts/front/male/tibialis.svg",
+      "subPathCount": 2
+    },
+    {
+      "slug": "calves",
+      "view": "front",
+      "gender": "male",
+      "file": "parts/front/male/calves.svg",
+      "subPathCount": 4
+    },
+    {
+      "slug": "forearm",
+      "view": "front",
+      "gender": "male",
+      "file": "parts/front/male/forearm.svg",
+      "subPathCount": 6
+    },
+    {
+      "slug": "hands",
+      "view": "front",
+      "gender": "male",
+      "file": "parts/front/male/hands.svg",
+      "subPathCount": 12
+    },
+    {
+      "slug": "ankles",
+      "view": "front",
+      "gender": "male",
+      "file": "parts/front/male/ankles.svg",
+      "subPathCount": 4
+    },
+    {
+      "slug": "feet",
+      "view": "front",
+      "gender": "male",
+      "file": "parts/front/male/feet.svg",
+      "subPathCount": 4
+    },
+    {
+      "slug": "head",
+      "view": "front",
+      "gender": "male",
+      "file": "parts/front/male/head.svg",
+      "subPathCount": 1
+    },
+    {
+      "slug": "hair",
+      "view": "front",
+      "gender": "male",
+      "file": "parts/front/male/hair.svg",
+      "subPathCount": 1
+    },
+    {
+      "slug": "neck",
+      "view": "back",
+      "gender": "male",
+      "file": "parts/back/male/neck.svg",
+      "subPathCount": 2
+    },
+    {
+      "slug": "trapezius",
+      "view": "back",
+      "gender": "male",
+      "file": "parts/back/male/trapezius.svg",
+      "subPathCount": 2
+    },
+    {
+      "slug": "deltoids",
+      "view": "back",
+      "gender": "male",
+      "file": "parts/back/male/deltoids.svg",
+      "subPathCount": 2
+    },
+    {
+      "slug": "upper-back",
+      "view": "back",
+      "gender": "male",
+      "file": "parts/back/male/upper-back.svg",
+      "subPathCount": 6
+    },
+    {
+      "slug": "triceps",
+      "view": "back",
+      "gender": "male",
+      "file": "parts/back/male/triceps.svg",
+      "subPathCount": 6
+    },
+    {
+      "slug": "lower-back",
+      "view": "back",
+      "gender": "male",
+      "file": "parts/back/male/lower-back.svg",
+      "subPathCount": 4
+    },
+    {
+      "slug": "forearm",
+      "view": "back",
+      "gender": "male",
+      "file": "parts/back/male/forearm.svg",
+      "subPathCount": 8
+    },
+    {
+      "slug": "gluteal",
+      "view": "back",
+      "gender": "male",
+      "file": "parts/back/male/gluteal.svg",
+      "subPathCount": 4
+    },
+    {
+      "slug": "adductors",
+      "view": "back",
+      "gender": "male",
+      "file": "parts/back/male/adductors.svg",
+      "subPathCount": 2
+    },
+    {
+      "slug": "hamstring",
+      "view": "back",
+      "gender": "male",
+      "file": "parts/back/male/hamstring.svg",
+      "subPathCount": 8
+    },
+    {
+      "slug": "calves",
+      "view": "back",
+      "gender": "male",
+      "file": "parts/back/male/calves.svg",
+      "subPathCount": 8
+    },
+    {
+      "slug": "ankles",
+      "view": "back",
+      "gender": "male",
+      "file": "parts/back/male/ankles.svg",
+      "subPathCount": 2
+    },
+    {
+      "slug": "feet",
+      "view": "back",
+      "gender": "male",
+      "file": "parts/back/male/feet.svg",
+      "subPathCount": 2
+    },
+    {
+      "slug": "hands",
+      "view": "back",
+      "gender": "male",
+      "file": "parts/back/male/hands.svg",
+      "subPathCount": 12
+    },
+    {
+      "slug": "head",
+      "view": "back",
+      "gender": "male",
+      "file": "parts/back/male/head.svg",
+      "subPathCount": 1
+    },
+    {
+      "slug": "hair",
+      "view": "back",
+      "gender": "male",
+      "file": "parts/back/male/hair.svg",
+      "subPathCount": 1
+    },
+    {
+      "slug": "neck",
+      "view": "front",
+      "gender": "female",
+      "file": "parts/front/female/neck.svg",
+      "subPathCount": 5
+    },
+    {
+      "slug": "trapezius",
+      "view": "front",
+      "gender": "female",
+      "file": "parts/front/female/trapezius.svg",
+      "subPathCount": 2
+    },
+    {
+      "slug": "hair",
+      "view": "front",
+      "gender": "female",
+      "file": "parts/front/female/hair.svg",
+      "subPathCount": 2
+    },
+    {
+      "slug": "deltoids",
+      "view": "front",
+      "gender": "female",
+      "file": "parts/front/female/deltoids.svg",
+      "subPathCount": 4
+    },
+    {
+      "slug": "head",
+      "view": "front",
+      "gender": "female",
+      "file": "parts/front/female/head.svg",
+      "subPathCount": 1
+    },
+    {
+      "slug": "chest",
+      "view": "front",
+      "gender": "female",
+      "file": "parts/front/female/chest.svg",
+      "subPathCount": 2
+    },
+    {
+      "slug": "biceps",
+      "view": "front",
+      "gender": "female",
+      "file": "parts/front/female/biceps.svg",
+      "subPathCount": 2
+    },
+    {
+      "slug": "triceps",
+      "view": "front",
+      "gender": "female",
+      "file": "parts/front/female/triceps.svg",
+      "subPathCount": 2
+    },
+    {
+      "slug": "obliques",
+      "view": "front",
+      "gender": "female",
+      "file": "parts/front/female/obliques.svg",
+      "subPathCount": 12
+    },
+    {
+      "slug": "abs",
+      "view": "front",
+      "gender": "female",
+      "file": "parts/front/female/abs.svg",
+      "subPathCount": 8
+    },
+    {
+      "slug": "forearm",
+      "view": "front",
+      "gender": "female",
+      "file": "parts/front/female/forearm.svg",
+      "subPathCount": 8
+    },
+    {
+      "slug": "hands",
+      "view": "front",
+      "gender": "female",
+      "file": "parts/front/female/hands.svg",
+      "subPathCount": 12
+    },
+    {
+      "slug": "adductors",
+      "view": "front",
+      "gender": "female",
+      "file": "parts/front/female/adductors.svg",
+      "subPathCount": 6
+    },
+    {
+      "slug": "quadriceps",
+      "view": "front",
+      "gender": "female",
+      "file": "parts/front/female/quadriceps.svg",
+      "subPathCount": 6
+    },
+    {
+      "slug": "knees",
+      "view": "front",
+      "gender": "female",
+      "file": "parts/front/female/knees.svg",
+      "subPathCount": 6
+    },
+    {
+      "slug": "tibialis",
+      "view": "front",
+      "gender": "female",
+      "file": "parts/front/female/tibialis.svg",
+      "subPathCount": 2
+    },
+    {
+      "slug": "calves",
+      "view": "front",
+      "gender": "female",
+      "file": "parts/front/female/calves.svg",
+      "subPathCount": 4
+    },
+    {
+      "slug": "ankles",
+      "view": "front",
+      "gender": "female",
+      "file": "parts/front/female/ankles.svg",
+      "subPathCount": 4
+    },
+    {
+      "slug": "feet",
+      "view": "front",
+      "gender": "female",
+      "file": "parts/front/female/feet.svg",
+      "subPathCount": 4
+    },
+    {
+      "slug": "hair",
+      "view": "back",
+      "gender": "female",
+      "file": "parts/back/female/hair.svg",
+      "subPathCount": 2
+    },
+    {
+      "slug": "neck",
+      "view": "back",
+      "gender": "female",
+      "file": "parts/back/female/neck.svg",
+      "subPathCount": 2
+    },
+    {
+      "slug": "trapezius",
+      "view": "back",
+      "gender": "female",
+      "file": "parts/back/female/trapezius.svg",
+      "subPathCount": 2
+    },
+    {
+      "slug": "deltoids",
+      "view": "back",
+      "gender": "female",
+      "file": "parts/back/female/deltoids.svg",
+      "subPathCount": 2
+    },
+    {
+      "slug": "upper-back",
+      "view": "back",
+      "gender": "female",
+      "file": "parts/back/female/upper-back.svg",
+      "subPathCount": 4
+    },
+    {
+      "slug": "lower-back",
+      "view": "back",
+      "gender": "female",
+      "file": "parts/back/female/lower-back.svg",
+      "subPathCount": 4
+    },
+    {
+      "slug": "triceps",
+      "view": "back",
+      "gender": "female",
+      "file": "parts/back/female/triceps.svg",
+      "subPathCount": 6
+    },
+    {
+      "slug": "forearm",
+      "view": "back",
+      "gender": "female",
+      "file": "parts/back/female/forearm.svg",
+      "subPathCount": 8
+    },
+    {
+      "slug": "hands",
+      "view": "back",
+      "gender": "female",
+      "file": "parts/back/female/hands.svg",
+      "subPathCount": 12
+    },
+    {
+      "slug": "gluteal",
+      "view": "back",
+      "gender": "female",
+      "file": "parts/back/female/gluteal.svg",
+      "subPathCount": 4
+    },
+    {
+      "slug": "adductors",
+      "view": "back",
+      "gender": "female",
+      "file": "parts/back/female/adductors.svg",
+      "subPathCount": 4
+    },
+    {
+      "slug": "hamstring",
+      "view": "back",
+      "gender": "female",
+      "file": "parts/back/female/hamstring.svg",
+      "subPathCount": 6
+    },
+    {
+      "slug": "calves",
+      "view": "back",
+      "gender": "female",
+      "file": "parts/back/female/calves.svg",
+      "subPathCount": 8
+    },
+    {
+      "slug": "feet",
+      "view": "back",
+      "gender": "female",
+      "file": "parts/back/female/feet.svg",
+      "subPathCount": 2
+    }
+  ]
+}

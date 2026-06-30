@@ -91,6 +91,11 @@ flutter:
     - assets/icons/muscles/female/
     - assets/icons/muscles/neutral/
     - assets/icons/gender/
+    - assets/body/
+    - assets/body/parts/front/male/
+    - assets/body/parts/front/female/
+    - assets/body/parts/back/male/
+    - assets/body/parts/back/female/
     - assets/google_fonts/
 
 sentry:
