@@ -3,8 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gymlog/core/exercises/muscle_taxonomy.dart';
-import 'package:gymlog/core/theme/dynamic_accent_theme.dart';
-import 'package:gymlog/shared/widgets/body/muscle_map.dart';
+import 'package:gymlog/shared/widgets/body/muscle_map_thumb.dart';
 import 'package:gymlog/features/profile/presentation/providers/profile_provider.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text.dart';
@@ -94,84 +93,74 @@ class RoutineCard extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // ── Header: muscle glyph + name/meta + menu ──────────────
+                // ── Header: muscle map + name/meta/tags + menu ──────────────
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Muscle-group glyph for the dominant muscle, in a square
-                    // tinted by the live accent. Decorative — name carries it.
                     ExcludeSemantics(
-                      child: Container(
-                        width: 44,
-                        height: 44,
-                        alignment: Alignment.center,
-                        padding: const EdgeInsets.symmetric(vertical: 4),
-                        decoration: BoxDecoration(
-                          // Live accent tint — follows the chosen palette (cyan,
-                          // etc.), never the old static purple.
-                          color: context.accent.base.withValues(alpha: 0.15),
-                          borderRadius: AppRadius.buttonPrimaryAll,
-                        ),
-                        child: MuscleMap(
-                          primaryGroups: primaryGroups,
-                          gender: gender,
-                          showBack:
-                              false, // compact front-only for the small tile
-                          showLegend: false,
-                        ),
+                      child: MuscleMapThumb(
+                        primaryGroups: primaryGroups,
+                        gender: gender,
+                        size: 108,
                       ),
                     ),
-                    const SizedBox(width: 13),
+                    const SizedBox(width: 14),
                     Expanded(
-                      child: Padding(
-                        padding: const EdgeInsets.only(top: 2),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              routineName,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: AppText.cardTitle(),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Expanded(
+                                child: Padding(
+                                  padding: const EdgeInsets.only(top: 2),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(routineName,
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: AppText.cardTitle()),
+                                      const SizedBox(height: 3),
+                                      Text(meta,
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: AppText.caption()),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              IconButton(
+                                tooltip: 'More options',
+                                padding: EdgeInsets.zero,
+                                constraints: const BoxConstraints(
+                                    minWidth: 48, minHeight: 48),
+                                iconSize: 20,
+                                icon: const Icon(Icons.more_horiz_rounded,
+                                    color: AppColors.textSecondary),
+                                onPressed: () => _showOptions(context, ref),
+                              ),
+                            ],
+                          ),
+                          if (tags.isNotEmpty)
+                            Padding(
+                              padding: const EdgeInsets.only(top: 10),
+                              child: Wrap(
+                                spacing: 6,
+                                runSpacing: 6,
+                                children: [
+                                  for (final t in tags) _tag(t),
+                                  if (extraTags > 0) _tag('+$extraTags'),
+                                ],
+                              ),
                             ),
-                            const SizedBox(height: 3),
-                            Text(
-                              meta,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: AppText.caption(),
-                            ),
-                          ],
-                        ),
+                        ],
                       ),
-                    ),
-                    // S13: standardized to more_horiz_rounded + showActionBottomSheet
-                    IconButton(
-                      tooltip: 'More options',
-                      padding: EdgeInsets.zero,
-                      constraints:
-                          const BoxConstraints(minWidth: 48, minHeight: 48),
-                      iconSize: 20,
-                      icon: const Icon(Icons.more_horiz_rounded,
-                          color: AppColors.textSecondary),
-                      onPressed: () => _showOptions(context, ref),
                     ),
                   ],
                 ),
-
-                // ── Muscle tags (aligned under the text column) ──────────
-                if (tags.isNotEmpty)
-                  Padding(
-                    padding: const EdgeInsets.only(left: 57, top: 11),
-                    child: Wrap(
-                      spacing: 6,
-                      runSpacing: 6,
-                      children: [
-                        for (final t in tags) _tag(t),
-                        if (extraTags > 0) _tag('+$extraTags'),
-                      ],
-                    ),
-                  ),
 
                 // ── Divider ───────────────────────────────
                 Padding(

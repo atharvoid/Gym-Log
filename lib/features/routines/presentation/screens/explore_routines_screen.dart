@@ -11,6 +11,7 @@ import 'package:gymlog/core/theme/app_colors.dart';
 import 'package:gymlog/core/theme/app_text.dart';
 import 'package:gymlog/core/theme/dynamic_accent_theme.dart';
 import 'package:gymlog/shared/widgets/body/muscle_map.dart';
+import 'package:gymlog/shared/widgets/body/muscle_map_thumb.dart';
 import 'package:gymlog/features/auth/presentation/providers/auth_provider.dart';
 import 'package:gymlog/features/auth/presentation/providers/tour_provider.dart';
 import 'package:gymlog/features/profile/presentation/providers/profile_provider.dart';
@@ -18,16 +19,7 @@ import 'package:gymlog/features/routines/presentation/data/explore_catalog.dart'
 import 'package:gymlog/features/routines/presentation/providers/routines_provider.dart';
 import 'package:gymlog/shared/widgets/premium_paywall.dart';
 import 'package:gymlog/shared/widgets/tour/spotlight_tour_overlay.dart';
-import 'package:gymlog/shared/widgets/ui/muscle_glyph.dart';
 import 'package:gymlog/shared/widgets/ui/primary_button.dart';
-
-String _dominantMuscle(String focus) {
-  final tokens = focus.split(' · ');
-  for (final t in tokens) {
-    if (MuscleGlyph.groupFor(t) != 'fullbody') return t;
-  }
-  return tokens.isNotEmpty ? tokens.first : 'fullbody';
-}
 
 /// Parses the human-readable [focus] string into parent muscle groups suitable
 /// for [MuscleMap]. Non-muscle tokens (e.g. "Strength", "45 min") are dropped,
@@ -43,11 +35,6 @@ Set<String> _focusGroups(String focus) {
       })
       .where((group) => group != 'Other')
       .toSet();
-}
-
-Color _glyphColor(String muscle, List<Color> ramp) {
-  final i = muscle.hashCode.abs() % ramp.length;
-  return Color.lerp(ramp[i], Colors.white, 0.35)!;
 }
 
 enum _LevelFilter {
@@ -307,7 +294,8 @@ class _ExploreRoutinesScreenState extends ConsumerState<ExploreRoutinesScreen>
 
   @override
   Widget build(BuildContext context) {
-    final ramp = context.accent.muscleSplitRamp;
+    final gender =
+        ref.watch(currentUserProfileProvider).valueOrNull?.gender ?? 'male';
     final surface = context.surface;
     final tourStep = ref.watch(firstRunTourProvider);
 
@@ -423,7 +411,7 @@ class _ExploreRoutinesScreenState extends ConsumerState<ExploreRoutinesScreen>
                                 const EdgeInsets.only(bottom: AppSpacing.x5),
                             child: _FeaturedCard(
                               template: template,
-                              ramp: ramp,
+                              gender: gender,
                               importing: _importing.contains(template.name),
                               imported: imported,
                               onImport: () => _import(template),
@@ -448,7 +436,7 @@ class _ExploreRoutinesScreenState extends ConsumerState<ExploreRoutinesScreen>
                                 bottom: AppSpacing.sectionGap),
                             child: _TemplateCard(
                               template: template,
-                              ramp: ramp,
+                              gender: gender,
                               importing: _importing.contains(template.name),
                               imported: imported,
                               onImport: () => _import(template),
@@ -692,7 +680,7 @@ class _SectionHeader extends StatelessWidget {
 
 class _FeaturedCard extends StatelessWidget {
   final RoutineTemplate template;
-  final List<Color> ramp;
+  final String gender;
   final bool importing;
   final bool imported;
   final VoidCallback onImport;
@@ -702,7 +690,7 @@ class _FeaturedCard extends StatelessWidget {
 
   const _FeaturedCard({
     required this.template,
-    required this.ramp,
+    required this.gender,
     required this.importing,
     required this.imported,
     required this.onImport,
@@ -715,8 +703,6 @@ class _FeaturedCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final accent = context.accent;
     final surface = context.surface;
-    final muscle = _dominantMuscle(template.focus);
-    final glyphColor = _glyphColor(muscle, ramp);
     final a11yLabel = 'Featured. ${template.name}. ${template.levelLabel}, '
         'about ${template.estMinutes} minutes, ${template.slots.length} exercises. '
         '${template.focus}. ${template.description}';
@@ -778,18 +764,10 @@ class _FeaturedCard extends StatelessWidget {
                           Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Container(
-                                width: 56,
-                                height: 56,
-                                alignment: Alignment.center,
-                                decoration: BoxDecoration(
-                                  color: glyphColor.withValues(alpha: 0.16),
-                                  borderRadius: AppRadius.thumbnailAll,
-                                ),
-                                child: MuscleGlyph(
-                                    muscle: muscle,
-                                    size: 32,
-                                    color: glyphColor),
+                              MuscleMapThumb(
+                                primaryGroups: _focusGroups(template.focus),
+                                gender: gender,
+                                size: 132,
                               ),
                               const SizedBox(width: 14),
                               Expanded(
@@ -860,7 +838,7 @@ class _FeaturedCard extends StatelessWidget {
 
 class _TemplateCard extends StatelessWidget {
   final RoutineTemplate template;
-  final List<Color> ramp;
+  final String gender;
   final bool importing;
   final bool imported;
   final VoidCallback onImport;
@@ -870,7 +848,7 @@ class _TemplateCard extends StatelessWidget {
 
   const _TemplateCard({
     required this.template,
-    required this.ramp,
+    required this.gender,
     required this.importing,
     required this.imported,
     required this.onImport,
@@ -884,8 +862,6 @@ class _TemplateCard extends StatelessWidget {
     final surface = context.surface;
     final preview = template.slots.take(3).map((s) => s.name).join(', ');
     final extra = template.slots.length - 3;
-    final muscle = _dominantMuscle(template.focus);
-    final glyphColor = _glyphColor(muscle, ramp);
 
     final a11yLabel = '${template.name}. ${template.levelLabel}, '
         'about ${template.estMinutes} minutes, ${template.slots.length} exercises. '
@@ -925,16 +901,10 @@ class _TemplateCard extends StatelessWidget {
                         Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Container(
-                              width: 44,
-                              height: 44,
-                              alignment: Alignment.center,
-                              decoration: BoxDecoration(
-                                color: glyphColor.withValues(alpha: 0.15),
-                                borderRadius: AppRadius.thumbnailAll,
-                              ),
-                              child: MuscleGlyph(
-                                  muscle: muscle, size: 26, color: glyphColor),
+                            MuscleMapThumb(
+                              primaryGroups: _focusGroups(template.focus),
+                              gender: gender,
+                              size: 104,
                             ),
                             const SizedBox(width: AppSpacing.x3),
                             Expanded(
@@ -951,34 +921,36 @@ class _TemplateCard extends StatelessWidget {
                                       overflow: TextOverflow.ellipsis,
                                       style: AppText.meta(
                                           color: surface.textSecondary)),
+                                  const SizedBox(height: AppSpacing.x3),
+                                  Wrap(
+                                    spacing: AppSpacing.x2,
+                                    runSpacing: 6,
+                                    crossAxisAlignment:
+                                        WrapCrossAlignment.center,
+                                    children: [
+                                      _LevelPill(
+                                          label: template.levelLabel,
+                                          color: template.levelColor),
+                                      _MetaChip(
+                                          icon: Icons.schedule_rounded,
+                                          label: '~${template.estMinutes} min'),
+                                      _MetaChip(
+                                          icon: Icons.fitness_center_rounded,
+                                          label:
+                                              '${template.slots.length} exercises'),
+                                    ],
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.only(top: 13),
+                                    child: Divider(
+                                        height: 1,
+                                        thickness: 1,
+                                        color: surface.borderSubtle),
+                                  ),
                                 ],
                               ),
                             ),
                           ],
-                        ),
-                        const SizedBox(height: AppSpacing.x3),
-                        Wrap(
-                          spacing: AppSpacing.x2,
-                          runSpacing: 6,
-                          crossAxisAlignment: WrapCrossAlignment.center,
-                          children: [
-                            _LevelPill(
-                                label: template.levelLabel,
-                                color: template.levelColor),
-                            _MetaChip(
-                                icon: Icons.schedule_rounded,
-                                label: '~${template.estMinutes} min'),
-                            _MetaChip(
-                                icon: Icons.fitness_center_rounded,
-                                label: '${template.slots.length} exercises'),
-                          ],
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.only(top: 13),
-                          child: Divider(
-                              height: 1,
-                              thickness: 1,
-                              color: surface.borderSubtle),
                         ),
                       ],
                     ),
@@ -1172,9 +1144,6 @@ class _PreviewSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final surface = context.surface;
-    final muscle = _dominantMuscle(template.focus);
-    final ramp = context.accent.muscleSplitRamp;
-    final glyphColor = _glyphColor(muscle, ramp);
 
     return DraggableScrollableSheet(
       initialChildSize: 0.6,
@@ -1208,36 +1177,16 @@ class _PreviewSheet extends StatelessWidget {
                 padding: const EdgeInsets.fromLTRB(
                     AppSpacing.x5, AppSpacing.x5, AppSpacing.x5, AppSpacing.x4),
                 children: [
-                  Row(
+                  Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Container(
-                        width: 48,
-                        height: 48,
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                          color: glyphColor.withValues(alpha: 0.15),
-                          borderRadius: AppRadius.thumbnailAll,
-                        ),
-                        child: MuscleGlyph(
-                            muscle: muscle, size: 28, color: glyphColor),
-                      ),
-                      const SizedBox(width: AppSpacing.x3),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(template.name,
-                                style: AppText.sectionHeading(
-                                    color: surface.textPrimary,
-                                    shadows: AppText.depthFor(context))),
-                            const SizedBox(height: 3),
-                            Text(template.focus,
-                                style:
-                                    AppText.meta(color: surface.textSecondary)),
-                          ],
-                        ),
-                      ),
+                      Text(template.name,
+                          style: AppText.sectionHeading(
+                              color: surface.textPrimary,
+                              shadows: AppText.depthFor(context))),
+                      const SizedBox(height: 3),
+                      Text(template.focus,
+                          style: AppText.meta(color: surface.textSecondary)),
                     ],
                   ),
                   const SizedBox(height: AppSpacing.x4),
