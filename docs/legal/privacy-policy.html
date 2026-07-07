@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>GymLog Privacy Policy</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 800px; margin: 40px auto; padding: 0 20px; line-height: 1.6; }
+    h1 { font-size: 24px; }
+    h2 { font-size: 18px; margin-top: 30px; }
+    table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+    th { background-color: #f5f5f5; }
+  </style>
+</head>
+<body>
+  <h1>GymLog Privacy Policy</h1>
+  <p><strong>Effective date:</strong> 14 June 2026</p>
+  
+  <p>GymLog is a local-first workout tracker. This policy is short because the honest answer to "what do you do with my data?" is: very little, and you can delete all of it at any time.</p>
+  
+  <h2>What we collect</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Data</th>
+        <th>Where it lives</th>
+        <th>Why</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Google account email, display name, account ID</td>
+        <td>Supabase (our auth provider)</td>
+        <td>Sign-in, and your cross-device profile</td>
+      </tr>
+      <tr>
+        <td>Workouts, sets, reps, weights, routines, personal records</td>
+        <td><strong>Your device</strong> (a private local database) — and, <strong>if you are signed in, a compressed copy in Supabase</strong></td>
+        <td>Local tracking is the core app; the cloud copy syncs across your devices and survives reinstalls</td>
+      </tr>
+      <tr>
+        <td>App preferences (units, rest timer, weekly goal)</td>
+        <td>Your device, and a compressed copy in Supabase when signed in</td>
+        <td>App behavior + cross-device continuity</td>
+      </tr>
+      <tr>
+        <td>Subscription entitlement status</td>
+        <td>RevenueCat (purchase processor) + a local cache</td>
+        <td>To unlock Pro features you paid for</td>
+      </tr>
+      <tr>
+        <td>Crash & error reports (device model, OS, stack traces; your account UUID only)</td>
+        <td>Sentry</td>
+        <td>Diagnosing crashes. Email/IP are scrubbed before sending</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>Cloud sync — what actually leaves the device</h2>
+  <p>When you are signed in, GymLog can sync your routines, workout history, and preferences to our backend (Supabase) so they follow you across devices and survive a reinstall. The synced body is a compressed payload tied to your account ID and protected by row-level security (only you can read it). If you are signed out, nothing syncs and your data stays on the device only.</p>
+
+  <h2>What we do NOT do</h2>
+  <ul>
+    <li>We do <strong>not</strong> run ads or sell your data to anyone.</li>
+    <li>We do <strong>not</strong> use third-party advertising or tracking SDKs.</li>
+    <li>We do <strong>not</strong> collect location, contacts, photos, or health-platform data.</li>
+  </ul>
+
+  <h2>Third-party services</h2>
+  <ul>
+    <li><strong>Supabase</strong> — authentication (Google sign-in), the cloud sync store, and hosting of the public exercise-illustration library your device downloads from.</li>
+    <li><strong>RevenueCat / Google Play / App Store</strong> — payment processing for the optional Pro subscription. We never see your payment details.</li>
+    <li><strong>Sentry</strong> — crash and error reporting (PII scrubbed; only your account UUID is attached).</li>
+  </ul>
+
+  <h2>Data retention</h2>
+  <ul>
+    <li><strong>Cloud data</strong> (profile + synced workouts/routines/preferences) is retained for as long as your account exists. When you delete your account it is removed immediately (see below).</li>
+    <li><strong>Crash reports</strong> are retained by Sentry per its standard retention window (typically up to 90 days) and contain no directly identifying information.</li>
+    <li><strong>Local data</strong> stays on your device until you delete the account, clear the app's storage, or uninstall the app.</li>
+  </ul>
+
+  <h2>How to delete your account and data</h2>
+  <p>Deletion is permanent and removes your cloud account, your synced data, and the data stored locally on the device.</p>
+  <ol>
+    <li><strong>In the app:</strong> <strong>Settings → Delete account</strong>. Type <code>DELETE</code> to confirm. This permanently deletes your sign-in account and any cloud-synced data from Supabase, erases the local database on the device, and signs you out.</li>
+    <li><strong>Without the app</strong> (e.g. after uninstalling): visit <strong><a href="https://atharvoid.github.io/Gym-Log/legal/delete-account.html">https://atharvoid.github.io/Gym-Log/legal/delete-account.html</a></strong>, sign in to verify ownership, and confirm deletion.</li>
+    <li><strong>By email:</strong> if you cannot use either option, email <strong>support@gymlog.app</strong> from your registered address and we will delete your account within 30 days.</li>
+  </ol>
+  <p>CSV files you have exported to your device's Downloads/Files are <strong>your property</strong> and are never accessed or removed by deletion.</p>
+
+  <h2>Data export</h2>
+  <p>Settings → <strong>Export workouts</strong> produces a CSV of every set you have logged. Your data is portable, free, forever.</p>
+
+  <h2>Changes</h2>
+  <p>Material changes to this policy will be reflected in this document with a new effective date and noted in release notes.</p>
+
+  <h2>Contact</h2>
+  <p>Questions or deletion help: <strong>support@gymlog.app</strong>, or open an issue on the GymLog repository.</p>
+</body>
+</html>

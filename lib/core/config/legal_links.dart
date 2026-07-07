@@ -2,12 +2,11 @@
 /// pre-sign-in Auth screen. Centralized so the App Store / Play Store
 /// required links never drift between the two surfaces.
 ///
-/// These point at the in-repo policy docs. Swap for a hosted privacy page
-/// before public launch if you move them off GitHub.
+/// These point at the hosted HTML pages on GitHub Pages.
 library;
 
 const String kPrivacyPolicyUrl =
-    'https://atharvoid.github.io/Gym-Log/legal/PRIVACY_POLICY.md';
+    'https://atharvoid.github.io/Gym-Log/legal/privacy-policy.html';
 
 const String kTermsOfServiceUrl =
     'https://atharvoid.github.io/Gym-Log/legal/terms-of-service.html';
