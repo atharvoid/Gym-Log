@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
@@ -98,10 +99,17 @@ final gifLastFrameProvider = FutureProvider.autoDispose
   try {
     if (isDisposed) return null;
 
-    final file = await GymlogGifCacheManager()
-        .cacheManager
-        .getSingleFile(args.url)
-        .timeout(const Duration(seconds: 12));
+    final cacheInfo =
+        await GymlogGifCacheManager().cacheManager.getFileFromCache(args.url);
+    final File file;
+    if (cacheInfo != null) {
+      file = cacheInfo.file;
+    } else {
+      file = await GymlogGifCacheManager()
+          .cacheManager
+          .getSingleFile(args.url)
+          .timeout(const Duration(seconds: 12));
+    }
     if (isDisposed) return null;
 
     final Uint8List bytes = await file.readAsBytes();
@@ -168,10 +176,17 @@ final gifFirstFrameProvider = FutureProvider.autoDispose
   try {
     if (isDisposed) return null;
 
-    final file = await GymlogGifCacheManager()
-        .cacheManager
-        .getSingleFile(args.url)
-        .timeout(const Duration(seconds: 12));
+    final cacheInfo =
+        await GymlogGifCacheManager().cacheManager.getFileFromCache(args.url);
+    final File file;
+    if (cacheInfo != null) {
+      file = cacheInfo.file;
+    } else {
+      file = await GymlogGifCacheManager()
+          .cacheManager
+          .getSingleFile(args.url)
+          .timeout(const Duration(seconds: 12));
+    }
     if (isDisposed) return null;
 
     final Uint8List bytes = await file.readAsBytes();

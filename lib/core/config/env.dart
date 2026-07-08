@@ -44,14 +44,11 @@ abstract final class Env {
 
   /// Base URL of the public storage bucket hosting exercise GIFs.
   /// (`excercises` typo is the real bucket name — do not "fix".)
-  static String get gifBucketBase {
-    const define = String.fromEnvironment('GIF_BUCKET_BASE');
-    if (define.isNotEmpty) return define;
-    if (supabaseUrl.isNotEmpty) {
-      return '$supabaseUrl/storage/v1/object/public/excercises';
-    }
-    return 'https://otcfigaprxfknickyrdh.supabase.co/storage/v1/object/public/excercises';
-  }
+  static const gifBucketBase = String.fromEnvironment(
+    'GIF_BUCKET_BASE',
+    defaultValue:
+        'https://otcfigaprxfknickyrdh.supabase.co/storage/v1/object/public/excercises',
+  );
 
   /// Public URL of the standalone web account-deletion page (Google Play
   /// requires a deletion path reachable WITHOUT the app). Served from the

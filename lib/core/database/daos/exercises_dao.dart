@@ -14,11 +14,11 @@ part 'exercises_dao.g.dart';
 /// v3: unified catalog (standard Hevy/Strong names + parent→child muscles),
 /// upsert-by-exerciseDbId so existing rows are renamed/re-muscled in place and
 /// GIF links are refreshed, with null gifUrl for exercises that have no GIF yet.
-const _kHydrationKey = 'exercises_hydrated_v4';
+const _kHydrationKey = 'exercises_hydrated_v5';
 
 /// Base URL of the public storage bucket that hosts exercise GIFs.
 /// Centralized in [Env] (overridable via --dart-define GIF_BUCKET_BASE).
-final _kGifBase = Env.gifBucketBase;
+const _kGifBase = Env.gifBucketBase;
 
 /// Top-level so it can run in a `compute()` isolate. Decodes the bundled
 /// exercise catalog JSON into a list of plain maps (primitives only, so the
@@ -166,11 +166,12 @@ class ExercisesDao extends DatabaseAccessor<AppDatabase>
       });
 
       await prefs.setBool(_kHydrationKey, true);
+      await prefs.remove('exercises_hydrated_v4');
       await prefs.remove('exercises_hydrated_v3');
       await prefs.remove('exercises_hydrated_v2');
       await prefs.remove('exercises_hydrated_v1');
       debugPrint(
-          '[ExercisesDao] Hydration v4 complete: ${list.length} exercises.');
+          '[ExercisesDao] Hydration v5 complete: ${list.length} exercises.');
     } catch (e, st) {
       debugPrint('[ExercisesDao] hydrateFromJson failed: $e\n$st');
       await seedDefaultExercises();
