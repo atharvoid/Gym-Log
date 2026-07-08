@@ -6,18 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-/// Bounded HTTP File Service that applies a per-request timeout.
-class _BoundedHttpFileService extends HttpFileService {
-  _BoundedHttpFileService();
-
-  @override
-  Future<FileServiceResponse> get(String url, {Map<String, String>? headers}) {
-    return super
-        .get(url, headers: headers)
-        .timeout(const Duration(seconds: 10));
-  }
-}
-
 /// Bounded CacheManager configuration for exercise GIFs.
 class GymlogGifCacheManager {
   static final GymlogGifCacheManager _instance =
@@ -27,14 +15,7 @@ class GymlogGifCacheManager {
   late final CacheManager cacheManager;
 
   GymlogGifCacheManager._internal() {
-    cacheManager = CacheManager(
-      Config(
-        'gymlog_gifs',
-        stalePeriod: const Duration(days: 30),
-        maxNrOfCacheObjects: 1000,
-        fileService: _BoundedHttpFileService(),
-      ),
-    );
+    cacheManager = DefaultCacheManager();
   }
 }
 

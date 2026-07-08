@@ -18,7 +18,7 @@ const _kHydrationKey = 'exercises_hydrated_v3';
 
 /// Base URL of the public storage bucket that hosts exercise GIFs.
 /// Centralized in [Env] (overridable via --dart-define GIF_BUCKET_BASE).
-const _kGifBase = Env.gifBucketBase;
+final _kGifBase = Env.gifBucketBase;
 
 /// Top-level so it can run in a `compute()` isolate. Decodes the bundled
 /// exercise catalog JSON into a list of plain maps (primitives only, so the
