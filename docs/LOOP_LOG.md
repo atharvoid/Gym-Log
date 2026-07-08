@@ -27,3 +27,4 @@
 | 2026-06-25 | `AGENTS.md` said "only a default widget test" and "no CI/CD" — both false; agent misinformed | Guides never updated after test suite and CI were built | H5: rewrote `AGENTS.md`, `CLAUDE.md`; deleted wrong `STITCH_DESIGN_SYSTEM.md`; created `DESIGN_NORTH_STAR.md` |
 | 2026-06-25 | `CLAUDE.md` said `npm run build && npm test` — for a Flutter app | Boilerplate from a different tool pasted into the repo | H5: replaced with real Flutter commands |
 | 2026-06-25 | `STITCH_DESIGN_SYSTEM.md` described a light-mode smart-home app — agents steered 180° wrong | File was for a different product ("The Luminous Engine") | H5: deleted; replaced with `docs/DESIGN_NORTH_STAR.md` |
+| 2026-07-08 | GIFs fail to load in small/thumbnail views | `ui.instantiateImageCodec` with `targetWidth` fails on animated GIFs | Decoded animated GIFs at native size in `gifFirstFrameProvider`/`gifLastFrameProvider` |
