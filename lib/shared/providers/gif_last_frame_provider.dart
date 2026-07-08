@@ -68,8 +68,6 @@ class _SimpleSemaphore {
 
 final _gifConcurrencySemaphore = _SimpleSemaphore(4);
 
-const _kMaxDecodeWidth = 360;
-
 void _keepAliveOnSuccess(Ref ref) {
   final link = ref.keepAlive();
   Timer? releaseTimer;
@@ -107,8 +105,6 @@ final gifLastFrameProvider =
 
     codec = await ui.instantiateImageCodec(
       bytes,
-      targetWidth: _kMaxDecodeWidth,
-      allowUpscaling: false,
     );
     if (isDisposed) return null;
 
@@ -172,8 +168,6 @@ final gifFirstFrameProvider =
 
     codec = await ui.instantiateImageCodec(
       bytes,
-      targetWidth: _kMaxDecodeWidth,
-      allowUpscaling: false,
     );
     if (isDisposed) return null;
 
