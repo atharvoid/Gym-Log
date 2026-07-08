@@ -31,10 +31,14 @@ class ExerciseHeroThumb extends StatelessWidget {
       flightShuttleBuilder: (flightCtx, anim, dir, fromCtx, toCtx) => Consumer(
         builder: (context, ref, _) {
           final last = ref
-              .watch(gifLastFrameProvider(exercise.gifUrl ?? ''))
+              .watch(gifLastFrameProvider(
+                  (url: exercise.gifUrl ?? '', targetWidth: null)))
               .valueOrNull;
           final first = ref
-              .watch(gifFirstFrameProvider(exercise.gifUrl ?? ''))
+              .watch(gifFirstFrameProvider((
+                url: exercise.gifUrl ?? '',
+                targetWidth: kGifThumbnailDecodeWidth
+              )))
               .valueOrNull;
           final img = last ?? first;
           return ClipRRect(

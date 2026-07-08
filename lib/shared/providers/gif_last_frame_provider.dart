@@ -68,7 +68,18 @@ class _SimpleSemaphore {
 
 final _gifConcurrencySemaphore = _SimpleSemaphore(4);
 
-void _keepAliveOnSuccess(Ref ref) {
+/// Thumbnail decode width cap. Thumbnails are 44–52 dp, so decoding at 2×
+/// logical pixels (104px on a 2× device) is plenty — keeps RAM low and decode
+/// fast. Full-res decodes are used for the hero/detail view.
+const kGifThumbnailDecodeWidth = 128;
+
+/// Keeps the provider alive for 60 s after its last subscriber detaches.
+/// IMPORTANT: call this eagerly (before any awaits) so the provider is never
+/// auto-disposed mid-decode. Without eager keepAlive, the provider is
+/// cancelled the moment a list thumbnail scrolls off-screen, which means
+/// `isDisposed` becomes true inside the frame-loop and the provider returns
+/// null — giving a fallback icon even though the GIF downloaded fine.
+void _keepAliveEager(Ref ref) {
   final link = ref.keepAlive();
   Timer? releaseTimer;
   ref.onDispose(() => releaseTimer?.cancel());
@@ -77,8 +88,20 @@ void _keepAliveOnSuccess(Ref ref) {
   ref.onResume(() => releaseTimer?.cancel());
 }
 
-final gifLastFrameProvider =
-    FutureProvider.autoDispose.family<ui.Image?, String>((ref, gifUrl) async {
+/// Decodes the LAST frame of the GIF at [gifUrl] as a static [ui.Image].
+///
+/// [targetWidth] caps the decode resolution. Defaults to [_kThumbnailDecodeWidth]
+/// (128 px) for list thumbnails. Pass `null` for full-resolution decodes (e.g.
+/// hero poster on the detail screen).
+final gifLastFrameProvider = FutureProvider.autoDispose
+    .family<ui.Image?, ({String url, int? targetWidth})>((ref, args) async {
+  // ── Eager keepAlive ─────────────────────────────────────────────────────
+  // Must happen BEFORE the first await so that Riverpod never auto-disposes
+  // this provider while it is still downloading / decoding. Without this,
+  // a thumbnail that scrolls off-screen mid-decode gets disposed → returns
+  // null → shows the fallback icon even when the GIF is already on disk.
+  _keepAliveEager(ref);
+
   ui.Image? resolvedImage;
   bool isDisposed = false;
 
@@ -96,7 +119,7 @@ final gifLastFrameProvider =
 
     final file = await GymlogGifCacheManager()
         .cacheManager
-        .getSingleFile(gifUrl)
+        .getSingleFile(args.url)
         .timeout(const Duration(seconds: 12));
     if (isDisposed) return null;
 
@@ -105,6 +128,8 @@ final gifLastFrameProvider =
 
     codec = await ui.instantiateImageCodec(
       bytes,
+      targetWidth: args.targetWidth,
+      allowUpscaling: false,
     );
     if (isDisposed) return null;
 
@@ -122,14 +147,12 @@ final gifLastFrameProvider =
       return null;
     }
 
-    // Keep active reference for provider lifecycle disposal
     resolvedImage = lastFrame;
-    _keepAliveOnSuccess(ref);
     return lastFrame;
   } catch (e, st) {
     debugPrint(
       '[gifLastFrameProvider] Failed to extract last frame.\n'
-      '  URL  : $gifUrl\n'
+      '  URL  : ${args.url}\n'
       '  Error: $e\n$st',
     );
     lastFrame?.dispose();
@@ -140,8 +163,15 @@ final gifLastFrameProvider =
   }
 });
 
-final gifFirstFrameProvider =
-    FutureProvider.autoDispose.family<ui.Image?, String>((ref, gifUrl) async {
+/// Decodes the FIRST frame of the GIF at [gifUrl] as a static [ui.Image].
+/// Cheaper than [gifLastFrameProvider] — only reads one frame.
+///
+/// [targetWidth] caps the decode resolution. Defaults to [_kThumbnailDecodeWidth].
+final gifFirstFrameProvider = FutureProvider.autoDispose
+    .family<ui.Image?, ({String url, int? targetWidth})>((ref, args) async {
+  // Eager keepAlive — same rationale as gifLastFrameProvider.
+  _keepAliveEager(ref);
+
   ui.Image? resolvedImage;
   bool isDisposed = false;
 
@@ -159,7 +189,7 @@ final gifFirstFrameProvider =
 
     final file = await GymlogGifCacheManager()
         .cacheManager
-        .getSingleFile(gifUrl)
+        .getSingleFile(args.url)
         .timeout(const Duration(seconds: 12));
     if (isDisposed) return null;
 
@@ -168,6 +198,8 @@ final gifFirstFrameProvider =
 
     codec = await ui.instantiateImageCodec(
       bytes,
+      targetWidth: args.targetWidth,
+      allowUpscaling: false,
     );
     if (isDisposed) return null;
 
@@ -182,12 +214,11 @@ final gifFirstFrameProvider =
     }
 
     resolvedImage = frame;
-    _keepAliveOnSuccess(ref);
     return frame;
   } catch (e, st) {
     debugPrint(
       '[gifFirstFrameProvider] Failed to extract first frame.\n'
-      '  URL  : $gifUrl\n'
+      '  URL  : ${args.url}\n'
       '  Error: $e\n$st',
     );
     frame?.dispose();

@@ -116,7 +116,9 @@ class _Poster extends ConsumerWidget {
     if (url == null || url.isEmpty) {
       return const Center(child: _FallbackIcon());
     }
-    final frame = ref.watch(gifLastFrameProvider(url)).valueOrNull;
+    final frame = ref
+        .watch(gifLastFrameProvider((url: url, targetWidth: null)))
+        .valueOrNull;
     if (frame == null) return const SizedBox.shrink();
     return RawImage(image: frame, fit: BoxFit.contain);
   }

@@ -174,7 +174,8 @@ class _ExerciseRow extends ConsumerWidget {
     if (url == null || url.isEmpty) {
       inner = _iconFallback();
     } else {
-      final frameAsync = ref.watch(gifLastFrameProvider(url));
+      final frameAsync = ref.watch(gifLastFrameProvider(
+          (url: url, targetWidth: kGifThumbnailDecodeWidth)));
       inner = frameAsync.when(
         loading: () => const SizedBox.shrink(),
         error: (_, __) => _iconFallback(),

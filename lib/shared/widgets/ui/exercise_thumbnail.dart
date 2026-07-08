@@ -43,8 +43,11 @@ class ExerciseThumbnail extends ConsumerWidget {
     if (url == null || url.isEmpty) {
       inner = _fallback(ref);
     } else {
-      final frameAsync = ref.watch(
-          fastFrame ? gifFirstFrameProvider(url) : gifLastFrameProvider(url));
+      final frameAsync = ref.watch(fastFrame
+          ? gifFirstFrameProvider(
+              (url: url, targetWidth: kGifThumbnailDecodeWidth))
+          : gifLastFrameProvider(
+              (url: url, targetWidth: kGifThumbnailDecodeWidth)));
       inner = frameAsync.when(
         loading: () => Container(color: surface.surface3),
         error: (_, __) => _fallback(ref),
@@ -78,8 +81,10 @@ class ExerciseThumbnail extends ConsumerWidget {
           HapticFeedback.lightImpact();
           if (gifUrl != null && gifUrl!.isNotEmpty) {
             ref.invalidate(fastFrame
-                ? gifFirstFrameProvider(gifUrl!)
-                : gifLastFrameProvider(gifUrl!));
+                ? gifFirstFrameProvider(
+                    (url: gifUrl!, targetWidth: kGifThumbnailDecodeWidth))
+                : gifLastFrameProvider(
+                    (url: gifUrl!, targetWidth: kGifThumbnailDecodeWidth)));
           }
         },
         child: Center(

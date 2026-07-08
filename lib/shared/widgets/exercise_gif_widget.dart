@@ -68,7 +68,8 @@ class ExerciseGifWidget extends StatelessWidget {
     // a plain Image (MemoryImage). No codec animation, minimal memory.
     return Consumer(
       builder: (context, ref, child) {
-        final frameAsync = ref.watch(gifLastFrameProvider(gifUrl!));
+        final frameAsync =
+            ref.watch(gifLastFrameProvider((url: gifUrl!, targetWidth: null)));
 
         return ClipRRect(
           borderRadius: borderRadius,
