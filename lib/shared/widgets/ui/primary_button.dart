@@ -35,9 +35,11 @@ class PrimaryButton extends StatelessWidget {
     final accent = context.accent;
     final disabled = isLoading || onPressed == null;
     final button = PressableScale(
-      child: SizedBox(
-        height: 52,
-        width: isFullWidth ? double.infinity : null,
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          minHeight: 52,
+          minWidth: isFullWidth ? double.infinity : 0.0,
+        ),
         child: ElevatedButton(
           onPressed: disabled
               ? null
@@ -48,6 +50,7 @@ class PrimaryButton extends StatelessWidget {
           style: ElevatedButton.styleFrom(
             backgroundColor: accent.base,
             foregroundColor: accent.onAccent,
+            minimumSize: Size(isFullWidth ? double.infinity : 88, 52),
             // Busy state stays on-brand (dimmed accent), not the default gray
             // "disabled" look — it reads as "working", not "unavailable".
             disabledBackgroundColor: accent.base.withValues(alpha: 0.6),

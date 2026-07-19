@@ -49,8 +49,8 @@ class RestTimerBar extends ConsumerWidget {
           child: _AmbientPulse(
             radius: AppRadius.cardAll,
             color: rest,
-            child: SizedBox(
-              height: kRestTileHeight,
+            child: Container(
+              constraints: const BoxConstraints(minHeight: kRestTileHeight),
               child: DecoratedBox(
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
@@ -164,7 +164,7 @@ class _RestAction extends StatelessWidget {
         borderRadius: BorderRadius.circular(AppRadius.buttonSecondary),
         onTap: onTap,
         child: Container(
-          height: 44,
+          height: 48,
           padding: const EdgeInsets.symmetric(horizontal: 16),
           alignment: Alignment.center,
           child: Text(

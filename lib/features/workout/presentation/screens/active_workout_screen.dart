@@ -1,5 +1,7 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/semantics.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gymlog/core/providers/settings_provider.dart';
@@ -8,6 +10,7 @@ import 'package:gymlog/core/utils/units.dart';
 import 'package:gymlog/features/workout/domain/active_workout_state.dart';
 import 'package:gymlog/features/workout/presentation/providers/active_workout_provider.dart';
 import 'package:gymlog/features/workout/presentation/providers/rest_timer_provider.dart';
+import 'package:gymlog/features/workout/presentation/providers/workout_event_provider.dart';
 import 'package:gymlog/features/workout/presentation/providers/workout_timer_provider.dart';
 import 'package:gymlog/shared/widgets/ui/primary_button.dart';
 import 'package:gymlog/core/database/database.dart';
@@ -36,6 +39,8 @@ class ActiveWorkoutScreen extends ConsumerStatefulWidget {
 }
 
 class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
+  StreamSubscription<ActiveWorkoutEvent>? _eventSubscription;
+
   @override
   void initState() {
     super.initState();
@@ -43,7 +48,72 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
       if (ref.read(activeWorkoutProvider) == null) {
         ref.read(activeWorkoutProvider.notifier).startWorkout();
       }
+      _eventSubscription =
+          ref.read(workoutEventBusProvider).stream.listen(_handleWorkoutEvent);
     });
+  }
+
+  @override
+  void dispose() {
+    _eventSubscription?.cancel();
+    super.dispose();
+  }
+
+  void _handleWorkoutEvent(ActiveWorkoutEvent event) {
+    if (!mounted) return;
+    switch (event) {
+      case SetRemovedEvent(
+          exerciseIndex: final exIdx,
+          setIndex: final setIdx,
+          removedSet: final set
+        ):
+        _showSetRemovedSnackbar(exIdx, setIdx, set);
+        break;
+      case TimerStartedEvent(seconds: final secs):
+        SemanticsService.sendAnnouncement(
+          View.of(context),
+          'Rest timer started: $secs seconds',
+          TextDirection.ltr,
+        );
+        break;
+      case TimerCancelledEvent():
+        SemanticsService.sendAnnouncement(
+          View.of(context),
+          'Rest timer skipped',
+          TextDirection.ltr,
+        );
+        break;
+      case TimerExpiredEvent():
+        SemanticsService.sendAnnouncement(
+          View.of(context),
+          'Rest timer expired',
+          TextDirection.ltr,
+        );
+        break;
+      default:
+        break;
+    }
+  }
+
+  void _showSetRemovedSnackbar(
+      int exerciseIndex, int setIndex, WorkoutSetState removedSet) {
+    final messenger = ScaffoldMessenger.of(context);
+    messenger.clearSnackBars();
+    messenger.showSnackBar(SnackBar(
+      content: Text('Set removed', style: AppText.button()),
+      action: SnackBarAction(
+        label: 'Undo',
+        textColor: context.accent.light,
+        onPressed: () {
+          ref
+              .read(activeWorkoutProvider.notifier)
+              .insertSet(exerciseIndex, setIndex, removedSet);
+        },
+      ),
+      behavior: SnackBarBehavior.floating,
+      backgroundColor: context.surface.bgSurface,
+      duration: const Duration(seconds: 4),
+    ));
   }
 
   Future<void> _confirmDiscard() async {
@@ -149,9 +219,16 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
         .toggleSetCompletion(exerciseIndex, setIndex);
 
     if (!wasCompleted && !isEditing) {
-      final seconds = ref.read(defaultRestSecondsProvider);
+      final exercise = workout.exercises[exerciseIndex];
+      final int seconds =
+          exercise.restSecondsOverride ?? ref.read(defaultRestSecondsProvider);
       if (seconds > 0) {
-        ref.read(restTimerProvider.notifier).start(seconds);
+        ref.read(restTimerProvider.notifier).start(
+              seconds: seconds,
+              workoutId: workout.id,
+              exerciseId: exercise.exerciseId,
+              setId: exercise.sets[setIndex].id,
+            );
       }
     }
   }
@@ -345,42 +422,47 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
                           onPressed:
                               isEditing ? () => context.pop() : _confirmDiscard,
                         ),
-                        const Spacer(),
-                        MergeSemantics(
-                          child: Consumer(
-                            builder: (context, ref, child) {
-                              final timer = ref.watch(workoutTimerProvider);
-                              final totals = ref.watch(sessionTotalsProvider);
-                              final volumeKg = totals.$1;
-                              final completedSets = totals.$2;
+                        Expanded(
+                          child: Center(
+                            child: MergeSemantics(
+                              child: Consumer(
+                                builder: (context, ref, child) {
+                                  final timer = ref.watch(workoutTimerProvider);
+                                  final totals =
+                                      ref.watch(sessionTotalsProvider);
+                                  final volumeKg = totals.$1;
+                                  final completedSets = totals.$2;
 
-                              return Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Text(
-                                    isEditing ? 'Edit Workout' : timer,
-                                    style: isEditing
-                                        ? AppText.cardTitle(
-                                            color: surface.textPrimary)
-                                        : AppText.heroStat(
-                                            color: surface.textPrimary),
-                                  ),
-                                  const SizedBox(height: 1),
-                                  Text(
-                                    isEditing
-                                        ? timer
-                                        : completedSets == 0
-                                            ? 'Log your first set'
-                                            : '${groupThousands(kgToDisplay(volumeKg, globalUnit))} $globalUnit · $completedSets set${completedSets != 1 ? 's' : ''}',
-                                    style: AppText.statLabel(
-                                        color: surface.textSecondary),
-                                  ),
-                                ],
-                              );
-                            },
+                                  return Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Text(
+                                        isEditing ? 'Edit Workout' : timer,
+                                        textAlign: TextAlign.center,
+                                        style: isEditing
+                                            ? AppText.cardTitle(
+                                                color: surface.textPrimary)
+                                            : AppText.heroStat(
+                                                color: surface.textPrimary),
+                                      ),
+                                      const SizedBox(height: 1),
+                                      Text(
+                                        isEditing
+                                            ? timer
+                                            : completedSets == 0
+                                                ? 'Log your first set'
+                                                : '${groupThousands(kgToDisplay(volumeKg, globalUnit))} $globalUnit · $completedSets set${completedSets != 1 ? 's' : ''}',
+                                        textAlign: TextAlign.center,
+                                        style: AppText.statLabel(
+                                            color: surface.textSecondary),
+                                      ),
+                                    ],
+                                  );
+                                },
+                              ),
+                            ),
                           ),
                         ),
-                        const Spacer(),
                         // RIGHT: Finish / Save only — the ⋯ overflow is removed.
                         PrimaryButton(
                           label: isEditing ? 'Save' : 'Finish',
@@ -466,37 +548,7 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
                             },
                             onAddSet: () => notifier.addSet(index),
                             onRemoveSet: (setIdx) {
-                              final workout = ref.read(activeWorkoutProvider);
-                              if (workout == null ||
-                                  index >= workout.exercises.length) {
-                                return;
-                              }
-                              final ex = workout.exercises[index];
-                              if (setIdx < 0 || setIdx >= ex.sets.length) {
-                                return;
-                              }
-                              final removedSet = ex.sets[setIdx];
-
                               notifier.removeSet(index, setIdx);
-
-                              final messenger = ScaffoldMessenger.of(context);
-                              messenger.clearSnackBars();
-                              messenger.showSnackBar(SnackBar(
-                                content: Text('Set removed',
-                                    style: AppText.button()),
-                                action: SnackBarAction(
-                                  label: 'Undo',
-                                  textColor: context.accent.light,
-                                  onPressed: () {
-                                    ref
-                                        .read(activeWorkoutProvider.notifier)
-                                        .insertSet(index, setIdx, removedSet);
-                                  },
-                                ),
-                                behavior: SnackBarBehavior.floating,
-                                backgroundColor: context.surface.bgSurface,
-                                duration: const Duration(seconds: 4),
-                              ));
                             },
                             onSetChanged: (updatedSet) {
                               final workout = ref.read(activeWorkoutProvider);

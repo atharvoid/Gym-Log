@@ -8,12 +8,14 @@ import 'package:gymlog/core/utils/units.dart';
 import 'package:gymlog/features/workout/domain/active_workout_state.dart';
 import 'package:gymlog/shared/widgets/ui/time_range_filter.dart';
 
+import 'package:gymlog/core/models/measurement_type.dart';
+
 // ── Shared column geometry ────────────────────────────────────────
 // The header row (ExerciseBlock) and every data row (SetRow) consume these
 // SAME constants so a caption can never drift from the column it labels.
 // Layout, left → right: SET · PREVIOUS · KG · REPS · ✓
-const double kSetColW = 44; // fixed — "1" / "W" / "D" / "F"
-const double kCheckColW = 44; // fixed — completion square
+const double kSetColW = 48; // fixed — "1" / "W" / "D" / "F"
+const double kCheckColW = 48; // fixed — completion square
 const int kPrevFlex = 5; // "999kg x 99" — read-only reference, widest
 const int kWeightFlex = 4; // editable number
 const int kRepsFlex = 4; // editable number
@@ -24,16 +26,26 @@ const int kRepsFlex = 4; // editable number
 /// (no boxes), the unit lives in the column header, and the set TYPE letter
 /// replaces the set NUMBER in the SET column. Set-type colors come from the
 /// shared [SetType] enum so they're identical to every other screen.
+///
+/// ## P0-02 adaptive layout
+///
+/// | [MeasurementType]   | weight-slot column | reps-slot column |
+/// |---------------------|--------------------|------------------|
+/// | weightAndReps       | kg / lbs           | REPS             |
+/// | repsOnly            | hidden             | REPS             |
+/// | duration            | hidden             | SECS             |
+/// | distance            | DIST (raw metres)  | hidden           |
 class SetRow extends StatefulWidget {
   final int setIndex;
   final WorkoutSetState setData;
+  final MeasurementType measurementType;
 
   /// Previous-session baseline for THIS set index. Null when no prior history.
   final double? previousWeight;
   final int? previousReps;
 
   /// Display/input unit ('kg' | 'lbs'). Storage stays kg; conversion happens
-  /// at this boundary only.
+  /// at this boundary only (ignored for [MeasurementType.distance]).
   final String unit;
   final ValueChanged<WorkoutSetState> onChanged;
   final VoidCallback onToggleComplete;
@@ -42,6 +54,7 @@ class SetRow extends StatefulWidget {
     super.key,
     required this.setIndex,
     required this.setData,
+    this.measurementType = MeasurementType.weightAndReps,
     this.previousWeight,
     this.previousReps,
     this.unit = 'kg',
@@ -59,13 +72,32 @@ class _SetRowState extends State<SetRow> {
   final _weightFocus = FocusNode();
   final _repsFocus = FocusNode();
 
-  String _formatWeightField(double kg) {
-    if (kg <= 0) return '';
-    final display = kgToDisplay(kg, widget.unit);
+  /// Rapid-tap guard — prevents a fast double-tap from toggling twice.
+  bool _completing = false;
+
+  /// When true, empty required fields briefly flash in the accent tint to
+  /// signal which value is missing (instead of a silent non-response).
+  bool _showValidationHint = false;
+
+  // ── Formatting ────────────────────────────────────────────────────────────
+
+  /// Formats a stored value for display in the weight-slot field.
+  /// For [MeasurementType.distance] the value is raw metres — no unit
+  /// conversion. For all others the user's preferred kg/lbs is applied.
+  String _formatWeightField(double? value) {
+    if (value == null || value <= 0) return '';
+    if (widget.measurementType == MeasurementType.distance) {
+      return value == value.truncateToDouble()
+          ? value.toInt().toString()
+          : value.toStringAsFixed(1);
+    }
+    final display = kgToDisplay(value, widget.unit);
     return display == display.truncateToDouble()
         ? display.toInt().toString()
         : display.toStringAsFixed(1);
   }
+
+  // ── Lifecycle ─────────────────────────────────────────────────────────────
 
   @override
   void initState() {
@@ -81,6 +113,28 @@ class _SetRowState extends State<SetRow> {
   @override
   void didUpdateWidget(covariant SetRow oldWidget) {
     super.didUpdateWidget(oldWidget);
+
+    // ── Measurement type changed ──────────────────────────────────────────
+    // This can happen when the catalog resolves after exercise addition, or
+    // when replaceExercise creates a new widget on the same key. Reset
+    // controllers that are no longer applicable for the new type.
+    if (widget.measurementType != oldWidget.measurementType) {
+      if (!widget.measurementType.showsWeightColumn) {
+        _weightController.text = '';
+      } else if (!_weightFocus.hasFocus) {
+        final t = _formatWeightField(widget.setData.weightKg);
+        _weightController.value = _weightController.value.copyWith(
+          text: t,
+          selection: TextSelection.collapsed(offset: t.length),
+        );
+      }
+      if (!widget.measurementType.showsRepsColumn) {
+        _repsController.text = '';
+      }
+      return; // skip the per-field refresh below — type change is authoritative
+    }
+
+    // ── Weight or unit changed externally ────────────────────────────────
     final weightChanged = widget.setData.weightKg != oldWidget.setData.weightKg;
     final unitChanged = widget.unit != oldWidget.unit;
     if ((weightChanged || unitChanged) && !_weightFocus.hasFocus) {
@@ -110,17 +164,56 @@ class _SetRowState extends State<SetRow> {
     super.dispose();
   }
 
-  bool get _canComplete =>
-      (widget.setData.weightKg > 0 || widget.previousWeight != null) &&
-      (widget.setData.reps > 0 || widget.previousReps != null);
+  // ── Completion logic ──────────────────────────────────────────────────────
 
-  /// Last session's performance for this set index → "15kg x 12".
+  /// Whether the set has enough data to be marked complete.
+  bool get _canComplete => switch (widget.measurementType) {
+        MeasurementType.weightAndReps =>
+          ((widget.setData.weightKg != null && widget.setData.weightKg! > 0) ||
+                  widget.previousWeight != null) &&
+              (widget.setData.reps > 0 || widget.previousReps != null),
+        MeasurementType.distance =>
+          (widget.setData.weightKg != null && widget.setData.weightKg! > 0) ||
+              widget.previousWeight != null,
+        _ => // repsOnly, duration
+          widget.setData.reps > 0 || widget.previousReps != null,
+      };
+
+  // ── Validation flash targets ───────────────────────────────────────────
+
+  bool get _weightShouldFlash =>
+      _showValidationHint &&
+      widget.measurementType.showsWeightColumn &&
+      (widget.setData.weightKg == null || widget.setData.weightKg! <= 0) &&
+      widget.previousWeight == null;
+
+  bool get _repsShouldFlash =>
+      _showValidationHint &&
+      widget.measurementType.showsRepsColumn &&
+      widget.setData.reps <= 0 &&
+      widget.previousReps == null;
+
+  // ── Previous-session label ────────────────────────────────────────────────
+
+  /// Last session's performance for this set index.
+  /// Rendered as: "15kg x 12" | "12 reps" | "60s" | "400m" | null.
   String? get _previousLabel {
     final w = widget.previousWeight;
     final r = widget.previousReps;
-    if (w == null || r == null) return null;
-    return '${formatWeight(w, widget.unit)}${widget.unit} x $r';
+    if (w == null && r == null) return null;
+    return switch (widget.measurementType) {
+      MeasurementType.weightAndReps => w != null
+          ? '${formatWeight(w, widget.unit)}${widget.unit} x ${r ?? 0}'
+          : (r != null ? '$r reps' : null),
+      MeasurementType.distance => w != null
+          ? '${w == w.truncateToDouble() ? w.toInt() : w.toStringAsFixed(1)}m'
+          : null,
+      MeasurementType.duration => r != null ? '${r}s' : null,
+      _ => r != null ? '$r reps' : null, // repsOnly
+    };
   }
+
+  // ── Set-type picker ───────────────────────────────────────────────────────
 
   Future<void> _pickSetType() async {
     final selected = await showBrandedPickerSheet<String>(
@@ -143,6 +236,8 @@ class _SetRowState extends State<SetRow> {
     }
   }
 
+  // ── Widgets ───────────────────────────────────────────────────────────────
+
   /// SET column content: the type letter REPLACES the number (Hevy pattern).
   /// Normal → set number; W/D/F → coloured letter (colors from [SetType]).
   Widget _setTypeIndicator() {
@@ -161,8 +256,8 @@ class _SetRowState extends State<SetRow> {
   /// directly on the row surface; focus is signalled only by the cursor
   /// (tinted with the active accent palette).
   ///
-  /// Horizontal padding expands the tap target so a finger lands on the
-  /// number field with room, not edge-to-edge.
+  /// When [flashHint] is true the hint text briefly renders in a dim accent
+  /// tint, signalling which field is missing a required value.
   Widget _numberField({
     required TextEditingController controller,
     required FocusNode focusNode,
@@ -171,6 +266,7 @@ class _SetRowState extends State<SetRow> {
     required ValueChanged<String> onChanged,
     TextInputAction action = TextInputAction.next,
     String? hintText,
+    bool flashHint = false,
   }) {
     final completed = widget.setData.isCompleted;
     return Semantics(
@@ -189,12 +285,16 @@ class _SetRowState extends State<SetRow> {
             FilteringTextInputFormatter.allow(RegExp(r'[0-9.]'))
           else
             FilteringTextInputFormatter.digitsOnly,
-          LengthLimitingTextInputFormatter(isDecimal ? 6 : 3),
+          LengthLimitingTextInputFormatter(isDecimal ? 6 : 5),
         ],
         style: AppText.value(),
         decoration: InputDecoration(
           hintText: hintText ?? '0',
-          hintStyle: AppText.value(color: AppColors.textTertiary),
+          hintStyle: AppText.value(
+            color: flashHint
+                ? context.accent.base.withValues(alpha: 0.55)
+                : AppColors.textTertiary,
+          ),
           border: InputBorder.none,
           focusedBorder: InputBorder.none,
           enabledBorder: InputBorder.none,
@@ -231,8 +331,8 @@ class _SetRowState extends State<SetRow> {
             : null,
       ),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
-      child: SizedBox(
-        height: 44,
+      child: Container(
+        constraints: const BoxConstraints(minHeight: 48),
         child: Row(
           children: [
             // ── SET — type letter replaces number, opens the type picker ──
@@ -257,7 +357,7 @@ class _SetRowState extends State<SetRow> {
               ),
             ),
 
-            // ── PREVIOUS — read-only "15kg x 12" from the last session ────
+            // ── PREVIOUS — read-only reference from the last session ────
             Expanded(
               flex: kPrevFlex,
               child: Align(
@@ -277,63 +377,97 @@ class _SetRowState extends State<SetRow> {
               ),
             ),
 
-            // ── KG — bare number, unit lives in the header ────────────
+            // ── WEIGHT / DISTANCE — hidden for repsOnly and duration ──────
             Expanded(
               flex: kWeightFlex,
-              child: _numberField(
-                controller: _weightController,
-                focusNode: _weightFocus,
-                isDecimal: true,
-                semanticLabel: 'Weight in ${widget.unit}',
-                hintText: widget.previousWeight != null
-                    ? _formatWeightField(widget.previousWeight!)
-                    : '0',
-                onChanged: (val) {
-                  final parsed = double.tryParse(val);
-                  if (parsed != null) {
-                    final kg =
-                        displayToKg(parsed, widget.unit).clamp(0.0, 999.5);
-                    widget.onChanged(widget.setData.copyWith(weightKg: kg));
-                  }
-                },
-              ),
+              child: !widget.measurementType.showsWeightColumn
+                  ? const SizedBox.shrink()
+                  : _numberField(
+                      controller: _weightController,
+                      focusNode: _weightFocus,
+                      isDecimal: true,
+                      semanticLabel:
+                          widget.measurementType == MeasurementType.distance
+                              ? 'Distance in metres'
+                              : 'Weight in ${widget.unit}',
+                      hintText: widget.previousWeight != null
+                          ? _formatWeightField(widget.previousWeight!)
+                          : '0',
+                      flashHint: _weightShouldFlash,
+                      onChanged: (val) {
+                        if (val.trim().isEmpty) {
+                          widget.onChanged(
+                              widget.setData.copyWith(weightKg: null));
+                          return;
+                        }
+                        final parsed = double.tryParse(val);
+                        if (parsed != null) {
+                          // Distance: store raw value — no kg/lbs conversion.
+                          // Weight: convert from the user's display unit to kg.
+                          final stored =
+                              widget.measurementType == MeasurementType.distance
+                                  ? parsed.clamp(0.0, 99999.0)
+                                  : displayToKg(parsed, widget.unit)
+                                      .clamp(0.0, 999.5);
+                          widget.onChanged(
+                              widget.setData.copyWith(weightKg: stored));
+                        }
+                      },
+                    ),
             ),
 
-            // ── REPS — bare number ───────────────────────────────
+            // ── REPS / SECS — hidden for distance ───────────────────────
             Expanded(
               flex: kRepsFlex,
-              child: _numberField(
-                controller: _repsController,
-                focusNode: _repsFocus,
-                isDecimal: false,
-                action: TextInputAction.done,
-                semanticLabel: 'Reps',
-                hintText: widget.previousReps != null
-                    ? '${widget.previousReps!}'
-                    : '0',
-                onChanged: (val) {
-                  final parsed = int.tryParse(val);
-                  if (parsed != null) {
-                    widget.onChanged(
-                        widget.setData.copyWith(reps: parsed.clamp(0, 999)));
-                  }
-                },
-              ),
+              child: !widget.measurementType.showsRepsColumn
+                  ? const SizedBox.shrink()
+                  : _numberField(
+                      controller: _repsController,
+                      focusNode: _repsFocus,
+                      isDecimal: false,
+                      action: TextInputAction.done,
+                      semanticLabel:
+                          widget.measurementType.repsFieldSemanticLabel,
+                      hintText: widget.previousReps != null
+                          ? '${widget.previousReps!}'
+                          : '0',
+                      flashHint: _repsShouldFlash,
+                      onChanged: (val) {
+                        final parsed = int.tryParse(val);
+                        if (parsed != null) {
+                          widget.onChanged(widget.setData
+                              .copyWith(reps: parsed.clamp(0, 99999)));
+                        }
+                      },
+                    ),
             ),
 
-            // ── Completion — green square (done) / outline (ready/idle) ────
+            // ── Completion — always tappable; validation fires on miss ───
             SizedBox(
               width: kCheckColW,
               child: Semantics(
                 button: true,
                 label: isCompleted ? 'Mark set incomplete' : 'Complete set',
                 child: GestureDetector(
-                  onTap: isCompleted || _canComplete
-                      ? () {
-                          if (!isCompleted) HapticFeedback.mediumImpact();
-                          _onToggleComplete();
+                  onTap: () {
+                    if (isCompleted) {
+                      _onToggleComplete();
+                      return;
+                    }
+                    if (!_canComplete) {
+                      // Show which field(s) are empty for 1.4 s, then fade.
+                      HapticFeedback.heavyImpact();
+                      setState(() => _showValidationHint = true);
+                      Future.delayed(const Duration(milliseconds: 1400), () {
+                        if (mounted) {
+                          setState(() => _showValidationHint = false);
                         }
-                      : null,
+                      });
+                      return;
+                    }
+                    HapticFeedback.mediumImpact();
+                    _onToggleComplete();
+                  },
                   behavior: HitTestBehavior.opaque,
                   child: Center(
                     child: TweenAnimationBuilder<double>(
@@ -388,21 +522,28 @@ class _SetRowState extends State<SetRow> {
     );
   }
 
-  /// Commits any available previous-session values into empty fields, then
-  /// toggles completion. If the user already typed a value, it is preserved.
+  /// Backfills empty fields from the previous session, then toggles completion.
+  /// Guards against rapid double-taps with [_completing].
   void _onToggleComplete() {
+    if (_completing) return;
+    _completing = true;
+    Future.delayed(const Duration(milliseconds: 400), () {
+      if (mounted) _completing = false;
+    });
+
     if (!widget.setData.isCompleted) {
-      // Commit BOTH previous-session values in ONE mutation. The old code
-      // emitted two onChanged calls, each derived from the STALE widget.setData,
-      // so the second overwrote the first (weight reset to 0, and a multi-digit
-      // value could render as a single leftover digit). Build one updated set
-      // from a single base and emit it once.
       var next = widget.setData;
-      if (next.weightKg <= 0 && widget.previousWeight != null) {
+      // Backfill weight-slot from previous session if still empty.
+      if (widget.measurementType.showsWeightColumn &&
+          (next.weightKg == null || next.weightKg! <= 0) &&
+          widget.previousWeight != null) {
         next = next.copyWith(weightKg: widget.previousWeight!);
         _weightController.text = _formatWeightField(widget.previousWeight!);
       }
-      if (next.reps <= 0 && widget.previousReps != null) {
+      // Backfill reps-slot from previous session if still empty.
+      if (widget.measurementType.showsRepsColumn &&
+          next.reps <= 0 &&
+          widget.previousReps != null) {
         next = next.copyWith(reps: widget.previousReps!);
         _repsController.text = widget.previousReps!.toString();
       }

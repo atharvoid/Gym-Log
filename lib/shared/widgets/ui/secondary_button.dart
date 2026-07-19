@@ -47,14 +47,17 @@ class SecondaryButton extends StatelessWidget {
         ? BorderSide(color: accentColors.base.withValues(alpha: 0.45))
         : BorderSide.none;
 
-    return SizedBox(
-      height: 48,
-      width: isFullWidth ? double.infinity : null,
+    return ConstrainedBox(
+      constraints: BoxConstraints(
+        minHeight: 48,
+        minWidth: isFullWidth ? double.infinity : 0.0,
+      ),
       child: ElevatedButton(
         onPressed: onPressed,
         style: ElevatedButton.styleFrom(
           backgroundColor: bg,
           foregroundColor: fg,
+          minimumSize: Size(isFullWidth ? double.infinity : 88, 48),
           disabledBackgroundColor: solid
               ? accentColors.base.withValues(alpha: 0.6)
               : AppColors.bgSurface,

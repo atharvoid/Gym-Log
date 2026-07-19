@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:gymlog/core/models/measurement_type.dart';
 import 'package:gymlog/core/theme/app_colors.dart';
 import 'package:gymlog/core/theme/app_text.dart';
-import 'package:gymlog/core/database/database.dart';
+import 'package:gymlog/core/theme/dynamic_accent_theme.dart';
 import 'package:gymlog/features/workout/domain/active_workout_state.dart';
 import 'package:gymlog/shared/widgets/ui/app_card.dart';
 import 'package:gymlog/shared/widgets/ui/exercise_thumbnail.dart';
@@ -97,31 +98,42 @@ class ExerciseBlock extends ConsumerWidget {
     final exerciseMeta = ref.watch(activeWorkoutProvider.select((state) {
       if (state == null || exerciseIndex >= state.exercises.length) return null;
       final ex = state.exercises[exerciseIndex];
-      // Return setIds as a joined string so Riverpod's == comparison suppresses
-      // ExerciseBlock rebuilds when only a different card's set is edited.
-      return (ex.exerciseId, ex.name, ex.sets.map((s) => s.id).join(','));
+      // Include measurementType in the tuple so the column headers are always
+      // accurate even before the catalog resolves (de == null).
+      return (
+        ex.exerciseId,
+        ex.name,
+        ex.sets.map((s) => s.id).join(','),
+        ex.measurementType, // $4 — authoritative source
+      );
     }));
 
     if (exerciseMeta == null) return const SizedBox.shrink();
 
     final exerciseId = exerciseMeta.$1;
     final exerciseName = exerciseMeta.$2;
-    // Split back to a list for indexed access in the set rows.
     final setIds =
         exerciseMeta.$3.isEmpty ? const <String>[] : exerciseMeta.$3.split(',');
+    final stateMType = exerciseMeta.$4;
 
-    final catalogById = ref.watch(exerciseCatalogByIdProvider).valueOrNull ??
-        const <int, Exercise>{};
+    final catalogById =
+        ref.watch(exerciseCatalogByIdProvider).valueOrNull ?? {};
     final de = catalogById[exerciseId];
+    // Use WorkoutExerciseState.measurementType as the primary source;
+    // fall back to catalog only when the state string is somehow empty.
+    final mType = MeasurementType.fromString(
+      stateMType.isNotEmpty ? stateMType : de?.measurementType,
+      equipment: de?.equipment,
+    );
 
     final unit = ref.watch(exerciseUnitProvider(exerciseId));
     final previousSets =
         ref.watch(previousSessionSetsProvider(exerciseId)).valueOrNull ??
             const [];
 
-    return RepaintBoundary(
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 7),
       child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 7),
         decoration: AppCard.decoration(),
         clipBehavior: Clip.antiAlias,
         child: Column(
@@ -148,7 +160,6 @@ class ExerciseBlock extends ConsumerWidget {
                           : null,
                       child: Text(
                         exerciseName,
-                        // S3: text-depth shadow on exercise card title
                         style: AppText.cardTitle(
                             shadows: AppText.depthFor(context)),
                         maxLines: 1,
@@ -156,6 +167,8 @@ class ExerciseBlock extends ConsumerWidget {
                       ),
                     ),
                   ),
+                  const SizedBox(width: 8),
+                  _RestOverrideChip(exerciseIndex: exerciseIndex),
                   IconButton(
                     tooltip: 'Exercise options',
                     constraints:
@@ -188,40 +201,61 @@ class ExerciseBlock extends ConsumerWidget {
                   ),
                   Expanded(
                     flex: kWeightFlex,
-                    child: Center(
-                      child: Semantics(
-                        button: onUnitTap != null,
-                        label:
-                            'Weight unit ${unit.toUpperCase()}, tap to change',
-                        child: GestureDetector(
-                          onTap: onUnitTap == null
-                              ? null
-                              : () {
-                                  HapticFeedback.selectionClick();
-                                  onUnitTap!();
-                                },
-                          behavior: HitTestBehavior.opaque,
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Icon(Icons.fitness_center_rounded,
-                                  size: 11, color: AppColors.textSecondary),
-                              const SizedBox(width: 3),
-                              Text(unit.toUpperCase(),
-                                  style: AppText.columnHeader(
-                                      color: AppColors.textSecondary)),
-                            ],
+                    child: !mType.showsWeightColumn
+                        ? const SizedBox.shrink()
+                        : Center(
+                            child: Semantics(
+                              button: onUnitTap != null && mType.requiresWeight,
+                              label: mType.requiresWeight
+                                  ? 'Weight unit ${unit.toUpperCase()}, tap to change'
+                                  : 'Distance column',
+                              child: GestureDetector(
+                                onTap:
+                                    (mType.requiresWeight && onUnitTap != null)
+                                        ? () {
+                                            HapticFeedback.selectionClick();
+                                            onUnitTap!();
+                                          }
+                                        : null,
+                                behavior: HitTestBehavior.opaque,
+                                child: Container(
+                                  constraints: const BoxConstraints(
+                                    minWidth: 48,
+                                    minHeight: 48,
+                                  ),
+                                  alignment: Alignment.center,
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(
+                                        mType.isDistance
+                                            ? Icons.straighten_rounded
+                                            : Icons.fitness_center_rounded,
+                                        size: 11,
+                                        color: AppColors.textSecondary,
+                                      ),
+                                      const SizedBox(width: 3),
+                                      Text(
+                                        mType.fixedWeightColumnLabel ??
+                                            unit.toUpperCase(),
+                                        style: AppText.columnHeader(
+                                            color: AppColors.textSecondary),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
                           ),
-                        ),
-                      ),
-                    ),
                   ),
                   Expanded(
                     flex: kRepsFlex,
                     child: Center(
-                      child: Text('REPS',
-                          style: AppText.columnHeader(
-                              color: AppColors.textSecondary)),
+                      child: Text(
+                        mType.repsColumnLabel,
+                        style: AppText.columnHeader(
+                            color: AppColors.textSecondary),
+                      ),
                     ),
                   ),
                   const SizedBox(
@@ -236,7 +270,7 @@ class ExerciseBlock extends ConsumerWidget {
             ),
             const SizedBox(height: 4),
 
-            // ── Sets — swipe left to delete (locked once completed) ──
+            // ── Sets ──
             ...setIds.asMap().entries.map((entry) {
               final setIndex = entry.key;
               final setId = entry.value;
@@ -263,6 +297,7 @@ class ExerciseBlock extends ConsumerWidget {
                     key: ValueKey(setData.id),
                     setIndex: setIndex,
                     setData: setData,
+                    measurementType: mType,
                     previousWeight: prevSet?.weightKg,
                     previousReps: prevSet?.reps,
                     unit: unit,
@@ -308,6 +343,302 @@ class ExerciseBlock extends ConsumerWidget {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _RestOverrideChip extends ConsumerWidget {
+  final int exerciseIndex;
+
+  const _RestOverrideChip({required this.exerciseIndex});
+
+  String _formatDuration(int totalSeconds) {
+    final m = totalSeconds ~/ 60;
+    final s = totalSeconds % 60;
+    return '$m:${s.toString().padLeft(2, '0')}';
+  }
+
+  void _showOverrideSheet(BuildContext context, WidgetRef ref,
+      int? currentOverride, int defaultRest) {
+    final accent = context.accent;
+    int tempValue = currentOverride ?? defaultRest;
+
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (sheetCtx) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return SafeArea(
+              top: false,
+              child: Container(
+                decoration: const BoxDecoration(
+                  color: AppColors.surface2,
+                  borderRadius: AppRadius.sheetTop,
+                ),
+                child: SingleChildScrollView(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // Drag handle
+                        Container(
+                          width: 36,
+                          height: 4,
+                          decoration: BoxDecoration(
+                            color: AppColors.borderEmphasis,
+                            borderRadius: BorderRadius.circular(2),
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                        Text(
+                          'Rest Timer Override',
+                          style: AppText.sheetTitle(),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          'Temporary for this exercise in the current workout.',
+                          style: AppText.body(color: AppColors.textSecondary),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 24),
+                        // Duration display & +/- adjusters
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            _AdjustmentButton(
+                              label: '-15s',
+                              onTap: () {
+                                HapticFeedback.selectionClick();
+                                setState(() {
+                                  tempValue = (tempValue - 15).clamp(10, 600);
+                                });
+                              },
+                            ),
+                            const SizedBox(width: 24),
+                            Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  _formatDuration(tempValue),
+                                  style: const TextStyle(
+                                    fontFamily: 'monospace',
+                                    fontSize: 32,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppColors.textPrimary,
+                                  ),
+                                ),
+                                Text(
+                                  tempValue == defaultRest
+                                      ? 'Matches Default'
+                                      : 'Custom Override',
+                                  style: AppText.columnHeader(
+                                    color: tempValue == defaultRest
+                                        ? AppColors.textSecondary
+                                        : accent.light,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(width: 24),
+                            _AdjustmentButton(
+                              label: '+15s',
+                              onTap: () {
+                                HapticFeedback.selectionClick();
+                                setState(() {
+                                  tempValue = (tempValue + 15).clamp(10, 600);
+                                });
+                              },
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 28),
+                        // Presets grid/row
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          alignment: WrapAlignment.center,
+                          children: [
+                            _PresetChip(
+                              label: 'None',
+                              isSelected: currentOverride == null,
+                              onTap: () {
+                                HapticFeedback.lightImpact();
+                                ref
+                                    .read(activeWorkoutProvider.notifier)
+                                    .setRestSecondsOverride(
+                                        exerciseIndex, null);
+                                Navigator.pop(sheetCtx);
+                              },
+                            ),
+                            for (final seconds in [30, 60, 90, 120, 180, 300])
+                              _PresetChip(
+                                label: _formatDuration(seconds),
+                                isSelected: currentOverride == seconds,
+                                onTap: () {
+                                  HapticFeedback.lightImpact();
+                                  ref
+                                      .read(activeWorkoutProvider.notifier)
+                                      .setRestSecondsOverride(
+                                          exerciseIndex, seconds);
+                                  Navigator.pop(sheetCtx);
+                                },
+                              ),
+                          ],
+                        ),
+                        const SizedBox(height: 24),
+                        // Save custom CTA
+                        SizedBox(
+                          width: double.infinity,
+                          height: 50,
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: accent.base,
+                              foregroundColor: accent.onAccent,
+                              elevation: 0,
+                              shape: const RoundedRectangleBorder(
+                                  borderRadius: AppRadius.buttonPrimaryAll),
+                            ),
+                            onPressed: () {
+                              HapticFeedback.lightImpact();
+                              ref
+                                  .read(activeWorkoutProvider.notifier)
+                                  .setRestSecondsOverride(
+                                      exerciseIndex, tempValue);
+                              Navigator.pop(sheetCtx);
+                            },
+                            child: Text('Apply Rest Time',
+                                style: AppText.button(color: accent.onAccent)),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final workout = ref.watch(activeWorkoutProvider);
+    if (workout == null || exerciseIndex >= workout.exercises.length) {
+      return const SizedBox.shrink();
+    }
+    final exercise = workout.exercises[exerciseIndex];
+    final override = exercise.restSecondsOverride;
+    final defaultRest = ref.watch(defaultRestSecondsProvider);
+    final effectiveSecs = override ?? defaultRest;
+
+    final accent = context.accent;
+    final isCustom = override != null;
+
+    return Semantics(
+      button: true,
+      label:
+          'Set rest duration override. Currently ${_formatDuration(effectiveSecs)}',
+      child: Material(
+        color:
+            isCustom ? accent.base.withValues(alpha: 0.16) : AppColors.surface3,
+        borderRadius: BorderRadius.circular(16),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(16),
+          onTap: () => _showOverrideSheet(context, ref, override, defaultRest),
+          child: Container(
+            constraints: const BoxConstraints(minHeight: 48, minWidth: 48),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            alignment: Alignment.center,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.timer_outlined,
+                  size: 14,
+                  color: isCustom ? accent.light : AppColors.textSecondary,
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  _formatDuration(effectiveSecs),
+                  style: AppText.columnHeader(
+                    color: isCustom ? accent.light : AppColors.textSecondary,
+                  ).copyWith(fontWeight: isCustom ? FontWeight.bold : null),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _AdjustmentButton extends StatelessWidget {
+  final String label;
+  final VoidCallback onTap;
+
+  const _AdjustmentButton({required this.label, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: AppColors.surface3,
+      borderRadius: BorderRadius.circular(8),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(8),
+        onTap: onTap,
+        child: Container(
+          width: 54,
+          height: 48,
+          alignment: Alignment.center,
+          child: Text(
+            label,
+            style: AppText.body(color: AppColors.textPrimary)
+                .copyWith(fontWeight: FontWeight.bold),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _PresetChip extends StatelessWidget {
+  final String label;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  const _PresetChip({
+    required this.label,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final accent = context.accent;
+    return Material(
+      color: isSelected ? accent.base : AppColors.surface3,
+      borderRadius: BorderRadius.circular(16),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
+        onTap: onTap,
+        child: Container(
+          constraints: const BoxConstraints(minHeight: 48, minWidth: 48),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+          alignment: Alignment.center,
+          child: Text(
+            label,
+            style: AppText.columnHeader(
+              color: isSelected ? accent.onAccent : AppColors.textPrimary,
+            ).copyWith(fontWeight: isSelected ? FontWeight.bold : null),
+          ),
         ),
       ),
     );

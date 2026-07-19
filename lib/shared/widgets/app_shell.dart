@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../features/auth/presentation/providers/auth_provider.dart';
 import '../../features/workout/presentation/providers/active_workout_provider.dart';
+import '../../features/workout/presentation/providers/rest_timer_provider.dart';
 import '../../core/services/workout_draft_store.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text.dart';
@@ -35,9 +37,11 @@ class _AppShellState extends ConsumerState<AppShell> {
   Future<void> _maybeOfferResume() async {
     // Don't interrupt if a session is somehow already live.
     if (!mounted || ref.read(activeWorkoutProvider) != null) return;
+    final user = ref.read(authProvider);
     final store = ref.read(workoutDraftStoreProvider);
-    final draft = await store.load(); // null if none / older than 24h
-    if (draft == null || !mounted) return;
+    final snapshot = await store.loadSnapshot(currentUserId: user?.id);
+    if (snapshot == null || !mounted) return;
+    final draft = snapshot.workout;
 
     final accent = context.accent;
 
@@ -140,6 +144,15 @@ class _AppShellState extends ConsumerState<AppShell> {
     if (!mounted) return;
     if (resume == true) {
       ref.read(activeWorkoutProvider.notifier).resumeDraft(draft);
+      if (snapshot.restTimer != null) {
+        ref.read(restTimerProvider.notifier).resumeFromEndTime(
+              endTime: snapshot.restTimer!.endTime,
+              totalSeconds: snapshot.restTimer!.totalSeconds,
+              workoutId: snapshot.restTimer!.workoutId,
+              exerciseId: snapshot.restTimer!.exerciseId,
+              setId: snapshot.restTimer!.setId,
+            );
+      }
       context.push('/workout/active');
     } else {
       await store.clear(); // explicit decline → discard
