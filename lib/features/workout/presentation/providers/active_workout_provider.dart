@@ -9,8 +9,11 @@ import '../../../../core/database/daos/workouts_dao.dart';
 import '../../../../core/providers/database_provider.dart';
 import '../../../../core/services/sync_engine.dart';
 import '../../../../core/services/workout_draft_store.dart';
+import '../../../../core/models/measurement_type.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../domain/active_workout_state.dart';
+import 'rest_timer_provider.dart';
+import 'workout_event_provider.dart';
 
 class ActiveWorkoutNotifier extends StateNotifier<ActiveWorkoutState?> {
   final Ref _ref;
@@ -18,6 +21,31 @@ class ActiveWorkoutNotifier extends StateNotifier<ActiveWorkoutState?> {
 
   ActiveWorkoutNotifier(this._ref) : super(null) {
     addListener(_persistDraftOnChange, fireImmediately: false);
+  }
+
+  void saveDraftNow([ActiveWorkoutState? targetState]) {
+    _draftDebounce?.cancel();
+    final store = _ref.read(workoutDraftStoreProvider);
+    final s = targetState ?? state;
+    if (s == null) {
+      unawaited(store.clear());
+      return;
+    }
+    if (s.originalSessionId != null) return;
+
+    final user = _ref.read(authProvider);
+    final timerState = _ref.read(restTimerProvider);
+    RestTimerSnapshot? timerSnapshot;
+    if (timerState != null && timerState.remainingSeconds > 0) {
+      timerSnapshot = RestTimerSnapshot(
+        totalSeconds: timerState.totalSeconds,
+        endTime: timerState.endTime,
+        workoutId: timerState.workoutId,
+        exerciseId: timerState.exerciseId,
+        setId: timerState.setId,
+      );
+    }
+    unawaited(store.save(s, userId: user?.id, restTimer: timerSnapshot));
   }
 
   void _persistDraftOnChange(ActiveWorkoutState? s) {
@@ -29,12 +57,13 @@ class ActiveWorkoutNotifier extends StateNotifier<ActiveWorkoutState?> {
     }
     if (s.originalSessionId != null) return;
     _draftDebounce = Timer(const Duration(milliseconds: 800), () {
-      unawaited(store.save(s));
+      saveDraftNow(s);
     });
   }
 
   void resumeDraft(ActiveWorkoutState draft) {
     state = draft;
+    saveDraftNow(draft);
   }
 
   @override
@@ -82,17 +111,19 @@ class ActiveWorkoutNotifier extends StateNotifier<ActiveWorkoutState?> {
       for (final re in routineExercises) {
         final meta = metaById[re.exerciseId];
         if (meta == null) continue;
+        final mType = MeasurementType.fromString(meta.measurementType,
+            equipment: meta.equipment);
         final prevSets = prevSetsByExercise[re.exerciseId] ?? const [];
 
         final sets = <WorkoutSetState>[];
         for (int i = 0; i < re.defaultSets; i++) {
-          double weight;
+          double? weight;
           int reps;
           if (i < prevSets.length) {
-            weight = prevSets[i].weightKg;
+            weight = mType.isRepsOnly ? null : prevSets[i].weightKg;
             reps = prevSets[i].reps;
           } else {
-            weight = re.defaultWeightKg ?? 0.0;
+            weight = mType.isRepsOnly ? null : (re.defaultWeightKg ?? 0.0);
             reps = re.defaultReps ?? 0;
           }
           sets.add(WorkoutSetState(
@@ -102,7 +133,13 @@ class ActiveWorkoutNotifier extends StateNotifier<ActiveWorkoutState?> {
           id: const Uuid().v4(),
           exerciseId: re.exerciseId,
           name: meta.name,
-          sets: sets.isEmpty ? [WorkoutSetState.create()] : sets,
+          measurementType: mType.raw,
+          sets: sets.isEmpty
+              ? [
+                  WorkoutSetState.create(
+                      weightKg: mType.isRepsOnly ? null : 0.0)
+                ]
+              : sets,
         ));
       }
 
@@ -110,6 +147,7 @@ class ActiveWorkoutNotifier extends StateNotifier<ActiveWorkoutState?> {
         state = state!.copyWith(exercises: exercises);
       }
     }
+    saveDraftNow();
   }
 
   /// Persists the active workout and returns any personal records that
@@ -133,7 +171,7 @@ class ActiveWorkoutNotifier extends StateNotifier<ActiveWorkoutState?> {
     for (final ex in state!.exercises) {
       for (final set in ex.sets) {
         if (set.isCompleted) {
-          totalVolume += set.weightKg * set.reps;
+          totalVolume += (set.weightKg ?? 0.0) * set.reps;
         }
       }
     }
@@ -217,15 +255,19 @@ class ActiveWorkoutNotifier extends StateNotifier<ActiveWorkoutState?> {
     final session = historicalWorkout.session;
 
     final exercises = historicalWorkout.exercises.map((he) {
+      final mType = MeasurementType.fromString(
+          he.exerciseMetadata.measurementType,
+          equipment: he.exerciseMetadata.equipment);
       return WorkoutExerciseState(
         id: const Uuid().v4(),
         exerciseId: he.exerciseMetadata.id,
         name: he.exerciseMetadata.name,
+        measurementType: mType.raw,
         sets: he.sets
             .map((s) => WorkoutSetState(
                   id: const Uuid().v4(),
                   setType: s.setType,
-                  weightKg: s.weightKg,
+                  weightKg: mType.isRepsOnly ? null : s.weightKg,
                   reps: s.reps,
                   isCompleted: true,
                   completedAt: s.completedAt,
@@ -272,25 +314,33 @@ class ActiveWorkoutNotifier extends StateNotifier<ActiveWorkoutState?> {
     state = null;
   }
 
-  void addExercise(int exerciseId, String name) {
+  void addExercise(int exerciseId, String name, {String? measurementType}) {
     if (state == null) return;
+    final mType = MeasurementType.fromString(measurementType);
     final exercise = WorkoutExerciseState(
       id: const Uuid().v4(),
       exerciseId: exerciseId,
       name: name,
-      sets: [WorkoutSetState.create()],
+      measurementType: mType.raw,
+      sets: [WorkoutSetState.create(weightKg: mType.isRepsOnly ? null : 0.0)],
     );
     state = state!.copyWith(exercises: [...state!.exercises, exercise]);
+    saveDraftNow();
   }
 
   void addSet(int exerciseIndex) {
     if (state == null) return;
     final exercises = [...state!.exercises];
     final exercise = exercises[exerciseIndex];
+    final mType = MeasurementType.fromString(exercise.measurementType);
     exercises[exerciseIndex] = exercise.copyWith(
-      sets: [...exercise.sets, WorkoutSetState(id: const Uuid().v4())],
+      sets: [
+        ...exercise.sets,
+        WorkoutSetState.create(weightKg: mType.isRepsOnly ? null : 0.0)
+      ],
     );
     state = state!.copyWith(exercises: exercises);
+    saveDraftNow();
   }
 
   void updateSet(int exerciseIndex, int setIndex,
@@ -299,8 +349,9 @@ class ActiveWorkoutNotifier extends StateNotifier<ActiveWorkoutState?> {
     final exercises = [...state!.exercises];
     final exercise = exercises[exerciseIndex];
     final sets = [...exercise.sets];
+    final mType = MeasurementType.fromString(exercise.measurementType);
     sets[setIndex] = sets[setIndex].copyWith(
-      weightKg: weight ?? sets[setIndex].weightKg,
+      weightKg: mType.isRepsOnly ? null : (weight ?? sets[setIndex].weightKg),
       reps: reps ?? sets[setIndex].reps,
       setType: type ?? sets[setIndex].setType,
     );
@@ -320,18 +371,23 @@ class ActiveWorkoutNotifier extends StateNotifier<ActiveWorkoutState?> {
     );
     exercises[exerciseIndex] = exercise.copyWith(sets: sets);
     state = state!.copyWith(exercises: exercises);
+    saveDraftNow();
   }
 
-  void replaceExercise(int exerciseIndex, int exerciseId, String name) {
+  void replaceExercise(int exerciseIndex, int exerciseId, String name,
+      {String? measurementType}) {
     if (state == null) return;
     final exercises = [...state!.exercises];
+    final mType = MeasurementType.fromString(measurementType);
     exercises[exerciseIndex] = WorkoutExerciseState(
       id: exercises[exerciseIndex].id,
       exerciseId: exerciseId,
       name: name,
-      sets: [WorkoutSetState.create()],
+      measurementType: mType.raw,
+      sets: [WorkoutSetState.create(weightKg: mType.isRepsOnly ? null : 0.0)],
     );
     state = state!.copyWith(exercises: exercises);
+    saveDraftNow();
   }
 
   void removeExercise(int exerciseIndex) {
@@ -339,6 +395,7 @@ class ActiveWorkoutNotifier extends StateNotifier<ActiveWorkoutState?> {
     final exercises = [...state!.exercises];
     exercises.removeAt(exerciseIndex);
     state = state!.copyWith(exercises: exercises);
+    saveDraftNow();
   }
 
   void removeSet(int exerciseIndex, int setIndex) {
@@ -346,9 +403,17 @@ class ActiveWorkoutNotifier extends StateNotifier<ActiveWorkoutState?> {
     final exercises = [...state!.exercises];
     final exercise = exercises[exerciseIndex];
     if (setIndex < 0 || setIndex >= exercise.sets.length) return;
+    final removedSet = exercise.sets[setIndex];
     final sets = [...exercise.sets]..removeAt(setIndex);
     exercises[exerciseIndex] = exercise.copyWith(sets: sets);
     state = state!.copyWith(exercises: exercises);
+    saveDraftNow();
+
+    _ref.read(workoutEventBusProvider).fire(SetRemovedEvent(
+          exerciseIndex,
+          setIndex,
+          removedSet,
+        ));
   }
 
   void insertSet(int exerciseIndex, int setIndex, WorkoutSetState set) {
@@ -361,6 +426,7 @@ class ActiveWorkoutNotifier extends StateNotifier<ActiveWorkoutState?> {
     sets.insert(setIndex, set);
     exercises[exerciseIndex] = exercise.copyWith(sets: sets);
     state = state!.copyWith(exercises: exercises);
+    saveDraftNow();
   }
 
   void reorderExercise(int oldIndex, int newIndex) {
@@ -371,6 +437,18 @@ class ActiveWorkoutNotifier extends StateNotifier<ActiveWorkoutState?> {
     final item = exercises.removeAt(oldIndex);
     exercises.insert(target, item);
     state = state!.copyWith(exercises: exercises);
+    saveDraftNow();
+  }
+
+  void setRestSecondsOverride(int exerciseIndex, int? seconds) {
+    if (state == null) return;
+    final exercises = [...state!.exercises];
+    if (exerciseIndex < 0 || exerciseIndex >= exercises.length) return;
+    exercises[exerciseIndex] = exercises[exerciseIndex].copyWith(
+      restSecondsOverride: seconds,
+    );
+    state = state!.copyWith(exercises: exercises);
+    saveDraftNow();
   }
 
   (double, int) get sessionTotals {
@@ -381,7 +459,7 @@ class ActiveWorkoutNotifier extends StateNotifier<ActiveWorkoutState?> {
     for (final ex in current.exercises) {
       for (final set in ex.sets) {
         if (set.isCompleted) {
-          volume += set.weightKg * set.reps;
+          volume += (set.weightKg ?? 0.0) * set.reps;
           sets++;
         }
       }
@@ -408,7 +486,7 @@ final sessionTotalsProvider = Provider<(double, int)>((ref) {
     for (final ex in state.exercises) {
       for (final set in ex.sets) {
         if (set.isCompleted) {
-          volume += set.weightKg * set.reps;
+          volume += (set.weightKg ?? 0.0) * set.reps;
           completed++;
         }
       }

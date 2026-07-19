@@ -691,6 +691,14 @@ class $ExercisesTable extends Exercises
       defaultConstraints:
           GeneratedColumn.constraintIsAlways('CHECK ("is_custom" IN (0, 1))'),
       defaultValue: const Constant(false));
+  static const VerificationMeta _measurementTypeMeta =
+      const VerificationMeta('measurementType');
+  @override
+  late final GeneratedColumn<String> measurementType = GeneratedColumn<String>(
+      'measurement_type', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: false,
+      defaultValue: const Constant('weight_and_reps'));
   static const VerificationMeta _createdByMeta =
       const VerificationMeta('createdBy');
   @override
@@ -715,6 +723,7 @@ class $ExercisesTable extends Exercises
         secondaryMuscles,
         instructions,
         isCustom,
+        measurementType,
         createdBy,
         seededAt
       ];
@@ -781,6 +790,12 @@ class $ExercisesTable extends Exercises
       context.handle(_isCustomMeta,
           isCustom.isAcceptableOrUnknown(data['is_custom']!, _isCustomMeta));
     }
+    if (data.containsKey('measurement_type')) {
+      context.handle(
+          _measurementTypeMeta,
+          measurementType.isAcceptableOrUnknown(
+              data['measurement_type']!, _measurementTypeMeta));
+    }
     if (data.containsKey('created_by')) {
       context.handle(_createdByMeta,
           createdBy.isAcceptableOrUnknown(data['created_by']!, _createdByMeta));
@@ -818,6 +833,8 @@ class $ExercisesTable extends Exercises
           .read(DriftSqlType.string, data['${effectivePrefix}instructions']),
       isCustom: attachedDatabase.typeMapping
           .read(DriftSqlType.bool, data['${effectivePrefix}is_custom'])!,
+      measurementType: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}measurement_type'])!,
       createdBy: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}created_by']),
       seededAt: attachedDatabase.typeMapping
@@ -842,6 +859,7 @@ class Exercise extends DataClass implements Insertable<Exercise> {
   final String? secondaryMuscles;
   final String? instructions;
   final bool isCustom;
+  final String measurementType;
   final String? createdBy;
   final DateTime? seededAt;
   const Exercise(
@@ -855,6 +873,7 @@ class Exercise extends DataClass implements Insertable<Exercise> {
       this.secondaryMuscles,
       this.instructions,
       required this.isCustom,
+      required this.measurementType,
       this.createdBy,
       this.seededAt});
   @override
@@ -878,6 +897,7 @@ class Exercise extends DataClass implements Insertable<Exercise> {
       map['instructions'] = Variable<String>(instructions);
     }
     map['is_custom'] = Variable<bool>(isCustom);
+    map['measurement_type'] = Variable<String>(measurementType);
     if (!nullToAbsent || createdBy != null) {
       map['created_by'] = Variable<String>(createdBy);
     }
@@ -906,6 +926,7 @@ class Exercise extends DataClass implements Insertable<Exercise> {
           ? const Value.absent()
           : Value(instructions),
       isCustom: Value(isCustom),
+      measurementType: Value(measurementType),
       createdBy: createdBy == null && nullToAbsent
           ? const Value.absent()
           : Value(createdBy),
@@ -929,6 +950,7 @@ class Exercise extends DataClass implements Insertable<Exercise> {
       secondaryMuscles: serializer.fromJson<String?>(json['secondaryMuscles']),
       instructions: serializer.fromJson<String?>(json['instructions']),
       isCustom: serializer.fromJson<bool>(json['isCustom']),
+      measurementType: serializer.fromJson<String>(json['measurementType']),
       createdBy: serializer.fromJson<String?>(json['createdBy']),
       seededAt: serializer.fromJson<DateTime?>(json['seededAt']),
     );
@@ -947,6 +969,7 @@ class Exercise extends DataClass implements Insertable<Exercise> {
       'secondaryMuscles': serializer.toJson<String?>(secondaryMuscles),
       'instructions': serializer.toJson<String?>(instructions),
       'isCustom': serializer.toJson<bool>(isCustom),
+      'measurementType': serializer.toJson<String>(measurementType),
       'createdBy': serializer.toJson<String?>(createdBy),
       'seededAt': serializer.toJson<DateTime?>(seededAt),
     };
@@ -963,6 +986,7 @@ class Exercise extends DataClass implements Insertable<Exercise> {
           Value<String?> secondaryMuscles = const Value.absent(),
           Value<String?> instructions = const Value.absent(),
           bool? isCustom,
+          String? measurementType,
           Value<String?> createdBy = const Value.absent(),
           Value<DateTime?> seededAt = const Value.absent()}) =>
       Exercise(
@@ -980,6 +1004,7 @@ class Exercise extends DataClass implements Insertable<Exercise> {
         instructions:
             instructions.present ? instructions.value : this.instructions,
         isCustom: isCustom ?? this.isCustom,
+        measurementType: measurementType ?? this.measurementType,
         createdBy: createdBy.present ? createdBy.value : this.createdBy,
         seededAt: seededAt.present ? seededAt.value : this.seededAt,
       );
@@ -1001,6 +1026,9 @@ class Exercise extends DataClass implements Insertable<Exercise> {
           ? data.instructions.value
           : this.instructions,
       isCustom: data.isCustom.present ? data.isCustom.value : this.isCustom,
+      measurementType: data.measurementType.present
+          ? data.measurementType.value
+          : this.measurementType,
       createdBy: data.createdBy.present ? data.createdBy.value : this.createdBy,
       seededAt: data.seededAt.present ? data.seededAt.value : this.seededAt,
     );
@@ -1019,6 +1047,7 @@ class Exercise extends DataClass implements Insertable<Exercise> {
           ..write('secondaryMuscles: $secondaryMuscles, ')
           ..write('instructions: $instructions, ')
           ..write('isCustom: $isCustom, ')
+          ..write('measurementType: $measurementType, ')
           ..write('createdBy: $createdBy, ')
           ..write('seededAt: $seededAt')
           ..write(')'))
@@ -1037,6 +1066,7 @@ class Exercise extends DataClass implements Insertable<Exercise> {
       secondaryMuscles,
       instructions,
       isCustom,
+      measurementType,
       createdBy,
       seededAt);
   @override
@@ -1053,6 +1083,7 @@ class Exercise extends DataClass implements Insertable<Exercise> {
           other.secondaryMuscles == this.secondaryMuscles &&
           other.instructions == this.instructions &&
           other.isCustom == this.isCustom &&
+          other.measurementType == this.measurementType &&
           other.createdBy == this.createdBy &&
           other.seededAt == this.seededAt);
 }
@@ -1068,6 +1099,7 @@ class ExercisesCompanion extends UpdateCompanion<Exercise> {
   final Value<String?> secondaryMuscles;
   final Value<String?> instructions;
   final Value<bool> isCustom;
+  final Value<String> measurementType;
   final Value<String?> createdBy;
   final Value<DateTime?> seededAt;
   const ExercisesCompanion({
@@ -1081,6 +1113,7 @@ class ExercisesCompanion extends UpdateCompanion<Exercise> {
     this.secondaryMuscles = const Value.absent(),
     this.instructions = const Value.absent(),
     this.isCustom = const Value.absent(),
+    this.measurementType = const Value.absent(),
     this.createdBy = const Value.absent(),
     this.seededAt = const Value.absent(),
   });
@@ -1095,6 +1128,7 @@ class ExercisesCompanion extends UpdateCompanion<Exercise> {
     this.secondaryMuscles = const Value.absent(),
     this.instructions = const Value.absent(),
     this.isCustom = const Value.absent(),
+    this.measurementType = const Value.absent(),
     this.createdBy = const Value.absent(),
     this.seededAt = const Value.absent(),
   })  : name = Value(name),
@@ -1112,6 +1146,7 @@ class ExercisesCompanion extends UpdateCompanion<Exercise> {
     Expression<String>? secondaryMuscles,
     Expression<String>? instructions,
     Expression<bool>? isCustom,
+    Expression<String>? measurementType,
     Expression<String>? createdBy,
     Expression<DateTime>? seededAt,
   }) {
@@ -1126,6 +1161,7 @@ class ExercisesCompanion extends UpdateCompanion<Exercise> {
       if (secondaryMuscles != null) 'secondary_muscles': secondaryMuscles,
       if (instructions != null) 'instructions': instructions,
       if (isCustom != null) 'is_custom': isCustom,
+      if (measurementType != null) 'measurement_type': measurementType,
       if (createdBy != null) 'created_by': createdBy,
       if (seededAt != null) 'seeded_at': seededAt,
     });
@@ -1142,6 +1178,7 @@ class ExercisesCompanion extends UpdateCompanion<Exercise> {
       Value<String?>? secondaryMuscles,
       Value<String?>? instructions,
       Value<bool>? isCustom,
+      Value<String>? measurementType,
       Value<String?>? createdBy,
       Value<DateTime?>? seededAt}) {
     return ExercisesCompanion(
@@ -1155,6 +1192,7 @@ class ExercisesCompanion extends UpdateCompanion<Exercise> {
       secondaryMuscles: secondaryMuscles ?? this.secondaryMuscles,
       instructions: instructions ?? this.instructions,
       isCustom: isCustom ?? this.isCustom,
+      measurementType: measurementType ?? this.measurementType,
       createdBy: createdBy ?? this.createdBy,
       seededAt: seededAt ?? this.seededAt,
     );
@@ -1193,6 +1231,9 @@ class ExercisesCompanion extends UpdateCompanion<Exercise> {
     if (isCustom.present) {
       map['is_custom'] = Variable<bool>(isCustom.value);
     }
+    if (measurementType.present) {
+      map['measurement_type'] = Variable<String>(measurementType.value);
+    }
     if (createdBy.present) {
       map['created_by'] = Variable<String>(createdBy.value);
     }
@@ -1215,6 +1256,7 @@ class ExercisesCompanion extends UpdateCompanion<Exercise> {
           ..write('secondaryMuscles: $secondaryMuscles, ')
           ..write('instructions: $instructions, ')
           ..write('isCustom: $isCustom, ')
+          ..write('measurementType: $measurementType, ')
           ..write('createdBy: $createdBy, ')
           ..write('seededAt: $seededAt')
           ..write(')'))
@@ -3127,8 +3169,8 @@ class $WorkoutSetsTable extends WorkoutSets
       const VerificationMeta('weightKg');
   @override
   late final GeneratedColumn<double> weightKg = GeneratedColumn<double>(
-      'weight_kg', aliasedName, false,
-      type: DriftSqlType.double, requiredDuringInsert: true);
+      'weight_kg', aliasedName, true,
+      type: DriftSqlType.double, requiredDuringInsert: false);
   static const VerificationMeta _repsMeta = const VerificationMeta('reps');
   @override
   late final GeneratedColumn<int> reps = GeneratedColumn<int>(
@@ -3218,8 +3260,6 @@ class $WorkoutSetsTable extends WorkoutSets
     if (data.containsKey('weight_kg')) {
       context.handle(_weightKgMeta,
           weightKg.isAcceptableOrUnknown(data['weight_kg']!, _weightKgMeta));
-    } else if (isInserting) {
-      context.missing(_weightKgMeta);
     }
     if (data.containsKey('reps')) {
       context.handle(
@@ -3267,7 +3307,7 @@ class $WorkoutSetsTable extends WorkoutSets
       setType: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}set_type'])!,
       weightKg: attachedDatabase.typeMapping
-          .read(DriftSqlType.double, data['${effectivePrefix}weight_kg'])!,
+          .read(DriftSqlType.double, data['${effectivePrefix}weight_kg']),
       reps: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}reps'])!,
       rpe: attachedDatabase.typeMapping
@@ -3293,7 +3333,7 @@ class WorkoutSet extends DataClass implements Insertable<WorkoutSet> {
   final int exerciseId;
   final int orderIndex;
   final String setType;
-  final double weightKg;
+  final double? weightKg;
   final int reps;
   final double? rpe;
   final bool isPr;
@@ -3305,7 +3345,7 @@ class WorkoutSet extends DataClass implements Insertable<WorkoutSet> {
       required this.exerciseId,
       required this.orderIndex,
       required this.setType,
-      required this.weightKg,
+      this.weightKg,
       required this.reps,
       this.rpe,
       required this.isPr,
@@ -3319,7 +3359,9 @@ class WorkoutSet extends DataClass implements Insertable<WorkoutSet> {
     map['exercise_id'] = Variable<int>(exerciseId);
     map['order_index'] = Variable<int>(orderIndex);
     map['set_type'] = Variable<String>(setType);
-    map['weight_kg'] = Variable<double>(weightKg);
+    if (!nullToAbsent || weightKg != null) {
+      map['weight_kg'] = Variable<double>(weightKg);
+    }
     map['reps'] = Variable<int>(reps);
     if (!nullToAbsent || rpe != null) {
       map['rpe'] = Variable<double>(rpe);
@@ -3341,7 +3383,9 @@ class WorkoutSet extends DataClass implements Insertable<WorkoutSet> {
       exerciseId: Value(exerciseId),
       orderIndex: Value(orderIndex),
       setType: Value(setType),
-      weightKg: Value(weightKg),
+      weightKg: weightKg == null && nullToAbsent
+          ? const Value.absent()
+          : Value(weightKg),
       reps: Value(reps),
       rpe: rpe == null && nullToAbsent ? const Value.absent() : Value(rpe),
       isPr: Value(isPr),
@@ -3363,7 +3407,7 @@ class WorkoutSet extends DataClass implements Insertable<WorkoutSet> {
       exerciseId: serializer.fromJson<int>(json['exerciseId']),
       orderIndex: serializer.fromJson<int>(json['orderIndex']),
       setType: serializer.fromJson<String>(json['setType']),
-      weightKg: serializer.fromJson<double>(json['weightKg']),
+      weightKg: serializer.fromJson<double?>(json['weightKg']),
       reps: serializer.fromJson<int>(json['reps']),
       rpe: serializer.fromJson<double?>(json['rpe']),
       isPr: serializer.fromJson<bool>(json['isPr']),
@@ -3380,7 +3424,7 @@ class WorkoutSet extends DataClass implements Insertable<WorkoutSet> {
       'exerciseId': serializer.toJson<int>(exerciseId),
       'orderIndex': serializer.toJson<int>(orderIndex),
       'setType': serializer.toJson<String>(setType),
-      'weightKg': serializer.toJson<double>(weightKg),
+      'weightKg': serializer.toJson<double?>(weightKg),
       'reps': serializer.toJson<int>(reps),
       'rpe': serializer.toJson<double?>(rpe),
       'isPr': serializer.toJson<bool>(isPr),
@@ -3395,7 +3439,7 @@ class WorkoutSet extends DataClass implements Insertable<WorkoutSet> {
           int? exerciseId,
           int? orderIndex,
           String? setType,
-          double? weightKg,
+          Value<double?> weightKg = const Value.absent(),
           int? reps,
           Value<double?> rpe = const Value.absent(),
           bool? isPr,
@@ -3407,7 +3451,7 @@ class WorkoutSet extends DataClass implements Insertable<WorkoutSet> {
         exerciseId: exerciseId ?? this.exerciseId,
         orderIndex: orderIndex ?? this.orderIndex,
         setType: setType ?? this.setType,
-        weightKg: weightKg ?? this.weightKg,
+        weightKg: weightKg.present ? weightKg.value : this.weightKg,
         reps: reps ?? this.reps,
         rpe: rpe.present ? rpe.value : this.rpe,
         isPr: isPr ?? this.isPr,
@@ -3482,7 +3526,7 @@ class WorkoutSetsCompanion extends UpdateCompanion<WorkoutSet> {
   final Value<int> exerciseId;
   final Value<int> orderIndex;
   final Value<String> setType;
-  final Value<double> weightKg;
+  final Value<double?> weightKg;
   final Value<int> reps;
   final Value<double?> rpe;
   final Value<bool> isPr;
@@ -3509,7 +3553,7 @@ class WorkoutSetsCompanion extends UpdateCompanion<WorkoutSet> {
     required int exerciseId,
     required int orderIndex,
     this.setType = const Value.absent(),
-    required double weightKg,
+    this.weightKg = const Value.absent(),
     required int reps,
     this.rpe = const Value.absent(),
     this.isPr = const Value.absent(),
@@ -3519,7 +3563,6 @@ class WorkoutSetsCompanion extends UpdateCompanion<WorkoutSet> {
   })  : workoutExerciseId = Value(workoutExerciseId),
         exerciseId = Value(exerciseId),
         orderIndex = Value(orderIndex),
-        weightKg = Value(weightKg),
         reps = Value(reps);
   static Insertable<WorkoutSet> custom({
     Expression<String>? id,
@@ -3557,7 +3600,7 @@ class WorkoutSetsCompanion extends UpdateCompanion<WorkoutSet> {
       Value<int>? exerciseId,
       Value<int>? orderIndex,
       Value<String>? setType,
-      Value<double>? weightKg,
+      Value<double?>? weightKg,
       Value<int>? reps,
       Value<double?>? rpe,
       Value<bool>? isPr,
@@ -4404,6 +4447,7 @@ typedef $$ExercisesTableCreateCompanionBuilder = ExercisesCompanion Function({
   Value<String?> secondaryMuscles,
   Value<String?> instructions,
   Value<bool> isCustom,
+  Value<String> measurementType,
   Value<String?> createdBy,
   Value<DateTime?> seededAt,
 });
@@ -4418,6 +4462,7 @@ typedef $$ExercisesTableUpdateCompanionBuilder = ExercisesCompanion Function({
   Value<String?> secondaryMuscles,
   Value<String?> instructions,
   Value<bool> isCustom,
+  Value<String> measurementType,
   Value<String?> createdBy,
   Value<DateTime?> seededAt,
 });
@@ -4500,6 +4545,10 @@ class $$ExercisesTableFilterComposer
 
   ColumnFilters<bool> get isCustom => $composableBuilder(
       column: $table.isCustom, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get measurementType => $composableBuilder(
+      column: $table.measurementType,
+      builder: (column) => ColumnFilters(column));
 
   ColumnFilters<String> get createdBy => $composableBuilder(
       column: $table.createdBy, builder: (column) => ColumnFilters(column));
@@ -4592,6 +4641,10 @@ class $$ExercisesTableOrderingComposer
   ColumnOrderings<bool> get isCustom => $composableBuilder(
       column: $table.isCustom, builder: (column) => ColumnOrderings(column));
 
+  ColumnOrderings<String> get measurementType => $composableBuilder(
+      column: $table.measurementType,
+      builder: (column) => ColumnOrderings(column));
+
   ColumnOrderings<String> get createdBy => $composableBuilder(
       column: $table.createdBy, builder: (column) => ColumnOrderings(column));
 
@@ -4637,6 +4690,9 @@ class $$ExercisesTableAnnotationComposer
 
   GeneratedColumn<bool> get isCustom =>
       $composableBuilder(column: $table.isCustom, builder: (column) => column);
+
+  GeneratedColumn<String> get measurementType => $composableBuilder(
+      column: $table.measurementType, builder: (column) => column);
 
   GeneratedColumn<String> get createdBy =>
       $composableBuilder(column: $table.createdBy, builder: (column) => column);
@@ -4721,6 +4777,7 @@ class $$ExercisesTableTableManager extends RootTableManager<
             Value<String?> secondaryMuscles = const Value.absent(),
             Value<String?> instructions = const Value.absent(),
             Value<bool> isCustom = const Value.absent(),
+            Value<String> measurementType = const Value.absent(),
             Value<String?> createdBy = const Value.absent(),
             Value<DateTime?> seededAt = const Value.absent(),
           }) =>
@@ -4735,6 +4792,7 @@ class $$ExercisesTableTableManager extends RootTableManager<
             secondaryMuscles: secondaryMuscles,
             instructions: instructions,
             isCustom: isCustom,
+            measurementType: measurementType,
             createdBy: createdBy,
             seededAt: seededAt,
           ),
@@ -4749,6 +4807,7 @@ class $$ExercisesTableTableManager extends RootTableManager<
             Value<String?> secondaryMuscles = const Value.absent(),
             Value<String?> instructions = const Value.absent(),
             Value<bool> isCustom = const Value.absent(),
+            Value<String> measurementType = const Value.absent(),
             Value<String?> createdBy = const Value.absent(),
             Value<DateTime?> seededAt = const Value.absent(),
           }) =>
@@ -4763,6 +4822,7 @@ class $$ExercisesTableTableManager extends RootTableManager<
             secondaryMuscles: secondaryMuscles,
             instructions: instructions,
             isCustom: isCustom,
+            measurementType: measurementType,
             createdBy: createdBy,
             seededAt: seededAt,
           ),
@@ -6583,7 +6643,7 @@ typedef $$WorkoutSetsTableCreateCompanionBuilder = WorkoutSetsCompanion
   required int exerciseId,
   required int orderIndex,
   Value<String> setType,
-  required double weightKg,
+  Value<double?> weightKg,
   required int reps,
   Value<double?> rpe,
   Value<bool> isPr,
@@ -6598,7 +6658,7 @@ typedef $$WorkoutSetsTableUpdateCompanionBuilder = WorkoutSetsCompanion
   Value<int> exerciseId,
   Value<int> orderIndex,
   Value<String> setType,
-  Value<double> weightKg,
+  Value<double?> weightKg,
   Value<int> reps,
   Value<double?> rpe,
   Value<bool> isPr,
@@ -6836,7 +6896,7 @@ class $$WorkoutSetsTableTableManager extends RootTableManager<
             Value<int> exerciseId = const Value.absent(),
             Value<int> orderIndex = const Value.absent(),
             Value<String> setType = const Value.absent(),
-            Value<double> weightKg = const Value.absent(),
+            Value<double?> weightKg = const Value.absent(),
             Value<int> reps = const Value.absent(),
             Value<double?> rpe = const Value.absent(),
             Value<bool> isPr = const Value.absent(),
@@ -6864,7 +6924,7 @@ class $$WorkoutSetsTableTableManager extends RootTableManager<
             required int exerciseId,
             required int orderIndex,
             Value<String> setType = const Value.absent(),
-            required double weightKg,
+            Value<double?> weightKg = const Value.absent(),
             required int reps,
             Value<double?> rpe = const Value.absent(),
             Value<bool> isPr = const Value.absent(),

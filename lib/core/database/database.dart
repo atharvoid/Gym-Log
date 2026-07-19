@@ -40,7 +40,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.executor);
 
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 5;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -61,6 +61,13 @@ class AppDatabase extends _$AppDatabase {
           }
           if (from < 4) {
             await m.addColumn(userProfiles, userProfiles.gender);
+          }
+          if (from < 5) {
+            await m.addColumn(exercises, exercises.measurementType);
+            await customStatement(
+                "UPDATE exercises SET measurement_type = 'reps_only' WHERE LOWER(REPLACE(equipment, ' ', '')) IN ('bodyweight', 'assisted')");
+            // ignore: experimental_member_use
+            await m.alterTable(TableMigration(workoutSets));
           }
         },
         beforeOpen: (details) async {

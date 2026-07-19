@@ -9,19 +9,19 @@ part 'workouts_dao.g.dart';
 
 class ExerciseHistoryData {
   final DateTime date;
-  final double weight;
+  final double? weight;
   final int reps;
-  final double estimated1RM;
+  final double? estimated1RM;
   final double volume;
-  final double bestSetWeight;
+  final double? bestSetWeight;
 
   const ExerciseHistoryData({
     required this.date,
-    required this.weight,
+    this.weight,
     required this.reps,
-    required this.estimated1RM,
+    this.estimated1RM,
     required this.volume,
-    required this.bestSetWeight,
+    this.bestSetWeight,
   });
 }
 
@@ -296,7 +296,7 @@ class WorkoutsDao extends DatabaseAccessor<AppDatabase>
           exerciseId: st['exerciseId'] as int,
           orderIndex: st['orderIndex'] as int,
           setType: Value(st['setType'] as String? ?? 'normal'),
-          weightKg: (st['weightKg'] as num).toDouble(),
+          weightKg: Value((st['weightKg'] as num?)?.toDouble()),
           reps: st['reps'] as int,
           rpe: Value((st['rpe'] as num?)?.toDouble()),
           isPr: Value(st['isPr'] as bool? ?? false),
@@ -730,14 +730,15 @@ class WorkoutsDao extends DatabaseAccessor<AppDatabase>
         COALESCE(s.ended_at, s.started_at) AS session_date,
         MAX(ws.weight_kg) AS max_weight,
         MAX(ws.reps) AS max_reps,
-        MAX($_epleySqlWs) AS best_e1rm,
-        SUM(ws.weight_kg * ws.reps) AS total_volume,
+        MAX(CASE WHEN ws.weight_kg IS NOT NULL AND ws.weight_kg > 0 THEN $_epleySqlWs ELSE NULL END) AS best_e1rm,
+        SUM(COALESCE(ws.weight_kg, 0.0) * ws.reps) AS total_volume,
         (
           SELECT inner_ws.weight_kg
           FROM workout_sets inner_ws
           JOIN workout_exercises inner_we ON inner_ws.workout_exercise_id = inner_we.id
           WHERE inner_ws.exercise_id = ws.exercise_id
             AND inner_we.session_id = s.id
+            AND inner_ws.weight_kg IS NOT NULL
             AND inner_ws.weight_kg > 0
             AND inner_ws.reps > 0
           ORDER BY (inner_ws.weight_kg * (CASE WHEN inner_ws.reps <= 1 THEN 1.0 ELSE 1.0 + inner_ws.reps / 30.0 END)) DESC
@@ -747,7 +748,6 @@ class WorkoutsDao extends DatabaseAccessor<AppDatabase>
       JOIN workout_exercises we ON ws.workout_exercise_id = we.id
       JOIN workout_sessions s ON we.session_id = s.id
       WHERE ws.exercise_id = ?
-        AND ws.weight_kg > 0
         AND ws.reps > 0$sinceClause
       GROUP BY s.id, COALESCE(s.ended_at, s.started_at)
       ORDER BY session_date ASC
@@ -763,11 +763,11 @@ class WorkoutsDao extends DatabaseAccessor<AppDatabase>
   List<ExerciseHistoryData> _mapHistoryRows(List<QueryRow> rows) {
     return rows.map((row) {
       final date = row.read<DateTime>('session_date');
-      final weight = row.read<double>('max_weight');
+      final weight = row.read<double?>('max_weight');
       final reps = row.read<int>('max_reps');
       final volume = row.read<double>('total_volume');
-      final best1rm = row.read<double>('best_e1rm');
-      final bestSetWeight = row.read<double>('best_set_weight');
+      final best1rm = row.read<double?>('best_e1rm');
+      final bestSetWeight = row.read<double?>('best_set_weight');
 
       return ExerciseHistoryData(
         date: date,
@@ -937,8 +937,8 @@ class WorkoutsDao extends DatabaseAccessor<AppDatabase>
         WorkoutSet? bestSet;
 
         for (final set in sets) {
-          if (set.weightKg > 0 && set.reps > 0) {
-            final e1rm = _epley(set.weightKg, set.reps);
+          if (set.weightKg != null && set.weightKg! > 0 && set.reps > 0) {
+            final e1rm = _epley(set.weightKg!, set.reps);
             if (e1rm > sessionBest1rm) {
               sessionBest1rm = e1rm;
               bestSet = set;
@@ -955,7 +955,7 @@ class WorkoutsDao extends DatabaseAccessor<AppDatabase>
           prs.add(PrRecord(
             exerciseId: we.exerciseId,
             exerciseName: '', // filled from batch lookup below
-            weightKg: bestSet.weightKg,
+            weightKg: bestSet.weightKg!,
             reps: bestSet.reps,
             estimated1rm: sessionBest1rm,
             previousBest1rm: priorMax,
@@ -1143,7 +1143,7 @@ class WorkoutsDao extends DatabaseAccessor<AppDatabase>
       for (final ex in state.exercises) {
         for (final set in ex.sets) {
           if (set.isCompleted) {
-            totalVolume += set.weightKg * set.reps;
+            totalVolume += (set.weightKg ?? 0.0) * set.reps;
           }
         }
       }

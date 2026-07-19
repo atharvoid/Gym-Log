@@ -1,5 +1,6 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:gymlog/core/database/daos/routines_dao.dart';
+import 'package:gymlog/core/models/measurement_type.dart';
 import 'package:uuid/uuid.dart';
 
 part 'active_workout_state.freezed.dart';
@@ -10,14 +11,15 @@ class WorkoutSetState with _$WorkoutSetState {
   const factory WorkoutSetState({
     required String id,
     @Default('normal') String setType,
-    @Default(0.0) double weightKg,
+    double? weightKg,
     @Default(0) int reps,
     @Default(false) bool isCompleted,
     DateTime? completedAt,
   }) = _WorkoutSetState;
 
-  factory WorkoutSetState.create() => WorkoutSetState(
+  factory WorkoutSetState.create({double? weightKg}) => WorkoutSetState(
         id: const Uuid().v4(),
+        weightKg: weightKg,
       );
 }
 
@@ -27,7 +29,9 @@ class WorkoutExerciseState with _$WorkoutExerciseState {
     @Default('') String id,
     required int exerciseId,
     required String name,
+    @Default('weight_and_reps') String measurementType,
     @Default([]) List<WorkoutSetState> sets,
+    int? restSecondsOverride,
   }) = _WorkoutExerciseState;
 }
 
@@ -55,17 +59,16 @@ List<WorkoutExerciseState> seedExercisesFromRoutine(
   return routine.exercises.map((he) {
     final c = he.config;
     final count = c.defaultSets > 0 ? c.defaultSets : 1;
-    // Seed only the set COUNT from the routine. Weight/reps stay 0 (empty) so
-    // each row shows the PREVIOUS session's value as a ghost hint (wired via
-    // previousSessionSetsProvider in ExerciseBlock/SetRow); the user commits it
-    // by ticking. Baking c.defaultWeightKg/c.defaultReps here was the source of
-    // the "random reps allocated on start" — those are routine-editor config
-    // defaults, not the user's last performance.
-    final sets = List.generate(count, (_) => WorkoutSetState.create());
+    final mType = MeasurementType.fromString(he.exercise.measurementType,
+        equipment: he.exercise.equipment);
+    final initialWeight = mType.isRepsOnly ? null : 0.0;
+    final sets = List.generate(
+        count, (_) => WorkoutSetState.create(weightKg: initialWeight));
     return WorkoutExerciseState(
       id: const Uuid().v4(),
       exerciseId: he.exercise.id,
       name: he.exercise.name,
+      measurementType: mType.raw,
       sets: sets,
     );
   }).toList();

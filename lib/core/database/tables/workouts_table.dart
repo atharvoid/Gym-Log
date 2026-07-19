@@ -38,7 +38,7 @@ class WorkoutSets extends Table {
   IntColumn get exerciseId => integer()();
   IntColumn get orderIndex => integer()();
   TextColumn get setType => text().withDefault(const Constant('normal'))();
-  RealColumn get weightKg => real()();
+  RealColumn get weightKg => real().nullable()();
   IntColumn get reps => integer()();
   RealColumn get rpe => real().nullable()();
   BoolColumn get isPr => boolean().withDefault(const Constant(false))();

@@ -14,7 +14,7 @@ part 'exercises_dao.g.dart';
 /// v3: unified catalog (standard Hevy/Strong names + parent→child muscles),
 /// upsert-by-exerciseDbId so existing rows are renamed/re-muscled in place and
 /// GIF links are refreshed, with null gifUrl for exercises that have no GIF yet.
-const _kHydrationKey = 'exercises_hydrated_v5';
+const _kHydrationKey = 'exercises_hydrated_v6';
 
 /// Base URL of the public storage bucket that hosts exercise GIFs.
 /// Centralized in [Env] (overridable via --dart-define GIF_BUCKET_BASE).
@@ -93,12 +93,19 @@ class ExercisesDao extends DatabaseAccessor<AppDatabase>
     String bodyPart = 'other',
     String equipment = 'other',
     String target = 'other',
+    String? measurementType,
   }) {
+    final eqNorm = equipment.toLowerCase().replaceAll(' ', '');
+    final resolvedType = measurementType ??
+        ((eqNorm == 'bodyweight' || eqNorm == 'assisted')
+            ? 'reps_only'
+            : 'weight_and_reps');
     return into(exercises).insert(ExercisesCompanion.insert(
       name: name,
       bodyPart: bodyPart,
       equipment: equipment,
       target: target,
+      measurementType: Value(resolvedType),
       isCustom: const Value(true),
       createdBy: Value(userId),
       seededAt: Value(DateTime.now()),
@@ -143,12 +150,19 @@ class ExercisesDao extends DatabaseAccessor<AppDatabase>
         for (final e in list) {
           final id = e['id'] as String;
           final hasGif = e['gif'] == true;
+          final equipment = e['equipment'] as String;
+          final eqNorm = equipment.toLowerCase().replaceAll(' ', '');
+          final mType = e['measurementType'] as String? ??
+              ((eqNorm == 'bodyweight' || eqNorm == 'assisted')
+                  ? 'reps_only'
+                  : 'weight_and_reps');
           final companion = ExercisesCompanion.insert(
             exerciseDbId: Value(id),
             name: e['name'] as String,
             bodyPart: e['bodyPart'] as String,
-            equipment: e['equipment'] as String,
+            equipment: equipment,
             target: e['target'] as String,
+            measurementType: Value(mType),
             secondaryMuscles:
                 Value(jsonEncode(e['secondaryMuscles'] ?? const <String>[])),
             instructions:

@@ -18,7 +18,7 @@ final _privateConstructorUsedError = UnsupportedError(
 mixin _$WorkoutSetState {
   String get id => throw _privateConstructorUsedError;
   String get setType => throw _privateConstructorUsedError;
-  double get weightKg => throw _privateConstructorUsedError;
+  double? get weightKg => throw _privateConstructorUsedError;
   int get reps => throw _privateConstructorUsedError;
   bool get isCompleted => throw _privateConstructorUsedError;
   DateTime? get completedAt => throw _privateConstructorUsedError;
@@ -37,7 +37,7 @@ abstract class $WorkoutSetStateCopyWith<$Res> {
   $Res call(
       {String id,
       String setType,
-      double weightKg,
+      double? weightKg,
       int reps,
       bool isCompleted,
       DateTime? completedAt});
@@ -58,7 +58,7 @@ class _$WorkoutSetStateCopyWithImpl<$Res, $Val extends WorkoutSetState>
   $Res call({
     Object? id = null,
     Object? setType = null,
-    Object? weightKg = null,
+    Object? weightKg = freezed,
     Object? reps = null,
     Object? isCompleted = null,
     Object? completedAt = freezed,
@@ -72,10 +72,10 @@ class _$WorkoutSetStateCopyWithImpl<$Res, $Val extends WorkoutSetState>
           ? _value.setType
           : setType // ignore: cast_nullable_to_non_nullable
               as String,
-      weightKg: null == weightKg
+      weightKg: freezed == weightKg
           ? _value.weightKg
           : weightKg // ignore: cast_nullable_to_non_nullable
-              as double,
+              as double?,
       reps: null == reps
           ? _value.reps
           : reps // ignore: cast_nullable_to_non_nullable
@@ -103,7 +103,7 @@ abstract class _$$WorkoutSetStateImplCopyWith<$Res>
   $Res call(
       {String id,
       String setType,
-      double weightKg,
+      double? weightKg,
       int reps,
       bool isCompleted,
       DateTime? completedAt});
@@ -122,7 +122,7 @@ class __$$WorkoutSetStateImplCopyWithImpl<$Res>
   $Res call({
     Object? id = null,
     Object? setType = null,
-    Object? weightKg = null,
+    Object? weightKg = freezed,
     Object? reps = null,
     Object? isCompleted = null,
     Object? completedAt = freezed,
@@ -136,10 +136,10 @@ class __$$WorkoutSetStateImplCopyWithImpl<$Res>
           ? _value.setType
           : setType // ignore: cast_nullable_to_non_nullable
               as String,
-      weightKg: null == weightKg
+      weightKg: freezed == weightKg
           ? _value.weightKg
           : weightKg // ignore: cast_nullable_to_non_nullable
-              as double,
+              as double?,
       reps: null == reps
           ? _value.reps
           : reps // ignore: cast_nullable_to_non_nullable
@@ -162,7 +162,7 @@ class _$WorkoutSetStateImpl implements _WorkoutSetState {
   const _$WorkoutSetStateImpl(
       {required this.id,
       this.setType = 'normal',
-      this.weightKg = 0.0,
+      this.weightKg,
       this.reps = 0,
       this.isCompleted = false,
       this.completedAt})
@@ -174,8 +174,7 @@ class _$WorkoutSetStateImpl implements _WorkoutSetState {
   @JsonKey()
   final String setType;
   @override
-  @JsonKey()
-  final double weightKg;
+  final double? weightKg;
   @override
   @JsonKey()
   final int reps;
@@ -222,7 +221,7 @@ abstract class _WorkoutSetState implements WorkoutSetState {
   const factory _WorkoutSetState(
       {required final String id,
       final String setType,
-      final double weightKg,
+      final double? weightKg,
       final int reps,
       final bool isCompleted,
       final DateTime? completedAt}) = _$WorkoutSetStateImpl;
@@ -232,7 +231,7 @@ abstract class _WorkoutSetState implements WorkoutSetState {
   @override
   String get setType;
   @override
-  double get weightKg;
+  double? get weightKg;
   @override
   int get reps;
   @override
@@ -250,7 +249,9 @@ mixin _$WorkoutExerciseState {
   String get id => throw _privateConstructorUsedError;
   int get exerciseId => throw _privateConstructorUsedError;
   String get name => throw _privateConstructorUsedError;
+  String get measurementType => throw _privateConstructorUsedError;
   List<WorkoutSetState> get sets => throw _privateConstructorUsedError;
+  int? get restSecondsOverride => throw _privateConstructorUsedError;
 
   @JsonKey(ignore: true)
   $WorkoutExerciseStateCopyWith<WorkoutExerciseState> get copyWith =>
@@ -264,7 +265,12 @@ abstract class $WorkoutExerciseStateCopyWith<$Res> {
       _$WorkoutExerciseStateCopyWithImpl<$Res, WorkoutExerciseState>;
   @useResult
   $Res call(
-      {String id, int exerciseId, String name, List<WorkoutSetState> sets});
+      {String id,
+      int exerciseId,
+      String name,
+      String measurementType,
+      List<WorkoutSetState> sets,
+      int? restSecondsOverride});
 }
 
 /// @nodoc
@@ -284,7 +290,9 @@ class _$WorkoutExerciseStateCopyWithImpl<$Res,
     Object? id = null,
     Object? exerciseId = null,
     Object? name = null,
+    Object? measurementType = null,
     Object? sets = null,
+    Object? restSecondsOverride = freezed,
   }) {
     return _then(_value.copyWith(
       id: null == id
@@ -299,10 +307,18 @@ class _$WorkoutExerciseStateCopyWithImpl<$Res,
           ? _value.name
           : name // ignore: cast_nullable_to_non_nullable
               as String,
+      measurementType: null == measurementType
+          ? _value.measurementType
+          : measurementType // ignore: cast_nullable_to_non_nullable
+              as String,
       sets: null == sets
           ? _value.sets
           : sets // ignore: cast_nullable_to_non_nullable
               as List<WorkoutSetState>,
+      restSecondsOverride: freezed == restSecondsOverride
+          ? _value.restSecondsOverride
+          : restSecondsOverride // ignore: cast_nullable_to_non_nullable
+              as int?,
     ) as $Val);
   }
 }
@@ -316,7 +332,12 @@ abstract class _$$WorkoutExerciseStateImplCopyWith<$Res>
   @override
   @useResult
   $Res call(
-      {String id, int exerciseId, String name, List<WorkoutSetState> sets});
+      {String id,
+      int exerciseId,
+      String name,
+      String measurementType,
+      List<WorkoutSetState> sets,
+      int? restSecondsOverride});
 }
 
 /// @nodoc
@@ -333,7 +354,9 @@ class __$$WorkoutExerciseStateImplCopyWithImpl<$Res>
     Object? id = null,
     Object? exerciseId = null,
     Object? name = null,
+    Object? measurementType = null,
     Object? sets = null,
+    Object? restSecondsOverride = freezed,
   }) {
     return _then(_$WorkoutExerciseStateImpl(
       id: null == id
@@ -348,10 +371,18 @@ class __$$WorkoutExerciseStateImplCopyWithImpl<$Res>
           ? _value.name
           : name // ignore: cast_nullable_to_non_nullable
               as String,
+      measurementType: null == measurementType
+          ? _value.measurementType
+          : measurementType // ignore: cast_nullable_to_non_nullable
+              as String,
       sets: null == sets
           ? _value._sets
           : sets // ignore: cast_nullable_to_non_nullable
               as List<WorkoutSetState>,
+      restSecondsOverride: freezed == restSecondsOverride
+          ? _value.restSecondsOverride
+          : restSecondsOverride // ignore: cast_nullable_to_non_nullable
+              as int?,
     ));
   }
 }
@@ -363,7 +394,9 @@ class _$WorkoutExerciseStateImpl implements _WorkoutExerciseState {
       {this.id = '',
       required this.exerciseId,
       required this.name,
-      final List<WorkoutSetState> sets = const []})
+      this.measurementType = 'weight_and_reps',
+      final List<WorkoutSetState> sets = const [],
+      this.restSecondsOverride})
       : _sets = sets;
 
   @override
@@ -373,6 +406,9 @@ class _$WorkoutExerciseStateImpl implements _WorkoutExerciseState {
   final int exerciseId;
   @override
   final String name;
+  @override
+  @JsonKey()
+  final String measurementType;
   final List<WorkoutSetState> _sets;
   @override
   @JsonKey()
@@ -383,8 +419,11 @@ class _$WorkoutExerciseStateImpl implements _WorkoutExerciseState {
   }
 
   @override
+  final int? restSecondsOverride;
+
+  @override
   String toString() {
-    return 'WorkoutExerciseState(id: $id, exerciseId: $exerciseId, name: $name, sets: $sets)';
+    return 'WorkoutExerciseState(id: $id, exerciseId: $exerciseId, name: $name, measurementType: $measurementType, sets: $sets, restSecondsOverride: $restSecondsOverride)';
   }
 
   @override
@@ -396,12 +435,22 @@ class _$WorkoutExerciseStateImpl implements _WorkoutExerciseState {
             (identical(other.exerciseId, exerciseId) ||
                 other.exerciseId == exerciseId) &&
             (identical(other.name, name) || other.name == name) &&
-            const DeepCollectionEquality().equals(other._sets, _sets));
+            (identical(other.measurementType, measurementType) ||
+                other.measurementType == measurementType) &&
+            const DeepCollectionEquality().equals(other._sets, _sets) &&
+            (identical(other.restSecondsOverride, restSecondsOverride) ||
+                other.restSecondsOverride == restSecondsOverride));
   }
 
   @override
-  int get hashCode => Object.hash(runtimeType, id, exerciseId, name,
-      const DeepCollectionEquality().hash(_sets));
+  int get hashCode => Object.hash(
+      runtimeType,
+      id,
+      exerciseId,
+      name,
+      measurementType,
+      const DeepCollectionEquality().hash(_sets),
+      restSecondsOverride);
 
   @JsonKey(ignore: true)
   @override
@@ -417,7 +466,9 @@ abstract class _WorkoutExerciseState implements WorkoutExerciseState {
       {final String id,
       required final int exerciseId,
       required final String name,
-      final List<WorkoutSetState> sets}) = _$WorkoutExerciseStateImpl;
+      final String measurementType,
+      final List<WorkoutSetState> sets,
+      final int? restSecondsOverride}) = _$WorkoutExerciseStateImpl;
 
   @override
   String get id;
@@ -426,7 +477,11 @@ abstract class _WorkoutExerciseState implements WorkoutExerciseState {
   @override
   String get name;
   @override
+  String get measurementType;
+  @override
   List<WorkoutSetState> get sets;
+  @override
+  int? get restSecondsOverride;
   @override
   @JsonKey(ignore: true)
   _$$WorkoutExerciseStateImplCopyWith<_$WorkoutExerciseStateImpl>

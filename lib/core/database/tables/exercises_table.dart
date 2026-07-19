@@ -12,6 +12,8 @@ class Exercises extends Table {
   TextColumn get secondaryMuscles => text().nullable()();
   TextColumn get instructions => text().nullable()();
   BoolColumn get isCustom => boolean().withDefault(const Constant(false))();
+  TextColumn get measurementType =>
+      text().withDefault(const Constant('weight_and_reps'))();
   TextColumn get createdBy => text().nullable()();
   DateTimeColumn get seededAt => dateTime().nullable()();
 }
