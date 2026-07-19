@@ -8,6 +8,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../database/database.dart';
 import '../providers/database_provider.dart';
+import 'workout_draft_store.dart';
 
 /// Outcome of an account deletion attempt. The flow ALWAYS wipes local data
 /// and signs the user out; [cloudPurged] / [authUserDeleted] report how
@@ -141,6 +142,7 @@ class AccountDeletionService {
         // Already signed out / offline — proceed with the local wipe anyway.
       }
 
+      await WorkoutDraftStore().clear();
       await _db.wipeAllData();
 
       // Clears settings, weekly goal, unit overrides, the local sync queue

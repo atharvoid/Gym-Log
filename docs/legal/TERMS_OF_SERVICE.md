@@ -8,11 +8,14 @@ GymLog is a workout-logging app. The free tier logs unlimited workouts,
 forever. The optional **GymLog Pro** subscription unlocks extended analytics
 (full chart history and the 1Y / All-Time ranges).
 
-## Your data, your responsibility
+## Your data storage & sync
 
-Workout data is stored **only on your device**. Because we never have a copy,
-we cannot recover it if you uninstall the app, clear its storage, or lose the
-device. Use Settings → Export workouts for backups.
+Workout data is stored locally on your device. 
+
+- **If you are signed in**: A compressed copy of your workouts, routines, and app preferences is synced to our secure database (Supabase). This ensures your history follows you across devices and survives app uninstalls or reinstalls.
+- **If you are signed out**: Your data remains stored **only on your device**. Because we never have a copy, we cannot recover it if you uninstall the app, clear its storage, or lose the device. 
+
+Use **Settings → Export workouts** to save local backups of your data at any time.
 
 ## Subscriptions
 
@@ -45,5 +48,4 @@ new effective date. Continued use after changes means acceptance.
 
 ## Contact
 
-Open an issue on the GymLog repository or contact the developer via the
-repository profile.
+If you have questions, need support, or request account deletion, email **support@gymlog.app**, or open an issue on the GymLog repository.

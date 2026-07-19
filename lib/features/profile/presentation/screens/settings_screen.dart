@@ -98,6 +98,7 @@ class SettingsScreen extends ConsumerStatefulWidget {
 
 class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   bool? _syncEnabled;
+  int _devTapCount = 0;
 
   /// Key attached to the Rest timer row — used by the step-3 tour spotlight
   /// so the overlay can locate its screen position from the Settings route.
@@ -491,6 +492,18 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           title: 'Version',
                           subtitle: 'GymLog $version',
                           showChevron: false,
+                          onTap: () {
+                            if (!tapGuard()) return;
+                            HapticFeedback.lightImpact();
+                            setState(() {
+                              _devTapCount++;
+                              if (_devTapCount >= 5) {
+                                _devTapCount = 0;
+                                throw StateError(
+                                    'Sentry Diagnostic Controlled Test Error');
+                              }
+                            });
+                          },
                         ),
                       ],
                     ),

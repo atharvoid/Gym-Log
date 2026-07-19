@@ -7,6 +7,11 @@ import 'package:go_router/go_router.dart';
 import 'package:gymlog/core/services/account_deletion_service.dart';
 import 'package:gymlog/core/theme/app_colors.dart';
 import 'package:gymlog/core/theme/app_text.dart';
+import 'package:gymlog/core/providers/database_provider.dart';
+import 'package:gymlog/features/auth/presentation/providers/auth_provider.dart';
+import 'package:gymlog/features/profile/presentation/providers/profile_provider.dart';
+import 'package:gymlog/core/services/workout_export_service.dart';
+import 'package:share_plus/share_plus.dart';
 
 /// Irreversible account deletion. Reached from Settings (not buried). The user
 /// reads exactly what is destroyed vs preserved, types DELETE to confirm, and
@@ -135,6 +140,7 @@ class _DeleteAccountScreenState extends ConsumerState<DeleteAccountScreen> {
                       ],
                     ),
                   ),
+                  const _ExportBackupButton(),
                   const SizedBox(height: 24),
                   const _SectionCard(
                     title: 'What will be permanently deleted',
@@ -155,6 +161,17 @@ class _DeleteAccountScreenState extends ConsumerState<DeleteAccountScreen> {
                     lines: [
                       'Any CSV files you exported to your phone (Downloads / Files) '
                           'are your property. They are never touched or removed.',
+                    ],
+                  ),
+                  const SizedBox(height: 14),
+                  const _SectionCard(
+                    title: 'Active Subscriptions (Store Managed)',
+                    tone: AppColors.warning,
+                    icon: Icons.info_outline_rounded,
+                    lines: [
+                      'Deleting your GymLog account does NOT cancel your subscription.',
+                      'You must cancel active billing in your App Store / Google Play account settings to prevent future renewals.',
+                      'Any refund requests must be initiated directly through the store processor.',
                     ],
                   ),
                   const SizedBox(height: 26),
@@ -306,6 +323,101 @@ class _SectionCard extends StatelessWidget {
               ),
             ),
         ],
+      ),
+    );
+  }
+}
+
+class _ExportBackupButton extends ConsumerWidget {
+  const _ExportBackupButton();
+
+  Future<void> _export(BuildContext context, WidgetRef ref, String userId,
+      String displayName) async {
+    HapticFeedback.lightImpact();
+    final messenger = ScaffoldMessenger.of(context);
+    final bgSurface = context.surface.bgSurface;
+    try {
+      final service = WorkoutExportService(ref.read(databaseProvider));
+      final file = await service.writeCsvFile(userId);
+      final who = displayName.trim().isEmpty ? '' : ' (${displayName.trim()})';
+      await SharePlus.instance.share(ShareParams(
+        files: [XFile(file.path, mimeType: 'text/csv')],
+        subject: 'GymLog workout export$who',
+        text: 'GymLog training history$who',
+      ));
+    } catch (e) {
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text(
+            'Export failed. Please try again.',
+            style: AppText.button(),
+          ),
+          backgroundColor: bgSurface,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final user = ref.watch(authProvider);
+    if (user == null) return const SizedBox.shrink();
+    final profile = ref.watch(currentUserProfileProvider).valueOrNull;
+    final displayName = profile?.displayName ?? '';
+    final surface = context.surface;
+
+    return Padding(
+      padding: const EdgeInsets.only(top: 14),
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: surface.surface2,
+          borderRadius: AppRadius.cardAll,
+          border: Border.all(color: surface.borderSubtle),
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Backup your training history',
+                    style: AppText.rowLabel(),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    'Download a CSV of all your sets before purging your account.',
+                    style: AppText.body(color: surface.textSecondary)
+                        .copyWith(fontSize: 12.5),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            ElevatedButton.icon(
+              onPressed: () => _export(context, ref, user.id, displayName),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: surface.surface3,
+                foregroundColor: surface.textPrimary,
+                elevation: 0,
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(AppRadius.buttonPrimary),
+                  side: BorderSide(color: surface.borderSubtle),
+                ),
+              ),
+              icon: const Icon(Icons.download_rounded, size: 16),
+              label: Text(
+                'Export',
+                style: AppText.button(color: surface.textPrimary)
+                    .copyWith(fontSize: 13),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
