@@ -106,7 +106,7 @@ void main() {
             workoutExerciseId: weId,
             exerciseId: exId,
             orderIndex: i,
-            weightKg: 80.0 + i,
+            weightKg: Value(80.0 + i),
             reps: 10,
           ));
     }

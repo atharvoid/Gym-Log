@@ -177,9 +177,11 @@ class _DetailSetRow extends StatelessWidget {
   });
 
   double? get _crossSessionDelta {
-    if (prevSet == null) return null;
-    if (set.weightKg <= 0 || prevSet!.weightKg <= 0) return null;
-    final d = set.weightKg - prevSet!.weightKg;
+    if (prevSet == null || set.weightKg == null || prevSet!.weightKg == null) {
+      return null;
+    }
+    if (set.weightKg! <= 0 || prevSet!.weightKg! <= 0) return null;
+    final d = set.weightKg! - prevSet!.weightKg!;
     return d == 0 ? null : d;
   }
 
@@ -189,6 +191,7 @@ class _DetailSetRow extends StatelessWidget {
         ? AppColors.textPrimary.withValues(alpha: 0.03)
         : Colors.transparent;
     final delta = _crossSessionDelta;
+    final showWeight = set.weightKg != null && set.weightKg! > 0;
 
     return Container(
       color: bg,
@@ -206,9 +209,11 @@ class _DetailSetRow extends StatelessWidget {
           Expanded(
             child: Row(
               children: [
-                Text(_formatWeight(set.weightKg, equipment),
-                    style: AppText.statLabel(color: AppColors.textPrimary)),
-                Text(' × ', style: AppText.statLabel()),
+                if (showWeight) ...[
+                  Text(_formatWeight(set.weightKg!, equipment),
+                      style: AppText.statLabel(color: AppColors.textPrimary)),
+                  Text(' × ', style: AppText.statLabel()),
+                ],
                 Text('${set.reps} reps',
                     style: AppText.statLabel(color: AppColors.textPrimary)),
                 if (set.isPr) ...[

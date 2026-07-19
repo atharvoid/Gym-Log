@@ -48,7 +48,8 @@ void main() {
         );
       ''');
 
-      // Create other tables referenced by beforeOpen index statements
+      await executor.runCustom(
+          'CREATE TABLE exercises (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, exercise_db_id TEXT, name TEXT, body_part TEXT, equipment TEXT, target TEXT, gif_url TEXT, secondary_muscles TEXT, instructions TEXT, is_custom INTEGER NOT NULL DEFAULT 0, created_by TEXT, seeded_at INTEGER);');
       await executor.runCustom(
           'CREATE TABLE workout_exercises (session_id TEXT, exercise_id TEXT);');
       await executor.runCustom(
@@ -98,6 +99,98 @@ void main() {
       await db.close();
 
       // Clean up temp dir
+      if (tempDir.existsSync()) {
+        tempDir.deleteSync(recursive: true);
+      }
+    });
+  });
+
+  group('Database v4 to v5 migration', () {
+    test(
+        'adds measurement_type column, backfills bodyweight exercises, and makes weight_kg nullable',
+        () async {
+      final tempDir = Directory.systemTemp.createTempSync('gymlog_v5_test');
+      final dbFile = File(p.join(tempDir.path, 'migration_v5_test.db'));
+      final executor = NativeDatabase(dbFile);
+
+      await executor.ensureOpen(_DummyQueryExecutorUser());
+
+      await executor.runCustom('''
+        CREATE TABLE exercises (
+          id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+          exercise_db_id TEXT UNIQUE,
+          name TEXT NOT NULL,
+          body_part TEXT NOT NULL,
+          equipment TEXT NOT NULL,
+          target TEXT NOT NULL,
+          gif_url TEXT,
+          secondary_muscles TEXT,
+          instructions TEXT,
+          is_custom INTEGER NOT NULL DEFAULT 0,
+          created_by TEXT,
+          seeded_at INTEGER
+        );
+      ''');
+
+      await executor.runCustom('''
+        CREATE TABLE workout_sets (
+          id TEXT NOT NULL PRIMARY KEY,
+          workout_exercise_id TEXT NOT NULL,
+          exercise_id INTEGER NOT NULL,
+          order_index INTEGER NOT NULL,
+          set_type TEXT NOT NULL DEFAULT 'normal',
+          weight_kg REAL NOT NULL,
+          reps INTEGER NOT NULL,
+          rpe REAL,
+          is_pr INTEGER NOT NULL DEFAULT 0,
+          estimated1rm REAL,
+          completed_at INTEGER
+        );
+      ''');
+
+      await executor.runCustom('''
+        CREATE TABLE user_profiles (
+          id TEXT NOT NULL PRIMARY KEY,
+          email TEXT NOT NULL,
+          display_name TEXT NOT NULL,
+          is_premium INTEGER NOT NULL DEFAULT 0,
+          created_at INTEGER NOT NULL
+        );
+      ''');
+      await executor.runCustom(
+          'CREATE TABLE workout_exercises (session_id TEXT, exercise_id TEXT);');
+      await executor.runCustom(
+          'CREATE TABLE workout_sessions (user_id TEXT, started_at INTEGER, routine_id TEXT);');
+      await executor
+          .runCustom('CREATE TABLE routine_exercises (routine_day_id TEXT);');
+      await executor.runCustom('CREATE TABLE routine_days (routine_id TEXT);');
+      await executor.runCustom(
+          'CREATE TABLE sync_outbox (user_id TEXT, created_at_ms INTEGER);');
+
+      await executor.runCustom('PRAGMA user_version = 4;');
+
+      await executor.runCustom('''
+        INSERT INTO exercises (id, name, body_part, equipment, target)
+        VALUES (1, 'Push-up', 'chest', 'Bodyweight', 'pectorals');
+      ''');
+      await executor.runCustom('''
+        INSERT INTO exercises (id, name, body_part, equipment, target)
+        VALUES (2, 'Bench Press', 'chest', 'Barbell', 'pectorals');
+      ''');
+
+      await executor.close();
+
+      final testExecutor = NativeDatabase(dbFile);
+      final db = AppDatabase.forTesting(testExecutor);
+
+      final ex1 = await db.exercisesDao.getExerciseById(1);
+      expect(ex1.measurementType, 'reps_only');
+
+      final ex2 = await db.exercisesDao.getExerciseById(2);
+      expect(ex2.measurementType, 'weight_and_reps');
+
+      await db.close();
+
       if (tempDir.existsSync()) {
         tempDir.deleteSync(recursive: true);
       }

@@ -68,8 +68,9 @@ void main() {
       bodyPart: 'Chest',
       equipment: 'Barbell',
       target: 'Chest',
-      secondaryMuscles: '["Triceps", "Shoulders"]',
+      secondaryMuscles: '["Triceps", "Front Delts"]',
       isCustom: false,
+      measurementType: 'weight_and_reps',
     );
 
     await tester.pumpWidget(
@@ -128,6 +129,7 @@ void main() {
       equipment: 'Barbell',
       target: 'Chest',
       isCustom: false,
+      measurementType: 'weight_and_reps',
     );
 
     await tester.pumpWidget(
@@ -168,6 +170,7 @@ void main() {
       equipment: 'Barbell',
       target: 'Chest',
       isCustom: false,
+      measurementType: 'weight_and_reps',
     );
 
     var analyticsCalls = 0;
@@ -230,6 +233,7 @@ void main() {
       equipment: 'Barbell',
       target: 'Chest',
       isCustom: false,
+      measurementType: 'weight_and_reps',
     );
 
     await tester.pumpWidget(

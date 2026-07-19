@@ -183,7 +183,7 @@ class WorkoutImportService {
                     exerciseId: exerciseIds[ei],
                     orderIndex: st.orderIndex,
                     setType: Value(st.setType),
-                    weightKg: st.weightKg,
+                    weightKg: Value(st.weightKg),
                     reps: st.reps,
                     rpe: Value(st.rpe),
                     completedAt: Value(s.endedAt ?? s.startedAt),

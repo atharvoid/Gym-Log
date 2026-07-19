@@ -5,7 +5,11 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../data/auth_repository.dart';
 
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
-  return AuthRepository(Supabase.instance.client);
+  try {
+    return AuthRepository(Supabase.instance.client);
+  } catch (_) {
+    return AuthRepository(null);
+  }
 });
 
 final authStateProvider = StreamProvider<AuthState>((ref) {
@@ -14,8 +18,8 @@ final authStateProvider = StreamProvider<AuthState>((ref) {
 
 final authProvider = Provider<User?>((ref) {
   final authState = ref.watch(authStateProvider);
-  final user = authState.value?.session?.user ??
-      Supabase.instance.client.auth.currentUser;
+  final repoUser = ref.watch(authRepositoryProvider).currentUser;
+  final user = authState.value?.session?.user ?? repoUser;
 
   // Keep Sentry scope in sync with auth state without capturing PII.
   if (user != null) {

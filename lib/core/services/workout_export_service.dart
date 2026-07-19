@@ -56,7 +56,7 @@ class WorkoutExportService {
         escapeCsvField(exercise.name),
         '${set.orderIndex + 1}', // stored 0-based, exported human 1-based
         set.setType,
-        formatNumber(set.weightKg),
+        set.weightKg == null ? '' : formatNumber(set.weightKg!),
         '${set.reps}',
         set.rpe == null ? '' : formatNumber(set.rpe!),
         set.isPr ? 'true' : 'false',

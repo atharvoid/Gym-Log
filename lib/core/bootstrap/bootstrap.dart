@@ -13,6 +13,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../config/env.dart';
 import '../database/database.dart';
 import '../services/premium_service.dart';
+import '../services/notification_service.dart';
 import '../theme/dynamic_accent_theme.dart';
 import '../theme/theme_palette.dart';
 import '../../shared/widgets/app_error_screen.dart';
@@ -22,6 +23,7 @@ import '../../shared/widgets/app_error_screen.dart';
 class BootstrapResult {
   final AppDatabase db;
   final PremiumService premiumService;
+  final NotificationService notificationService;
 
   /// True when the local database failed its integrity check. The app shows a
   /// recovery prompt instead of crashing.
@@ -39,6 +41,7 @@ class BootstrapResult {
   const BootstrapResult({
     required this.db,
     required this.premiumService,
+    required this.notificationService,
     required this.databaseCorrupted,
     required this.cloudAvailable,
     required this.accentPalette,
@@ -92,9 +95,14 @@ abstract final class Bootstrap {
         // ── Stage 6: commerce readiness (never blocks launch) ────────────
         final premiumService = _initCommerce(dbStage.db);
 
+        // ── Stage 6b: local notifications initialization ─────────────────
+        final notificationService = NotificationService();
+        await notificationService.init();
+
         final result = BootstrapResult(
           db: dbStage.db,
           premiumService: premiumService,
+          notificationService: notificationService,
           databaseCorrupted: dbStage.corrupted,
           cloudAvailable: cloudAvailable,
           accentPalette: accentPalette,

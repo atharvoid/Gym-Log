@@ -78,7 +78,7 @@ void main() {
             workoutExerciseId: weId,
             exerciseId: exerciseId,
             orderIndex: i,
-            weightKg: sets[i].$1,
+            weightKg: Value(sets[i].$1),
             reps: sets[i].$2,
           ));
     }

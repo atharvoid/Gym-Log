@@ -90,12 +90,13 @@ abstract final class WorkoutCsvParser {
       final start = _tryDate(_hevyDate, startStr);
       final reps = int.tryParse(cell('reps'));
       final weight = _num(cell(weightCol));
-      if (start == null || reps == null || weight == null) {
+      if (start == null || reps == null) {
         skipped++;
         continue;
       }
 
-      final weightKg = unit == 'lbs' ? weight * _kgPerLb : weight;
+      final weightKg =
+          weight == null ? null : (unit == 'lbs' ? weight * _kgPerLb : weight);
       builder.add(
         sessionName: title.isEmpty ? 'Workout' : title,
         startedAt: start,
@@ -150,9 +151,11 @@ abstract final class WorkoutCsvParser {
         continue;
       }
 
-      final weight = _num(cell('weight')) ?? 0;
+      final weight = _num(cell('weight'));
       final rowUnit = hasUnitCol ? _normUnit(cell('weight unit')) : assumedUnit;
-      final weightKg = rowUnit == 'lbs' ? weight * _kgPerLb : weight;
+      final weightKg = weight == null
+          ? null
+          : (rowUnit == 'lbs' ? weight * _kgPerLb : weight);
 
       final setOrder = cell('set order').toLowerCase();
       final notes = cell('notes');
@@ -288,7 +291,7 @@ class _SessionBuilder {
     required String exerciseName,
     required String? exerciseNotes,
     required String setType,
-    required double weightKg,
+    required double? weightKg,
     required int reps,
     required double? rpe,
   }) {

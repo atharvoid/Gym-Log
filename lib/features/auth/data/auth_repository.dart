@@ -3,11 +3,14 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/config/env.dart';
+import '../../../core/services/workout_draft_store.dart';
 
 class AuthRepository {
-  final SupabaseClient _client;
+  final SupabaseClient? _client;
+  final WorkoutDraftStore _draftStore;
 
-  AuthRepository(this._client);
+  AuthRepository(this._client, [WorkoutDraftStore? draftStore])
+      : _draftStore = draftStore ?? WorkoutDraftStore();
 
   /// Tracks an in-flight Google sign-in. The `google_sign_in` plugin keeps a
   /// single global pending operation and throws
@@ -21,14 +24,18 @@ class AuthRepository {
   /// User cancellation is NOT an error — it resolves normally so the UI can
   /// simply re-enable the button without showing a failure message.
   Future<void> signInWithGoogle() {
+    if (_client == null) return Future.value();
     return _googleSignInInFlight ??=
         _performGoogleSignIn().whenComplete(() => _googleSignInInFlight = null);
   }
 
   Future<void> _performGoogleSignIn() async {
+    final client = _client;
+    if (client == null) return;
+
     // Use web OAuth for web platform
     if (kIsWeb) {
-      await _client.auth.signInWithOAuth(
+      await client.auth.signInWithOAuth(
         OAuthProvider.google,
         redirectTo: 'http://127.0.0.1:8080/',
       );
@@ -59,7 +66,7 @@ class AuthRepository {
       throw Exception('No ID Token found');
     }
 
-    await _client.auth.signInWithIdToken(
+    await client.auth.signInWithIdToken(
       provider: OAuthProvider.google,
       idToken: idToken,
       accessToken: accessToken,
@@ -67,12 +74,19 @@ class AuthRepository {
   }
 
   Future<void> signOut() async {
-    await _client.auth.signOut();
+    await _draftStore.clear();
+    final client = _client;
+    if (client != null) {
+      try {
+        await client.auth.signOut();
+      } catch (_) {}
+    }
   }
 
-  User? get currentUser => _client.auth.currentUser;
+  User? get currentUser => _client?.auth.currentUser;
 
-  Session? get currentSession => _client.auth.currentSession;
+  Session? get currentSession => _client?.auth.currentSession;
 
-  Stream<AuthState> get authStateChanges => _client.auth.onAuthStateChange;
+  Stream<AuthState> get authStateChanges =>
+      _client?.auth.onAuthStateChange ?? const Stream.empty();
 }

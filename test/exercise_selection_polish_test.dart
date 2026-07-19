@@ -96,6 +96,7 @@ void main() {
         equipment: 'Barbell',
         target: 'Chest',
         isCustom: false,
+        measurementType: 'weight_and_reps',
       ),
       const Exercise(
         id: 2,
@@ -104,6 +105,7 @@ void main() {
         equipment: 'Dumbbell',
         target: 'Chest',
         isCustom: false,
+        measurementType: 'weight_and_reps',
       ),
       const Exercise(
         id: 3,
@@ -112,6 +114,7 @@ void main() {
         equipment: 'Barbell',
         target: 'Legs',
         isCustom: false,
+        measurementType: 'weight_and_reps',
       ),
     ];
 

@@ -48,11 +48,11 @@ class RawSet {
 
   final int orderIndex; // 0-based, contiguous within the exercise
   final String setType; // normal | warmup | dropset | failure
-  final double weightKg; // always kilograms
+  final double? weightKg; // kilograms (null if unrecorded / bodyweight)
   final int reps;
   final double? rpe;
 
-  double get volumeKg => weightKg * reps;
+  double get volumeKg => (weightKg ?? 0.0) * reps;
 }
 
 /// One exercise within a session, preserving the order it appeared in the file.

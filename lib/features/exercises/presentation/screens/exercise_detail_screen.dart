@@ -56,7 +56,7 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
     return SkeletonPulse(child: child);
   }
 
-  double _metricForToggle(ExerciseHistoryData e, int index) {
+  double? _metricForToggle(ExerciseHistoryData e, int index) {
     switch (index) {
       case 0:
         return e.weight;
@@ -268,7 +268,7 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
                             _buildStatToggles(surface),
                             if (history.isNotEmpty) ...[
                               const SizedBox(height: 24),
-                              _buildPersonalRecords(surface, prs),
+                              _buildPersonalRecords(context, prs),
                             ],
                             const SizedBox(height: 24),
                             _buildInstructions(exercise, surface),
@@ -368,7 +368,8 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
                 '$_activeToggleIndex|$_selectedTimeRange|${history.length}'),
             data: [
               for (final e in history)
-                ChartPoint(e.date, _metricForToggle(e, _activeToggleIndex)),
+                if (_metricForToggle(e, _activeToggleIndex) != null)
+                  ChartPoint(e.date, _metricForToggle(e, _activeToggleIndex)!),
             ],
             valueFormatter: (v) => _activeToggleIndex == 3
                 ? '${groupThousands(v)} kg'
@@ -429,14 +430,19 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
     );
   }
 
-  Widget _buildPersonalRecords(SurfaceTokens surface, PersonalRecords prs) {
+  Widget _buildPersonalRecords(BuildContext context, PersonalRecords prs) {
+    final surface = context.surface;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           children: [
-            const Icon(Icons.emoji_events,
-                color: AppColors.rewardGold, size: 20),
+            const Icon(
+              Icons.emoji_events_rounded,
+              color: AppColors.warning,
+              size: 16,
+            ),
             const SizedBox(width: 8),
             Text(
               'Personal Records',
@@ -454,11 +460,19 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
           ),
           child: Column(
             children: [
-              _prRow('Heaviest Weight',
-                  '${prs.maxWeight.toStringAsFixed(1)} kg', surface),
+              _prRow(
+                  'Heaviest Weight',
+                  prs.maxWeight != null
+                      ? '${prs.maxWeight!.toStringAsFixed(1)} kg'
+                      : '—',
+                  surface),
               _prDivider(surface),
               _prRow(
-                  'Best 1RM', '${prs.max1RM.toStringAsFixed(2)} kg', surface),
+                  'Best 1RM',
+                  prs.max1RM != null
+                      ? '${prs.max1RM!.toStringAsFixed(2)} kg'
+                      : '—',
+                  surface),
               _prDivider(surface),
               _prRow('Max Session Volume',
                   '${prs.maxVolume.toStringAsFixed(0)} kg', surface),

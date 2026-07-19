@@ -93,6 +93,7 @@ void main() {
       equipment: 'Barbell',
       target: 'Chest',
       isCustom: false,
+      measurementType: 'weight_and_reps',
     );
 
     await tester.pumpWidget(

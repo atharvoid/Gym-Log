@@ -42,6 +42,7 @@ void main() {
         equipment: 'Dumbbell',
         target: 'Biceps',
         isCustom: false,
+        measurementType: 'weight_and_reps',
         gifUrl: '',
       ),
     ];
@@ -78,6 +79,7 @@ void main() {
         equipment: 'Dumbbell',
         target: 'Biceps',
         isCustom: false,
+        measurementType: 'weight_and_reps',
         gifUrl: '',
       ),
     ];
@@ -110,6 +112,7 @@ void main() {
       equipment: 'Dumbbell',
       target: 'Biceps',
       isCustom: false,
+      measurementType: 'weight_and_reps',
       gifUrl: '',
     );
 

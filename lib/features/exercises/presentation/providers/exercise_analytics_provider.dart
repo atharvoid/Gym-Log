@@ -32,21 +32,21 @@ final exerciseAnalyticsProvider =
 });
 
 class PersonalRecords {
-  final double maxWeight;
-  final double max1RM;
+  final double? maxWeight;
+  final double? max1RM;
   final double maxVolume;
   final int maxReps;
 
   const PersonalRecords({
-    required this.maxWeight,
-    required this.max1RM,
+    this.maxWeight,
+    this.max1RM,
     required this.maxVolume,
     required this.maxReps,
   });
 
   static const empty = PersonalRecords(
-    maxWeight: 0.0,
-    max1RM: 0.0,
+    maxWeight: null,
+    max1RM: null,
     maxVolume: 0.0,
     maxReps: 0,
   );
@@ -58,10 +58,14 @@ final exercisePersonalRecordsProvider =
   return historyAsync.maybeWhen(
     data: (history) {
       if (history.isEmpty) return PersonalRecords.empty;
+      final weights = history.map((e) => e.weight).whereType<double>();
       final maxWeight =
-          history.map((e) => e.weight).reduce((a, b) => a > b ? a : b);
+          weights.isEmpty ? null : weights.reduce((a, b) => a > b ? a : b);
+
+      final e1rms = history.map((e) => e.estimated1RM).whereType<double>();
       final max1RM =
-          history.map((e) => e.estimated1RM).reduce((a, b) => a > b ? a : b);
+          e1rms.isEmpty ? null : e1rms.reduce((a, b) => a > b ? a : b);
+
       final maxVolume =
           history.map((e) => e.volume).reduce((a, b) => a > b ? a : b);
       final maxReps =

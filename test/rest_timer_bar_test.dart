@@ -15,12 +15,19 @@ void main() {
   testWidgets('RestTimerBar stays compact in a bottomNavigationBar',
       (tester) async {
     await tester.pumpWidget(
-      const ProviderScope(
+      ProviderScope(
         child: MaterialApp(
           home: Scaffold(
-            body: SizedBox.expand(),
+            body: const SizedBox.expand(),
             bottomNavigationBar: RestTimerBar(
-              state: RestTimerState(totalSeconds: 90, remainingSeconds: 54),
+              state: RestTimerState(
+                totalSeconds: 90,
+                remainingSeconds: 54,
+                endTime: DateTime.now(),
+                workoutId: 'w-mock',
+                exerciseId: 1,
+                setId: 's-mock',
+              ),
             ),
           ),
         ),

@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:gymlog/core/services/notification_service.dart';
 import 'app.dart';
 import 'core/bootstrap/bootstrap.dart';
 import 'core/providers/database_provider.dart';
@@ -14,6 +15,8 @@ Future<void> main() async {
       overrides: [
         databaseProvider.overrideWithValue(result.db),
         premiumServiceProvider.overrideWithValue(result.premiumService),
+        notificationServiceProvider
+            .overrideWithValue(result.notificationService),
         // Seed the accent palette read from disk before the first frame so the
         // app paints in the user's chosen accent immediately.
         initialAccentPaletteProvider.overrideWithValue(result.accentPalette),
