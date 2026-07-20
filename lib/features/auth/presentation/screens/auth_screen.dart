@@ -124,6 +124,9 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
         _snack('No connection. Check your internet and try again.');
       } else if (e is AuthException) {
         _snack('Sign-in unavailable. Please try again later.');
+      } else if (e.toString().contains('10:') ||
+          e.toString().contains('DEVELOPER_ERROR')) {
+        _snack('Sign-in error (10): Google SHA-1 fingerprint mismatch.');
       } else {
         _snack("Couldn't sign in. Please try again.");
       }
