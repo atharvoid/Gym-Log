@@ -59,8 +59,14 @@ List<WorkoutExerciseState> seedExercisesFromRoutine(
   return routine.exercises.map((he) {
     final c = he.config;
     final count = c.defaultSets > 0 ? c.defaultSets : 1;
-    final mType = MeasurementType.fromString(he.exercise.measurementType,
-        equipment: he.exercise.equipment);
+    final rawType = he.exercise.measurementType;
+    final mType = rawType.isNotEmpty
+        ? MeasurementType.fromString(rawType)
+        : MeasurementType.inferLegacyMeasurementType(
+            equipment: he.exercise.equipment,
+            exerciseName: he.exercise.name,
+          );
+
     final initialWeight = mType.isRepsOnly ? null : 0.0;
     final sets = List.generate(
         count, (_) => WorkoutSetState.create(weightKg: initialWeight));

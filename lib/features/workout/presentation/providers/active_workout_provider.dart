@@ -111,8 +111,12 @@ class ActiveWorkoutNotifier extends StateNotifier<ActiveWorkoutState?> {
       for (final re in routineExercises) {
         final meta = metaById[re.exerciseId];
         if (meta == null) continue;
-        final mType = MeasurementType.fromString(meta.measurementType,
-            equipment: meta.equipment);
+        final rawType = meta.measurementType;
+        final mType = rawType.isNotEmpty
+            ? MeasurementType.fromString(rawType)
+            : MeasurementType.inferLegacyMeasurementType(
+                equipment: meta.equipment, exerciseName: meta.name);
+
         final prevSets = prevSetsByExercise[re.exerciseId] ?? const [];
 
         final sets = <WorkoutSetState>[];
@@ -255,9 +259,14 @@ class ActiveWorkoutNotifier extends StateNotifier<ActiveWorkoutState?> {
     final session = historicalWorkout.session;
 
     final exercises = historicalWorkout.exercises.map((he) {
-      final mType = MeasurementType.fromString(
-          he.exerciseMetadata.measurementType,
-          equipment: he.exerciseMetadata.equipment);
+      final rawType = he.exerciseMetadata.measurementType;
+      final mType = rawType.isNotEmpty
+          ? MeasurementType.fromString(rawType)
+          : MeasurementType.inferLegacyMeasurementType(
+              equipment: he.exerciseMetadata.equipment,
+              exerciseName: he.exerciseMetadata.name,
+            );
+
       return WorkoutExerciseState(
         id: const Uuid().v4(),
         exerciseId: he.exerciseMetadata.id,
@@ -314,9 +323,30 @@ class ActiveWorkoutNotifier extends StateNotifier<ActiveWorkoutState?> {
     state = null;
   }
 
-  void addExercise(int exerciseId, String name, {String? measurementType}) {
+  void addExerciseFromEntity(Exercise exercise) {
+    addExercise(exercise.id, exercise.name,
+        measurementType: exercise.measurementType);
+  }
+
+  Future<void> addExercise(int exerciseId, String name,
+      {String? measurementType}) async {
     if (state == null) return;
-    final mType = MeasurementType.fromString(measurementType);
+    String? resolvedType = measurementType;
+    if (resolvedType == null || resolvedType.isEmpty) {
+      try {
+        final db = _ref.read(databaseProvider);
+        final row = await (db.select(db.exercises)
+              ..where((t) => t.id.equals(exerciseId)))
+            .getSingleOrNull();
+        if (row != null) {
+          resolvedType = row.measurementType;
+        }
+      } catch (e) {
+        debugPrint(
+            '[ActiveWorkoutNotifier] Failed to resolve measurementType for exercise $exerciseId: $e');
+      }
+    }
+    final mType = MeasurementType.fromString(resolvedType);
     final exercise = WorkoutExerciseState(
       id: const Uuid().v4(),
       exerciseId: exerciseId,
@@ -374,11 +404,31 @@ class ActiveWorkoutNotifier extends StateNotifier<ActiveWorkoutState?> {
     saveDraftNow();
   }
 
-  void replaceExercise(int exerciseIndex, int exerciseId, String name,
-      {String? measurementType}) {
+  void replaceExerciseFromEntity(int exerciseIndex, Exercise exercise) {
+    replaceExercise(exerciseIndex, exercise.id, exercise.name,
+        measurementType: exercise.measurementType);
+  }
+
+  Future<void> replaceExercise(int exerciseIndex, int exerciseId, String name,
+      {String? measurementType}) async {
     if (state == null) return;
     final exercises = [...state!.exercises];
-    final mType = MeasurementType.fromString(measurementType);
+    String? resolvedType = measurementType;
+    if (resolvedType == null || resolvedType.isEmpty) {
+      try {
+        final db = _ref.read(databaseProvider);
+        final row = await (db.select(db.exercises)
+              ..where((t) => t.id.equals(exerciseId)))
+            .getSingleOrNull();
+        if (row != null) {
+          resolvedType = row.measurementType;
+        }
+      } catch (e) {
+        debugPrint(
+            '[ActiveWorkoutNotifier] Failed to resolve replacement measurementType for exercise $exerciseId: $e');
+      }
+    }
+    final mType = MeasurementType.fromString(resolvedType);
     exercises[exerciseIndex] = WorkoutExerciseState(
       id: exercises[exerciseIndex].id,
       exerciseId: exerciseId,

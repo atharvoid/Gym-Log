@@ -14,23 +14,40 @@ void main() {
       expect(MeasurementType.fromString('distance'), MeasurementType.distance);
     });
 
-    test('falls back to equipment when raw value is null or empty', () {
-      expect(MeasurementType.fromString(null, equipment: 'Bodyweight'),
+    test(
+        'inferLegacyMeasurementType classifies bodyweight vs assisted machine correctly',
+        () {
+      expect(
+          MeasurementType.inferLegacyMeasurementType(
+              equipment: 'Bodyweight', exerciseName: 'Push-up'),
           MeasurementType.repsOnly);
-      expect(MeasurementType.fromString(null, equipment: 'body weight'),
+      expect(
+          MeasurementType.inferLegacyMeasurementType(
+              equipment: 'None', exerciseName: 'Air Squat'),
           MeasurementType.repsOnly);
-      expect(MeasurementType.fromString(null, equipment: 'Assisted'),
-          MeasurementType.repsOnly);
-      expect(MeasurementType.fromString(null, equipment: 'Barbell'),
+      expect(
+          MeasurementType.inferLegacyMeasurementType(
+              equipment: 'Bodyweight', exerciseName: 'Plank Hold'),
+          MeasurementType.duration);
+      expect(
+          MeasurementType.inferLegacyMeasurementType(
+              equipment: 'Assisted', exerciseName: 'Assisted Pull-up'),
           MeasurementType.weightAndReps);
-      expect(MeasurementType.fromString(null, equipment: 'Dumbbell'),
+      expect(
+          MeasurementType.inferLegacyMeasurementType(
+              equipment: 'Assisted Machine', exerciseName: 'Assisted Dip'),
+          MeasurementType.weightAndReps);
+      expect(
+          MeasurementType.inferLegacyMeasurementType(
+              equipment: 'Barbell', exerciseName: 'Bench Press'),
           MeasurementType.weightAndReps);
     });
 
-    test(
-        'defaults to weightAndReps when both raw and equipment are unrecognised',
+    test('defaults to weightAndReps when equipment is unknown or unrecognised',
         () {
-      expect(MeasurementType.fromString(null, equipment: null),
+      expect(
+          MeasurementType.inferLegacyMeasurementType(
+              equipment: null, exerciseName: null),
           MeasurementType.weightAndReps);
       expect(MeasurementType.fromString('unknown_type'),
           MeasurementType.weightAndReps);

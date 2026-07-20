@@ -119,9 +119,11 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
   Future<void> _confirmDiscard() async {
     final confirmed = await showAppConfirmDialog(
       context: context,
-      title: 'Discard Workout?',
-      message: 'All progress from this session will be lost.',
-      confirmLabel: 'Discard',
+      title: 'Discard workout?',
+      message:
+          'Your sets from this workout will be deleted. This cannot be undone.',
+      confirmLabel: 'Discard workout',
+      cancelLabel: 'Keep workout',
       isDestructive: true,
     );
     if (confirmed && mounted) {
@@ -305,7 +307,7 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
           onTap: () async {
             final selected = await context.push<Exercise>('/exercises/select');
             if (selected != null && mounted) {
-              notifier.addExercise(selected.id, selected.name);
+              notifier.addExerciseFromEntity(selected);
             }
           },
           child: Container(
@@ -463,11 +465,30 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
                             ),
                           ),
                         ),
-                        // RIGHT: Finish / Save only — the ⋯ overflow is removed.
-                        PrimaryButton(
-                          label: isEditing ? 'Save' : 'Finish',
-                          onPressed: isEditing ? _saveChanges : _finish,
-                          isFullWidth: false,
+                        // RIGHT: Finish / Save button. Disabled until at least one set is completed.
+                        Consumer(
+                          builder: (context, ref, child) {
+                            final totals = ref.watch(sessionTotalsProvider);
+                            final completedSets = totals.$2;
+                            final isFinishEnabled = completedSets > 0;
+
+                            return Semantics(
+                              button: true,
+                              enabled: isFinishEnabled,
+                              label: isFinishEnabled
+                                  ? (isEditing
+                                      ? 'Save workout changes'
+                                      : 'Finish workout')
+                                  : 'Finish workout, unavailable until a set is completed',
+                              child: PrimaryButton(
+                                label: isEditing ? 'Save' : 'Finish',
+                                onPressed: isFinishEnabled
+                                    ? (isEditing ? _saveChanges : _finish)
+                                    : null,
+                                isFullWidth: false,
+                              ),
+                            );
+                          },
                         ),
                       ],
                     ),
@@ -542,8 +563,8 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
                               final selected = await context
                                   .push<Exercise>('/exercises/select');
                               if (selected != null && mounted) {
-                                notifier.replaceExercise(
-                                    index, selected.id, selected.name);
+                                notifier.replaceExerciseFromEntity(
+                                    index, selected);
                               }
                             },
                             onAddSet: () => notifier.addSet(index),

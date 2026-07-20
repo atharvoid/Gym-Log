@@ -1,4 +1,7 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
+
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -119,12 +122,12 @@ class ExerciseBlock extends ConsumerWidget {
     final catalogById =
         ref.watch(exerciseCatalogByIdProvider).valueOrNull ?? {};
     final de = catalogById[exerciseId];
-    // Use WorkoutExerciseState.measurementType as the primary source;
-    // fall back to catalog only when the state string is somehow empty.
-    final mType = MeasurementType.fromString(
-      stateMType.isNotEmpty ? stateMType : de?.measurementType,
-      equipment: de?.equipment,
-    );
+    final String? rawType =
+        stateMType.isNotEmpty ? stateMType : de?.measurementType;
+    final mType = (rawType != null && rawType.isNotEmpty)
+        ? MeasurementType.fromString(rawType)
+        : MeasurementType.inferLegacyMeasurementType(
+            equipment: de?.equipment, exerciseName: de?.name);
 
     final unit = ref.watch(exerciseUnitProvider(exerciseId));
     final previousSets =
@@ -143,32 +146,42 @@ class ExerciseBlock extends ConsumerWidget {
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 14, 4, 0),
               child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   de != null
                       ? ExerciseHeroThumb(
                           exercise: de,
-                          size: 44,
+                          size: 48,
                           enableHero: enableHero,
                         )
-                      : const ExerciseThumbnail(gifUrl: null, size: 44),
+                      : const ExerciseThumbnail(gifUrl: null, size: 48),
                   const SizedBox(width: 12),
                   Expanded(
-                    child: GestureDetector(
-                      onTap: de != null
-                          ? () => context.push('/exercise/detail/${de.id}',
-                              extra: de)
-                          : null,
-                      child: Text(
-                        exerciseName,
-                        style: AppText.cardTitle(
-                            shadows: AppText.depthFor(context)),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        GestureDetector(
+                          onTap: de != null
+                              ? () => context.push('/exercise/detail/${de.id}',
+                                  extra: de)
+                              : null,
+                          child: Text(
+                            exerciseName,
+                            style: AppText.cardTitle(
+                                shadows: AppText.depthFor(context)),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        _RestOverrideChip(
+                          exerciseIndex: exerciseIndex,
+                          exerciseName: exerciseName,
+                        ),
+                      ],
                     ),
                   ),
-                  const SizedBox(width: 8),
-                  _RestOverrideChip(exerciseIndex: exerciseIndex),
                   IconButton(
                     tooltip: 'Exercise options',
                     constraints:
@@ -351,26 +364,42 @@ class ExerciseBlock extends ConsumerWidget {
 
 class _RestOverrideChip extends ConsumerWidget {
   final int exerciseIndex;
+  final String exerciseName;
 
-  const _RestOverrideChip({required this.exerciseIndex});
+  const _RestOverrideChip({
+    required this.exerciseIndex,
+    required this.exerciseName,
+  });
 
   String _formatDuration(int totalSeconds) {
+    if (totalSeconds <= 0) return 'Off';
     final m = totalSeconds ~/ 60;
     final s = totalSeconds % 60;
     return '$m:${s.toString().padLeft(2, '0')}';
   }
 
-  void _showOverrideSheet(BuildContext context, WidgetRef ref,
-      int? currentOverride, int defaultRest) {
-    final accent = context.accent;
+  void _showOverrideSheet(
+    BuildContext context,
+    WidgetRef ref,
+    int? currentOverride,
+    int defaultRest,
+  ) {
     int tempValue = currentOverride ?? defaultRest;
+    if (tempValue <= 0) tempValue = defaultRest;
 
     showModalBottomSheet<void>(
       context: context,
+      useRootNavigator: true,
+      useSafeArea: true,
+      isScrollControlled: true,
       backgroundColor: Colors.transparent,
+      barrierColor: Colors.black.withValues(alpha: 0.60),
       builder: (sheetCtx) {
+        final accent = sheetCtx.accent;
         return StatefulBuilder(
           builder: (context, setState) {
+            final bottomPadding =
+                math.max(16.0, MediaQuery.viewPaddingOf(sheetCtx).bottom);
             return SafeArea(
               top: false,
               child: Container(
@@ -380,33 +409,38 @@ class _RestOverrideChip extends ConsumerWidget {
                 ),
                 child: SingleChildScrollView(
                   child: Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
+                    padding: EdgeInsets.fromLTRB(20, 16, 20, bottomPadding),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        // Drag handle
-                        Container(
-                          width: 36,
-                          height: 4,
-                          decoration: BoxDecoration(
-                            color: AppColors.borderEmphasis,
-                            borderRadius: BorderRadius.circular(2),
+                        Center(
+                          child: Container(
+                            width: 36,
+                            height: 4,
+                            decoration: BoxDecoration(
+                              color: AppColors.borderEmphasis,
+                              borderRadius: BorderRadius.circular(2),
+                            ),
                           ),
                         ),
-                        const SizedBox(height: 20),
+                        const SizedBox(height: 16),
                         Text(
                           'Rest Timer Override',
                           style: AppText.sheetTitle(),
                           textAlign: TextAlign.center,
                         ),
-                        const SizedBox(height: 6),
+
+                        const SizedBox(height: 4),
                         Text(
-                          'Temporary for this exercise in the current workout.',
+                          '$exerciseName · This workout only',
                           style: AppText.body(color: AppColors.textSecondary),
                           textAlign: TextAlign.center,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                        const SizedBox(height: 24),
-                        // Duration display & +/- adjusters
+                        const SizedBox(height: 20),
+                        // Stepper row
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
@@ -415,11 +449,11 @@ class _RestOverrideChip extends ConsumerWidget {
                               onTap: () {
                                 HapticFeedback.selectionClick();
                                 setState(() {
-                                  tempValue = (tempValue - 15).clamp(10, 600);
+                                  tempValue = (tempValue - 15).clamp(15, 600);
                                 });
                               },
                             ),
-                            const SizedBox(width: 24),
+                            const SizedBox(width: 20),
                             Column(
                               mainAxisSize: MainAxisSize.min,
                               children: [
@@ -434,8 +468,8 @@ class _RestOverrideChip extends ConsumerWidget {
                                 ),
                                 Text(
                                   tempValue == defaultRest
-                                      ? 'Matches Default'
-                                      : 'Custom Override',
+                                      ? 'Matches default'
+                                      : 'Custom duration',
                                   style: AppText.columnHeader(
                                     color: tempValue == defaultRest
                                         ? AppColors.textSecondary
@@ -444,20 +478,20 @@ class _RestOverrideChip extends ConsumerWidget {
                                 ),
                               ],
                             ),
-                            const SizedBox(width: 24),
+                            const SizedBox(width: 20),
                             _AdjustmentButton(
                               label: '+15s',
                               onTap: () {
                                 HapticFeedback.selectionClick();
                                 setState(() {
-                                  tempValue = (tempValue + 15).clamp(10, 600);
+                                  tempValue = (tempValue + 15).clamp(15, 600);
                                 });
                               },
                             ),
                           ],
                         ),
-                        const SizedBox(height: 28),
-                        // Presets grid/row
+                        const SizedBox(height: 16),
+                        // Presets Wrap
                         Wrap(
                           spacing: 8,
                           runSpacing: 8,
@@ -478,42 +512,110 @@ class _RestOverrideChip extends ConsumerWidget {
                             for (final seconds in [30, 60, 90, 120, 180, 300])
                               _PresetChip(
                                 label: _formatDuration(seconds),
-                                isSelected: currentOverride == seconds,
+                                isSelected: tempValue == seconds,
                                 onTap: () {
                                   HapticFeedback.lightImpact();
-                                  ref
-                                      .read(activeWorkoutProvider.notifier)
-                                      .setRestSecondsOverride(
-                                          exerciseIndex, seconds);
-                                  Navigator.pop(sheetCtx);
+                                  setState(() {
+                                    tempValue = seconds;
+                                  });
                                 },
                               ),
                           ],
                         ),
-                        const SizedBox(height: 24),
-                        // Save custom CTA
-                        SizedBox(
-                          width: double.infinity,
-                          height: 50,
-                          child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: accent.base,
-                              foregroundColor: accent.onAccent,
-                              elevation: 0,
-                              shape: const RoundedRectangleBorder(
-                                  borderRadius: AppRadius.buttonPrimaryAll),
+
+                        const SizedBox(height: 16),
+                        // State options: Use default & Off
+                        Row(
+                          children: [
+                            Expanded(
+                              child: OutlinedButton(
+                                style: OutlinedButton.styleFrom(
+                                  foregroundColor: currentOverride == null
+                                      ? accent.light
+                                      : AppColors.textPrimary,
+                                  side: BorderSide(
+                                    color: currentOverride == null
+                                        ? accent.base
+                                        : AppColors.borderSubtle,
+                                  ),
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 12),
+                                ),
+                                onPressed: () {
+                                  HapticFeedback.lightImpact();
+                                  ref
+                                      .read(activeWorkoutProvider.notifier)
+                                      .setRestSecondsOverride(
+                                          exerciseIndex, null);
+                                  Navigator.pop(sheetCtx);
+                                },
+                                child: Text(
+                                    'Use default · ${_formatDuration(defaultRest)}'),
+                              ),
                             ),
-                            onPressed: () {
-                              HapticFeedback.lightImpact();
-                              ref
-                                  .read(activeWorkoutProvider.notifier)
-                                  .setRestSecondsOverride(
-                                      exerciseIndex, tempValue);
-                              Navigator.pop(sheetCtx);
-                            },
-                            child: Text('Apply Rest Time',
-                                style: AppText.button(color: accent.onAccent)),
-                          ),
+                            const SizedBox(width: 8),
+                            OutlinedButton(
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: currentOverride == 0
+                                    ? AppColors.error
+                                    : AppColors.textSecondary,
+                                side: BorderSide(
+                                  color: currentOverride == 0
+                                      ? AppColors.error
+                                      : AppColors.borderSubtle,
+                                ),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 16, vertical: 12),
+                              ),
+                              onPressed: () {
+                                HapticFeedback.lightImpact();
+                                ref
+                                    .read(activeWorkoutProvider.notifier)
+                                    .setRestSecondsOverride(exerciseIndex, 0);
+                                Navigator.pop(sheetCtx);
+                              },
+                              child: const Text('Off'),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        // Apply & Cancel buttons
+                        Row(
+                          children: [
+                            Expanded(
+                              child: TextButton(
+                                onPressed: () => Navigator.pop(sheetCtx),
+                                child: Text('Cancel',
+                                    style: AppText.button(
+                                        color: AppColors.textSecondary)),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: accent.base,
+                                  foregroundColor: accent.onAccent,
+                                  elevation: 0,
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 14),
+                                  shape: const RoundedRectangleBorder(
+                                      borderRadius: AppRadius.buttonPrimaryAll),
+                                ),
+                                onPressed: () {
+                                  HapticFeedback.lightImpact();
+                                  ref
+                                      .read(activeWorkoutProvider.notifier)
+                                      .setRestSecondsOverride(
+                                          exerciseIndex, tempValue);
+                                  Navigator.pop(sheetCtx);
+                                },
+                                child: Text('Apply',
+                                    style:
+                                        AppText.button(color: accent.onAccent)),
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
@@ -536,39 +638,54 @@ class _RestOverrideChip extends ConsumerWidget {
     final exercise = workout.exercises[exerciseIndex];
     final override = exercise.restSecondsOverride;
     final defaultRest = ref.watch(defaultRestSecondsProvider);
-    final effectiveSecs = override ?? defaultRest;
 
     final accent = context.accent;
     final isCustom = override != null;
+    final isDisabled = override == 0;
+
+    String labelText;
+    if (isDisabled) {
+      labelText = 'Rest Off';
+    } else if (override != null) {
+      labelText = 'Rest ${_formatDuration(override)} · Custom';
+    } else {
+      labelText = 'Rest ${_formatDuration(defaultRest)}';
+    }
 
     return Semantics(
       button: true,
-      label:
-          'Set rest duration override. Currently ${_formatDuration(effectiveSecs)}',
+      label: 'Set rest duration override. Currently $labelText',
       child: Material(
-        color:
-            isCustom ? accent.base.withValues(alpha: 0.16) : AppColors.surface3,
+        color: isDisabled
+            ? AppColors.surface3.withValues(alpha: 0.5)
+            : (isCustom
+                ? accent.base.withValues(alpha: 0.16)
+                : AppColors.surface3),
         borderRadius: BorderRadius.circular(16),
         child: InkWell(
           borderRadius: BorderRadius.circular(16),
           onTap: () => _showOverrideSheet(context, ref, override, defaultRest),
           child: Container(
             constraints: const BoxConstraints(minHeight: 48, minWidth: 48),
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
             alignment: Alignment.center,
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Icon(
-                  Icons.timer_outlined,
+                  isDisabled ? Icons.timer_off_outlined : Icons.timer_outlined,
                   size: 14,
-                  color: isCustom ? accent.light : AppColors.textSecondary,
+                  color: isCustom && !isDisabled
+                      ? accent.light
+                      : AppColors.textSecondary,
                 ),
                 const SizedBox(width: 4),
                 Text(
-                  _formatDuration(effectiveSecs),
+                  labelText,
                   style: AppText.columnHeader(
-                    color: isCustom ? accent.light : AppColors.textSecondary,
+                    color: isCustom && !isDisabled
+                        ? accent.light
+                        : AppColors.textSecondary,
                   ).copyWith(fontWeight: isCustom ? FontWeight.bold : null),
                 ),
               ],

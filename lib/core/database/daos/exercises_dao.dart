@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../config/env.dart';
+import '../../models/measurement_type.dart';
 import '../database.dart';
 import '../tables/exercises_table.dart';
 
@@ -14,7 +15,7 @@ part 'exercises_dao.g.dart';
 /// v3: unified catalog (standard Hevy/Strong names + parent→child muscles),
 /// upsert-by-exerciseDbId so existing rows are renamed/re-muscled in place and
 /// GIF links are refreshed, with null gifUrl for exercises that have no GIF yet.
-const _kHydrationKey = 'exercises_hydrated_v6';
+const _kHydrationKey = 'exercises_hydrated_v7';
 
 /// Base URL of the public storage bucket that hosts exercise GIFs.
 /// Centralized in [Env] (overridable via --dart-define GIF_BUCKET_BASE).
@@ -95,11 +96,10 @@ class ExercisesDao extends DatabaseAccessor<AppDatabase>
     String target = 'other',
     String? measurementType,
   }) {
-    final eqNorm = equipment.toLowerCase().replaceAll(' ', '');
     final resolvedType = measurementType ??
-        ((eqNorm == 'bodyweight' || eqNorm == 'assisted')
-            ? 'reps_only'
-            : 'weight_and_reps');
+        MeasurementType.inferLegacyMeasurementType(
+                equipment: equipment, exerciseName: name)
+            .raw;
     return into(exercises).insert(ExercisesCompanion.insert(
       name: name,
       bodyPart: bodyPart,
@@ -149,16 +149,18 @@ class ExercisesDao extends DatabaseAccessor<AppDatabase>
       await transaction(() async {
         for (final e in list) {
           final id = e['id'] as String;
+          final name = e['name'] as String;
           final hasGif = e['gif'] == true;
           final equipment = e['equipment'] as String;
-          final eqNorm = equipment.toLowerCase().replaceAll(' ', '');
-          final mType = e['measurementType'] as String? ??
-              ((eqNorm == 'bodyweight' || eqNorm == 'assisted')
-                  ? 'reps_only'
-                  : 'weight_and_reps');
+          final rawMType = e['measurementType'] as String?;
+          final mType = rawMType != null && rawMType.isNotEmpty
+              ? MeasurementType.fromString(rawMType).raw
+              : MeasurementType.inferLegacyMeasurementType(
+                      equipment: equipment, exerciseName: name)
+                  .raw;
           final companion = ExercisesCompanion.insert(
             exerciseDbId: Value(id),
-            name: e['name'] as String,
+            name: name,
             bodyPart: e['bodyPart'] as String,
             equipment: equipment,
             target: e['target'] as String,

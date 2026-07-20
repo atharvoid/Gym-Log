@@ -29,9 +29,12 @@ Future<bool> showAppConfirmDialog({
   final result = await showModalBottomSheet<bool>(
     context: context,
     useRootNavigator: true,
-    isDismissible: false,
-    enableDrag: false,
+    useSafeArea: true,
+    isScrollControlled: true,
+    isDismissible: true,
+    enableDrag: true,
     backgroundColor: Colors.transparent,
+    barrierColor: Colors.black.withValues(alpha: 0.60),
     builder: (sheetCtx) {
       final accent = sheetCtx.accent;
       final iconBg =
@@ -41,6 +44,7 @@ Future<bool> showAppConfirmDialog({
               size: 36, color: AppColors.error)
           : Icon(Icons.info_outline_rounded, size: 36, color: accent.light);
       final confirmBg = isDestructive ? AppColors.error : accent.base;
+      final bottomInset = MediaQuery.viewPaddingOf(sheetCtx).bottom;
 
       return SafeArea(
         top: false,
@@ -50,7 +54,12 @@ Future<bool> showAppConfirmDialog({
             borderRadius: AppRadius.sheetTop,
           ),
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
+            padding: EdgeInsets.fromLTRB(
+              20,
+              16,
+              20,
+              bottomInset > 0 ? bottomInset : 16,
+            ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -82,7 +91,7 @@ Future<bool> showAppConfirmDialog({
                 Text(message,
                     style: AppText.body(color: AppColors.textSecondary),
                     textAlign: TextAlign.center),
-                const SizedBox(height: 28),
+                const SizedBox(height: 24),
                 // Confirm button
                 SizedBox(
                   width: double.infinity,

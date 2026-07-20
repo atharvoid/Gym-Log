@@ -7,25 +7,64 @@ enum MeasurementType {
   final String raw;
   const MeasurementType(this.raw);
 
-  static MeasurementType fromString(String? val, {String? equipment}) {
+  /// Strict string parsing for stored [measurementType] raw values.
+  /// Does NOT perform arbitrary equipment inference at render time.
+  static MeasurementType fromString(String? val) {
     if (val != null && val.isNotEmpty) {
       final normalized = val.toLowerCase().trim();
       for (final type in values) {
-        if (type.raw == normalized || type.name.toLowerCase() == normalized) {
+        if (type.raw == normalized ||
+            type.name.toLowerCase() == normalized ||
+            (type == MeasurementType.weightAndReps &&
+                normalized == 'weightandreps') ||
+            (type == MeasurementType.repsOnly && normalized == 'repsonly')) {
           return type;
         }
-      }
-    }
-    if (equipment != null && equipment.isNotEmpty) {
-      final eq = equipment.toLowerCase().replaceAll(' ', '');
-      if (eq == 'bodyweight' || eq == 'assisted') {
-        return MeasurementType.repsOnly;
       }
     }
     return MeasurementType.weightAndReps;
   }
 
+  /// Legacy classifier for old database rows, catalog migration engines, and
+  /// legacy imports where an explicit [measurementType] string is absent.
+  static MeasurementType inferLegacyMeasurementType({
+    required String? equipment,
+    required String? exerciseName,
+  }) {
+    if (equipment != null && equipment.isNotEmpty) {
+      final eqNorm = equipment
+          .toLowerCase()
+          .replaceAll(' ', '')
+          .replaceAll('_', '')
+          .replaceAll('-', '');
+      if (eqNorm == 'bodyweight' ||
+          eqNorm == 'none' ||
+          eqNorm == 'noequipment') {
+        if (exerciseName != null) {
+          final nameNorm = exerciseName.toLowerCase();
+          if (nameNorm.contains('plank') ||
+              nameNorm.contains('wall sit') ||
+              nameNorm.contains('hold')) {
+            return MeasurementType.duration;
+          }
+        }
+        return MeasurementType.repsOnly;
+      }
+    }
+    // Assisted counterweight machines, cables, dumbbells, barbells, etc.
+    // all require numeric weight input.
+    return MeasurementType.weightAndReps;
+  }
+
   bool get requiresWeight => this == MeasurementType.weightAndReps;
+  bool get requiresReps =>
+      this == MeasurementType.weightAndReps ||
+      this == MeasurementType.repsOnly ||
+      this == MeasurementType.duration;
+  bool get supportsWeight => this == MeasurementType.weightAndReps;
+  bool get contributesToWeightVolume => this == MeasurementType.weightAndReps;
+  bool get supportsWeightPr => this == MeasurementType.weightAndReps;
+
   bool get isRepsOnly => this == MeasurementType.repsOnly;
   bool get isDuration => this == MeasurementType.duration;
   bool get isDistance => this == MeasurementType.distance;
