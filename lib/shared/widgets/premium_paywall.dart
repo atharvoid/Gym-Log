@@ -6,6 +6,7 @@ import 'package:purchases_flutter/purchases_flutter.dart'
     show IntroductoryPrice, Offerings, Package, PackageType, PeriodUnit;
 
 import '../../core/providers/premium_provider.dart';
+import '../../core/services/premium_service.dart';
 import '../../core/theme/app_colors.dart' show SurfaceContextX;
 import '../../core/theme/app_text.dart';
 import '../../core/theme/dynamic_accent_theme.dart';
@@ -269,15 +270,19 @@ class _PaywallSheetState extends ConsumerState<_PaywallSheet> {
         // User cancelled the purchase
         return;
       }
-      if (info.entitlements.active.isNotEmpty) {
+      if (hasPremium(info)) {
         HapticFeedback.heavyImpact();
         Navigator.of(context).pop();
         _snack('Welcome to GymLog Pro — everything is unlocked.');
       } else {
         HapticFeedback.heavyImpact();
+        debugPrint(
+          '[PremiumPaywall] Purchase completed for package "${package.identifier}", '
+          'but entitlement "${PremiumService.entitlementId}" is not active. '
+          'Active entitlements: ${info.entitlements.active.keys.join(", ")}',
+        );
         _snack(
-          "Payment received — finishing setup. If Pro isn't unlocked in "
-          "a minute, reopen the app or contact support.",
+          'Purchase completed, but Premium is still being verified. Try Restore Purchases.',
         );
       }
     } catch (e) {
@@ -294,12 +299,12 @@ class _PaywallSheetState extends ConsumerState<_PaywallSheet> {
     try {
       final info = await ref.read(premiumServiceProvider).restorePurchases();
       if (!mounted) return;
-      if (info != null && info.entitlements.active.isNotEmpty) {
+      if (info != null && hasPremium(info)) {
         HapticFeedback.heavyImpact();
         Navigator.of(context).pop();
         _snack('Pro restored. Welcome back.');
       } else {
-        _snack('No previous purchases found.');
+        _snack('No active Pro subscription found for this account.');
       }
     } catch (_) {
       if (mounted) _snack('Restore failed. Try again later.');

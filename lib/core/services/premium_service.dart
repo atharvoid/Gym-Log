@@ -31,6 +31,10 @@ class PremiumService with WidgetsBindingObserver {
 
   static const entitlementId = 'premium';
 
+  static bool hasPremium(CustomerInfo info) {
+    return info.entitlements.active.containsKey(entitlementId);
+  }
+
   final AppDatabase _db;
 
   bool _configured = false;
@@ -207,8 +211,8 @@ class PremiumService with WidgetsBindingObserver {
     if (userId == null) return;
 
     try {
+      final isPremium = hasPremium(info);
       final entitlement = info.entitlements.active[entitlementId];
-      final isPremium = entitlement != null;
       final expiry = entitlement?.expirationDate != null
           ? DateTime.tryParse(entitlement!.expirationDate!)
           : null;

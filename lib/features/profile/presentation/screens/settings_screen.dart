@@ -10,7 +10,6 @@ import 'package:gymlog/core/providers/settings_provider.dart';
 import 'package:gymlog/core/services/sync_engine.dart';
 import 'package:gymlog/core/services/sync_entitlement_gate.dart';
 import 'package:gymlog/core/services/workout_export_service.dart';
-import 'package:gymlog/core/services/premium_service.dart';
 import 'package:gymlog/core/theme/app_colors.dart';
 import 'package:gymlog/core/theme/app_text.dart';
 import 'package:gymlog/core/theme/dynamic_accent_theme.dart';
@@ -263,9 +262,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                             try {
                               final service = ref.read(premiumServiceProvider);
                               final info = await service.restorePurchases();
-                              if (info != null &&
-                                  info.entitlements.active.containsKey(
-                                      PremiumService.entitlementId)) {
+                              if (info != null && hasPremium(info)) {
                                 messenger.showSnackBar(SnackBar(
                                   content: Text(
                                       'Purchases restored successfully. You are now Pro!',

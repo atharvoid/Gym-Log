@@ -18,6 +18,14 @@ final customerInfoProvider = StreamProvider<CustomerInfo>((ref) {
   return ref.watch(premiumServiceProvider).customerInfoStream;
 });
 
+/// Canonical verification function for CustomerInfo entitlements.
+/// Forbidden elsewhere: info.entitlements.active.isNotEmpty
+bool hasPremium(CustomerInfo info) {
+  return info.entitlements.active.containsKey(
+    PremiumService.entitlementId,
+  );
+}
+
 /// Single source of truth for premium entitlement.
 ///
 /// Priority:
@@ -29,7 +37,7 @@ final customerInfoProvider = StreamProvider<CustomerInfo>((ref) {
 final isPremiumProvider = Provider<bool>((ref) {
   final info = ref.watch(customerInfoProvider).valueOrNull;
   if (info != null) {
-    return info.entitlements.active.containsKey(PremiumService.entitlementId);
+    return hasPremium(info);
   }
 
   final profile = ref.watch(currentUserProfileProvider).valueOrNull;
