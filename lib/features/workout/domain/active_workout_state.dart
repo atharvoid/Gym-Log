@@ -1,6 +1,7 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:gymlog/core/database/daos/routines_dao.dart';
 import 'package:gymlog/core/models/measurement_type.dart';
+import 'package:gymlog/core/models/rest_preference.dart';
 import 'package:uuid/uuid.dart';
 
 part 'active_workout_state.freezed.dart';
@@ -33,6 +34,11 @@ class WorkoutExerciseState with _$WorkoutExerciseState {
     @Default([]) List<WorkoutSetState> sets,
     int? restSecondsOverride,
   }) = _WorkoutExerciseState;
+}
+
+extension WorkoutExerciseStateRestPreferenceX on WorkoutExerciseState {
+  RestPreference get restPreference =>
+      restPreferenceFromStorage(restSecondsOverride);
 }
 
 @freezed

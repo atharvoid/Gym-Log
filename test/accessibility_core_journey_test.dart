@@ -187,18 +187,18 @@ void main() {
     expect(minusSize.height, greaterThanOrEqualTo(48));
     expect(plusSize.height, greaterThanOrEqualTo(48));
 
-    // Find preset chips (e.g. 'None', '0:30')
-    final noneChip = find.widgetWithText(InkWell, 'None');
+    // Find preset chips (e.g. '1:00', '0:30')
+    final oneMinChip = find.widgetWithText(InkWell, '1:00');
     final thirtySecsChip = find.widgetWithText(InkWell, '0:30');
 
-    expect(noneChip, findsOneWidget);
+    expect(oneMinChip, findsOneWidget);
     expect(thirtySecsChip, findsOneWidget);
 
-    final noneSize = tester.getSize(noneChip);
+    final oneMinSize = tester.getSize(oneMinChip);
     final thirtySize = tester.getSize(thirtySecsChip);
 
-    expect(noneSize.height, greaterThanOrEqualTo(48));
-    expect(noneSize.width, greaterThanOrEqualTo(48));
+    expect(oneMinSize.height, greaterThanOrEqualTo(48));
+    expect(oneMinSize.width, greaterThanOrEqualTo(48));
     expect(thirtySize.height, greaterThanOrEqualTo(48));
     expect(thirtySize.width, greaterThanOrEqualTo(48));
 

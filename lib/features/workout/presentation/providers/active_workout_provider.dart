@@ -7,9 +7,11 @@ import 'package:drift/drift.dart';
 import '../../../../core/database/database.dart';
 import '../../../../core/database/daos/workouts_dao.dart';
 import '../../../../core/providers/database_provider.dart';
+import '../../../../core/providers/settings_provider.dart';
 import '../../../../core/services/sync_engine.dart';
 import '../../../../core/services/workout_draft_store.dart';
 import '../../../../core/models/measurement_type.dart';
+import '../../../../core/models/rest_preference.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../domain/active_workout_state.dart';
 import 'rest_timer_provider.dart';
@@ -490,15 +492,24 @@ class ActiveWorkoutNotifier extends StateNotifier<ActiveWorkoutState?> {
     saveDraftNow();
   }
 
-  void setRestSecondsOverride(int exerciseIndex, int? seconds) {
+  void setRestPreference(int exerciseIndex, RestPreference preference) {
     if (state == null) return;
     final exercises = [...state!.exercises];
     if (exerciseIndex < 0 || exerciseIndex >= exercises.length) return;
+    final globalSeconds = _ref.read(defaultRestSecondsProvider);
+    final normalized = normalizeRestPreference(
+      preference: preference,
+      globalSeconds: globalSeconds,
+    );
     exercises[exerciseIndex] = exercises[exerciseIndex].copyWith(
-      restSecondsOverride: seconds,
+      restSecondsOverride: restPreferenceToStorage(normalized),
     );
     state = state!.copyWith(exercises: exercises);
     saveDraftNow();
+  }
+
+  void setRestSecondsOverride(int exerciseIndex, int? seconds) {
+    setRestPreference(exerciseIndex, restPreferenceFromStorage(seconds));
   }
 
   (double, int) get sessionTotals {

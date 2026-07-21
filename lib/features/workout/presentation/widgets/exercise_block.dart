@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gymlog/core/models/measurement_type.dart';
+import 'package:gymlog/core/models/rest_preference.dart';
 import 'package:gymlog/core/theme/app_colors.dart';
 import 'package:gymlog/core/theme/app_text.dart';
 import 'package:gymlog/core/theme/dynamic_accent_theme.dart';
@@ -381,11 +382,13 @@ class _RestOverrideChip extends ConsumerWidget {
   void _showOverrideSheet(
     BuildContext context,
     WidgetRef ref,
-    int? currentOverride,
+    RestPreference currentPreference,
     int defaultRest,
   ) {
-    int tempValue = currentOverride ?? defaultRest;
-    if (tempValue <= 0) tempValue = defaultRest;
+    RestPreference selectedPreference = normalizeRestPreference(
+      preference: currentPreference,
+      globalSeconds: defaultRest,
+    );
 
     showModalBottomSheet<void>(
       context: context,
@@ -400,6 +403,25 @@ class _RestOverrideChip extends ConsumerWidget {
           builder: (context, setState) {
             final bottomPadding =
                 math.max(16.0, MediaQuery.viewPaddingOf(sheetCtx).bottom);
+            final effectiveSeconds = resolveRestSeconds(
+                  preference: selectedPreference,
+                  globalSeconds: defaultRest,
+                ) ??
+                defaultRest;
+
+            String subtitleText;
+            Color subtitleColor;
+            if (isDefault(selectedPreference)) {
+              subtitleText = 'Matches default';
+              subtitleColor = AppColors.textSecondary;
+            } else if (isOff(selectedPreference)) {
+              subtitleText = 'Timer disabled';
+              subtitleColor = AppColors.error;
+            } else {
+              subtitleText = 'Custom duration';
+              subtitleColor = accent.light;
+            }
+
             return SafeArea(
               top: false,
               child: Container(
@@ -430,7 +452,6 @@ class _RestOverrideChip extends ConsumerWidget {
                           style: AppText.sheetTitle(),
                           textAlign: TextAlign.center,
                         ),
-
                         const SizedBox(height: 4),
                         Text(
                           '$exerciseName · This workout only',
@@ -449,7 +470,12 @@ class _RestOverrideChip extends ConsumerWidget {
                               onTap: () {
                                 HapticFeedback.selectionClick();
                                 setState(() {
-                                  tempValue = (tempValue - 15).clamp(15, 600);
+                                  final newSec =
+                                      (effectiveSeconds - 15).clamp(15, 600);
+                                  selectedPreference = normalizeRestPreference(
+                                    preference: RestPreference.custom(newSec),
+                                    globalSeconds: defaultRest,
+                                  );
                                 });
                               },
                             ),
@@ -458,7 +484,7 @@ class _RestOverrideChip extends ConsumerWidget {
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 Text(
-                                  _formatDuration(tempValue),
+                                  _formatDuration(effectiveSeconds),
                                   style: const TextStyle(
                                     fontFamily: 'monospace',
                                     fontSize: 32,
@@ -467,13 +493,9 @@ class _RestOverrideChip extends ConsumerWidget {
                                   ),
                                 ),
                                 Text(
-                                  tempValue == defaultRest
-                                      ? 'Matches default'
-                                      : 'Custom duration',
+                                  subtitleText,
                                   style: AppText.columnHeader(
-                                    color: tempValue == defaultRest
-                                        ? AppColors.textSecondary
-                                        : accent.light,
+                                    color: subtitleColor,
                                   ),
                                 ),
                               ],
@@ -484,7 +506,12 @@ class _RestOverrideChip extends ConsumerWidget {
                               onTap: () {
                                 HapticFeedback.selectionClick();
                                 setState(() {
-                                  tempValue = (tempValue + 15).clamp(15, 600);
+                                  final newSec =
+                                      (effectiveSeconds + 15).clamp(15, 600);
+                                  selectedPreference = normalizeRestPreference(
+                                    preference: RestPreference.custom(newSec),
+                                    globalSeconds: defaultRest,
+                                  );
                                 });
                               },
                             ),
@@ -497,32 +524,25 @@ class _RestOverrideChip extends ConsumerWidget {
                           runSpacing: 8,
                           alignment: WrapAlignment.center,
                           children: [
-                            _PresetChip(
-                              label: 'None',
-                              isSelected: currentOverride == null,
-                              onTap: () {
-                                HapticFeedback.lightImpact();
-                                ref
-                                    .read(activeWorkoutProvider.notifier)
-                                    .setRestSecondsOverride(
-                                        exerciseIndex, null);
-                                Navigator.pop(sheetCtx);
-                              },
-                            ),
                             for (final seconds in [30, 60, 90, 120, 180, 300])
                               _PresetChip(
                                 label: _formatDuration(seconds),
-                                isSelected: tempValue == seconds,
+                                isSelected:
+                                    isCustomPreset(selectedPreference, seconds),
                                 onTap: () {
                                   HapticFeedback.lightImpact();
                                   setState(() {
-                                    tempValue = seconds;
+                                    selectedPreference =
+                                        normalizeRestPreference(
+                                      preference:
+                                          RestPreference.custom(seconds),
+                                      globalSeconds: defaultRest,
+                                    );
                                   });
                                 },
                               ),
                           ],
                         ),
-
                         const SizedBox(height: 16),
                         // State options: Use default & Off
                         Row(
@@ -530,11 +550,11 @@ class _RestOverrideChip extends ConsumerWidget {
                             Expanded(
                               child: OutlinedButton(
                                 style: OutlinedButton.styleFrom(
-                                  foregroundColor: currentOverride == null
+                                  foregroundColor: isDefault(selectedPreference)
                                       ? accent.light
                                       : AppColors.textPrimary,
                                   side: BorderSide(
-                                    color: currentOverride == null
+                                    color: isDefault(selectedPreference)
                                         ? accent.base
                                         : AppColors.borderSubtle,
                                   ),
@@ -543,11 +563,10 @@ class _RestOverrideChip extends ConsumerWidget {
                                 ),
                                 onPressed: () {
                                   HapticFeedback.lightImpact();
-                                  ref
-                                      .read(activeWorkoutProvider.notifier)
-                                      .setRestSecondsOverride(
-                                          exerciseIndex, null);
-                                  Navigator.pop(sheetCtx);
+                                  setState(() {
+                                    selectedPreference =
+                                        const RestPreference.useDefault();
+                                  });
                                 },
                                 child: Text(
                                     'Use default · ${_formatDuration(defaultRest)}'),
@@ -556,11 +575,11 @@ class _RestOverrideChip extends ConsumerWidget {
                             const SizedBox(width: 8),
                             OutlinedButton(
                               style: OutlinedButton.styleFrom(
-                                foregroundColor: currentOverride == 0
+                                foregroundColor: isOff(selectedPreference)
                                     ? AppColors.error
                                     : AppColors.textSecondary,
                                 side: BorderSide(
-                                  color: currentOverride == 0
+                                  color: isOff(selectedPreference)
                                       ? AppColors.error
                                       : AppColors.borderSubtle,
                                 ),
@@ -569,10 +588,10 @@ class _RestOverrideChip extends ConsumerWidget {
                               ),
                               onPressed: () {
                                 HapticFeedback.lightImpact();
-                                ref
-                                    .read(activeWorkoutProvider.notifier)
-                                    .setRestSecondsOverride(exerciseIndex, 0);
-                                Navigator.pop(sheetCtx);
+                                setState(() {
+                                  selectedPreference =
+                                      const RestPreference.disabled();
+                                });
                               },
                               child: const Text('Off'),
                             ),
@@ -606,8 +625,8 @@ class _RestOverrideChip extends ConsumerWidget {
                                   HapticFeedback.lightImpact();
                                   ref
                                       .read(activeWorkoutProvider.notifier)
-                                      .setRestSecondsOverride(
-                                          exerciseIndex, tempValue);
+                                      .setRestPreference(
+                                          exerciseIndex, selectedPreference);
                                   Navigator.pop(sheetCtx);
                                 },
                                 child: Text('Apply',
@@ -636,18 +655,21 @@ class _RestOverrideChip extends ConsumerWidget {
       return const SizedBox.shrink();
     }
     final exercise = workout.exercises[exerciseIndex];
-    final override = exercise.restSecondsOverride;
     final defaultRest = ref.watch(defaultRestSecondsProvider);
+    final preference = normalizeRestPreference(
+      preference: exercise.restPreference,
+      globalSeconds: defaultRest,
+    );
 
     final accent = context.accent;
-    final isCustom = override != null;
-    final isDisabled = override == 0;
+    final isCustom = preference is RestPreferenceCustomDuration;
+    final isDisabled = isOff(preference);
 
     String labelText;
     if (isDisabled) {
       labelText = 'Rest Off';
-    } else if (override != null) {
-      labelText = 'Rest ${_formatDuration(override)} · Custom';
+    } else if (preference is RestPreferenceCustomDuration) {
+      labelText = 'Rest ${_formatDuration(preference.seconds)} · Custom';
     } else {
       labelText = 'Rest ${_formatDuration(defaultRest)}';
     }
@@ -664,7 +686,8 @@ class _RestOverrideChip extends ConsumerWidget {
         borderRadius: BorderRadius.circular(16),
         child: InkWell(
           borderRadius: BorderRadius.circular(16),
-          onTap: () => _showOverrideSheet(context, ref, override, defaultRest),
+          onTap: () =>
+              _showOverrideSheet(context, ref, preference, defaultRest),
           child: Container(
             constraints: const BoxConstraints(minHeight: 48, minWidth: 48),
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
