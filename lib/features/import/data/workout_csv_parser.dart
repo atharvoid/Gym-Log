@@ -44,6 +44,11 @@ abstract final class WorkoutCsvParser {
   /// Identifies the source app from the header cells, or null if unknown.
   static ImportSource? detectSource(List<String> header) {
     final h = header.map((c) => c.trim().toLowerCase()).toSet();
+    if (h.contains('gymlog_schema_version') ||
+        (h.contains('workout_id') && h.contains('exercise_id')) ||
+        (h.contains('set_number') && h.contains('workout'))) {
+      return ImportSource.gymlog;
+    }
     if (h.contains('exercise_title') && h.contains('set_index')) {
       return ImportSource.hevy;
     }
@@ -77,9 +82,260 @@ abstract final class WorkoutCsvParser {
     }
 
     final dataRows = rows.skip(1).toList();
-    return source == ImportSource.hevy
-        ? _parseHevy(header, dataRows)
-        : _parseStrong(header, dataRows, _normUnit(assumedStrongUnit));
+    switch (source) {
+      case ImportSource.gymlog:
+        return _parseGymLog(header, dataRows);
+      case ImportSource.hevy:
+        return _parseHevy(header, dataRows);
+      case ImportSource.strong:
+        return _parseStrong(header, dataRows, _normUnit(assumedStrongUnit));
+    }
+  }
+
+  // ── GymLog ─────────────────────────────────────────────────────────────────
+
+  static ImportParseResult _parseGymLog(
+      List<String> header, List<List<String>> rows) {
+    final idx = _indexMap(header);
+
+    if (idx.containsKey('gymlog_schema_version')) {
+      final versionIdx = idx['gymlog_schema_version']!;
+      String versionStr = '2';
+      for (final r in rows) {
+        if (versionIdx < r.length) {
+          final val = r[versionIdx].trim();
+          if (val.isNotEmpty) {
+            versionStr = val;
+            break;
+          }
+        }
+      }
+
+      final parsedVer = int.tryParse(versionStr);
+      if (parsedVer != null && parsedVer > 2) {
+        throw ImportException('Unsupported export version: $versionStr.');
+      }
+
+      if (parsedVer == 1) {
+        return _parseGymLogV1(header, rows);
+      }
+      return _parseGymLogV2(header, rows);
+    }
+
+    if (idx.containsKey('set_number')) {
+      return _parseGymLogV1(header, rows);
+    }
+
+    return _parseGymLogV2(header, rows);
+  }
+
+  static ImportParseResult _parseGymLogV2(
+      List<String> header, List<List<String>> rows) {
+    final idx = _indexMap(header);
+    final requiredCols = [
+      'gymlog_schema_version',
+      'workout_id',
+      'workout_name',
+      'workout_started_at',
+      'exercise_name',
+      'set_index',
+    ];
+    for (final col in requiredCols) {
+      if (!idx.containsKey(col)) {
+        throw ImportException(
+            'Invalid GymLog CSV format: missing required column $col.');
+      }
+    }
+
+    final builder = _SessionBuilder();
+    final warnings = <String>[];
+    var skipped = 0;
+
+    for (var i = 0; i < rows.length; i++) {
+      final r = rows[i];
+      final rowNum = i + 2;
+      String cell(String key) => _cell(r, idx, key);
+
+      final versionStr = cell('gymlog_schema_version');
+      final rowVer = int.tryParse(versionStr);
+      if (rowVer != null && rowVer > 2) {
+        throw ImportException('Unsupported export version: $versionStr.');
+      }
+
+      final wkName = cell('workout_name');
+      final startStr = cell('workout_started_at');
+      final exName = cell('exercise_name');
+      if (startStr.isEmpty || exName.isEmpty) {
+        warnings.add('Row $rowNum skipped: date or exercise name is missing.');
+        skipped++;
+        continue;
+      }
+      final start = DateTime.tryParse(startStr) ??
+          _tryDate(_strongDate, startStr) ??
+          _tryDate(_hevyDate, startStr);
+      if (start == null) {
+        warnings.add('Row $rowNum skipped: date or exercise name is missing.');
+        skipped++;
+        continue;
+      }
+
+      final endStr = cell('workout_ended_at');
+      final endedAt = endStr.isNotEmpty
+          ? (DateTime.tryParse(endStr) ??
+              _tryDate(_strongDate, endStr) ??
+              _tryDate(_hevyDate, endStr))
+          : null;
+
+      final completedStr = cell('completed_at');
+      final completedAt = completedStr.isNotEmpty
+          ? (DateTime.tryParse(completedStr) ??
+              _tryDate(_strongDate, completedStr) ??
+              _tryDate(_hevyDate, completedStr))
+          : null;
+
+      final rawWeight = parseFlexibleDecimal(cell('weight_kg'));
+      final repsRaw = parseFlexibleDecimal(cell('reps'));
+      final durRaw = parseFlexibleDecimal(cell('duration_seconds'));
+      final distRaw = parseFlexibleDecimal(cell('distance_meters'));
+
+      final weightKg = (rawWeight == null || rawWeight < 0) ? null : rawWeight;
+      final reps = (repsRaw == null || repsRaw <= 0) ? null : repsRaw.toInt();
+      final durationSeconds =
+          (durRaw == null || durRaw <= 0) ? null : durRaw.toInt();
+      final distanceMeters = (distRaw == null || distRaw <= 0) ? null : distRaw;
+
+      final explicitTypeStr = cell('measurement_type');
+      MeasurementType? explicitType;
+      if (explicitTypeStr.isNotEmpty) {
+        try {
+          explicitType = MeasurementType.fromString(explicitTypeStr);
+        } catch (_) {}
+      }
+
+      final isPrStr = cell('is_pr').trim().toLowerCase();
+      final prTypeStr = cell('pr_type').trim().toLowerCase();
+      final bool isPr =
+          isPrStr == 'true' || (prTypeStr.isNotEmpty && prTypeStr != 'none');
+      final String prType =
+          prTypeStr.isNotEmpty ? prTypeStr : (isPr ? 'estimated_1rm' : 'none');
+
+      final inferredMType = explicitType ??
+          _inferMeasurementType(
+            exerciseName: exName,
+            weightKg: weightKg,
+            reps: reps,
+            durationSeconds: durationSeconds,
+            distanceMeters: distanceMeters,
+          );
+
+      builder.add(
+        sessionName: wkName.isEmpty ? 'Workout' : wkName,
+        startedAt: start,
+        endedAt: endedAt,
+        sessionNotes: cell('workout_notes'),
+        exerciseName: exName,
+        exerciseNotes: null,
+        setType: _normalizeHevySetType(cell('set_type')),
+        csvRowNum: rowNum,
+        weightKg: weightKg,
+        reps: reps,
+        durationSeconds: durationSeconds,
+        distanceMeters: distanceMeters,
+        measurementType: inferredMType,
+        rpe: parseFlexibleDecimal(cell('rpe')),
+        isPr: isPr,
+        prType: prType,
+        estimated1rm: parseFlexibleDecimal(cell('estimated_1rm')),
+        completedAt: completedAt,
+      );
+    }
+
+    return ImportParseResult(
+      source: ImportSource.gymlog,
+      sessions: builder.sessions,
+      warnings: warnings,
+      weightUnitAssumed: false,
+      assumedUnit: 'kg',
+      skippedRows: skipped,
+    );
+  }
+
+  static ImportParseResult _parseGymLogV1(
+      List<String> header, List<List<String>> rows) {
+    final idx = _indexMap(header);
+    final builder = _SessionBuilder();
+    final warnings = <String>[];
+    var skipped = 0;
+
+    for (var i = 0; i < rows.length; i++) {
+      final r = rows[i];
+      final rowNum = i + 2;
+      String cell(String key) => _cell(r, idx, key);
+
+      final wkName = cell('workout');
+      final dateStr = cell('date');
+      final exName = cell('exercise');
+      if (dateStr.isEmpty || exName.isEmpty) {
+        warnings.add('Row $rowNum skipped: date or exercise name is missing.');
+        skipped++;
+        continue;
+      }
+      final start = DateTime.tryParse(dateStr) ??
+          _tryDate(_strongDate, dateStr) ??
+          _tryDate(_hevyDate, dateStr);
+      if (start == null) {
+        warnings.add('Row $rowNum skipped: date or exercise name is missing.');
+        skipped++;
+        continue;
+      }
+
+      final rawWeight = parseFlexibleDecimal(cell('weight_kg'));
+      final weightKg = (rawWeight == null || rawWeight < 0) ? null : rawWeight;
+
+      final repsRaw = parseFlexibleDecimal(cell('reps'));
+      final reps = (repsRaw == null || repsRaw <= 0) ? null : repsRaw.toInt();
+
+      final isPrStr = cell('is_pr').trim().toLowerCase();
+      final bool isPr = isPrStr == 'true';
+
+      final inferredMType = _inferMeasurementType(
+        exerciseName: exName,
+        weightKg: weightKg,
+        reps: reps,
+        durationSeconds: null,
+        distanceMeters: null,
+      );
+
+      builder.add(
+        sessionName: wkName.isEmpty ? 'Workout' : wkName,
+        startedAt: start,
+        endedAt: null,
+        sessionNotes: '',
+        exerciseName: exName,
+        exerciseNotes: null,
+        setType: _normalizeHevySetType(cell('set_type')),
+        csvRowNum: rowNum,
+        weightKg: weightKg,
+        reps: reps,
+        durationSeconds: null,
+        distanceMeters: null,
+        measurementType: inferredMType,
+        rpe: parseFlexibleDecimal(cell('rpe')),
+        isPr: isPr,
+        prType: isPr ? 'estimated_1rm' : 'none',
+        estimated1rm: parseFlexibleDecimal(cell('estimated_1rm')),
+        completedAt: null,
+      );
+    }
+
+    return ImportParseResult(
+      source: ImportSource.gymlog,
+      sessions: builder.sessions,
+      warnings: warnings,
+      weightUnitAssumed: false,
+      assumedUnit: 'kg',
+      skippedRows: skipped,
+    );
   }
 
   // ── Hevy ───────────────────────────────────────────────────────────────────
@@ -500,6 +756,10 @@ class _SessionBuilder {
     double? distanceMeters,
     MeasurementType? measurementType,
     required double? rpe,
+    bool isPr = false,
+    String prType = 'none',
+    double? estimated1rm,
+    DateTime? completedAt,
   }) {
     final key = '$sessionName|${startedAt.millisecondsSinceEpoch}';
     final session = _sessionByKey.putIfAbsent(key, () {
@@ -536,6 +796,10 @@ class _SessionBuilder {
       distanceMeters: distanceMeters,
       measurementType: measurementType,
       rpe: rpe,
+      isPr: isPr,
+      prType: prType,
+      estimated1rm: estimated1rm,
+      completedAt: completedAt,
     ));
   }
 }

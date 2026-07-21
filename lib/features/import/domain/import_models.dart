@@ -11,7 +11,8 @@ import '../../../core/models/measurement_type.dart';
 /// Which competitor app a CSV was exported from.
 enum ImportSource {
   hevy('Hevy'),
-  strong('Strong');
+  strong('Strong'),
+  gymlog('GymLog');
 
   const ImportSource(this.label);
 
@@ -50,6 +51,10 @@ class ImportedSet {
     this.distanceMeters,
     this.measurementType,
     this.rpe,
+    this.isPr = false,
+    this.prType = 'none',
+    this.estimated1rm,
+    this.completedAt,
   });
 
   final int orderIndex; // 0-based, contiguous within the exercise
@@ -61,6 +66,10 @@ class ImportedSet {
   final double? distanceMeters;
   final MeasurementType? measurementType;
   final double? rpe;
+  final bool isPr;
+  final String prType;
+  final double? estimated1rm;
+  final DateTime? completedAt;
 
   double get volumeKg => (weightKg ?? 0.0) * (reps ?? 0);
 }

@@ -189,7 +189,10 @@ class WorkoutImportService {
                     weightKg: Value(st.weightKg),
                     reps: st.reps ?? 0,
                     rpe: Value(st.rpe),
-                    completedAt: Value(s.endedAt ?? s.startedAt),
+                    isPr: Value(st.isPr),
+                    estimated1rm: Value(st.estimated1rm),
+                    completedAt:
+                        Value(st.completedAt ?? s.endedAt ?? s.startedAt),
                   ),
                 );
           }
@@ -303,6 +306,10 @@ class WorkoutImportService {
               distanceMeters: finalDistance,
               measurementType: mType,
               rpe: st.rpe,
+              isPr: st.isPr,
+              prType: st.prType,
+              estimated1rm: st.estimated1rm,
+              completedAt: st.completedAt,
             ));
           }
         }
