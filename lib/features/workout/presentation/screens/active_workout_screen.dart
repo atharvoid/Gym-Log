@@ -12,7 +12,6 @@ import 'package:gymlog/features/workout/presentation/providers/active_workout_pr
 import 'package:gymlog/features/workout/presentation/providers/rest_timer_provider.dart';
 import 'package:gymlog/features/workout/presentation/providers/workout_event_provider.dart';
 import 'package:gymlog/features/workout/presentation/providers/workout_timer_provider.dart';
-import 'package:gymlog/shared/widgets/ui/primary_button.dart';
 import 'package:gymlog/core/database/database.dart';
 import 'package:gymlog/core/utils/formatters.dart';
 import 'package:gymlog/shared/widgets/ui/app_dialog.dart';
@@ -20,6 +19,7 @@ import 'package:gymlog/shared/widgets/ui/time_range_filter.dart';
 import 'package:gymlog/core/theme/app_text.dart';
 import 'package:gymlog/core/theme/dynamic_accent_theme.dart';
 import 'package:gymlog/core/utils/tap_guard.dart';
+import 'package:gymlog/shared/widgets/ui/app_snack_bar.dart';
 import '../widgets/exercise_block.dart';
 import '../widgets/pr_celebration_overlay.dart';
 import '../widgets/rest_timer_bar.dart';
@@ -97,23 +97,20 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
 
   void _showSetRemovedSnackbar(
       int exerciseIndex, int setIndex, WorkoutSetState removedSet) {
-    final messenger = ScaffoldMessenger.of(context);
-    messenger.clearSnackBars();
-    messenger.showSnackBar(SnackBar(
-      content: Text('Set removed', style: AppText.button()),
-      action: SnackBarAction(
-        label: 'Undo',
-        textColor: context.accent.light,
-        onPressed: () {
-          ref
-              .read(activeWorkoutProvider.notifier)
-              .insertSet(exerciseIndex, setIndex, removedSet);
-        },
-      ),
-      behavior: SnackBarBehavior.floating,
-      backgroundColor: context.surface.bgSurface,
-      duration: const Duration(seconds: 4),
-    ));
+    final restTimer = ref.read(restTimerProvider);
+    final restBarVisible = restTimer != null;
+
+    showAppSnackBar(
+      context,
+      message: 'Set removed',
+      actionLabel: 'Undo',
+      additionalBottomOffset: restBarVisible ? kRestTileHeight + 18 : 0,
+      onAction: () {
+        ref
+            .read(activeWorkoutProvider.notifier)
+            .insertSet(exerciseIndex, setIndex, removedSet);
+      },
+    );
   }
 
   Future<void> _confirmDiscard() async {
@@ -388,111 +385,146 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
               padding: const EdgeInsets.only(left: 12, right: 12, bottom: 10),
               child: SafeArea(
                 bottom: false,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // Grab handle — hints the swipe-down-to-minimize gesture.
-                    // Wrapped in Semantics and GestureDetector with 48dp height to satisfy touch targets (AW-1).
-                    Semantics(
-                      button: true,
-                      label: 'Minimize workout',
-                      child: GestureDetector(
-                        behavior: HitTestBehavior.opaque,
-                        onTap: () => context.pop(),
-                        child: Container(
-                          width: 60,
-                          height: 48,
-                          alignment: Alignment.center,
+                child: Container(
+                  constraints: const BoxConstraints(minHeight: 76),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Grab handle — hints the swipe-down-to-minimize gesture.
+                      Semantics(
+                        button: true,
+                        label: 'Minimize workout',
+                        child: GestureDetector(
+                          behavior: HitTestBehavior.opaque,
+                          onTap: () => context.pop(),
                           child: Container(
-                            width: 36,
-                            height: 4,
-                            decoration: BoxDecoration(
-                              color: surface.borderEmphasis,
-                              borderRadius: BorderRadius.circular(2),
+                            width: 60,
+                            height: 48,
+                            alignment: Alignment.center,
+                            child: Container(
+                              width: 36,
+                              height: 4,
+                              decoration: BoxDecoration(
+                                color: surface.borderEmphasis,
+                                borderRadius: BorderRadius.circular(2),
+                              ),
                             ),
                           ),
                         ),
                       ),
-                    ),
-                    Row(
-                      children: [
-                        // LEFT: discard cross (reverted to original left position).
-                        IconButton(
-                          tooltip: isEditing ? 'Cancel' : 'Discard workout',
-                          icon: Icon(Icons.close_rounded,
-                              color: surface.textPrimary),
-                          onPressed:
-                              isEditing ? () => context.pop() : _confirmDiscard,
-                        ),
-                        Expanded(
-                          child: Center(
-                            child: MergeSemantics(
-                              child: Consumer(
-                                builder: (context, ref, child) {
-                                  final timer = ref.watch(workoutTimerProvider);
-                                  final totals =
-                                      ref.watch(sessionTotalsProvider);
-                                  final volumeKg = totals.$1;
-                                  final completedSets = totals.$2;
+                      Row(
+                        children: [
+                          // LEFT: 48x48 close button
+                          SizedBox.square(
+                            dimension: 48,
+                            child: IconButton(
+                              tooltip: isEditing ? 'Cancel' : 'Discard workout',
+                              padding: EdgeInsets.zero,
+                              icon: Icon(Icons.close_rounded,
+                                  color: surface.textPrimary, size: 24),
+                              onPressed: isEditing
+                                  ? () => context.pop()
+                                  : _confirmDiscard,
+                            ),
+                          ),
+                          Expanded(
+                            child: Center(
+                              child: MergeSemantics(
+                                child: Consumer(
+                                  builder: (context, ref, child) {
+                                    final timer =
+                                        ref.watch(workoutTimerProvider);
+                                    final totals =
+                                        ref.watch(sessionTotalsProvider);
+                                    final volumeKg = totals.$1;
+                                    final completedSets = totals.$2;
 
-                                  return Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Text(
-                                        isEditing ? 'Edit Workout' : timer,
-                                        textAlign: TextAlign.center,
-                                        style: isEditing
-                                            ? AppText.cardTitle(
-                                                color: surface.textPrimary)
-                                            : AppText.heroStat(
-                                                color: surface.textPrimary),
-                                      ),
-                                      const SizedBox(height: 1),
-                                      Text(
-                                        isEditing
-                                            ? timer
-                                            : completedSets == 0
-                                                ? 'Log your first set'
-                                                : '${groupThousands(kgToDisplay(volumeKg, globalUnit))} $globalUnit · $completedSets set${completedSets != 1 ? 's' : ''}',
-                                        textAlign: TextAlign.center,
-                                        style: AppText.statLabel(
-                                            color: surface.textSecondary),
-                                      ),
-                                    ],
-                                  );
-                                },
+                                    return Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Text(
+                                          isEditing ? 'Edit Workout' : timer,
+                                          textAlign: TextAlign.center,
+                                          style: TextStyle(
+                                            fontFamily: 'Inter',
+                                            fontSize: 28,
+                                            fontWeight: FontWeight.w700,
+                                            color: surface.textPrimary,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 2),
+                                        Text(
+                                          isEditing
+                                              ? timer
+                                              : completedSets == 0
+                                                  ? 'Log your first set'
+                                                  : '${groupThousands(kgToDisplay(volumeKg, globalUnit))} $globalUnit · $completedSets set${completedSets != 1 ? 's' : ''}',
+                                          textAlign: TextAlign.center,
+                                          style: TextStyle(
+                                            fontFamily: 'Inter',
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.w400,
+                                            color: surface.textSecondary,
+                                          ),
+                                        ),
+                                      ],
+                                    );
+                                  },
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                        // RIGHT: Finish / Save button. Disabled until at least one set is completed.
-                        Consumer(
-                          builder: (context, ref, child) {
-                            final totals = ref.watch(sessionTotalsProvider);
-                            final completedSets = totals.$2;
-                            final isFinishEnabled = completedSets > 0;
+                          // RIGHT: Finish / Save button (width 92, height 46, radius 15)
+                          Consumer(
+                            builder: (context, ref, child) {
+                              final totals = ref.watch(sessionTotalsProvider);
+                              final completedSets = totals.$2;
+                              final isFinishEnabled = completedSets > 0;
+                              final accent = context.accent;
 
-                            return Semantics(
-                              button: true,
-                              enabled: isFinishEnabled,
-                              label: isFinishEnabled
-                                  ? (isEditing
-                                      ? 'Save workout changes'
-                                      : 'Finish workout')
-                                  : 'Finish workout, unavailable until a set is completed',
-                              child: PrimaryButton(
-                                label: isEditing ? 'Save' : 'Finish',
-                                onPressed: isFinishEnabled
-                                    ? (isEditing ? _saveChanges : _finish)
-                                    : null,
-                                isFullWidth: false,
-                              ),
-                            );
-                          },
-                        ),
-                      ],
-                    ),
-                  ],
+                              return Semantics(
+                                button: true,
+                                enabled: isFinishEnabled,
+                                label: isFinishEnabled
+                                    ? (isEditing
+                                        ? 'Save workout changes'
+                                        : 'Finish workout')
+                                    : 'Finish workout, unavailable until a set is completed',
+                                child: Material(
+                                  color: isFinishEnabled
+                                      ? accent.base
+                                      : surface.surface3,
+                                  borderRadius: BorderRadius.circular(15),
+                                  child: InkWell(
+                                    borderRadius: BorderRadius.circular(15),
+                                    onTap: isFinishEnabled
+                                        ? (isEditing ? _saveChanges : _finish)
+                                        : null,
+                                    child: Container(
+                                      width: 92,
+                                      height: 46,
+                                      alignment: Alignment.center,
+                                      child: Text(
+                                        isEditing ? 'Save' : 'Finish',
+                                        style: TextStyle(
+                                          fontFamily: 'Inter',
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.w700,
+                                          color: isFinishEnabled
+                                              ? accent.onAccent
+                                              : surface.textTertiary,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),

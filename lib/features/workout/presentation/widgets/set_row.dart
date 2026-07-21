@@ -269,43 +269,80 @@ class _SetRowState extends State<SetRow> {
     bool flashHint = false,
   }) {
     final completed = widget.setData.isCompleted;
-    return Semantics(
-      label: semanticLabel,
-      child: TextField(
-        controller: controller,
-        focusNode: focusNode,
-        readOnly: completed,
-        textAlign: TextAlign.center,
-        textAlignVertical: TextAlignVertical.center,
-        textInputAction: action,
-        keyboardType: TextInputType.numberWithOptions(decimal: isDecimal),
-        cursorColor: context.accent.base,
-        inputFormatters: [
-          if (isDecimal)
-            FilteringTextInputFormatter.allow(RegExp(r'[0-9.]'))
-          else
-            FilteringTextInputFormatter.digitsOnly,
-          LengthLimitingTextInputFormatter(isDecimal ? 6 : 5),
-        ],
-        style: AppText.value(),
-        decoration: InputDecoration(
-          hintText: hintText ?? '0',
-          hintStyle: AppText.value(
+    final accent = context.accent;
+    final hasFocus = focusNode.hasFocus;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        constraints: const BoxConstraints(minHeight: 48, minWidth: 48),
+        decoration: BoxDecoration(
+          color: hasFocus
+              ? accent.base.withValues(alpha: 0.12)
+              : AppColors.surface3,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
             color: flashHint
-                ? context.accent.base.withValues(alpha: 0.55)
-                : AppColors.textTertiary,
+                ? accent.base
+                : (hasFocus
+                    ? accent.base.withValues(alpha: 0.80)
+                    : AppColors.borderSubtle.withValues(alpha: 0.3)),
+            width: hasFocus || flashHint ? 1.5 : 1.0,
           ),
-          border: InputBorder.none,
-          focusedBorder: InputBorder.none,
-          enabledBorder: InputBorder.none,
-          filled: false,
-          isDense: true,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 8),
         ),
-        onChanged: onChanged,
-        onSubmitted: (_) => action == TextInputAction.next
-            ? FocusScope.of(context).nextFocus()
-            : FocusScope.of(context).unfocus(),
+        child: Center(
+          child: Semantics(
+            label: semanticLabel,
+            child: TextField(
+              controller: controller,
+              focusNode: focusNode,
+              readOnly: completed,
+              textAlign: TextAlign.center,
+              textAlignVertical: TextAlignVertical.center,
+              textInputAction: action,
+              keyboardType: TextInputType.numberWithOptions(decimal: isDecimal),
+              cursorColor: accent.base,
+              inputFormatters: [
+                if (isDecimal)
+                  FilteringTextInputFormatter.allow(RegExp(r'[0-9.]'))
+                else
+                  FilteringTextInputFormatter.digitsOnly,
+                LengthLimitingTextInputFormatter(isDecimal ? 6 : 5),
+              ],
+              style: const TextStyle(
+                fontFamily: 'Inter',
+                fontFeatures: [FontFeature.tabularFigures()],
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textPrimary,
+              ),
+              decoration: InputDecoration(
+                hintText: hintText ?? '0',
+                hintStyle: TextStyle(
+                  fontFamily: 'Inter',
+                  fontFeatures: const [FontFeature.tabularFigures()],
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                  color: flashHint
+                      ? accent.base.withValues(alpha: 0.85)
+                      : AppColors.textTertiary,
+                ),
+                border: InputBorder.none,
+                focusedBorder: InputBorder.none,
+                enabledBorder: InputBorder.none,
+                filled: false,
+                isDense: true,
+                contentPadding:
+                    const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+              ),
+              onChanged: onChanged,
+              onSubmitted: (_) => action == TextInputAction.next
+                  ? FocusScope.of(context).nextFocus()
+                  : FocusScope.of(context).unfocus(),
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -332,7 +369,7 @@ class _SetRowState extends State<SetRow> {
       ),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
       child: Container(
-        constraints: const BoxConstraints(minHeight: 48),
+        constraints: const BoxConstraints(minHeight: 56),
         child: Row(
           children: [
             // ── SET — type letter replaces number, opens the type picker ──

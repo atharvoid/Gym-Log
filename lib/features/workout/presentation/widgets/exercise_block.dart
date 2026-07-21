@@ -4,12 +4,9 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gymlog/core/models/measurement_type.dart';
-import 'package:gymlog/core/models/rest_preference.dart';
 import 'package:gymlog/core/theme/app_colors.dart';
 import 'package:gymlog/core/theme/app_text.dart';
-import 'package:gymlog/core/theme/dynamic_accent_theme.dart';
 import 'package:gymlog/features/workout/domain/active_workout_state.dart';
-import 'package:gymlog/shared/widgets/ui/app_card.dart';
 import 'package:gymlog/shared/widgets/ui/exercise_thumbnail.dart';
 import 'package:gymlog/shared/widgets/exercise_hero_thumb.dart';
 import 'package:gymlog/shared/widgets/ui/secondary_button.dart';
@@ -18,7 +15,7 @@ import 'package:gymlog/core/providers/settings_provider.dart';
 import 'package:gymlog/features/workout/presentation/providers/active_workout_provider.dart';
 import 'package:gymlog/features/workout/presentation/providers/previous_session_provider.dart';
 import 'package:gymlog/features/exercises/presentation/providers/exercises_provider.dart';
-import 'rest_time_sheet.dart';
+import 'compact_rest_chip.dart';
 import 'set_row.dart';
 
 /// One exercise inside the active workout. Shared card surface (gradient +
@@ -137,67 +134,83 @@ class ExerciseBlock extends ConsumerWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 7),
       child: Container(
-        decoration: AppCard.decoration(),
+        decoration: BoxDecoration(
+          color: AppColors.surface2,
+          borderRadius: BorderRadius.circular(17),
+          border: Border.all(
+            color: Colors.white.withValues(alpha: 0.07),
+            width: 1.0,
+          ),
+        ),
         clipBehavior: Clip.antiAlias,
+        padding: const EdgeInsets.fromLTRB(15, 15, 15, 13),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // ── Header ──────────────────────────
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 14, 4, 0),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  de != null
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SizedBox.square(
+                  dimension: 48,
+                  child: de != null
                       ? ExerciseHeroThumb(
                           exercise: de,
                           size: 48,
                           enableHero: enableHero,
                         )
                       : const ExerciseThumbnail(gifUrl: null, size: 48),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        GestureDetector(
-                          onTap: de != null
-                              ? () => context.push('/exercise/detail/${de.id}',
-                                  extra: de)
-                              : null,
-                          child: Text(
-                            exerciseName,
-                            style: AppText.cardTitle(
-                                shadows: AppText.depthFor(context)),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      GestureDetector(
+                        onTap: de != null
+                            ? () => context.push('/exercise/detail/${de.id}',
+                                extra: de)
+                            : null,
+                        child: Text(
+                          exerciseName,
+                          style: const TextStyle(
+                            fontFamily: 'Inter',
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.textPrimary,
                           ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                        const SizedBox(height: 6),
-                        _RestOverrideChip(
+                      ),
+                      const SizedBox(height: 7),
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: CompactRestChip(
                           exerciseIndex: exerciseIndex,
                           exerciseName: exerciseName,
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
-                  IconButton(
+                ),
+                SizedBox.square(
+                  dimension: 48,
+                  child: IconButton(
                     tooltip: 'Exercise options',
-                    constraints:
-                        const BoxConstraints(minWidth: 48, minHeight: 48),
+                    padding: EdgeInsets.zero,
                     icon: const Icon(Icons.more_horiz_rounded,
                         color: AppColors.textSecondary, size: 20),
                     onPressed: () => _showMenu(context, exerciseName),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 16),
 
             // ── Column labels — share SetRow's exact column geometry ─────
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+            SizedBox(
+              height: 22,
               child: Row(
                 children: [
                   SizedBox(
@@ -345,124 +358,20 @@ class ExerciseBlock extends ConsumerWidget {
             }),
 
             Padding(
-              padding: const EdgeInsets.fromLTRB(16, 4, 16, 14),
-              child: SecondaryButton(
-                label: '+ Add Set',
-                accent: true,
-                onPressed: () {
-                  HapticFeedback.lightImpact();
-                  onAddSet();
-                },
+              padding: const EdgeInsets.only(top: 8),
+              child: SizedBox(
+                height: 50,
+                child: SecondaryButton(
+                  label: '+ Add Set',
+                  accent: true,
+                  onPressed: () {
+                    HapticFeedback.lightImpact();
+                    onAddSet();
+                  },
+                ),
               ),
             ),
           ],
-        ),
-      ),
-    );
-  }
-}
-
-class _RestOverrideChip extends ConsumerWidget {
-  final int exerciseIndex;
-  final String exerciseName;
-
-  const _RestOverrideChip({
-    required this.exerciseIndex,
-    required this.exerciseName,
-  });
-
-  String _formatDuration(int totalSeconds) {
-    if (totalSeconds <= 0) return 'Off';
-    final m = totalSeconds ~/ 60;
-    final s = totalSeconds % 60;
-    return '$m:${s.toString().padLeft(2, '0')}';
-  }
-
-  Future<void> _handleTap(
-    BuildContext context,
-    WidgetRef ref,
-    RestPreference currentPreference,
-    int defaultRest,
-  ) async {
-    final result = await showRestTimeSheet(
-      context: context,
-      exerciseName: exerciseName,
-      currentPreference: currentPreference,
-      globalSeconds: defaultRest,
-    );
-
-    if (result != null) {
-      ref
-          .read(activeWorkoutProvider.notifier)
-          .setRestPreference(exerciseIndex, result);
-    }
-  }
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final workout = ref.watch(activeWorkoutProvider);
-    if (workout == null || exerciseIndex >= workout.exercises.length) {
-      return const SizedBox.shrink();
-    }
-    final exercise = workout.exercises[exerciseIndex];
-    final defaultRest = ref.watch(defaultRestSecondsProvider);
-    final preference = normalizeRestPreference(
-      preference: exercise.restPreference,
-      globalSeconds: defaultRest,
-    );
-
-    final accent = context.accent;
-    final isCustom = preference is RestPreferenceCustomDuration;
-    final isDisabled = isOff(preference);
-
-    String labelText;
-    if (isDisabled) {
-      labelText = 'Rest Off';
-    } else if (preference is RestPreferenceCustomDuration) {
-      labelText = 'Rest ${_formatDuration(preference.seconds)} · Custom';
-    } else {
-      labelText = 'Rest ${_formatDuration(defaultRest)}';
-    }
-
-    return Semantics(
-      button: true,
-      label: 'Set rest duration override. Currently $labelText',
-      child: Material(
-        color: isDisabled
-            ? AppColors.surface3.withValues(alpha: 0.5)
-            : (isCustom
-                ? accent.base.withValues(alpha: 0.16)
-                : AppColors.surface3),
-        borderRadius: BorderRadius.circular(16),
-        child: InkWell(
-          borderRadius: BorderRadius.circular(16),
-          onTap: () => _handleTap(context, ref, preference, defaultRest),
-          child: Container(
-            constraints: const BoxConstraints(minHeight: 48, minWidth: 48),
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-            alignment: Alignment.center,
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  isDisabled ? Icons.timer_off_outlined : Icons.timer_outlined,
-                  size: 14,
-                  color: isCustom && !isDisabled
-                      ? accent.light
-                      : AppColors.textSecondary,
-                ),
-                const SizedBox(width: 4),
-                Text(
-                  labelText,
-                  style: AppText.columnHeader(
-                    color: isCustom && !isDisabled
-                        ? accent.light
-                        : AppColors.textSecondary,
-                  ).copyWith(fontWeight: isCustom ? FontWeight.bold : null),
-                ),
-              ],
-            ),
-          ),
         ),
       ),
     );
