@@ -442,6 +442,61 @@ class ActiveWorkoutNotifier extends StateNotifier<ActiveWorkoutState?> {
     saveDraftNow();
   }
 
+  Future<void> replaceExerciseWithPolicy(
+    int exerciseIndex,
+    int newExerciseId,
+    String newName, {
+    required bool keepCompatibleValues,
+    String? measurementType,
+  }) async {
+    if (state == null) return;
+    final exercises = [...state!.exercises];
+    if (exerciseIndex < 0 || exerciseIndex >= exercises.length) return;
+
+    final oldExercise = exercises[exerciseIndex];
+    String? resolvedType = measurementType;
+    if (resolvedType == null || resolvedType.isEmpty) {
+      try {
+        final db = _ref.read(databaseProvider);
+        final row = await (db.select(db.exercises)
+              ..where((t) => t.id.equals(newExerciseId)))
+            .getSingleOrNull();
+        if (row != null) {
+          resolvedType = row.measurementType;
+        }
+      } catch (e) {
+        debugPrint(
+            '[ActiveWorkoutNotifier] Failed to resolve replacement measurementType for exercise $newExerciseId: $e');
+      }
+    }
+    final oldMType = MeasurementType.fromString(oldExercise.measurementType);
+    final newMType = MeasurementType.fromString(resolvedType);
+
+    final List<WorkoutSetState> newSets;
+    if (keepCompatibleValues) {
+      newSets = adaptSetsForMeasurementType(
+        oldSets: oldExercise.sets,
+        oldType: oldMType,
+        newType: newMType,
+      );
+    } else {
+      newSets = [
+        WorkoutSetState.create(weightKg: newMType.isRepsOnly ? null : 0.0),
+      ];
+    }
+
+    exercises[exerciseIndex] = WorkoutExerciseState(
+      id: oldExercise.id,
+      exerciseId: newExerciseId,
+      name: newName,
+      measurementType: newMType.raw,
+      sets: newSets,
+      restSecondsOverride: oldExercise.restSecondsOverride,
+    );
+    state = state!.copyWith(exercises: exercises);
+    saveDraftNow();
+  }
+
   void removeExercise(int exerciseIndex) {
     if (state == null) return;
     final exercises = [...state!.exercises];
@@ -450,14 +505,29 @@ class ActiveWorkoutNotifier extends StateNotifier<ActiveWorkoutState?> {
     saveDraftNow();
   }
 
-  void removeSet(int exerciseIndex, int setIndex) {
-    if (state == null) return;
+  RemovedSetSnapshot? removeSetWithSnapshot({
+    required String exerciseInstanceId,
+    required String setId,
+  }) {
+    if (state == null) return null;
     final exercises = [...state!.exercises];
+    final exerciseIndex =
+        exercises.indexWhere((e) => e.id == exerciseInstanceId);
+    if (exerciseIndex == -1) return null;
+
     final exercise = exercises[exerciseIndex];
-    if (setIndex < 0 || setIndex >= exercise.sets.length) return;
+    final setIndex = exercise.sets.indexWhere((s) => s.id == setId);
+    if (setIndex == -1) return null;
+
     final removedSet = exercise.sets[setIndex];
-    final sets = [...exercise.sets]..removeAt(setIndex);
-    exercises[exerciseIndex] = exercise.copyWith(sets: sets);
+    final snapshot = RemovedSetSnapshot(
+      exerciseInstanceId: exerciseInstanceId,
+      set: removedSet,
+      originalIndex: setIndex,
+    );
+
+    final updatedSets = [...exercise.sets]..removeAt(setIndex);
+    exercises[exerciseIndex] = exercise.copyWith(sets: updatedSets);
     state = state!.copyWith(exercises: exercises);
     saveDraftNow();
 
@@ -465,7 +535,43 @@ class ActiveWorkoutNotifier extends StateNotifier<ActiveWorkoutState?> {
           exerciseIndex,
           setIndex,
           removedSet,
+          snapshot: snapshot,
         ));
+
+    return snapshot;
+  }
+
+  bool restoreRemovedSet(RemovedSetSnapshot snapshot) {
+    if (state == null) return false;
+    final exercises = [...state!.exercises];
+    final exerciseIndex =
+        exercises.indexWhere((e) => e.id == snapshot.exerciseInstanceId);
+    if (exerciseIndex == -1) return false;
+
+    final exercise = exercises[exerciseIndex];
+    if (exercise.sets.any((s) => s.id == snapshot.set.id)) {
+      return false;
+    }
+
+    final targetIndex = snapshot.originalIndex.clamp(0, exercise.sets.length);
+    final updatedSets = [...exercise.sets]..insert(targetIndex, snapshot.set);
+
+    exercises[exerciseIndex] = exercise.copyWith(sets: updatedSets);
+    state = state!.copyWith(exercises: exercises);
+    saveDraftNow();
+
+    return true;
+  }
+
+  void removeSet(int exerciseIndex, int setIndex) {
+    if (state == null) return;
+    if (exerciseIndex < 0 || exerciseIndex >= state!.exercises.length) return;
+    final exercise = state!.exercises[exerciseIndex];
+    if (setIndex < 0 || setIndex >= exercise.sets.length) return;
+    removeSetWithSnapshot(
+      exerciseInstanceId: exercise.id,
+      setId: exercise.sets[setIndex].id,
+    );
   }
 
   void insertSet(int exerciseIndex, int setIndex, WorkoutSetState set) {

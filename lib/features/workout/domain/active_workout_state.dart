@@ -85,3 +85,46 @@ List<WorkoutExerciseState> seedExercisesFromRoutine(
     );
   }).toList();
 }
+
+/// A snapshot of a set removed from an exercise, enabling exact Undo restoration
+/// even after exercise reordering.
+@immutable
+class RemovedSetSnapshot {
+  const RemovedSetSnapshot({
+    required this.exerciseInstanceId,
+    required this.set,
+    required this.originalIndex,
+  });
+
+  final String exerciseInstanceId;
+  final WorkoutSetState set;
+  final int originalIndex;
+}
+
+/// Evaluates whether an exercise contains meaningful user-entered data before replacement.
+bool hasMeaningfulSetData(WorkoutExerciseState exercise) {
+  return exercise.sets.any(
+    (set) => set.isCompleted || set.weightKg != null || set.reps > 0,
+  );
+}
+
+/// Adapts existing set data for a new exercise measurement type according to compatibility rules.
+List<WorkoutSetState> adaptSetsForMeasurementType({
+  required List<WorkoutSetState> oldSets,
+  required MeasurementType oldType,
+  required MeasurementType newType,
+}) {
+  return oldSets.map((s) {
+    final double? newWeight =
+        (newType.showsWeightColumn && oldType.showsWeightColumn)
+            ? s.weightKg
+            : null;
+    final int newReps =
+        newType.showsRepsColumn ? (oldType.showsRepsColumn ? s.reps : 0) : 0;
+
+    return s.copyWith(
+      weightKg: newWeight,
+      reps: newReps,
+    );
+  }).toList();
+}

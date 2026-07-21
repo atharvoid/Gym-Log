@@ -45,7 +45,9 @@ class SetRemovedEvent extends ActiveWorkoutEvent {
   final int exerciseIndex;
   final int setIndex;
   final WorkoutSetState removedSet;
-  const SetRemovedEvent(this.exerciseIndex, this.setIndex, this.removedSet);
+  final RemovedSetSnapshot? snapshot;
+  const SetRemovedEvent(this.exerciseIndex, this.setIndex, this.removedSet,
+      {this.snapshot});
 }
 
 class ActiveWorkoutEventBus {

@@ -65,9 +65,22 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
       case SetRemovedEvent(
           exerciseIndex: final exIdx,
           setIndex: final setIdx,
-          removedSet: final set
+          removedSet: final set,
+          snapshot: final snapshot,
         ):
-        _showSetRemovedSnackbar(exIdx, setIdx, set);
+        if (snapshot != null) {
+          _showSetRemovedSnackbar(snapshot);
+        } else {
+          final workout = ref.read(activeWorkoutProvider);
+          final exId = (workout != null && exIdx < workout.exercises.length)
+              ? workout.exercises[exIdx].id
+              : '';
+          _showSetRemovedSnackbar(RemovedSetSnapshot(
+            exerciseInstanceId: exId,
+            set: set,
+            originalIndex: setIdx,
+          ));
+        }
         break;
       case TimerStartedEvent(seconds: final secs):
         SemanticsService.sendAnnouncement(
@@ -95,8 +108,7 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
     }
   }
 
-  void _showSetRemovedSnackbar(
-      int exerciseIndex, int setIndex, WorkoutSetState removedSet) {
+  void _showSetRemovedSnackbar(RemovedSetSnapshot snapshot) {
     final restTimer = ref.read(restTimerProvider);
     final restBarVisible = restTimer != null;
 
@@ -104,11 +116,10 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
       context,
       message: 'Set removed',
       actionLabel: 'Undo',
+      duration: const Duration(seconds: 5),
       additionalBottomOffset: restBarVisible ? kRestTileHeight + 18 : 0,
       onAction: () {
-        ref
-            .read(activeWorkoutProvider.notifier)
-            .insertSet(exerciseIndex, setIndex, removedSet);
+        ref.read(activeWorkoutProvider.notifier).restoreRemovedSet(snapshot);
       },
     );
   }
@@ -594,9 +605,42 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
                             onReplace: () async {
                               final selected = await context
                                   .push<Exercise>('/exercises/select');
-                              if (selected != null && mounted) {
-                                notifier.replaceExerciseFromEntity(
-                                    index, selected);
+                              if (selected == null || !context.mounted) return;
+                              final workout = ref.read(activeWorkoutProvider);
+                              if (workout != null &&
+                                  index < workout.exercises.length) {
+                                final oldExercise = workout.exercises[index];
+                                if (hasMeaningfulSetData(oldExercise)) {
+                                  if (!context.mounted) return;
+                                  final choice =
+                                      await _showReplaceExerciseDialog(context);
+                                  if (choice == ReplacementChoice.keepValues) {
+                                    notifier.replaceExerciseWithPolicy(
+                                      index,
+                                      selected.id,
+                                      selected.name,
+                                      keepCompatibleValues: true,
+                                      measurementType: selected.measurementType,
+                                    );
+                                  } else if (choice ==
+                                      ReplacementChoice.clearSets) {
+                                    notifier.replaceExerciseWithPolicy(
+                                      index,
+                                      selected.id,
+                                      selected.name,
+                                      keepCompatibleValues: false,
+                                      measurementType: selected.measurementType,
+                                    );
+                                  }
+                                } else {
+                                  notifier.replaceExerciseWithPolicy(
+                                    index,
+                                    selected.id,
+                                    selected.name,
+                                    keepCompatibleValues: false,
+                                    measurementType: selected.measurementType,
+                                  );
+                                }
                               }
                             },
                             onAddSet: () => notifier.addSet(index),
@@ -791,4 +835,120 @@ class _ReorderExercisesSheetState extends State<_ReorderExercisesSheet> {
       ),
     );
   }
+}
+
+enum ReplacementChoice {
+  clearSets,
+  keepValues,
+  cancel,
+}
+
+Future<ReplacementChoice?> _showReplaceExerciseDialog(BuildContext context) {
+  final surface = context.surface;
+  final accent = context.accent;
+
+  return showDialog<ReplacementChoice>(
+    context: context,
+    builder: (dialogContext) {
+      return Dialog(
+        backgroundColor: surface.bgSurface,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+          side: BorderSide(color: surface.borderSubtle, width: 1),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                'Replace exercise?',
+                style: TextStyle(
+                  fontFamily: 'Inter',
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                  color: surface.textPrimary,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'This exercise has logged data. Choose how to handle your existing sets.',
+                style: TextStyle(
+                  fontFamily: 'Inter',
+                  fontSize: 14,
+                  fontWeight: FontWeight.w400,
+                  color: surface.textSecondary,
+                ),
+              ),
+              const SizedBox(height: 20),
+              Material(
+                color: surface.surface3,
+                borderRadius: BorderRadius.circular(12),
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(12),
+                  onTap: () =>
+                      Navigator.pop(dialogContext, ReplacementChoice.clearSets),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 14, horizontal: 16),
+                    child: Center(
+                      child: Text(
+                        'Replace and clear sets',
+                        style: TextStyle(
+                          fontFamily: 'Inter',
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: surface.textPrimary,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 10),
+              Material(
+                color: accent.base.withValues(alpha: 0.16),
+                borderRadius: BorderRadius.circular(12),
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(12),
+                  onTap: () => Navigator.pop(
+                      dialogContext, ReplacementChoice.keepValues),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 14, horizontal: 16),
+                    child: Center(
+                      child: Text(
+                        'Replace and keep compatible values',
+                        style: TextStyle(
+                          fontFamily: 'Inter',
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: accent.light,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 10),
+              TextButton(
+                onPressed: () =>
+                    Navigator.pop(dialogContext, ReplacementChoice.cancel),
+                child: Text(
+                  'Cancel',
+                  style: TextStyle(
+                    fontFamily: 'Inter',
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: surface.textSecondary,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    },
+  );
 }
