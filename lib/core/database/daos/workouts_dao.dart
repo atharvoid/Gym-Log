@@ -810,9 +810,11 @@ class WorkoutsDao extends DatabaseAccessor<AppDatabase>
   ///   3. exercise metadata batch (IN clause)
   ///   4. all sets of the session (single JOIN)
   ///   5. previous-session sets for every exercise (single CTE query)
-  Future<HydratedWorkout?> getHydratedWorkout(String sessionId) async {
+  Future<HydratedWorkout?> getHydratedWorkout(String sessionId,
+      {String? userId}) async {
     final session = await getSessionOrNull(sessionId);
     if (session == null) return null;
+    if (userId != null && session.userId != userId) return null;
 
     final exercises = await getExercisesForSession(sessionId);
     if (exercises.isEmpty) {
@@ -1249,12 +1251,13 @@ class WorkoutsDao extends DatabaseAccessor<AppDatabase>
     });
   }
 
-  Stream<HydratedWorkout?> watchHydratedWorkout(String sessionId) {
+  Stream<HydratedWorkout?> watchHydratedWorkout(String sessionId,
+      {String? userId}) {
     return customSelect(
       'SELECT 1 FROM workout_sessions WHERE id = ?',
       variables: [Variable.withString(sessionId)],
       readsFrom: {workoutSessions, workoutExercises, workoutSets},
-    ).watch().asyncMap((_) => getHydratedWorkout(sessionId));
+    ).watch().asyncMap((_) => getHydratedWorkout(sessionId, userId: userId));
   }
 
   /// Removes sessions that were started but never finished within 24h,

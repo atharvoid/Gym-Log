@@ -138,7 +138,7 @@ void main() {
       expect(
           importRes.exercisesCreated, contains('Unicorn Deadlift (Barbell)'));
 
-      final exercises = await db.exercisesDao.getAllExercises();
+      final exercises = await db.exercisesDao.getAllExercises(userId: userId);
       expect(
           exercises.any((e) => e.name == 'Unicorn Deadlift (Barbell)'), isTrue);
     });

@@ -10,6 +10,7 @@ import 'package:gymlog/core/providers/settings_provider.dart';
 import 'package:gymlog/core/services/sync_engine.dart';
 import 'package:gymlog/core/services/sync_entitlement_gate.dart';
 import 'package:gymlog/core/services/workout_export_service.dart';
+import 'package:gymlog/core/services/sign_out_coordinator.dart';
 import 'package:gymlog/core/theme/app_colors.dart';
 import 'package:gymlog/core/theme/app_text.dart';
 import 'package:gymlog/core/theme/dynamic_accent_theme.dart';
@@ -612,16 +613,62 @@ class _SignOutButton extends ConsumerWidget {
           borderRadius: AppRadius.cardAll,
           onTap: () async {
             if (!tapGuard()) return;
-            final confirmed = await showAppConfirmDialog(
-              context: context,
-              title: 'Sign out?',
-              message: 'Your workouts are stored locally and will be here '
-                  'when you sign back in.',
-              confirmLabel: 'Sign Out',
-              isDestructive: true,
-            );
-            if (confirmed) {
-              await ref.read(authRepositoryProvider).signOut();
+            final user = ref.read(authProvider);
+            if (user == null) return;
+            final profile = ref.read(currentUserProfileProvider).valueOrNull;
+            final coordinator = ref.read(signOutCoordinatorProvider);
+            final prep = await coordinator.prepare(user.id);
+            if (prep == SignOutResult.unsyncedWork) {
+              if (!context.mounted) return;
+              final strategy = await showDialog<SignOutStrategy>(
+                context: context,
+                builder: (context) => AlertDialog(
+                  title: const Text('Unsynced Work'),
+                  content: const Text(
+                    'You have workouts that are not synchronized with the cloud. What would you like to do?',
+                  ),
+                  actions: [
+                    TextButton(
+                      child: const Text('Keep me signed in'),
+                      onPressed: () =>
+                          Navigator.pop(context, SignOutStrategy.keepSignedIn),
+                    ),
+                    TextButton(
+                      child: const Text('Sign out after sync'),
+                      onPressed: () => Navigator.pop(
+                          context, SignOutStrategy.signOutAfterSync),
+                    ),
+                    TextButton(
+                      child: const Text('Export and sign out'),
+                      onPressed: () => Navigator.pop(
+                          context, SignOutStrategy.exportAndSignOut),
+                    ),
+                  ],
+                ),
+              );
+              if (strategy == null ||
+                  strategy == SignOutStrategy.keepSignedIn) {
+                return;
+              }
+              if (strategy == SignOutStrategy.exportAndSignOut) {
+                if (!context.mounted) return;
+                await _exportWorkouts(
+                    context, ref, user.id, profile?.displayName ?? '');
+              }
+              await coordinator.execute(strategy);
+            } else {
+              if (!context.mounted) return;
+              final confirmed = await showAppConfirmDialog(
+                context: context,
+                title: 'Sign out?',
+                message: 'Your workouts are stored locally and will be here '
+                    'when you sign back in.',
+                confirmLabel: 'Sign Out',
+                isDestructive: true,
+              );
+              if (confirmed) {
+                await coordinator.execute(SignOutStrategy.forceSignOut);
+              }
             }
           },
           child: Container(

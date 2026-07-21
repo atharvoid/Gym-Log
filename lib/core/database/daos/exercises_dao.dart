@@ -36,37 +36,83 @@ class ExercisesDao extends DatabaseAccessor<AppDatabase>
 
   // ── Queries ────────────────────────────────────────────────────────────────
 
-  Future<List<Exercise>> getAllExercises() => select(exercises).get();
+  Future<List<Exercise>> getAllExercises({String? userId}) {
+    if (userId == null || userId.isEmpty) {
+      return (select(exercises)..where((t) => t.isCustom.not())).get();
+    }
+    return (select(exercises)
+          ..where((t) => t.isCustom.not() | t.createdBy.equals(userId)))
+        .get();
+  }
 
   Future<Exercise> getExerciseById(int id) =>
       (select(exercises)..where((t) => t.id.equals(id))).getSingle();
 
-  Future<List<Exercise>> searchExercises(String query) {
+  Future<List<Exercise>> searchExercises(String query, {String? userId}) {
     // Neutralize LIKE wildcards — exercise names never contain % or _,
     // so treating them as plain separators keeps search predictable.
     final sanitized = query.replaceAll('%', ' ').replaceAll('_', ' ').trim();
+    if (userId == null || userId.isEmpty) {
+      return (select(exercises)
+            ..where((t) => t.name.like('%$sanitized%') & t.isCustom.not())
+            ..orderBy([(t) => OrderingTerm.asc(t.name)]))
+          .get();
+    }
     return (select(exercises)
-          ..where((t) => t.name.like('%$sanitized%'))
+          ..where((t) =>
+              t.name.like('%$sanitized%') &
+              (t.isCustom.not() | t.createdBy.equals(userId)))
           ..orderBy([(t) => OrderingTerm.asc(t.name)]))
         .get();
   }
 
   /// Case-insensitive exact-name existence check — guards the manual
   /// "Create custom exercise" flow against duplicating a catalog entry.
-  Future<bool> exerciseNameExists(String name) async {
+  Future<bool> exerciseNameExists(String name, {String? userId}) async {
+    if (userId == null || userId.isEmpty) {
+      final rows = await customSelect(
+        'SELECT 1 FROM exercises WHERE LOWER(name) = LOWER(?) AND is_custom = 0 LIMIT 1',
+        variables: [Variable.withString(name.trim())],
+        readsFrom: {exercises},
+      ).get();
+      return rows.isNotEmpty;
+    }
     final rows = await customSelect(
-      'SELECT 1 FROM exercises WHERE LOWER(name) = LOWER(?) LIMIT 1',
-      variables: [Variable.withString(name.trim())],
+      'SELECT 1 FROM exercises WHERE LOWER(name) = LOWER(?) AND (is_custom = 0 OR created_by = ?) LIMIT 1',
+      variables: [
+        Variable.withString(name.trim()),
+        Variable.withString(userId)
+      ],
       readsFrom: {exercises},
     ).get();
     return rows.isNotEmpty;
   }
 
-  Future<List<Exercise>> filterByBodyPart(String bodyPart) =>
-      (select(exercises)..where((t) => t.bodyPart.equals(bodyPart))).get();
+  Future<List<Exercise>> filterByBodyPart(String bodyPart, {String? userId}) {
+    if (userId == null || userId.isEmpty) {
+      return (select(exercises)
+            ..where((t) => t.bodyPart.equals(bodyPart) & t.isCustom.not()))
+          .get();
+    }
+    return (select(exercises)
+          ..where((t) =>
+              t.bodyPart.equals(bodyPart) &
+              (t.isCustom.not() | t.createdBy.equals(userId))))
+        .get();
+  }
 
-  Future<List<Exercise>> filterByEquipment(String equipment) =>
-      (select(exercises)..where((t) => t.equipment.equals(equipment))).get();
+  Future<List<Exercise>> filterByEquipment(String equipment, {String? userId}) {
+    if (userId == null || userId.isEmpty) {
+      return (select(exercises)
+            ..where((t) => t.equipment.equals(equipment) & t.isCustom.not()))
+          .get();
+    }
+    return (select(exercises)
+          ..where((t) =>
+              t.equipment.equals(equipment) &
+              (t.isCustom.not() | t.createdBy.equals(userId))))
+        .get();
+  }
 
   /// COUNT(*) in SQL — the old version loaded all ~1,300 rows just to count.
   Future<int> getExerciseCount() {

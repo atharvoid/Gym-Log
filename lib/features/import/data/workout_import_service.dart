@@ -34,7 +34,7 @@ class WorkoutImportService {
       (text, assumedStrongUnit),
     );
 
-    final matcher = await _buildMatcher();
+    final matcher = await _buildMatcher(userId);
     final (validatedSessions, warnings) =
         await _resolveAndValidateSessions(parsed, matcher);
 
@@ -86,7 +86,7 @@ class WorkoutImportService {
       (text, assumedStrongUnit),
     );
 
-    final matcher = await _buildMatcher();
+    final matcher = await _buildMatcher(userId);
     final (validatedSessions, warnings) =
         await _resolveAndValidateSessions(parsed, matcher);
 
@@ -338,8 +338,8 @@ class WorkoutImportService {
     return (validatedSessions, warnings);
   }
 
-  Future<ExerciseMatcher> _buildMatcher() async {
-    final library = await _db.exercisesDao.getAllExercises();
+  Future<ExerciseMatcher> _buildMatcher(String userId) async {
+    final library = await _db.exercisesDao.getAllExercises(userId: userId);
     return ExerciseMatcher(
       library.map((e) => ExerciseRef(
             e.id,

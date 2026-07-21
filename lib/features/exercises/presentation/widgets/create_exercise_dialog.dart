@@ -116,8 +116,7 @@ class _CreateExerciseDialogState extends ConsumerState<_CreateExerciseDialog> {
     });
 
     final dao = ref.read(databaseProvider).exercisesDao;
-
-    if (await dao.exerciseNameExists(name)) {
+    if (await dao.exerciseNameExists(name, userId: user.id)) {
       if (!mounted) return;
       setState(() {
         _saving = false;

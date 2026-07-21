@@ -17,7 +17,9 @@ final hydratedRoutinesProvider = StreamProvider<List<HydratedRoutine>>((ref) {
 final routineDetailProvider =
     StreamProvider.family<HydratedRoutineDetail?, String>((ref, routineId) {
   final db = ref.watch(databaseProvider);
-  return db.routinesDao.watchHydratedRoutineDetail(routineId);
+  final user = ref.watch(authProvider);
+  if (user == null) return Stream.value(null);
+  return db.routinesDao.watchHydratedRoutineDetail(routineId, userId: user.id);
 });
 
 /// Maps a time-range label to a [DateTime] cutoff, or null for all-time.

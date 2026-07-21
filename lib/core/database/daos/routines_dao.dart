@@ -236,23 +236,24 @@ class RoutinesDao extends DatabaseAccessor<AppDatabase>
     });
   }
 
-  /// Reactive stream of a single routine with full exercise metadata + config.
-  /// Re-emits when the routine, its day/exercise structure, or the exercise
-  /// library change — so the detail screen updates live after editor saves.
-  Stream<HydratedRoutineDetail?> watchHydratedRoutineDetail(String routineId) {
+  Stream<HydratedRoutineDetail?> watchHydratedRoutineDetail(String routineId,
+      {String? userId}) {
     return customSelect(
       'SELECT COUNT(*) AS c FROM routines WHERE id = ?',
       variables: [Variable.withString(routineId)],
       readsFrom: {routines, routineDays, routineExercises, db.exercises},
-    ).watch().asyncMap((_) => getHydratedRoutineDetail(routineId));
+    )
+        .watch()
+        .asyncMap((_) => getHydratedRoutineDetail(routineId, userId: userId));
   }
 
-  Future<HydratedRoutineDetail?> getHydratedRoutineDetail(
-      String routineId) async {
+  Future<HydratedRoutineDetail?> getHydratedRoutineDetail(String routineId,
+      {String? userId}) async {
     final routine = await (select(routines)
           ..where((t) => t.id.equals(routineId)))
         .getSingleOrNull();
     if (routine == null) return null;
+    if (userId != null && routine.userId != userId) return null;
 
     final rows = await _exercisesForRoutines([routineId]);
     return HydratedRoutineDetail(

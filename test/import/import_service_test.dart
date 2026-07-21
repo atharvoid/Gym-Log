@@ -97,7 +97,7 @@ void main() {
     // No duplicate sessions or custom exercises were created.
     final sessions = await db.workoutsDao.getSessionsForUser(userId);
     expect(sessions.length, 2);
-    final exercises = await db.exercisesDao.getAllExercises();
+    final exercises = await db.exercisesDao.getAllExercises(userId: userId);
     expect(exercises.where((e) => e.isCustom).length, 6);
   });
 
