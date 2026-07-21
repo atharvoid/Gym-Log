@@ -37,6 +37,15 @@ enum MeasurementType {
           .replaceAll(' ', '')
           .replaceAll('_', '')
           .replaceAll('-', '');
+      if (eqNorm.contains('assisted') ||
+          eqNorm.contains('barbell') ||
+          eqNorm.contains('dumbbell') ||
+          eqNorm.contains('cable') ||
+          eqNorm.contains('machine') ||
+          eqNorm.contains('kettlebell') ||
+          eqNorm.contains('smith')) {
+        return MeasurementType.weightAndReps;
+      }
       if (eqNorm == 'bodyweight' ||
           eqNorm == 'none' ||
           eqNorm == 'noequipment') {
@@ -48,6 +57,32 @@ enum MeasurementType {
             return MeasurementType.duration;
           }
         }
+        return MeasurementType.repsOnly;
+      }
+    }
+    if (exerciseName != null && exerciseName.isNotEmpty) {
+      final nameNorm = exerciseName.toLowerCase();
+      if (nameNorm.contains('plank') ||
+          nameNorm.contains('wall sit') ||
+          nameNorm.contains('hold')) {
+        return MeasurementType.duration;
+      }
+      if (nameNorm.contains('push up') ||
+          nameNorm.contains('pushup') ||
+          nameNorm.contains('push-up') ||
+          nameNorm.contains('pull up') ||
+          nameNorm.contains('pullup') ||
+          nameNorm.contains('pull-up') ||
+          nameNorm.contains('chin up') ||
+          nameNorm.contains('chinup') ||
+          nameNorm.contains('chin-up') ||
+          nameNorm.contains('sit up') ||
+          nameNorm.contains('situp') ||
+          nameNorm.contains('sit-up') ||
+          nameNorm.contains('crunch') ||
+          nameNorm.contains('burpee') ||
+          nameNorm.contains('jumping jack') ||
+          (nameNorm.contains('dip') && !nameNorm.contains('assisted'))) {
         return MeasurementType.repsOnly;
       }
     }

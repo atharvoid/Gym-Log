@@ -17,35 +17,44 @@
 library;
 
 class ExerciseRef {
-  const ExerciseRef(this.id, this.name);
+  const ExerciseRef(
+    this.id,
+    this.name, {
+    this.measurementType,
+    this.equipment,
+  });
+
   final int id;
   final String name;
+  final String? measurementType;
+  final String? equipment;
 }
 
 class _Cand {
-  const _Cand(this.id, this.equip);
-  final int id;
+  const _Cand(this.ref, this.equip);
+  final ExerciseRef ref;
   final String equip; // equipment class
 }
 
 class ExerciseMatcher {
   ExerciseMatcher(Iterable<ExerciseRef> library) {
     for (final e in library) {
-      _byExact.putIfAbsent(e.name.trim().toLowerCase(), () => e.id);
+      _byExact.putIfAbsent(e.name.trim().toLowerCase(), () => e);
       final key = movementKey(e.name);
       if (key.isNotEmpty) {
-        (_byMovement[key] ??= <_Cand>[])
-            .add(_Cand(e.id, equipFromName(e.name)));
+        (_byMovement[key] ??= <_Cand>[]).add(_Cand(e, equipFromName(e.name)));
       }
     }
   }
 
-  final Map<String, int> _byExact = {};
+  final Map<String, ExerciseRef> _byExact = {};
   final Map<String, List<_Cand>> _byMovement = {};
 
-  /// Returns the catalog id for [name], or null when there's no confident
-  /// match (caller then creates a custom exercise).
-  int? match(String name) {
+  /// Returns the catalog id for [name], or null when there's no confident match.
+  int? match(String name) => matchRef(name)?.id;
+
+  /// Returns the full [ExerciseRef] for [name], or null when there's no confident match.
+  ExerciseRef? matchRef(String name) {
     final exact = _byExact[name.trim().toLowerCase()];
     if (exact != null) return exact;
 
@@ -56,15 +65,15 @@ class ExerciseMatcher {
 
     final equip = equipFromName(name);
     final same = cands.where((c) => c.equip == equip).toList();
-    if (same.isNotEmpty) return same.first.id;
+    if (same.isNotEmpty) return same.first.ref;
 
     // Equipment not specified in the incoming name → best-effort single family.
-    if (equip == 'other') return cands.first.id;
+    if (equip == 'other') return cands.first.ref;
 
     // Equipment specified but no same-equipment catalog entry: only link when
     // the movement is unambiguous, otherwise stay null (→ custom) rather than
     // attach the wrong-equipment exercise.
-    return cands.length == 1 ? cands.first.id : null;
+    return cands.length == 1 ? cands.first.ref : null;
   }
 
   // ── Normalisation (mirrors tool/gen_catalog.py so the runtime agrees with

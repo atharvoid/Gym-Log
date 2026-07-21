@@ -1,9 +1,12 @@
+library;
+
+import '../../../core/models/measurement_type.dart';
+
 /// Pure-Dart domain models for the workout CSV import feature.
 ///
 /// No Flutter or Drift imports — everything here is trivially unit-testable
 /// and safe to run off the UI isolate. [WorkoutCsvParser] produces these;
 /// [WorkoutImportService] maps them onto the local database.
-library;
 
 /// Which competitor app a CSV was exported from.
 enum ImportSource {
@@ -35,34 +38,48 @@ abstract final class SetTypes {
   static const failure = 'failure';
 }
 
-/// A single logged set, already normalised to GymLog conventions: weight in
-/// kilograms and a contiguous 0-based [orderIndex] reflecting performed order.
-class RawSet {
-  const RawSet({
+/// A single logged set with metric-aware nullable fields.
+class ImportedSet {
+  const ImportedSet({
     required this.orderIndex,
     required this.setType,
-    required this.weightKg,
-    required this.reps,
+    this.csvRowNum = 0,
+    this.weightKg,
+    this.reps,
+    this.durationSeconds,
+    this.distanceMeters,
+    this.measurementType,
     this.rpe,
   });
 
   final int orderIndex; // 0-based, contiguous within the exercise
   final String setType; // normal | warmup | dropset | failure
+  final int csvRowNum;
   final double? weightKg; // kilograms (null if unrecorded / bodyweight)
-  final int reps;
+  final int? reps;
+  final int? durationSeconds;
+  final double? distanceMeters;
+  final MeasurementType? measurementType;
   final double? rpe;
 
-  double get volumeKg => (weightKg ?? 0.0) * reps;
+  double get volumeKg => (weightKg ?? 0.0) * (reps ?? 0);
 }
+
+typedef RawSet = ImportedSet;
 
 /// One exercise within a session, preserving the order it appeared in the file.
 class ParsedExercise {
-  ParsedExercise({required this.name, this.notes, List<RawSet>? sets})
-      : sets = sets ?? <RawSet>[];
+  ParsedExercise({
+    required this.name,
+    this.notes,
+    this.measurementType,
+    List<ImportedSet>? sets,
+  }) : sets = sets ?? <ImportedSet>[];
 
   final String name;
   final String? notes;
-  final List<RawSet> sets;
+  final MeasurementType? measurementType;
+  final List<ImportedSet> sets;
 }
 
 /// A full workout session reconstructed from the file.
