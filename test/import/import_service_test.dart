@@ -67,8 +67,8 @@ void main() {
     expect(r.exercisesCreated.length, 6);
     expect(r.exercisesCreated, contains('Lower Chest Fly'));
 
-    // Every exercise's first all-time appearance is a PR (8 total).
-    expect(r.prsDetected, 8);
+    // Per-set PR detection identifies all record-breaking sets (22 total).
+    expect(r.prsDetected, 22);
 
     // Stored volume matches the parsed total.
     expect(await totalStoredVolume(), closeTo(9483.0, 0.01));

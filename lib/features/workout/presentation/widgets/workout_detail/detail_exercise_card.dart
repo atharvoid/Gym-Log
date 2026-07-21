@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
-import 'package:gymlog/core/theme/app_colors.dart';
-import 'package:gymlog/core/theme/app_text.dart';
 import 'package:gymlog/core/database/daos/workouts_dao.dart';
 import 'package:gymlog/core/database/database.dart';
-import 'package:gymlog/shared/widgets/ui/app_card.dart';
+import 'package:gymlog/core/models/measurement_type.dart';
+import 'package:gymlog/core/theme/app_colors.dart';
+import 'package:gymlog/core/theme/app_text.dart';
+import 'package:gymlog/core/utils/formatters.dart';
 import 'package:gymlog/shared/widgets/exercise_hero_thumb.dart';
+import 'package:gymlog/shared/widgets/ui/app_card.dart';
 
 const _kAccentPos = AppColors.success;
 
@@ -56,7 +58,10 @@ class DetailExerciseCard extends StatelessWidget {
           children: [
             _ExerciseCardHeader(exercise: exercise, enableHero: enableHero),
             const SizedBox(height: 12),
-            _SetTableHeader(hasPrevHistory: hasPrevHistory),
+            _SetTableHeader(
+                hasPrevHistory: hasPrevHistory,
+                measurementType:
+                    MeasurementType.fromString(exercise.measurementType)),
             const SizedBox(height: 4),
             ...sets.asMap().entries.map((entry) {
               final idx = entry.key;
@@ -71,6 +76,8 @@ class DetailExerciseCard extends StatelessWidget {
                 prevSet: prevSet,
                 hasPrevHistory: hasPrevHistory,
                 equipment: exercise.equipment,
+                measurementType:
+                    MeasurementType.fromString(exercise.measurementType),
               );
             }),
             const SizedBox(height: 12),
@@ -128,13 +135,28 @@ class _ExerciseCardHeader extends StatelessWidget {
 class _SetTableHeader extends StatelessWidget {
   /// VS PREV header shown only when the exercise has prior history.
   final bool hasPrevHistory;
+  final MeasurementType measurementType;
 
-  const _SetTableHeader({required this.hasPrevHistory});
+  const _SetTableHeader({
+    required this.hasPrevHistory,
+    required this.measurementType,
+  });
+
+  String get _columnHeader {
+    switch (measurementType) {
+      case MeasurementType.weightAndReps:
+        return 'WEIGHT & REPS';
+      case MeasurementType.repsOnly:
+        return 'REPS';
+      case MeasurementType.duration:
+        return 'DURATION';
+      case MeasurementType.distance:
+        return 'DISTANCE & TIME';
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    // Same column skeleton as the data rows (SET 64 | Expanded | trailing) so
-    // header labels and cells share one alignment axis.
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Row(
@@ -146,7 +168,7 @@ class _SetTableHeader extends StatelessWidget {
           ),
           const SizedBox(width: 12),
           Expanded(
-            child: Text('WEIGHT & REPS',
+            child: Text(_columnHeader,
                 style: AppText.columnHeader(color: AppColors.textSecondary)),
           ),
           if (hasPrevHistory)
@@ -166,6 +188,7 @@ class _DetailSetRow extends StatelessWidget {
   final WorkoutSet? prevSet;
   final bool hasPrevHistory;
   final String? equipment;
+  final MeasurementType measurementType;
 
   const _DetailSetRow({
     required this.setNumber,
@@ -174,6 +197,7 @@ class _DetailSetRow extends StatelessWidget {
     this.prevSet,
     required this.hasPrevHistory,
     this.equipment,
+    required this.measurementType,
   });
 
   double? get _crossSessionDelta {
@@ -191,7 +215,17 @@ class _DetailSetRow extends StatelessWidget {
         ? AppColors.textPrimary.withValues(alpha: 0.03)
         : Colors.transparent;
     final delta = _crossSessionDelta;
-    final showWeight = set.weightKg != null && set.weightKg! > 0;
+
+    final formattedText = MeasurementFormatter.formatSet(
+      measurementType: measurementType,
+      weightKg: set.weightKg,
+      reps: set.reps,
+      durationSeconds:
+          measurementType == MeasurementType.duration ? set.reps : null,
+      distanceMeters:
+          measurementType == MeasurementType.distance ? set.weightKg : null,
+      equipment: equipment,
+    );
 
     return Container(
       color: bg,
@@ -209,12 +243,7 @@ class _DetailSetRow extends StatelessWidget {
           Expanded(
             child: Row(
               children: [
-                if (showWeight) ...[
-                  Text(_formatWeight(set.weightKg!, equipment),
-                      style: AppText.statLabel(color: AppColors.textPrimary)),
-                  Text(' × ', style: AppText.statLabel()),
-                ],
-                Text('${set.reps} reps',
+                Text(formattedText,
                     style: AppText.statLabel(color: AppColors.textPrimary)),
                 if (set.isPr) ...[
                   const SizedBox(width: 8),
@@ -257,13 +286,6 @@ class _DetailSetRow extends StatelessWidget {
         return Text('$setNumber',
             style: AppText.statLabel(color: AppColors.textPrimary));
     }
-  }
-
-  static String _formatWeight(double kg, String? equipment) {
-    final isBw = equipment?.toLowerCase() == 'body weight';
-    final prefix = (isBw && kg > 0) ? '+' : '';
-    if (kg == kg.truncateToDouble()) return '$prefix${kg.toInt()} kg';
-    return '$prefix${kg.toStringAsFixed(1)} kg';
   }
 }
 

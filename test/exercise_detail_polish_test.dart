@@ -220,7 +220,7 @@ void main() {
     // Verify recovery and successful data display
     expect(find.byType(AsyncErrorState), findsNothing);
     expect(find.text('Personal Records'), findsOneWidget);
-    expect(find.text('100.0 kg'), findsOneWidget);
+    expect(find.text('100 kg'), findsOneWidget);
   });
 
   testWidgets(

@@ -11,6 +11,7 @@ import '../../../../core/providers/settings_provider.dart';
 import '../../../../core/services/sync_engine.dart';
 import '../../../../core/services/workout_draft_store.dart';
 import '../../../../core/models/measurement_type.dart';
+import '../../../../core/models/personal_record.dart';
 import '../../../../core/models/rest_preference.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../domain/active_workout_state.dart';
@@ -159,7 +160,7 @@ class ActiveWorkoutNotifier extends StateNotifier<ActiveWorkoutState?> {
   /// Persists the active workout and returns any personal records that
   /// were set. The local commit always happens regardless of sync gate.
   /// `enqueueSession`/`syncNow` are no-ops when the gate is closed.
-  Future<List<PrRecord>> finishWorkout({String? name}) async {
+  Future<List<PersonalRecord>> finishWorkout({String? name}) async {
     if (state == null) return const [];
 
     final hasAnyCompletedSet =
@@ -187,7 +188,7 @@ class ActiveWorkoutNotifier extends StateNotifier<ActiveWorkoutState?> {
         (name != null && name.trim().isNotEmpty) ? name.trim() : state!.name;
 
     try {
-      final prs = await db.transaction<List<PrRecord>>(() async {
+      final prs = await db.transaction<List<PersonalRecord>>(() async {
         await db.workoutsDao.insertSession(
           WorkoutSessionsCompanion(
             id: Value(sessionId),

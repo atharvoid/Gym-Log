@@ -222,14 +222,22 @@ class _StatsRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final hasPrs = preview.prCount > 0;
+    final hasVolume = preview.totalVolumeKg > 0;
 
     return MergeSemantics(
       child: Row(
         children: [
-          _StatChip(
-            icon: Icons.inventory_2_outlined,
-            label: _formatVolume(preview.totalVolumeKg),
-          ),
+          if (hasVolume)
+            _StatChip(
+              icon: Icons.inventory_2_outlined,
+              label: _formatVolume(preview.totalVolumeKg),
+            )
+          else
+            _StatChip(
+              icon: Icons.fitness_center_rounded,
+              label:
+                  '${preview.totalExerciseCount} exercise${preview.totalExerciseCount != 1 ? 's' : ''}',
+            ),
           const SizedBox(width: 20),
           _StatChip(icon: Icons.timer_outlined, label: durationStr),
           if (hasPrs) ...[

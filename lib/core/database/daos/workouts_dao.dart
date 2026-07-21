@@ -1,6 +1,8 @@
 import 'package:drift/drift.dart';
 import 'package:flutter/foundation.dart';
 import 'package:uuid/uuid.dart';
+import '../../models/measurement_type.dart';
+import '../../models/personal_record.dart';
 import '../database.dart';
 import '../tables/workouts_table.dart';
 import '../../../features/workout/domain/active_workout_state.dart';
@@ -325,8 +327,10 @@ class WorkoutsDao extends DatabaseAccessor<AppDatabase>
   /// workout_sets / workout_exercises reference the session via FKs; deleting
   /// only the parent row would leave orphaned sets that keep polluting PR
   /// detection and exercise history forever.
+  /// Deletes a session **and all of its children** atomically, then recalculates PRs.
   Future<void> deleteSession(String id) {
     return transaction(() async {
+      final session = await getSessionOrNull(id);
       await customUpdate(
         'DELETE FROM workout_sets WHERE workout_exercise_id IN '
         '(SELECT id FROM workout_exercises WHERE session_id = ?)',
@@ -337,6 +341,10 @@ class WorkoutsDao extends DatabaseAccessor<AppDatabase>
       await (delete(workoutExercises)..where((t) => t.sessionId.equals(id)))
           .go();
       await (delete(workoutSessions)..where((t) => t.id.equals(id))).go();
+
+      if (session != null) {
+        await recalculateAllPrs(userId: session.userId);
+      }
     });
   }
 
@@ -679,8 +687,23 @@ class WorkoutsDao extends DatabaseAccessor<AppDatabase>
   Future<void> updateSet(WorkoutSetsCompanion set) =>
       update(workoutSets).replace(set);
 
-  Future<void> deleteSet(String id) =>
-      (delete(workoutSets)..where((t) => t.id.equals(id))).go();
+  Future<void> deleteSet(String id) async {
+    final setRows =
+        await (select(workoutSets)..where((t) => t.id.equals(id))).get();
+    if (setRows.isNotEmpty) {
+      final set = setRows.first;
+      final weRows = await (select(workoutExercises)
+            ..where((t) => t.id.equals(set.workoutExerciseId)))
+          .get();
+      await (delete(workoutSets)..where((t) => t.id.equals(id))).go();
+      if (weRows.isNotEmpty) {
+        final session = await getSessionOrNull(weRows.first.sessionId);
+        if (session != null) {
+          await recalculateAllPrs(userId: session.userId);
+        }
+      }
+    }
+  }
 
   // ── Epley 1RM Formula ────────────────────────────────────────────────────
 
@@ -911,110 +934,319 @@ class WorkoutsDao extends DatabaseAccessor<AppDatabase>
 
   // ── PR Detection ──────────────────────────────────────────────────────────
 
-  /// Marks the best-1RM set per exercise in [sessionId] as a PR if it exceeds
-  /// the historical max for that exercise across all sessions before
-  /// [sessionStart], and returns the list of PRs so the UI can celebrate.
-  ///
-  /// Epley formula: `estimated1RM = weight × (1 + reps / 30)`
-  /// Only the single best set per exercise per session is ever marked.
-  Future<List<PrRecord>> detectAndMarkPrs(
+  /// Evaluates PRs per exercise and measurement type, marks PR sets in DB,
+  /// and returns detected [PersonalRecord]s so the UI can celebrate.
+  Future<List<PersonalRecord>> detectAndMarkPrs(
     String sessionId,
     DateTime sessionStart,
   ) async {
-    final prs = <PrRecord>[];
+    final prs = <PersonalRecord>[];
     try {
       final exercises = await getExercisesForSession(sessionId);
       if (exercises.isEmpty) return prs;
 
+      final exerciseIds = exercises.map((e) => e.exerciseId).toSet().toList();
+      final metaRows = await (db.select(db.exercises)
+            ..where((t) => t.id.isIn(exerciseIds)))
+          .get();
+      final metaById = {for (final e in metaRows) e.id: e};
       final setsByWorkoutExercise = await _getSetsForSession(sessionId);
 
       for (final we in exercises) {
-        final sets = setsByWorkoutExercise[we.id] ?? const [];
-        final priorMax =
-            await _getMaxEstimated1rmBefore(we.exerciseId, sessionStart);
+        final meta = metaById[we.exerciseId];
+        if (meta == null) continue;
 
-        double sessionBest1rm = 0;
-        WorkoutSet? bestSet;
+        final mType = MeasurementType.fromString(meta.measurementType);
+        final isAssisted = meta.equipment.toLowerCase().contains('assisted') ||
+            meta.name.toLowerCase().contains('assisted');
+
+        final sets = setsByWorkoutExercise[we.id] ?? const [];
+        final priorSets =
+            await _getPriorSetsForExercise(we.exerciseId, sessionStart);
 
         for (final set in sets) {
-          if (set.weightKg != null && set.weightKg! > 0 && set.reps > 0) {
-            final e1rm = _epley(set.weightKg!, set.reps);
-            if (e1rm > sessionBest1rm) {
-              sessionBest1rm = e1rm;
-              bestSet = set;
-            }
+          final setPrs = _evaluateSetPrs(
+            set: set,
+            mType: mType,
+            isAssisted: isAssisted,
+            priorSets: priorSets,
+            exerciseId: we.exerciseId,
+            exerciseName: meta.name,
+          );
+
+          if (setPrs.isNotEmpty) {
+            await (update(workoutSets)..where((t) => t.id.equals(set.id)))
+                .write(WorkoutSetsCompanion(
+              isPr: const Value(true),
+              estimated1rm: Value(mType == MeasurementType.weightAndReps
+                  ? set.estimated1rm
+                  : null),
+            ));
+            prs.addAll(setPrs);
           }
         }
-
-        if (bestSet != null && sessionBest1rm > priorMax) {
-          await (update(workoutSets)..where((t) => t.id.equals(bestSet!.id)))
-              .write(WorkoutSetsCompanion(
-            isPr: const Value(true),
-            estimated1rm: Value(sessionBest1rm),
-          ));
-          prs.add(PrRecord(
-            exerciseId: we.exerciseId,
-            exerciseName: '', // filled from batch lookup below
-            weightKg: bestSet.weightKg!,
-            reps: bestSet.reps,
-            estimated1rm: sessionBest1rm,
-            previousBest1rm: priorMax,
-          ));
-        }
       }
-
-      if (prs.isEmpty) return prs;
-
-      // Resolve exercise names in one query.
-      final nameRows = await (db.select(db.exercises)
-            ..where((t) => t.id.isIn(prs.map((p) => p.exerciseId).toList())))
-          .get();
-      final nameById = {for (final e in nameRows) e.id: e.name};
-
-      return [
-        for (final p in prs)
-          PrRecord(
-            exerciseId: p.exerciseId,
-            exerciseName: nameById[p.exerciseId] ?? 'Exercise',
-            weightKg: p.weightKg,
-            reps: p.reps,
-            estimated1rm: p.estimated1rm,
-            previousBest1rm: p.previousBest1rm,
-          ),
-      ];
+      return prs;
     } catch (e) {
       if (kDebugMode) debugPrint('[WorkoutsDao] detectAndMarkPrs failed: $e');
       return prs;
     }
   }
 
-  Future<double> _getMaxEstimated1rmBefore(
-      int exerciseId, DateTime before) async {
-    final rows = await customSelect(
-      '''
-      SELECT COALESCE(MAX($_epleySqlWs), 0) AS max_1rm
-      FROM workout_sets ws
-      JOIN workout_exercises we ON ws.workout_exercise_id = we.id
-      JOIN workout_sessions s   ON we.session_id = s.id
-      WHERE ws.exercise_id = ?
-        AND s.ended_at IS NOT NULL
-        AND s.started_at < ?
-        AND ws.weight_kg > 0
-        AND ws.reps > 0
-      ''',
-      variables: [
-        Variable.withInt(exerciseId),
-        // Bound as a typed DateTime so it serializes to the same storage
-        // format as the column. An ISO-string bind compares INTEGER < TEXT,
-        // which is unconditionally true in SQLite — that made priorMax
-        // include the CURRENT session, so no PR could ever fire.
-        Variable.withDateTime(before),
-      ],
-      readsFrom: {workoutSets, workoutExercises, workoutSessions},
-    ).get();
+  Future<List<WorkoutSet>> _getPriorSetsForExercise(
+    int exerciseId,
+    DateTime sessionStart,
+  ) async {
+    final rows = await (select(workoutSets).join([
+      innerJoin(
+        workoutExercises,
+        workoutExercises.id.equalsExp(workoutSets.workoutExerciseId),
+      ),
+      innerJoin(
+        workoutSessions,
+        workoutSessions.id.equalsExp(workoutExercises.sessionId),
+      ),
+    ])
+          ..where(workoutSets.exerciseId.equals(exerciseId) &
+              workoutSessions.endedAt.isNotNull() &
+              workoutSessions.startedAt.isSmallerThanValue(sessionStart))
+          ..orderBy([OrderingTerm.asc(workoutSessions.startedAt)]))
+        .get();
 
-    if (rows.isEmpty) return 0.0;
-    return rows.first.read<double>('max_1rm');
+    return rows.map((r) => r.readTable(workoutSets)).toList();
+  }
+
+  List<PersonalRecord> _evaluateSetPrs({
+    required WorkoutSet set,
+    required MeasurementType mType,
+    required bool isAssisted,
+    required List<WorkoutSet> priorSets,
+    required int exerciseId,
+    required String exerciseName,
+  }) {
+    final prs = <PersonalRecord>[];
+
+    switch (mType) {
+      case MeasurementType.weightAndReps:
+        if (isAssisted) {
+          // Assisted exercise: higher assistance weight = lighter / easier load.
+          // Do not award max weight / e1rm PR for higher assistance.
+          // Safe strategy: track max reps at equal assistance load.
+          final weight = set.weightKg ?? 0.0;
+          final reps = set.reps;
+          if (reps > 0) {
+            double maxRepsAtLoad = 0;
+            for (final p in priorSets) {
+              if ((p.weightKg ?? 0.0) == weight && p.reps > maxRepsAtLoad) {
+                maxRepsAtLoad = p.reps.toDouble();
+              }
+            }
+            if (priorSets.isNotEmpty &&
+                maxRepsAtLoad > 0 &&
+                reps > maxRepsAtLoad) {
+              prs.add(PersonalRecord(
+                type: PersonalRecordType.maxReps,
+                exerciseId: exerciseId,
+                exerciseName: exerciseName,
+                value: reps.toDouble(),
+                unit: 'reps',
+                setId: set.id,
+                previousValue: maxRepsAtLoad,
+              ));
+            }
+          }
+        } else {
+          final weight = set.weightKg ?? 0.0;
+          final reps = set.reps;
+          if (weight > 0 && reps > 0) {
+            final e1rm = _epley(weight, reps);
+
+            double priorMaxE1rm = 0;
+            double priorMaxWeight = 0;
+            double priorMaxRepsAtWeight = 0;
+
+            for (final p in priorSets) {
+              final pw = p.weightKg ?? 0.0;
+              final pr = p.reps;
+              if (pw > 0 && pr > 0) {
+                final pe1rm = _epley(pw, pr);
+                if (pe1rm > priorMaxE1rm) priorMaxE1rm = pe1rm;
+                if (pw > priorMaxWeight) priorMaxWeight = pw;
+                if (pw == weight && pr > priorMaxRepsAtWeight) {
+                  priorMaxRepsAtWeight = pr.toDouble();
+                }
+              }
+            }
+
+            if (priorSets.isNotEmpty && e1rm > priorMaxE1rm) {
+              prs.add(PersonalRecord(
+                type: PersonalRecordType.estimatedOneRepMax,
+                exerciseId: exerciseId,
+                exerciseName: exerciseName,
+                value: e1rm,
+                unit: 'kg',
+                setId: set.id,
+                previousValue: priorMaxE1rm > 0 ? priorMaxE1rm : null,
+              ));
+            } else if (priorSets.isNotEmpty && weight > priorMaxWeight) {
+              prs.add(PersonalRecord(
+                type: PersonalRecordType.maxWeight,
+                exerciseId: exerciseId,
+                exerciseName: exerciseName,
+                value: weight,
+                unit: 'kg',
+                setId: set.id,
+                previousValue: priorMaxWeight > 0 ? priorMaxWeight : null,
+              ));
+            } else if (priorSets.isNotEmpty &&
+                weight == priorMaxWeight &&
+                reps > priorMaxRepsAtWeight &&
+                priorMaxRepsAtWeight > 0) {
+              prs.add(PersonalRecord(
+                type: PersonalRecordType.maxReps,
+                exerciseId: exerciseId,
+                exerciseName: exerciseName,
+                value: reps.toDouble(),
+                unit: 'reps',
+                setId: set.id,
+                previousValue: priorMaxRepsAtWeight,
+              ));
+            } else if (priorSets.isEmpty) {
+              prs.add(PersonalRecord(
+                type: PersonalRecordType.estimatedOneRepMax,
+                exerciseId: exerciseId,
+                exerciseName: exerciseName,
+                value: e1rm,
+                unit: 'kg',
+                setId: set.id,
+                previousValue: null,
+              ));
+            }
+          }
+        }
+        break;
+
+      case MeasurementType.repsOnly:
+        final reps = set.reps;
+        if (reps > 0) {
+          double priorMaxReps = 0;
+          for (final p in priorSets) {
+            if (p.reps > priorMaxReps) priorMaxReps = p.reps.toDouble();
+          }
+          if (priorSets.isEmpty || reps > priorMaxReps) {
+            prs.add(PersonalRecord(
+              type: PersonalRecordType.maxReps,
+              exerciseId: exerciseId,
+              exerciseName: exerciseName,
+              value: reps.toDouble(),
+              unit: 'reps',
+              setId: set.id,
+              previousValue: priorMaxReps > 0 ? priorMaxReps : null,
+            ));
+          }
+        }
+        break;
+
+      case MeasurementType.duration:
+        final duration = set.reps; // seconds
+        if (duration > 0) {
+          double priorMaxDuration = 0;
+          for (final p in priorSets) {
+            if (p.reps > priorMaxDuration) priorMaxDuration = p.reps.toDouble();
+          }
+          if (priorSets.isEmpty || duration > priorMaxDuration) {
+            prs.add(PersonalRecord(
+              type: PersonalRecordType.maxDuration,
+              exerciseId: exerciseId,
+              exerciseName: exerciseName,
+              value: duration.toDouble(),
+              unit: 's',
+              setId: set.id,
+              previousValue: priorMaxDuration > 0 ? priorMaxDuration : null,
+            ));
+          }
+        }
+        break;
+
+      case MeasurementType.distance:
+        final dist = set.weightKg ?? 0.0;
+        final duration = set.reps; // seconds
+        if (dist > 0) {
+          double priorMaxDist = 0;
+          double priorBestPace = double.infinity;
+          for (final p in priorSets) {
+            final pd = p.weightKg ?? 0.0;
+            final pt = p.reps;
+            if (pd > priorMaxDist) priorMaxDist = pd;
+            if (pd > 0 && pt > 0) {
+              final pace = pt / pd;
+              if (pace < priorBestPace) priorBestPace = pace;
+            }
+          }
+
+          if (priorSets.isEmpty || dist > priorMaxDist) {
+            prs.add(PersonalRecord(
+              type: PersonalRecordType.maxDistance,
+              exerciseId: exerciseId,
+              exerciseName: exerciseName,
+              value: dist,
+              unit: 'm',
+              setId: set.id,
+              previousValue: priorMaxDist > 0 ? priorMaxDist : null,
+            ));
+          }
+
+          if (duration > 0) {
+            final pace = duration / dist;
+            if (priorBestPace != double.infinity && pace < priorBestPace) {
+              prs.add(PersonalRecord(
+                type: PersonalRecordType.bestPace,
+                exerciseId: exerciseId,
+                exerciseName: exerciseName,
+                value: pace,
+                unit: 's/m',
+                setId: set.id,
+                previousValue: priorBestPace,
+              ));
+            }
+          }
+        }
+        break;
+    }
+
+    return prs;
+  }
+
+  /// Deterministically recalculates all PRs across history in chronological order.
+  /// Idempotent: running multiple times produces identical results.
+  Future<void> recalculateAllPrs({String? userId}) async {
+    await transaction(() async {
+      final query = select(workoutSessions)
+        ..where((t) => t.endedAt.isNotNull());
+      if (userId != null) {
+        query.where((t) => t.userId.equals(userId));
+      }
+      query.orderBy([(t) => OrderingTerm.asc(t.startedAt)]);
+
+      final sessions = await query.get();
+      final sessionIds = sessions.map((s) => s.id).toList();
+      if (sessionIds.isEmpty) return;
+
+      final weRows = await (select(workoutExercises)
+            ..where((t) => t.sessionId.isIn(sessionIds)))
+          .get();
+      final weIds = weRows.map((e) => e.id).toList();
+
+      if (weIds.isNotEmpty) {
+        await (update(workoutSets)
+              ..where((t) => t.workoutExerciseId.isIn(weIds)))
+            .write(const WorkoutSetsCompanion(isPr: Value(false)));
+      }
+
+      for (final s in sessions) {
+        await detectAndMarkPrs(s.id, s.startedAt);
+      }
+    });
   }
 
   Stream<HydratedWorkout?> watchHydratedWorkout(String sessionId) {
@@ -1207,8 +1439,8 @@ class WorkoutsDao extends DatabaseAccessor<AppDatabase>
         }
       }
 
-      // 6. Recalculate PRs against history prior to this session
-      await detectAndMarkPrs(sessionId, existing.startedAt);
+      // 6. Recalculate PRs across all sessions to preserve historical accuracy
+      await recalculateAllPrs(userId: existing.userId);
     });
   }
 }

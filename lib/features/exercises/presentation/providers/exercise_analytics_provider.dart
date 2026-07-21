@@ -36,12 +36,16 @@ class PersonalRecords {
   final double? max1RM;
   final double maxVolume;
   final int maxReps;
+  final int maxDuration;
+  final double maxDistance;
 
   const PersonalRecords({
     this.maxWeight,
     this.max1RM,
     required this.maxVolume,
     required this.maxReps,
+    required this.maxDuration,
+    required this.maxDistance,
   });
 
   static const empty = PersonalRecords(
@@ -49,6 +53,8 @@ class PersonalRecords {
     max1RM: null,
     maxVolume: 0.0,
     maxReps: 0,
+    maxDuration: 0,
+    maxDistance: 0.0,
   );
 }
 
@@ -75,6 +81,8 @@ final exercisePersonalRecordsProvider =
         max1RM: max1RM,
         maxVolume: maxVolume,
         maxReps: maxReps,
+        maxDuration: maxReps,
+        maxDistance: maxWeight ?? 0.0,
       );
     },
     orElse: () => PersonalRecords.empty,

@@ -9,8 +9,8 @@ import 'package:gymlog/core/theme/dynamic_accent_theme.dart';
 import 'package:gymlog/core/exercises/muscle_taxonomy.dart';
 import 'package:gymlog/core/database/database.dart';
 import 'package:gymlog/core/database/daos/workouts_dao.dart';
+import 'package:gymlog/core/models/measurement_type.dart';
 import 'package:gymlog/core/providers/premium_provider.dart';
-import 'package:gymlog/core/utils/units.dart';
 import 'package:gymlog/features/routines/presentation/widgets/routine_detail_styles.dart';
 import 'package:gymlog/shared/widgets/async_error_state.dart';
 import 'package:gymlog/shared/widgets/branded_line_chart.dart';
@@ -44,31 +44,67 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
   int _activeToggleIndex = 0;
   String _selectedTimeRange = '6M';
 
-  static const _toggleLabels = [
-    'Heaviest Weight',
-    'One Rep Max',
-    'Best Set',
-    'Session Volume',
-  ];
+  List<String> _getToggleLabels(MeasurementType mType) {
+    switch (mType) {
+      case MeasurementType.weightAndReps:
+        return [
+          'One Rep Max',
+          'Heaviest Weight',
+          'Session Volume',
+          'Total Reps'
+        ];
+      case MeasurementType.repsOnly:
+        return ['Max Reps', 'Total Reps'];
+      case MeasurementType.duration:
+        return ['Max Duration', 'Total Duration'];
+      case MeasurementType.distance:
+        return ['Distance', 'Duration', 'Pace'];
+    }
+  }
+
+  double? _metricForToggle(
+    ExerciseHistoryData e,
+    int index,
+    MeasurementType mType,
+  ) {
+    switch (mType) {
+      case MeasurementType.weightAndReps:
+        switch (index) {
+          case 0:
+            return e.estimated1RM ?? e.weight;
+          case 1:
+            return e.weight;
+          case 2:
+            return e.volume;
+          case 3:
+            return e.reps.toDouble();
+          default:
+            return e.estimated1RM ?? e.weight;
+        }
+      case MeasurementType.repsOnly:
+        return e.reps.toDouble();
+      case MeasurementType.duration:
+        return e.reps.toDouble();
+      case MeasurementType.distance:
+        switch (index) {
+          case 0:
+            return e.weight;
+          case 1:
+            return e.reps.toDouble();
+          case 2:
+            if (e.weight != null && e.weight! > 0 && e.reps > 0) {
+              return e.reps / (e.weight! / 1000.0);
+            }
+            return null;
+          default:
+            return e.weight;
+        }
+    }
+  }
 
   Widget _wrapPulse({required Widget child}) {
     if (MediaQuery.disableAnimationsOf(context)) return child;
     return SkeletonPulse(child: child);
-  }
-
-  double? _metricForToggle(ExerciseHistoryData e, int index) {
-    switch (index) {
-      case 0:
-        return e.weight;
-      case 1:
-        return e.estimated1RM;
-      case 2:
-        return e.bestSetWeight;
-      case 3:
-        return e.volume;
-      default:
-        return e.weight;
-    }
   }
 
   @override
@@ -260,15 +296,20 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
                       data: (history) {
                         final isPremium = ref.watch(isPremiumProvider);
                         final visible = gateChartSamples(history, isPremium);
+                        final mType = MeasurementType.fromString(
+                            exercise.measurementType);
                         return Column(
                           children: [
-                            _buildGraphSection(visible,
-                                showProPill: !isPremium && history.length > 3),
+                            _buildGraphSection(
+                              visible,
+                              mType: mType,
+                              showProPill: !isPremium && history.length > 3,
+                            ),
                             const SizedBox(height: 24),
-                            _buildStatToggles(surface),
+                            _buildStatToggles(surface, mType),
                             if (history.isNotEmpty) ...[
                               const SizedBox(height: 24),
-                              _buildPersonalRecords(context, prs),
+                              _buildPersonalRecords(context, prs, mType),
                             ],
                             const SizedBox(height: 24),
                             _buildInstructions(exercise, surface),
@@ -335,8 +376,16 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
     );
   }
 
-  Widget _buildGraphSection(List<ExerciseHistoryData> history,
-      {bool showProPill = false}) {
+  Widget _buildGraphSection(
+    List<ExerciseHistoryData> history, {
+    required MeasurementType mType,
+    bool showProPill = false,
+  }) {
+    final toggles = _getToggleLabels(mType);
+    final activeIndex =
+        _activeToggleIndex < toggles.length ? _activeToggleIndex : 0;
+    final activeLabel = toggles[activeIndex];
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -344,7 +393,7 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
           children: [
             Expanded(
               child: Text(
-                _toggleLabels[_activeToggleIndex],
+                activeLabel,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: RDStyles.sectionLabel,
@@ -364,16 +413,13 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
         const SizedBox(height: 12),
         RepaintBoundary(
           child: BrandedLineChart(
-            key: ValueKey(
-                '$_activeToggleIndex|$_selectedTimeRange|${history.length}'),
+            key: ValueKey('$activeIndex|$_selectedTimeRange|${history.length}'),
             data: [
               for (final e in history)
-                if (_metricForToggle(e, _activeToggleIndex) != null)
-                  ChartPoint(e.date, _metricForToggle(e, _activeToggleIndex)!),
+                if (_metricForToggle(e, activeIndex, mType) != null)
+                  ChartPoint(e.date, _metricForToggle(e, activeIndex, mType)!),
             ],
-            valueFormatter: (v) => _activeToggleIndex == 3
-                ? '${groupThousands(v)} kg'
-                : '${v == v.truncateToDouble() ? v.toInt() : v.toStringAsFixed(1)} kg',
+            valueFormatter: (v) => _formatChartValue(v, activeIndex, mType),
             emptyTitle: 'No data yet',
             emptySubtitle: 'Log this exercise to see your progress',
           ),
@@ -382,12 +428,41 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
     );
   }
 
-  Widget _buildStatToggles(SurfaceTokens surface) {
+  String _formatChartValue(double v, int toggleIdx, MeasurementType mType) {
+    switch (mType) {
+      case MeasurementType.weightAndReps:
+        if (toggleIdx == 3) return '${v.toInt()} reps';
+        return '${v == v.truncateToDouble() ? v.toInt() : v.toStringAsFixed(1)} kg';
+      case MeasurementType.repsOnly:
+        return '${v.toInt()} reps';
+      case MeasurementType.duration:
+        final mins = v.toInt() ~/ 60;
+        final secs = v.toInt() % 60;
+        return '$mins:${secs.toString().padLeft(2, '0')}';
+      case MeasurementType.distance:
+        if (toggleIdx == 0) {
+          final km = v / 1000.0;
+          return km >= 1.0 ? '${km.toStringAsFixed(1)} km' : '${v.toInt()} m';
+        } else if (toggleIdx == 1) {
+          final mins = v.toInt() ~/ 60;
+          final secs = v.toInt() % 60;
+          return '$mins:${secs.toString().padLeft(2, '0')}';
+        } else {
+          final mins = v.toInt() ~/ 60;
+          final secs = v.toInt() % 60;
+          return '$mins:${secs.toString().padLeft(2, '0')} /km';
+        }
+    }
+  }
+
+  Widget _buildStatToggles(SurfaceTokens surface, MeasurementType mType) {
     final accent = context.accent;
+    final toggles = _getToggleLabels(mType);
+
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Row(
-        children: _toggleLabels.asMap().entries.map((entry) {
+        children: toggles.asMap().entries.map((entry) {
           final isActive = entry.key == _activeToggleIndex;
           return Padding(
             padding: const EdgeInsets.only(right: 8),
@@ -430,8 +505,66 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
     );
   }
 
-  Widget _buildPersonalRecords(BuildContext context, PersonalRecords prs) {
+  Widget _buildPersonalRecords(
+    BuildContext context,
+    PersonalRecords prs,
+    MeasurementType mType,
+  ) {
     final surface = context.surface;
+    final rows = <Widget>[];
+
+    switch (mType) {
+      case MeasurementType.weightAndReps:
+        rows.addAll([
+          _prRow(
+              'Heaviest Weight',
+              prs.maxWeight != null
+                  ? '${prs.maxWeight == prs.maxWeight!.truncateToDouble() ? prs.maxWeight!.toInt() : prs.maxWeight!.toStringAsFixed(1)} kg'
+                  : '—',
+              surface),
+          _prDivider(surface),
+          _prRow(
+              'Best 1RM',
+              prs.max1RM != null
+                  ? '${prs.max1RM == prs.max1RM!.truncateToDouble() ? prs.max1RM!.toInt() : prs.max1RM!.toStringAsFixed(1)} kg'
+                  : '—',
+              surface),
+          _prDivider(surface),
+          _prRow(
+              'Max Session Volume',
+              '${prs.maxVolume == prs.maxVolume.truncateToDouble() ? prs.maxVolume.toInt() : prs.maxVolume.toStringAsFixed(1)} kg',
+              surface),
+          _prDivider(surface),
+          _prRow('Max Reps', '${prs.maxReps} reps', surface),
+        ]);
+        break;
+      case MeasurementType.repsOnly:
+        rows.addAll([
+          _prRow('Max Reps', '${prs.maxReps} reps', surface),
+          _prDivider(surface),
+          _prRow('Max Session Reps', '${prs.maxReps} reps', surface),
+        ]);
+        break;
+      case MeasurementType.duration:
+        final secs = prs.maxDuration;
+        final mins = secs ~/ 60;
+        final s = secs % 60;
+        final durStr = '$mins:${s.toString().padLeft(2, '0')}';
+        rows.addAll([
+          _prRow('Max Duration', durStr, surface),
+        ]);
+        break;
+      case MeasurementType.distance:
+        final dist = prs.maxDistance;
+        final distKm = dist / 1000.0;
+        final distStr = (distKm >= 1.0)
+            ? '${distKm.toStringAsFixed(1)} km'
+            : '${dist.toInt()} m';
+        rows.addAll([
+          _prRow('Max Distance', distStr, surface),
+        ]);
+        break;
+    }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -458,28 +591,7 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
             color: surface.bgSurface,
             borderRadius: AppRadius.cardAll,
           ),
-          child: Column(
-            children: [
-              _prRow(
-                  'Heaviest Weight',
-                  prs.maxWeight != null
-                      ? '${prs.maxWeight!.toStringAsFixed(1)} kg'
-                      : '—',
-                  surface),
-              _prDivider(surface),
-              _prRow(
-                  'Best 1RM',
-                  prs.max1RM != null
-                      ? '${prs.max1RM!.toStringAsFixed(2)} kg'
-                      : '—',
-                  surface),
-              _prDivider(surface),
-              _prRow('Max Session Volume',
-                  '${prs.maxVolume.toStringAsFixed(0)} kg', surface),
-              _prDivider(surface),
-              _prRow('Max Reps', '${prs.maxReps} reps', surface),
-            ],
-          ),
+          child: Column(children: rows),
         ),
       ],
     );
