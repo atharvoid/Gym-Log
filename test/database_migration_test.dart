@@ -60,7 +60,7 @@ void main() {
           .runCustom('CREATE TABLE routine_exercises (routine_day_id TEXT);');
       await executor.runCustom('CREATE TABLE routine_days (routine_id TEXT);');
       await executor.runCustom(
-          'CREATE TABLE sync_outbox (user_id TEXT, created_at_ms INTEGER);');
+          'CREATE TABLE sync_outbox (id INTEGER PRIMARY KEY AUTOINCREMENT, entity_type TEXT, entity_id TEXT, user_id TEXT, op TEXT, payload TEXT, updated_at_ms INTEGER, created_at_ms INTEGER);');
 
       await executor.runCustom('PRAGMA user_version = 2;');
 
@@ -165,7 +165,7 @@ void main() {
           .runCustom('CREATE TABLE routine_exercises (routine_day_id TEXT);');
       await executor.runCustom('CREATE TABLE routine_days (routine_id TEXT);');
       await executor.runCustom(
-          'CREATE TABLE sync_outbox (user_id TEXT, created_at_ms INTEGER);');
+          'CREATE TABLE sync_outbox (id INTEGER PRIMARY KEY AUTOINCREMENT, entity_type TEXT, entity_id TEXT, user_id TEXT, op TEXT, payload TEXT, updated_at_ms INTEGER, created_at_ms INTEGER);');
 
       await executor.runCustom('PRAGMA user_version = 4;');
 

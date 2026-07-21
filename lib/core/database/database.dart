@@ -96,6 +96,22 @@ class AppDatabase extends _$AppDatabase {
           // Sync queue drains FIFO per user.
           await customStatement(
               'CREATE INDEX IF NOT EXISTS idx_outbox_user_created ON sync_outbox (user_id, created_at_ms)');
+          await customStatement(
+              'CREATE UNIQUE INDEX IF NOT EXISTS idx_outbox_user_entity ON sync_outbox (user_id, entity_type, entity_id)');
+          await customStatement('''
+            CREATE TABLE IF NOT EXISTS sync_failures (
+              object_id TEXT NOT NULL,
+              user_id TEXT NOT NULL,
+              entity_type TEXT NOT NULL,
+              entity_id TEXT NOT NULL,
+              reason TEXT NOT NULL,
+              attempts INTEGER NOT NULL DEFAULT 1,
+              first_seen_at_ms INTEGER NOT NULL,
+              last_seen_at_ms INTEGER NOT NULL,
+              sanitized_diagnostic TEXT NOT NULL DEFAULT '',
+              PRIMARY KEY (object_id, user_id)
+            );
+          ''');
         },
       );
 

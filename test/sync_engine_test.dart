@@ -27,13 +27,16 @@ class FakeRemote implements SyncRemote {
   int pushedObjects = 0;
 
   @override
-  Future<void> pushBatch(List<SyncObject> objects) async {
+  Future<List<PushResult>> pushBatch(List<SyncObject> objects) async {
     if (failNext) throw Exception('offline');
     pushBatches++;
     pushedObjects += objects.length;
+    final results = <PushResult>[];
     for (final o in objects) {
-      store[o.id] = o; // upsert (LWW handled server-side in prod)
+      store[o.id] = o;
+      results.add(PushResult(id: o.id, status: PushResultStatus.accepted));
     }
+    return results;
   }
 
   @override
@@ -120,7 +123,7 @@ void main() {
       ]
     };
     final encoded = SyncCodec.encode(data);
-    expect(SyncCodec.decode(encoded), data);
+    expect(SyncCodec.decode(encoded).body, data);
   });
 
   test('enqueueSession queues one row; syncNow uploads and clears it',

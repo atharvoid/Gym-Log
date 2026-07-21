@@ -442,6 +442,45 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       ),
                     ),
                   ),
+                  if (profile?.id != null) ...[
+                    Consumer(
+                      builder: (context, ref, child) {
+                        final qCount = ref
+                                .watch(
+                                    quarantinedSyncCountProvider(profile!.id))
+                                .valueOrNull ??
+                            0;
+                        if (qCount <= 0) return const SizedBox.shrink();
+                        return Padding(
+                          padding: const EdgeInsets.only(top: 8),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 14, vertical: 10),
+                            decoration: BoxDecoration(
+                              color: Colors.amber.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(
+                                  color: Colors.amber.withValues(alpha: 0.3)),
+                            ),
+                            child: Row(
+                              children: [
+                                const Icon(Icons.warning_amber_rounded,
+                                    size: 18, color: Colors.amber),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: Text(
+                                    '$qCount ${qCount == 1 ? "item" : "items"} could not be synchronized and ${qCount == 1 ? "was" : "were"} quarantined.',
+                                    style: AppText.meta(
+                                        color: surface.textPrimary),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
                   const SizedBox(height: 22),
                   _GroupHeader('HELP', color: surface.textSecondary),
                   AppCard(
