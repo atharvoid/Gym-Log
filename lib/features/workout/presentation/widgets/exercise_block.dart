@@ -1,5 +1,3 @@
-import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
 
 import 'package:flutter/services.dart';
@@ -20,6 +18,7 @@ import 'package:gymlog/core/providers/settings_provider.dart';
 import 'package:gymlog/features/workout/presentation/providers/active_workout_provider.dart';
 import 'package:gymlog/features/workout/presentation/providers/previous_session_provider.dart';
 import 'package:gymlog/features/exercises/presentation/providers/exercises_provider.dart';
+import 'rest_time_sheet.dart';
 import 'set_row.dart';
 
 /// One exercise inside the active workout. Shared card surface (gradient +
@@ -379,273 +378,24 @@ class _RestOverrideChip extends ConsumerWidget {
     return '$m:${s.toString().padLeft(2, '0')}';
   }
 
-  void _showOverrideSheet(
+  Future<void> _handleTap(
     BuildContext context,
     WidgetRef ref,
     RestPreference currentPreference,
     int defaultRest,
-  ) {
-    RestPreference selectedPreference = normalizeRestPreference(
-      preference: currentPreference,
+  ) async {
+    final result = await showRestTimeSheet(
+      context: context,
+      exerciseName: exerciseName,
+      currentPreference: currentPreference,
       globalSeconds: defaultRest,
     );
 
-    showModalBottomSheet<void>(
-      context: context,
-      useRootNavigator: true,
-      useSafeArea: true,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      barrierColor: Colors.black.withValues(alpha: 0.60),
-      builder: (sheetCtx) {
-        final accent = sheetCtx.accent;
-        return StatefulBuilder(
-          builder: (context, setState) {
-            final bottomPadding =
-                math.max(16.0, MediaQuery.viewPaddingOf(sheetCtx).bottom);
-            final effectiveSeconds = resolveRestSeconds(
-                  preference: selectedPreference,
-                  globalSeconds: defaultRest,
-                ) ??
-                defaultRest;
-
-            String subtitleText;
-            Color subtitleColor;
-            if (isDefault(selectedPreference)) {
-              subtitleText = 'Matches default';
-              subtitleColor = AppColors.textSecondary;
-            } else if (isOff(selectedPreference)) {
-              subtitleText = 'Timer disabled';
-              subtitleColor = AppColors.error;
-            } else {
-              subtitleText = 'Custom duration';
-              subtitleColor = accent.light;
-            }
-
-            return SafeArea(
-              top: false,
-              child: Container(
-                decoration: const BoxDecoration(
-                  color: AppColors.surface2,
-                  borderRadius: AppRadius.sheetTop,
-                ),
-                child: SingleChildScrollView(
-                  child: Padding(
-                    padding: EdgeInsets.fromLTRB(20, 16, 20, bottomPadding),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        Center(
-                          child: Container(
-                            width: 36,
-                            height: 4,
-                            decoration: BoxDecoration(
-                              color: AppColors.borderEmphasis,
-                              borderRadius: BorderRadius.circular(2),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          'Rest Timer Override',
-                          style: AppText.sheetTitle(),
-                          textAlign: TextAlign.center,
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          '$exerciseName · This workout only',
-                          style: AppText.body(color: AppColors.textSecondary),
-                          textAlign: TextAlign.center,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        const SizedBox(height: 20),
-                        // Stepper row
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            _AdjustmentButton(
-                              label: '-15s',
-                              onTap: () {
-                                HapticFeedback.selectionClick();
-                                setState(() {
-                                  final newSec =
-                                      (effectiveSeconds - 15).clamp(15, 600);
-                                  selectedPreference = normalizeRestPreference(
-                                    preference: RestPreference.custom(newSec),
-                                    globalSeconds: defaultRest,
-                                  );
-                                });
-                              },
-                            ),
-                            const SizedBox(width: 20),
-                            Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(
-                                  _formatDuration(effectiveSeconds),
-                                  style: const TextStyle(
-                                    fontFamily: 'monospace',
-                                    fontSize: 32,
-                                    fontWeight: FontWeight.bold,
-                                    color: AppColors.textPrimary,
-                                  ),
-                                ),
-                                Text(
-                                  subtitleText,
-                                  style: AppText.columnHeader(
-                                    color: subtitleColor,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(width: 20),
-                            _AdjustmentButton(
-                              label: '+15s',
-                              onTap: () {
-                                HapticFeedback.selectionClick();
-                                setState(() {
-                                  final newSec =
-                                      (effectiveSeconds + 15).clamp(15, 600);
-                                  selectedPreference = normalizeRestPreference(
-                                    preference: RestPreference.custom(newSec),
-                                    globalSeconds: defaultRest,
-                                  );
-                                });
-                              },
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-                        // Presets Wrap
-                        Wrap(
-                          spacing: 8,
-                          runSpacing: 8,
-                          alignment: WrapAlignment.center,
-                          children: [
-                            for (final seconds in [30, 60, 90, 120, 180, 300])
-                              _PresetChip(
-                                label: _formatDuration(seconds),
-                                isSelected:
-                                    isCustomPreset(selectedPreference, seconds),
-                                onTap: () {
-                                  HapticFeedback.lightImpact();
-                                  setState(() {
-                                    selectedPreference =
-                                        normalizeRestPreference(
-                                      preference:
-                                          RestPreference.custom(seconds),
-                                      globalSeconds: defaultRest,
-                                    );
-                                  });
-                                },
-                              ),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-                        // State options: Use default & Off
-                        Row(
-                          children: [
-                            Expanded(
-                              child: OutlinedButton(
-                                style: OutlinedButton.styleFrom(
-                                  foregroundColor: isDefault(selectedPreference)
-                                      ? accent.light
-                                      : AppColors.textPrimary,
-                                  side: BorderSide(
-                                    color: isDefault(selectedPreference)
-                                        ? accent.base
-                                        : AppColors.borderSubtle,
-                                  ),
-                                  padding:
-                                      const EdgeInsets.symmetric(vertical: 12),
-                                ),
-                                onPressed: () {
-                                  HapticFeedback.lightImpact();
-                                  setState(() {
-                                    selectedPreference =
-                                        const RestPreference.useDefault();
-                                  });
-                                },
-                                child: Text(
-                                    'Use default · ${_formatDuration(defaultRest)}'),
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            OutlinedButton(
-                              style: OutlinedButton.styleFrom(
-                                foregroundColor: isOff(selectedPreference)
-                                    ? AppColors.error
-                                    : AppColors.textSecondary,
-                                side: BorderSide(
-                                  color: isOff(selectedPreference)
-                                      ? AppColors.error
-                                      : AppColors.borderSubtle,
-                                ),
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 16, vertical: 12),
-                              ),
-                              onPressed: () {
-                                HapticFeedback.lightImpact();
-                                setState(() {
-                                  selectedPreference =
-                                      const RestPreference.disabled();
-                                });
-                              },
-                              child: const Text('Off'),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-                        // Apply & Cancel buttons
-                        Row(
-                          children: [
-                            Expanded(
-                              child: TextButton(
-                                onPressed: () => Navigator.pop(sheetCtx),
-                                child: Text('Cancel',
-                                    style: AppText.button(
-                                        color: AppColors.textSecondary)),
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: accent.base,
-                                  foregroundColor: accent.onAccent,
-                                  elevation: 0,
-                                  padding:
-                                      const EdgeInsets.symmetric(vertical: 14),
-                                  shape: const RoundedRectangleBorder(
-                                      borderRadius: AppRadius.buttonPrimaryAll),
-                                ),
-                                onPressed: () {
-                                  HapticFeedback.lightImpact();
-                                  ref
-                                      .read(activeWorkoutProvider.notifier)
-                                      .setRestPreference(
-                                          exerciseIndex, selectedPreference);
-                                  Navigator.pop(sheetCtx);
-                                },
-                                child: Text('Apply',
-                                    style:
-                                        AppText.button(color: accent.onAccent)),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            );
-          },
-        );
-      },
-    );
+    if (result != null) {
+      ref
+          .read(activeWorkoutProvider.notifier)
+          .setRestPreference(exerciseIndex, result);
+    }
   }
 
   @override
@@ -686,8 +436,7 @@ class _RestOverrideChip extends ConsumerWidget {
         borderRadius: BorderRadius.circular(16),
         child: InkWell(
           borderRadius: BorderRadius.circular(16),
-          onTap: () =>
-              _showOverrideSheet(context, ref, preference, defaultRest),
+          onTap: () => _handleTap(context, ref, preference, defaultRest),
           child: Container(
             constraints: const BoxConstraints(minHeight: 48, minWidth: 48),
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
@@ -713,71 +462,6 @@ class _RestOverrideChip extends ConsumerWidget {
                 ),
               ],
             ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _AdjustmentButton extends StatelessWidget {
-  final String label;
-  final VoidCallback onTap;
-
-  const _AdjustmentButton({required this.label, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: AppColors.surface3,
-      borderRadius: BorderRadius.circular(8),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(8),
-        onTap: onTap,
-        child: Container(
-          width: 54,
-          height: 48,
-          alignment: Alignment.center,
-          child: Text(
-            label,
-            style: AppText.body(color: AppColors.textPrimary)
-                .copyWith(fontWeight: FontWeight.bold),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _PresetChip extends StatelessWidget {
-  final String label;
-  final bool isSelected;
-  final VoidCallback onTap;
-
-  const _PresetChip({
-    required this.label,
-    required this.isSelected,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final accent = context.accent;
-    return Material(
-      color: isSelected ? accent.base : AppColors.surface3,
-      borderRadius: BorderRadius.circular(16),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(16),
-        onTap: onTap,
-        child: Container(
-          constraints: const BoxConstraints(minHeight: 48, minWidth: 48),
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-          alignment: Alignment.center,
-          child: Text(
-            label,
-            style: AppText.columnHeader(
-              color: isSelected ? accent.onAccent : AppColors.textPrimary,
-            ).copyWith(fontWeight: isSelected ? FontWeight.bold : null),
           ),
         ),
       ),

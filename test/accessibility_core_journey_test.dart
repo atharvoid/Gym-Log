@@ -172,10 +172,10 @@ void main() {
     await tester.pumpAndSettle(); // Let bottom sheet slide up animation finish
 
     // Verify sheet title is visible
-    expect(find.text('Rest Timer Override'), findsOneWidget);
+    expect(find.text('Rest time'), findsOneWidget);
 
-    // Find adjustment buttons (+15s, -15s)
-    final minus15 = find.widgetWithText(InkWell, '-15s');
+    // Find adjustment buttons (+15s, −15s)
+    final minus15 = find.widgetWithText(InkWell, '−15s');
     final plus15 = find.widgetWithText(InkWell, '+15s');
 
     expect(minus15, findsOneWidget);
