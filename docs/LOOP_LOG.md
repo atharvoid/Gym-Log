@@ -28,3 +28,4 @@
 | 2026-06-25 | `CLAUDE.md` said `npm run build && npm test` — for a Flutter app | Boilerplate from a different tool pasted into the repo | H5: replaced with real Flutter commands |
 | 2026-06-25 | `STITCH_DESIGN_SYSTEM.md` described a light-mode smart-home app — agents steered 180° wrong | File was for a different product ("The Luminous Engine") | H5: deleted; replaced with `docs/DESIGN_NORTH_STAR.md` |
 | 2026-07-08 | GIFs fail to load in small/thumbnail views | `ui.instantiateImageCodec` with `targetWidth` fails on animated GIFs | Decoded animated GIFs at native size in `gifFirstFrameProvider`/`gifLastFrameProvider` |
+| 2026-07-22 | Phase 1–14 already committed on `fix-sha1-auth-issue`, not pending | GSD init assumed phases were future work; branch actually had all 14 atomic fix commits | H15: audit current HEAD against phase plan before assigning work — check `git log --oneline` |

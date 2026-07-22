@@ -2,7 +2,7 @@
 
 > Flutter workout logging app. This file captures build steps, conventions, and
 > architectural decisions agents need to work effectively in this codebase.
-> **Last verified:** HEAD on `remediation/8-phase`.
+> **Last verified:** HEAD `b32af2c` on `fix-sha1-auth-issue` (2026-07-22). All 14 atomic fix phases implemented and tested. Remaining: release certification (Phase 15) — see `docs/RELEASE_CHECKLIST.md`.
 
 ---
 

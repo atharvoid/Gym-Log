@@ -154,11 +154,31 @@
 
 ## Sequencing Strategy
 
-**Wave 1** (independent): 1, 3, 4, 9, 10, 11, 12, 14
-**Wave 2** (depends on 1): 2, 6, 7, 8
-**Wave 3** (depends on 3): 5
-**Wave 4** (depends on 3,4): 13
-**Wave 5** (depends on all): 15
+**Wave 1** (independent): 1, 3, 4, 9, 10, 11, 12, 14 — ✅ all done
+**Wave 2** (depends on 1): 2, 6, 7, 8 — ✅ all done
+**Wave 3** (depends on 3): 5 — ✅ done
+**Wave 4** (depends on 3,4): 13 — ✅ done
+**Wave 5** (depends on all): 15 — 🟡 partial (checklist created, gaps documented)
+
+## Status Summary
+
+| Phase | Commit | Status |
+|-------|--------|--------|
+| 1 — Measurement Model | `fabf981` | ✅ |
+| 2 — Compact Rest Timer | `7091cbf` | ✅ |
+| 3 — Active Workout Visual | `fcbf3df` | ✅ |
+| 4 — Auth Screen | `65ad9ad` | ✅ |
+| 5 — Reversible Deletion | `be25045` | ✅ |
+| 6 — Metric CSV Import | `9639945` | ✅ |
+| 7 — Lossless CSV Export | `7f04b75` | ✅ |
+| 8 — Metric-Aware History/PRs | `84a8996` | ✅ |
+| 9 — Premium Entitlement | `1ed7195` | ✅ |
+| 10 — Sync Quarantine | `0d9e446` | ✅ |
+| 11 — Account Isolation | `442d2e6` | ✅ |
+| 12 — Bounded Media Cache | `bae40d2` | ✅ |
+| 13 — Accessibility | `aef17b0` | ✅ |
+| 14 — Documentation | `df4d5fa` | ✅ |
+| 15 — Release Certification | `docs/RELEASE_CHECKLIST.md` | 🟡 |
 
 ---
-*Generated from 50-section audit, 2026-07-22*
+*Audited at HEAD b32af2c, 2026-07-22 — all 14 atomic phases verified implemented and tested*
