@@ -76,6 +76,15 @@ android {
                 )
                 signingConfigs.getByName("debug")
             }
+            ndk {
+                debugSymbolLevel = "none"
+            }
+        }
+    }
+
+    packaging {
+        jniLibs {
+            doNotStrip("**/*.so")
         }
     }
 }
