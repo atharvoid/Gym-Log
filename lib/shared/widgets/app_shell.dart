@@ -10,6 +10,7 @@ import '../../core/theme/app_text.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/chrome_tokens.dart';
 import '../../core/theme/dynamic_accent_theme.dart';
+import '../layout/adaptive.dart';
 import 'active_workout_bar.dart';
 import 'bottom_nav_bar.dart';
 
@@ -189,7 +190,8 @@ class _AppShellState extends ConsumerState<AppShell> {
           bottom: false,
           child: Center(
             child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 600),
+              constraints:
+                  BoxConstraints(maxWidth: context.adaptive.contentMaxWidth),
               child: widget.navigationShell,
             ),
           ),

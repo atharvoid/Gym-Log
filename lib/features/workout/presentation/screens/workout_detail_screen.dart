@@ -8,6 +8,7 @@ import 'package:gymlog/core/theme/app_text.dart';
 import 'package:gymlog/core/utils/formatters.dart';
 import 'package:gymlog/core/database/daos/workouts_dao.dart';
 import 'package:gymlog/core/providers/database_provider.dart';
+import 'package:gymlog/shared/layout/adaptive.dart';
 import 'package:gymlog/shared/widgets/async_error_state.dart';
 import 'package:gymlog/shared/widgets/ui/app_card.dart';
 import 'package:gymlog/shared/widgets/ui/skeleton.dart';
@@ -134,7 +135,7 @@ class WorkoutDetailScreen extends ConsumerWidget {
     // screen is pushed outside the shell, which caps width at 600 elsewhere).
     return Center(
       child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 600),
+        constraints: BoxConstraints(maxWidth: context.adaptive.contentMaxWidth),
         // Physics intentionally unset → platform-aware via ScrollConfiguration
         // (iOS bounce, Android stretch). Was hardcoded BouncingScrollPhysics.
         child: CustomScrollView(

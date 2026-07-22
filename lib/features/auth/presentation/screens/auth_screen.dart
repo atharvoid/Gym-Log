@@ -7,6 +7,7 @@ import '../../../../core/config/legal_links.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text.dart';
 import '../../../../core/theme/dynamic_accent_theme.dart';
+import '../../../../shared/layout/adaptive.dart';
 import '../../../../shared/widgets/motion/pressable_scale.dart';
 import '../../data/auth_repository.dart';
 import '../providers/auth_provider.dart';
@@ -179,7 +180,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
           surface.isLight ? Brightness.dark : Brightness.light,
     );
 
-    final textScale = MediaQuery.textScalerOf(context).scale(1.0);
+    final textScale = context.adaptive.textScaleFactor;
     final double topPadding = textScale >= 1.6 ? 12 : 24;
 
     final secondaryColor =
@@ -383,8 +384,8 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
               child: Align(
                 alignment: Alignment.topCenter,
                 child: ConstrainedBox(
-                  constraints: const BoxConstraints(
-                    maxWidth: 520,
+                  constraints: BoxConstraints(
+                    maxWidth: context.adaptive.contentMaxWidth,
                   ),
                   child: CustomScrollView(
                     keyboardDismissBehavior:

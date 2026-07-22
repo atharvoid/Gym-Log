@@ -61,9 +61,14 @@ void main() {
         databaseProvider.overrideWithValue(db),
       ],
       child: MaterialApp(
-        home: MediaQuery(
-          data: MediaQueryData(disableAnimations: disableAnimations),
-          child: const AuthScreen(),
+        home: Builder(
+          builder: (context) {
+            final mq = MediaQuery.of(context);
+            return MediaQuery(
+              data: mq.copyWith(disableAnimations: disableAnimations),
+              child: const AuthScreen(),
+            );
+          },
         ),
       ),
     );

@@ -54,15 +54,20 @@ void main() {
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
         theme: buildAppTheme(palette.tokens, palette: palette),
-        home: MediaQuery(
-          data: MediaQueryData(
-            textScaler: TextScaler.linear(textScale),
-            disableAnimations: disableAnimations,
-          ),
-          child: const Material(
-            color: Colors.black,
-            child: AuthScreen(),
-          ),
+        home: Builder(
+          builder: (context) {
+            final mq = MediaQuery.of(context);
+            return MediaQuery(
+              data: mq.copyWith(
+                textScaler: TextScaler.linear(textScale),
+                disableAnimations: disableAnimations,
+              ),
+              child: const Material(
+                color: Colors.black,
+                child: AuthScreen(),
+              ),
+            );
+          },
         ),
       ),
     );

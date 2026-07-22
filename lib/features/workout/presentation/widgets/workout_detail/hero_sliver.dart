@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:gymlog/core/theme/app_colors.dart';
 import 'package:gymlog/core/theme/app_text.dart';
+import 'package:gymlog/shared/layout/adaptive.dart';
 
 /// Collapsing two-stage hero for the Workout Detail screen.
 ///   Expanded → large title + date + three metric pips.
@@ -31,8 +32,7 @@ class WorkoutHeroSliver extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final surface = context.surface;
-    final double scale =
-        MediaQuery.textScalerOf(context).scale(1.0).clamp(1.0, 1.4).toDouble();
+    final double scale = context.adaptive.textScaleFactor;
     final expandedHeight = 168.0 * scale + 16;
     final reduceMotion = MediaQuery.disableAnimationsOf(context);
 
