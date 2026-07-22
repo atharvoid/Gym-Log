@@ -154,8 +154,9 @@ class _CreateExerciseDialogState extends ConsumerState<_CreateExerciseDialog> {
   @override
   Widget build(BuildContext context) {
     final accent = context.accent;
+    final surface = context.surface;
     return Dialog(
-      backgroundColor: AppColors.surface2,
+      backgroundColor: surface.surface2,
       shape: const RoundedRectangleBorder(borderRadius: AppRadius.cardAll),
       insetPadding: const EdgeInsets.symmetric(horizontal: 28, vertical: 24),
       child: Padding(
@@ -180,10 +181,10 @@ class _CreateExerciseDialogState extends ConsumerState<_CreateExerciseDialog> {
               onSubmitted: (_) => _create(),
               decoration: InputDecoration(
                 hintText: 'Exercise name',
-                hintStyle: AppText.body(color: AppColors.textTertiary),
-                counterStyle: AppText.caption(color: AppColors.textTertiary),
+                hintStyle: AppText.body(color: surface.textTertiary),
+                counterStyle: AppText.caption(color: surface.textTertiary),
                 filled: true,
-                fillColor: AppColors.surface3,
+                fillColor: surface.surface3,
                 contentPadding:
                     const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                 enabledBorder: const OutlineInputBorder(
@@ -221,7 +222,7 @@ class _CreateExerciseDialogState extends ConsumerState<_CreateExerciseDialog> {
             Text(
               'An animated demo isn’t added for custom exercises yet — the rest '
               'tracks exactly like any other lift.',
-              style: AppText.caption(color: AppColors.textTertiary)
+              style: AppText.caption(color: surface.textTertiary)
                   .copyWith(height: 1.4),
             ),
             if (_error != null) ...[
@@ -245,17 +246,17 @@ class _CreateExerciseDialogState extends ConsumerState<_CreateExerciseDialog> {
                 TextButton(
                   onPressed: _saving ? null : () => Navigator.of(context).pop(),
                   child: Text('Cancel',
-                      style: AppText.button(color: AppColors.textSecondary)),
+                      style: AppText.button(color: surface.textSecondary)),
                 ),
                 const SizedBox(width: 4),
                 TextButton(
                   onPressed: _saving ? null : _create,
                   child: _saving
-                      ? const SizedBox(
+                      ? SizedBox(
                           width: 18,
                           height: 18,
                           child: CircularProgressIndicator(
-                              strokeWidth: 2, color: AppColors.textPrimary),
+                              strokeWidth: 2, color: surface.textPrimary),
                         )
                       : Text('Create',
                           style: AppText.button(color: accent.light)),
@@ -271,7 +272,7 @@ class _CreateExerciseDialogState extends ConsumerState<_CreateExerciseDialog> {
   Widget _label(String text) => Padding(
         padding: const EdgeInsets.only(bottom: 8, top: 14),
         child: Text(text,
-            style: AppText.columnHeader(color: AppColors.textSecondary)),
+            style: AppText.columnHeader(color: context.surface.textSecondary)),
       );
 }
 
@@ -284,11 +285,12 @@ class _SelectField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final surface = context.surface;
     return Semantics(
       button: true,
       label: value,
       child: Material(
-        color: AppColors.surface3,
+        color: surface.surface3,
         borderRadius: AppRadius.inputAll,
         clipBehavior: Clip.antiAlias,
         child: InkWell(
@@ -299,8 +301,8 @@ class _SelectField extends StatelessWidget {
             child: Row(
               children: [
                 Expanded(child: Text(value, style: AppText.value())),
-                const Icon(Icons.keyboard_arrow_down_rounded,
-                    color: AppColors.textSecondary),
+                Icon(Icons.keyboard_arrow_down_rounded,
+                    color: surface.textSecondary),
               ],
             ),
           ),
@@ -324,8 +326,8 @@ Future<String?> _showOptionSheet({
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
     builder: (sheetCtx) => Container(
-      decoration: const BoxDecoration(
-        color: AppColors.surface2,
+      decoration: BoxDecoration(
+        color: sheetCtx.surface.surface2,
         borderRadius: AppRadius.sheetTop,
       ),
       child: SafeArea(
@@ -339,7 +341,7 @@ Future<String?> _showOptionSheet({
                 width: 36,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: AppColors.borderEmphasis,
+                  color: sheetCtx.surface.borderEmphasis,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -382,6 +384,7 @@ class _OptionRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final accent = context.accent;
+    final surface = context.surface;
     return Semantics(
       button: true,
       selected: selected,
@@ -389,16 +392,15 @@ class _OptionRow extends StatelessWidget {
         onTap: onTap,
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 14),
-          decoration: const BoxDecoration(
-            border: Border(bottom: BorderSide(color: AppColors.borderSubtle)),
+          decoration: BoxDecoration(
+            border: Border(bottom: BorderSide(color: surface.borderSubtle)),
           ),
           child: Row(
             children: [
               Expanded(
                 child: Text(label,
                     style: AppText.body(
-                        color:
-                            selected ? accent.light : AppColors.textPrimary)),
+                        color: selected ? accent.light : surface.textPrimary)),
               ),
               if (selected)
                 Icon(Icons.check_rounded, size: 18, color: accent.base),

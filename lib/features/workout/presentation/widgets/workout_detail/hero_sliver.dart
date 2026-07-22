@@ -30,6 +30,7 @@ class WorkoutHeroSliver extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final surface = context.surface;
     final double scale =
         MediaQuery.textScalerOf(context).scale(1.0).clamp(1.0, 1.4).toDouble();
     final expandedHeight = 168.0 * scale + 16;
@@ -39,21 +40,21 @@ class WorkoutHeroSliver extends StatelessWidget {
       pinned: true,
       forceElevated: true,
       scrolledUnderElevation: 0,
-      backgroundColor: AppColors.bgBase,
+      backgroundColor: surface.bgBase,
       surfaceTintColor: Colors.transparent,
       elevation: 0,
       expandedHeight: expandedHeight,
       leading: IconButton(
         tooltip: 'Back',
-        icon: const Icon(Icons.arrow_back_rounded,
-            size: 24, color: AppColors.textPrimary),
+        icon: Icon(Icons.arrow_back_rounded,
+            size: 24, color: surface.textPrimary),
         onPressed: () => Navigator.of(context).maybePop(),
       ),
       actions: [
         IconButton(
           tooltip: 'Workout options',
-          icon: const Icon(Icons.more_horiz_rounded,
-              size: 24, color: AppColors.textPrimary),
+          icon: Icon(Icons.more_horiz_rounded,
+              size: 24, color: surface.textPrimary),
           onPressed: onMoreTap,
         ),
       ],
@@ -82,10 +83,9 @@ class WorkoutHeroSliver extends StatelessWidget {
               ),
             ),
             background: Container(
-              color: AppColors.bgBase,
-              foregroundDecoration: const BoxDecoration(
-                border:
-                    Border(bottom: BorderSide(color: AppColors.borderSubtle)),
+              color: surface.bgBase,
+              foregroundDecoration: BoxDecoration(
+                border: Border(bottom: BorderSide(color: surface.borderSubtle)),
               ),
               child: Align(
                 alignment: Alignment.bottomLeft,
@@ -134,7 +134,7 @@ class WorkoutHeroSliver extends StatelessWidget {
                                 shadows: AppText.depthFor(context),
                               ),
                             ),
-                            _HeroPip.dot,
+                            _HeroPip.dot(context),
                             Flexible(
                               child: Tooltip(
                                 triggerMode: TooltipTriggerMode.tap,
@@ -149,7 +149,7 @@ class WorkoutHeroSliver extends StatelessWidget {
                                 ),
                               ),
                             ),
-                            _HeroPip.dot,
+                            _HeroPip.dot(context),
                             Flexible(
                               child: _HeroPip(
                                 value: '$totalSets',
@@ -179,11 +179,14 @@ class _HeroPip extends StatelessWidget {
 
   const _HeroPip({required this.value, required this.label, this.shadows});
 
-  static const dot = Padding(
-    padding: EdgeInsets.symmetric(horizontal: 14),
-    child: Text('·',
-        style: TextStyle(color: AppColors.textTertiary, fontSize: 22)),
-  );
+  static Widget dot(BuildContext context) {
+    final surface = context.surface;
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 14),
+      child: Text('·',
+          style: TextStyle(color: surface.textTertiary, fontSize: 22)),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -206,7 +209,8 @@ class _HeroPip extends StatelessWidget {
           ),
           const SizedBox(height: 2),
           Text(label,
-              style: AppText.columnHeader(color: AppColors.textSecondary)),
+              style:
+                  AppText.columnHeader(color: context.surface.textSecondary)),
         ],
       ),
     );

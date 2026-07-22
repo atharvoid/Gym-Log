@@ -90,18 +90,19 @@ class _FinishSummarySheetState extends State<_FinishSummarySheet> {
   @override
   Widget build(BuildContext context) {
     final accent = context.accent;
+    final surface = context.surface;
     return Padding(
       // Lift above the keyboard when the name field is focused.
       padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom),
       child: DecoratedBox(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [AppColors.surface2, AppColors.bgBase],
+            colors: [surface.surface2, surface.bgBase],
           ),
           borderRadius: AppRadius.sheetTop,
-          border: Border(top: BorderSide(color: AppColors.borderSubtle)),
+          border: Border(top: BorderSide(color: surface.borderSubtle)),
         ),
         child: SafeArea(
           top: false,
@@ -116,7 +117,7 @@ class _FinishSummarySheetState extends State<_FinishSummarySheet> {
                     width: 36,
                     height: 4,
                     decoration: BoxDecoration(
-                      color: AppColors.borderEmphasis,
+                      color: surface.borderEmphasis,
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),
@@ -176,10 +177,9 @@ class _FinishSummarySheetState extends State<_FinishSummarySheet> {
                   decoration: InputDecoration(
                     labelText: 'Workout name',
                     labelStyle: AppText.caption(),
-                    counterStyle:
-                        AppText.caption(color: AppColors.textTertiary),
+                    counterStyle: AppText.caption(color: surface.textTertiary),
                     filled: true,
-                    fillColor: AppColors.surface3,
+                    fillColor: surface.surface3,
                     contentPadding: const EdgeInsets.symmetric(
                         horizontal: 14, vertical: 14),
                     enabledBorder: const OutlineInputBorder(
@@ -237,7 +237,7 @@ class _Stat extends StatelessWidget {
         ),
         const SizedBox(height: 2),
         Text(label,
-            style: AppText.columnHeader(color: AppColors.textSecondary)),
+            style: AppText.columnHeader(color: context.surface.textSecondary)),
       ],
     );
   }

@@ -157,6 +157,7 @@ class _SetTableHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final surface = context.surface;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Row(
@@ -164,17 +165,17 @@ class _SetTableHeader extends StatelessWidget {
           SizedBox(
             width: 64,
             child: Text('SET',
-                style: AppText.columnHeader(color: AppColors.textSecondary)),
+                style: AppText.columnHeader(color: surface.textSecondary)),
           ),
           const SizedBox(width: 12),
           Expanded(
             child: Text(_columnHeader,
-                style: AppText.columnHeader(color: AppColors.textSecondary)),
+                style: AppText.columnHeader(color: surface.textSecondary)),
           ),
           if (hasPrevHistory)
             Text('VS PREV',
                 textAlign: TextAlign.right,
-                style: AppText.columnHeader(color: AppColors.textSecondary)),
+                style: AppText.columnHeader(color: surface.textSecondary)),
         ],
       ),
     );
@@ -211,8 +212,9 @@ class _DetailSetRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final surface = context.surface;
     final bg = isAlternate
-        ? AppColors.textPrimary.withValues(alpha: 0.03)
+        ? surface.textPrimary.withValues(alpha: 0.03)
         : Colors.transparent;
     final delta = _crossSessionDelta;
 
@@ -236,7 +238,7 @@ class _DetailSetRow extends StatelessWidget {
             width: 64,
             child: Align(
               alignment: Alignment.centerLeft,
-              child: _buildSetTypeIndicator(),
+              child: _buildSetTypeIndicator(context),
             ),
           ),
           const SizedBox(width: 12),
@@ -244,7 +246,7 @@ class _DetailSetRow extends StatelessWidget {
             child: Row(
               children: [
                 Text(formattedText,
-                    style: AppText.statLabel(color: AppColors.textPrimary)),
+                    style: AppText.statLabel(color: surface.textPrimary)),
                 if (set.isPr) ...[
                   const SizedBox(width: 8),
                   const _PrBadge(),
@@ -261,7 +263,8 @@ class _DetailSetRow extends StatelessWidget {
     );
   }
 
-  Widget _buildSetTypeIndicator() {
+  Widget _buildSetTypeIndicator(BuildContext context) {
+    final surface = context.surface;
     switch (set.setType.toLowerCase()) {
       case 'warmup':
         return const _SetTypePill(
@@ -284,7 +287,7 @@ class _DetailSetRow extends StatelessWidget {
         );
       default:
         return Text('$setNumber',
-            style: AppText.statLabel(color: AppColors.textPrimary));
+            style: AppText.statLabel(color: surface.textPrimary));
     }
   }
 }
