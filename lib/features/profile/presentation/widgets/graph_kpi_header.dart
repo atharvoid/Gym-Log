@@ -20,6 +20,7 @@ class GraphKpiHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final surface = context.surface;
     final latest = aggregates.isEmpty ? null : aggregates.last;
     final previous =
         aggregates.length >= 2 ? aggregates[aggregates.length - 2] : null;
@@ -44,7 +45,7 @@ class GraphKpiHeader extends StatelessWidget {
               const SizedBox(height: 2),
               Text(
                 'This week',
-                style: AppText.caption(color: AppColors.textTertiary),
+                style: AppText.caption(color: surface.textTertiary),
               ),
             ],
           ),
@@ -79,16 +80,17 @@ class _DeltaPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final surface = context.surface;
     if (previous == 0) {
       return Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
         decoration: BoxDecoration(
-          color: AppColors.textSecondary.withValues(alpha: 0.12),
+          color: surface.textSecondary.withValues(alpha: 0.12),
           borderRadius: BorderRadius.circular(AppRadius.badge),
         ),
         child: Text(
           'vs last week',
-          style: AppText.statLabel(color: AppColors.textSecondary),
+          style: AppText.statLabel(color: surface.textSecondary),
         ),
       );
     }

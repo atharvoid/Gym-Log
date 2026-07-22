@@ -32,7 +32,7 @@ Future<void> showPrCelebration(
     context: context,
     barrierDismissible: true,
     barrierLabel: 'Personal record celebration',
-    barrierColor: AppColors.bgBase.withValues(alpha: 0.82),
+    barrierColor: context.surface.bgBase.withValues(alpha: 0.82),
     transitionDuration:
         reduceMotion ? Duration.zero : const Duration(milliseconds: 260),
     transitionBuilder: reduceMotion

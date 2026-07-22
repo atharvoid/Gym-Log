@@ -172,7 +172,7 @@ class _StepCompletionState extends ConsumerState<StepCompletion> {
                       '${level[0].toUpperCase()}${level.substring(1)} ($levelTemplatesCount starter programs)',
                   iconColor: accent.light,
                 ),
-                const Divider(height: 24, color: AppColors.borderSubtle),
+                Divider(height: 24, color: surface.borderSubtle),
                 _SummaryRow(
                   icon: Icons.flag_rounded,
                   title: 'Weekly Target',
@@ -180,7 +180,7 @@ class _StepCompletionState extends ConsumerState<StepCompletion> {
                   iconColor: accent.light,
                   trailing: const GoalRing(progress: 0.0, size: 20),
                 ),
-                const Divider(height: 24, color: AppColors.borderSubtle),
+                Divider(height: 24, color: surface.borderSubtle),
                 _SummaryRow(
                   icon: Icons.scale_rounded,
                   title: 'Logging Unit',

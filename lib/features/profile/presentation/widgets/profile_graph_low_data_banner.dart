@@ -8,20 +8,21 @@ class ProfileGraphLowDataBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final surface = context.surface;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: AppColors.surface4,
+        color: surface.surface4,
         borderRadius: AppRadius.badgeAll,
-        border: Border.all(color: AppColors.borderSubtle),
+        border: Border.all(color: surface.borderSubtle),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(
+          Icon(
             Icons.info_outline_rounded,
             size: 14,
-            color: AppColors.textSecondary,
+            color: surface.textSecondary,
           ),
           const SizedBox(width: 8),
           Text(
