@@ -16,6 +16,7 @@ class RestTimerState {
   final String workoutId;
   final int exerciseId;
   final String setId;
+  final String? exerciseName;
 
   const RestTimerState({
     required this.totalSeconds,
@@ -24,6 +25,7 @@ class RestTimerState {
     required this.workoutId,
     required this.exerciseId,
     required this.setId,
+    this.exerciseName,
   });
 
   double get progress =>
@@ -48,6 +50,7 @@ class RestTimerNotifier extends StateNotifier<RestTimerState?>
   String _currentWorkoutId = '';
   int _currentExerciseId = 0;
   String _currentSetId = '';
+  String? _currentExerciseName;
 
   RestTimerNotifier(this._ref) : super(null) {
     try {
@@ -60,6 +63,7 @@ class RestTimerNotifier extends StateNotifier<RestTimerState?>
     required String workoutId,
     required int exerciseId,
     required String setId,
+    String? exerciseName,
   }) {
     _ticker?.cancel();
     _finished = false;
@@ -68,6 +72,7 @@ class RestTimerNotifier extends StateNotifier<RestTimerState?>
     _currentWorkoutId = workoutId;
     _currentExerciseId = exerciseId;
     _currentSetId = setId;
+    _currentExerciseName = exerciseName;
 
     state = RestTimerState(
       totalSeconds: seconds,
@@ -76,6 +81,7 @@ class RestTimerNotifier extends StateNotifier<RestTimerState?>
       workoutId: workoutId,
       exerciseId: exerciseId,
       setId: setId,
+      exerciseName: exerciseName,
     );
 
     // Fire TimerStartedEvent
@@ -84,6 +90,7 @@ class RestTimerNotifier extends StateNotifier<RestTimerState?>
           workoutId: workoutId,
           exerciseId: exerciseId,
           setId: setId,
+          exerciseName: exerciseName,
         ));
 
     _ticker = Timer.periodic(const Duration(seconds: 1), (_) => _sync());
@@ -159,6 +166,7 @@ class RestTimerNotifier extends StateNotifier<RestTimerState?>
           workoutId: _currentWorkoutId,
           exerciseId: _currentExerciseId,
           setId: _currentSetId,
+          exerciseName: _currentExerciseName,
         ));
 
     // Double buzz — felt even with the phone on the bench.

@@ -18,11 +18,13 @@ class TimerStartedEvent extends ActiveWorkoutEvent {
   final String workoutId;
   final int exerciseId;
   final String setId;
+  final String? exerciseName;
   const TimerStartedEvent({
     required this.seconds,
     required this.workoutId,
     required this.exerciseId,
     required this.setId,
+    this.exerciseName,
   });
 }
 
@@ -30,10 +32,12 @@ class TimerExpiredEvent extends ActiveWorkoutEvent {
   final String workoutId;
   final int exerciseId;
   final String setId;
+  final String? exerciseName;
   const TimerExpiredEvent({
     required this.workoutId,
     required this.exerciseId,
     required this.setId,
+    this.exerciseName,
   });
 }
 

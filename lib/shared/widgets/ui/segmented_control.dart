@@ -63,25 +63,34 @@ class SegmentedControl extends StatelessWidget {
                 children: [
                   for (final s in segments)
                     Expanded(
-                      child: GestureDetector(
-                        behavior: HitTestBehavior.opaque,
-                        onTap: s == selected
-                            ? null
-                            : () {
-                                HapticFeedback.selectionClick();
-                                onChanged(s);
-                              },
-                        child: Center(
-                          child: Text(
-                            s,
-                            style: AppText.rowLabel(
-                              color: s == selected
-                                  ? AppColors.textPrimary
-                                  : AppColors.textSecondary,
-                            ).copyWith(
-                              fontWeight: s == selected
-                                  ? FontWeight.w600
-                                  : FontWeight.w400,
+                      child: Semantics(
+                        button: true,
+                        selected: s == selected,
+                        label: s,
+                        child: Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            borderRadius:
+                                BorderRadius.circular(AppRadius.segmentedInner),
+                            onTap: s == selected
+                                ? null
+                                : () {
+                                    HapticFeedback.selectionClick();
+                                    onChanged(s);
+                                  },
+                            child: Center(
+                              child: Text(
+                                s,
+                                style: AppText.rowLabel(
+                                  color: s == selected
+                                      ? AppColors.textPrimary
+                                      : AppColors.textSecondary,
+                                ).copyWith(
+                                  fontWeight: s == selected
+                                      ? FontWeight.w600
+                                      : FontWeight.w400,
+                                ),
+                              ),
                             ),
                           ),
                         ),

@@ -88,6 +88,7 @@ class BrandedLineChart extends StatefulWidget {
 
 class _BrandedLineChartState extends State<BrandedLineChart> {
   int? _touchedIndex;
+  bool _showDataTable = false;
 
   double _niceInterval(double maxV) {
     if (maxV <= 0) return 1;
@@ -360,12 +361,107 @@ class _BrandedLineChartState extends State<BrandedLineChart> {
       ),
     );
 
+    final firstDateStr = widget.dateFormatter(data.first.date);
+    final lastDateStr = widget.dateFormatter(data.last.date);
+    final dateRangeStr = '$firstDateStr to $lastDateStr';
+
+    final trendStr = data.last.value > data.first.value
+        ? 'Increasing'
+        : (data.last.value < data.first.value ? 'Decreasing' : 'Steady');
+
+    final latestStr = widget.valueFormatter(data.last.value);
+    final minStr = widget.valueFormatter(minV);
+    final maxStr = widget.valueFormatter(maxV);
+    final metricName =
+        widget.yAxisUnit != null ? '${widget.yAxisUnit} chart' : 'Volume chart';
+
+    final semanticsSummary = '$metricName, $dateRangeStr. '
+        'Latest: $latestStr, Min: $minStr, Max: $maxStr, '
+        'Trend: $trendStr, ${data.length} points.';
+
     return Semantics(
       container: true,
-      label: 'Volume chart, ${data.length} sessions. '
-          'Selected ${widget.valueFormatter(sel.value)} '
-          'on ${widget.dateFormatter(sel.date)}.',
-      child: chart,
+      label: semanticsSummary,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          chart,
+          _buildDataTable(context),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDataTable(BuildContext context) {
+    final accent = context.accent;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SizedBox(height: 8),
+        Semantics(
+          button: true,
+          label: _showDataTable ? 'Hide data table' : 'View data table',
+          child: TextButton.icon(
+            onPressed: () => setState(() => _showDataTable = !_showDataTable),
+            icon: Icon(
+              _showDataTable
+                  ? Icons.table_chart_rounded
+                  : Icons.table_chart_outlined,
+              size: 16,
+              color: accent.light,
+            ),
+            label: Text(
+              _showDataTable ? 'Hide data table' : 'View data table',
+              style: AppText.button().copyWith(
+                color: accent.light,
+                fontSize: 13,
+              ),
+            ),
+          ),
+        ),
+        if (_showDataTable) ...[
+          const SizedBox(height: 8),
+          Semantics(
+            container: true,
+            label: 'Data table, ${widget.data.length} rows',
+            child: Container(
+              decoration: BoxDecoration(
+                color: AppColors.surface3,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: AppColors.borderSubtle),
+              ),
+              child: ListView.separated(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: widget.data.length,
+                separatorBuilder: (_, __) =>
+                    const Divider(height: 1, color: AppColors.borderSubtle),
+                itemBuilder: (context, idx) {
+                  final pt = widget.data[idx];
+                  final valStr = widget.valueFormatter(pt.value);
+                  final dateStr = widget.dateFormatter(pt.date);
+                  return Semantics(
+                    container: true,
+                    label: 'Date: $dateStr, Value: $valStr',
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 14, vertical: 10),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(dateStr, style: AppText.rowLabel()),
+                          Text(valStr, style: AppText.statValue()),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
+        ],
+      ],
     );
   }
 

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/semantics.dart';
 import 'package:flutter/services.dart';
 import 'package:gymlog/core/theme/app_colors.dart';
 import 'package:gymlog/core/theme/app_text.dart';
@@ -347,213 +348,293 @@ class _SetRowState extends State<SetRow> {
     );
   }
 
+  String _buildCoherentSemanticLabel() {
+    final type = SetType.of(widget.setData.setType);
+    final setTypeName = type == SetType.normal
+        ? 'Set ${widget.setIndex + 1}'
+        : '${type.label} Set ${widget.setIndex + 1}';
+
+    final prev = _previousLabel;
+    final prevPart =
+        (prev != null && prev.isNotEmpty) ? 'Previous: $prev. ' : '';
+
+    final wVal = widget.setData.weightKg;
+    final rVal = widget.setData.reps;
+
+    String weightPart = '';
+    if (widget.measurementType.showsWeightColumn) {
+      if (widget.measurementType == MeasurementType.distance) {
+        final distStr =
+            wVal != null && wVal > 0 ? _formatWeightField(wVal) : '0';
+        weightPart = 'Distance: $distStr metres. ';
+      } else {
+        final wStr =
+            wVal != null && wVal > 0 ? formatWeight(wVal, widget.unit) : '0';
+        final unitName = widget.unit == 'lbs' ? 'pounds' : 'kilograms';
+        weightPart = 'Weight: $wStr $unitName. ';
+      }
+    }
+
+    String repsPart = '';
+    if (widget.measurementType.showsRepsColumn) {
+      if (widget.measurementType == MeasurementType.duration) {
+        repsPart = 'Duration: $rVal seconds. ';
+      } else {
+        repsPart = 'Reps: $rVal. ';
+      }
+    }
+
+    final statusPart =
+        widget.setData.isCompleted ? 'Completed.' : 'Not completed.';
+
+    return '$setTypeName. $prevPart$weightPart$repsPart$statusPart';
+  }
+
+  Map<CustomSemanticsAction, VoidCallback> _buildCustomSemanticsActions() {
+    final Map<CustomSemanticsAction, VoidCallback> actions = {};
+
+    if (widget.measurementType.showsWeightColumn) {
+      actions[const CustomSemanticsAction(label: 'Edit weight')] = () {
+        _weightFocus.requestFocus();
+      };
+    }
+    if (widget.measurementType.showsRepsColumn) {
+      actions[const CustomSemanticsAction(label: 'Edit reps')] = () {
+        _repsFocus.requestFocus();
+      };
+    }
+
+    actions[CustomSemanticsAction(
+      label:
+          widget.setData.isCompleted ? 'Mark set incomplete' : 'Complete set',
+    )] = () {
+      if (widget.setData.isCompleted || _canComplete) {
+        _onToggleComplete();
+      }
+    };
+
+    if (!widget.setData.isCompleted) {
+      actions[const CustomSemanticsAction(label: 'Change set type')] = () {
+        _pickSetType();
+      };
+    }
+
+    return actions;
+  }
+
   @override
   Widget build(BuildContext context) {
     final isCompleted = widget.setData.isCompleted;
     final prev = _previousLabel;
-    // Honor OS reduce-motion: the completion tint + check-pop become instant.
     final reduceMotion = MediaQuery.disableAnimationsOf(context);
 
-    return AnimatedContainer(
-      duration:
-          reduceMotion ? Duration.zero : const Duration(milliseconds: 200),
-      curve: Curves.easeInOut,
-      // Completed row = 3px green left border + 6% green tint (not a full fill).
-      // Completion is a fixed success semantic — like reward gold, it never
-      // shifts with the accent palette.
-      decoration: BoxDecoration(
-        color: isCompleted ? AppColors.completionTint : Colors.transparent,
-        border: isCompleted
-            ? const Border(left: BorderSide(color: AppColors.success, width: 3))
-            : null,
-      ),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
-      child: Container(
-        constraints: const BoxConstraints(minHeight: 56),
-        child: Row(
-          children: [
-            // ── SET — type letter replaces number, opens the type picker ──
-            SizedBox(
-              width: kSetColW,
-              child: Semantics(
-                button: !isCompleted,
-                label: 'Set type, ${SetType.of(widget.setData.setType).label}',
-                child: GestureDetector(
-                  onTap: isCompleted
-                      ? null
-                      : () {
-                          HapticFeedback.selectionClick();
-                          _pickSetType();
-                        },
-                  behavior: HitTestBehavior.opaque,
-                  child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: _setTypeIndicator(),
+    final coherentLabel = _buildCoherentSemanticLabel();
+    final customActions = _buildCustomSemanticsActions();
+
+    return Semantics(
+      container: true,
+      label: coherentLabel,
+      customSemanticsActions: customActions,
+      child: AnimatedContainer(
+        duration:
+            reduceMotion ? Duration.zero : const Duration(milliseconds: 200),
+        curve: Curves.easeInOut,
+        decoration: BoxDecoration(
+          color: isCompleted ? AppColors.completionTint : Colors.transparent,
+          border: isCompleted
+              ? const Border(
+                  left: BorderSide(color: AppColors.success, width: 3))
+              : null,
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+        child: Container(
+          constraints: const BoxConstraints(minHeight: 56),
+          child: Row(
+            children: [
+              // ── SET — type letter replaces number, opens the type picker ──
+              SizedBox(
+                width: kSetColW,
+                child: Semantics(
+                  button: !isCompleted,
+                  label:
+                      'Set type, ${SetType.of(widget.setData.setType).label}',
+                  child: GestureDetector(
+                    onTap: isCompleted
+                        ? null
+                        : () {
+                            HapticFeedback.selectionClick();
+                            _pickSetType();
+                          },
+                    behavior: HitTestBehavior.opaque,
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: _setTypeIndicator(),
+                    ),
                   ),
                 ),
               ),
-            ),
 
-            // ── PREVIOUS — read-only reference from the last session ────
-            Expanded(
-              flex: kPrevFlex,
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: FittedBox(
-                  fit: BoxFit.scaleDown,
+              // ── PREVIOUS — read-only reference from the last session ────
+              Expanded(
+                flex: kPrevFlex,
+                child: Align(
                   alignment: Alignment.centerLeft,
-                  child: Text(
-                    prev ?? '',
-                    style: AppText.statLabel(
-                      color: prev != null
-                          ? AppColors.textSecondary
-                          : AppColors.textTertiary,
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      prev ?? '',
+                      style: AppText.statLabel(
+                        color: prev != null
+                            ? AppColors.textSecondary
+                            : AppColors.textTertiary,
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
 
-            // ── WEIGHT / DISTANCE — hidden for repsOnly and duration ──────
-            Expanded(
-              flex: kWeightFlex,
-              child: !widget.measurementType.showsWeightColumn
-                  ? const SizedBox.shrink()
-                  : _numberField(
-                      controller: _weightController,
-                      focusNode: _weightFocus,
-                      isDecimal: true,
-                      semanticLabel:
-                          widget.measurementType == MeasurementType.distance
-                              ? 'Distance in metres'
-                              : 'Weight in ${widget.unit}',
-                      hintText: widget.previousWeight != null
-                          ? _formatWeightField(widget.previousWeight!)
-                          : '0',
-                      flashHint: _weightShouldFlash,
-                      onChanged: (val) {
-                        if (val.trim().isEmpty) {
-                          widget.onChanged(
-                              widget.setData.copyWith(weightKg: null));
-                          return;
-                        }
-                        final parsed = double.tryParse(val);
-                        if (parsed != null) {
-                          // Distance: store raw value — no kg/lbs conversion.
-                          // Weight: convert from the user's display unit to kg.
-                          final stored =
-                              widget.measurementType == MeasurementType.distance
-                                  ? parsed.clamp(0.0, 99999.0)
-                                  : displayToKg(parsed, widget.unit)
-                                      .clamp(0.0, 999.5);
-                          widget.onChanged(
-                              widget.setData.copyWith(weightKg: stored));
-                        }
-                      },
-                    ),
-            ),
+              // ── WEIGHT / DISTANCE — hidden for repsOnly and duration ──────
+              Expanded(
+                flex: kWeightFlex,
+                child: !widget.measurementType.showsWeightColumn
+                    ? const SizedBox.shrink()
+                    : _numberField(
+                        controller: _weightController,
+                        focusNode: _weightFocus,
+                        isDecimal: true,
+                        semanticLabel:
+                            widget.measurementType == MeasurementType.distance
+                                ? 'Distance in metres'
+                                : 'Weight in ${widget.unit}',
+                        hintText: widget.previousWeight != null
+                            ? _formatWeightField(widget.previousWeight!)
+                            : '0',
+                        flashHint: _weightShouldFlash,
+                        onChanged: (val) {
+                          if (val.trim().isEmpty) {
+                            widget.onChanged(
+                                widget.setData.copyWith(weightKg: null));
+                            return;
+                          }
+                          final parsed = double.tryParse(val);
+                          if (parsed != null) {
+                            // Distance: store raw value — no kg/lbs conversion.
+                            // Weight: convert from the user's display unit to kg.
+                            final stored = widget.measurementType ==
+                                    MeasurementType.distance
+                                ? parsed.clamp(0.0, 99999.0)
+                                : displayToKg(parsed, widget.unit)
+                                    .clamp(0.0, 999.5);
+                            widget.onChanged(
+                                widget.setData.copyWith(weightKg: stored));
+                          }
+                        },
+                      ),
+              ),
 
-            // ── REPS / SECS — hidden for distance ───────────────────────
-            Expanded(
-              flex: kRepsFlex,
-              child: !widget.measurementType.showsRepsColumn
-                  ? const SizedBox.shrink()
-                  : _numberField(
-                      controller: _repsController,
-                      focusNode: _repsFocus,
-                      isDecimal: false,
-                      action: TextInputAction.done,
-                      semanticLabel:
-                          widget.measurementType.repsFieldSemanticLabel,
-                      hintText: widget.previousReps != null
-                          ? '${widget.previousReps!}'
-                          : '0',
-                      flashHint: _repsShouldFlash,
-                      onChanged: (val) {
-                        final parsed = int.tryParse(val);
-                        if (parsed != null) {
-                          widget.onChanged(widget.setData
-                              .copyWith(reps: parsed.clamp(0, 99999)));
-                        }
-                      },
-                    ),
-            ),
+              // ── REPS / SECS — hidden for distance ───────────────────────
+              Expanded(
+                flex: kRepsFlex,
+                child: !widget.measurementType.showsRepsColumn
+                    ? const SizedBox.shrink()
+                    : _numberField(
+                        controller: _repsController,
+                        focusNode: _repsFocus,
+                        isDecimal: false,
+                        action: TextInputAction.done,
+                        semanticLabel:
+                            widget.measurementType.repsFieldSemanticLabel,
+                        hintText: widget.previousReps != null
+                            ? '${widget.previousReps!}'
+                            : '0',
+                        flashHint: _repsShouldFlash,
+                        onChanged: (val) {
+                          final parsed = int.tryParse(val);
+                          if (parsed != null) {
+                            widget.onChanged(widget.setData
+                                .copyWith(reps: parsed.clamp(0, 99999)));
+                          }
+                        },
+                      ),
+              ),
 
-            // ── Completion — always tappable; validation fires on miss ───
-            SizedBox(
-              width: kCheckColW,
-              child: Semantics(
-                button: true,
-                label: isCompleted ? 'Mark set incomplete' : 'Complete set',
-                child: GestureDetector(
-                  onTap: () {
-                    if (isCompleted) {
+              // ── Completion — always tappable; validation fires on miss ───
+              SizedBox(
+                width: kCheckColW,
+                child: Semantics(
+                  button: true,
+                  label: isCompleted ? 'Mark set incomplete' : 'Complete set',
+                  child: GestureDetector(
+                    onTap: () {
+                      if (isCompleted) {
+                        _onToggleComplete();
+                        return;
+                      }
+                      if (!_canComplete) {
+                        // Show which field(s) are empty for 1.4 s, then fade.
+                        HapticFeedback.heavyImpact();
+                        setState(() => _showValidationHint = true);
+                        Future.delayed(const Duration(milliseconds: 1400), () {
+                          if (mounted) {
+                            setState(() => _showValidationHint = false);
+                          }
+                        });
+                        return;
+                      }
+                      HapticFeedback.mediumImpact();
                       _onToggleComplete();
-                      return;
-                    }
-                    if (!_canComplete) {
-                      // Show which field(s) are empty for 1.4 s, then fade.
-                      HapticFeedback.heavyImpact();
-                      setState(() => _showValidationHint = true);
-                      Future.delayed(const Duration(milliseconds: 1400), () {
-                        if (mounted) {
-                          setState(() => _showValidationHint = false);
-                        }
-                      });
-                      return;
-                    }
-                    HapticFeedback.mediumImpact();
-                    _onToggleComplete();
-                  },
-                  behavior: HitTestBehavior.opaque,
-                  child: Center(
-                    child: TweenAnimationBuilder<double>(
-                      key: ValueKey(isCompleted),
-                      tween: Tween<double>(
-                        begin: isCompleted ? 1.15 : 1.0,
-                        end: 1.0,
-                      ),
-                      duration: reduceMotion
-                          ? Duration.zero
-                          : const Duration(milliseconds: 100),
-                      curve: Curves.easeOutBack,
-                      builder: (context, scale, child) =>
-                          Transform.scale(scale: scale, child: child),
-                      child: Container(
-                        width: 32,
-                        height: 32,
-                        decoration: BoxDecoration(
-                          borderRadius: AppRadius.badgeAll,
-                          color: isCompleted
-                              ? AppColors.success
-                              : Colors.transparent,
-                          border: isCompleted
-                              ? null
-                              : Border.all(
-                                  color: _canComplete
-                                      ? AppColors.success
-                                          .withValues(alpha: 0.55)
-                                      : AppColors.textPrimary
-                                          .withValues(alpha: 0.15),
-                                ),
+                    },
+                    behavior: HitTestBehavior.opaque,
+                    child: Center(
+                      child: TweenAnimationBuilder<double>(
+                        key: ValueKey(isCompleted),
+                        tween: Tween<double>(
+                          begin: isCompleted ? 1.15 : 1.0,
+                          end: 1.0,
                         ),
-                        child: Icon(
-                          Icons.check_rounded,
-                          color: isCompleted
-                              ? AppColors.textPrimary
-                              : _canComplete
-                                  ? AppColors.success.withValues(alpha: 0.7)
-                                  : AppColors.textPrimary
-                                      .withValues(alpha: 0.10),
-                          size: 18,
+                        duration: reduceMotion
+                            ? Duration.zero
+                            : const Duration(milliseconds: 100),
+                        curve: Curves.easeOutBack,
+                        builder: (context, scale, child) =>
+                            Transform.scale(scale: scale, child: child),
+                        child: Container(
+                          width: 32,
+                          height: 32,
+                          decoration: BoxDecoration(
+                            borderRadius: AppRadius.badgeAll,
+                            color: isCompleted
+                                ? AppColors.success
+                                : Colors.transparent,
+                            border: isCompleted
+                                ? null
+                                : Border.all(
+                                    color: _canComplete
+                                        ? AppColors.success
+                                            .withValues(alpha: 0.55)
+                                        : AppColors.textPrimary
+                                            .withValues(alpha: 0.15),
+                                  ),
+                          ),
+                          child: Icon(
+                            Icons.check_rounded,
+                            color: isCompleted
+                                ? AppColors.textPrimary
+                                : _canComplete
+                                    ? AppColors.success.withValues(alpha: 0.7)
+                                    : AppColors.textPrimary
+                                        .withValues(alpha: 0.10),
+                            size: 18,
+                          ),
                         ),
                       ),
                     ),
                   ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

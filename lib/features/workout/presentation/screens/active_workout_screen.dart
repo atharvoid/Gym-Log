@@ -82,10 +82,12 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
           ));
         }
         break;
-      case TimerStartedEvent(seconds: final secs):
+      case TimerStartedEvent(seconds: final secs, exerciseName: final name):
         SemanticsService.sendAnnouncement(
           View.of(context),
-          'Rest timer started: $secs seconds',
+          name != null && name.isNotEmpty
+              ? 'Rest timer started for $name, $secs seconds.'
+              : 'Rest timer started, $secs seconds.',
           TextDirection.ltr,
         );
         break;
@@ -96,10 +98,12 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
           TextDirection.ltr,
         );
         break;
-      case TimerExpiredEvent():
+      case TimerExpiredEvent(exerciseName: final name):
         SemanticsService.sendAnnouncement(
           View.of(context),
-          'Rest timer expired',
+          name != null && name.isNotEmpty
+              ? 'Rest complete for $name.'
+              : 'Rest complete.',
           TextDirection.ltr,
         );
         break;
@@ -238,6 +242,7 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
               workoutId: workout.id,
               exerciseId: exercise.exerciseId,
               setId: exercise.sets[setIndex].id,
+              exerciseName: exercise.name,
             );
       }
     }

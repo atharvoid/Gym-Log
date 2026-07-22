@@ -28,28 +28,40 @@ class TogglePill extends StatelessWidget {
     final motion = MediaQuery.disableAnimationsOf(context)
         ? Duration.zero
         : const Duration(milliseconds: 200);
-    return GestureDetector(
-      onTap: onTap == null
-          ? null
-          : () {
-              HapticFeedback.lightImpact();
-              onTap!();
-            },
-      child: AnimatedContainer(
-        duration: motion,
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-        decoration: BoxDecoration(
-          color: isActive ? context.accent.base : AppColors.borderSubtle,
+    return Semantics(
+      container: true,
+      button: true,
+      selected: isActive,
+      label: label,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
           borderRadius: BorderRadius.circular(999),
-        ),
-        child: AnimatedDefaultTextStyle(
-          duration: motion,
-          style: AppText.rowLabel(
-            color: isActive ? context.accent.onAccent : AppColors.textSecondary,
-          ).copyWith(
-            fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
+          onTap: onTap == null
+              ? null
+              : () {
+                  HapticFeedback.lightImpact();
+                  onTap!();
+                },
+          child: AnimatedContainer(
+            duration: motion,
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+            decoration: BoxDecoration(
+              color: isActive ? context.accent.base : AppColors.borderSubtle,
+              borderRadius: BorderRadius.circular(999),
+            ),
+            child: AnimatedDefaultTextStyle(
+              duration: motion,
+              style: AppText.rowLabel(
+                color: isActive
+                    ? context.accent.onAccent
+                    : AppColors.textSecondary,
+              ).copyWith(
+                fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
+              ),
+              child: Text(label),
+            ),
           ),
-          child: Text(label),
         ),
       ),
     );
