@@ -36,6 +36,7 @@ class RestTimerBar extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final notifier = ref.read(restTimerProvider.notifier);
     final rest = context.accent.base; // reactive timer hue
+    final surface = context.surface;
 
     return SafeArea(
       top: false,
@@ -59,9 +60,9 @@ class RestTimerBar extends ConsumerWidget {
                     colors: [
                       Color.alphaBlend(
                         rest.withValues(alpha: 0.16),
-                        AppColors.bgBase,
+                        surface.bgBase,
                       ),
-                      AppColors.bgBase,
+                      surface.bgBase,
                     ],
                   ),
                   borderRadius: AppRadius.cardAll,
@@ -81,6 +82,7 @@ class RestTimerBar extends ConsumerWidget {
                           painter: _RestRingPainter(
                             progress: state.progress,
                             arcColor: rest,
+                            trackColor: surface.borderDefault,
                           ),
                           child: Center(
                             child: Icon(Icons.timer_outlined,
@@ -95,12 +97,12 @@ class RestTimerBar extends ConsumerWidget {
                         children: [
                           Text('REST',
                               style: AppText.columnHeader(
-                                  color: AppColors.textSecondary)),
+                                  color: surface.textSecondary)),
                           // S3: text-depth shadow on timer display
                           Text(
                             _label,
                             style: AppText.timer(
-                                    color: AppColors.textPrimary,
+                                    color: surface.textPrimary,
                                     shadows: AppText.depthFor(context))
                                 .copyWith(
                               fontSize: 36,
@@ -157,8 +159,9 @@ class _RestAction extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color:
-          emphasized ? accent.withValues(alpha: 0.16) : AppColors.borderSubtle,
+      color: emphasized
+          ? accent.withValues(alpha: 0.16)
+          : context.surface.borderSubtle,
       borderRadius: BorderRadius.circular(AppRadius.buttonSecondary),
       child: InkWell(
         borderRadius: BorderRadius.circular(AppRadius.buttonSecondary),
@@ -170,7 +173,7 @@ class _RestAction extends StatelessWidget {
           child: Text(
             label,
             style: AppText.statLabel(
-              color: emphasized ? accent : AppColors.textPrimary,
+              color: emphasized ? accent : context.surface.textPrimary,
             ),
           ),
         ),
@@ -250,7 +253,11 @@ class _AmbientPulseState extends State<_AmbientPulse>
 class _RestRingPainter extends CustomPainter {
   final double progress;
   final Color arcColor;
-  _RestRingPainter({required this.progress, required this.arcColor});
+  final Color trackColor;
+  _RestRingPainter(
+      {required this.progress,
+      required this.arcColor,
+      required this.trackColor});
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -263,7 +270,7 @@ class _RestRingPainter extends CustomPainter {
       Paint()
         ..style = PaintingStyle.stroke
         ..strokeWidth = 3
-        ..color = AppColors.borderDefault,
+        ..color = trackColor,
     );
     if (progress > 0) {
       canvas.drawArc(

@@ -52,14 +52,15 @@ class ExerciseBlock extends ConsumerWidget {
   });
 
   void _showMenu(BuildContext context, String exerciseName) {
+    final surface = context.surface;
     showActionBottomSheet(
       context: context,
       title: exerciseName,
       items: [
         ActionSheetItem(
           icon: Icons.swap_horiz_rounded,
-          iconColor: AppColors.textSecondary,
-          iconBackground: AppColors.bgBase,
+          iconColor: surface.textSecondary,
+          iconBackground: surface.bgBase,
           title: 'Replace Exercise',
           onTap: (sheetContext) {
             Navigator.pop(sheetContext);
@@ -69,8 +70,8 @@ class ExerciseBlock extends ConsumerWidget {
         if (onReorderExercises != null)
           ActionSheetItem(
             icon: Icons.swap_vert_rounded,
-            iconColor: AppColors.textSecondary,
-            iconBackground: AppColors.bgBase,
+            iconColor: surface.textSecondary,
+            iconBackground: surface.bgBase,
             title: 'Reorder Exercises',
             onTap: (sheetContext) {
               Navigator.pop(sheetContext);
@@ -109,6 +110,7 @@ class ExerciseBlock extends ConsumerWidget {
     }));
 
     if (exerciseMeta == null) return const SizedBox.shrink();
+    final surface = context.surface;
 
     final exerciseId = exerciseMeta.$1;
     final exerciseName = exerciseMeta.$2;
@@ -135,7 +137,7 @@ class ExerciseBlock extends ConsumerWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 7),
       child: Container(
         decoration: BoxDecoration(
-          color: AppColors.surface2,
+          color: surface.surface2,
           borderRadius: BorderRadius.circular(17),
           border: Border.all(
             color: Colors.white.withValues(alpha: 0.07),
@@ -173,11 +175,11 @@ class ExerciseBlock extends ConsumerWidget {
                             : null,
                         child: Text(
                           exerciseName,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontFamily: 'Inter',
                             fontSize: 18,
                             fontWeight: FontWeight.w700,
-                            color: AppColors.textPrimary,
+                            color: surface.textPrimary,
                           ),
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
@@ -199,8 +201,8 @@ class ExerciseBlock extends ConsumerWidget {
                   child: IconButton(
                     tooltip: 'Exercise options',
                     padding: EdgeInsets.zero,
-                    icon: const Icon(Icons.more_horiz_rounded,
-                        color: AppColors.textSecondary, size: 20),
+                    icon: Icon(Icons.more_horiz_rounded,
+                        color: surface.textSecondary, size: 20),
                     onPressed: () => _showMenu(context, exerciseName),
                   ),
                 ),
@@ -216,14 +218,14 @@ class ExerciseBlock extends ConsumerWidget {
                   SizedBox(
                     width: kSetColW,
                     child: Text('SET',
-                        style: AppText.columnHeader(
-                            color: AppColors.textSecondary)),
+                        style:
+                            AppText.columnHeader(color: surface.textSecondary)),
                   ),
                   Expanded(
                     flex: kPrevFlex,
                     child: Text('PREVIOUS',
-                        style: AppText.columnHeader(
-                            color: AppColors.textSecondary)),
+                        style:
+                            AppText.columnHeader(color: surface.textSecondary)),
                   ),
                   Expanded(
                     flex: kWeightFlex,
@@ -258,14 +260,14 @@ class ExerciseBlock extends ConsumerWidget {
                                             ? Icons.straighten_rounded
                                             : Icons.fitness_center_rounded,
                                         size: 11,
-                                        color: AppColors.textSecondary,
+                                        color: surface.textSecondary,
                                       ),
                                       const SizedBox(width: 3),
                                       Text(
                                         mType.fixedWeightColumnLabel ??
                                             unit.toUpperCase(),
                                         style: AppText.columnHeader(
-                                            color: AppColors.textSecondary),
+                                            color: surface.textSecondary),
                                       ),
                                     ],
                                   ),
@@ -279,16 +281,16 @@ class ExerciseBlock extends ConsumerWidget {
                     child: Center(
                       child: Text(
                         mType.repsColumnLabel,
-                        style: AppText.columnHeader(
-                            color: AppColors.textSecondary),
+                        style:
+                            AppText.columnHeader(color: surface.textSecondary),
                       ),
                     ),
                   ),
-                  const SizedBox(
+                  SizedBox(
                     width: kCheckColW,
                     child: Center(
                       child: Icon(Icons.check_rounded,
-                          size: 13, color: AppColors.textSecondary),
+                          size: 13, color: surface.textSecondary),
                     ),
                   ),
                 ],
@@ -348,8 +350,8 @@ class ExerciseBlock extends ConsumerWidget {
                       color: AppColors.error.withValues(alpha: 0.85),
                       alignment: Alignment.centerRight,
                       padding: const EdgeInsets.only(right: 22),
-                      child: const Icon(Icons.delete_outline_rounded,
-                          color: AppColors.textPrimary, size: 20),
+                      child: Icon(Icons.delete_outline_rounded,
+                          color: surface.textPrimary, size: 20),
                     ),
                     child: row,
                   );

@@ -104,6 +104,7 @@ class _RestTimeSheetState extends State<RestTimeSheet> {
   @override
   Widget build(BuildContext context) {
     final accent = context.accent;
+    final surface = context.surface;
     final mediaQuery = MediaQuery.of(context);
     final bottomInset = math.max(20.0, mediaQuery.viewPadding.bottom);
     final maxHeight = mediaQuery.size.height * 0.72;
@@ -115,9 +116,9 @@ class _RestTimeSheetState extends State<RestTimeSheet> {
       child: ConstrainedBox(
         constraints: BoxConstraints(maxHeight: maxHeight),
         child: Container(
-          decoration: const BoxDecoration(
-            color: AppColors.surface2,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          decoration: BoxDecoration(
+            color: surface.surface2,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
           ),
           child: SingleChildScrollView(
             child: Padding(
@@ -132,7 +133,7 @@ class _RestTimeSheetState extends State<RestTimeSheet> {
                       width: 36,
                       height: 4,
                       decoration: BoxDecoration(
-                        color: AppColors.borderEmphasis,
+                        color: surface.borderEmphasis,
                         borderRadius: BorderRadius.circular(2),
                       ),
                     ),
@@ -140,13 +141,13 @@ class _RestTimeSheetState extends State<RestTimeSheet> {
                   const SizedBox(height: 18),
 
                   // Title: Rest time (20/700)
-                  const Text(
+                  Text(
                     'Rest time',
                     style: TextStyle(
                       fontFamily: 'Inter',
                       fontSize: 20,
                       fontWeight: FontWeight.w700,
-                      color: AppColors.textPrimary,
+                      color: surface.textPrimary,
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -155,11 +156,11 @@ class _RestTimeSheetState extends State<RestTimeSheet> {
                   // Subtitle: exerciseName · This workout only (14/400)
                   Text(
                     '${widget.exerciseName} · This workout only',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontFamily: 'Inter',
                       fontSize: 14,
                       fontWeight: FontWeight.w400,
-                      color: AppColors.textSecondary,
+                      color: surface.textSecondary,
                     ),
                     textAlign: TextAlign.center,
                     maxLines: 1,
@@ -206,7 +207,7 @@ class _RestTimeSheetState extends State<RestTimeSheet> {
                   // Header / Section label: CUSTOM
                   Text(
                     'CUSTOM',
-                    style: AppText.columnHeader(color: AppColors.textSecondary),
+                    style: AppText.columnHeader(color: surface.textSecondary),
                     textAlign: TextAlign.start,
                   ),
                   const SizedBox(height: 12),
@@ -225,11 +226,11 @@ class _RestTimeSheetState extends State<RestTimeSheet> {
                       const SizedBox(width: 24),
                       Text(
                         _formatDuration(displaySeconds),
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontFamily: 'monospace',
                           fontSize: 32,
                           fontWeight: FontWeight.bold,
-                          color: AppColors.textPrimary,
+                          color: surface.textPrimary,
                         ),
                       ),
                       const SizedBox(width: 24),
@@ -277,7 +278,7 @@ class _RestTimeSheetState extends State<RestTimeSheet> {
                           height: 50,
                           child: TextButton(
                             style: TextButton.styleFrom(
-                              foregroundColor: AppColors.textSecondary,
+                              foregroundColor: surface.textSecondary,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12),
                               ),
@@ -285,8 +286,8 @@ class _RestTimeSheetState extends State<RestTimeSheet> {
                             onPressed: () => Navigator.pop(context, null),
                             child: Text(
                               'Cancel',
-                              style: AppText.button(
-                                  color: AppColors.textSecondary),
+                              style:
+                                  AppText.button(color: surface.textSecondary),
                             ),
                           ),
                         ),
@@ -350,15 +351,16 @@ class _OptionButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final surface = context.surface;
     return Material(
       color:
-          isSelected ? accent.base.withValues(alpha: 0.14) : AppColors.surface3,
+          isSelected ? accent.base.withValues(alpha: 0.14) : surface.surface3,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(14),
         side: BorderSide(
           color: isSelected
               ? accent.base.withValues(alpha: 0.60)
-              : AppColors.borderSubtle,
+              : surface.borderSubtle,
           width: isSelected ? 1.5 : 1.0,
         ),
       ),
@@ -378,7 +380,7 @@ class _OptionButton extends StatelessWidget {
               fontFamily: 'Inter',
               fontSize: 14,
               fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-              color: isSelected ? accent.light : AppColors.textPrimary,
+              color: isSelected ? accent.light : surface.textPrimary,
             ),
           ),
         ),
@@ -395,8 +397,9 @@ class _StepperButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final surface = context.surface;
     return Material(
-      color: AppColors.surface3,
+      color: surface.surface3,
       borderRadius: BorderRadius.circular(12),
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
@@ -407,11 +410,11 @@ class _StepperButton extends StatelessWidget {
           alignment: Alignment.center,
           child: Text(
             label,
-            style: const TextStyle(
+            style: TextStyle(
               fontFamily: 'Inter',
               fontSize: 14,
               fontWeight: FontWeight.bold,
-              color: AppColors.textPrimary,
+              color: surface.textPrimary,
             ),
           ),
         ),
@@ -435,15 +438,16 @@ class _PresetButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final surface = context.surface;
     return Material(
       color:
-          isSelected ? accent.base.withValues(alpha: 0.14) : AppColors.surface3,
+          isSelected ? accent.base.withValues(alpha: 0.14) : surface.surface3,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(14),
         side: BorderSide(
           color: isSelected
               ? accent.base.withValues(alpha: 0.60)
-              : AppColors.borderSubtle,
+              : surface.borderSubtle,
           width: isSelected ? 1.5 : 1.0,
         ),
       ),
@@ -463,7 +467,7 @@ class _PresetButton extends StatelessWidget {
               fontFamily: 'Inter',
               fontSize: 14,
               fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-              color: isSelected ? accent.light : AppColors.textPrimary,
+              color: isSelected ? accent.light : surface.textPrimary,
             ),
           ),
         ),

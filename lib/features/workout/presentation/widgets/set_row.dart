@@ -242,13 +242,14 @@ class _SetRowState extends State<SetRow> {
   /// SET column content: the type letter REPLACES the number (Hevy pattern).
   /// Normal → set number; W/D/F → coloured letter (colors from [SetType]).
   Widget _setTypeIndicator() {
+    final surface = context.surface;
     final type = SetType.of(widget.setData.setType);
     final isNormal = type == SetType.normal;
     final label = isNormal ? '${widget.setIndex + 1}' : type.short;
     final color = isNormal
         ? (widget.setData.isCompleted
-            ? AppColors.textPrimary
-            : AppColors.textSecondary)
+            ? surface.textPrimary
+            : surface.textSecondary)
         : type.color;
     return Text(label, style: AppText.value(color: color));
   }
@@ -271,6 +272,7 @@ class _SetRowState extends State<SetRow> {
   }) {
     final completed = widget.setData.isCompleted;
     final accent = context.accent;
+    final surface = context.surface;
     final hasFocus = focusNode.hasFocus;
 
     return Padding(
@@ -279,16 +281,15 @@ class _SetRowState extends State<SetRow> {
         duration: const Duration(milliseconds: 150),
         constraints: const BoxConstraints(minHeight: 48, minWidth: 48),
         decoration: BoxDecoration(
-          color: hasFocus
-              ? accent.base.withValues(alpha: 0.12)
-              : AppColors.surface3,
+          color:
+              hasFocus ? accent.base.withValues(alpha: 0.12) : surface.surface3,
           borderRadius: BorderRadius.circular(10),
           border: Border.all(
             color: flashHint
                 ? accent.base
                 : (hasFocus
                     ? accent.base.withValues(alpha: 0.80)
-                    : AppColors.borderSubtle.withValues(alpha: 0.3)),
+                    : surface.borderSubtle.withValues(alpha: 0.3)),
             width: hasFocus || flashHint ? 1.5 : 1.0,
           ),
         ),
@@ -311,12 +312,12 @@ class _SetRowState extends State<SetRow> {
                   FilteringTextInputFormatter.digitsOnly,
                 LengthLimitingTextInputFormatter(isDecimal ? 6 : 5),
               ],
-              style: const TextStyle(
+              style: TextStyle(
                 fontFamily: 'Inter',
-                fontFeatures: [FontFeature.tabularFigures()],
+                fontFeatures: const [FontFeature.tabularFigures()],
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
-                color: AppColors.textPrimary,
+                color: surface.textPrimary,
               ),
               decoration: InputDecoration(
                 hintText: hintText ?? '0',
@@ -327,7 +328,7 @@ class _SetRowState extends State<SetRow> {
                   fontWeight: FontWeight.w500,
                   color: flashHint
                       ? accent.base.withValues(alpha: 0.85)
-                      : AppColors.textTertiary,
+                      : surface.textTertiary,
                 ),
                 border: InputBorder.none,
                 focusedBorder: InputBorder.none,
@@ -425,6 +426,7 @@ class _SetRowState extends State<SetRow> {
   @override
   Widget build(BuildContext context) {
     final isCompleted = widget.setData.isCompleted;
+    final surface = context.surface;
     final prev = _previousLabel;
     final reduceMotion = MediaQuery.disableAnimationsOf(context);
 
@@ -486,8 +488,8 @@ class _SetRowState extends State<SetRow> {
                       prev ?? '',
                       style: AppText.statLabel(
                         color: prev != null
-                            ? AppColors.textSecondary
-                            : AppColors.textTertiary,
+                            ? surface.textSecondary
+                            : surface.textTertiary,
                       ),
                     ),
                   ),
@@ -613,17 +615,17 @@ class _SetRowState extends State<SetRow> {
                                     color: _canComplete
                                         ? AppColors.success
                                             .withValues(alpha: 0.55)
-                                        : AppColors.textPrimary
+                                        : surface.textPrimary
                                             .withValues(alpha: 0.15),
                                   ),
                           ),
                           child: Icon(
                             Icons.check_rounded,
                             color: isCompleted
-                                ? AppColors.textPrimary
+                                ? surface.textPrimary
                                 : _canComplete
                                     ? AppColors.success.withValues(alpha: 0.7)
-                                    : AppColors.textPrimary
+                                    : surface.textPrimary
                                         .withValues(alpha: 0.10),
                             size: 18,
                           ),

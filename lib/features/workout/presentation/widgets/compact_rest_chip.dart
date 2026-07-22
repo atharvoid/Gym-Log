@@ -88,17 +88,18 @@ class CompactRestChip extends ConsumerWidget {
     final IconData iconData =
         isDisabled ? Icons.timer_off_outlined : Icons.timer_outlined;
 
+    final surface = context.surface;
     final Color bgColor = isDisabled
-        ? AppColors.surface3.withValues(alpha: 0.5)
-        : (isCustom ? accent.base.withValues(alpha: 0.16) : AppColors.surface3);
+        ? surface.surface3.withValues(alpha: 0.5)
+        : (isCustom ? accent.base.withValues(alpha: 0.16) : surface.surface3);
 
     final Color iconColor = isCustom && !isDisabled
         ? accent.light
-        : (isDisabled ? AppColors.textTertiary : AppColors.textSecondary);
+        : (isDisabled ? surface.textTertiary : surface.textSecondary);
 
     final Color textColor = isCustom && !isDisabled
         ? accent.light
-        : (isDisabled ? AppColors.textTertiary : AppColors.textSecondary);
+        : (isDisabled ? surface.textTertiary : surface.textSecondary);
 
     return Semantics(
       button: true,
