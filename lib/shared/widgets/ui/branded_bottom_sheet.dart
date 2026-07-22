@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:gymlog/core/theme/app_colors.dart';
 import 'package:gymlog/core/theme/app_text.dart';
+import 'package:gymlog/core/theme/dynamic_accent_theme.dart';
 
 /// [branded_bottom_sheet.dart]
 /// Canonical bottom-sheet shell: drag handle, sheet background, safe-area
@@ -24,6 +25,9 @@ class BrandedBottomSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final accent = context.accent;
+    final surface = context.surface;
+
     Widget content = SafeArea(
       top: false,
       child: Padding(
@@ -37,7 +41,7 @@ class BrandedBottomSheet extends StatelessWidget {
                 width: 36,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: AppColors.borderDefault,
+                  color: accent.base,
                   borderRadius: BorderRadius.circular(6),
                 ),
               ),
@@ -45,12 +49,14 @@ class BrandedBottomSheet extends StatelessWidget {
             if (title != null) ...[
               const SizedBox(height: 20),
               Text(title!,
-                  style: AppText.sheetTitle(), textAlign: TextAlign.start),
+                  style: AppText.sheetTitle(color: accent.base),
+                  textAlign: TextAlign.start),
             ],
             if (subtitle != null) ...[
               const SizedBox(height: 4),
               Text(subtitle!,
-                  style: AppText.body(), textAlign: TextAlign.start),
+                  style: AppText.body(color: surface.textSecondary),
+                  textAlign: TextAlign.start),
             ],
             if (title != null || subtitle != null) const SizedBox(height: 20),
             child,
@@ -67,10 +73,10 @@ class BrandedBottomSheet extends StatelessWidget {
     }
 
     return Container(
-      decoration: const BoxDecoration(
-        color: AppColors.bgSheet,
+      decoration: BoxDecoration(
+        color: surface.surface2,
         borderRadius:
-            BorderRadius.vertical(top: Radius.circular(AppRadius.sheet)),
+            const BorderRadius.vertical(top: Radius.circular(AppRadius.sheet)),
       ),
       child: content,
     );
