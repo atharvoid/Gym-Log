@@ -1,35 +1,44 @@
 # Project State — GymLog
 
-**HEAD:** b32af2c09d8cc8a9a51d1149b51bccc0df6e3982
+**HEAD:** 107e6e098e26b5d80a92710888988660c1e1632b
 **Branch:** fix-sha1-auth-issue
 **Initialized:** 2026-07-22
+**Last updated:** 2026-07-23
 
 ## Context
 
-**Older ATOMIC remediation** (commits on `fix-sha1-auth-issue`): addresses a related but different set of requirements from the earlier 50-section audit.
+**Legacy ATOMIC remediation** (earlier commits on `fix-sha1-auth-issue`):
+addresses the 50-section audit through 15 phases. Labeled "Legacy ATOMIC
+remediation" in ROADMAP. Does NOT satisfy UX-95 acceptance criteria.
 
-**UX-95-01-14 program**: a new program with distinct acceptance criteria. NOT satisfied by the older ATOMIC commits.
+**Canonical UX-95 program** (14 phases): HEAD `107e6e0` implements UX-95-01
+(shell/navigation reconstruction) plus a cross-app dynamic color-token
+migration and partial Help/recovery hardening. This is the active program.
 
 ## Phase Progress
 
-| Phase | Status |
-|-------|--------|
-| 1 — Dynamic shell/navigation | pending |
-| 2 — Safe draft recovery | pending |
-| 3 — Adaptive Help report | pending |
-| 4 — Measurement-aware presentation | pending |
-| 5 — Safe catalog parsing | pending |
-| 6 — Large-text/adaptive primitives | pending |
-| 7 — Exact-SHA visual certification | pending |
-| 8 — Store certification | pending |
-
-See `docs/RELEASE_CHECKLIST.md` for the broader release gaps.
+| Phase | Description | Status |
+|-------|-------------|--------|
+| UX-95-01 | Dynamic shell and bottom-navigation reconstruction | **Implementation complete; visual/device acceptance pending** |
+| UX-95-02 | Adaptive layout and large-text foundation | **Open** |
+| UX-95-03 | Measurement-aware presentation architecture | **Open** |
+| UX-95-04 | Active-workout final density and timer reconstruction | **Open** |
+| UX-95-05 | Routine and exercise authoring reconstruction | **Open** |
+| UX-95-06 | Help, resume, error, and database-recovery safety | **Open** |
+| UX-95-07 | Settings and Profile information architecture | **Open** |
+| UX-95-08 | Splash and onboarding time-to-value | **Open** |
+| UX-95-09 | Paywall, billing truth, and purchase accessibility | **Open** |
+| UX-95-10 | Whole-app accessibility and keyboard qualification | **Open** |
+| UX-95-11 | Motion, rendering, and performance budget | **Open** |
+| UX-95-12 | Design-system consolidation and visual consistency | **Open** |
+| UX-95-13 | Exact-SHA full-screen visual certification | **Open** |
+| UX-95-14 | Store, billing, monitoring, and release certification | **Open** |
 
 ## Current Work
 
-- **Active phase:** none — spec needed
-- **Last action:** Corrected phase status after confusing older remediation with new UX-95 program
-- **Next action:** Obtain UX-95-01-14 spec, then plan/execute
+- **Active phase:** UX-95-02 ready for implementation
+- **Last action:** Corrected canonical planning records
+- **Next action:** Execute canonical UX-95-02 from the Notion specification
 
 ## Branching Strategy
 
@@ -41,10 +50,7 @@ See `docs/RELEASE_CHECKLIST.md` for the broader release gaps.
 
 - `.planning/PROJECT.md` — Project overview & constraints
 - `.planning/REQUIREMENTS.md` — Release criteria, user stories, acceptance criteria
-- `.planning/ROADMAP.md` — 15 phases with dependencies
+- `.planning/ROADMAP.md` — Legacy ATOMIC remediation + canonical UX-95 program
 - `.planning/STATE.md` — This file, state tracking
-- `.planning/config.json` — Workflow preferences (YOLO, fine, parallel, all agents)
-- `audit/` — 50-section systematic product audit (source of all context)
-
----
-*2026-07-22*
+- `.planning/config.json` — Workflow preferences
+- `audit/` — 50-section systematic product audit

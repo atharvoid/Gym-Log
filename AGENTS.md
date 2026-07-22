@@ -2,7 +2,7 @@
 
 > Flutter workout logging app. This file captures build steps, conventions, and
 > architectural decisions agents need to work effectively in this codebase.
-> **Last verified:** HEAD `38febdd` on `fix-sha1-auth-issue` (2026-07-23). See status below.
+> **Last verified:** HEAD `107e6e0` on `fix-sha1-auth-issue` (2026-07-23). See status below.
 
 ---
 
