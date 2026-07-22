@@ -5,6 +5,8 @@ import 'package:gymlog/core/theme/app_colors.dart';
 import 'package:gymlog/core/theme/app_text.dart';
 import 'package:gymlog/shared/providers/gif_last_frame_provider.dart';
 
+import 'package:gymlog/core/services/exercise_media_cache_manager.dart';
+
 /// Detail-screen exercise banner with a stable Hero contract:
 ///  - Poster (static last frame, BoxFit.contain) is the ONLY thing in the Hero
 ///    flight → matches the source tile exactly (contain → contain, no resize).
@@ -55,8 +57,7 @@ class _ExerciseHeroImageState extends ConsumerState<ExerciseHeroImage> {
   @override
   Widget build(BuildContext context) {
     final reduceMotion = MediaQuery.disableAnimationsOf(context);
-    // Reduced motion: no flight staging — show the GIF straight away.
-    final showAnimated = _showAnimated || reduceMotion;
+    final showAnimated = _showAnimated && !reduceMotion;
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -68,9 +69,6 @@ class _ExerciseHeroImageState extends ConsumerState<ExerciseHeroImage> {
           child: ClipRRect(
             borderRadius: AppRadius.cardAll,
             child: Container(
-              // Letterbox fill: the square GIF is shown CONTAIN, so the empty
-              // left/right gutters must read as the SAME pure white the GIFs are
-              // baked on (#FFFFFF). thumbTile (#F5F5F5) leaves a visible seam.
               color: AppColors.gifCanvas,
               child: Stack(
                 fit: StackFit.expand,
@@ -84,10 +82,10 @@ class _ExerciseHeroImageState extends ConsumerState<ExerciseHeroImage> {
                       duration: Duration(milliseconds: reduceMotion ? 0 : 220),
                       curve: Curves.easeOut,
                       child: CachedNetworkImage(
+                        cacheManager: ExerciseMediaCacheManager(),
                         imageUrl: widget.gifUrl!,
-                        fit: BoxFit.contain, // was BoxFit.cover
+                        fit: BoxFit.contain,
                         fadeInDuration: Duration.zero,
-                        // Poster shows underneath — never a spinner on this path.
                         placeholder: (_, __) => const SizedBox.shrink(),
                         errorWidget: (_, __, ___) => const SizedBox.shrink(),
                       ),

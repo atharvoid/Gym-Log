@@ -1,21 +1,9 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../core/theme/app_colors.dart';
-import '../providers/gif_last_frame_provider.dart';
-
-/// [exercise_gif_widget.dart]
-/// Purpose: Hybrid offline-first GIF display.
-///   - Downloads from Supabase on first view, caches permanently to disk.
-///   - On subsequent opens (even offline) loads from device cache instantly.
-///   - Shows a minimal progress indicator while loading.
-///   - Shows a fallback icon on network error or null URL.
-///   - Supports [animate: false] to decode a single static frame via
-///     [gifLastFrameProvider], eliminating animation overhead and codec memory.
-///
-/// Usage:
-///   ExerciseGifWidget(gifUrl: exercise.gifUrl, height: 220)
-///   ExerciseGifWidget(gifUrl: exercise.gifUrl, width: 48, height: 48, animate: false)
+import 'package:gymlog/core/services/exercise_media_cache_manager.dart';
+import 'package:gymlog/core/theme/app_colors.dart';
+import 'package:gymlog/shared/providers/gif_last_frame_provider.dart';
 
 class ExerciseGifWidget extends StatelessWidget {
   final String? gifUrl;
@@ -41,17 +29,22 @@ class ExerciseGifWidget extends StatelessWidget {
       return _buildFallback();
     }
 
-    if (animate) {
+    final reduceMotion =
+        MediaQuery.maybeOf(context)?.disableAnimations ?? false;
+    final shouldAnimate = animate && !reduceMotion;
+
+    if (shouldAnimate) {
       return ClipRRect(
         borderRadius: borderRadius,
         child: CachedNetworkImage(
+          cacheManager: ExerciseMediaCacheManager(),
           imageUrl: gifUrl!,
           width: width,
           height: height,
           fit: fit,
-          // Background while downloading — dark surface keeps OLED aesthetics
+          memCacheWidth:
+              width != null && width! > 0 ? (width! * 2).toInt() : 512,
           placeholder: (context, url) => _buildPlaceholder(),
-          // Logs the exact failing URL + exception for debugging
           errorWidget: (context, url, error) {
             debugPrint(
               '[ExerciseGifWidget] Failed to load GIF.\n'
@@ -64,12 +57,12 @@ class ExerciseGifWidget extends StatelessWidget {
       );
     }
 
-    // Static frame branch: decode once via gifLastFrameProvider, render as
-    // a plain Image (MemoryImage). No codec animation, minimal memory.
     return Consumer(
       builder: (context, ref, child) {
-        final frameAsync =
-            ref.watch(gifLastFrameProvider((url: gifUrl!, targetWidth: null)));
+        final frameAsync = ref.watch(gifLastFrameProvider((
+          url: gifUrl!,
+          targetWidth: width != null && width! > 0 ? (width! * 2).toInt() : 512,
+        )));
 
         return ClipRRect(
           borderRadius: borderRadius,

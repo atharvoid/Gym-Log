@@ -4,21 +4,9 @@ import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
-import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-/// Bounded CacheManager configuration for exercise GIFs.
-class GymlogGifCacheManager {
-  static final GymlogGifCacheManager _instance =
-      GymlogGifCacheManager._internal();
-  factory GymlogGifCacheManager() => _instance;
-
-  late final CacheManager cacheManager;
-
-  GymlogGifCacheManager._internal() {
-    cacheManager = DefaultCacheManager();
-  }
-}
+import 'package:gymlog/core/services/exercise_media_cache_manager.dart';
 
 /// Bounded concurrency semaphore to limit concurrent cache-fetch and decode.
 class _SimpleSemaphore {
@@ -100,13 +88,12 @@ final gifLastFrameProvider = FutureProvider.autoDispose
     if (isDisposed) return null;
 
     final cacheInfo =
-        await GymlogGifCacheManager().cacheManager.getFileFromCache(args.url);
+        await ExerciseMediaCacheManager().getFileFromCache(args.url);
     final File file;
     if (cacheInfo != null) {
       file = cacheInfo.file;
     } else {
-      file = await GymlogGifCacheManager()
-          .cacheManager
+      file = await ExerciseMediaCacheManager()
           .getSingleFile(args.url)
           .timeout(const Duration(seconds: 12));
     }
@@ -177,13 +164,12 @@ final gifFirstFrameProvider = FutureProvider.autoDispose
     if (isDisposed) return null;
 
     final cacheInfo =
-        await GymlogGifCacheManager().cacheManager.getFileFromCache(args.url);
+        await ExerciseMediaCacheManager().getFileFromCache(args.url);
     final File file;
     if (cacheInfo != null) {
       file = cacheInfo.file;
     } else {
-      file = await GymlogGifCacheManager()
-          .cacheManager
+      file = await ExerciseMediaCacheManager()
           .getSingleFile(args.url)
           .timeout(const Duration(seconds: 12));
     }

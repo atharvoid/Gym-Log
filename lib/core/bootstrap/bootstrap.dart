@@ -18,25 +18,26 @@ import '../theme/dynamic_accent_theme.dart';
 import '../theme/theme_palette.dart';
 import '../../shared/widgets/app_error_screen.dart';
 
+import '../services/exercise_media_cache_manager.dart';
+
+enum BootstrapStatus {
+  localReady,
+  remoteDegraded,
+  migrationFailure,
+  recoverableError,
+}
+
 /// Outcome of the staged startup sequence. Carries the shared singletons the
 /// provider scope needs, plus resilience flags the UI may act on.
 class BootstrapResult {
   final AppDatabase db;
   final PremiumService premiumService;
   final NotificationService notificationService;
-
-  /// True when the local database failed its integrity check. The app shows a
-  /// recovery prompt instead of crashing.
   final bool databaseCorrupted;
-
-  /// True when the build carries real Supabase config AND init completed within
-  /// the timeout. When false, the app runs local-only until the next launch.
   final bool cloudAvailable;
-
-  /// The accent palette persisted by the user (or [ThemePalette.fallback] —
-  /// Volt — on a fresh install). Read before the first frame so there is no
-  /// accent flash.
   final ThemePalette accentPalette;
+  final BootstrapStatus status;
+  final bool recoverableError;
 
   const BootstrapResult({
     required this.db,
@@ -45,6 +46,8 @@ class BootstrapResult {
     required this.databaseCorrupted,
     required this.cloudAvailable,
     required this.accentPalette,
+    this.status = BootstrapStatus.localReady,
+    this.recoverableError = false,
   });
 }
 
@@ -52,70 +55,98 @@ class BootstrapResult {
 ///
 /// Each stage is independent: a cloud failure never blocks local launch, and a
 /// corrupt database surfaces a user-facing reset path rather than a black
-/// screen. The happy-path flow is identical to the previous inline `main()`.
+/// screen.
 abstract final class Bootstrap {
   /// Upper bound on cloud (Supabase) initialisation before we proceed in
   /// local-only mode.
-  static const cloudInitTimeout = Duration(seconds: 8);
+  static const cloudInitTimeout = Duration(seconds: 4);
 
   static const _dbFileName = 'gymlog_db.sqlite';
 
-  /// Runs the full staged startup inside the Sentry zone and launches the app
-  /// built by [appBuilder] from the [BootstrapResult].
+  /// Runs nonblocking startup. Block ONLY on Flutter binding, local config,
+  /// and database open/integrity check before calling [runApp].
   static Future<void> run(
     Widget Function(BootstrapResult result) appBuilder,
   ) async {
-    // ── Stage 1: framework binding + image-cache guardrails ──────────────
+    // ── Stage 1: Framework binding & image-cache guardrails ──────────────
     WidgetsFlutterBinding.ensureInitialized();
     _boundImageCache();
 
-    // Branded failure surface — release builds must never show the red/yellow
-    // Flutter error screen if a build method throws.
     ErrorWidget.builder = (details) {
       if (kDebugMode) return ErrorWidget(details.exception);
       return const AppErrorScreen();
     };
 
-    // ── Stage 2: crash reporting wraps the entire startup ────────────────
+    usePathUrlStrategy();
+
+    // ── Stage 2: Sentry initialization ─────────────────────────────────
     await SentryFlutter.init(
       _configureSentry,
       appRunner: () async {
-        // ── Stage 3: navigation strategy (web path-based routing) ────────
-        usePathUrlStrategy();
-
-        // ── Stage 4: local database readiness (+ integrity check) ────────
+        // ── Stage 3: Essential local configuration (accent palette & DB) ─
+        final accentPalette = await _initAccentPalette();
         final dbStage = await _initDatabase();
 
-        // ── Stage 4b: persisted accent palette (cheap; before first frame) ─
-        final accentPalette = await _initAccentPalette();
-
-        // ── Stage 5: cloud auth readiness (bounded; local-only on failure)
-        final cloudAvailable = await _initCloud();
-
-        // ── Stage 6: commerce readiness (never blocks launch) ────────────
-        final premiumService = _initCommerce(dbStage.db);
-
-        // ── Stage 6b: local notifications initialization ─────────────────
+        final db = dbStage.db;
         final notificationService = NotificationService();
-        await notificationService.init();
+        final premiumService = PremiumService(db);
+
+        final bool migrationFailure = dbStage.corrupted;
+        final status = migrationFailure
+            ? BootstrapStatus.migrationFailure
+            : BootstrapStatus.localReady;
 
         final result = BootstrapResult(
-          db: dbStage.db,
+          db: db,
           premiumService: premiumService,
           notificationService: notificationService,
-          databaseCorrupted: dbStage.corrupted,
-          cloudAvailable: cloudAvailable,
+          databaseCorrupted: migrationFailure,
+          cloudAvailable: false, // Set asynchronously post-frame
           accentPalette: accentPalette,
+          status: status,
+          recoverableError: migrationFailure,
         );
 
+        // ── Stage 4: Launch UI IMMEDIATELY after local ready ─────────────
         runApp(appBuilder(result));
 
-        // ── Stage 7: post-launch maintenance, off the first-frame path ───
-        if (!dbStage.corrupted) {
-          unawaited(_postLaunchMaintenance(dbStage.db));
+        // ── Stage 5: Move noncritical work post-first-frame ───────────────
+        if (!migrationFailure) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            unawaited(_postLaunchBackgroundWork(
+              db: db,
+              premiumService: premiumService,
+              notificationService: notificationService,
+            ));
+          });
         }
       },
     );
+  }
+
+  static Future<void> _postLaunchBackgroundWork({
+    required AppDatabase db,
+    required PremiumService premiumService,
+    required NotificationService notificationService,
+  }) async {
+    try {
+      // 1. Media cache maintenance
+      unawaited(ExerciseMediaCacheManager().performMaintenance());
+
+      // 2. Local notifications initialization
+      unawaited(notificationService.init());
+
+      // 3. Cloud pull & Supabase readiness check (bounded timeout)
+      await _initCloud();
+
+      // 4. Commerce readiness (RevenueCat refresh)
+      _initCommerce(db);
+
+      // 5. Catalog metadata refresh & nonessential warm-up queries
+      await _postLaunchMaintenance(db);
+    } catch (e) {
+      debugPrint('[Bootstrap] postLaunchBackgroundWork failed: $e');
+    }
   }
 
   // ── Stage 1 helpers ────────────────────────────────────────────────────────

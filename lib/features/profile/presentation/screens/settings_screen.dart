@@ -11,6 +11,7 @@ import 'package:gymlog/core/services/sync_engine.dart';
 import 'package:gymlog/core/services/sync_entitlement_gate.dart';
 import 'package:gymlog/core/services/workout_export_service.dart';
 import 'package:gymlog/core/services/sign_out_coordinator.dart';
+import 'package:gymlog/core/services/exercise_media_cache_manager.dart';
 import 'package:gymlog/core/theme/app_colors.dart';
 import 'package:gymlog/core/theme/app_text.dart';
 import 'package:gymlog/core/theme/dynamic_accent_theme.dart';
@@ -370,6 +371,29 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                 context, ref, profile.id, profile.displayName),
                           ),
                         ],
+                        const AppActionDivider(),
+                        AppActionRow(
+                          icon: Icons.cleaning_services_rounded,
+                          title: 'Clear exercise media cache',
+                          subtitle:
+                              'Free up cache space without touching workout data',
+                          onTap: () async {
+                            if (!tapGuard()) return;
+                            HapticFeedback.lightImpact();
+                            await ExerciseMediaCacheManager().clearMediaCache();
+                            if (!context.mounted) return;
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  'Exercise media cache cleared',
+                                  style: AppText.button(),
+                                ),
+                                backgroundColor: context.surface.bgSurface,
+                                behavior: SnackBarBehavior.floating,
+                              ),
+                            );
+                          },
+                        ),
                       ],
                     ),
                   ),
