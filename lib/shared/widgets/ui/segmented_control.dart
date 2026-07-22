@@ -33,7 +33,7 @@ class SegmentedControl extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.transparent,
         borderRadius: BorderRadius.circular(AppRadius.segmentedOuter),
-        border: Border.all(color: AppColors.borderEmphasis),
+        border: Border.all(color: context.surface.borderEmphasis),
       ),
       child: LayoutBuilder(
         builder: (context, c) {
@@ -53,7 +53,7 @@ class SegmentedControl extends StatelessWidget {
                 bottom: 0,
                 child: Container(
                   decoration: BoxDecoration(
-                    color: AppColors.surface4,
+                    color: context.surface.surface4,
                     borderRadius:
                         BorderRadius.circular(AppRadius.segmentedInner),
                   ),
@@ -83,8 +83,8 @@ class SegmentedControl extends StatelessWidget {
                                 s,
                                 style: AppText.rowLabel(
                                   color: s == selected
-                                      ? AppColors.textPrimary
-                                      : AppColors.textSecondary,
+                                      ? context.surface.textPrimary
+                                      : context.surface.textSecondary,
                                 ).copyWith(
                                   fontWeight: s == selected
                                       ? FontWeight.w600

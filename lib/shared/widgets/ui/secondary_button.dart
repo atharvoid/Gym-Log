@@ -39,10 +39,10 @@ class SecondaryButton extends StatelessWidget {
 
     final Color bg = solid
         ? accentColors.base
-        : (accent ? accentColors.muted : AppColors.bgSurface);
+        : (accent ? accentColors.muted : context.surface.bgSurface);
     final Color fg = solid
         ? accentColors.onAccent
-        : (accent ? accentColors.light : AppColors.textPrimary);
+        : (accent ? accentColors.light : context.surface.textPrimary);
     final BorderSide side = (accent && !solid)
         ? BorderSide(color: accentColors.base.withValues(alpha: 0.45))
         : BorderSide.none;
@@ -60,9 +60,9 @@ class SecondaryButton extends StatelessWidget {
           minimumSize: Size(isFullWidth ? double.infinity : 88, 48),
           disabledBackgroundColor: solid
               ? accentColors.base.withValues(alpha: 0.6)
-              : AppColors.bgSurface,
+              : context.surface.bgSurface,
           disabledForegroundColor:
-              solid ? accentColors.onAccent : AppColors.textDisabled,
+              solid ? accentColors.onAccent : context.surface.textDisabled,
           elevation: 0,
           shadowColor: Colors.transparent,
           side: side,

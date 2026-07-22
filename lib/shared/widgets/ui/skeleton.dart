@@ -106,7 +106,7 @@ class WorkoutHistoryCardSkeleton extends StatelessWidget {
               ),
             ),
           const SizedBox(height: 10),
-          Container(height: 1, color: AppColors.borderSubtle),
+          Container(height: 1, color: context.surface.borderSubtle),
           const SizedBox(height: 12),
           const Row(
             children: [

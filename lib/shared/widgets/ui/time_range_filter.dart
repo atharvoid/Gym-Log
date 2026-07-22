@@ -41,7 +41,7 @@ class TimeRangeFilter extends ConsumerWidget {
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           alignment: Alignment.center,
           decoration: BoxDecoration(
-            color: AppColors.surfaceRaised,
+            color: context.surface.surface2,
             borderRadius: BorderRadius.circular(AppRadius.buttonSecondary),
           ),
           child: Row(
@@ -49,10 +49,10 @@ class TimeRangeFilter extends ConsumerWidget {
             children: [
               Text(value, style: RDStyles.rangePill),
               const SizedBox(width: 4),
-              const Icon(
+              Icon(
                 Icons.keyboard_arrow_down_rounded,
                 size: 16,
-                color: AppColors.textTertiary,
+                color: context.surface.textTertiary,
               ),
             ],
           ),
@@ -73,108 +73,111 @@ class TimeRangeFilter extends ConsumerWidget {
       context: context,
       useRootNavigator: true,
       backgroundColor: Colors.transparent,
-      builder: (sheetCtx) => Container(
-        decoration: const BoxDecoration(
-          color: AppColors.bgSurface,
-          borderRadius:
-              BorderRadius.vertical(top: Radius.circular(AppRadius.sheet)),
-        ),
-        child: ClipRRect(
-          borderRadius: const BorderRadius.vertical(
-              top: Radius.circular(AppRadius.sheet)),
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-            child: Padding(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Center(
-                    child: Container(
-                      width: 36,
-                      height: 4,
-                      decoration: BoxDecoration(
-                        color: AppColors.borderDefault,
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Time Range',
-                    style: AppText.sheetTitle(),
-                  ),
-                  const SizedBox(height: 16),
-                  ...kTimeRangeOptions.map((range) {
-                    final isSelected = range == value;
-                    final isLocked =
-                        !isPremium && kProTimeRanges.contains(range);
-                    return Semantics(
-                      button: true,
-                      selected: isSelected && !isLocked,
-                      label: isLocked
-                          ? '$range, premium, locked'
-                          : isSelected
-                              ? '$range, selected'
-                              : range,
-                      child: InkWell(
-                        onTap: () {
-                          Navigator.of(sheetCtx).pop();
-                          if (isLocked) {
-                            showPremiumPaywall(context);
-                            return;
-                          }
-                          HapticFeedback.lightImpact();
-                          onChanged(range);
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          decoration: const BoxDecoration(
-                            border: Border(
-                              bottom: BorderSide(
-                                color: AppColors.borderSubtle,
-                                width: 1,
-                              ),
-                            ),
-                          ),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  range,
-                                  style: AppText.rowLabel(
-                                    color: isLocked
-                                        ? AppColors.textSecondary
-                                        : isSelected
-                                            ? accent.base
-                                            : AppColors.textPrimary,
-                                  ),
-                                ),
-                              ),
-                              if (isLocked)
-                                Icon(
-                                  Icons.lock_rounded,
-                                  size: 14,
-                                  color: accent.light,
-                                )
-                              else if (isSelected)
-                                Icon(
-                                  Icons.check_rounded,
-                                  size: 18,
-                                  color: accent.base,
-                                ),
-                            ],
-                          ),
+      builder: (sheetCtx) {
+        final surface = sheetCtx.surface;
+        return Container(
+          decoration: BoxDecoration(
+            color: surface.bgSurface,
+            borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(AppRadius.sheet)),
+          ),
+          child: ClipRRect(
+            borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(AppRadius.sheet)),
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Center(
+                      child: Container(
+                        width: 36,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: surface.borderDefault,
+                          borderRadius: BorderRadius.circular(6),
                         ),
                       ),
-                    );
-                  }),
-                ],
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Time Range',
+                      style: AppText.sheetTitle(),
+                    ),
+                    const SizedBox(height: 16),
+                    ...kTimeRangeOptions.map((range) {
+                      final isSelected = range == value;
+                      final isLocked =
+                          !isPremium && kProTimeRanges.contains(range);
+                      return Semantics(
+                        button: true,
+                        selected: isSelected && !isLocked,
+                        label: isLocked
+                            ? '$range, premium, locked'
+                            : isSelected
+                                ? '$range, selected'
+                                : range,
+                        child: InkWell(
+                          onTap: () {
+                            Navigator.of(sheetCtx).pop();
+                            if (isLocked) {
+                              showPremiumPaywall(context);
+                              return;
+                            }
+                            HapticFeedback.lightImpact();
+                            onChanged(range);
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            decoration: BoxDecoration(
+                              border: Border(
+                                bottom: BorderSide(
+                                  color: surface.borderSubtle,
+                                  width: 1,
+                                ),
+                              ),
+                            ),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    range,
+                                    style: AppText.rowLabel(
+                                      color: isLocked
+                                          ? surface.textSecondary
+                                          : isSelected
+                                              ? accent.base
+                                              : surface.textPrimary,
+                                    ),
+                                  ),
+                                ),
+                                if (isLocked)
+                                  Icon(
+                                    Icons.lock_rounded,
+                                    size: 14,
+                                    color: accent.light,
+                                  )
+                                else if (isSelected)
+                                  Icon(
+                                    Icons.check_rounded,
+                                    size: 18,
+                                    color: accent.base,
+                                  ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      );
+                    }),
+                  ],
+                ),
               ),
             ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }
