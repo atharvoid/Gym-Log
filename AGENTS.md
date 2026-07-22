@@ -2,7 +2,7 @@
 
 > Flutter workout logging app. This file captures build steps, conventions, and
 > architectural decisions agents need to work effectively in this codebase.
-> **Last verified:** HEAD `b32af2c` on `fix-sha1-auth-issue` (2026-07-22). All 14 atomic fix phases implemented and tested. Remaining: release certification (Phase 15) — see `docs/RELEASE_CHECKLIST.md`.
+> **Last verified:** HEAD `38febdd` on `fix-sha1-auth-issue` (2026-07-23). See status below.
 
 ---
 
@@ -112,6 +112,28 @@ Zero-tolerance gate on every push/PR to `main` and `remediation/**`:
 4. **CI Gate** — passes only if all three above pass
 
 See `docs/CI_RUNBOOK.md` for details.
+
+---
+
+## Canonical Phase Status
+
+HEAD `38febdd` implements UX-95-01 (shell/navigation reconstruction) plus a
+cross-app dynamic color-token migration and partial Help/recovery hardening.
+The commit numbering does **not** reflect the canonical Notion specification.
+
+| Phase | Description | Status |
+|-------|-------------|--------|
+| UX-95-01 | Dynamic shell/navigation reconstruction | **Implementation complete; visual/device acceptance pending** |
+| UX-95-02 | Adaptive layout & large-text foundation | **Open** |
+| UX-95-03 | Measurement-aware presentation architecture | **Open** |
+| UX-95-04 | Active-workout density & timer reconstruction | **Open** |
+| UX-95-05 | Routine/exercise authoring reconstruction | **Open** |
+| UX-95-06 | Help, resume, error & DB recovery safety | **Open** |
+| UX-95-07 | Settings/profile information architecture | **Open** |
+| UX-95-08 | Splash/onboarding time-to-value | **Open** |
+| UX-95-09 | Paywall, billing truth & purchase accessibility | **Open** |
+| UX-95-10 | Whole-app accessibility & keyboard qualification | **Open** |
+| UX-95-11–14 | Performance, design-system, visual & store certification | **Open** |
 
 ---
 
