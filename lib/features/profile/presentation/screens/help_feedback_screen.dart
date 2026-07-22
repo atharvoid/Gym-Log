@@ -36,7 +36,8 @@ Future<void> showReportProblemSheet(BuildContext context, WidgetRef ref) async {
     context: context,
     title: 'Report a problem',
     subtitle: 'Submit non-sensitive diagnostic details to support',
-    child: _ReportProblemForm(
+    scrollable: true,
+    child: ReportProblemForm(
       appVersion: version,
       dbSchemaVersion: dbSchemaVersion,
       catalogVersion: catalogVersion,
@@ -46,14 +47,15 @@ Future<void> showReportProblemSheet(BuildContext context, WidgetRef ref) async {
   );
 }
 
-class _ReportProblemForm extends StatefulWidget {
+class ReportProblemForm extends StatefulWidget {
   final String appVersion;
   final int dbSchemaVersion;
   final int catalogVersion;
   final String osName;
   final String opRef;
 
-  const _ReportProblemForm({
+  const ReportProblemForm({
+    super.key,
     required this.appVersion,
     required this.dbSchemaVersion,
     required this.catalogVersion,
@@ -62,10 +64,10 @@ class _ReportProblemForm extends StatefulWidget {
   });
 
   @override
-  State<_ReportProblemForm> createState() => _ReportProblemFormState();
+  State<ReportProblemForm> createState() => _ReportProblemFormState();
 }
 
-class _ReportProblemFormState extends State<_ReportProblemForm> {
+class _ReportProblemFormState extends State<ReportProblemForm> {
   String _category = 'Bug / Crash';
   final _shortDescriptionController = TextEditingController();
   final _reproStepsController = TextEditingController();
@@ -145,123 +147,117 @@ class _ReportProblemFormState extends State<_ReportProblemForm> {
   Widget build(BuildContext context) {
     final accent = context.accent;
     final surface = context.surface;
-
-    return SizedBox(
-      height: 180,
-      child: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('CATEGORY', style: AppText.meta(color: surface.textSecondary)),
-            const SizedBox(height: 6),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              decoration: BoxDecoration(
-                color: surface.surface2,
-                borderRadius: BorderRadius.circular(AppRadius.input),
-              ),
-              child: DropdownButtonHideUnderline(
-                child: DropdownButton<String>(
-                  value: _category,
-                  isExpanded: true,
-                  dropdownColor: surface.surface2,
-                  items: _categories.map((c) {
-                    return DropdownMenuItem(
-                      value: c,
-                      child: Text(c,
-                          style: AppText.body(color: surface.textPrimary)),
-                    );
-                  }).toList(),
-                  onChanged: (val) {
-                    if (val != null) setState(() => _category = val);
-                  },
-                ),
-              ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text('CATEGORY', style: AppText.meta(color: surface.textSecondary)),
+        const SizedBox(height: 6),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          decoration: BoxDecoration(
+            color: surface.surface2,
+            borderRadius: BorderRadius.circular(AppRadius.input),
+          ),
+          child: DropdownButtonHideUnderline(
+            child: DropdownButton<String>(
+              value: _category,
+              isExpanded: true,
+              dropdownColor: surface.surface2,
+              items: _categories.map((c) {
+                return DropdownMenuItem(
+                  value: c,
+                  child:
+                      Text(c, style: AppText.body(color: surface.textPrimary)),
+                );
+              }).toList(),
+              onChanged: (val) {
+                if (val != null) setState(() => _category = val);
+              },
             ),
-            const SizedBox(height: 16),
-            Text('SHORT DESCRIPTION',
-                style: AppText.meta(color: surface.textSecondary)),
-            const SizedBox(height: 6),
-            TextField(
-              controller: _shortDescriptionController,
-              style: AppText.body(color: surface.textPrimary),
-              decoration: InputDecoration(
-                hintText: 'What happened?',
-                hintStyle: AppText.body(color: surface.textSecondary),
-                filled: true,
-                fillColor: surface.surface2,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(AppRadius.input),
-                  borderSide: BorderSide.none,
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-            Text('REPRODUCTION STEPS (OPTIONAL)',
-                style: AppText.meta(color: surface.textSecondary)),
-            const SizedBox(height: 6),
-            TextField(
-              controller: _reproStepsController,
-              maxLines: 3,
-              style: AppText.body(color: surface.textPrimary),
-              decoration: InputDecoration(
-                hintText: '1. Tapped X\n2. Opened Y\n3. Saw error Z',
-                hintStyle: AppText.body(color: surface.textSecondary),
-                filled: true,
-                fillColor: surface.surface2,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(AppRadius.input),
-                  borderSide: BorderSide.none,
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: surface.surface2,
-                borderRadius: BorderRadius.circular(AppRadius.card),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('SYSTEM METADATA (INCLUDED)',
-                      style: AppText.meta(color: accent.base)),
-                  const SizedBox(height: 4),
-                  Text(
-                    'App: ${widget.appVersion} • OS: ${widget.osName} • DB: v${widget.dbSchemaVersion} • Catalog: v${widget.catalogVersion} • Ref: ${widget.opRef}',
-                    style: AppText.meta(color: surface.textSecondary),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Privacy Note: Workout contents, email, auth tokens, database payloads, and purchase tokens are strictly excluded.',
-                    style: AppText.caption(color: surface.textSecondary),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 20),
-            SizedBox(
-              width: double.infinity,
-              height: 48,
-              child: ElevatedButton(
-                onPressed: _submitReport,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: accent.base,
-                  foregroundColor: accent.onAccent,
-                  shape: RoundedRectangleBorder(
-                    borderRadius:
-                        BorderRadius.circular(AppRadius.buttonPrimary),
-                  ),
-                ),
-                child: Text('Submit Report',
-                    style: AppText.button(color: accent.onAccent)),
-              ),
-            ),
-            const SizedBox(height: 12),
-          ],
+          ),
         ),
-      ),
+        const SizedBox(height: 16),
+        Text('SHORT DESCRIPTION',
+            style: AppText.meta(color: surface.textSecondary)),
+        const SizedBox(height: 6),
+        TextField(
+          controller: _shortDescriptionController,
+          style: AppText.body(color: surface.textPrimary),
+          decoration: InputDecoration(
+            hintText: 'What happened?',
+            hintStyle: AppText.body(color: surface.textSecondary),
+            filled: true,
+            fillColor: surface.surface2,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(AppRadius.input),
+              borderSide: BorderSide.none,
+            ),
+          ),
+        ),
+        const SizedBox(height: 16),
+        Text('REPRODUCTION STEPS (OPTIONAL)',
+            style: AppText.meta(color: surface.textSecondary)),
+        const SizedBox(height: 6),
+        TextField(
+          controller: _reproStepsController,
+          maxLines: 3,
+          style: AppText.body(color: surface.textPrimary),
+          decoration: InputDecoration(
+            hintText: '1. Tapped X\n2. Opened Y\n3. Saw error Z',
+            hintStyle: AppText.body(color: surface.textSecondary),
+            filled: true,
+            fillColor: surface.surface2,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(AppRadius.input),
+              borderSide: BorderSide.none,
+            ),
+          ),
+        ),
+        const SizedBox(height: 16),
+        Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: surface.surface2,
+            borderRadius: BorderRadius.circular(AppRadius.card),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('SYSTEM METADATA (INCLUDED)',
+                  style: AppText.meta(color: accent.base)),
+              const SizedBox(height: 4),
+              Text(
+                'App: ${widget.appVersion} • OS: ${widget.osName} • DB: v${widget.dbSchemaVersion} • Catalog: v${widget.catalogVersion} • Ref: ${widget.opRef}',
+                style: AppText.meta(color: surface.textSecondary),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Privacy Note: Workout contents, email, auth tokens, database payloads, and purchase tokens are strictly excluded.',
+                style: AppText.caption(color: surface.textSecondary),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 20),
+        SizedBox(
+          width: double.infinity,
+          height: 48,
+          child: ElevatedButton(
+            onPressed: _submitReport,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: accent.base,
+              foregroundColor: accent.onAccent,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(AppRadius.buttonPrimary),
+              ),
+            ),
+            child: Text('Submit Report',
+                style: AppText.button(color: accent.onAccent)),
+          ),
+        ),
+        const SizedBox(height: 12),
+      ],
     );
   }
 }
