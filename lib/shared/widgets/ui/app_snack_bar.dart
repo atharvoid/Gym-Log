@@ -21,6 +21,7 @@ void showAppSnackBar(
   messenger.clearSnackBars();
 
   final accent = context.accent;
+  final surface = context.surface;
   final bottomPadding =
       MediaQuery.viewPaddingOf(context).bottom + additionalBottomOffset + 12;
 
@@ -29,21 +30,21 @@ void showAppSnackBar(
       behavior: SnackBarBehavior.floating,
       duration: duration,
       elevation: 4,
-      backgroundColor: AppColors.surface3,
+      backgroundColor: surface.surface3,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(14),
-        side: const BorderSide(color: AppColors.borderSubtle, width: 1.0),
+        side: BorderSide(color: surface.borderSubtle, width: 1.0),
       ),
       margin: EdgeInsets.fromLTRB(16, 0, 16, bottomPadding),
       content: Text(
         message,
         maxLines: 2,
         overflow: TextOverflow.ellipsis,
-        style: const TextStyle(
+        style: TextStyle(
           fontFamily: 'Inter',
           fontSize: 14,
           fontWeight: FontWeight.w500,
-          color: AppColors.textPrimary,
+          color: surface.textPrimary,
         ),
       ),
       action: actionLabel != null

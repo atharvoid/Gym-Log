@@ -37,17 +37,22 @@ class AppCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final BoxDecoration cardDecoration = BoxDecoration(
+      gradient: AppColors.cardGradient,
+      borderRadius: BorderRadius.circular(radius),
+      border: Border.all(color: context.surface.borderSubtle, width: 1),
+    );
     if (onTap == null) {
       return Container(
         padding: padding,
-        decoration: decoration(radius: radius),
+        decoration: cardDecoration,
         clipBehavior: Clip.antiAlias,
         child: child,
       );
     }
     // Clip the ink ripple to the rounded corners via the container.
     return Container(
-      decoration: decoration(radius: radius),
+      decoration: cardDecoration,
       clipBehavior: Clip.antiAlias,
       child: Material(
         color: Colors.transparent,

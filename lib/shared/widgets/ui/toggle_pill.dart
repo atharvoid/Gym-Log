@@ -47,7 +47,8 @@ class TogglePill extends StatelessWidget {
             duration: motion,
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
             decoration: BoxDecoration(
-              color: isActive ? context.accent.base : AppColors.borderSubtle,
+              color:
+                  isActive ? context.accent.base : context.surface.borderSubtle,
               borderRadius: BorderRadius.circular(999),
             ),
             child: AnimatedDefaultTextStyle(
@@ -55,7 +56,7 @@ class TogglePill extends StatelessWidget {
               style: AppText.rowLabel(
                 color: isActive
                     ? context.accent.onAccent
-                    : AppColors.textSecondary,
+                    : context.surface.textSecondary,
               ).copyWith(
                 fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
               ),

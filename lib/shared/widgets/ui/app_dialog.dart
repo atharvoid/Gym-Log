@@ -37,6 +37,7 @@ Future<bool> showAppConfirmDialog({
     barrierColor: Colors.black.withValues(alpha: 0.60),
     builder: (sheetCtx) {
       final accent = sheetCtx.accent;
+      final surface = sheetCtx.surface;
       final iconBg =
           isDestructive ? AppColors.error.withValues(alpha: 0.1) : accent.muted;
       final iconWidget = isDestructive
@@ -49,8 +50,8 @@ Future<bool> showAppConfirmDialog({
       return SafeArea(
         top: false,
         child: Container(
-          decoration: const BoxDecoration(
-            color: AppColors.surface2,
+          decoration: BoxDecoration(
+            color: surface.surface2,
             borderRadius: AppRadius.sheetTop,
           ),
           child: Padding(
@@ -68,7 +69,7 @@ Future<bool> showAppConfirmDialog({
                   width: 36,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: AppColors.borderEmphasis,
+                    color: surface.borderEmphasis,
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -85,11 +86,12 @@ Future<bool> showAppConfirmDialog({
                 const SizedBox(height: 16),
                 // Title
                 Text(title,
-                    style: AppText.sheetTitle(), textAlign: TextAlign.center),
+                    style: AppText.sheetTitle(color: accent.base),
+                    textAlign: TextAlign.center),
                 const SizedBox(height: 8),
                 // Message
                 Text(message,
-                    style: AppText.body(color: AppColors.textSecondary),
+                    style: AppText.body(color: surface.textSecondary),
                     textAlign: TextAlign.center),
                 const SizedBox(height: 24),
                 // Confirm button
@@ -99,7 +101,7 @@ Future<bool> showAppConfirmDialog({
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
                       backgroundColor: confirmBg,
-                      foregroundColor: AppColors.textPrimary,
+                      foregroundColor: accent.onAccent,
                       elevation: 0,
                       shape: const RoundedRectangleBorder(
                           borderRadius: AppRadius.buttonPrimaryAll),
@@ -118,13 +120,13 @@ Future<bool> showAppConfirmDialog({
                   height: 50,
                   child: TextButton(
                     style: TextButton.styleFrom(
-                      foregroundColor: AppColors.textSecondary,
+                      foregroundColor: surface.textSecondary,
                       shape: const RoundedRectangleBorder(
                           borderRadius: AppRadius.buttonSecondaryAll),
                     ),
                     onPressed: () => Navigator.of(sheetCtx).pop(false),
                     child: Text(cancelLabel,
-                        style: AppText.button(color: AppColors.textSecondary)),
+                        style: AppText.button(color: surface.textSecondary)),
                   ),
                 ),
               ],
@@ -208,9 +210,10 @@ class _AppTextInputDialogContentState
   @override
   Widget build(BuildContext context) {
     final accent = context.accent;
+    final surface = context.surface;
 
     return Dialog(
-      backgroundColor: AppColors.surface2,
+      backgroundColor: surface.surface2,
       shape: const RoundedRectangleBorder(borderRadius: AppRadius.cardAll),
       child: Padding(
         padding: const EdgeInsets.fromLTRB(24, 24, 16, 12),
@@ -231,10 +234,10 @@ class _AppTextInputDialogContentState
                 style: AppText.value(),
                 decoration: InputDecoration(
                   hintText: widget.hint,
-                  hintStyle: AppText.body(color: AppColors.textTertiary),
-                  counterStyle: AppText.caption(color: AppColors.textTertiary),
+                  hintStyle: AppText.body(color: surface.textTertiary),
+                  counterStyle: AppText.caption(color: surface.textTertiary),
                   filled: true,
-                  fillColor: AppColors.surface3,
+                  fillColor: surface.surface3,
                   contentPadding:
                       const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                   enabledBorder: const OutlineInputBorder(
@@ -256,7 +259,7 @@ class _AppTextInputDialogContentState
                 TextButton(
                   onPressed: () => Navigator.of(context).pop(null),
                   child: Text('Cancel',
-                      style: AppText.button(color: AppColors.textSecondary)),
+                      style: AppText.button(color: surface.textSecondary)),
                 ),
                 const SizedBox(width: 4),
                 TextButton(

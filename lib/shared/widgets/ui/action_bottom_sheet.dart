@@ -59,8 +59,8 @@ class _ActionBottomSheetContent extends StatelessWidget {
     return Container(
       // surface2 + AppRadius.sheetTop — same chrome as the branded confirm/
       // input sheets (app_dialog), so every sheet in the app matches.
-      decoration: const BoxDecoration(
-        color: AppColors.surface2,
+      decoration: BoxDecoration(
+        color: context.surface.surface2,
         borderRadius: AppRadius.sheetTop,
       ),
       child: SafeArea(
@@ -72,8 +72,8 @@ class _ActionBottomSheetContent extends StatelessWidget {
             Container(
               width: 40,
               height: 4,
-              decoration: const BoxDecoration(
-                color: AppColors.borderDefault,
+              decoration: BoxDecoration(
+                color: context.surface.borderDefault,
                 borderRadius: AppRadius.badgeAll,
               ),
             ),
@@ -86,13 +86,13 @@ class _ActionBottomSheetContent extends StatelessWidget {
                   textAlign: TextAlign.center,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: AppText.body(color: AppColors.textSecondary)
+                  style: AppText.body(color: context.surface.textSecondary)
                       .copyWith(fontWeight: FontWeight.w600),
                 ),
               ),
               const SizedBox(height: 16),
-              const Divider(
-                color: AppColors.borderSubtle,
+              Divider(
+                color: context.surface.borderSubtle,
                 height: 0.5,
                 thickness: 0.5,
               ),
@@ -153,8 +153,8 @@ class _ActionSheetItemWidget extends StatelessWidget {
                           // 16/500 — off the standard scale, so derive the family
                           // from AppText.button and pin the medium weight here.
                           style: AppText.button(
-                                  color:
-                                      item.titleColor ?? AppColors.textPrimary)
+                                  color: item.titleColor ??
+                                      context.surface.textPrimary)
                               .copyWith(fontWeight: FontWeight.w500),
                         ),
                         if (item.subtitle != null) ...[
@@ -165,7 +165,7 @@ class _ActionSheetItemWidget extends StatelessWidget {
                             overflow: TextOverflow.ellipsis,
                             style: AppText.meta(
                                 color: item.subtitleColor ??
-                                    AppColors.textSecondary),
+                                    context.surface.textSecondary),
                           ),
                         ],
                       ],
