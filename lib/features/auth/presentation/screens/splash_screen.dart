@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/services/profile_image_sync_service.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text.dart';
+import '../../../../core/theme/dynamic_accent_theme.dart';
 import '../../../../core/providers/premium_provider.dart';
 import '../../../../core/services/profile_sync_service.dart';
 import '../../../../core/services/sync_engine.dart';
@@ -46,7 +47,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
     _glowController = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 2),
-    );
+    )..value = 0.5;
     _glowScale = Tween<double>(begin: 1.0, end: 1.15).animate(
       CurvedAnimation(parent: _glowController, curve: Curves.easeInOut),
     );
@@ -94,7 +95,6 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
       _glowController.value = 1.0;
       _introController.value = 1.0;
     } else {
-      if (!_glowController.isAnimating) _glowController.repeat(reverse: true);
       if (!_introController.isAnimating) _introController.forward();
     }
   }
@@ -171,8 +171,9 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
   @override
   Widget build(BuildContext context) {
     final surface = context.surface;
-    const voltBase = Color(0xFFC8FF00); // Volt tokens directly
-    final voltGlow = voltBase.withValues(alpha: 0.08);
+    final accent = context.accent;
+    final accentBase = accent.base;
+    final voltGlow = accent.glow.withValues(alpha: 0.08);
 
     Widget content = Center(
       child: Column(
@@ -199,22 +200,22 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                   color: surface.surface3,
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(
-                    color: voltBase.withValues(alpha: 0.2),
+                    color: accentBase.withValues(alpha: 0.2),
                     width: 1.5,
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: voltBase.withValues(alpha: 0.15),
+                      color: accentBase.withValues(alpha: 0.15),
                       blurRadius: 20,
                       spreadRadius: 2,
                     ),
                   ],
                 ),
-                child: const Center(
+                child: Center(
                   child: Icon(
                     Icons.fitness_center_rounded,
                     size: 40,
-                    color: voltBase,
+                    color: accentBase,
                   ),
                 ),
               ),
@@ -235,7 +236,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                 color: surface.textPrimary,
                 shadows: [
                   Shadow(
-                    color: voltBase.withValues(alpha: 0.3),
+                    color: accentBase.withValues(alpha: 0.3),
                     blurRadius: 8,
                   ),
                 ],
