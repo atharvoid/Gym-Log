@@ -1,4 +1,10 @@
-# Workout import & export (GymLog v2, Hevy & Strong CSV)
+# GymLog Workout Import & Export Specification
+
+> **Status:** Active / Production Authoritative
+> **Owner:** Core Engineering
+> **Last verified SHA:** `aef17b09305ebf0455244c3c04159577f37e0a84`
+> **Last reviewed date:** 2026-07-22
+> **Next review date:** 2026-10-22
 
 Lets users export their training data losslessly and import training history into GymLog from **GymLog (v1/v2)**, **Hevy**, or **Strong**. Free for everyone — it's the user's own data.
 

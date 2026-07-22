@@ -15,6 +15,7 @@ import '../../features/workout/presentation/screens/active_workout_screen.dart';
 import '../../features/exercises/presentation/screens/exercise_selection_screen.dart';
 import '../../features/exercises/presentation/screens/exercise_detail_screen.dart';
 import '../../features/profile/presentation/screens/settings_screen.dart';
+import '../../features/profile/presentation/screens/help_feedback_screen.dart';
 import '../../features/profile/presentation/screens/personal_details_screen.dart';
 import '../../features/profile/presentation/screens/appearance_screen.dart';
 import '../../features/profile/presentation/screens/delete_account_screen.dart';
@@ -134,6 +135,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/settings',
         builder: (c, s) => const SettingsScreen(),
+      ),
+      GoRoute(
+        path: '/settings/help',
+        builder: (c, s) => const HelpFeedbackScreen(),
       ),
       GoRoute(
         path: '/settings/personal',

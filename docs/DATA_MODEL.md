@@ -1,8 +1,14 @@
-# DATA_MODEL.md
+# GymLog Data Model & Schema Specification
+
+> **Status:** Active / Production Authoritative
+> **Owner:** Core Engineering
+> **Last verified SHA:** `aef17b09305ebf0455244c3c04159577f37e0a84`
+> **Last reviewed date:** 2026-07-22
+> **Next review date:** 2026-10-22
 
 ## Drift Tables
 
-Schema version: **1** (`AppDatabase.schemaVersion`)  
+Schema version: **5** (`AppDatabase.schemaVersion`)  
 DB file: `gymlog_db.sqlite` in `getApplicationDocumentsDirectory()`
 
 ### `user_profiles` (`UserProfiles` / `UserProfile`)

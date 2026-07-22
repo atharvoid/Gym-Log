@@ -1,5 +1,11 @@
 # GymLog — Design North Star
 
+> **Status:** Active / Production Authoritative
+> **Owner:** Core Engineering
+> **Last verified SHA:** `aef17b09305ebf0455244c3c04159577f37e0a84`
+> **Last reviewed date:** 2026-07-22
+> **Next review date:** 2026-10-22
+
 > The visual identity of GymLog. Read this before any visual work. It replaces
 > the deleted `STITCH_DESIGN_SYSTEM.md` (which described a different app).
 

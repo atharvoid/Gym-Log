@@ -10,3 +10,10 @@ const String kPrivacyPolicyUrl =
 
 const String kTermsOfServiceUrl =
     'https://atharvoid.github.io/Gym-Log/legal/terms-of-service.html';
+
+const String kAccountDeletionUrl =
+    'https://atharvoid.github.io/Gym-Log/legal/delete-account.html';
+
+const String kSupportEmail = 'support@gymlog.app';
+
+const int kExerciseCatalogVersion = 2;

@@ -513,6 +513,17 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     child: Column(
                       children: [
                         AppActionRow(
+                          icon: Icons.help_outline_rounded,
+                          title: 'Help & feedback',
+                          subtitle: 'Report a problem & support portal',
+                          onTap: () {
+                            if (!tapGuard()) return;
+                            HapticFeedback.selectionClick();
+                            context.push('/settings/help');
+                          },
+                        ),
+                        const AppActionDivider(),
+                        AppActionRow(
                           icon: Icons.shield_outlined,
                           title: 'Your data',
                           subtitle:

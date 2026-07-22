@@ -1,4 +1,10 @@
-# Local Account Isolation Policy
+# GymLog Local Account Isolation Policy
+
+> **Status:** Active / Production Authoritative
+> **Owner:** Core Engineering
+> **Last verified SHA:** `aef17b09305ebf0455244c3c04159577f37e0a84`
+> **Last reviewed date:** 2026-07-22
+> **Next review date:** 2026-10-22
 
 This document defines the policy and architectural guidelines for handling multiple user accounts on the same device.
 

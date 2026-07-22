@@ -1,5 +1,11 @@
 # GymLog Privacy Policy
 
+> **Status:** Active / Production Authoritative
+> **Owner:** Legal & Product Compliance
+> **Last verified SHA:** `aef17b09305ebf0455244c3c04159577f37e0a84`
+> **Last reviewed date:** 2026-07-22
+> **Next review date:** 2026-10-22
+
 **Effective date:** 14 June 2026
 
 GymLog is a local-first workout tracker. This policy is short because the

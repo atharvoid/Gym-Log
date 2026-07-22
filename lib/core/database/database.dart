@@ -33,6 +33,8 @@ part 'database.g.dart';
   ],
   daos: [UserDao, ExercisesDao, WorkoutsDao, RoutinesDao, SyncOutboxDao],
 )
+const int kDatabaseSchemaVersion = 5;
+
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
@@ -40,7 +42,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.executor);
 
   @override
-  int get schemaVersion => 5;
+  int get schemaVersion => kDatabaseSchemaVersion;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
