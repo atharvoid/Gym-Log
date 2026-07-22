@@ -162,23 +162,18 @@
 
 ## Status Summary
 
-| Phase | Commit | Status |
-|-------|--------|--------|
-| 1 — Measurement Model | `fabf981` | ✅ |
-| 2 — Compact Rest Timer | `7091cbf` | ✅ |
-| 3 — Active Workout Visual | `fcbf3df` | ✅ |
-| 4 — Auth Screen | `65ad9ad` | ✅ |
-| 5 — Reversible Deletion | `be25045` | ✅ |
-| 6 — Metric CSV Import | `9639945` | ✅ |
-| 7 — Lossless CSV Export | `7f04b75` | ✅ |
-| 8 — Metric-Aware History/PRs | `84a8996` | ✅ |
-| 9 — Premium Entitlement | `1ed7195` | ✅ |
-| 10 — Sync Quarantine | `0d9e446` | ✅ |
-| 11 — Account Isolation | `442d2e6` | ✅ |
-| 12 — Bounded Media Cache | `bae40d2` | ✅ |
-| 13 — Accessibility | `aef17b0` | ✅ |
-| 14 — Documentation | `df4d5fa` | ✅ |
-| 15 — Release Certification | `docs/RELEASE_CHECKLIST.md` | 🟡 |
+**Older ATOMIC remediation** (committed before this program): partially addresses related areas but does NOT satisfy the UX-95-01-14 acceptance criteria.
+
+| Phase | Status |
+|-------|--------|
+| UX-95-01 — Dynamic shell/navigation | pending |
+| UX-95-02 — Safe draft recovery | pending |
+| UX-95-03 — Adaptive Help report | pending |
+| UX-95-04 — Measurement-aware presentation | pending |
+| UX-95-05 — Safe catalog parsing | pending |
+| UX-95-06 — Large-text/adaptive primitives | pending |
+| UX-95-07 — Exact-SHA visual certification | pending |
+| UX-95-08 — Store certification | pending |
 
 ---
-*Audited at HEAD b32af2c, 2026-07-22 — all 14 atomic phases verified implemented and tested*
+*Corrected 2026-07-22: UX-95-01-14 is a new program, distinct from older ATOMIC remediation*

@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import '../../features/auth/presentation/providers/auth_provider.dart';
 import '../../features/workout/presentation/providers/active_workout_provider.dart';
 import '../../features/workout/presentation/providers/rest_timer_provider.dart';
 import '../../core/services/workout_draft_store.dart';
-import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text.dart';
+import '../../core/theme/app_colors.dart';
+import '../../core/theme/chrome_tokens.dart';
 import '../../core/theme/dynamic_accent_theme.dart';
 import 'active_workout_bar.dart';
 import 'bottom_nav_bar.dart';
@@ -60,8 +62,8 @@ class _AppShellState extends ConsumerState<AppShell> {
       builder: (sheetCtx) => SafeArea(
         top: false,
         child: Container(
-          decoration: const BoxDecoration(
-            color: AppColors.surface2,
+          decoration: BoxDecoration(
+            color: context.chrome.sheetBg,
             borderRadius: AppRadius.sheetTop,
           ),
           child: Padding(
@@ -74,7 +76,7 @@ class _AppShellState extends ConsumerState<AppShell> {
                   width: 36,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: AppColors.borderEmphasis,
+                    color: context.surface.borderEmphasis,
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -98,7 +100,7 @@ class _AppShellState extends ConsumerState<AppShell> {
                 const SizedBox(height: 8),
                 Text(
                   'You have an unfinished workout started $ago. Continue where you left off.',
-                  style: AppText.body(color: AppColors.textSecondary),
+                  style: AppText.body(color: context.chrome.textSecondary),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 28),
@@ -126,13 +128,14 @@ class _AppShellState extends ConsumerState<AppShell> {
                   height: 50,
                   child: TextButton(
                     style: TextButton.styleFrom(
-                      foregroundColor: AppColors.textSecondary,
+                      foregroundColor: context.chrome.textSecondary,
                       shape: const RoundedRectangleBorder(
                           borderRadius: AppRadius.buttonSecondaryAll),
                     ),
                     onPressed: () => Navigator.of(sheetCtx).pop(false),
                     child: Text('Discard',
-                        style: AppText.button(color: AppColors.textSecondary)),
+                        style: AppText.button(
+                            color: context.chrome.textSecondary)),
                   ),
                 ),
               ],
@@ -164,51 +167,59 @@ class _AppShellState extends ConsumerState<AppShell> {
     final isWorkoutActive = ref.watch(activeWorkoutProvider) != null;
     final reduceMotion = MediaQuery.disableAnimationsOf(context);
 
-    return Scaffold(
-      backgroundColor: AppColors.bgBase,
-      body: SafeArea(
-        bottom: false,
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 600),
-            child: widget.navigationShell,
-          ),
-        ),
-      ),
-      bottomNavigationBar: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          AnimatedSwitcher(
-            duration: reduceMotion
-                ? Duration.zero
-                : const Duration(milliseconds: 280),
-            switchInCurve: Curves.easeOutCubic,
-            switchOutCurve: Curves.easeOutCubic,
-            transitionBuilder: (child, animation) {
-              return SizeTransition(
-                sizeFactor: animation,
-                child: SlideTransition(
-                  position: Tween<Offset>(
-                    begin: const Offset(0, 1.0),
-                    end: Offset.zero,
-                  ).animate(animation),
-                  child: child,
-                ),
-              );
-            },
-            child: isWorkoutActive
-                ? const ActiveWorkoutBar(key: ValueKey('activeBar'))
-                : const SizedBox.shrink(key: ValueKey('emptyBar')),
-          ),
-          BottomNavBar(
-            currentIndex: widget.navigationShell.currentIndex,
-            onTap: (index) => widget.navigationShell.goBranch(
-              index,
-              // Re-tapping the active tab pops it back to its branch root.
-              initialLocation: index == widget.navigationShell.currentIndex,
+    final surface = context.surface;
+    final overlayStyle = surface.isLight
+        ? SystemUiOverlayStyle.dark
+        : SystemUiOverlayStyle.light;
+
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: overlayStyle.copyWith(statusBarColor: Colors.transparent),
+      child: Scaffold(
+        backgroundColor: context.chrome.background,
+        body: SafeArea(
+          bottom: false,
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 600),
+              child: widget.navigationShell,
             ),
           ),
-        ],
+        ),
+        bottomNavigationBar: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            AnimatedSwitcher(
+              duration: reduceMotion
+                  ? Duration.zero
+                  : const Duration(milliseconds: 280),
+              switchInCurve: Curves.easeOutCubic,
+              switchOutCurve: Curves.easeOutCubic,
+              transitionBuilder: (child, animation) {
+                return SizeTransition(
+                  sizeFactor: animation,
+                  child: SlideTransition(
+                    position: Tween<Offset>(
+                      begin: const Offset(0, 1.0),
+                      end: Offset.zero,
+                    ).animate(animation),
+                    child: child,
+                  ),
+                );
+              },
+              child: isWorkoutActive
+                  ? const ActiveWorkoutBar(key: ValueKey('activeBar'))
+                  : const SizedBox.shrink(key: ValueKey('emptyBar')),
+            ),
+            BottomNavBar(
+              currentIndex: widget.navigationShell.currentIndex,
+              onTap: (index) => widget.navigationShell.goBranch(
+                index,
+                // Re-tapping the active tab pops it back to its branch root.
+                initialLocation: index == widget.navigationShell.currentIndex,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

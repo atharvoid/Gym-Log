@@ -4,31 +4,32 @@
 **Branch:** fix-sha1-auth-issue
 **Initialized:** 2026-07-22
 
+## Context
+
+**Older ATOMIC remediation** (commits on `fix-sha1-auth-issue`): addresses a related but different set of requirements from the earlier 50-section audit.
+
+**UX-95-01-14 program**: a new program with distinct acceptance criteria. NOT satisfied by the older ATOMIC commits.
+
 ## Phase Progress
 
 | Phase | Status |
 |-------|--------|
-| 1 — Measurement Model Foundation | done |
-| 2 — Compact Rest Timer UI | done |
-| 3 — Active Workout Visual Reconstruction | done |
-| 4 — Auth Screen First Principles | done |
-| 5 — Reversible Deletion & Exercise Replacement | done |
-| 6 — Metric-Aware CSV Import | done |
-| 7 — Metric-Aware CSV Export | done |
-| 8 — Metric-Aware History, Analytics & PRs | done |
-| 9 — Premium Entitlement Integrity | done |
-| 10 — Sync Resilience (Quarantine + Monotonic Versions) | done |
-| 11 — Account Isolation | done |
-| 12 — Bounded Media Cache & Nonblocking Startup | done |
-| 13 — Accessibility Core Journey & Charts | done |
-| 14 — Documentation & Support Metadata | done |
-| 15 — Release Certification | **active** |
+| 1 — Dynamic shell/navigation | pending |
+| 2 — Safe draft recovery | pending |
+| 3 — Adaptive Help report | pending |
+| 4 — Measurement-aware presentation | pending |
+| 5 — Safe catalog parsing | pending |
+| 6 — Large-text/adaptive primitives | pending |
+| 7 — Exact-SHA visual certification | pending |
+| 8 — Store certification | pending |
+
+See `docs/RELEASE_CHECKLIST.md` for the broader release gaps.
 
 ## Current Work
 
-- **Active phase:** 15 — Release Certification
-- **Last action:** Discovered all 14 atomic phases already implemented on this branch
-- **Next action:** Verify Sentry config, build artifacts, store readiness, physical device testing
+- **Active phase:** none — spec needed
+- **Last action:** Corrected phase status after confusing older remediation with new UX-95 program
+- **Next action:** Obtain UX-95-01-14 spec, then plan/execute
 
 ## Branching Strategy
 

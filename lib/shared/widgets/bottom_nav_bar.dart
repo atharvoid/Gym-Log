@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../../core/theme/app_colors.dart';
+import '../../core/theme/chrome_tokens.dart';
 import '../../core/theme/dynamic_accent_theme.dart';
 import '../../core/theme/app_text.dart';
 
@@ -17,7 +17,7 @@ class BottomNavBar extends StatelessWidget {
   final ValueChanged<int> onTap;
 
   /// Height of the navigation bar excluding the system safe-area inset.
-  static const height = 72.0;
+  static const height = 60.0;
 
   const BottomNavBar({
     super.key,
@@ -34,11 +34,16 @@ class BottomNavBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: const BoxDecoration(color: AppColors.bgBase),
+      decoration: BoxDecoration(
+        color: context.chrome.navBackground,
+        border: Border(
+          top: BorderSide(width: 1, color: context.chrome.separator),
+        ),
+      ),
       child: SafeArea(
         top: false,
         child: SizedBox(
-          height: 72,
+          height: 60,
           child: Row(
             children: [
               for (var i = 0; i < _tabs.length; i++)
@@ -80,7 +85,8 @@ class _NavButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final accent = context.accent;
-    final color = isActive ? accent.light : AppColors.textSecondary;
+    final color = isActive ? accent.light : context.chrome.textSecondary;
+    final reduceMotion = MediaQuery.disableAnimationsOf(context);
     return Semantics(
       selected: isActive,
       button: true,
@@ -102,7 +108,9 @@ class _NavButton extends StatelessWidget {
             ),
             const SizedBox(height: 3),
             AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
+              duration: reduceMotion
+                  ? Duration.zero
+                  : const Duration(milliseconds: 200),
               curve: Curves.easeOutCubic,
               height: 2,
               width: isActive ? 16 : 0,

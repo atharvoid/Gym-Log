@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/theme/app_colors.dart';
+import '../../core/theme/chrome_tokens.dart';
 import '../../core/theme/app_text.dart';
 import '../../core/theme/dynamic_accent_theme.dart';
 import '../../features/workout/presentation/providers/active_workout_provider.dart';
@@ -30,12 +31,12 @@ class ActiveWorkoutBar extends ConsumerWidget {
       child: GestureDetector(
         onTap: () => context.push('/workout/active'),
         child: Container(
-          margin: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+          margin: const EdgeInsets.fromLTRB(16, 8, 16, 0),
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
           decoration: BoxDecoration(
-            color: AppColors.surface2,
+            color: context.chrome.activeBarBg,
             borderRadius: BorderRadius.circular(AppRadius.buttonSecondary),
-            border: Border.all(color: AppColors.borderDefault, width: 1),
+            border: Border.all(color: context.surface.borderDefault, width: 1),
           ),
           child: Row(
             children: [
