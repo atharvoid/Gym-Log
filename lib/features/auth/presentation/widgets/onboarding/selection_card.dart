@@ -33,7 +33,9 @@ class OnboardingSelectionCard extends StatelessWidget {
         child: Container(
           margin: const EdgeInsets.only(bottom: 16),
           decoration: BoxDecoration(
-            gradient: AppColors.cardGradient,
+            gradient: surface.isLight
+                ? AppColors.cardGradientLight
+                : AppColors.cardGradient,
             borderRadius: BorderRadius.circular(AppRadius.card),
             border: Border.all(
               color: selected ? accent.base : surface.borderSubtle,

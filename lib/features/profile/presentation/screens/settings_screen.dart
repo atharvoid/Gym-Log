@@ -731,20 +731,20 @@ Future<void> _pickWeightUnit(
     context: context,
     title: 'Weight Unit',
     selected: unit,
-    options: const [
+    options: [
       PickerOption(
         value: 'kg',
         label: 'Kilograms',
         subtitle: 'kg',
         icon: Icons.fitness_center_rounded,
-        color: AppColors.textSecondary,
+        color: context.surface.textSecondary,
       ),
       PickerOption(
         value: 'lbs',
         label: 'Pounds',
         subtitle: 'lbs',
         icon: Icons.fitness_center_rounded,
-        color: AppColors.textSecondary,
+        color: context.surface.textSecondary,
       ),
     ],
   );
@@ -767,7 +767,7 @@ Future<void> _pickRestTimer(
           label: s == 0 ? 'Off' : '$s seconds',
           subtitle: s == 90 ? 'Recommended' : null,
           icon: s == 0 ? Icons.timer_off_outlined : Icons.timer_outlined,
-          color: AppColors.textSecondary,
+          color: context.surface.textSecondary,
         ),
     ],
   );

@@ -64,6 +64,13 @@ enum SetType {
   final Color color;
   final IconData icon;
 
+  /// Resolve the display color dynamically so [normal] uses the current
+  /// surface's text-primary token instead of a compile-time constant.
+  Color resolveColor(BuildContext context) {
+    if (this == SetType.normal) return context.surface.textPrimary;
+    return color;
+  }
+
   /// Resolve a stored string to a [SetType]. Tolerates the legacy 'drop' alias.
   static SetType of(String? value) {
     switch (value) {

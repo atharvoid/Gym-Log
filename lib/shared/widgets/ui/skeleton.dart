@@ -77,11 +77,12 @@ class WorkoutHistoryCardSkeleton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final surface = context.surface;
     return Container(
       padding: const EdgeInsets.all(16),
       // Identical geometry to the real card (shared decoration) so the feed
       // never reflows when content lands.
-      decoration: AppCard.decoration(),
+      decoration: AppCard.decoration(isLight: surface.isLight),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

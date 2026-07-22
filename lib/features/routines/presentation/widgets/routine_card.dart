@@ -36,23 +36,27 @@ class RoutineCard extends ConsumerWidget {
   });
 
   Widget _tag(
+    BuildContext context,
     String label, {
     Color? backgroundColor,
     Color? textColor,
-  }) =>
-      Container(
-        padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3),
-        decoration: BoxDecoration(
-          color: backgroundColor ?? AppColors.surface3,
-          borderRadius: AppRadius.badgeAll,
-        ),
-        child: Text(label,
-            style: AppText.badge(color: textColor ?? AppColors.textSecondary)),
-      );
+  }) {
+    final surface = context.surface;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3),
+      decoration: BoxDecoration(
+        color: backgroundColor ?? surface.surface3,
+        borderRadius: AppRadius.badgeAll,
+      ),
+      child: Text(label,
+          style: AppText.badge(color: textColor ?? surface.textSecondary)),
+    );
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final accent = context.accent;
+    final surface = context.surface;
     final count = exerciseNames.length;
 
     final exLabel = count == 1 ? 'exercise' : 'exercises';
@@ -70,9 +74,11 @@ class RoutineCard extends ConsumerWidget {
 
     return Container(
       decoration: BoxDecoration(
-        gradient: AppColors.cardGradient,
+        gradient: surface.isLight
+            ? AppColors.cardGradientLight
+            : AppColors.cardGradient,
         borderRadius: AppRadius.cardAll,
-        border: Border.all(color: AppColors.borderSubtle),
+        border: Border.all(color: surface.borderSubtle),
       ),
       clipBehavior: Clip.antiAlias,
       child: Material(
@@ -117,8 +123,8 @@ class RoutineCard extends ConsumerWidget {
                       constraints:
                           const BoxConstraints(minWidth: 48, minHeight: 48),
                       iconSize: 20,
-                      icon: const Icon(Icons.more_horiz_rounded,
-                          color: AppColors.textSecondary),
+                      icon: Icon(Icons.more_horiz_rounded,
+                          color: surface.textSecondary),
                       onPressed: () => _showOptions(context, ref),
                     ),
                   ],
@@ -132,11 +138,11 @@ class RoutineCard extends ConsumerWidget {
                       spacing: 6,
                       runSpacing: 6,
                       children: [
-                        _tag(tags.first,
+                        _tag(context, tags.first,
                             backgroundColor: accent.muted,
                             textColor: accent.base),
-                        for (final t in tags.skip(1)) _tag(t),
-                        if (extraTags > 0) _tag('+$extraTags'),
+                        for (final t in tags.skip(1)) _tag(context, t),
+                        if (extraTags > 0) _tag(context, '+$extraTags'),
                       ],
                     ),
                   ),
@@ -144,7 +150,7 @@ class RoutineCard extends ConsumerWidget {
                 // ── Divider ───────────────────────────────
                 Padding(
                   padding: const EdgeInsets.only(top: 13),
-                  child: Container(height: 1, color: AppColors.borderSubtle),
+                  child: Container(height: 1, color: surface.borderSubtle),
                 ),
 
                 // ── Footer: preview + Start pill ────────────────────
@@ -172,10 +178,10 @@ class RoutineCard extends ConsumerWidget {
                               SnackBar(
                                 content: Text(
                                   'Add exercises to this routine first',
-                                  style: AppText.body(
-                                      color: AppColors.textPrimary),
+                                  style:
+                                      AppText.body(color: surface.textPrimary),
                                 ),
-                                backgroundColor: AppColors.surface2,
+                                backgroundColor: surface.surface2,
                                 behavior: SnackBarBehavior.floating,
                               ),
                             );
@@ -202,8 +208,8 @@ class RoutineCard extends ConsumerWidget {
       items: [
         ActionSheetItem(
           icon: Icons.edit_outlined,
-          iconColor: AppColors.textSecondary,
-          iconBackground: AppColors.bgBase,
+          iconColor: context.surface.textSecondary,
+          iconBackground: context.surface.bgBase,
           title: 'Edit Routine',
           onTap: (sheetContext) {
             Navigator.of(sheetContext).pop();

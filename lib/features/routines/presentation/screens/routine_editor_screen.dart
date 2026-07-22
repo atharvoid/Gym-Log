@@ -520,11 +520,14 @@ class _EditorExerciseCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final accent = context.accent;
+    final surface = context.surface;
     return ClipRRect(
       borderRadius: BorderRadius.circular(AppRadius.card),
       child: Container(
         decoration: BoxDecoration(
-          gradient: AppColors.cardGradient,
+          gradient: surface.isLight
+              ? AppColors.cardGradientLight
+              : AppColors.cardGradient,
           border: Border.all(color: context.surface.borderSubtle),
           borderRadius: BorderRadius.circular(AppRadius.card),
         ),

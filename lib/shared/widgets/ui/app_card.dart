@@ -28,9 +28,13 @@ class AppCard extends StatelessWidget {
 
   /// Canonical card decoration, exposed for non-interactive stand-ins
   /// (skeletons) so they render identical geometry to the real card.
-  static BoxDecoration decoration({double radius = AppRadius.card}) =>
+  static BoxDecoration decoration({
+    double radius = AppRadius.card,
+    bool isLight = false,
+  }) =>
       BoxDecoration(
-        gradient: AppColors.cardGradient,
+        gradient:
+            isLight ? AppColors.cardGradientLight : AppColors.cardGradient,
         borderRadius: BorderRadius.circular(radius),
         border: Border.all(color: AppColors.borderSubtle, width: 1),
       );

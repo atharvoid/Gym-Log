@@ -314,9 +314,11 @@ class _DetailCardSkeleton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final surface = context.surface;
     return Container(
       padding: const EdgeInsets.all(16),
-      decoration: AppCard.decoration(radius: AppRadius.card),
+      decoration:
+          AppCard.decoration(radius: AppRadius.card, isLight: surface.isLight),
       child: const Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

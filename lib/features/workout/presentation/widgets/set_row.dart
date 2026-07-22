@@ -228,7 +228,7 @@ class _SetRowState extends State<SetRow> {
             label: t.label,
             subtitle: t.subtitle,
             icon: t.icon,
-            color: t.color,
+            color: t.resolveColor(context),
           ),
       ],
     );
