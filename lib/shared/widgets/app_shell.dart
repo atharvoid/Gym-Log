@@ -37,11 +37,16 @@ class _AppShellState extends ConsumerState<AppShell> {
   }
 
   Future<void> _maybeOfferResume() async {
-    // Don't interrupt if a session is somehow already live.
     if (!mounted || ref.read(activeWorkoutProvider) != null) return;
     final user = ref.read(authProvider);
     final store = ref.read(workoutDraftStoreProvider);
-    final snapshot = await store.loadSnapshot(currentUserId: user?.id);
+
+    WorkoutDraftSnapshot? snapshot;
+    try {
+      snapshot = await store.loadSnapshot(currentUserId: user?.id);
+    } catch (_) {
+      return;
+    }
     if (snapshot == null || !mounted) return;
     final draft = snapshot.workout;
 
@@ -158,7 +163,11 @@ class _AppShellState extends ConsumerState<AppShell> {
       }
       context.push('/workout/active');
     } else {
-      await store.clear(); // explicit decline → discard
+      try {
+        await store.clear();
+      } catch (_) {
+        // Discard failed silently — storage may stay dirty but app state is clean.
+      }
     }
   }
 
