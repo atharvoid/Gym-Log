@@ -84,7 +84,8 @@ class PersonalDetailsScreen extends ConsumerWidget {
           title: Text('Personal details',
               style: AppText.sheetTitle(color: surface.textPrimary)),
         ),
-        body: AdaptiveContent(child: SafeArea(
+        body: AdaptiveContent(
+            child: SafeArea(
           child: ListView(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
             children: [

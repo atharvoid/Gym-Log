@@ -388,8 +388,16 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
               final totals = ref.watch(sessionTotalsProvider);
               final volumeKg = totals.$1;
               final completedSets = totals.$2;
+              final workoutName = ref.watch(
+                activeWorkoutProvider.select(
+                  (state) => state == null
+                      ? 'Active Workout'
+                      : getWorkoutNameFallback(state.startTime, state.name),
+                ),
+              );
               return ActiveWorkoutHeader(
                 isEditing: isEditing,
+                workoutName: workoutName,
                 elapsedTime: timer,
                 volumeKg: volumeKg,
                 completedSets: completedSets,

@@ -312,7 +312,8 @@ class HelpFeedbackScreen extends ConsumerWidget {
         title: Text('Help & Feedback',
             style: AppText.screenTitle(color: surface.textPrimary)),
       ),
-      body: AdaptiveContent(child: SingleChildScrollView(
+      body: AdaptiveContent(
+          child: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

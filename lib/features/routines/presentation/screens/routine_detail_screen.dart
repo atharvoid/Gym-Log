@@ -275,7 +275,8 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
 
     final scaffold = Scaffold(
       backgroundColor: surface.bgBase,
-      body: AdaptiveContent(child: AppRefreshIndicator(
+      body: AdaptiveContent(
+          child: AppRefreshIndicator(
         onRefresh: _onRefresh,
         child: CustomScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
@@ -465,7 +466,8 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
     return SkeletonPulse(
       child: Scaffold(
         backgroundColor: surface.bgBase,
-        body: AdaptiveContent(child: CustomScrollView(
+        body: AdaptiveContent(
+            child: CustomScrollView(
           physics: const NeverScrollableScrollPhysics(),
           slivers: [
             SliverAppBar(
@@ -526,7 +528,8 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
           onPressed: () => context.pop(),
         ),
       ),
-      body: AdaptiveContent(child: AsyncErrorState(
+      body: AdaptiveContent(
+          child: AsyncErrorState(
         message: "Couldn't load this routine.",
         onRetry: _onRefresh,
       )),

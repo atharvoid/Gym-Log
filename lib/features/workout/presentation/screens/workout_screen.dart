@@ -92,8 +92,9 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
 
     return Scaffold(
       backgroundColor: surface.bgBase,
-      body: AdaptiveContent(child: SafeArea(
-        child: SingleChildScrollView(
+      body: AdaptiveContent(
+        child: SafeArea(
+            child: SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,

@@ -12,6 +12,7 @@ Widget _header() => SizedBox(
       width: 390,
       child: ActiveWorkoutHeader(
         isEditing: false,
+        workoutName: 'Active Workout',
         elapsedTime: '00:12:34',
         volumeKg: 1250.0,
         completedSets: 8,
@@ -19,7 +20,7 @@ Widget _header() => SizedBox(
         finishEnabled: true,
         onMinimize: () {},
         onClose: () {},
-        onFinish: null,
+        onFinish: () {},
       ),
     );
 
@@ -32,6 +33,7 @@ Widget _headerLargeText() => MediaQuery(
         width: 320,
         child: ActiveWorkoutHeader(
           isEditing: false,
+          workoutName: 'Active Workout',
           elapsedTime: '00:12:34',
           volumeKg: 1250.0,
           completedSets: 8,
@@ -39,7 +41,7 @@ Widget _headerLargeText() => MediaQuery(
           finishEnabled: true,
           onMinimize: () {},
           onClose: () {},
-          onFinish: null,
+          onFinish: () {},
         ),
       ),
     );

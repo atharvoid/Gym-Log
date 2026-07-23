@@ -172,6 +172,7 @@ class PremiumService with WidgetsBindingObserver {
   /// Rethrows real failures so the paywall can surface them.
   Future<CustomerInfo?> purchasePackage(Package package) async {
     try {
+      // ignore: deprecated_member_use
       final result = await Purchases.purchasePackage(package);
       _onCustomerInfo(result.customerInfo);
       return result.customerInfo;

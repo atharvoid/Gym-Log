@@ -183,7 +183,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           title: Text('Settings',
               style: AppText.sheetTitle(color: surface.textPrimary)),
         ),
-        body: AdaptiveContent(child: SafeArea(
+        body: AdaptiveContent(
+            child: SafeArea(
           child: Stack(
             children: [
               ListView(
