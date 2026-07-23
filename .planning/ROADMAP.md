@@ -144,9 +144,10 @@ audit but do **not** satisfy the UX-95 acceptance criteria.
 
 ## Canonical UX-95 Program
 
-HEAD `107e6e0` on `fix-sha1-auth-issue` delivers:
+HEAD `57e7888` on `fix-sha1-auth-issue` delivers:
 
 - **UX-95-01 implementation** (dynamic shell/navigation reconstruction)
+- **UX-95-02 source implementation** (adaptive/large-text header reflow for active workout)
 - Cross-app dynamic color-token migration
 - Partial Help/recovery hardening
 
@@ -155,7 +156,7 @@ The commit numbering does **not** reflect the canonical Notion specification.
 | Phase | Description | Status |
 |-------|-------------|--------|
 | UX-95-01 | Dynamic shell and bottom-navigation reconstruction | **Implementation complete; visual/device acceptance pending** |
-| UX-95-02 | Adaptive layout and large-text foundation | **Open** |
+| UX-95-02 | Adaptive layout and large-text foundation | **Source implementation complete; physical-device and CI acceptance pending** |
 | UX-95-03 | Measurement-aware presentation architecture | **Open** |
 | UX-95-04 | Active-workout final density and timer reconstruction | **Open** |
 | UX-95-05 | Routine and exercise authoring reconstruction | **Open** |
@@ -173,7 +174,12 @@ The commit numbering does **not** reflect the canonical Notion specification.
 
 ## Next Execution
 
-Implement **UX-95-02 — Adaptive layout and large-text foundation** from the
-exact Notion specification.
+Capture acceptance evidence for **UX-95-02**:
+- Physical-device acceptance at 1.0×, 1.6× and 2.0× text scales
+- Gesture and three-button navigation
+- Rest timer visibility alongside reflowed header
+- BillingClient dependency resolves to API 8+
+- Android native build passes after RevenueCat and edge-to-edge changes
+- Obtain a CI-equivalent result (CI only triggers on `main` and `remediation/**`)
 
 *Last updated: 2026-07-23*
