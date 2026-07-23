@@ -15,6 +15,7 @@ import 'package:gymlog/shared/widgets/ui/app_card.dart';
 import 'package:gymlog/shared/widgets/ui/branded_bottom_sheet.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:gymlog/shared/layout/adaptive.dart';
 
 /// Opens the Problem Report bottom sheet.
 Future<void> showReportProblemSheet(BuildContext context, WidgetRef ref) async {
@@ -311,7 +312,7 @@ class HelpFeedbackScreen extends ConsumerWidget {
         title: Text('Help & Feedback',
             style: AppText.screenTitle(color: surface.textPrimary)),
       ),
-      body: SingleChildScrollView(
+      body: AdaptiveContent(child: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -413,7 +414,7 @@ class HelpFeedbackScreen extends ConsumerWidget {
             const SizedBox(height: 24),
           ],
         ),
-      ),
+      )),
     );
   }
 }

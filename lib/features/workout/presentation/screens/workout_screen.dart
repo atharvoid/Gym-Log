@@ -18,6 +18,7 @@ import '../../../routines/presentation/widgets/routine_card.dart';
 import '../../../routines/presentation/providers/routines_provider.dart';
 import '../../domain/active_workout_state.dart';
 import '../providers/active_workout_provider.dart';
+import 'package:gymlog/shared/layout/adaptive.dart';
 
 /// [workout_screen.dart]
 /// Routines tab — the user's saved routines (reactive via hydratedRoutinesProvider).
@@ -91,7 +92,7 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
 
     return Scaffold(
       backgroundColor: surface.bgBase,
-      body: SafeArea(
+      body: AdaptiveContent(child: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
           child: Column(
@@ -210,7 +211,7 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
               ),
             ],
           ),
-        ),
+        )),
       ),
     );
   }

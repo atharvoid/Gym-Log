@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-/// Three-tier screen classification matching Material 3 breakpoints.
+/// Three-tier screen classification — custom GymLog breakpoints.
 ///
 /// | Class    | Width range  | Typical device                    |
 /// |----------|-------------|-----------------------------------|
@@ -28,6 +28,26 @@ class AdaptiveTokens {
   bool get isExpanded => screenClass == ScreenClass.expanded;
 }
 
+/// Wraps child content in a centered, width-constrained layout using
+/// [AdaptiveTokens.contentMaxWidth]. Prevents content from stretching
+/// too wide on large screens / tablets while centering naturally.
+class AdaptiveContent extends StatelessWidget {
+  const AdaptiveContent({super.key, required this.child});
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          maxWidth: context.adaptive.contentMaxWidth,
+        ),
+        child: child,
+      ),
+    );
+  }
+}
+
 /// Extension on [BuildContext] that provides responsive layout and
 /// text-scaling primitives. Access via `context.adaptive.*`.
 extension AdaptiveContext on BuildContext {
@@ -42,7 +62,7 @@ extension AdaptiveContext on BuildContext {
     if (width < 360) {
       screenClass = ScreenClass.compact;
       horizontalInset = 12;
-      contentMaxWidth = width - horizontalInset * 2;
+      contentMaxWidth = (width - horizontalInset * 2).clamp(0, double.infinity);
     } else if (width < 600) {
       screenClass = ScreenClass.medium;
       horizontalInset = 16;
@@ -53,16 +73,11 @@ extension AdaptiveContext on BuildContext {
       contentMaxWidth = (width - horizontalInset * 2).clamp(600, 800);
     }
 
-    // Clamp text scale to a safe range — 1.4 is the max supported by all
-    // production layouts. The OS can request up to 2.0 or higher, but above
-    // 1.4 layouts break (clipped buttons, overflowing text fields).
-    final clampedTextScale = textScale.clamp(1.0, 1.4);
-
     return AdaptiveTokens(
       screenClass: screenClass,
       contentMaxWidth: contentMaxWidth,
       horizontalInset: horizontalInset,
-      textScaleFactor: clampedTextScale,
+      textScaleFactor: textScale,
     );
   }
 }

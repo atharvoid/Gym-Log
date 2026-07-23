@@ -115,20 +115,20 @@ void main() {
       expect(state.tokens!.textScaleFactor, 1.3);
     });
 
-    testWidgets('text scale 2.0 is clamped to 1.4', (tester) async {
+    testWidgets('text scale 2.0 passes through (clamp removed per UX‑95‑02)', (tester) async {
       await pumpWithScale(tester, textScaleFactor: 2.0);
       final state = tester.state<_AdaptiveReaderState>(
         find.byType(_AdaptiveReader),
       );
-      expect(state.tokens!.textScaleFactor, 1.4);
+      expect(state.tokens!.textScaleFactor, 2.0);
     });
 
-    testWidgets('text scale 0.8 is clamped to 1.0', (tester) async {
+    testWidgets('text scale 0.8 passes through (clamp removed per UX‑95‑02)', (tester) async {
       await pumpWithScale(tester, textScaleFactor: 0.8);
       final state = tester.state<_AdaptiveReaderState>(
         find.byType(_AdaptiveReader),
       );
-      expect(state.tokens!.textScaleFactor, 1.0);
+      expect(state.tokens!.textScaleFactor, 0.8);
     });
   });
 }

@@ -20,6 +20,7 @@ import 'package:gymlog/features/import/presentation/providers/import_provider.da
 import 'package:gymlog/features/profile/presentation/providers/profile_provider.dart';
 import 'package:gymlog/core/providers/settings_provider.dart';
 import 'package:gymlog/features/routines/presentation/widgets/routine_detail_styles.dart';
+import 'package:gymlog/shared/layout/adaptive.dart';
 
 enum _Phase { intro, loading, preview, importing, done }
 
@@ -204,7 +205,7 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
             ),
           ),
         ),
-        body: SafeArea(top: false, child: _buildBody()),
+        body: AdaptiveContent(child: SafeArea(top: false, child: _buildBody())),
       ),
     );
   }

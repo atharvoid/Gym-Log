@@ -19,6 +19,7 @@ import 'package:gymlog/shared/widgets/ui/time_range_filter.dart';
 import 'package:gymlog/shared/widgets/ui/app_dialog.dart';
 import 'package:gymlog/shared/widgets/ui/primary_button.dart';
 import 'package:gymlog/core/utils/tap_guard.dart';
+import 'package:gymlog/shared/layout/adaptive.dart';
 
 class PersonalDetailsScreen extends ConsumerWidget {
   const PersonalDetailsScreen({super.key});
@@ -83,7 +84,7 @@ class PersonalDetailsScreen extends ConsumerWidget {
           title: Text('Personal details',
               style: AppText.sheetTitle(color: surface.textPrimary)),
         ),
-        body: SafeArea(
+        body: AdaptiveContent(child: SafeArea(
           child: ListView(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
             children: [
@@ -309,7 +310,7 @@ class PersonalDetailsScreen extends ConsumerWidget {
               ),
             ],
           ),
-        ),
+        )),
       ),
     );
   }

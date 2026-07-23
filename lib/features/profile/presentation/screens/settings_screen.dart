@@ -30,6 +30,7 @@ import 'package:gymlog/core/config/legal_links.dart';
 import 'package:gymlog/shared/widgets/tour/spotlight_tour_overlay.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:gymlog/shared/layout/adaptive.dart';
 
 /// Weekly-goal picker, shared by Settings and the Profile goal ring.
 Future<void> showWeeklyGoalSheet(BuildContext context, WidgetRef ref) async {
@@ -182,7 +183,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           title: Text('Settings',
               style: AppText.sheetTitle(color: surface.textPrimary)),
         ),
-        body: SafeArea(
+        body: AdaptiveContent(child: SafeArea(
           child: Stack(
             children: [
               ListView(
@@ -614,7 +615,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 ),
             ],
           ),
-        ),
+        )),
       ),
     );
   }

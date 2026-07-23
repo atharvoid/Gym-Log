@@ -172,9 +172,9 @@ class PremiumService with WidgetsBindingObserver {
   /// Rethrows real failures so the paywall can surface them.
   Future<CustomerInfo?> purchasePackage(Package package) async {
     try {
-      final info = await Purchases.purchasePackage(package);
-      _onCustomerInfo(info);
-      return info;
+      final result = await Purchases.purchasePackage(package);
+      _onCustomerInfo(result.customerInfo);
+      return result.customerInfo;
     } on PlatformException catch (e) {
       if (PurchasesErrorHelper.getErrorCode(e) ==
           PurchasesErrorCode.purchaseCancelledError) {

@@ -35,6 +35,7 @@ import 'package:gymlog/shared/widgets/ui/secondary_button.dart';
 import 'package:gymlog/shared/widgets/ui/skeleton.dart';
 import 'package:gymlog/shared/widgets/motion/pressable_scale.dart';
 import 'package:gymlog/shared/widgets/ui/time_range_filter.dart';
+import 'package:gymlog/shared/layout/adaptive.dart';
 import '../providers/routines_provider.dart';
 import '../widgets/routine_exercise_block.dart';
 import '../widgets/routine_volume_graph.dart';
@@ -274,7 +275,7 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
 
     final scaffold = Scaffold(
       backgroundColor: surface.bgBase,
-      body: AppRefreshIndicator(
+      body: AdaptiveContent(child: AppRefreshIndicator(
         onRefresh: _onRefresh,
         child: CustomScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
@@ -363,7 +364,7 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
             SliverToBoxAdapter(child: SizedBox(height: 80 + bottomInset)),
           ],
         ),
-      ),
+      )),
       bottomNavigationBar: SafeArea(
         child: Padding(
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 10),
@@ -464,7 +465,7 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
     return SkeletonPulse(
       child: Scaffold(
         backgroundColor: surface.bgBase,
-        body: CustomScrollView(
+        body: AdaptiveContent(child: CustomScrollView(
           physics: const NeverScrollableScrollPhysics(),
           slivers: [
             SliverAppBar(
@@ -500,7 +501,7 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
               ),
             ),
           ],
-        ),
+        )),
         bottomNavigationBar: const SafeArea(
           child: Padding(
             padding: EdgeInsets.fromLTRB(16, 8, 16, 10),
@@ -525,10 +526,10 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
           onPressed: () => context.pop(),
         ),
       ),
-      body: AsyncErrorState(
+      body: AdaptiveContent(child: AsyncErrorState(
         message: "Couldn't load this routine.",
         onRetry: _onRefresh,
-      ),
+      )),
     );
   }
 

@@ -21,6 +21,7 @@ import 'package:gymlog/shared/widgets/ui/skeleton.dart';
 import '../providers/exercise_analytics_provider.dart';
 import 'package:gymlog/shared/widgets/exercise_hero_image.dart';
 import 'package:gymlog/shared/widgets/motion/entrance_fade.dart';
+import 'package:gymlog/shared/layout/adaptive.dart';
 
 class ExerciseDetailScreen extends ConsumerStatefulWidget {
   final int exerciseId;
@@ -129,11 +130,11 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
           scrolledUnderElevation: 0,
           iconTheme: IconThemeData(color: surface.textPrimary),
         ),
-        body: AsyncErrorState(
+        body: AdaptiveContent(child: AsyncErrorState(
           message: "Couldn't load this exercise.",
           onRetry: () =>
               ref.invalidate(_exerciseFallbackProvider(widget.exerciseId)),
-        ),
+        )),
       ),
       data: (exercise) {
         final disableAnims = MediaQuery.disableAnimationsOf(context);
@@ -165,7 +166,7 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
             titleSpacing: 0,
             iconTheme: IconThemeData(color: surface.textPrimary),
           ),
-          body: ListView(
+          body: AdaptiveContent(child: ListView(
             padding: const EdgeInsets.all(16),
             children: [
               // GIF/Hero lives outside _entryFade so the Hero can fly without
@@ -322,7 +323,7 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
               ),
             ],
           ),
-        );
+        ));
       },
     );
   }
@@ -336,7 +337,7 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
         scrolledUnderElevation: 0,
         iconTheme: IconThemeData(color: surface.textPrimary),
       ),
-      body: _wrapPulse(
+      body: AdaptiveContent(child: _wrapPulse(
         child: ListView(
           padding: const EdgeInsets.all(16),
           children: const [
@@ -372,7 +373,7 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
             SkeletonBox(height: 150, radius: AppRadius.card),
           ],
         ),
-      ),
+      )),
     );
   }
 
