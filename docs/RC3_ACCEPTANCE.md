@@ -14,8 +14,8 @@ This document tracks the verification of corrections for the GymLog release cand
 | Auth screen uses entrance motion (280ms opacity/translate) | P1 | Play-installed build exhibits entrance animations on login screen | `ATOMIC-RC3-07` | | | | **Reproduced** |
 | No-equipment exercises arrive as `weight_and_reps` | P0 | Play-installed build permits logging weight for bodyweight / no-equipment exercises | `ATOMIC-RC3-03` to `06` | | | | **Reproduced** |
 | Home history title uses Hero flying animation to Workout Detail | P1 | Observed flying/resizing animation during transition from Home to Workout Detail | `ATOMIC-RC3-09` | | | | **Reproduced** |
-| `finishWorkout()` catches persistence failures and returns empty PR list silently | P0 | Code audit of active workout provider | `ATOMIC-RC3-01` | | | | Pending |
-| `saveEditedWorkout()` catches failure and returns void | P0 | Code audit of active workout provider | `ATOMIC-RC3-01` | | | | Pending |
+| `finishWorkout()` catches persistence failures and returns empty PR list silently | P0 | Code audit of active workout provider | `ATOMIC-RC3-01` | `bf5e57cadbd1` | 3 unit tests pass | | **Passed** |
+| `saveEditedWorkout()` catches failure and returns void | P0 | Code audit of active workout provider | `ATOMIC-RC3-01` | `bf5e57cadbd1` | 3 unit tests pass | | **Passed** |
 | Missing/invalid measurement metadata defaults to `weight_and_reps` | P0 | Code audit of domain models | `ATOMIC-RC3-03` | | | | Pending |
 | Hydration key remains `exercises_hydrated_v7` skipping repair | P0 | Code audit of database files | `ATOMIC-RC3-04` | | | | Pending |
 | Legacy drafts without measurement metadata override catalog | P0 | Code audit of draft store | `ATOMIC-RC3-05` | | | | Pending |

@@ -14,7 +14,9 @@ import '../../../../core/models/measurement_type.dart';
 import '../../../../core/models/personal_record.dart';
 import '../../../../core/models/rest_preference.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 import '../../domain/active_workout_state.dart';
+import '../../domain/workout_save_result.dart';
 import 'rest_timer_provider.dart';
 import 'workout_event_provider.dart';
 
@@ -160,14 +162,17 @@ class ActiveWorkoutNotifier extends StateNotifier<ActiveWorkoutState?> {
   /// Persists the active workout and returns any personal records that
   /// were set. The local commit always happens regardless of sync gate.
   /// `enqueueSession`/`syncNow` are no-ops when the gate is closed.
-  Future<List<PersonalRecord>> finishWorkout({String? name}) async {
-    if (state == null) return const [];
+  Future<WorkoutSaveResult> finishWorkout({String? name}) async {
+    if (state == null) {
+      return WorkoutSaveResult.failure('No active workout state found.',
+          retryable: false);
+    }
 
     final hasAnyCompletedSet =
         state!.exercises.any((e) => e.sets.any((s) => s.isCompleted));
     if (!hasAnyCompletedSet) {
       state = null;
-      return const [];
+      return WorkoutSaveResult.success(const []);
     }
 
     final db = _ref.read(databaseProvider);
@@ -251,10 +256,15 @@ class ActiveWorkoutNotifier extends StateNotifier<ActiveWorkoutState?> {
         unawaited(engine.syncNow(userId, reason: 'post_workout'));
       }
 
-      return prs;
-    } catch (e) {
+      return WorkoutSaveResult.success(prs);
+    } catch (e, stackTrace) {
       debugPrint('[finishWorkout] transaction failed: $e');
-      return const [];
+      final errSummary = e.toString().split('\n').first;
+      unawaited(Sentry.captureException(
+        Exception('Workout finish transaction failed: $errSummary'),
+        stackTrace: stackTrace,
+      ));
+      return WorkoutSaveResult.failure('Database transaction failed.');
     }
   }
 
@@ -299,8 +309,12 @@ class ActiveWorkoutNotifier extends StateNotifier<ActiveWorkoutState?> {
     );
   }
 
-  Future<void> saveEditedWorkout() async {
-    if (state == null || state!.originalSessionId == null) return;
+  Future<WorkoutSaveResult> saveEditedWorkout() async {
+    if (state == null || state!.originalSessionId == null) {
+      return WorkoutSaveResult.failure(
+          'No active workout or original session ID found.',
+          retryable: false);
+    }
 
     final db = _ref.read(databaseProvider);
     final sessionId = state!.originalSessionId!;
@@ -317,8 +331,15 @@ class ActiveWorkoutNotifier extends StateNotifier<ActiveWorkoutState?> {
         await engine.enqueueSession(userId, sessionId);
         unawaited(engine.syncNow(userId, reason: 'workout_edited'));
       }
-    } catch (e) {
+      return WorkoutSaveResult.success(const []);
+    } catch (e, stackTrace) {
       debugPrint('[saveEditedWorkout] transaction failed: $e');
+      final errSummary = e.toString().split('\n').first;
+      unawaited(Sentry.captureException(
+        Exception('Workout edit transaction failed: $errSummary'),
+        stackTrace: stackTrace,
+      ));
+      return WorkoutSaveResult.failure('Database transaction failed.');
     }
   }
 

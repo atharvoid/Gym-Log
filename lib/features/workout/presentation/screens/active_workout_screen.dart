@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:gymlog/core/providers/settings_provider.dart';
 import 'package:gymlog/core/theme/app_colors.dart';
 import 'package:gymlog/features/workout/domain/active_workout_state.dart';
+import 'package:gymlog/features/workout/domain/workout_save_result.dart';
 import 'package:gymlog/features/workout/presentation/providers/active_workout_provider.dart';
 import 'package:gymlog/features/workout/presentation/providers/rest_timer_provider.dart';
 import 'package:gymlog/features/workout/presentation/providers/workout_event_provider.dart';
@@ -40,6 +41,7 @@ class ActiveWorkoutScreen extends ConsumerStatefulWidget {
 
 class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
   StreamSubscription<ActiveWorkoutEvent>? _eventSubscription;
+  bool _isSaving = false;
 
   @override
   void initState() {
@@ -146,7 +148,7 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
   }
 
   Future<void> _finish() async {
-    if (!tapGuard()) return;
+    if (!tapGuard() || _isSaving) return;
     final workout = ref.read(activeWorkoutProvider);
     if (workout == null) return;
 
@@ -186,40 +188,102 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
     );
     if (name == null || !mounted) return;
 
-    ref.read(restTimerProvider.notifier).skip();
+    await _retryFinish(name);
+  }
 
+  Future<void> _retryFinish(String? name) async {
+    if (_isSaving) return;
+    setState(() {
+      _isSaving = true;
+    });
+
+    ref.read(restTimerProvider.notifier).skip();
     final rootNavigator = Navigator.of(context, rootNavigator: true);
 
-    try {
-      final prs = await ref
-          .read(activeWorkoutProvider.notifier)
-          .finishWorkout(name: name);
-      if (!mounted) return;
+    final result = await ref
+        .read(activeWorkoutProvider.notifier)
+        .finishWorkout(name: name);
+
+    if (!mounted) return;
+    setState(() {
+      _isSaving = false;
+    });
+
+    if (result is WorkoutSaveSuccess) {
       HapticFeedback.heavyImpact();
       context.go('/');
-      if (prs.isNotEmpty) {
+      if (result.prs.isNotEmpty) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
-          showPrCelebration(rootNavigator.context, prs);
+          showPrCelebration(rootNavigator.context, result.prs);
         });
       }
-    } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            "Couldn't save the workout; your session is safe. Try again.",
-            style: AppText.body(color: context.surface.textPrimary),
-          ),
-          backgroundColor: AppColors.error.withValues(alpha: 0.92),
-          behavior: SnackBarBehavior.floating,
-        ),
+    } else if (result is WorkoutSaveFailure) {
+      _showSaveErrorSnackBar(
+        context,
+        isEditing: false,
+        name: name,
+        reason: result.reason,
       );
     }
   }
 
   Future<void> _saveChanges() async {
-    await ref.read(activeWorkoutProvider.notifier).saveEditedWorkout();
-    if (mounted) context.go('/');
+    if (_isSaving) return;
+    setState(() {
+      _isSaving = true;
+    });
+
+    final result =
+        await ref.read(activeWorkoutProvider.notifier).saveEditedWorkout();
+
+    if (!mounted) return;
+    setState(() {
+      _isSaving = false;
+    });
+
+    if (result is WorkoutSaveSuccess) {
+      context.go('/');
+    } else if (result is WorkoutSaveFailure) {
+      _showSaveErrorSnackBar(
+        context,
+        isEditing: true,
+        reason: result.reason,
+      );
+    }
+  }
+
+  void _showSaveErrorSnackBar(
+    BuildContext context, {
+    required bool isEditing,
+    String? name,
+    required String reason,
+  }) {
+    final bottomMargin = ref.read(restTimerProvider) != null ? 80.0 : 16.0;
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          isEditing
+              ? "Failed to save changes. Try again."
+              : "Failed to finish workout. Try again.",
+          style: AppText.body(color: context.surface.textPrimary),
+        ),
+        backgroundColor: AppColors.error.withValues(alpha: 0.92),
+        behavior: SnackBarBehavior.floating,
+        margin: EdgeInsets.only(left: 16, right: 16, bottom: bottomMargin),
+        action: SnackBarAction(
+          label: 'Retry',
+          textColor: context.surface.textPrimary,
+          onPressed: () {
+            if (isEditing) {
+              _saveChanges();
+            } else {
+              _retryFinish(name);
+            }
+          },
+        ),
+      ),
+    );
   }
 
   void _toggleSet(int exerciseIndex, int setIndex, {required bool isEditing}) {
@@ -402,10 +466,11 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
                 volumeKg: volumeKg,
                 completedSets: completedSets,
                 weightUnit: globalUnit,
-                finishEnabled: completedSets > 0,
+                finishEnabled: completedSets > 0 && !_isSaving,
                 onMinimize: () => context.pop(),
                 onClose: isEditing ? () => context.pop() : _confirmDiscard,
-                onFinish: isEditing ? _saveChanges : _finish,
+                onFinish:
+                    _isSaving ? null : (isEditing ? _saveChanges : _finish),
               );
             },
           ),
