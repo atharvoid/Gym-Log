@@ -129,13 +129,17 @@ class CompactRestChip extends ConsumerWidget {
                     color: iconColor,
                   ),
                   const SizedBox(width: 4),
-                  Text(
-                    labelText,
-                    style: TextStyle(
-                      fontFamily: 'Inter',
-                      fontSize: 13,
-                      fontWeight: isCustom ? FontWeight.w600 : FontWeight.w500,
-                      color: textColor,
+                  Flexible(
+                    child: Text(
+                      labelText,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontFamily: 'Inter',
+                        fontSize: 13,
+                        fontWeight:
+                            isCustom ? FontWeight.w600 : FontWeight.w500,
+                        color: textColor,
+                      ),
                     ),
                   ),
                 ],

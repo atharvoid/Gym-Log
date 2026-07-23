@@ -6,7 +6,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gymlog/core/providers/settings_provider.dart';
 import 'package:gymlog/core/theme/app_colors.dart';
-import 'package:gymlog/core/utils/units.dart';
 import 'package:gymlog/features/workout/domain/active_workout_state.dart';
 import 'package:gymlog/features/workout/presentation/providers/active_workout_provider.dart';
 import 'package:gymlog/features/workout/presentation/providers/rest_timer_provider.dart';
@@ -20,13 +19,14 @@ import 'package:gymlog/core/theme/app_text.dart';
 import 'package:gymlog/core/theme/dynamic_accent_theme.dart';
 import 'package:gymlog/core/utils/tap_guard.dart';
 import 'package:gymlog/shared/widgets/ui/app_snack_bar.dart';
+import '../widgets/active_workout_header.dart';
 import '../widgets/exercise_block.dart';
 import '../widgets/pr_celebration_overlay.dart';
 import '../widgets/rest_timer_bar.dart';
 import '../widgets/finish_summary_sheet.dart';
 import 'package:gymlog/shared/widgets/motion/entrance_fade.dart';
+import 'package:gymlog/shared/layout/adaptive.dart';
 
-const double _minSwipeVelocity = 120.0;
 const double _bottomListPadding = 100.0;
 const double _reorderSheetHeightRatio = 0.7;
 
@@ -379,173 +379,28 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
 
     return Scaffold(
       backgroundColor: surface.bgBase,
-      body: Column(
+      body: AdaptiveContent(
+          child: Column(
         children: [
-          // ── Header — swipe DOWN to minimize; ✕ discard left; Finish right ──
-          GestureDetector(
-            behavior: HitTestBehavior.opaque,
-            // Swipe down anywhere on the header (the timer area) minimizes back to
-            // the ActiveWorkoutBar. Replaces the old minimize chevron button.
-            onVerticalDragEnd: (details) {
-              if ((details.primaryVelocity ?? 0) > _minSwipeVelocity) {
-                context.pop();
-              }
+          Consumer(
+            builder: (context, ref, _) {
+              final timer = ref.watch(workoutTimerProvider);
+              final totals = ref.watch(sessionTotalsProvider);
+              final volumeKg = totals.$1;
+              final completedSets = totals.$2;
+              return ActiveWorkoutHeader(
+                isEditing: isEditing,
+                elapsedTime: timer,
+                volumeKg: volumeKg,
+                completedSets: completedSets,
+                weightUnit: globalUnit,
+                finishEnabled: completedSets > 0,
+                onMinimize: () => context.pop(),
+                onClose: isEditing ? () => context.pop() : _confirmDiscard,
+                onFinish: isEditing ? _saveChanges : _finish,
+              );
             },
-            child: Container(
-              decoration: BoxDecoration(
-                color: surface.bgBase,
-                border: Border(
-                  bottom: BorderSide(color: surface.borderSubtle, width: 0.5),
-                ),
-              ),
-              padding: const EdgeInsets.only(left: 12, right: 12, bottom: 10),
-              child: SafeArea(
-                bottom: false,
-                child: Container(
-                  constraints: const BoxConstraints(minHeight: 76),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      // Grab handle — hints the swipe-down-to-minimize gesture.
-                      Semantics(
-                        button: true,
-                        label: 'Minimize workout',
-                        child: GestureDetector(
-                          behavior: HitTestBehavior.opaque,
-                          onTap: () => context.pop(),
-                          child: Container(
-                            width: 60,
-                            height: 48,
-                            alignment: Alignment.center,
-                            child: Container(
-                              width: 36,
-                              height: 4,
-                              decoration: BoxDecoration(
-                                color: surface.borderEmphasis,
-                                borderRadius: BorderRadius.circular(2),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                      Row(
-                        children: [
-                          // LEFT: 48x48 close button
-                          SizedBox.square(
-                            dimension: 48,
-                            child: IconButton(
-                              tooltip: isEditing ? 'Cancel' : 'Discard workout',
-                              padding: EdgeInsets.zero,
-                              icon: Icon(Icons.close_rounded,
-                                  color: surface.textPrimary, size: 24),
-                              onPressed: isEditing
-                                  ? () => context.pop()
-                                  : _confirmDiscard,
-                            ),
-                          ),
-                          Expanded(
-                            child: Center(
-                              child: MergeSemantics(
-                                child: Consumer(
-                                  builder: (context, ref, child) {
-                                    final timer =
-                                        ref.watch(workoutTimerProvider);
-                                    final totals =
-                                        ref.watch(sessionTotalsProvider);
-                                    final volumeKg = totals.$1;
-                                    final completedSets = totals.$2;
-
-                                    return Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Text(
-                                          isEditing ? 'Edit Workout' : timer,
-                                          textAlign: TextAlign.center,
-                                          style: TextStyle(
-                                            fontFamily: 'Inter',
-                                            fontSize: 28,
-                                            fontWeight: FontWeight.w700,
-                                            color: surface.textPrimary,
-                                          ),
-                                        ),
-                                        const SizedBox(height: 2),
-                                        Text(
-                                          isEditing
-                                              ? timer
-                                              : completedSets == 0
-                                                  ? 'Log your first set'
-                                                  : '${groupThousands(kgToDisplay(volumeKg, globalUnit))} $globalUnit · $completedSets set${completedSets != 1 ? 's' : ''}',
-                                          textAlign: TextAlign.center,
-                                          style: TextStyle(
-                                            fontFamily: 'Inter',
-                                            fontSize: 13,
-                                            fontWeight: FontWeight.w400,
-                                            color: surface.textSecondary,
-                                          ),
-                                        ),
-                                      ],
-                                    );
-                                  },
-                                ),
-                              ),
-                            ),
-                          ),
-                          // RIGHT: Finish / Save button (width 92, height 46, radius 15)
-                          Consumer(
-                            builder: (context, ref, child) {
-                              final totals = ref.watch(sessionTotalsProvider);
-                              final completedSets = totals.$2;
-                              final isFinishEnabled = completedSets > 0;
-                              final accent = context.accent;
-
-                              return Semantics(
-                                button: true,
-                                enabled: isFinishEnabled,
-                                label: isFinishEnabled
-                                    ? (isEditing
-                                        ? 'Save workout changes'
-                                        : 'Finish workout')
-                                    : 'Finish workout, unavailable until a set is completed',
-                                child: Material(
-                                  color: isFinishEnabled
-                                      ? accent.base
-                                      : surface.surface3,
-                                  borderRadius: BorderRadius.circular(15),
-                                  child: InkWell(
-                                    borderRadius: BorderRadius.circular(15),
-                                    onTap: isFinishEnabled
-                                        ? (isEditing ? _saveChanges : _finish)
-                                        : null,
-                                    child: Container(
-                                      width: 92,
-                                      height: 46,
-                                      alignment: Alignment.center,
-                                      child: Text(
-                                        isEditing ? 'Save' : 'Finish',
-                                        style: TextStyle(
-                                          fontFamily: 'Inter',
-                                          fontSize: 15,
-                                          fontWeight: FontWeight.w700,
-                                          color: isFinishEnabled
-                                              ? accent.onAccent
-                                              : surface.textTertiary,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
           ),
-
           Expanded(
             child: !workoutExists
                 ? const SizedBox.shrink()
@@ -678,7 +533,7 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
                       ),
           ),
         ],
-      ),
+      )),
       bottomNavigationBar: !workoutExists || restTimer == null
           ? null
           : Container(
