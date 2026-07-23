@@ -2,7 +2,7 @@
 
 > Flutter workout logging app. This file captures build steps, conventions, and
 > architectural decisions agents need to work effectively in this codebase.
-> **Last verified:** HEAD `107e6e0` on `fix-sha1-auth-issue` (2026-07-23). See status below.
+> **Last verified:** HEAD `57e7888` on `fix-sha1-auth-issue` (2026-07-23). See status below.
 
 ---
 
@@ -94,13 +94,14 @@ Project conventions are documented in detail under `docs/CONVENTIONS.md`. Key po
 
 ## Testing & CI
 
-### Test Suite (18 files)
+### Test Suite (21 files, 497 tests)
 
 The test suite covers DAO integration (host SQLite via ffi), sync engine,
 set-row widget behaviour, workout start, chart axis formatting, rest timer bar,
-routine reorder, streak/formatter logic, profile sync, weekly bar chart, export,
-explore catalog integrity, routine caps, weekly goal sheet, and a compile-surface
-smoke test. Golden tests live in `test/golden/`.
+active workout header (extracted widget + golden + large-text), routine reorder,
+streak/formatter logic, profile sync, weekly bar chart, export,
+explore catalog integrity, routine caps, weekly goal sheet, adaptive layout,
+and a compile-surface smoke test. Golden tests live in `test/golden/`.
 
 ### CI Pipeline (`.github/workflows/ci.yml`)
 
@@ -117,14 +118,15 @@ See `docs/CI_RUNBOOK.md` for details.
 
 ## Canonical Phase Status
 
-HEAD `38febdd` implements UX-95-01 (shell/navigation reconstruction) plus a
-cross-app dynamic color-token migration and partial Help/recovery hardening.
+HEAD `57e7888` implements UX-95-01 (shell/navigation reconstruction), completes
+the adaptive/large-text header reflow for active workout (UX-95-02), and includes
+a cross-app dynamic color-token migration plus partial Help/recovery hardening.
 The commit numbering does **not** reflect the canonical Notion specification.
 
 | Phase | Description | Status |
 |-------|-------------|--------|
 | UX-95-01 | Dynamic shell/navigation reconstruction | **Implementation complete; visual/device acceptance pending** |
-| UX-95-02 | Adaptive layout & large-text foundation | **Open** |
+| UX-95-02 | Adaptive layout & large-text foundation | **Source implementation complete; physical-device and CI acceptance pending** |
 | UX-95-03 | Measurement-aware presentation architecture | **Open** |
 | UX-95-04 | Active-workout density & timer reconstruction | **Open** |
 | UX-95-05 | Routine/exercise authoring reconstruction | **Open** |
