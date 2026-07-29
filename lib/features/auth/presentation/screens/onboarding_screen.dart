@@ -16,7 +16,6 @@ import 'package:gymlog/features/auth/presentation/widgets/onboarding/step_experi
 import 'package:gymlog/features/auth/presentation/widgets/onboarding/step_weekly_goal.dart';
 import 'package:gymlog/features/auth/presentation/widgets/onboarding/step_completion.dart';
 import 'package:gymlog/shared/widgets/ui/app_dialog.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class OnboardingScreen extends ConsumerStatefulWidget {
   const OnboardingScreen({super.key});
@@ -88,19 +87,18 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   }
 
   Future<void> _handleStartTour() async {
-    final prefs = await SharedPreferences.getInstance();
-    // Defer the masked tour until the user has real content (a routine or a
-    // logged workout) so spotlights never land on empty placeholder UI.
-    await prefs.setInt(
-        'first_run_tour_step', FirstRunTourNotifier.deferredStep);
+    // Go through the notifier (same path as Settings → "Replay app tour") so
+    // the live state changes: the orchestrator listener fires and the step-0
+    // spotlight renders on Home. A raw SharedPreferences write is invisible —
+    // the notifier reads prefs once at app start.
+    await ref.read(firstRunTourProvider.notifier).setStep(0);
     if (mounted) {
       context.go('/');
     }
   }
 
   Future<void> _handleSkipTour() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setInt('first_run_tour_step', -1); // Skip tour permanently
+    await ref.read(firstRunTourProvider.notifier).setStep(-1);
     if (mounted) {
       context.go('/');
     }
