@@ -120,6 +120,17 @@ class _ReportProblemFormState extends State<ReportProblemForm> {
     await Clipboard.setData(ClipboardData(text: reportText));
 
     if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          'Diagnostic report copied to clipboard',
+          style: AppText.body(color: context.surface.textPrimary),
+        ),
+        backgroundColor: context.surface.surface2,
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+
     Navigator.of(context, rootNavigator: true).pop();
 
     final uri = Uri(

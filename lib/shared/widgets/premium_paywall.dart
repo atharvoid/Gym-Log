@@ -423,26 +423,32 @@ class _PaywallSheetState extends ConsumerState<_PaywallSheet> {
                         child: Semantics(
                           label: '$title, $subtitle',
                           child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
-                              // Filled icons signal intentional design.
-                              // Outline icons look like a default choice.
                               Icon(icon, size: 20, color: accent.base),
                               const SizedBox(width: 14),
                               Expanded(
-                                child: ExcludeSemantics(
-                                  child: Text(
-                                    title,
-                                    style: AppText.body(
-                                            color: surface.textPrimary)
-                                        .copyWith(fontWeight: FontWeight.w600),
-                                  ),
-                                ),
-                              ),
-                              ExcludeSemantics(
-                                child: Text(
-                                  subtitle, // sentence case — not .toUpperCase()
-                                  style: AppText.label(
-                                      color: surface.textSecondary),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    ExcludeSemantics(
+                                      child: Text(
+                                        title,
+                                        style: AppText.body(
+                                                color: surface.textPrimary)
+                                            .copyWith(
+                                                fontWeight: FontWeight.w600),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 1),
+                                    ExcludeSemantics(
+                                      child: Text(
+                                        subtitle,
+                                        style: AppText.label(
+                                            color: surface.textSecondary),
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
                             ],
@@ -648,34 +654,43 @@ class _PackageRow extends StatelessWidget {
                     color: selected ? accent.base : surface.textSecondary,
                   ),
                   const SizedBox(width: 12),
-                  Text(
-                    title,
-                    style: AppText.body(color: surface.textPrimary).copyWith(
-                      fontWeight: FontWeight.w600,
+                  Expanded(
+                    child: Wrap(
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      spacing: 8,
+                      runSpacing: 4,
+                      children: [
+                        Text(
+                          title,
+                          style:
+                              AppText.body(color: surface.textPrimary).copyWith(
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        if (badge != null)
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 7, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: accent.base.withValues(alpha: 0.16),
+                              borderRadius:
+                                  BorderRadius.circular(AppRadius.badge),
+                            ),
+                            child: Text(
+                              badge!.toUpperCase(),
+                              style: AppText.label(
+                                color: accent.base,
+                                letterSpacing: 12 * 0.05,
+                              ).copyWith(
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                      ],
                     ),
                   ),
-                  if (badge != null) ...[
-                    const SizedBox(width: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 7, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: accent.base.withValues(alpha: 0.16),
-                        borderRadius: BorderRadius.circular(AppRadius.badge),
-                      ),
-                      child: Text(
-                        badge!.toUpperCase(),
-                        style: AppText.label(
-                          color: accent.base,
-                          letterSpacing: 12 * 0.05,
-                        ).copyWith(
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ],
-                  const Spacer(),
+                  const SizedBox(width: 12),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
