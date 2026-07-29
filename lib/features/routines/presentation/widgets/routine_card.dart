@@ -11,6 +11,7 @@ import '../../../../core/utils/relative_time.dart';
 import '../../../../core/providers/database_provider.dart';
 import '../../../../shared/widgets/ui/action_bottom_sheet.dart';
 import '../../../../shared/widgets/ui/app_dialog.dart';
+import '../../../../shared/widgets/feedback/undoable_delete.dart';
 
 /// Premium routine card for the Routines list.
 /// - Tapping the body opens the routine detail (`/routines/:id`).
@@ -223,7 +224,7 @@ class RoutineCard extends ConsumerWidget {
           iconBackground: AppColors.error.withValues(alpha: 0.12),
           title: 'Delete Routine',
           titleColor: AppColors.error,
-          subtitle: 'This cannot be undone',
+          subtitle: 'Remove from list',
           subtitleColor: AppColors.error.withValues(alpha: 0.7),
           onTap: (sheetContext) {
             Navigator.of(sheetContext).pop();
@@ -235,17 +236,30 @@ class RoutineCard extends ConsumerWidget {
   }
 
   Future<void> _confirmDelete(BuildContext context, WidgetRef ref) async {
-    final actions = ref.read(databaseProvider).routinesDao;
+    final messenger = ScaffoldMessenger.of(context);
+    final dao = ref.read(databaseProvider).routinesDao;
     final confirmed = await showAppConfirmDialog(
       context: context,
       title: 'Delete Routine?',
       message:
-          'This routine will be permanently deleted. Your workout history stays.',
+          'This routine will be removed from your list. Your workout history stays.',
       confirmLabel: 'Delete',
       isDestructive: true,
     );
-    if (confirmed) {
-      await actions.deleteRoutine(routineId);
-    }
+    if (!confirmed || !context.mounted) return;
+
+    final data = await dao.exportRoutineJson(routineId);
+    if (data == null) return;
+
+    HapticFeedback.mediumImpact();
+    await dao.deleteRoutine(routineId);
+
+    showUndoableDelete(
+      messenger: messenger,
+      label: 'Routine deleted',
+      onUndo: () async {
+        await dao.restoreRoutine(data);
+      },
+    );
   }
 }

@@ -260,7 +260,7 @@ class WorkoutDetailScreen extends ConsumerWidget {
           iconBackground: AppColors.error.withValues(alpha: 0.12),
           title: 'Delete Workout',
           titleColor: AppColors.error,
-          subtitle: 'This cannot be undone',
+          subtitle: 'Remove from history',
           subtitleColor: AppColors.error.withValues(alpha: 0.7),
           onTap: (sheetContext) {
             Navigator.of(sheetContext).pop();
@@ -276,7 +276,7 @@ class WorkoutDetailScreen extends ConsumerWidget {
     final confirmed = await showAppConfirmDialog(
       context: context,
       title: 'Delete Workout?',
-      message: 'This workout will be permanently removed from your history.',
+      message: 'This workout will be removed from your history.',
       confirmLabel: 'Delete',
       isDestructive: true,
     );

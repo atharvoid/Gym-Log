@@ -176,7 +176,7 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
           iconBackground: AppColors.error.withValues(alpha: 0.12),
           title: 'Delete Routine',
           titleColor: AppColors.error,
-          subtitle: 'This cannot be undone',
+          subtitle: 'Remove from list',
           subtitleColor: AppColors.error.withValues(alpha: 0.7),
           onTap: (ctx) {
             Navigator.of(ctx).pop();
@@ -193,7 +193,7 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
       context: context,
       title: 'Delete Routine?',
       message:
-          'This routine will be permanently deleted. Your workout history stays.',
+          'This routine will be removed from your list. Your workout history stays.',
       confirmLabel: 'Delete',
       isDestructive: true,
     );
