@@ -36,6 +36,7 @@ class BootstrapResult {
   final bool databaseCorrupted;
   final bool cloudAvailable;
   final ThemePalette accentPalette;
+  final Future<bool> cloudReady;
   final BootstrapStatus status;
   final bool recoverableError;
 
@@ -46,6 +47,7 @@ class BootstrapResult {
     required this.databaseCorrupted,
     required this.cloudAvailable,
     required this.accentPalette,
+    required this.cloudReady,
     this.status = BootstrapStatus.localReady,
     this.recoverableError = false,
   });
@@ -80,6 +82,7 @@ abstract final class Bootstrap {
     usePathUrlStrategy();
 
     // ── Stage 2: Sentry initialization ─────────────────────────────────
+    final cloudReady = Completer<bool>();
     await SentryFlutter.init(
       _configureSentry,
       appRunner: () async {
@@ -103,6 +106,7 @@ abstract final class Bootstrap {
           databaseCorrupted: migrationFailure,
           cloudAvailable: false, // Set asynchronously post-frame
           accentPalette: accentPalette,
+          cloudReady: cloudReady.future,
           status: status,
           recoverableError: migrationFailure,
         );
@@ -117,8 +121,11 @@ abstract final class Bootstrap {
               db: db,
               premiumService: premiumService,
               notificationService: notificationService,
+              cloudReady: cloudReady,
             ));
           });
+        } else {
+          cloudReady.complete(false);
         }
       },
     );
@@ -128,6 +135,7 @@ abstract final class Bootstrap {
     required AppDatabase db,
     required PremiumService premiumService,
     required NotificationService notificationService,
+    required Completer<bool> cloudReady,
   }) async {
     try {
       // 1. Media cache maintenance
@@ -137,7 +145,8 @@ abstract final class Bootstrap {
       unawaited(notificationService.init());
 
       // 3. Cloud pull & Supabase readiness check (bounded timeout)
-      await _initCloud();
+      final cloudOk = await _initCloud();
+      cloudReady.complete(cloudOk);
 
       // 4. Commerce readiness (RevenueCat refresh)
       _initCommerce(db);
@@ -146,6 +155,7 @@ abstract final class Bootstrap {
       await _postLaunchMaintenance(db);
     } catch (e) {
       debugPrint('[Bootstrap] postLaunchBackgroundWork failed: $e');
+      if (!cloudReady.isCompleted) cloudReady.complete(false);
     }
   }
 

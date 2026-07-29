@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../providers/cloud_readiness_provider.dart';
 import '../../shared/widgets/app_shell.dart';
 import '../../features/auth/presentation/screens/splash_screen.dart';
 import '../../features/auth/presentation/screens/auth_screen.dart';
@@ -26,19 +27,42 @@ import '../../features/routines/presentation/screens/routine_detail_screen.dart'
 import '../../features/workout/presentation/screens/workout_detail_screen.dart';
 import '../../core/database/database.dart';
 
-/// Converts a Supabase AuthState stream into a ChangeNotifier so GoRouter
-/// knows to re-evaluate its redirect the moment auth state changes.
-class _GoRouterRefreshStream extends ChangeNotifier {
-  _GoRouterRefreshStream(Stream<AuthState> stream) {
+/// Defers touching Supabase until cloud initialisation completes (it runs
+/// post-first-frame — see Bootstrap). Notifies GoRouter once at creation and
+/// again when readiness resolves, so redirects re-evaluate with the real
+/// auth state: a restored session sitting on /auth self-heals into /splash.
+class _DeferredAuthRefreshListenable extends ChangeNotifier {
+  _DeferredAuthRefreshListenable(Future<bool> cloudReady) {
     notifyListeners();
-    _subscription = stream.listen((_) => notifyListeners());
+    unawaited(cloudReady.then((ready) {
+      _cloudReady = ready;
+      if (ready) {
+        try {
+          _subscription = Supabase.instance.client.auth.onAuthStateChange
+              .listen((_) => notifyListeners());
+        } catch (_) {
+          _cloudReady = false;
+        }
+      }
+      notifyListeners();
+    }));
   }
 
-  late final StreamSubscription<AuthState> _subscription;
+  bool _cloudReady = false;
+  StreamSubscription<AuthState>? _subscription;
+
+  bool get isSignedIn {
+    if (!_cloudReady) return false;
+    try {
+      return Supabase.instance.client.auth.currentSession != null;
+    } catch (_) {
+      return false;
+    }
+  }
 
   @override
   void dispose() {
-    _subscription.cancel();
+    _subscription?.cancel();
     super.dispose();
   }
 }
@@ -49,16 +73,17 @@ class _GoRouterRefreshStream extends ChangeNotifier {
 final rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'rootNavigator');
 
 final routerProvider = Provider<GoRouter>((ref) {
-  // Wire GoRouter to Supabase auth stream so redirects re-run on login/logout
-  final refreshStream = _GoRouterRefreshStream(
-    Supabase.instance.client.auth.onAuthStateChange,
+  // Wire GoRouter to the auth stream once the cloud is ready; redirects
+  // re-run on readiness and on every subsequent auth change.
+  final refreshListenable = _DeferredAuthRefreshListenable(
+    ref.read(cloudReadinessProvider),
   );
-  ref.onDispose(refreshStream.dispose);
+  ref.onDispose(refreshListenable.dispose);
 
   return GoRouter(
     navigatorKey: rootNavigatorKey,
     initialLocation: '/splash',
-    refreshListenable: refreshStream,
+    refreshListenable: refreshListenable,
     observers: [SentryNavigatorObserver()],
     redirect: (context, state) {
       final location = state.matchedLocation;
@@ -66,7 +91,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       // Allow splash and onboarding to run without interference
       if (location == '/splash' || location == '/onboarding') return null;
 
-      final isSignedIn = Supabase.instance.client.auth.currentSession != null;
+      final isSignedIn = refreshListenable.isSignedIn;
       final isAuthRoute = location == '/auth';
 
       // Redirect unauthenticated users to auth

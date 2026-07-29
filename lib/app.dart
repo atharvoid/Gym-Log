@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'core/providers/cloud_readiness_provider.dart';
 import 'core/providers/premium_provider.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/dynamic_accent_theme.dart';
@@ -53,11 +54,25 @@ class _GymLogAppState extends ConsumerState<GymLogApp> {
       onResume: _onResume,
     );
 
-    // Cover the fresh-install path: GoRouter redirects /auth -> / directly on
-    // sign-in, so SplashScreen never runs. initSession() is idempotent.
-    _authSub = Supabase.instance.client.auth.onAuthStateChange.listen(
-      _onAuthStateChange,
-    );
+    // Supabase.initialize() runs post-first-frame (see Bootstrap), so the
+    // singleton does not exist yet — touching Supabase.instance here throws
+    // LateInitializationError in release builds and crash-loops the app into
+    // AppErrorScreen. Await cloud readiness instead; in local-only mode the
+    // listener simply never wires and the app stays fully usable offline.
+    unawaited(_wireAuthWhenCloudReady());
+  }
+
+  Future<void> _wireAuthWhenCloudReady() async {
+    final ready = await ref.read(cloudReadinessProvider);
+    if (!ready || !mounted || _authSub != null) return;
+    try {
+      _authSub = Supabase.instance.client.auth.onAuthStateChange.listen(
+        _onAuthStateChange,
+      );
+    } catch (_) {
+      // Defensive: readiness resolved true but the singleton is still not
+      // usable (e.g. abandoned init future after timeout). Stay local-only.
+    }
   }
 
   String? get _userId => ref.read(authProvider)?.id;
