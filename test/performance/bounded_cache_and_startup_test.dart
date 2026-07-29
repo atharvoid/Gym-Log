@@ -110,6 +110,7 @@ void main() {
         databaseCorrupted: false,
         cloudAvailable: false,
         accentPalette: ThemePalette.fallback,
+        cloudReady: Future.value(false),
         status: BootstrapStatus.localReady,
       );
 
@@ -130,6 +131,7 @@ void main() {
         databaseCorrupted: false,
         cloudAvailable: false,
         accentPalette: ThemePalette.fallback,
+        cloudReady: Future.value(false),
         status: BootstrapStatus.localReady,
         recoverableError: false,
       );

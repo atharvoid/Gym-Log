@@ -559,8 +559,9 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
                               onReplace: () async {
                                 final selected = await context
                                     .push<Exercise>('/exercises/select');
-                                if (selected == null || !context.mounted)
+                                if (selected == null || !context.mounted) {
                                   return;
+                                }
                                 final workout = ref.read(activeWorkoutProvider);
                                 if (workout != null &&
                                     index < workout.exercises.length) {
