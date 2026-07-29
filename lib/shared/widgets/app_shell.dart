@@ -13,6 +13,7 @@ import '../../core/theme/dynamic_accent_theme.dart';
 import '../layout/adaptive.dart';
 import 'active_workout_bar.dart';
 import 'bottom_nav_bar.dart';
+import 'ui/app_dialog.dart';
 
 /// [app_shell.dart]
 /// Purpose: High-Density Tracker - App shell with bottom nav
@@ -163,11 +164,21 @@ class _AppShellState extends ConsumerState<AppShell> {
             );
       }
       context.push('/workout/active');
-    } else {
-      try {
-        await store.clear();
-      } catch (_) {
-        // Discard failed silently — storage may stay dirty but app state is clean.
+    } else if (resume == false) {
+      if (!mounted) return;
+      final confirm = await showAppConfirmDialog(
+        context: context,
+        title: 'Discard draft workout?',
+        message: 'Your in-progress workout draft will be permanently deleted.',
+        confirmLabel: 'Discard',
+        isDestructive: true,
+      );
+      if (confirm) {
+        try {
+          await store.clear();
+        } catch (e) {
+          debugPrint('[AppShell] Draft clear error: $e');
+        }
       }
     }
   }

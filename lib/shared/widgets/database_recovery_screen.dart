@@ -21,10 +21,14 @@ class DatabaseRecoveryScreen extends StatefulWidget {
 class _DatabaseRecoveryScreenState extends State<DatabaseRecoveryScreen> {
   bool _resetting = false;
   bool _done = false;
+  String? _errorMessage;
 
   Future<void> _reset() async {
     HapticFeedback.mediumImpact();
-    setState(() => _resetting = true);
+    setState(() {
+      _resetting = true;
+      _errorMessage = null;
+    });
     try {
       await Bootstrap.resetDatabaseFile();
       if (mounted) {
@@ -33,8 +37,14 @@ class _DatabaseRecoveryScreenState extends State<DatabaseRecoveryScreen> {
           _done = true;
         });
       }
-    } catch (_) {
-      if (mounted) setState(() => _resetting = false);
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _resetting = false;
+          _errorMessage =
+              'Failed to reset database: $e. Please close the app and try again.';
+        });
+      }
     }
   }
 
@@ -56,15 +66,23 @@ class _DatabaseRecoveryScreenState extends State<DatabaseRecoveryScreen> {
                   color: AppColors.surface3,
                   borderRadius: AppRadius.badgeAll,
                 ),
-                child: const Icon(
-                  Icons.storage_rounded,
-                  color: AppColors.textSecondary,
+                child: Icon(
+                  _errorMessage != null
+                      ? Icons.error_outline_rounded
+                      : Icons.storage_rounded,
+                  color: _errorMessage != null
+                      ? AppColors.error
+                      : AppColors.textSecondary,
                   size: 26,
                 ),
               ),
               const SizedBox(height: AppSpacing.x5),
               Text(
-                _done ? 'Reset complete' : 'Local data needs a reset',
+                _done
+                    ? 'Reset complete'
+                    : (_errorMessage != null
+                        ? 'Reset Failed'
+                        : 'Local data needs a reset'),
                 textAlign: TextAlign.center,
                 style: AppText.sectionHeading(),
               ),
@@ -73,10 +91,15 @@ class _DatabaseRecoveryScreenState extends State<DatabaseRecoveryScreen> {
                 _done
                     ? 'Reopen GymLog to continue. If you are signed in, your\n'
                         'cloud history will restore automatically.'
-                    : 'Your local data appears corrupted. Reset to continue?\n'
-                        'Signed-in Pro users restore their history from the cloud.',
+                    : (_errorMessage ??
+                        'Your local data appears corrupted. Reset to continue?\n'
+                            'Signed-in Pro users restore their history from the cloud.'),
                 textAlign: TextAlign.center,
-                style: AppText.body(color: AppColors.textSecondary),
+                style: AppText.body(
+                  color: _errorMessage != null
+                      ? AppColors.error
+                      : AppColors.textSecondary,
+                ),
               ),
               const SizedBox(height: AppSpacing.x6),
               if (_done)
@@ -87,7 +110,11 @@ class _DatabaseRecoveryScreenState extends State<DatabaseRecoveryScreen> {
                 )
               else ...[
                 _RecoveryAction(
-                  label: _resetting ? 'Resetting…' : 'Reset local data',
+                  label: _resetting
+                      ? 'Resetting…'
+                      : (_errorMessage != null
+                          ? 'Try reset again'
+                          : 'Reset local data'),
                   primary: true,
                   onTap: _resetting ? null : _reset,
                 ),
