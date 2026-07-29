@@ -56,37 +56,12 @@ class RoutineDetailScreen extends ConsumerStatefulWidget {
       _RoutineDetailScreenState();
 }
 
-class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _entryController;
-  bool _entryStarted = false;
+class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen> {
   final GlobalKey _startRoutineButtonKey = GlobalKey();
 
   @override
   void initState() {
     super.initState();
-    _entryController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 320),
-    );
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    if (_entryStarted) return;
-    _entryStarted = true;
-    if (MediaQuery.disableAnimationsOf(context)) {
-      _entryController.value = 1.0;
-    } else {
-      _entryController.forward();
-    }
-  }
-
-  @override
-  void dispose() {
-    _entryController.dispose();
-    super.dispose();
   }
 
   // ── Actions ─────────────────────────────────────────────────────────────────
@@ -283,38 +258,32 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
           slivers: [
             _appBar(routine),
             SliverToBoxAdapter(
-              child: _entryFade(
-                interval: const Interval(0.0, 0.32, curve: Curves.easeOutExpo),
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        '$exerciseCount exercise${exerciseCount != 1 ? 's' : ''}'
-                        '${lastDate != null ? ' · Last performed ${relativeDay(lastDate)}' : ''}',
-                        style: AppText.meta(),
-                      ),
-                      if (sessionStats != null && sessionStats.count > 0) ...[
-                        const SizedBox(height: 16),
-                        _HeroStatStrip(stats: sessionStats),
-                      ],
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '$exerciseCount exercise${exerciseCount != 1 ? 's' : ''}'
+                      '${lastDate != null ? ' · Last performed ${relativeDay(lastDate)}' : ''}',
+                      style: AppText.meta(),
+                    ),
+                    if (sessionStats != null && sessionStats.count > 0) ...[
                       const SizedBox(height: 16),
-                      _MusclesWorkedMap(routine: routine),
+                      _HeroStatStrip(stats: sessionStats),
                     ],
-                  ),
+                    const SizedBox(height: 16),
+                    _MusclesWorkedMap(routine: routine),
+                  ],
                 ),
               ),
             ),
             SliverToBoxAdapter(
-              child: _entryFade(
-                interval: const Interval(0.2, 0.5, curve: Curves.easeOutExpo),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: _RoutineVolumeSection(
-                    routineId: widget.routineId,
-                    isPremium: isPremium,
-                  ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: _RoutineVolumeSection(
+                  routineId: widget.routineId,
+                  isPremium: isPremium,
                 ),
               ),
             ),
@@ -325,27 +294,19 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
                   (context, index) {
                     final exercise = routine.exercises[index];
                     final sets = lastSetsMap[exercise.exercise.id.toString()];
-                    final delay = index.clamp(0, 3) * 0.05;
-                    return _entryFade(
-                      interval: Interval(
-                        (0.4 + delay).clamp(0.0, 0.9),
-                        (0.6 + delay).clamp(0.0, 1.0),
-                        curve: Curves.easeOutExpo,
-                      ),
-                      child: RoutineExerciseBlock(
-                        hydratedExercise: exercise,
-                        lastSets: sets,
-                        onTap: () {
-                          HapticFeedback.selectionClick();
-                          context.push(
-                            '/exercise/detail/${exercise.exercise.id}',
-                            extra: exercise.exercise,
-                          );
-                        },
-                        isLoadingHistory: isLoadingHistory,
-                        isLast: index == routine.exercises.length - 1,
-                        enableHero: heroEnabledList[index],
-                      ),
+                    return RoutineExerciseBlock(
+                      hydratedExercise: exercise,
+                      lastSets: sets,
+                      onTap: () {
+                        HapticFeedback.selectionClick();
+                        context.push(
+                          '/exercise/detail/${exercise.exercise.id}',
+                          extra: exercise.exercise,
+                        );
+                      },
+                      isLoadingHistory: isLoadingHistory,
+                      isLast: index == routine.exercises.length - 1,
+                      enableHero: heroEnabledList[index],
                     );
                   },
                   childCount: routine.exercises.length,
@@ -439,23 +400,6 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
           onPressed: () => _showActions(routine),
         ),
       ],
-    );
-  }
-
-  Widget _entryFade({required Interval interval, required Widget child}) {
-    final curvedAnimation = CurvedAnimation(
-      parent: _entryController,
-      curve: interval,
-    );
-    return FadeTransition(
-      opacity: curvedAnimation,
-      child: SlideTransition(
-        position: Tween<Offset>(
-          begin: const Offset(0, 0.05),
-          end: Offset.zero,
-        ).animate(curvedAnimation),
-        child: child,
-      ),
     );
   }
 

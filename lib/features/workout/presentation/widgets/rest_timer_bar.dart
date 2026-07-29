@@ -47,9 +47,17 @@ class RestTimerBar extends ConsumerWidget {
         child: Semantics(
           container: true,
           label: 'Rest timer, $_label remaining',
-          child: _AmbientPulse(
-            radius: AppRadius.cardAll,
-            color: rest,
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              borderRadius: AppRadius.cardAll,
+              boxShadow: [
+                BoxShadow(
+                  color: rest.withValues(alpha: 0.28),
+                  blurRadius: 18,
+                  spreadRadius: -2,
+                ),
+              ],
+            ),
             child: Container(
               constraints: const BoxConstraints(minHeight: kRestTileHeight),
               child: DecoratedBox(

@@ -20,7 +20,6 @@ import 'package:gymlog/core/providers/database_provider.dart';
 import 'package:gymlog/shared/widgets/ui/skeleton.dart';
 import '../providers/exercise_analytics_provider.dart';
 import 'package:gymlog/shared/widgets/exercise_hero_image.dart';
-import 'package:gymlog/shared/widgets/motion/entrance_fade.dart';
 import 'package:gymlog/shared/layout/adaptive.dart';
 
 class ExerciseDetailScreen extends ConsumerStatefulWidget {
@@ -182,162 +181,155 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
 
                   const SizedBox(height: 16),
 
-                  // Text content and analytics fade in via the entry animation.
-                  EntranceFade(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Exercise Name & Metadata
-                        Text(
-                          exercise.name,
-                          style: AppText.titleLarge(
-                            color: surface.textPrimary,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
+                  // Text content and analytics (shown immediately).
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Exercise Name & Metadata
+                      Text(
+                        exercise.name,
+                        style: AppText.titleLarge(
+                          color: surface.textPrimary,
                         ),
-                        const SizedBox(height: 8),
-                        Text(
-                          () {
-                            final parent =
-                                MuscleTaxonomy.parentOf(exercise.target);
-                            return parent == exercise.target ||
-                                    parent == 'Other'
-                                ? exercise.equipment
-                                : '$parent  •  ${exercise.equipment}';
-                          }(),
-                          style: AppText.body(
-                            color: surface.textSecondary,
-                          ).copyWith(
-                            fontSize: 14,
-                          ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        () {
+                          final parent =
+                              MuscleTaxonomy.parentOf(exercise.target);
+                          return parent == exercise.target || parent == 'Other'
+                              ? exercise.equipment
+                              : '$parent  •  ${exercise.equipment}';
+                        }(),
+                        style: AppText.body(
+                          color: surface.textSecondary,
+                        ).copyWith(
+                          fontSize: 14,
                         ),
-                        const SizedBox(height: 14),
-                        // Worked muscles: primary (accent) + secondary (muted) chips.
-                        Builder(
-                          builder: (_) {
-                            final chips = <(String, bool)>[
-                              (exercise.target, true)
-                            ];
-                            try {
-                              final sec =
-                                  (jsonDecode(exercise.secondaryMuscles ?? '[]')
-                                          as List)
-                                      .cast<String>();
-                              for (final m in sec) {
-                                if (m.trim().isNotEmpty) chips.add((m, false));
-                              }
-                            } catch (_) {
-                              /* malformed JSON — show primary only */
+                      ),
+                      const SizedBox(height: 14),
+                      // Worked muscles: primary (accent) + secondary (muted) chips.
+                      Builder(
+                        builder: (_) {
+                          final chips = <(String, bool)>[
+                            (exercise.target, true)
+                          ];
+                          try {
+                            final sec =
+                                (jsonDecode(exercise.secondaryMuscles ?? '[]')
+                                        as List)
+                                    .cast<String>();
+                            for (final m in sec) {
+                              if (m.trim().isNotEmpty) chips.add((m, false));
                             }
-                            final accent = context.accent;
-                            return Wrap(
-                              spacing: 8,
-                              runSpacing: 8,
-                              children: [
-                                for (final (label, isPrimary) in chips)
-                                  MergeSemantics(
-                                    child: Container(
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 11, vertical: 6),
-                                      decoration: BoxDecoration(
+                          } catch (_) {
+                            /* malformed JSON — show primary only */
+                          }
+                          final accent = context.accent;
+                          return Wrap(
+                            spacing: 8,
+                            runSpacing: 8,
+                            children: [
+                              for (final (label, isPrimary) in chips)
+                                MergeSemantics(
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 11, vertical: 6),
+                                    decoration: BoxDecoration(
+                                      color: isPrimary
+                                          ? accent.base.withValues(alpha: 0.12)
+                                          : surface.surface3,
+                                      borderRadius: BorderRadius.circular(
+                                          AppRadius.badge),
+                                      border: Border.all(
                                         color: isPrimary
                                             ? accent.base
-                                                .withValues(alpha: 0.12)
-                                            : surface.surface3,
-                                        borderRadius: BorderRadius.circular(
-                                            AppRadius.badge),
-                                        border: Border.all(
-                                          color: isPrimary
-                                              ? accent.base
-                                                  .withValues(alpha: 0.35)
-                                              : surface.borderSubtle,
-                                          width: 1,
-                                        ),
+                                                .withValues(alpha: 0.35)
+                                            : surface.borderSubtle,
+                                        width: 1,
                                       ),
-                                      child: Text(
-                                        label,
-                                        style: AppText.label(
-                                          color: isPrimary
-                                              ? accent.base
-                                              : surface.textPrimary,
-                                        ).copyWith(
-                                          fontSize: 12.5,
-                                        ),
+                                    ),
+                                    child: Text(
+                                      label,
+                                      style: AppText.label(
+                                        color: isPrimary
+                                            ? accent.base
+                                            : surface.textPrimary,
+                                      ).copyWith(
+                                        fontSize: 12.5,
                                       ),
                                     ),
                                   ),
-                              ],
-                            );
-                          },
-                        ),
-
-                        const SizedBox(height: 24),
-
-                        historyAsync.when(
-                          loading: () => _wrapPulse(
-                            child: const Column(
-                              children: [
-                                SkeletonBox(
-                                    height: 198, radius: AppRadius.card),
-                                SizedBox(height: 24),
-                                Row(
-                                  children: [
-                                    SkeletonBox(
-                                        width: 120,
-                                        height: 36,
-                                        radius: AppRadius.buttonSecondary),
-                                    SizedBox(width: 8),
-                                    SkeletonBox(
-                                        width: 100,
-                                        height: 36,
-                                        radius: AppRadius.buttonSecondary),
-                                    SizedBox(width: 8),
-                                    SkeletonBox(
-                                        width: 90,
-                                        height: 36,
-                                        radius: AppRadius.buttonSecondary),
-                                  ],
                                 ),
-                                SizedBox(height: 24),
-                                SkeletonBox(
-                                    height: 150, radius: AppRadius.card),
-                              ],
-                            ),
-                          ),
-                          error: (err, _) => AsyncErrorState(
-                            message: 'Failed to load analytics',
-                            onRetry: () => ref.invalidate(
-                                exerciseAnalyticsProvider(
-                                    (widget.exerciseId, _selectedTimeRange))),
-                          ),
-                          data: (history) {
-                            final isPremium = ref.watch(isPremiumProvider);
-                            final visible =
-                                gateChartSamples(history, isPremium);
-                            final mType = MeasurementType.fromString(
-                                exercise.measurementType);
-                            return Column(
-                              children: [
-                                _buildGraphSection(
-                                  visible,
-                                  mType: mType,
-                                  showProPill: !isPremium && history.length > 3,
-                                ),
-                                const SizedBox(height: 24),
-                                _buildStatToggles(surface, mType),
-                                if (history.isNotEmpty) ...[
-                                  const SizedBox(height: 24),
-                                  _buildPersonalRecords(context, prs, mType),
+                            ],
+                          );
+                        },
+                      ),
+
+                      const SizedBox(height: 24),
+
+                      historyAsync.when(
+                        loading: () => _wrapPulse(
+                          child: const Column(
+                            children: [
+                              SkeletonBox(height: 198, radius: AppRadius.card),
+                              SizedBox(height: 24),
+                              Row(
+                                children: [
+                                  SkeletonBox(
+                                      width: 120,
+                                      height: 36,
+                                      radius: AppRadius.buttonSecondary),
+                                  SizedBox(width: 8),
+                                  SkeletonBox(
+                                      width: 100,
+                                      height: 36,
+                                      radius: AppRadius.buttonSecondary),
+                                  SizedBox(width: 8),
+                                  SkeletonBox(
+                                      width: 90,
+                                      height: 36,
+                                      radius: AppRadius.buttonSecondary),
                                 ],
-                                const SizedBox(height: 24),
-                                _buildInstructions(exercise, surface),
-                              ],
-                            );
-                          },
+                              ),
+                              SizedBox(height: 24),
+                              SkeletonBox(height: 150, radius: AppRadius.card),
+                            ],
+                          ),
                         ),
-                      ],
-                    ),
+                        error: (err, _) => AsyncErrorState(
+                          message: 'Failed to load analytics',
+                          onRetry: () => ref.invalidate(
+                              exerciseAnalyticsProvider(
+                                  (widget.exerciseId, _selectedTimeRange))),
+                        ),
+                        data: (history) {
+                          final isPremium = ref.watch(isPremiumProvider);
+                          final visible = gateChartSamples(history, isPremium);
+                          final mType = MeasurementType.fromString(
+                              exercise.measurementType);
+                          return Column(
+                            children: [
+                              _buildGraphSection(
+                                visible,
+                                mType: mType,
+                                showProPill: !isPremium && history.length > 3,
+                              ),
+                              const SizedBox(height: 24),
+                              _buildStatToggles(surface, mType),
+                              if (history.isNotEmpty) ...[
+                                const SizedBox(height: 24),
+                                _buildPersonalRecords(context, prs, mType),
+                              ],
+                              const SizedBox(height: 24),
+                              _buildInstructions(exercise, surface),
+                            ],
+                          );
+                        },
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -562,9 +554,14 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
         break;
       case MeasurementType.repsOnly:
         rows.addAll([
-          _prRow('Max Reps', '${prs.maxReps} reps', surface),
+          _prRow('Best Set Reps', '${prs.maxReps} reps', surface),
           _prDivider(surface),
-          _prRow('Max Session Reps', '${prs.maxReps} reps', surface),
+          _prRow(
+              'Best Session Total',
+              prs.maxVolume > 0
+                  ? '${prs.maxVolume.toInt()} reps'
+                  : '${prs.maxReps} reps',
+              surface),
         ]);
         break;
       case MeasurementType.duration:

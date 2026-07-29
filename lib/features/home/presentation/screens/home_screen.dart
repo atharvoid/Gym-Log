@@ -22,7 +22,6 @@ import 'package:gymlog/core/database/database.dart';
 import 'package:gymlog/core/providers/database_provider.dart';
 import 'package:gymlog/core/utils/tap_guard.dart';
 import 'package:gymlog/shared/widgets/feedback/undoable_delete.dart';
-import '../../../../shared/widgets/motion/entrance_fade.dart';
 import 'package:gymlog/features/auth/presentation/providers/tour_provider.dart';
 import 'package:gymlog/features/routines/presentation/providers/routines_provider.dart';
 import 'package:gymlog/shared/widgets/tour/spotlight_tour_overlay.dart';
@@ -155,52 +154,50 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             AppRefreshIndicator(
               onRefresh: () =>
                   ref.read(workoutHistoryProvider.notifier).refresh(),
-              child: EntranceFade(
-                child: ListView.builder(
-                  key: const PageStorageKey('home_feed'),
-                  controller: _scrollController,
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
-                  itemCount: itemCount,
-                  itemBuilder: (context, index) {
-                    if (index == 0) {
-                      return _HomeHeaderBand(
-                        bandKey: _homeHeaderKey,
-                        weeklyStatsKey: _weeklyStatsKey,
-                        showWeeklyStats: showStats,
-                      );
-                    }
-                    if (showFindProgram) {
-                      if (index == 1) return _findProgramCard();
-                      if (index == 2) return _quickStart();
-                      if (index == 3) return _header();
-                    } else {
-                      if (index == 1) return _quickStart();
-                      if (index == 2) return _header();
-                    }
+              child: ListView.builder(
+                key: const PageStorageKey('home_feed'),
+                controller: _scrollController,
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+                itemCount: itemCount,
+                itemBuilder: (context, index) {
+                  if (index == 0) {
+                    return _HomeHeaderBand(
+                      bandKey: _homeHeaderKey,
+                      weeklyStatsKey: _weeklyStatsKey,
+                      showWeeklyStats: showStats,
+                    );
+                  }
+                  if (showFindProgram) {
+                    if (index == 1) return _findProgramCard();
+                    if (index == 2) return _quickStart();
+                    if (index == 3) return _header();
+                  } else {
+                    if (index == 1) return _quickStart();
+                    if (index == 2) return _header();
+                  }
 
-                    final historyIndex = index - baseCount;
-                    if (historyIndex < totalItems) {
-                      final preview = historyState.items[historyIndex];
+                  final historyIndex = index - baseCount;
+                  if (historyIndex < totalItems) {
+                    final preview = historyState.items[historyIndex];
 
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: 8),
-                        child: WorkoutHistoryCard(
-                          key: ValueKey(preview.session.id),
-                          preview: preview,
-                          // RC3-09: Hero flying-title animation removed.
-                          enableHero: false,
-                          onMenuPressed: () {
-                            HapticFeedback.selectionClick();
-                            _showWorkoutCardMenu(preview.session);
-                          },
-                        ),
-                      );
-                    }
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: WorkoutHistoryCard(
+                        key: ValueKey(preview.session.id),
+                        preview: preview,
+                        // RC3-09: Hero flying-title animation removed.
+                        enableHero: false,
+                        onMenuPressed: () {
+                          HapticFeedback.selectionClick();
+                          _showWorkoutCardMenu(preview.session);
+                        },
+                      ),
+                    );
+                  }
 
-                    return _footer(historyState);
-                  },
-                ),
+                  return _footer(historyState);
+                },
               ),
             ),
             // Step 0 — Find a program spotlight (or Quick Start if the user

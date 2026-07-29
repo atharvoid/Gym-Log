@@ -224,8 +224,8 @@ void main() {
   });
 
   testWidgets(
-      'motion collapses to zero (immediate value 1.0) under disableAnimations',
-      (tester) async {
+      'content is visible immediately (no entrance FadeTransition) '
+      'under disableAnimations and normal motion', (tester) async {
     const dummyExercise = Exercise(
       id: 42,
       name: 'Bench Press Test',
@@ -236,37 +236,41 @@ void main() {
       measurementType: 'weight_and_reps',
     );
 
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          authRepositoryProvider.overrideWithValue(mockAuthRepository),
-          databaseProvider.overrideWithValue(db),
-          exerciseAnalyticsProvider((42, '6M')).overrideWith(
-              (ref) => SynchronousStream(<ExerciseHistoryData>[])),
-        ],
-        child: const MaterialApp(
-          home: MediaQuery(
-            data: MediaQueryData(disableAnimations: true),
-            child: ExerciseDetailScreen(
-              exerciseId: 42,
-              exercise: dummyExercise,
+    for (final disableAnimations in [true, false]) {
+      // Dispose previous tree before next iteration.
+      await tester.pumpWidget(const SizedBox.shrink());
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            authRepositoryProvider.overrideWithValue(mockAuthRepository),
+            databaseProvider.overrideWithValue(db),
+            exerciseAnalyticsProvider((42, '6M')).overrideWith(
+                (ref) => SynchronousStream(<ExerciseHistoryData>[])),
+          ],
+          child: MaterialApp(
+            home: MediaQuery(
+              data: MediaQueryData(disableAnimations: disableAnimations),
+              child: const ExerciseDetailScreen(
+                exerciseId: 42,
+                exercise: dummyExercise,
+              ),
             ),
           ),
         ),
-      ),
-    );
+      );
 
-    await tester.pump();
+      // A single pump is enough — no entrance animation to wait for.
+      await tester.pump();
 
-    // Find the entry FadeTransition and assert its value is 1.0 immediately
-    final fadeFinder = find
-        .descendant(
-          of: find.byType(ExerciseDetailScreen),
-          matching: find.byType(FadeTransition),
-        )
-        .first;
-
-    final fadeWidget = tester.widget<FadeTransition>(fadeFinder);
-    expect(fadeWidget.opacity.value, 1.0);
+      // The exercise name must be findable immediately with no entrance
+      // FadeTransition wrapping the analytics column.
+      expect(
+        find.text('Bench Press Test'),
+        findsAtLeastNWidgets(1),
+        reason: 'content must be visible immediately '
+            '(disableAnimations=$disableAnimations)',
+      );
+    }
   });
 }

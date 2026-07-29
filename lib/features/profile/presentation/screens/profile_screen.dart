@@ -17,7 +17,6 @@ import '../../../../core/theme/app_text.dart';
 import '../../../../core/theme/dynamic_accent_theme.dart';
 import '../../../../core/utils/tap_guard.dart';
 import '../../../../shared/widgets/bottom_nav_bar.dart';
-import '../../../../shared/widgets/motion/entrance_fade.dart';
 import '../../../../shared/widgets/premium_paywall.dart';
 import '../../../../shared/widgets/ui/app_action_row.dart';
 import '../../../../shared/widgets/ui/app_card.dart';
@@ -158,94 +157,71 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 child: ListView(
                   padding: EdgeInsets.fromLTRB(16, 4, 16, bottomClearance),
                   children: [
-                    EntranceFade(
-                      index: 0,
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: Semantics(
-                              header: true,
-                              child: Text(
-                                'Profile',
-                                style: AppText.screenTitle(
-                                  color: surface.textPrimary,
-                                  shadows: AppText.depthFor(context),
-                                ),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Semantics(
+                            header: true,
+                            child: Text(
+                              'Profile',
+                              style: AppText.screenTitle(
+                                color: surface.textPrimary,
+                                shadows: AppText.depthFor(context),
                               ),
                             ),
                           ),
-                          IconButton(
-                            tooltip: 'Settings',
-                            constraints: const BoxConstraints(
-                                minWidth: 48, minHeight: 48),
-                            icon: Icon(Icons.settings_outlined,
-                                size: 22, color: surface.textPrimary),
-                            onPressed: _openSettings,
-                          ),
-                        ],
-                      ),
+                        ),
+                        IconButton(
+                          tooltip: 'Settings',
+                          constraints:
+                              const BoxConstraints(minWidth: 48, minHeight: 48),
+                          icon: Icon(Icons.settings_outlined,
+                              size: 22, color: surface.textPrimary),
+                          onPressed: _openSettings,
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 12),
-                    EntranceFade(
-                      index: 0,
-                      child: Semantics(
-                        container: true,
-                        label: 'Profile, $displayName, $email',
-                        child: _IdentityHeader(
-                          displayName: displayName,
-                          email: email,
-                          isPremium: isPremium,
-                          showSyncPausedBadge: showSyncPausedBadge,
-                          imagePath: _profileImagePath,
-                          onImageChanged: _onImageChanged,
-                        ),
+                    Semantics(
+                      container: true,
+                      label: 'Profile, $displayName, $email',
+                      child: _IdentityHeader(
+                        displayName: displayName,
+                        email: email,
+                        isPremium: isPremium,
+                        showSyncPausedBadge: showSyncPausedBadge,
+                        imagePath: _profileImagePath,
+                        onImageChanged: _onImageChanged,
                       ),
                     ),
                     const SizedBox(height: 20),
-                    EntranceFade(
-                      index: 1,
-                      child: AppCard(
-                        radius: AppRadius.card,
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: AppSpacing.x1, vertical: AppSpacing.x4),
-                        child: _StatsStrip(
-                          streak: streak,
-                          goal: goal,
-                          workoutCount: workoutCount,
-                          onGoalTap: () => showWeeklyGoalSheet(context, ref),
-                        ),
+                    AppCard(
+                      radius: AppRadius.card,
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: AppSpacing.x1, vertical: AppSpacing.x4),
+                      child: _StatsStrip(
+                        streak: streak,
+                        goal: goal,
+                        workoutCount: workoutCount,
+                        onGoalTap: () => showWeeklyGoalSheet(context, ref),
                       ),
                     ),
                     if (goal > 0 && streak.workoutsThisWeek >= goal) ...[
                       const SizedBox(height: 10),
-                      const EntranceFade(
-                        index: 2,
-                        offset: Offset.zero,
-                        child: _GoalReachedBanner(),
-                      ),
+                      const _GoalReachedBanner(),
                     ] else if (!streak.trainedToday) ...[
                       const SizedBox(height: 10),
-                      EntranceFade(
-                        index: 2,
-                        offset: Offset.zero,
-                        child: _StreakReminder(streak: streak),
-                      ),
+                      _StreakReminder(streak: streak),
                     ],
                     const SizedBox(height: 28),
-                    const EntranceFade(
-                      index: 3,
-                      child: _TrainingChartSection(),
-                    ),
+                    const _TrainingChartSection(),
                     const SizedBox(height: 28),
-                    EntranceFade(
-                      index: 4,
-                      child: _QuickLinks(
-                        isPremium: isPremium,
-                        onPremiumTap: () =>
-                            _openPremium(context, isPremium: isPremium),
-                        onExerciseLibraryTap: _openExerciseLibrary,
-                        onSettingsTap: _openSettings,
-                      ),
+                    _QuickLinks(
+                      isPremium: isPremium,
+                      onPremiumTap: () =>
+                          _openPremium(context, isPremium: isPremium),
+                      onExerciseLibraryTap: _openExerciseLibrary,
+                      onSettingsTap: _openSettings,
                     ),
                   ],
                 ),

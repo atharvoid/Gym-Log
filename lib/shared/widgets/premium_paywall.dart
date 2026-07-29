@@ -4,12 +4,26 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:purchases_flutter/purchases_flutter.dart'
     show IntroductoryPrice, Offerings, Package, PackageType, PeriodUnit;
+import 'package:url_launcher/url_launcher.dart';
 
+import '../../core/config/legal_links.dart';
 import '../../core/providers/premium_provider.dart';
 import '../../core/services/premium_service.dart';
 import '../../core/theme/app_colors.dart' show SurfaceContextX;
 import '../../core/theme/app_text.dart';
 import '../../core/theme/dynamic_accent_theme.dart';
+
+Future<void> _openUrl(BuildContext context, String url) async {
+  final uri = Uri.tryParse(url);
+  if (uri == null) return;
+  if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Could not open link.')),
+      );
+    }
+  }
+}
 
 enum PaywallSource { generic, routineLimit, chartFilter, timeRange, sync }
 
@@ -582,6 +596,57 @@ class _PaywallSheetState extends ConsumerState<_PaywallSheet> {
                           child: Text(
                             _restoring ? 'Restoring…' : 'Restore Purchases',
                             style: AppText.body(color: surface.textSecondary),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+
+                    // ── Legal disclosure ────────────────────────────────────
+                    Center(
+                      child: Text(
+                        'Subscription auto-renews unless cancelled at least '
+                        '24 hours before the end of the current period. '
+                        'Manage or cancel in your store account settings.',
+                        textAlign: TextAlign.center,
+                        style: AppText.caption(color: surface.textTertiary),
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        TextButton(
+                          onPressed: () => _openUrl(context, kPrivacyPolicyUrl),
+                          style: TextButton.styleFrom(
+                            minimumSize: const Size(0, 40),
+                            padding: const EdgeInsets.symmetric(horizontal: 8),
+                          ),
+                          child: Text(
+                            'Privacy Policy',
+                            style:
+                                AppText.caption(color: surface.textSecondary),
+                          ),
+                        ),
+                        Container(
+                          width: 3,
+                          height: 3,
+                          decoration: BoxDecoration(
+                            color: surface.textTertiary,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                        TextButton(
+                          onPressed: () =>
+                              _openUrl(context, kTermsOfServiceUrl),
+                          style: TextButton.styleFrom(
+                            minimumSize: const Size(0, 40),
+                            padding: const EdgeInsets.symmetric(horizontal: 8),
+                          ),
+                          child: Text(
+                            'Terms of Use',
+                            style:
+                                AppText.caption(color: surface.textSecondary),
                           ),
                         ),
                       ],
