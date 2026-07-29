@@ -21,7 +21,7 @@ This document tracks the verification of corrections for the GymLog release cand
 | Hydration key remains `exercises_hydrated_v7` skipping repair | P0 | Code audit of database files | `ATOMIC-RC3-04` | `c2f6d9a3b9` | 3 unit tests pass | | **Passed** |
 | Legacy drafts without measurement metadata override catalog | P0 | Code audit of draft store | `ATOMIC-RC3-05` | `d31f676d31` | 2 unit tests pass | | **Passed** |
 | `updateSet(weight: null)` retains old weight | P0 | Code audit of active workout provider | `ATOMIC-RC3-02` | `62ac41e66367` | 4 unit tests pass | | **Passed** |
-| Rest timer permission status is not queried | P1 | Code audit of rest services | `ATOMIC-RC3-13` | | | | Pending |
+| Rest timer permission status is not queried | P1 | Code audit of rest services | `ATOMIC-RC3-13` | `3d6487b` | 515 tests pass | | **Passed** |
 | Routine / workout summaries volume-centered | P1 | Code audit of summary projections | `ATOMIC-RC3-14` | | | | Pending |
 | Routine editor card overloaded horizontally | P1 | Code audit of routine editor screen | `ATOMIC-RC3-16` | | | | Pending |
 | Exercise selection disables normal keyboard resizing | P1 | Code audit of exercise search screen | `ATOMIC-RC3-17` | | | | Pending |
