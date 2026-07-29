@@ -521,6 +521,8 @@ class _EditorExerciseCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final accent = context.accent;
     final surface = context.surface;
+    final hasEquipment = (exercise.equipment ?? '').isNotEmpty;
+
     return ClipRRect(
       borderRadius: BorderRadius.circular(AppRadius.card),
       child: Container(
@@ -544,97 +546,117 @@ class _EditorExerciseCard extends StatelessWidget {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.fromLTRB(12, 12, 4, 12),
-              child: Row(
+              padding: const EdgeInsets.fromLTRB(12, 10, 4, 10),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  ReorderableDragStartListener(
-                    index: index,
-                    child: Semantics(
-                      label: 'Reorder ${exercise.name}',
-                      child: Container(
-                        width: 32,
-                        height: 48,
-                        alignment: Alignment.center,
-                        child: Icon(
-                          Icons.drag_indicator_rounded,
-                          size: 20,
-                          color: context.surface.textPrimary
-                              .withValues(alpha: 0.30),
+                  // Row 1: Drag handle, thumbnail, exercise name, and remove button
+                  Row(
+                    children: [
+                      ReorderableDragStartListener(
+                        index: index,
+                        child: Semantics(
+                          label: 'Reorder ${exercise.name}',
+                          child: Container(
+                            width: 32,
+                            height: 44,
+                            alignment: Alignment.center,
+                            child: Icon(
+                              Icons.drag_indicator_rounded,
+                              size: 20,
+                              color: context.surface.textPrimary
+                                  .withValues(alpha: 0.30),
+                            ),
+                          ),
                         ),
                       ),
-                    ),
-                  ),
-                  ClipRRect(
-                    borderRadius: AppRadius.thumbnailAll,
-                    child: ExerciseGifWidget(
-                      gifUrl: exercise.gifUrl,
-                      width: 44,
-                      height: 44,
-                      fit: BoxFit.cover,
-                      animate: false,
-                      borderRadius: AppRadius.thumbnailAll,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
+                      ClipRRect(
+                        borderRadius: AppRadius.thumbnailAll,
+                        child: ExerciseGifWidget(
+                          gifUrl: exercise.gifUrl,
+                          width: 44,
+                          height: 44,
+                          fit: BoxFit.cover,
+                          animate: false,
+                          borderRadius: AppRadius.thumbnailAll,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
                           exercise.name,
-                          // Two lines before truncating — the trailing stepper + remove
-                          // controls squeeze this column hard, and "Barbell Ben…" at
-                          // ~12 chars made rows ambiguous (three barbell presses in a
-                          // row were indistinguishable).
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                           style: AppText.rowLabel(
                                   color: context.surface.textPrimary)
                               .copyWith(fontSize: 14.5, height: 1.2),
                         ),
-                        const SizedBox(height: 2),
-                        Text(
-                          '${exercise.sets} set${exercise.sets != 1 ? 's' : ''}'
-                          '${(exercise.equipment ?? '').isNotEmpty ? ' · ${exercise.equipment}' : ''}',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: AppText.caption(
-                              color: context.surface.textSecondary),
+                      ),
+                      IconButton(
+                        tooltip: 'Remove ${exercise.name}',
+                        constraints:
+                            const BoxConstraints(minWidth: 48, minHeight: 48),
+                        icon: Icon(Icons.close_rounded,
+                            size: 18,
+                            color: context.surface.textPrimary
+                                .withValues(alpha: 0.4)),
+                        onPressed: onRemove,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  // Row 2: Equipment on left, sets stepper on right
+                  Padding(
+                    padding: const EdgeInsets.only(left: 44, right: 8),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        if (hasEquipment)
+                          Flexible(
+                            child: Text(
+                              exercise.equipment!,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: AppText.caption(
+                                  color: context.surface.textSecondary),
+                            ),
+                          )
+                        else
+                          const SizedBox.shrink(),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              'Sets: ',
+                              style: AppText.caption(
+                                  color: context.surface.textSecondary),
+                            ),
+                            _StepperButton(
+                              icon: Icons.remove_rounded,
+                              label: 'Decrease sets',
+                              enabled: exercise.sets > 1,
+                              onTap: () => onSetsChanged(exercise.sets - 1),
+                            ),
+                            SizedBox(
+                              width: 22,
+                              child: Text(
+                                '${exercise.sets}',
+                                textAlign: TextAlign.center,
+                                style: AppText.body(
+                                        color: context.surface.textPrimary)
+                                    .copyWith(fontWeight: FontWeight.w700),
+                              ),
+                            ),
+                            _StepperButton(
+                              icon: Icons.add_rounded,
+                              label: 'Increase sets',
+                              enabled: exercise.sets < 10,
+                              onTap: () => onSetsChanged(exercise.sets + 1),
+                            ),
+                          ],
                         ),
                       ],
                     ),
-                  ),
-                  // Sets stepper
-                  _StepperButton(
-                    icon: Icons.remove_rounded,
-                    label: 'Decrease sets',
-                    enabled: exercise.sets > 1,
-                    onTap: () => onSetsChanged(exercise.sets - 1),
-                  ),
-                  SizedBox(
-                    width: 22,
-                    child: Text(
-                      '${exercise.sets}',
-                      textAlign: TextAlign.center,
-                      style: AppText.body(color: context.surface.textPrimary)
-                          .copyWith(fontWeight: FontWeight.w700),
-                    ),
-                  ),
-                  _StepperButton(
-                    icon: Icons.add_rounded,
-                    label: 'Increase sets',
-                    enabled: exercise.sets < 10,
-                    onTap: () => onSetsChanged(exercise.sets + 1),
-                  ),
-                  IconButton(
-                    tooltip: 'Remove ${exercise.name}',
-                    constraints:
-                        const BoxConstraints(minWidth: 48, minHeight: 48),
-                    icon: Icon(Icons.close_rounded,
-                        size: 18,
-                        color:
-                            context.surface.textPrimary.withValues(alpha: 0.4)),
-                    onPressed: onRemove,
                   ),
                 ],
               ),
