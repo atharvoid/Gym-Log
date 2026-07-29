@@ -27,7 +27,7 @@ This document tracks the verification of corrections for the GymLog release cand
 | Exercise selection disables normal keyboard resizing | P1 | Code audit of exercise search screen | `ATOMIC-RC3-17` | `5b0903f` | 519 tests pass | | **Passed** |
 | Resume-draft Discard clears immediately and silently | P1 | Code audit of draft resume sheet | `ATOMIC-RC3-19` | `a4c0e46` | 519 tests pass | | **Passed** |
 | Database recovery catches reset failure silently | P1 | Code audit of database recovery screen | `ATOMIC-RC3-19` | `a4c0e46` | 519 tests pass | | **Passed** |
-| Settings copy claims cloud backup generally | P1 | Code audit of settings screen | `ATOMIC-RC3-20` | | | | Pending |
+| Settings copy claims cloud backup generally | P1 | Code audit of settings screen | `ATOMIC-RC3-20` | `1aca7e6` | 519 tests pass | | **Passed** |
 | Paywall feature/plan rows fragile at large text | P1 | Code audit of paywall widget | `ATOMIC-RC3-22` | | | | Pending |
 | Delete menus say "cannot be undone" despite Undo | P1 | Code audit of menus | `ATOMIC-RC3-23` | | | | Pending |
 | Exercise removal in Active Workout is immediate | P1 | Code audit of workout screen | `ATOMIC-RC3-12` | `7d7d734` | 515 tests pass | | **Passed** |
