@@ -16,16 +16,16 @@ void main() {
     await db.close();
   });
 
-  group('ATOMIC-RC3-04 Exercises Hydration Engine v8', () {
-    test('1. Runs hydration and converts raw types when v8 key is missing',
+  group('ATOMIC-RC3-04 Exercises Hydration Engine v9', () {
+    test('1. Runs hydration and converts raw types when v9 key is missing',
         () async {
       // Seed initial SharedPreferences with an old hydration key
       SharedPreferences.setMockInitialValues({
-        'exercises_hydrated_v7': true,
+        'exercises_hydrated_v8': true,
       });
 
       final prefs = await SharedPreferences.getInstance();
-      expect(prefs.getBool('exercises_hydrated_v8'), isNull);
+      expect(prefs.getBool('exercises_hydrated_v9'), isNull);
 
       // Initially DB has no exercises
       var exercises = await db.exercisesDao.getAllExercises();
@@ -43,6 +43,12 @@ void main() {
           exercises.firstWhere((e) => e.name.toLowerCase() == 'push up');
       expect(pushUp.measurementType, MeasurementType.repsOnly.raw);
 
+      // Verify 4-digit zero-padded GitHub raw GIF URL
+      expect(pushUp.gifUrl,
+          contains('raw.githubusercontent.com/atharvoid/gymlog-assets/main/'));
+      final gifFilename = pushUp.gifUrl!.split('/').last;
+      expect(gifFilename, matches(r'^\d{4}\.gif$'));
+
       final plank =
           exercises.firstWhere((e) => e.name.toLowerCase().contains('plank'));
       expect(plank.measurementType, MeasurementType.duration.raw);
@@ -51,16 +57,16 @@ void main() {
           .firstWhere((e) => e.name.toLowerCase() == 'bench press (barbell)');
       expect(bench.measurementType, MeasurementType.weightAndReps.raw);
 
-      // SharedPreferences should have exercises_hydrated_v8 set to true
-      expect(prefs.getBool('exercises_hydrated_v8'), isTrue);
-      // exercises_hydrated_v7 should be removed
-      expect(prefs.getBool('exercises_hydrated_v7'), isNull);
+      // SharedPreferences should have exercises_hydrated_v9 set to true
+      expect(prefs.getBool('exercises_hydrated_v9'), isTrue);
+      // exercises_hydrated_v8 should be removed
+      expect(prefs.getBool('exercises_hydrated_v8'), isNull);
     });
 
-    test('2. Skips hydration if exercises_hydrated_v8 is already true',
+    test('2. Skips hydration if exercises_hydrated_v9 is already true',
         () async {
       SharedPreferences.setMockInitialValues({
-        'exercises_hydrated_v8': true,
+        'exercises_hydrated_v9': true,
       });
 
       // DB should not be populated when running hydration since key says it's done

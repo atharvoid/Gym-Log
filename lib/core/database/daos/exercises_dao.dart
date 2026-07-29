@@ -15,7 +15,7 @@ part 'exercises_dao.g.dart';
 /// v3: unified catalog (standard Hevy/Strong names + parent→child muscles),
 /// upsert-by-exerciseDbId so existing rows are renamed/re-muscled in place and
 /// GIF links are refreshed, with null gifUrl for exercises that have no GIF yet.
-const _kHydrationKey = 'exercises_hydrated_v8';
+const _kHydrationKey = 'exercises_hydrated_v9';
 
 /// Base URL of the public storage bucket that hosts exercise GIFs.
 /// Centralized in [Env] (overridable via --dart-define GIF_BUCKET_BASE).
@@ -216,7 +216,9 @@ class ExercisesDao extends DatabaseAccessor<AppDatabase>
                 Value(jsonEncode(e['secondaryMuscles'] ?? const <String>[])),
             instructions:
                 Value(jsonEncode(e['instructions'] ?? const <String>[])),
-            gifUrl: hasGif ? Value('$_kGifBase/$id.gif') : const Value(null),
+            gifUrl: hasGif
+                ? Value('$_kGifBase/${id.padLeft(4, '0')}.gif')
+                : const Value(null),
           );
           await into(exercises).insert(
             companion,
@@ -229,6 +231,7 @@ class ExercisesDao extends DatabaseAccessor<AppDatabase>
       });
 
       await prefs.setBool(_kHydrationKey, true);
+      await prefs.remove('exercises_hydrated_v8');
       await prefs.remove('exercises_hydrated_v7');
       await prefs.remove('exercises_hydrated_v6');
       await prefs.remove('exercises_hydrated_v5');
@@ -237,7 +240,7 @@ class ExercisesDao extends DatabaseAccessor<AppDatabase>
       await prefs.remove('exercises_hydrated_v2');
       await prefs.remove('exercises_hydrated_v1');
       debugPrint(
-          '[ExercisesDao] Hydration v8 complete: ${list.length} exercises.');
+          '[ExercisesDao] Hydration v9 complete: ${list.length} exercises.');
     } catch (e, st) {
       debugPrint('[ExercisesDao] hydrateFromJson failed: $e\n$st');
       await seedDefaultExercises();

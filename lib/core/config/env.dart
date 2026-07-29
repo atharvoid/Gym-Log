@@ -47,7 +47,7 @@ abstract final class Env {
   static const gifBucketBase = String.fromEnvironment(
     'GIF_BUCKET_BASE',
     defaultValue:
-        'https://otcfigaprxfknickyrdh.supabase.co/storage/v1/object/public/excercises',
+        'https://raw.githubusercontent.com/atharvoid/gymlog-assets/main',
   );
 
   /// Public URL of the standalone web account-deletion page (Google Play
