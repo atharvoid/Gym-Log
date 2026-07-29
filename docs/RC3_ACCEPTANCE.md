@@ -12,7 +12,7 @@ This document tracks the verification of corrections for the GymLog release cand
 | Finding | Severity | Reproduction | Target Atomic Task | Fix SHA | Automated Evidence | Device Evidence | Status |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
 | Auth screen uses entrance motion (280ms opacity/translate) | P1 | Play-installed build exhibits entrance animations on login screen | `ATOMIC-RC3-07` | | | | **Reproduced** |
-| No-equipment exercises arrive as `weight_and_reps` | P0 | Play-installed build permits logging weight for bodyweight / no-equipment exercises | `ATOMIC-RC3-03` to `06` | | | | **Reproduced** |
+| No-equipment exercises arrive as `weight_and_reps` | P0 | Play-installed build permits logging weight for bodyweight / no-equipment exercises | `ATOMIC-RC3-03` to `06` | `9ababc4` | 1 e2e test pass (RC3-06) | | **Passed** |
 | Home history title uses Hero flying animation to Workout Detail | P1 | Observed flying/resizing animation during transition from Home to Workout Detail | `ATOMIC-RC3-09` | | | | **Reproduced** |
 | `finishWorkout()` catches persistence failures and returns empty PR list silently | P0 | Code audit of active workout provider | `ATOMIC-RC3-01` | `bf5e57cadbd1` | 3 unit tests pass | | **Passed** |
 | `saveEditedWorkout()` catches failure and returns void | P0 | Code audit of active workout provider | `ATOMIC-RC3-01` | `bf5e57cadbd1` | 3 unit tests pass | | **Passed** |
