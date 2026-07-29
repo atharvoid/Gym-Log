@@ -14,6 +14,7 @@ This document tracks the verification of corrections for the GymLog release cand
 | Auth screen uses entrance motion (280ms opacity/translate) | P1 | Play-installed build exhibits entrance animations on login screen | `ATOMIC-RC3-07` | `ca43f62` | 16 unit + 14 golden tests pass | | **Passed** |
 | No-equipment exercises arrive as `weight_and_reps` | P0 | Play-installed build permits logging weight for bodyweight / no-equipment exercises | `ATOMIC-RC3-03` to `06` | `9ababc4` | 1 e2e test pass (RC3-06) | | **Passed** |
 | Home history title uses Hero flying animation to Workout Detail | P1 | Observed flying/resizing animation during transition from Home to Workout Detail | `ATOMIC-RC3-09` | | | | **Reproduced** |
+| Cinematic splash adds 1200ms brand pause before routing | P1 | Splash screen uses AnimationController glow/intro/exit animations | `ATOMIC-RC3-08` | `f5abda7` | analyze + 515 tests pass | | **Passed** |
 | `finishWorkout()` catches persistence failures and returns empty PR list silently | P0 | Code audit of active workout provider | `ATOMIC-RC3-01` | `bf5e57cadbd1` | 3 unit tests pass | | **Passed** |
 | `saveEditedWorkout()` catches failure and returns void | P0 | Code audit of active workout provider | `ATOMIC-RC3-01` | `bf5e57cadbd1` | 3 unit tests pass | | **Passed** |
 | Missing/invalid measurement metadata defaults to `weight_and_reps` | P0 | Code audit of domain models | `ATOMIC-RC3-03` | `240f40656a81` | 5 unit tests pass | | **Passed** |
