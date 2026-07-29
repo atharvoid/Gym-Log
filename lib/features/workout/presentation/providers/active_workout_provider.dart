@@ -628,6 +628,31 @@ class ActiveWorkoutNotifier extends StateNotifier<ActiveWorkoutState?> {
     saveDraftNow();
   }
 
+  /// Removes the exercise at [exerciseIndex] and returns the removed
+  /// [WorkoutExerciseState] snapshot so the caller can offer an Undo action.
+  /// Returns null if the state is not active or the index is out of range.
+  WorkoutExerciseState? removeExerciseWithSnapshot(int exerciseIndex) {
+    if (state == null) return null;
+    final exercises = [...state!.exercises];
+    if (exerciseIndex < 0 || exerciseIndex >= exercises.length) return null;
+    final snapshot = exercises[exerciseIndex];
+    exercises.removeAt(exerciseIndex);
+    state = state!.copyWith(exercises: exercises);
+    saveDraftNow();
+    return snapshot;
+  }
+
+  /// Re-inserts a previously removed exercise at [exerciseIndex].
+  /// Used by the Undo action of [removeExerciseWithSnapshot].
+  void insertExerciseAt(int exerciseIndex, WorkoutExerciseState exercise) {
+    if (state == null) return;
+    final exercises = [...state!.exercises];
+    final safeIndex = exerciseIndex.clamp(0, exercises.length);
+    exercises.insert(safeIndex, exercise);
+    state = state!.copyWith(exercises: exercises);
+    saveDraftNow();
+  }
+
   RemovedSetSnapshot? removeSetWithSnapshot({
     required String exerciseInstanceId,
     required String setId,

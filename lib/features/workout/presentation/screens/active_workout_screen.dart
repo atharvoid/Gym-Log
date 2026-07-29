@@ -27,6 +27,7 @@ import '../widgets/rest_timer_bar.dart';
 import '../widgets/finish_summary_sheet.dart';
 import 'package:gymlog/shared/widgets/motion/entrance_fade.dart';
 import 'package:gymlog/shared/layout/adaptive.dart';
+import 'package:gymlog/shared/widgets/feedback/undoable_delete.dart';
 
 const double _bottomListPadding = 100.0;
 const double _reorderSheetHeightRatio = 0.7;
@@ -533,7 +534,22 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
                             onReorderExercises: exerciseIds.length > 1
                                 ? _showReorderSheet
                                 : null,
-                            onRemove: () => notifier.removeExercise(index),
+                            onRemove: () {
+                              final messenger = ScaffoldMessenger.of(context);
+                              final exercise = ref
+                                  .read(activeWorkoutProvider)
+                                  ?.exercises[index];
+                              if (exercise == null) return;
+                              final snapshot =
+                                  notifier.removeExerciseWithSnapshot(index);
+                              if (snapshot == null) return;
+                              showUndoableDelete(
+                                messenger: messenger,
+                                label: '"${snapshot.name}" removed',
+                                onUndo: () =>
+                                    notifier.insertExerciseAt(index, snapshot),
+                              );
+                            },
                             onUnitTap: () => _pickUnit(index),
                             onReplace: () async {
                               final selected = await context
