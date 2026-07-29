@@ -6,6 +6,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../features/workout/domain/active_workout_state.dart';
+import '../models/measurement_type.dart';
 
 const _kDraftKeyV2 = 'active_workout_draft_v2';
 const _kDraftKeyV1 = 'active_workout_draft_v1';
@@ -270,19 +271,24 @@ Map<String, dynamic> _exToJson(WorkoutExerciseState e) => {
     };
 
 WorkoutExerciseState _exFromJson(Map<String, dynamic> m) {
-  final mTypeRaw = m['measurementType'] as String? ?? 'weight_and_reps';
-  final isRepsOnlyOrDuration =
-      mTypeRaw == 'reps_only' || mTypeRaw == 'duration';
+  final name = m['name'] as String? ?? '';
+  final mTypeRaw = m['measurementType'] as String?;
+  final mType = MeasurementType.resolve(
+    explicitValue: mTypeRaw == 'weight_and_reps' ? null : mTypeRaw,
+    equipment: null,
+    exerciseName: name,
+  );
+  final showsWeight = mType.showsWeightColumn;
   return WorkoutExerciseState(
     id: m['id'] as String? ?? '',
     exerciseId: (m['exerciseId'] as num).toInt(),
-    name: m['name'] as String? ?? '',
-    measurementType: mTypeRaw,
+    name: name,
+    measurementType: mType.raw,
     sets: [
       for (final s in (m['sets'] as List? ?? const []))
         () {
           final set = _setFromJson(s as Map<String, dynamic>);
-          return isRepsOnlyOrDuration ? set.copyWith(weightKg: null) : set;
+          return showsWeight ? set : set.copyWith(weightKg: null);
         }(),
     ],
     restSecondsOverride: m['restSecondsOverride'] as int?,

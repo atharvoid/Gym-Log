@@ -67,9 +67,49 @@ class ActiveWorkoutNotifier extends StateNotifier<ActiveWorkoutState?> {
     });
   }
 
-  void resumeDraft(ActiveWorkoutState draft) {
-    state = draft;
-    saveDraftNow(draft);
+  Future<void> resumeDraft(ActiveWorkoutState draft) async {
+    AppDatabase? db;
+    try {
+      db = _ref.read(databaseProvider);
+    } catch (_) {
+      // Ignored if databaseProvider is not overridden in test environment
+    }
+
+    final upgradedExercises = <WorkoutExerciseState>[];
+    for (final ex in draft.exercises) {
+      String? explicitValue = ex.measurementType;
+      String? equipment;
+      if (db != null) {
+        final row = await (db.select(db.exercises)
+              ..where((t) => t.id.equals(ex.exerciseId)))
+            .getSingleOrNull();
+        if (row != null) {
+          explicitValue = row.measurementType;
+          equipment = row.equipment;
+        }
+      }
+
+      final mType = MeasurementType.resolve(
+        explicitValue:
+            explicitValue == 'weight_and_reps' ? null : explicitValue,
+        equipment: equipment,
+        exerciseName: ex.name,
+      );
+
+      final showsWeight = mType.showsWeightColumn;
+      final sets = ex.sets.map((s) {
+        return showsWeight ? s : s.copyWith(weightKg: null);
+      }).toList();
+
+      upgradedExercises.add(ex.copyWith(
+        measurementType: mType.raw,
+        sets: sets,
+      ));
+    }
+
+    final upgradedDraft = draft.copyWith(exercises: upgradedExercises);
+    state = upgradedDraft;
+    saveDraftNow(upgradedDraft);
   }
 
   @override
@@ -131,10 +171,11 @@ class ActiveWorkoutNotifier extends StateNotifier<ActiveWorkoutState?> {
           double? weight;
           int reps;
           if (i < prevSets.length) {
-            weight = mType.isRepsOnly ? null : prevSets[i].weightKg;
+            weight = mType.showsWeightColumn ? prevSets[i].weightKg : null;
             reps = prevSets[i].reps;
           } else {
-            weight = mType.isRepsOnly ? null : (re.defaultWeightKg ?? 0.0);
+            weight =
+                mType.showsWeightColumn ? (re.defaultWeightKg ?? 0.0) : null;
             reps = re.defaultReps ?? 0;
           }
           sets.add(WorkoutSetState(
@@ -148,7 +189,7 @@ class ActiveWorkoutNotifier extends StateNotifier<ActiveWorkoutState?> {
           sets: sets.isEmpty
               ? [
                   WorkoutSetState.create(
-                      weightKg: mType.isRepsOnly ? null : 0.0)
+                      weightKg: mType.showsWeightColumn ? 0.0 : null)
                 ]
               : sets,
         ));
@@ -290,7 +331,7 @@ class ActiveWorkoutNotifier extends StateNotifier<ActiveWorkoutState?> {
             .map((s) => WorkoutSetState(
                   id: const Uuid().v4(),
                   setType: s.setType,
-                  weightKg: mType.isRepsOnly ? null : s.weightKg,
+                  weightKg: mType.showsWeightColumn ? s.weightKg : null,
                   reps: s.reps,
                   isCompleted: true,
                   completedAt: s.completedAt,
@@ -383,7 +424,9 @@ class ActiveWorkoutNotifier extends StateNotifier<ActiveWorkoutState?> {
       exerciseId: exerciseId,
       name: name,
       measurementType: mType.raw,
-      sets: [WorkoutSetState.create(weightKg: mType.isRepsOnly ? null : 0.0)],
+      sets: [
+        WorkoutSetState.create(weightKg: mType.showsWeightColumn ? 0.0 : null)
+      ],
     );
     state = state!.copyWith(exercises: [...state!.exercises, exercise]);
     saveDraftNow();
@@ -397,7 +440,7 @@ class ActiveWorkoutNotifier extends StateNotifier<ActiveWorkoutState?> {
     exercises[exerciseIndex] = exercise.copyWith(
       sets: [
         ...exercise.sets,
-        WorkoutSetState.create(weightKg: mType.isRepsOnly ? null : 0.0)
+        WorkoutSetState.create(weightKg: mType.showsWeightColumn ? 0.0 : null)
       ],
     );
     state = state!.copyWith(exercises: exercises);
@@ -507,7 +550,9 @@ class ActiveWorkoutNotifier extends StateNotifier<ActiveWorkoutState?> {
       exerciseId: exerciseId,
       name: name,
       measurementType: mType.raw,
-      sets: [WorkoutSetState.create(weightKg: mType.isRepsOnly ? null : 0.0)],
+      sets: [
+        WorkoutSetState.create(weightKg: mType.showsWeightColumn ? 0.0 : null)
+      ],
     );
     state = state!.copyWith(exercises: exercises);
     saveDraftNow();
@@ -558,7 +603,8 @@ class ActiveWorkoutNotifier extends StateNotifier<ActiveWorkoutState?> {
       );
     } else {
       newSets = [
-        WorkoutSetState.create(weightKg: newMType.isRepsOnly ? null : 0.0),
+        WorkoutSetState.create(
+            weightKg: newMType.showsWeightColumn ? 0.0 : null),
       ];
     }
 
