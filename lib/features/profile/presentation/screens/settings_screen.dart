@@ -528,9 +528,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         AppActionRow(
                           icon: Icons.shield_outlined,
                           title: 'Your data',
-                          subtitle:
-                              'Stored on-device, backed up to your account',
-                          onTap: () => _showDataInfo(context),
+                          subtitle: isPremium
+                              ? 'Stored on-device, backed up to your account'
+                              : 'Stored locally on this device',
+                          onTap: () => _showDataInfo(context, isPremium),
                         ),
                         const AppActionDivider(),
                         AppActionRow(
@@ -821,16 +822,20 @@ Future<void> _exportWorkouts(BuildContext context, WidgetRef ref, String userId,
   }
 }
 
-void _showDataInfo(BuildContext context) {
+void _showDataInfo(BuildContext context, bool isPremium) {
   HapticFeedback.lightImpact();
   showAppConfirmDialog(
     context: context,
-    title: 'Local-first, cloud-backed',
-    message: 'Every workout is saved instantly to a private database '
-        'on this device — the app works fully offline. A '
-        'compressed copy is then mirrored to your private '
-        'account so your history survives a reinstall or a new '
-        'phone. Only you can read it.',
+    title: isPremium ? 'Local-first, cloud-backed' : 'Local-first privacy',
+    message: isPremium
+        ? 'Every workout is saved instantly to a private database '
+            'on this device — GymLog works fully offline. Workouts are '
+            'automatically backed up to your account so your history survives '
+            'a reinstall or a new phone. Only you can read it.'
+        : 'Every workout is saved instantly to a private database '
+            'on this device — GymLog works fully offline. Upgrade to '
+            'GymLog Pro to automatically back up your history to the cloud '
+            'and sync across devices.',
     confirmLabel: 'Got it',
     cancelLabel: 'Close',
   );
