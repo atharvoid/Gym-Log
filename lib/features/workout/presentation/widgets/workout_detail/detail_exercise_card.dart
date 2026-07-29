@@ -152,6 +152,8 @@ class _SetTableHeader extends StatelessWidget {
         return 'DURATION';
       case MeasurementType.distance:
         return 'DISTANCE & TIME';
+      case MeasurementType.unknown:
+        return '—';
     }
   }
 

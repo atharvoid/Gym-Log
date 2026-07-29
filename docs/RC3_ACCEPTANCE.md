@@ -16,7 +16,7 @@ This document tracks the verification of corrections for the GymLog release cand
 | Home history title uses Hero flying animation to Workout Detail | P1 | Observed flying/resizing animation during transition from Home to Workout Detail | `ATOMIC-RC3-09` | | | | **Reproduced** |
 | `finishWorkout()` catches persistence failures and returns empty PR list silently | P0 | Code audit of active workout provider | `ATOMIC-RC3-01` | `bf5e57cadbd1` | 3 unit tests pass | | **Passed** |
 | `saveEditedWorkout()` catches failure and returns void | P0 | Code audit of active workout provider | `ATOMIC-RC3-01` | `bf5e57cadbd1` | 3 unit tests pass | | **Passed** |
-| Missing/invalid measurement metadata defaults to `weight_and_reps` | P0 | Code audit of domain models | `ATOMIC-RC3-03` | | | | Pending |
+| Missing/invalid measurement metadata defaults to `weight_and_reps` | P0 | Code audit of domain models | `ATOMIC-RC3-03` | `240f40656a81` | 5 unit tests pass | | **Passed** |
 | Hydration key remains `exercises_hydrated_v7` skipping repair | P0 | Code audit of database files | `ATOMIC-RC3-04` | | | | Pending |
 | Legacy drafts without measurement metadata override catalog | P0 | Code audit of draft store | `ATOMIC-RC3-05` | | | | Pending |
 | `updateSet(weight: null)` retains old weight | P0 | Code audit of active workout provider | `ATOMIC-RC3-02` | `62ac41e66367` | 4 unit tests pass | | **Passed** |

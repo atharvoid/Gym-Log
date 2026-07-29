@@ -76,6 +76,8 @@ class MeasurementFormatter {
           return '$distStr · $timeStr';
         }
         return distStr;
+      case MeasurementType.unknown:
+        return '—';
     }
   }
 

@@ -394,7 +394,7 @@ class _$WorkoutExerciseStateImpl implements _WorkoutExerciseState {
       {this.id = '',
       required this.exerciseId,
       required this.name,
-      this.measurementType = 'weight_and_reps',
+      this.measurementType = 'unknown',
       final List<WorkoutSetState> sets = const [],
       this.restSecondsOverride})
       : _sets = sets;
