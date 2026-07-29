@@ -236,12 +236,26 @@ class RestTimerNotifier extends StateNotifier<RestTimerState?>
               exerciseName = workout.exercises[exIndex].name;
             }
           }
-          _ref.read(notificationServiceProvider).scheduleRestTimerNotification(
-                exerciseName: exerciseName,
-                endTime: end,
-              );
+          unawaited(_scheduleNotificationIfPermitted(
+            exerciseName: exerciseName,
+            endTime: end,
+          ));
         }
       }
+    }
+  }
+
+  Future<void> _scheduleNotificationIfPermitted({
+    required String exerciseName,
+    required DateTime endTime,
+  }) async {
+    final notifService = _ref.read(notificationServiceProvider);
+    final permitted = await notifService.hasPermission();
+    if (permitted) {
+      notifService.scheduleRestTimerNotification(
+        exerciseName: exerciseName,
+        endTime: endTime,
+      );
     }
   }
 

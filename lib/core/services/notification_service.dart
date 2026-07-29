@@ -96,22 +96,23 @@ class NotificationService {
     if (kIsWeb) return true;
     try {
       if (Platform.isAndroid) {
-        final androidPlatformChannelSpecifics =
-            _plugin.resolvePlatformSpecificImplementation<
-                AndroidFlutterLocalNotificationsPlugin>();
-        if (androidPlatformChannelSpecifics != null) {
-          return true;
+        final androidImpl = _plugin.resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin>();
+        if (androidImpl != null) {
+          return await androidImpl.areNotificationsEnabled() ?? false;
         }
       } else if (Platform.isIOS) {
-        final iosPlatformChannelSpecifics =
-            _plugin.resolvePlatformSpecificImplementation<
-                IOSFlutterLocalNotificationsPlugin>();
-        if (iosPlatformChannelSpecifics != null) {
-          return true;
+        final iosImpl = _plugin.resolvePlatformSpecificImplementation<
+            IOSFlutterLocalNotificationsPlugin>();
+        if (iosImpl != null) {
+          final settings = await iosImpl.checkPermissions();
+          return settings?.isEnabled ?? false;
         }
       }
-    } catch (_) {}
-    return true;
+    } catch (e) {
+      debugPrint('[NotificationService] hasPermission error: $e');
+    }
+    return false;
   }
 
   Future<void> scheduleRestTimerNotification({
