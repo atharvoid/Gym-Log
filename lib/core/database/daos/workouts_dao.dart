@@ -1214,6 +1214,8 @@ class WorkoutsDao extends DatabaseAccessor<AppDatabase>
           }
         }
         break;
+      case MeasurementType.unknown:
+        break;
     }
 
     return prs;

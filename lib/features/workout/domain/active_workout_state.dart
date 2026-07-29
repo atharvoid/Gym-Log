@@ -30,10 +30,20 @@ class WorkoutExerciseState with _$WorkoutExerciseState {
     @Default('') String id,
     required int exerciseId,
     required String name,
-    @Default('weight_and_reps') String measurementType,
+    @Default('unknown') String measurementType,
     @Default([]) List<WorkoutSetState> sets,
     int? restSecondsOverride,
   }) = _WorkoutExerciseState;
+}
+
+extension WorkoutExerciseStateMeasurementX on WorkoutExerciseState {
+  MeasurementType get resolvedMeasurementType {
+    return MeasurementType.resolve(
+      explicitValue: measurementType,
+      equipment: null,
+      exerciseName: name,
+    );
+  }
 }
 
 extension WorkoutExerciseStateRestPreferenceX on WorkoutExerciseState {
@@ -66,12 +76,11 @@ List<WorkoutExerciseState> seedExercisesFromRoutine(
     final c = he.config;
     final count = c.defaultSets > 0 ? c.defaultSets : 1;
     final rawType = he.exercise.measurementType;
-    final mType = rawType.isNotEmpty
-        ? MeasurementType.fromString(rawType)
-        : MeasurementType.inferLegacyMeasurementType(
-            equipment: he.exercise.equipment,
-            exerciseName: he.exercise.name,
-          );
+    final mType = MeasurementType.resolve(
+      explicitValue: rawType,
+      equipment: he.exercise.equipment,
+      exerciseName: he.exercise.name,
+    );
 
     final initialWeight = mType.isRepsOnly ? null : 0.0;
     final sets = List.generate(

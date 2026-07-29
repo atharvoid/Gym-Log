@@ -83,6 +83,12 @@ class WorkoutExportService {
           durationStr = '';
           distanceStr = set.weightKg != null ? formatNumber(set.weightKg!) : '';
           break;
+        case MeasurementType.unknown:
+          weightKgStr = '';
+          repsStr = '';
+          durationStr = '';
+          distanceStr = '';
+          break;
       }
 
       final String prTypeStr;
@@ -103,6 +109,9 @@ class WorkoutExportService {
             break;
           case MeasurementType.weightAndReps:
             prTypeStr = 'max_weight';
+            break;
+          case MeasurementType.unknown:
+            prTypeStr = 'none';
             break;
         }
       }

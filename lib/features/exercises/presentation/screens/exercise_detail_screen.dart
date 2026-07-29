@@ -60,6 +60,8 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
         return ['Max Duration', 'Total Duration'];
       case MeasurementType.distance:
         return ['Distance', 'Duration', 'Pace'];
+      case MeasurementType.unknown:
+        return [];
     }
   }
 
@@ -100,6 +102,8 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
           default:
             return e.weight;
         }
+      case MeasurementType.unknown:
+        return null;
     }
   }
 
@@ -468,6 +472,8 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
           final secs = v.toInt() % 60;
           return '$mins:${secs.toString().padLeft(2, '0')} /km';
         }
+      case MeasurementType.unknown:
+        return '';
     }
   }
 
@@ -579,6 +585,8 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
         rows.addAll([
           _prRow('Max Distance', distStr, surface),
         ]);
+        break;
+      case MeasurementType.unknown:
         break;
     }
 

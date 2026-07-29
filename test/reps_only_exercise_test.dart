@@ -43,14 +43,15 @@ void main() {
           MeasurementType.weightAndReps);
     });
 
-    test('defaults to weightAndReps when equipment is unknown or unrecognised',
+    test(
+        'defaults to unknown when metadata is completely missing, and throws on unknown_type in fromString',
         () {
       expect(
           MeasurementType.inferLegacyMeasurementType(
               equipment: null, exerciseName: null),
-          MeasurementType.weightAndReps);
-      expect(MeasurementType.fromString('unknown_type'),
-          MeasurementType.weightAndReps);
+          MeasurementType.unknown);
+      expect(() => MeasurementType.fromString('unknown_type'),
+          throwsArgumentError);
     });
 
     test('boolean flags match enum value', () {

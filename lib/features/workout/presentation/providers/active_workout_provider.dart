@@ -118,10 +118,11 @@ class ActiveWorkoutNotifier extends StateNotifier<ActiveWorkoutState?> {
         final meta = metaById[re.exerciseId];
         if (meta == null) continue;
         final rawType = meta.measurementType;
-        final mType = rawType.isNotEmpty
-            ? MeasurementType.fromString(rawType)
-            : MeasurementType.inferLegacyMeasurementType(
-                equipment: meta.equipment, exerciseName: meta.name);
+        final mType = MeasurementType.resolve(
+          explicitValue: rawType,
+          equipment: meta.equipment,
+          exerciseName: meta.name,
+        );
 
         final prevSets = prevSetsByExercise[re.exerciseId] ?? const [];
 
@@ -274,12 +275,11 @@ class ActiveWorkoutNotifier extends StateNotifier<ActiveWorkoutState?> {
 
     final exercises = historicalWorkout.exercises.map((he) {
       final rawType = he.exerciseMetadata.measurementType;
-      final mType = rawType.isNotEmpty
-          ? MeasurementType.fromString(rawType)
-          : MeasurementType.inferLegacyMeasurementType(
-              equipment: he.exerciseMetadata.equipment,
-              exerciseName: he.exerciseMetadata.name,
-            );
+      final mType = MeasurementType.resolve(
+        explicitValue: rawType,
+        equipment: he.exerciseMetadata.equipment,
+        exerciseName: he.exerciseMetadata.name,
+      );
 
       return WorkoutExerciseState(
         id: const Uuid().v4(),
@@ -357,6 +357,7 @@ class ActiveWorkoutNotifier extends StateNotifier<ActiveWorkoutState?> {
       {String? measurementType}) async {
     if (state == null) return;
     String? resolvedType = measurementType;
+    String? resolvedEquipment;
     if (resolvedType == null || resolvedType.isEmpty) {
       try {
         final db = _ref.read(databaseProvider);
@@ -365,13 +366,18 @@ class ActiveWorkoutNotifier extends StateNotifier<ActiveWorkoutState?> {
             .getSingleOrNull();
         if (row != null) {
           resolvedType = row.measurementType;
+          resolvedEquipment = row.equipment;
         }
       } catch (e) {
         debugPrint(
             '[ActiveWorkoutNotifier] Failed to resolve measurementType for exercise $exerciseId: $e');
       }
     }
-    final mType = MeasurementType.fromString(resolvedType);
+    final mType = MeasurementType.resolve(
+      explicitValue: resolvedType,
+      equipment: resolvedEquipment,
+      exerciseName: name,
+    );
     final exercise = WorkoutExerciseState(
       id: const Uuid().v4(),
       exerciseId: exerciseId,
@@ -387,7 +393,7 @@ class ActiveWorkoutNotifier extends StateNotifier<ActiveWorkoutState?> {
     if (state == null) return;
     final exercises = [...state!.exercises];
     final exercise = exercises[exerciseIndex];
-    final mType = MeasurementType.fromString(exercise.measurementType);
+    final mType = exercise.resolvedMeasurementType;
     exercises[exerciseIndex] = exercise.copyWith(
       sets: [
         ...exercise.sets,
@@ -411,7 +417,7 @@ class ActiveWorkoutNotifier extends StateNotifier<ActiveWorkoutState?> {
     final setIndex = sets.indexWhere((s) => s.id == setId);
     if (setIndex == -1) return;
 
-    final mType = MeasurementType.fromString(exercise.measurementType);
+    final mType = exercise.resolvedMeasurementType;
     final double? resolvedWeight =
         mType.showsWeightColumn ? next.weightKg : null;
     final int resolvedReps = mType.showsRepsColumn ? next.reps : 0;
@@ -444,7 +450,7 @@ class ActiveWorkoutNotifier extends StateNotifier<ActiveWorkoutState?> {
         prevReps = previousSets[setIndex].reps;
       }
 
-      final mType = MeasurementType.fromString(exercise.measurementType);
+      final mType = exercise.resolvedMeasurementType;
       final canComplete = canCompleteSetRaw(
         measurementType: mType,
         weightKg: current.weightKg,
@@ -475,6 +481,7 @@ class ActiveWorkoutNotifier extends StateNotifier<ActiveWorkoutState?> {
     if (state == null) return;
     final exercises = [...state!.exercises];
     String? resolvedType = measurementType;
+    String? resolvedEquipment;
     if (resolvedType == null || resolvedType.isEmpty) {
       try {
         final db = _ref.read(databaseProvider);
@@ -483,13 +490,18 @@ class ActiveWorkoutNotifier extends StateNotifier<ActiveWorkoutState?> {
             .getSingleOrNull();
         if (row != null) {
           resolvedType = row.measurementType;
+          resolvedEquipment = row.equipment;
         }
       } catch (e) {
         debugPrint(
             '[ActiveWorkoutNotifier] Failed to resolve replacement measurementType for exercise $exerciseId: $e');
       }
     }
-    final mType = MeasurementType.fromString(resolvedType);
+    final mType = MeasurementType.resolve(
+      explicitValue: resolvedType,
+      equipment: resolvedEquipment,
+      exerciseName: name,
+    );
     exercises[exerciseIndex] = WorkoutExerciseState(
       id: exercises[exerciseIndex].id,
       exerciseId: exerciseId,
@@ -514,6 +526,7 @@ class ActiveWorkoutNotifier extends StateNotifier<ActiveWorkoutState?> {
 
     final oldExercise = exercises[exerciseIndex];
     String? resolvedType = measurementType;
+    String? resolvedEquipment;
     if (resolvedType == null || resolvedType.isEmpty) {
       try {
         final db = _ref.read(databaseProvider);
@@ -522,14 +535,19 @@ class ActiveWorkoutNotifier extends StateNotifier<ActiveWorkoutState?> {
             .getSingleOrNull();
         if (row != null) {
           resolvedType = row.measurementType;
+          resolvedEquipment = row.equipment;
         }
       } catch (e) {
         debugPrint(
             '[ActiveWorkoutNotifier] Failed to resolve replacement measurementType for exercise $newExerciseId: $e');
       }
     }
-    final oldMType = MeasurementType.fromString(oldExercise.measurementType);
-    final newMType = MeasurementType.fromString(resolvedType);
+    final oldMType = oldExercise.resolvedMeasurementType;
+    final newMType = MeasurementType.resolve(
+      explicitValue: resolvedType,
+      equipment: resolvedEquipment,
+      exerciseName: newName,
+    );
 
     final List<WorkoutSetState> newSets;
     if (keepCompatibleValues) {

@@ -205,12 +205,7 @@ abstract final class WorkoutCsvParser {
       final distanceMeters = (distRaw == null || distRaw <= 0) ? null : distRaw;
 
       final explicitTypeStr = cell('measurement_type');
-      MeasurementType? explicitType;
-      if (explicitTypeStr.isNotEmpty) {
-        try {
-          explicitType = MeasurementType.fromString(explicitTypeStr);
-        } catch (_) {}
-      }
+      final explicitType = MeasurementType.tryParse(explicitTypeStr);
 
       final isPrStr = cell('is_pr').trim().toLowerCase();
       final prTypeStr = cell('pr_type').trim().toLowerCase();
@@ -394,12 +389,7 @@ abstract final class WorkoutCsvParser {
           (durRaw == null || durRaw <= 0) ? null : durRaw.toInt();
 
       final explicitTypeStr = cell('measurement_type');
-      MeasurementType? explicitType;
-      if (explicitTypeStr.isNotEmpty) {
-        try {
-          explicitType = MeasurementType.fromString(explicitTypeStr);
-        } catch (_) {}
-      }
+      final explicitType = MeasurementType.tryParse(explicitTypeStr);
 
       final inferredMType = explicitType ??
           _inferMeasurementType(
@@ -522,12 +512,7 @@ abstract final class WorkoutCsvParser {
       }
 
       final explicitTypeStr = cell('measurement_type');
-      MeasurementType? explicitType;
-      if (explicitTypeStr.isNotEmpty) {
-        try {
-          explicitType = MeasurementType.fromString(explicitTypeStr);
-        } catch (_) {}
-      }
+      final explicitType = MeasurementType.tryParse(explicitTypeStr);
 
       final inferredMType = explicitType ??
           _inferMeasurementType(
@@ -679,6 +664,8 @@ abstract final class WorkoutCsvParser {
           return 'distance is missing for $exerciseName.';
         }
         return null;
+      case MeasurementType.unknown:
+        return 'unrecognized measurement type for $exerciseName.';
     }
   }
 

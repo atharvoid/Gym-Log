@@ -252,12 +252,12 @@ class WorkoutImportService {
         if (mType == null &&
             matchedRef != null &&
             matchedRef.measurementType != null) {
-          mType = MeasurementType.fromString(matchedRef.measurementType);
+          mType = MeasurementType.tryParse(matchedRef.measurementType);
         }
         // 3. Imported column shape or legacy classifier
         mType ??= ex.measurementType ??
             (ex.sets.isNotEmpty ? ex.sets.first.measurementType : null) ??
-            MeasurementType.weightAndReps;
+            MeasurementType.unknown;
 
         final validSets = <ImportedSet>[];
         for (final st in ex.sets) {
@@ -290,6 +290,9 @@ class WorkoutImportService {
               if (finalDistance == null || finalDistance <= 0) {
                 error = 'distance is missing for ${ex.name}.';
               }
+              break;
+            case MeasurementType.unknown:
+              error = 'unrecognized measurement type for ${ex.name}.';
               break;
           }
 

@@ -2,27 +2,81 @@ enum MeasurementType {
   weightAndReps('weight_and_reps'),
   repsOnly('reps_only'),
   duration('duration'),
-  distance('distance');
+  distance('distance'),
+  unknown('unknown');
 
   final String raw;
   const MeasurementType(this.raw);
 
-  /// Strict string parsing for stored [measurementType] raw values.
-  /// Does NOT perform arbitrary equipment inference at render time.
-  static MeasurementType fromString(String? val) {
-    if (val != null && val.isNotEmpty) {
-      final normalized = val.toLowerCase().trim();
-      for (final type in values) {
-        if (type.raw == normalized ||
-            type.name.toLowerCase() == normalized ||
-            (type == MeasurementType.weightAndReps &&
-                normalized == 'weightandreps') ||
-            (type == MeasurementType.repsOnly && normalized == 'repsonly')) {
-          return type;
-        }
+  // Reviewed catalog lists/maps for mapping specific exercises to their types
+  static const Map<String, MeasurementType> _explicitExceptions = {
+    // Duration exercises
+    'plank': MeasurementType.duration,
+    'wall sit': MeasurementType.duration,
+    'l-sit': MeasurementType.duration,
+
+    // Reps-only exercises
+    'push up': MeasurementType.repsOnly,
+    'pushup': MeasurementType.repsOnly,
+    'push-up': MeasurementType.repsOnly,
+    'pull up': MeasurementType.repsOnly,
+    'pullup': MeasurementType.repsOnly,
+    'pull-up': MeasurementType.repsOnly,
+    'chin up': MeasurementType.repsOnly,
+    'chinup': MeasurementType.repsOnly,
+    'chin-up': MeasurementType.repsOnly,
+    'sit up': MeasurementType.repsOnly,
+    'situp': MeasurementType.repsOnly,
+    'sit-up': MeasurementType.repsOnly,
+    'crunch': MeasurementType.repsOnly,
+    'burpee': MeasurementType.repsOnly,
+    'jumping jack': MeasurementType.repsOnly,
+    'jumping-jack': MeasurementType.repsOnly,
+    'squat jump': MeasurementType.repsOnly,
+    'jump squat': MeasurementType.repsOnly,
+  };
+
+  /// Parses the input string, returning null for missing/unknown/invalid values.
+  static MeasurementType? tryParse(String? val) {
+    if (val == null || val.isEmpty) return null;
+    final normalized = val.toLowerCase().trim();
+    for (final type in values) {
+      if (type.raw == normalized ||
+          type.name.toLowerCase() == normalized ||
+          (type == MeasurementType.weightAndReps &&
+              normalized == 'weightandreps') ||
+          (type == MeasurementType.repsOnly && normalized == 'repsonly')) {
+        return type;
       }
     }
-    return MeasurementType.weightAndReps;
+    return null;
+  }
+
+  /// Strict string parsing for stored [measurementType] raw values.
+  /// Throws an ArgumentError if the input is missing or unrecognized.
+  static MeasurementType fromString(String? val) {
+    final parsed = tryParse(val);
+    if (parsed == null) {
+      throw ArgumentError('Invalid or unknown MeasurementType: "$val"');
+    }
+    return parsed;
+  }
+
+  /// Authoritative measurement type resolver.
+  /// Valid explicit metadata wins; otherwise legacy inference runs.
+  static MeasurementType resolve({
+    required String? explicitValue,
+    required String? equipment,
+    required String? exerciseName,
+  }) {
+    final parsed = tryParse(explicitValue);
+    if (parsed != null) {
+      return parsed;
+    }
+    return inferLegacyMeasurementType(
+      equipment: equipment,
+      exerciseName: exerciseName,
+    );
   }
 
   /// Legacy classifier for old database rows, catalog migration engines, and
@@ -31,64 +85,75 @@ enum MeasurementType {
     required String? equipment,
     required String? exerciseName,
   }) {
-    if (equipment != null && equipment.isNotEmpty) {
-      final eqNorm = equipment
-          .toLowerCase()
-          .replaceAll(' ', '')
-          .replaceAll('_', '')
-          .replaceAll('-', '');
-      if (eqNorm.contains('assisted') ||
-          eqNorm.contains('barbell') ||
-          eqNorm.contains('dumbbell') ||
-          eqNorm.contains('cable') ||
-          eqNorm.contains('machine') ||
-          eqNorm.contains('kettlebell') ||
-          eqNorm.contains('smith')) {
-        return MeasurementType.weightAndReps;
-      }
-      if (eqNorm == 'bodyweight' ||
-          eqNorm == 'none' ||
-          eqNorm == 'noequipment') {
-        if (exerciseName != null) {
-          final nameNorm = exerciseName.toLowerCase();
-          if (nameNorm.contains('plank') ||
-              nameNorm.contains('wall sit') ||
-              nameNorm.contains('hold')) {
-            return MeasurementType.duration;
-          }
-        }
-        return MeasurementType.repsOnly;
+    final String nameNorm = (exerciseName ?? '').toLowerCase().trim();
+    final String eqNorm = (equipment ?? '')
+        .toLowerCase()
+        .replaceAll(' ', '')
+        .replaceAll('_', '')
+        .replaceAll('-', '');
+
+    // 1. Assisted/counterweight exercises remain weighted
+    if (nameNorm.contains('assisted') ||
+        nameNorm.contains('counterweight') ||
+        eqNorm.contains('assisted') ||
+        eqNorm.contains('counterweight')) {
+      return MeasurementType.weightAndReps;
+    }
+
+    // 2. Check explicit name exceptions first
+    for (final entry in _explicitExceptions.entries) {
+      if (nameNorm.contains(entry.key)) {
+        return entry.value;
       }
     }
-    if (exerciseName != null && exerciseName.isNotEmpty) {
-      final nameNorm = exerciseName.toLowerCase();
-      if (nameNorm.contains('plank') ||
-          nameNorm.contains('wall sit') ||
-          nameNorm.contains('hold')) {
-        return MeasurementType.duration;
-      }
-      if (nameNorm.contains('push up') ||
-          nameNorm.contains('pushup') ||
-          nameNorm.contains('push-up') ||
-          nameNorm.contains('pull up') ||
-          nameNorm.contains('pullup') ||
-          nameNorm.contains('pull-up') ||
-          nameNorm.contains('chin up') ||
-          nameNorm.contains('chinup') ||
-          nameNorm.contains('chin-up') ||
-          nameNorm.contains('sit up') ||
-          nameNorm.contains('situp') ||
-          nameNorm.contains('sit-up') ||
-          nameNorm.contains('crunch') ||
-          nameNorm.contains('burpee') ||
-          nameNorm.contains('jumping jack') ||
-          (nameNorm.contains('dip') && !nameNorm.contains('assisted'))) {
-        return MeasurementType.repsOnly;
-      }
+
+    // 3. Check if name is explicitly duration
+    if (nameNorm.contains('hold') ||
+        nameNorm.contains('plank') ||
+        nameNorm.contains('wall sit')) {
+      return MeasurementType.duration;
     }
-    // Assisted counterweight machines, cables, dumbbells, barbells, etc.
-    // all require numeric weight input.
-    return MeasurementType.weightAndReps;
+
+    // 4. Bodyweight / no-equipment exercises default to reps-only (unless duration above)
+    if (eqNorm == 'bodyweight' || eqNorm == 'none' || eqNorm == 'noequipment') {
+      return MeasurementType.repsOnly;
+    }
+
+    // 5. Check other equipment keywords for weighted
+    if (eqNorm.contains('barbell') ||
+        eqNorm.contains('dumbbell') ||
+        eqNorm.contains('cable') ||
+        eqNorm.contains('machine') ||
+        eqNorm.contains('kettlebell') ||
+        eqNorm.contains('smith') ||
+        eqNorm.contains('plate') ||
+        eqNorm.contains('band')) {
+      return MeasurementType.weightAndReps;
+    }
+
+    // 6. If name matches common bodyweight exercises
+    if (nameNorm.contains('push') ||
+        nameNorm.contains('pull') ||
+        nameNorm.contains('chin') ||
+        nameNorm.contains('dip') ||
+        nameNorm.contains('crunch') ||
+        nameNorm.contains('situp')) {
+      return MeasurementType.repsOnly;
+    }
+
+    // 7. If we have a non-generic name, default to weightAndReps
+    final isGeneric = nameNorm.isEmpty ||
+        nameNorm == 'custom' ||
+        nameNorm == 'custom exercise' ||
+        nameNorm == 'unknown' ||
+        nameNorm == 'exercise';
+    if (!isGeneric) {
+      return MeasurementType.weightAndReps;
+    }
+
+    // 8. If absolutely no metadata/match is found, default to unknown
+    // (Missing metadata must never silently default to weighted)
+    return MeasurementType.unknown;
   }
 
   bool get requiresWeight => this == MeasurementType.weightAndReps;
@@ -103,6 +168,7 @@ enum MeasurementType {
   bool get isRepsOnly => this == MeasurementType.repsOnly;
   bool get isDuration => this == MeasurementType.duration;
   bool get isDistance => this == MeasurementType.distance;
+  bool get isUnknown => this == MeasurementType.unknown;
 
   // ── Column visibility ────────────────────────────────────────────────────
   /// True when a weight / load / distance input column should be shown.
@@ -113,7 +179,8 @@ enum MeasurementType {
   /// True when a reps / count / seconds column should be shown.
   /// [distance] stores its single metric in the weight slot, so it hides
   /// the reps slot.
-  bool get showsRepsColumn => this != MeasurementType.distance;
+  bool get showsRepsColumn =>
+      this != MeasurementType.distance && this != MeasurementType.unknown;
 
   // ── Column labels ────────────────────────────────────────────────────────
   /// Header label for the reps-slot column.

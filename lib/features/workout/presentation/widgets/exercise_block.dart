@@ -105,7 +105,7 @@ class ExerciseBlock extends ConsumerWidget {
         ex.exerciseId,
         ex.name,
         ex.sets.map((s) => s.id).join(','),
-        ex.measurementType, // $4 — authoritative source
+        ex.resolvedMeasurementType, // $4 — authoritative source
       );
     }));
 
@@ -116,17 +116,11 @@ class ExerciseBlock extends ConsumerWidget {
     final exerciseName = exerciseMeta.$2;
     final setIds =
         exerciseMeta.$3.isEmpty ? const <String>[] : exerciseMeta.$3.split(',');
-    final stateMType = exerciseMeta.$4;
+    final MeasurementType mType = exerciseMeta.$4;
 
     final catalogById =
         ref.watch(exerciseCatalogByIdProvider).valueOrNull ?? {};
     final de = catalogById[exerciseId];
-    final String? rawType =
-        stateMType.isNotEmpty ? stateMType : de?.measurementType;
-    final mType = (rawType != null && rawType.isNotEmpty)
-        ? MeasurementType.fromString(rawType)
-        : MeasurementType.inferLegacyMeasurementType(
-            equipment: de?.equipment, exerciseName: de?.name);
 
     final unit = ref.watch(exerciseUnitProvider(exerciseId));
     final previousSets =

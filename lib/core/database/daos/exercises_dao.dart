@@ -142,10 +142,11 @@ class ExercisesDao extends DatabaseAccessor<AppDatabase>
     String target = 'other',
     String? measurementType,
   }) {
-    final resolvedType = measurementType ??
-        MeasurementType.inferLegacyMeasurementType(
-                equipment: equipment, exerciseName: name)
-            .raw;
+    final resolvedType = MeasurementType.resolve(
+      explicitValue: measurementType,
+      equipment: equipment,
+      exerciseName: name,
+    ).raw;
     return into(exercises).insert(ExercisesCompanion.insert(
       name: name,
       bodyPart: bodyPart,
@@ -199,11 +200,11 @@ class ExercisesDao extends DatabaseAccessor<AppDatabase>
           final hasGif = e['gif'] == true;
           final equipment = e['equipment'] as String;
           final rawMType = e['measurementType'] as String?;
-          final mType = rawMType != null && rawMType.isNotEmpty
-              ? MeasurementType.fromString(rawMType).raw
-              : MeasurementType.inferLegacyMeasurementType(
-                      equipment: equipment, exerciseName: name)
-                  .raw;
+          final mType = MeasurementType.resolve(
+            explicitValue: rawMType,
+            equipment: equipment,
+            exerciseName: name,
+          ).raw;
           final companion = ExercisesCompanion.insert(
             exerciseDbId: Value(id),
             name: name,
