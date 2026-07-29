@@ -29,6 +29,6 @@ This document tracks the verification of corrections for the GymLog release cand
 | Database recovery catches reset failure silently | P1 | Code audit of database recovery screen | `ATOMIC-RC3-19` | `a4c0e46` | 519 tests pass | | **Passed** |
 | Settings copy claims cloud backup generally | P1 | Code audit of settings screen | `ATOMIC-RC3-20` | `1aca7e6` | 519 tests pass | | **Passed** |
 | Paywall feature/plan rows fragile at large text | P1 | Code audit of paywall widget | `ATOMIC-RC3-22` | `40b8a59` | 519 tests pass | | **Passed** |
-| Delete menus say "cannot be undone" despite Undo | P1 | Code audit of menus | `ATOMIC-RC3-23` | | | | Pending |
+| Delete menus say "cannot be undone" despite Undo | P1 | Code audit of menus | `ATOMIC-RC3-23` | `327cb1b` | 519 tests pass | | **Passed** |
 | Exercise removal in Active Workout is immediate | P1 | Code audit of workout screen | `ATOMIC-RC3-12` | `7d7d734` | 515 tests pass | | **Passed** |
 | Help report silently copies diagnostics | P2 | Code audit of help feedback screen | `ATOMIC-RC3-21` | `40b8a59` | 519 tests pass | | **Passed** |
