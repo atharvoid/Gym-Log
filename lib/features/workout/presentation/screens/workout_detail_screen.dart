@@ -141,7 +141,9 @@ class WorkoutDetailScreen extends ConsumerWidget {
         child: CustomScrollView(
           slivers: [
             WorkoutHeroSliver(
-              workoutId: session.id,
+              // RC3-09: Hero flying-title animation removed — pass null so
+              // the sliver renders a plain Text with no Hero widget.
+              workoutId: null,
               name: name,
               dateStr: dateStr,
               durationStr: durationStr,

@@ -147,8 +147,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final int baseCount = showFindProgram ? 4 : 3;
     final itemCount = baseCount + totalItems + 1;
 
-    final seenSessionIds = <String>{};
-
     return Scaffold(
       backgroundColor: surface.bgBase,
       body: SafeArea(
@@ -184,13 +182,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     final historyIndex = index - baseCount;
                     if (historyIndex < totalItems) {
                       final preview = historyState.items[historyIndex];
-                      final enableHero = seenSessionIds.add(preview.session.id);
+
                       return Padding(
                         padding: const EdgeInsets.only(bottom: 8),
                         child: WorkoutHistoryCard(
                           key: ValueKey(preview.session.id),
                           preview: preview,
-                          enableHero: enableHero,
+                          // RC3-09: Hero flying-title animation removed.
+                          enableHero: false,
                           onMenuPressed: () {
                             HapticFeedback.selectionClick();
                             _showWorkoutCardMenu(preview.session);
