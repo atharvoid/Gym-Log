@@ -34,38 +34,8 @@ class AuthScreen extends ConsumerStatefulWidget {
   ConsumerState<AuthScreen> createState() => _AuthScreenState();
 }
 
-class _AuthScreenState extends ConsumerState<AuthScreen>
-    with SingleTickerProviderStateMixin {
+class _AuthScreenState extends ConsumerState<AuthScreen> {
   bool _isSigningIn = false;
-  late final AnimationController _entranceController;
-
-  @override
-  void initState() {
-    super.initState();
-    _entranceController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 280),
-    );
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    if (MediaQuery.disableAnimationsOf(context)) {
-      _entranceController.value = 1.0;
-    } else {
-      if (!_entranceController.isAnimating &&
-          _entranceController.value == 0.0) {
-        _entranceController.forward();
-      }
-    }
-  }
-
-  @override
-  void dispose() {
-    _entranceController.dispose();
-    super.dispose();
-  }
 
   Future<void> _signIn() async {
     if (_isSigningIn) return;
@@ -129,40 +99,6 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
     } catch (_) {
       if (mounted) _snack("Couldn't open the link.");
     }
-  }
-
-  Widget _entrance({
-    required Widget child,
-    double start = 0,
-  }) {
-    final reducedMotion = MediaQuery.disableAnimationsOf(context);
-
-    if (reducedMotion) {
-      return child;
-    }
-
-    final animation = CurvedAnimation(
-      parent: _entranceController,
-      curve: Interval(
-        start,
-        1.0,
-        curve: Curves.easeOutCubic,
-      ),
-    );
-
-    return AnimatedBuilder(
-      animation: animation,
-      child: child,
-      builder: (context, child) {
-        return Opacity(
-          opacity: animation.value,
-          child: Transform.translate(
-            offset: Offset(0, 8 * (1 - animation.value)),
-            child: child,
-          ),
-        );
-      },
-    );
   }
 
   @override
@@ -398,14 +334,14 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              _entrance(child: brandBlock, start: 0.0),
+                              brandBlock,
                               const SizedBox(height: 24),
                               const Spacer(),
-                              _entrance(child: trustBlock, start: 0.1),
+                              trustBlock,
                               const SizedBox(height: 24),
-                              _entrance(child: signInButton, start: 0.2),
+                              signInButton,
                               const SizedBox(height: 18),
-                              _entrance(child: legalBlock, start: 0.28),
+                              legalBlock,
                             ],
                           ),
                         ),
