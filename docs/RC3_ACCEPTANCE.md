@@ -24,7 +24,7 @@ This document tracks the verification of corrections for the GymLog release cand
 | Rest timer permission status is not queried | P1 | Code audit of rest services | `ATOMIC-RC3-13` | `3d6487b` | 515 tests pass | | **Passed** |
 | Routine / workout summaries volume-centered | P1 | Code audit of summary projections | `ATOMIC-RC3-14` | `7576e95` | 519 tests pass | | **Passed** |
 | Routine editor card overloaded horizontally | P1 | Code audit of routine editor screen | `ATOMIC-RC3-16` | `201ce25` | 519 tests pass | | **Passed** |
-| Exercise selection disables normal keyboard resizing | P1 | Code audit of exercise search screen | `ATOMIC-RC3-17` | | | | Pending |
+| Exercise selection disables normal keyboard resizing | P1 | Code audit of exercise search screen | `ATOMIC-RC3-17` | `5b0903f` | 519 tests pass | | **Passed** |
 | Resume-draft Discard clears immediately and silently | P1 | Code audit of draft resume sheet | `ATOMIC-RC3-19` | | | | Pending |
 | Database recovery catches reset failure silently | P1 | Code audit of database recovery screen | `ATOMIC-RC3-19` | | | | Pending |
 | Settings copy claims cloud backup generally | P1 | Code audit of settings screen | `ATOMIC-RC3-20` | | | | Pending |
