@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:gymlog/core/theme/app_colors.dart';
 import 'package:gymlog/core/theme/dynamic_accent_theme.dart';
@@ -42,6 +44,12 @@ class ActiveWorkoutHeader extends StatelessWidget {
     final isCompactOrLargeText =
         context.adaptive.isCompact || context.adaptive.textScaleFactor >= 1.6;
 
+    // Fold the status-bar inset into the grab-handle strip (edge-to-edge
+    // makes viewPadding.top non-zero; a SafeArea would add the inset as dead
+    // space ON TOP of the strip). The header background extends into the
+    // inset area via the outer Container decoration.
+    final topInset = MediaQuery.viewPaddingOf(context).top;
+
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onVerticalDragEnd: (details) {
@@ -57,25 +65,25 @@ class ActiveWorkoutHeader extends StatelessWidget {
           ),
         ),
         padding: const EdgeInsets.only(left: 12, right: 12, bottom: 10),
-        child: SafeArea(
-          bottom: false,
-          child: Container(
-            constraints: const BoxConstraints(minHeight: 76),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                _buildGrabHandle(surface),
-                if (isCompactOrLargeText) _buildReflowedLayout(surface, accent),
-                if (!isCompactOrLargeText) _buildNormalLayout(surface, accent),
-              ],
-            ),
+        child: Container(
+          constraints: const BoxConstraints(minHeight: 76),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _buildGrabHandle(surface, topInset),
+              if (isCompactOrLargeText) _buildReflowedLayout(surface, accent),
+              if (!isCompactOrLargeText) _buildNormalLayout(surface, accent),
+            ],
           ),
         ),
       ),
     );
   }
 
-  Widget _buildGrabHandle(SurfaceTokens surface) {
+  Widget _buildGrabHandle(SurfaceTokens surface, double topInset) {
+    // Strip absorbs the status-bar inset: always >= 48dp (a11y touch target),
+    // growing on notched devices so the pill always clears the status bar.
+    // Pill is bottom-aligned directly above the navigation row.
     return Semantics(
       button: true,
       label: 'Minimize workout',
@@ -84,9 +92,11 @@ class ActiveWorkoutHeader extends StatelessWidget {
         onTap: onMinimize,
         child: Container(
           width: 60,
-          height: 48,
-          alignment: Alignment.center,
+          height: math.max(48.0, topInset + 20.0),
+          alignment: Alignment.bottomCenter,
+          padding: const EdgeInsets.only(bottom: 8),
           child: Container(
+            key: const ValueKey('grab-handle-pill'),
             width: 36,
             height: 4,
             decoration: BoxDecoration(

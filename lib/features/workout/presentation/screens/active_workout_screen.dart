@@ -442,137 +442,156 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
 
     final surface = context.surface;
 
-    return Scaffold(
-      backgroundColor: surface.bgBase,
-      body: AdaptiveContent(
-          child: Column(
-        children: [
-          Consumer(
-            builder: (context, ref, _) {
-              final timer = ref.watch(workoutTimerProvider);
-              final totals = ref.watch(sessionTotalsProvider);
-              final volumeKg = totals.$1;
-              final completedSets = totals.$2;
-              final workoutName = ref.watch(
-                activeWorkoutProvider.select(
-                  (state) => state == null
-                      ? 'Active Workout'
-                      : getWorkoutNameFallback(state.startTime, state.name),
-                ),
-              );
-              return ActiveWorkoutHeader(
-                isEditing: isEditing,
-                workoutName: workoutName,
-                elapsedTime: timer,
-                volumeKg: volumeKg,
-                completedSets: completedSets,
-                weightUnit: globalUnit,
-                finishEnabled: completedSets > 0 && !_isSaving,
-                onMinimize: () => context.pop(),
-                onClose: isEditing ? () => context.pop() : _confirmDiscard,
-                onFinish:
-                    _isSaving ? null : (isEditing ? _saveChanges : _finish),
-              );
-            },
-          ),
-          Expanded(
-            child: !workoutExists
-                ? const SizedBox.shrink()
-                : exerciseIds.isEmpty
-                    ? EntranceFade(
-                        child: Center(
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 24),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                Icon(
-                                  Icons.fitness_center_rounded,
-                                  size: 48,
-                                  color: surface.textTertiary,
-                                ),
-                                const SizedBox(height: 16),
-                                Text(
-                                  'Add your first exercise',
-                                  style: AppText.sheetTitle(
-                                      color: surface.textPrimary),
-                                  textAlign: TextAlign.center,
-                                ),
-                                const SizedBox(height: 6),
-                                Text(
-                                  'Choose from our library or build a custom move.',
-                                  style: AppText.body(
-                                      color: surface.textSecondary),
-                                  textAlign: TextAlign.center,
-                                ),
-                                const SizedBox(height: 24),
-                                SizedBox(
-                                  width: 200,
-                                  child: _buildAddExerciseButton(notifier),
-                                ),
-                              ],
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: surface.isLight
+          ? SystemUiOverlayStyle.dark
+          : SystemUiOverlayStyle.light,
+      child: Scaffold(
+        backgroundColor: surface.bgBase,
+        body: AdaptiveContent(
+            child: Column(
+          children: [
+            Consumer(
+              builder: (context, ref, _) {
+                final timer = ref.watch(workoutTimerProvider);
+                final totals = ref.watch(sessionTotalsProvider);
+                final volumeKg = totals.$1;
+                final completedSets = totals.$2;
+                final workoutName = ref.watch(
+                  activeWorkoutProvider.select(
+                    (state) => state == null
+                        ? 'Active Workout'
+                        : getWorkoutNameFallback(state.startTime, state.name),
+                  ),
+                );
+                return ActiveWorkoutHeader(
+                  isEditing: isEditing,
+                  workoutName: workoutName,
+                  elapsedTime: timer,
+                  volumeKg: volumeKg,
+                  completedSets: completedSets,
+                  weightUnit: globalUnit,
+                  finishEnabled: completedSets > 0 && !_isSaving,
+                  onMinimize: () => context.pop(),
+                  onClose: isEditing ? () => context.pop() : _confirmDiscard,
+                  onFinish:
+                      _isSaving ? null : (isEditing ? _saveChanges : _finish),
+                );
+              },
+            ),
+            Expanded(
+              child: !workoutExists
+                  ? const SizedBox.shrink()
+                  : exerciseIds.isEmpty
+                      ? EntranceFade(
+                          child: Center(
+                            child: Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 24),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.fitness_center_rounded,
+                                    size: 48,
+                                    color: surface.textTertiary,
+                                  ),
+                                  const SizedBox(height: 16),
+                                  Text(
+                                    'Add your first exercise',
+                                    style: AppText.sheetTitle(
+                                        color: surface.textPrimary),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                  const SizedBox(height: 6),
+                                  Text(
+                                    'Choose from our library or build a custom move.',
+                                    style: AppText.body(
+                                        color: surface.textSecondary),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                  const SizedBox(height: 24),
+                                  SizedBox(
+                                    width: 200,
+                                    child: _buildAddExerciseButton(notifier),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
-                        ),
-                      )
-                    : ListView.builder(
-                        padding: EdgeInsets.only(
-                          top: 8,
-                          bottom: MediaQuery.viewPaddingOf(context).bottom +
-                              _bottomListPadding,
-                        ),
-                        itemCount: exerciseIds.length + 1,
-                        itemBuilder: (context, index) {
-                          if (index == exerciseIds.length) {
-                            return _buildAddExerciseButton(notifier);
-                          }
-                          return ExerciseBlock(
-                            key: ValueKey(exerciseIds[index]),
-                            exerciseIndex: index,
-                            enableHero: heroEnabledList[index],
-                            onReorderExercises: exerciseIds.length > 1
-                                ? _showReorderSheet
-                                : null,
-                            onRemove: () {
-                              final messenger = ScaffoldMessenger.of(context);
-                              final exercise = ref
-                                  .read(activeWorkoutProvider)
-                                  ?.exercises[index];
-                              if (exercise == null) return;
-                              final snapshot =
-                                  notifier.removeExerciseWithSnapshot(index);
-                              if (snapshot == null) return;
-                              showUndoableDelete(
-                                messenger: messenger,
-                                label: '"${snapshot.name}" removed',
-                                onUndo: () =>
-                                    notifier.insertExerciseAt(index, snapshot),
-                              );
-                            },
-                            onUnitTap: () => _pickUnit(index),
-                            onReplace: () async {
-                              final selected = await context
-                                  .push<Exercise>('/exercises/select');
-                              if (selected == null || !context.mounted) return;
-                              final workout = ref.read(activeWorkoutProvider);
-                              if (workout != null &&
-                                  index < workout.exercises.length) {
-                                final oldExercise = workout.exercises[index];
-                                if (hasMeaningfulSetData(oldExercise)) {
-                                  if (!context.mounted) return;
-                                  final choice =
-                                      await _showReplaceExerciseDialog(context);
-                                  if (choice == ReplacementChoice.keepValues) {
-                                    notifier.replaceExerciseWithPolicy(
-                                      index,
-                                      selected.id,
-                                      selected.name,
-                                      keepCompatibleValues: true,
-                                      measurementType: selected.measurementType,
-                                    );
-                                  } else if (choice ==
-                                      ReplacementChoice.clearSets) {
+                        )
+                      : ListView.builder(
+                          padding: EdgeInsets.only(
+                            top: 8,
+                            bottom: MediaQuery.viewPaddingOf(context).bottom +
+                                _bottomListPadding,
+                          ),
+                          itemCount: exerciseIds.length + 1,
+                          itemBuilder: (context, index) {
+                            if (index == exerciseIds.length) {
+                              return _buildAddExerciseButton(notifier);
+                            }
+                            return ExerciseBlock(
+                              key: ValueKey(exerciseIds[index]),
+                              exerciseIndex: index,
+                              enableHero: heroEnabledList[index],
+                              onReorderExercises: exerciseIds.length > 1
+                                  ? _showReorderSheet
+                                  : null,
+                              onRemove: () {
+                                final messenger = ScaffoldMessenger.of(context);
+                                final exercise = ref
+                                    .read(activeWorkoutProvider)
+                                    ?.exercises[index];
+                                if (exercise == null) return;
+                                final snapshot =
+                                    notifier.removeExerciseWithSnapshot(index);
+                                if (snapshot == null) return;
+                                showUndoableDelete(
+                                  messenger: messenger,
+                                  label: '"${snapshot.name}" removed',
+                                  onUndo: () => notifier.insertExerciseAt(
+                                      index, snapshot),
+                                );
+                              },
+                              onUnitTap: () => _pickUnit(index),
+                              onReplace: () async {
+                                final selected = await context
+                                    .push<Exercise>('/exercises/select');
+                                if (selected == null || !context.mounted)
+                                  return;
+                                final workout = ref.read(activeWorkoutProvider);
+                                if (workout != null &&
+                                    index < workout.exercises.length) {
+                                  final oldExercise = workout.exercises[index];
+                                  if (hasMeaningfulSetData(oldExercise)) {
+                                    if (!context.mounted) return;
+                                    final choice =
+                                        await _showReplaceExerciseDialog(
+                                            context);
+                                    if (choice ==
+                                        ReplacementChoice.keepValues) {
+                                      notifier.replaceExerciseWithPolicy(
+                                        index,
+                                        selected.id,
+                                        selected.name,
+                                        keepCompatibleValues: true,
+                                        measurementType:
+                                            selected.measurementType,
+                                      );
+                                    } else if (choice ==
+                                        ReplacementChoice.clearSets) {
+                                      notifier.replaceExerciseWithPolicy(
+                                        index,
+                                        selected.id,
+                                        selected.name,
+                                        keepCompatibleValues: false,
+                                        measurementType:
+                                            selected.measurementType,
+                                      );
+                                    }
+                                  } else {
                                     notifier.replaceExerciseWithPolicy(
                                       index,
                                       selected.id,
@@ -581,69 +600,62 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
                                       measurementType: selected.measurementType,
                                     );
                                   }
-                                } else {
-                                  notifier.replaceExerciseWithPolicy(
-                                    index,
-                                    selected.id,
-                                    selected.name,
-                                    keepCompatibleValues: false,
-                                    measurementType: selected.measurementType,
-                                  );
                                 }
-                              }
-                            },
-                            onAddSet: () => notifier.addSet(index),
-                            onRemoveSet: (setIdx) {
-                              notifier.removeSet(index, setIdx);
-                            },
-                            onSetChanged: (updatedSet) {
-                              final workout = ref.read(activeWorkoutProvider);
-                              if (workout == null ||
-                                  index >= workout.exercises.length) {
-                                return;
-                              }
-                              final exercise = workout.exercises[index];
-                              notifier.replaceSet(
-                                  exercise.id, updatedSet.id, updatedSet);
-                            },
-                            onToggleSetCompletion: (setIdx) =>
-                                _toggleSet(index, setIdx, isEditing: isEditing),
-                          );
-                        },
-                      ),
-          ),
-        ],
-      )),
-      bottomNavigationBar: !workoutExists || restTimer == null
-          ? null
-          : Container(
-              decoration: BoxDecoration(
-                color: surface.bgBase,
-                border: Border(
-                  top: BorderSide(color: surface.borderSubtle, width: 0.5),
-                ),
-              ),
-              child: SafeArea(
-                top: false,
-                child: AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 240),
-                  switchInCurve: Curves.easeOutCubic,
-                  switchOutCurve: Curves.easeInCubic,
-                  transitionBuilder: (child, animation) => SizeTransition(
-                    sizeFactor: animation,
-                    child: SlideTransition(
-                      position: Tween<Offset>(
-                        begin: const Offset(0, 1),
-                        end: Offset.zero,
-                      ).animate(animation),
-                      child: child,
-                    ),
-                  ),
-                  child: RestTimerBar(
-                      key: const ValueKey('rest'), state: restTimer),
-                ),
-              ),
+                              },
+                              onAddSet: () => notifier.addSet(index),
+                              onRemoveSet: (setIdx) {
+                                notifier.removeSet(index, setIdx);
+                              },
+                              onSetChanged: (updatedSet) {
+                                final workout = ref.read(activeWorkoutProvider);
+                                if (workout == null ||
+                                    index >= workout.exercises.length) {
+                                  return;
+                                }
+                                final exercise = workout.exercises[index];
+                                notifier.replaceSet(
+                                    exercise.id, updatedSet.id, updatedSet);
+                              },
+                              onToggleSetCompletion: (setIdx) => _toggleSet(
+                                  index, setIdx,
+                                  isEditing: isEditing),
+                            );
+                          },
+                        ),
             ),
+          ],
+        )),
+        bottomNavigationBar: !workoutExists || restTimer == null
+            ? null
+            : Container(
+                decoration: BoxDecoration(
+                  color: surface.bgBase,
+                  border: Border(
+                    top: BorderSide(color: surface.borderSubtle, width: 0.5),
+                  ),
+                ),
+                child: SafeArea(
+                  top: false,
+                  child: AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 240),
+                    switchInCurve: Curves.easeOutCubic,
+                    switchOutCurve: Curves.easeInCubic,
+                    transitionBuilder: (child, animation) => SizeTransition(
+                      sizeFactor: animation,
+                      child: SlideTransition(
+                        position: Tween<Offset>(
+                          begin: const Offset(0, 1),
+                          end: Offset.zero,
+                        ).animate(animation),
+                        child: child,
+                      ),
+                    ),
+                    child: RestTimerBar(
+                        key: const ValueKey('rest'), state: restTimer),
+                  ),
+                ),
+              ),
+      ),
     );
   }
 }

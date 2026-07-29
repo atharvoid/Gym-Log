@@ -46,6 +46,25 @@ Widget _headerLargeText() => MediaQuery(
       ),
     );
 
+Widget _headerWithStatusBarInset() => MediaQuery(
+      data: const MediaQueryData(viewPadding: EdgeInsets.only(top: 30)),
+      child: SizedBox(
+        width: 390,
+        child: ActiveWorkoutHeader(
+          isEditing: false,
+          workoutName: 'Active Workout',
+          elapsedTime: '00:12:34',
+          volumeKg: 1250.0,
+          completedSets: 8,
+          weightUnit: 'kg',
+          finishEnabled: true,
+          onMinimize: () {},
+          onClose: () {},
+          onFinish: () {},
+        ),
+      ),
+    );
+
 void main() {
   goldenTest(
     'ActiveWorkoutHeader renders correctly per theme (normal layout)',
@@ -62,6 +81,15 @@ void main() {
     builder: () => allThemesGroup(
       'ActiveWorkoutHeader (large-text)',
       _headerLargeText(),
+    ),
+  );
+
+  goldenTest(
+    'ActiveWorkoutHeader renders correctly per theme (status-bar inset)',
+    fileName: 'active_workout_header_inset',
+    builder: () => allThemesGroup(
+      'ActiveWorkoutHeader (inset)',
+      _headerWithStatusBarInset(),
     ),
   );
 }
