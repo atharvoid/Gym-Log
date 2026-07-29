@@ -15,7 +15,7 @@ part 'exercises_dao.g.dart';
 /// v3: unified catalog (standard Hevy/Strong names + parent→child muscles),
 /// upsert-by-exerciseDbId so existing rows are renamed/re-muscled in place and
 /// GIF links are refreshed, with null gifUrl for exercises that have no GIF yet.
-const _kHydrationKey = 'exercises_hydrated_v7';
+const _kHydrationKey = 'exercises_hydrated_v8';
 
 /// Base URL of the public storage bucket that hosts exercise GIFs.
 /// Centralized in [Env] (overridable via --dart-define GIF_BUCKET_BASE).
@@ -229,12 +229,15 @@ class ExercisesDao extends DatabaseAccessor<AppDatabase>
       });
 
       await prefs.setBool(_kHydrationKey, true);
+      await prefs.remove('exercises_hydrated_v7');
+      await prefs.remove('exercises_hydrated_v6');
+      await prefs.remove('exercises_hydrated_v5');
       await prefs.remove('exercises_hydrated_v4');
       await prefs.remove('exercises_hydrated_v3');
       await prefs.remove('exercises_hydrated_v2');
       await prefs.remove('exercises_hydrated_v1');
       debugPrint(
-          '[ExercisesDao] Hydration v5 complete: ${list.length} exercises.');
+          '[ExercisesDao] Hydration v8 complete: ${list.length} exercises.');
     } catch (e, st) {
       debugPrint('[ExercisesDao] hydrateFromJson failed: $e\n$st');
       await seedDefaultExercises();
@@ -250,6 +253,11 @@ class ExercisesDao extends DatabaseAccessor<AppDatabase>
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_kHydrationKey);
     // Also clear older keys if present
+    await prefs.remove('exercises_hydrated_v7');
+    await prefs.remove('exercises_hydrated_v6');
+    await prefs.remove('exercises_hydrated_v5');
+    await prefs.remove('exercises_hydrated_v4');
+    await prefs.remove('exercises_hydrated_v3');
     await prefs.remove('exercises_hydrated_v2');
     await prefs.remove('exercises_hydrated_v1');
     debugPrint(
@@ -263,57 +271,36 @@ class ExercisesDao extends DatabaseAccessor<AppDatabase>
     final existing = await getAllExercises();
     if (existing.isNotEmpty) return;
 
-    await insertExercises([
-      ExercisesCompanion.insert(
-          name: 'Barbell Bench Press',
-          bodyPart: 'chest',
-          equipment: 'barbell',
-          target: 'pectorals'),
-      ExercisesCompanion.insert(
-          name: 'Barbell Squat',
-          bodyPart: 'upper legs',
-          equipment: 'barbell',
-          target: 'quadriceps'),
-      ExercisesCompanion.insert(
-          name: 'Deadlift',
-          bodyPart: 'back',
-          equipment: 'barbell',
-          target: 'spine'),
-      ExercisesCompanion.insert(
-          name: 'Pull-up',
-          bodyPart: 'back',
-          equipment: 'body weight',
-          target: 'lats'),
-      ExercisesCompanion.insert(
-          name: 'Overhead Press',
-          bodyPart: 'shoulders',
-          equipment: 'barbell',
-          target: 'delts'),
-      ExercisesCompanion.insert(
-          name: 'Dumbbell Lateral Raise',
-          bodyPart: 'shoulders',
-          equipment: 'dumbbell',
-          target: 'delts'),
-      ExercisesCompanion.insert(
-          name: 'Tricep Pushdown',
-          bodyPart: 'upper arms',
-          equipment: 'cable',
-          target: 'triceps'),
-      ExercisesCompanion.insert(
-          name: 'Bicep Curl',
-          bodyPart: 'upper arms',
-          equipment: 'dumbbell',
-          target: 'biceps'),
-      ExercisesCompanion.insert(
-          name: 'Leg Press',
-          bodyPart: 'upper legs',
-          equipment: 'machine',
-          target: 'quadriceps'),
-      ExercisesCompanion.insert(
-          name: 'Romanian Deadlift',
-          bodyPart: 'upper legs',
-          equipment: 'barbell',
-          target: 'hamstrings'),
-    ]);
+    final defaultExercises = [
+      ('Barbell Bench Press', 'chest', 'barbell', 'pectorals'),
+      ('Barbell Squat', 'upper legs', 'barbell', 'quadriceps'),
+      ('Deadlift', 'back', 'barbell', 'spine'),
+      ('Pull-up', 'back', 'body weight', 'lats'),
+      ('Overhead Press', 'shoulders', 'barbell', 'delts'),
+      ('Dumbbell Lateral Raise', 'shoulders', 'dumbbell', 'delts'),
+      ('Tricep Pushdown', 'upper arms', 'cable', 'triceps'),
+      ('Bicep Curl', 'upper arms', 'dumbbell', 'biceps'),
+      ('Leg Press', 'upper legs', 'machine', 'quadriceps'),
+      ('Romanian Deadlift', 'upper legs', 'barbell', 'hamstrings'),
+    ];
+
+    await insertExercises(defaultExercises.map((e) {
+      final name = e.$1;
+      final bodyPart = e.$2;
+      final equipment = e.$3;
+      final target = e.$4;
+      final mType = MeasurementType.resolve(
+        explicitValue: null,
+        equipment: equipment,
+        exerciseName: name,
+      ).raw;
+      return ExercisesCompanion.insert(
+        name: name,
+        bodyPart: bodyPart,
+        equipment: equipment,
+        target: target,
+        measurementType: Value(mType),
+      );
+    }).toList());
   }
 }
