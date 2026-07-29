@@ -255,7 +255,6 @@ class _ExerciseSelectionScreenState
 
     return Scaffold(
       backgroundColor: surface.bgBase,
-      resizeToAvoidBottomInset: false,
       appBar: AppBar(
         title: Text(
           widget.browse ? 'Exercise Library' : 'Select Exercise',
