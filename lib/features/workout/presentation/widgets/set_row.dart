@@ -167,18 +167,14 @@ class _SetRowState extends State<SetRow> {
 
   // ── Completion logic ──────────────────────────────────────────────────────
 
-  /// Whether the set has enough data to be marked complete.
-  bool get _canComplete => switch (widget.measurementType) {
-        MeasurementType.weightAndReps =>
-          ((widget.setData.weightKg != null && widget.setData.weightKg! > 0) ||
-                  widget.previousWeight != null) &&
-              (widget.setData.reps > 0 || widget.previousReps != null),
-        MeasurementType.distance =>
-          (widget.setData.weightKg != null && widget.setData.weightKg! > 0) ||
-              widget.previousWeight != null,
-        _ => // repsOnly, duration
-          widget.setData.reps > 0 || widget.previousReps != null,
-      };
+  // Whether the set has enough data to be marked complete.
+  bool get _canComplete => canCompleteSetRaw(
+        measurementType: widget.measurementType,
+        weightKg: widget.setData.weightKg,
+        reps: widget.setData.reps,
+        previousWeight: widget.previousWeight,
+        previousReps: widget.previousReps,
+      );
 
   // ── Validation flash targets ───────────────────────────────────────────
 
@@ -552,6 +548,10 @@ class _SetRowState extends State<SetRow> {
                             : '0',
                         flashHint: _repsShouldFlash,
                         onChanged: (val) {
+                          if (val.trim().isEmpty) {
+                            widget.onChanged(widget.setData.copyWith(reps: 0));
+                            return;
+                          }
                           final parsed = int.tryParse(val);
                           if (parsed != null) {
                             widget.onChanged(widget.setData

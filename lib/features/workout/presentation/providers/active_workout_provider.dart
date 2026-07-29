@@ -19,6 +19,7 @@ import '../../domain/active_workout_state.dart';
 import '../../domain/workout_save_result.dart';
 import 'rest_timer_provider.dart';
 import 'workout_event_provider.dart';
+import 'previous_session_provider.dart';
 
 class ActiveWorkoutNotifier extends StateNotifier<ActiveWorkoutState?> {
   final Ref _ref;
@@ -397,18 +398,29 @@ class ActiveWorkoutNotifier extends StateNotifier<ActiveWorkoutState?> {
     saveDraftNow();
   }
 
-  void updateSet(int exerciseIndex, int setIndex,
-      {double? weight, int? reps, String? type}) {
+  void replaceSet(
+      String exerciseInstanceId, String setId, WorkoutSetState next) {
     if (state == null) return;
     final exercises = [...state!.exercises];
+    final exerciseIndex =
+        exercises.indexWhere((e) => e.id == exerciseInstanceId);
+    if (exerciseIndex == -1) return;
+
     final exercise = exercises[exerciseIndex];
     final sets = [...exercise.sets];
+    final setIndex = sets.indexWhere((s) => s.id == setId);
+    if (setIndex == -1) return;
+
     final mType = MeasurementType.fromString(exercise.measurementType);
-    sets[setIndex] = sets[setIndex].copyWith(
-      weightKg: mType.isRepsOnly ? null : (weight ?? sets[setIndex].weightKg),
-      reps: reps ?? sets[setIndex].reps,
-      setType: type ?? sets[setIndex].setType,
+    final double? resolvedWeight =
+        mType.showsWeightColumn ? next.weightKg : null;
+    final int resolvedReps = mType.showsRepsColumn ? next.reps : 0;
+
+    sets[setIndex] = next.copyWith(
+      weightKg: resolvedWeight,
+      reps: resolvedReps,
     );
+
     exercises[exerciseIndex] = exercise.copyWith(sets: sets);
     state = state!.copyWith(exercises: exercises);
   }
@@ -419,6 +431,31 @@ class ActiveWorkoutNotifier extends StateNotifier<ActiveWorkoutState?> {
     final exercise = exercises[exerciseIndex];
     final sets = [...exercise.sets];
     final current = sets[setIndex];
+
+    if (!current.isCompleted) {
+      final previousSetsAsync =
+          _ref.read(previousSessionSetsProvider(exercise.exerciseId));
+      final previousSets = previousSetsAsync.valueOrNull ?? const [];
+
+      double? prevWeight;
+      int? prevReps;
+      if (setIndex < previousSets.length) {
+        prevWeight = previousSets[setIndex].weightKg;
+        prevReps = previousSets[setIndex].reps;
+      }
+
+      final mType = MeasurementType.fromString(exercise.measurementType);
+      final canComplete = canCompleteSetRaw(
+        measurementType: mType,
+        weightKg: current.weightKg,
+        reps: current.reps,
+        previousWeight: prevWeight,
+        previousReps: prevReps,
+      );
+
+      if (!canComplete) return;
+    }
+
     sets[setIndex] = current.copyWith(
       isCompleted: !current.isCompleted,
       completedAt: !current.isCompleted ? DateTime.now() : null,

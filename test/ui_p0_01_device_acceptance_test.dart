@@ -47,6 +47,8 @@ void main() {
       expect(completed1, 0);
 
       // Complete set
+      final ex = container.read(activeWorkoutProvider)!.exercises[0];
+      notifier.replaceSet(ex.id, ex.sets[0].id, ex.sets[0].copyWith(reps: 10));
       notifier.toggleSetCompletion(0, 0);
 
       // After completing set, completedSets is 1
@@ -78,7 +80,9 @@ void main() {
       // Add weighted exercise
       notifier.addExercise(100, 'Bench Press',
           measurementType: 'weight_and_reps');
-      notifier.updateSet(0, 0, weight: 80.0, reps: 10);
+      final ex = container.read(activeWorkoutProvider)!.exercises[0];
+      notifier.replaceSet(
+          ex.id, ex.sets[0].id, ex.sets[0].copyWith(weightKg: 80.0, reps: 10));
 
       var state = container.read(activeWorkoutProvider)!;
       expect(state.exercises[0].sets[0].weightKg, 80.0);

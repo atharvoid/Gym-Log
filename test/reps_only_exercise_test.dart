@@ -144,12 +144,16 @@ void main() {
       final notifier = container.read(activeWorkoutProvider.notifier);
       await notifier.startWorkout(name: 'Test Workout');
       notifier.addExercise(100, 'Pull-up', measurementType: 'reps_only');
-      notifier.updateSet(0, 0, reps: 15);
+      final ex0 = container.read(activeWorkoutProvider)!.exercises[0];
+      notifier.replaceSet(
+          ex0.id, ex0.sets[0].id, ex0.sets[0].copyWith(reps: 15));
       notifier.toggleSetCompletion(0, 0);
 
       notifier.addExercise(101, 'Bench Press',
           measurementType: 'weight_and_reps');
-      notifier.updateSet(1, 0, weight: 80.0, reps: 5);
+      final ex1 = container.read(activeWorkoutProvider)!.exercises[1];
+      notifier.replaceSet(ex1.id, ex1.sets[0].id,
+          ex1.sets[0].copyWith(weightKg: 80.0, reps: 5));
       notifier.toggleSetCompletion(1, 0);
 
       final (volume, completedSets) = notifier.sessionTotals;

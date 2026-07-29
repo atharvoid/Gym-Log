@@ -587,17 +587,8 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
                                 return;
                               }
                               final exercise = workout.exercises[index];
-                              final setIdx = exercise.sets
-                                  .indexWhere((s) => s.id == updatedSet.id);
-                              if (setIdx != -1) {
-                                notifier.updateSet(
-                                  index,
-                                  setIdx,
-                                  weight: updatedSet.weightKg,
-                                  reps: updatedSet.reps,
-                                  type: updatedSet.setType,
-                                );
-                              }
+                              notifier.replaceSet(
+                                  exercise.id, updatedSet.id, updatedSet);
                             },
                             onToggleSetCompletion: (setIdx) =>
                                 _toggleSet(index, setIdx, isEditing: isEditing),

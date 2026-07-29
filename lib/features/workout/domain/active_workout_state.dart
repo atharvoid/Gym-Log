@@ -104,8 +104,30 @@ class RemovedSetSnapshot {
 /// Evaluates whether an exercise contains meaningful user-entered data before replacement.
 bool hasMeaningfulSetData(WorkoutExerciseState exercise) {
   return exercise.sets.any(
-    (set) => set.isCompleted || set.weightKg != null || set.reps > 0,
+    (set) =>
+        set.isCompleted ||
+        (set.weightKg != null && set.weightKg! > 0.0) ||
+        set.reps > 0,
   );
+}
+
+/// Pure domain function to check if a set has enough data to be completed.
+bool canCompleteSetRaw({
+  required MeasurementType measurementType,
+  required double? weightKg,
+  required int reps,
+  required double? previousWeight,
+  required int? previousReps,
+}) {
+  return switch (measurementType) {
+    MeasurementType.weightAndReps =>
+      ((weightKg != null && weightKg > 0.0) || previousWeight != null) &&
+          (reps > 0 || previousReps != null),
+    MeasurementType.distance =>
+      (weightKg != null && weightKg > 0.0) || previousWeight != null,
+    _ => // repsOnly, duration
+      reps > 0 || previousReps != null,
+  };
 }
 
 /// Adapts existing set data for a new exercise measurement type according to compatibility rules.
