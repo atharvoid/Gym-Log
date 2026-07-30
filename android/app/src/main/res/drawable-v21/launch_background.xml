@@ -1,12 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Modify this file to customize your launch splash screen -->
-<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:drawable="?android:colorBackground" />
+<!--
+  Window background painted by Android between process start and Flutter's first
+  frame — API 21+ variant.
 
-    <!-- You can insert your own image assets here -->
-    <!-- <item>
-        <bitmap
-            android:gravity="center"
-            android:src="@mipmap/launch_image" />
-    </item> -->
+  minSdk is 21 (see android/app/build.gradle.kts), so THIS file is the one every
+  supported device actually resolves; the base drawable/launch_background.xml
+  is kept only for tooling that expects a base drawable to exist and is not
+  loaded on any device this app ships to.
+
+  This was `?android:colorBackground`, a theme attribute that resolves to
+  Theme.Light's background (a light color) in day mode via values/styles.xml,
+  or Theme.Black's background (black) in night mode via
+  values-night/styles.xml. In day mode that reintroduced the exact
+  white-flash-on-cold-start regression the base file's comment describes as
+  fixed: the earlier fix landed in a resource the OS never loads for this app.
+
+  MUST match AppColors.bgBase (#000000), unconditionally in both day and
+  night mode: this app has no light theme.
+
+  If you ever add a brand mark here, add it as a second <item> with a bitmap
+  and gravity="center", and mirror it in values-v31/styles.xml so Android 12+
+  shows the same thing. Divergence between those two files is the usual cause
+  of a double-splash.
+-->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:drawable="@android:color/black" />
 </layer-list>
