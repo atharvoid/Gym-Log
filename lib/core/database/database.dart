@@ -114,6 +114,20 @@ class AppDatabase extends _$AppDatabase {
               PRIMARY KEY (object_id, user_id)
             );
           ''');
+          // A6: last revision this device knows the server has for a given
+          // entity. Raw table (no Drift Table object), same rationale as
+          // sync_failures above — SyncEngine reads/writes it through
+          // SyncOutboxDao.getRevision/setRevision so outgoing pushes stop
+          // sending a hardcoded revision of 1 after the entity's first sync.
+          await customStatement('''
+            CREATE TABLE IF NOT EXISTS entity_revisions (
+              entity_type TEXT NOT NULL,
+              entity_id TEXT NOT NULL,
+              user_id TEXT NOT NULL,
+              revision INTEGER NOT NULL DEFAULT 0,
+              PRIMARY KEY (entity_type, entity_id, user_id)
+            );
+          ''');
         },
       );
 
@@ -142,6 +156,11 @@ class AppDatabase extends _$AppDatabase {
       // leaving the sync-failures badge (quarantinedSyncCountProvider)
       // reporting stale counts for objects that no longer exist locally.
       await customStatement('DELETE FROM sync_failures');
+      // entity_revisions (A6): same rationale — raw table, invisible to
+      // delete(...), holds per-entity revision bookkeeping that is
+      // meaningless once the account's data is gone and must not leak into
+      // a fresh sign-in on the same device.
+      await customStatement('DELETE FROM entity_revisions');
     });
   }
 
