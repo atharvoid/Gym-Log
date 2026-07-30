@@ -12,7 +12,7 @@ final premiumServiceProvider = Provider<PremiumService>((ref) {
 });
 
 /// Live RevenueCat customer info. Stays in `loading` forever when RC is
-/// unconfigured/unsupported — [isPremiumProvider] then falls back to the
+/// unconfigured/unsupported -- [isPremiumProvider] then falls back to the
 /// local Drift cache, preserving offline-first behavior.
 final customerInfoProvider = StreamProvider<CustomerInfo>((ref) {
   return ref.watch(premiumServiceProvider).customerInfoStream;
@@ -33,7 +33,7 @@ bool hasPremium(CustomerInfo info) {
 ///   2. Local `user_profiles.isPremium` + `premiumExpiry` (offline cache,
 ///      kept in sync by [PremiumService])
 ///
-/// Workout logging is NEVER gated — only deep analytics history.
+/// Workout logging is NEVER gated -- only deep analytics history.
 final isPremiumProvider = Provider<bool>((ref) {
   final info = ref.watch(customerInfoProvider).valueOrNull;
   if (info != null) {
@@ -69,7 +69,7 @@ String? chartLimitBannerCopy({
         ? 'Log 1 more week to unlock your trend chart'
         : 'Log $remaining more weeks to unlock your trend chart';
   } else {
-    // Free user — the plan caps visible history at 3 samples permanently;
+    // Free user -- the plan caps visible history at 3 samples permanently;
     // logging further weeks alone never unlocks the rest without upgrading,
     // so the copy below must say so instead of echoing the premium copy.
     if (totalLoggedSamples >= 3) {
@@ -82,13 +82,29 @@ String? chartLimitBannerCopy({
   }
 }
 
+/// Computes a warning banner when RevenueCat has flagged a billing issue on
+/// the user's active Pro subscription (typically a failed renewal charge).
+/// RevenueCat keeps the entitlement active through its grace period, so Pro
+/// access is not revoked here -- but nothing else in the app surfaced this,
+/// so the user would otherwise only find out when access silently lapses at
+/// the end of the grace window. Returns null when there is no active Pro
+/// entitlement or no billing issue has been flagged on it.
+String? billingIssueBannerCopy(CustomerInfo info) {
+  final entitlement = info.entitlements.active[PremiumService.entitlementId];
+  if (entitlement == null || entitlement.billingIssueDetectedAt == null) {
+    return null;
+  }
+  return "There's a problem with your payment method. Update it in your "
+      'store account to keep Pro active.';
+}
+
 /// Free-tier routine ceiling. Matches Hevy's free cap (4) and beats Strong (3):
 /// high enough for Push/Pull/Legs + a Full-Body day, low enough that
 /// program-hoppers convert. Pro is unlimited.
 ///
 /// Grandfathering falls out of the simple `count >= kFreeRoutineLimit` gate:
 /// a user who already has more (legacy, or downgraded from Pro) keeps them all
-/// — they simply cannot create a new one until they drop back under the cap.
+/// -- they simply cannot create a new one until they drop back under the cap.
 const int kFreeRoutineLimit = 4;
 
 /// True when a free user is at/over the routine cap and must upgrade to add
