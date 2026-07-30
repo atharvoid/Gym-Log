@@ -41,6 +41,10 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
   _Phase _phase = _Phase.intro;
   String? _content;
   String? _fileName;
+
+  /// The unit the SOURCE FILE was logged in, used to parse it. This is not the
+  /// user's display preference and must never be used to render a total — see
+  /// _buildPreview.
   String _assumedUnit = 'kg';
   ImportSummary? _summary;
   ImportResult? _result;
@@ -223,7 +227,7 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
 
   Widget _centered(Widget child) => Center(child: child);
 
-  // ── Intro ───────────────────────────────────────────────
+  // ── Intro ─────────────────────────────────────
 
   Widget _buildIntro() {
     final surface = context.surface;
@@ -276,7 +280,7 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
     );
   }
 
-  // ── Preview ───────────────────────────────────────────
+  // ── Preview ──────────────────────────────────
 
   Widget _buildPreview() {
     final s = _summary!;
@@ -286,6 +290,10 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
         ? '${df.format(s.firstDate!)} – ${df.format(s.lastDate!)}'
         : '—';
     final surface = context.surface;
+    // The user's DISPLAY preference. Deliberately not _assumedUnit: that is the
+    // unit the source file was logged in, and the summary total has already
+    // been normalised to kilograms by the parser.
+    final displayUnit = ref.watch(weightUnitProvider);
 
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
@@ -325,7 +333,8 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
             _divider(),
             _StatRow(
                 label: 'Total volume',
-                value: '${groupThousands(s.totalVolumeKg)} kg'),
+                value: formatVolume(
+                    s.totalVolumeKg.toDouble(), displayUnit)),
             _divider(),
             _StatRow(label: 'Date range', value: range),
           ]),
@@ -398,7 +407,7 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
         'library: $shown$extra';
   }
 
-  // ── Importing ───────────────────────────────────────────
+  // ── Importing ─────────────────────────────────────
 
   Widget _buildImporting() {
     final pct = _total == 0 ? null : (_done / _total).clamp(0.0, 1.0);
@@ -430,7 +439,7 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
     );
   }
 
-  // ── Done ──────────────────────────────────────────────
+  // ── Done ────────────────────────────────────
 
   Widget _buildDone() {
     final r = _result!;
@@ -514,7 +523,7 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
       );
 }
 
-// ── Reusable bits ──────────────────────────────────────────
+// ── Reusable bits ─────────────────────────────────────
 
 class _Card extends StatelessWidget {
   const _Card({required this.child});
