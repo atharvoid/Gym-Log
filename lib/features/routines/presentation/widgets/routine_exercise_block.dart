@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:gymlog/core/theme/app_colors.dart';
 import 'package:gymlog/core/theme/app_text.dart';
 import 'package:gymlog/core/theme/set_type.dart';
+import 'package:gymlog/core/utils/units.dart';
 import 'package:gymlog/core/database/daos/routines_dao.dart';
 import 'package:gymlog/core/database/daos/workouts_dao.dart';
 import 'package:gymlog/shared/widgets/exercise_hero_thumb.dart';
@@ -18,6 +19,11 @@ class RoutineExerciseBlock extends StatelessWidget {
   final bool isLast;
   final bool enableHero;
 
+  /// Display unit ('kg' | 'lbs'). Storage stays kg — see units.dart.
+  /// Matches the unit-aware pattern used by SetRow/DetailExerciseCard so the
+  /// planned/last-session weight shown here never drifts from the live logger.
+  final String unit;
+
   const RoutineExerciseBlock({
     super.key,
     required this.hydratedExercise,
@@ -26,11 +32,10 @@ class RoutineExerciseBlock extends StatelessWidget {
     this.isLoadingHistory = false,
     this.isLast = false,
     this.enableHero = true,
+    this.unit = 'kg',
   });
 
-  String _fmtKg(double? w) => w == null
-      ? '–'
-      : (w % 1 == 0 ? w.toInt().toString() : w.toStringAsFixed(1));
+  String _fmtWeight(double? w) => w == null ? '–' : formatWeight(w, unit);
 
   /// The planned scheme from the routine config — what you're meant to do.
   String get _target {
@@ -46,7 +51,8 @@ class RoutineExerciseBlock extends StatelessWidget {
     final top =
         sets.reduce((a, b) => (a.weightKg ?? 0) >= (b.weightKg ?? 0) ? a : b);
     final r = top.reps?.toString() ?? '–';
-    return 'Last session, top set ${_fmtKg(top.weightKg)} kilograms for $r reps';
+    final unitName = unit == 'lbs' ? 'pounds' : 'kilograms';
+    return 'Last session, top set ${_fmtWeight(top.weightKg)} $unitName for $r reps';
   }
 
   @override
@@ -118,7 +124,7 @@ class RoutineExerciseBlock extends StatelessWidget {
                 ),
               )
             else if (hasHistory)
-              ExcludeSemantics(child: _SetTable(sets: sets))
+              ExcludeSemantics(child: _SetTable(sets: sets, unit: unit))
             else
               ExcludeSemantics(
                 child: Text(
@@ -135,14 +141,13 @@ class RoutineExerciseBlock extends StatelessWidget {
 
 class _SetTable extends StatelessWidget {
   final List<LastSessionSetData> sets;
-  const _SetTable({required this.sets});
+  final String unit;
+  const _SetTable({required this.sets, required this.unit});
 
   /// Right gutter so the numeric columns sit inboard of the screen edge.
   static const double _numGutter = 20;
 
-  String _fmtKg(double? w) => w == null
-      ? '–'
-      : (w % 1 == 0 ? w.toInt().toString() : w.toStringAsFixed(1));
+  String _fmtWeight(double? w) => w == null ? '–' : formatWeight(w, unit);
 
   @override
   Widget build(BuildContext context) {
@@ -165,7 +170,7 @@ class _SetTable extends StatelessWidget {
               flex: 3,
               child: Padding(
                 padding: const EdgeInsets.only(right: _numGutter),
-                child: Text('KG',
+                child: Text(unit.toUpperCase(),
                     style: AppText.columnHeader(color: AppColors.textSecondary),
                     textAlign: TextAlign.right),
               ),
@@ -212,7 +217,7 @@ class _SetTable extends StatelessWidget {
                   flex: 3,
                   child: Padding(
                     padding: const EdgeInsets.only(right: _numGutter),
-                    child: Text(_fmtKg(sets[i].weightKg),
+                    child: Text(_fmtWeight(sets[i].weightKg),
                         style: AppText.value(), textAlign: TextAlign.right),
                   ),
                 ),
