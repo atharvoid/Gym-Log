@@ -120,6 +120,25 @@ class ActiveWorkoutNotifier extends StateNotifier<ActiveWorkoutState?> {
     super.dispose();
   }
 
+  /// Eagerly starts resolving [previousSessionSetsProvider] for an exercise
+  /// as soon as it enters the active workout — well before the user can tap
+  /// to complete a set. `toggleSetCompletion` reads this provider
+  /// synchronously via `.valueOrNull ?? const []`, which cannot distinguish
+  /// "still loading" from "confirmed no previous session"; warming the fetch
+  /// here closes that race instead of papering over it at read time.
+  /// Deliberately fire-and-forget: a prefetch failure must never block
+  /// adding/starting an exercise, so it's reported to Sentry instead of
+  /// rethrown.
+  void _prefetchPreviousSets(int exerciseId) {
+    unawaited(() async {
+      try {
+        await _ref.read(previousSessionSetsProvider(exerciseId).future);
+      } catch (e, stackTrace) {
+        unawaited(Sentry.captureException(e, stackTrace: stackTrace));
+      }
+    }());
+  }
+
   Future<void> startWorkout({
     String? routineId,
     String? name,
@@ -129,6 +148,9 @@ class ActiveWorkoutNotifier extends StateNotifier<ActiveWorkoutState?> {
       for (final e in (initialExercises ?? const <WorkoutExerciseState>[]))
         e.id.isEmpty ? e.copyWith(id: const Uuid().v4()) : e,
     ];
+    for (final id in seeded.map((e) => e.exerciseId).toSet()) {
+      _prefetchPreviousSets(id);
+    }
     state = ActiveWorkoutState(
       id: const Uuid().v4(),
       startTime: DateTime.now(),
@@ -148,6 +170,9 @@ class ActiveWorkoutNotifier extends StateNotifier<ActiveWorkoutState?> {
 
       final exerciseIds =
           routineExercises.map((re) => re.exerciseId).toSet().toList();
+      for (final id in exerciseIds) {
+        _prefetchPreviousSets(id);
+      }
       final metaRows = await (db.select(db.exercises)
             ..where((t) => t.id.isIn(exerciseIds)))
           .get();
@@ -309,7 +334,7 @@ class ActiveWorkoutNotifier extends StateNotifier<ActiveWorkoutState?> {
     }
   }
 
-  void loadForEdit(HydratedWorkout historicalWorkout) {
+  void loadForEdit(HistoricalWorkout historicalWorkout) {
     final session = historicalWorkout.session;
 
     final exercises = historicalWorkout.exercises.map((he) {
@@ -391,6 +416,7 @@ class ActiveWorkoutNotifier extends StateNotifier<ActiveWorkoutState?> {
   Future<void> addExercise(int exerciseId, String name,
       {String? measurementType}) async {
     if (state == null) return;
+    _prefetchPreviousSets(exerciseId);
     String? resolvedType = measurementType;
     String? resolvedEquipment;
     if (resolvedType == null || resolvedType.isEmpty) {
@@ -477,6 +503,13 @@ class ActiveWorkoutNotifier extends StateNotifier<ActiveWorkoutState?> {
     final current = sets[setIndex];
 
     if (!current.isCompleted) {
+      // previousSessionSetsProvider is prefetched as soon as this exercise
+      // enters the active workout (see startWorkout/addExercise/
+      // replaceExercise/replaceExerciseWithPolicy), so by the time a set can
+      // be tapped it has almost always already resolved. `.valueOrNull`
+      // still falls back to "no previous session" while genuinely loading;
+      // that residual window is now effectively closed rather than the
+      // default outcome.
       final previousSetsAsync =
           _ref.read(previousSessionSetsProvider(exercise.exerciseId));
       final previousSets = previousSetsAsync.valueOrNull ?? const [];
@@ -517,6 +550,7 @@ class ActiveWorkoutNotifier extends StateNotifier<ActiveWorkoutState?> {
   Future<void> replaceExercise(int exerciseIndex, int exerciseId, String name,
       {String? measurementType}) async {
     if (state == null) return;
+    _prefetchPreviousSets(exerciseId);
     final exercises = [...state!.exercises];
     String? resolvedType = measurementType;
     String? resolvedEquipment;
@@ -564,6 +598,7 @@ class ActiveWorkoutNotifier extends StateNotifier<ActiveWorkoutState?> {
     if (state == null) return;
     final exercises = [...state!.exercises];
     if (exerciseIndex < 0 || exerciseIndex >= exercises.length) return;
+    _prefetchPreviousSets(newExerciseId);
 
     final oldExercise = exercises[exerciseIndex];
     String? resolvedType = measurementType;
