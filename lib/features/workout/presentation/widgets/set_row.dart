@@ -310,9 +310,15 @@ class _SetRowState extends State<SetRow> {
               keyboardType: TextInputType.numberWithOptions(decimal: isDecimal),
               cursorColor: accent.base,
               inputFormatters: [
-                if (isDecimal)
-                  FilteringTextInputFormatter.allow(RegExp(r'[0-9.]'))
-                else
+                if (isDecimal) ...[
+                  FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+                  TextInputFormatter.withFunction((oldValue, newValue) {
+                    if ('.'.allMatches(newValue.text).length > 1) {
+                      return oldValue;
+                    }
+                    return newValue;
+                  }),
+                ] else
                   FilteringTextInputFormatter.digitsOnly,
                 LengthLimitingTextInputFormatter(isDecimal ? 6 : 5),
               ],
