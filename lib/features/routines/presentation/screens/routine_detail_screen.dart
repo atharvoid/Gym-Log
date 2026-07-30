@@ -70,7 +70,7 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen> {
     super.initState();
   }
 
-  // ── Actions ────────────────────────────────────────
+  // ── Actions ────────────────────────────────
 
   void _startRoutine(HydratedRoutineDetail routine) {
     if (!tapGuard()) return;
@@ -212,7 +212,7 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen> {
     ref.invalidate(routineLastSetsProvider(widget.routineId));
   }
 
-  // ── Build ────────────────────────────────────────
+  // ── Build ────────────────────────────────
 
   @override
   Widget build(BuildContext context) {
@@ -277,7 +277,7 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen> {
                     ),
                     if (sessionStats != null && sessionStats.count > 0) ...[
                       const SizedBox(height: 16),
-                      _HeroStatStrip(stats: sessionStats),
+                      _HeroStatStrip(stats: sessionStats, unit: unit),
                     ],
                     const SizedBox(height: 12),
                     _MusclesWorkedStrip(routine: routine),
@@ -412,7 +412,7 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen> {
     );
   }
 
-  // ── Loading / error / not-found ───────────────────────────────────────────
+  // ── Loading / error / not-found ────────────────────────────────
 
   Widget _buildSkeleton() {
     final surface = context.surface;
@@ -568,6 +568,10 @@ class _RoutineVolumeSectionState extends ConsumerState<_RoutineVolumeSection> {
     final allSamples = volumeAsync.valueOrNull ?? const <DailyVolumeSample>[];
     final visible = gateChartSamples(allSamples, widget.isPremium);
     final hasTrend = allSamples.length >= 2;
+    // Volume is stored in kg; the chart and this header must both speak the
+    // user's unit. Watched here rather than passed down because this section
+    // is already a ConsumerStatefulWidget.
+    final unit = ref.watch(weightUnitProvider);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -582,7 +586,8 @@ class _RoutineVolumeSectionState extends ConsumerState<_RoutineVolumeSection> {
                 child: Text.rich(
                   TextSpan(children: [
                     TextSpan(text: 'Total Volume ', style: AppText.cardTitle()),
-                    TextSpan(text: '(kg)', style: AppText.meta()),
+                    TextSpan(
+                        text: '(${unitLabel(unit)})', style: AppText.meta()),
                   ]),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -615,12 +620,14 @@ class _RoutineVolumeSectionState extends ConsumerState<_RoutineVolumeSection> {
                 radius: AppRadius.card,
               ),
             ),
-            error: (_, __) => const RoutineVolumeGraph(data: []),
+            error: (_, __) =>
+                RoutineVolumeGraph(data: const [], unit: unit),
             data: (_) => AnimatedSwitcher(
               duration: const Duration(milliseconds: 300),
               child: RoutineVolumeGraph(
                 key: ValueKey('$_selectedTimeRange${visible.length}'),
                 data: visible,
+                unit: unit,
               ),
             ),
           ),
@@ -632,16 +639,24 @@ class _RoutineVolumeSectionState extends ConsumerState<_RoutineVolumeSection> {
   }
 }
 
-// ════════════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════════════
 // Sub-widgets
-// ══════════════════════════════════════════════════════════════════════
+// ═════════════════════════════════════════════════════════════════════
 
 class _HeroStatStrip extends StatelessWidget {
   final RoutineSessionStats stats;
-  const _HeroStatStrip({required this.stats});
+
+  /// Active weight unit ('kg' | 'lbs'). BEST/AVG are aggregate volumes stored
+  /// in kilograms, so both the value and the column label depend on it.
+  final String unit;
+
+  const _HeroStatStrip({required this.stats, required this.unit});
 
   @override
   Widget build(BuildContext context) {
+    // .toDouble() so this is correct whether RoutineSessionStats exposes the
+    // aggregates as int or double.
+    final label = unitLabel(unit).toUpperCase();
     return MergeSemantics(
       child: Row(
         children: [
@@ -653,14 +668,16 @@ class _HeroStatStrip extends StatelessWidget {
           const _StatDivider(),
           Expanded(
               child: _HeroStat(
-                  value: groupThousands(stats.bestVolumeKg),
-                  label: 'BEST KG',
+                  value: groupThousands(
+                      kgToDisplay(stats.bestVolumeKg.toDouble(), unit)),
+                  label: 'BEST $label',
                   shadows: AppText.depthFor(context))),
           const _StatDivider(),
           Expanded(
               child: _HeroStat(
-                  value: groupThousands(stats.avgVolumeKg),
-                  label: 'AVG KG',
+                  value: groupThousands(
+                      kgToDisplay(stats.avgVolumeKg.toDouble(), unit)),
+                  label: 'AVG $label',
                   shadows: AppText.depthFor(context))),
         ],
       ),
@@ -769,6 +786,8 @@ class _RoutineProgressPill extends StatelessWidget {
     final latest = samples.last.volume;
     if (first == 0) return const SizedBox.shrink();
 
+    // Percentage delta — unit-invariant by construction, so no conversion is
+    // needed here even though the underlying samples are in kilograms.
     final delta = ((latest - first) / first * 100).round();
     final isUp = delta >= 0;
     final surface = context.surface;
