@@ -11,6 +11,8 @@ import 'package:gymlog/core/database/database.dart';
 import 'package:gymlog/core/database/daos/workouts_dao.dart';
 import 'package:gymlog/core/models/measurement_type.dart';
 import 'package:gymlog/core/providers/premium_provider.dart';
+import 'package:gymlog/core/providers/settings_provider.dart';
+import 'package:gymlog/core/utils/units.dart';
 import 'package:gymlog/features/routines/presentation/widgets/routine_detail_styles.dart';
 import 'package:gymlog/shared/widgets/async_error_state.dart';
 import 'package:gymlog/shared/widgets/branded_line_chart.dart';
@@ -64,6 +66,16 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
     }
   }
 
+  /// Whether the metric behind [index] is denominated in kilograms and must be
+  /// converted before display.
+  ///
+  /// Only weightAndReps carries weight, and only on its first three toggles:
+  /// One Rep Max, Heaviest Weight and Session Volume. Toggle 3 is Total Reps,
+  /// which is a count. repsOnly (reps), duration (seconds) and distance
+  /// (metres/seconds) are never weights.
+  bool _isWeightMetric(int index, MeasurementType mType) =>
+      mType == MeasurementType.weightAndReps && index != 3;
+
   double? _metricForToggle(
     ExerciseHistoryData e,
     int index,
@@ -106,6 +118,19 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
     }
   }
 
+  /// [_metricForToggle] in the unit the user actually reads. Call this exactly
+  /// once per value — the formatter downstream only appends a label.
+  double? _displayMetric(
+    ExerciseHistoryData e,
+    int index,
+    MeasurementType mType,
+    String unit,
+  ) {
+    final raw = _metricForToggle(e, index, mType);
+    if (raw == null) return null;
+    return _isWeightMetric(index, mType) ? kgToDisplay(raw, unit) : raw;
+  }
+
   Widget _wrapPulse({required Widget child}) {
     if (MediaQuery.disableAnimationsOf(context)) return child;
     return SkeletonPulse(child: child);
@@ -123,6 +148,10 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
         : ref.watch(_exerciseFallbackProvider(widget.exerciseId));
 
     final surface = context.surface;
+    // Resolved here and threaded down by hand. The chart's valueFormatter runs
+    // during painting rather than during build, so it must close over a plain
+    // value — reading the provider from inside it would be unsafe.
+    final unit = ref.watch(weightUnitProvider);
 
     return exerciseAsync.when(
       loading: () => _buildPageSkeleton(context),
@@ -315,13 +344,15 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
                               _buildGraphSection(
                                 visible,
                                 mType: mType,
+                                unit: unit,
                                 showProPill: !isPremium && history.length > 3,
                               ),
                               const SizedBox(height: 24),
                               _buildStatToggles(surface, mType),
                               if (history.isNotEmpty) ...[
                                 const SizedBox(height: 24),
-                                _buildPersonalRecords(context, prs, mType),
+                                _buildPersonalRecords(
+                                    context, prs, mType, unit),
                               ],
                               const SizedBox(height: 24),
                               _buildInstructions(exercise, surface),
@@ -391,6 +422,7 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
   Widget _buildGraphSection(
     List<ExerciseHistoryData> history, {
     required MeasurementType mType,
+    required String unit,
     bool showProPill = false,
   }) {
     final toggles = _getToggleLabels(mType);
@@ -425,13 +457,18 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
         const SizedBox(height: 12),
         RepaintBoundary(
           child: BrandedLineChart(
-            key: ValueKey('$activeIndex|$_selectedTimeRange|${history.length}'),
+            key: ValueKey(
+                '$activeIndex|$_selectedTimeRange|$unit|${history.length}'),
+            // Converted here, once. The axis, the plotted line and the tooltip
+            // therefore all read the same numbers.
             data: [
               for (final e in history)
-                if (_metricForToggle(e, activeIndex, mType) != null)
-                  ChartPoint(e.date, _metricForToggle(e, activeIndex, mType)!),
+                if (_displayMetric(e, activeIndex, mType, unit) != null)
+                  ChartPoint(
+                      e.date, _displayMetric(e, activeIndex, mType, unit)!),
             ],
-            valueFormatter: (v) => _formatChartValue(v, activeIndex, mType),
+            valueFormatter: (v) =>
+                _formatChartValue(v, activeIndex, mType, unit),
             emptyTitle: 'No data yet',
             emptySubtitle: 'Log this exercise to see your progress',
           ),
@@ -440,11 +477,14 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
     );
   }
 
-  String _formatChartValue(double v, int toggleIdx, MeasurementType mType) {
+  /// Takes an ALREADY-CONVERTED value and only labels it. Never convert here —
+  /// [_displayMetric] has already done it.
+  String _formatChartValue(
+      double v, int toggleIdx, MeasurementType mType, String unit) {
     switch (mType) {
       case MeasurementType.weightAndReps:
         if (toggleIdx == 3) return '${v.toInt()} reps';
-        return '${v == v.truncateToDouble() ? v.toInt() : v.toStringAsFixed(1)} kg';
+        return '${v == v.truncateToDouble() ? v.toInt() : v.toStringAsFixed(1)} ${unitLabel(unit)}';
       case MeasurementType.repsOnly:
         return '${v.toInt()} reps';
       case MeasurementType.duration:
@@ -519,10 +559,18 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
     );
   }
 
+  /// Formats a stored-kilogram personal record in the active unit.
+  String _weightPr(double? kg, String unit) {
+    if (kg == null) return '—';
+    final v = kgToDisplay(kg, unit);
+    return '${v == v.truncateToDouble() ? v.toInt() : v.toStringAsFixed(1)} ${unitLabel(unit)}';
+  }
+
   Widget _buildPersonalRecords(
     BuildContext context,
     PersonalRecords prs,
     MeasurementType mType,
+    String unit,
   ) {
     final surface = context.surface;
     final rows = <Widget>[];
@@ -530,25 +578,13 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
     switch (mType) {
       case MeasurementType.weightAndReps:
         rows.addAll([
-          _prRow(
-              'Heaviest Weight',
-              prs.maxWeight != null
-                  ? '${prs.maxWeight == prs.maxWeight!.truncateToDouble() ? prs.maxWeight!.toInt() : prs.maxWeight!.toStringAsFixed(1)} kg'
-                  : '—',
-              surface),
+          _prRow('Heaviest Weight', _weightPr(prs.maxWeight, unit), surface),
           _prDivider(surface),
-          _prRow(
-              'Best 1RM',
-              prs.max1RM != null
-                  ? '${prs.max1RM == prs.max1RM!.truncateToDouble() ? prs.max1RM!.toInt() : prs.max1RM!.toStringAsFixed(1)} kg'
-                  : '—',
-              surface),
+          _prRow('Best 1RM', _weightPr(prs.max1RM, unit), surface),
           _prDivider(surface),
-          _prRow(
-              'Max Session Volume',
-              '${prs.maxVolume == prs.maxVolume.truncateToDouble() ? prs.maxVolume.toInt() : prs.maxVolume.toStringAsFixed(1)} kg',
-              surface),
+          _prRow('Max Session Volume', _weightPr(prs.maxVolume, unit), surface),
           _prDivider(surface),
+          // A rep count, not a weight — left unconverted on purpose.
           _prRow('Max Reps', '${prs.maxReps} reps', surface),
         ]);
         break;
