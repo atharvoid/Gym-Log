@@ -17,7 +17,19 @@ class BottomNavBar extends StatelessWidget {
   final ValueChanged<int> onTap;
 
   /// Height of the navigation bar excluding the system safe-area inset.
+  ///
+  /// This is the ONLY place the nav height is declared. `build` below consumes
+  /// it rather than repeating a literal, so the constant can never drift from
+  /// the rendered pixels — the shell's inset math depends on that guarantee.
   static const height = 72.0;
+
+  /// Nav height INCLUDING the system gesture/safe-area inset.
+  ///
+  /// Anything positioning itself above the nav bar (the floating active-workout
+  /// bar, a FAB, a docked CTA) should use this instead of adding
+  /// `MediaQuery.viewPaddingOf(context).bottom` at the call site.
+  static double totalHeight(BuildContext context) =>
+      height + MediaQuery.viewPaddingOf(context).bottom;
 
   const BottomNavBar({
     super.key,
@@ -38,7 +50,7 @@ class BottomNavBar extends StatelessWidget {
       child: SafeArea(
         top: false,
         child: SizedBox(
-          height: 72,
+          height: height,
           child: Row(
             children: [
               for (var i = 0; i < _tabs.length; i++)
