@@ -426,9 +426,15 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
     bool showProPill = false,
   }) {
     final toggles = _getToggleLabels(mType);
+    // MeasurementType.unknown yields NO toggles, and this used to index into
+    // the empty list on the very next line — a RangeError on every build, so
+    // any exercise with an unrecognised measurementType string crashed the
+    // detail screen outright. The chart itself degrades gracefully (all its
+    // values come back null and it renders the empty state), so a header
+    // fallback is all that is needed to keep the screen up.
     final activeIndex =
         _activeToggleIndex < toggles.length ? _activeToggleIndex : 0;
-    final activeLabel = toggles[activeIndex];
+    final activeLabel = toggles.isEmpty ? 'Progress' : toggles[activeIndex];
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -469,6 +475,12 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
             ],
             valueFormatter: (v) =>
                 _formatChartValue(v, activeIndex, mType, unit),
+            // This screen replots the SAME component for up to four different
+            // metrics, so the spoken name has to follow the active toggle — a
+            // fixed string would be wrong three times out of four. Derived
+            // from the toggle label so the repsOnly / duration / distance sets
+            // are covered without a second mapping to keep in sync.
+            metricLabel: '$activeLabel chart',
             emptyTitle: 'No data yet',
             emptySubtitle: 'Log this exercise to see your progress',
           ),
@@ -518,17 +530,30 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
       child: Row(
         children: toggles.asMap().entries.map((entry) {
           final isActive = entry.key == _activeToggleIndex;
+          // One handler for the gesture and the semantics action, so a
+          // screen-reader activation fires the same haptic as a tap.
+          void handleTap() {
+            HapticFeedback.selectionClick();
+            setState(() => _activeToggleIndex = entry.key);
+          }
+
           return Padding(
             padding: const EdgeInsets.only(right: 8),
             child: Semantics(
+              // Was: button + selected and nothing else. No label, so a screen
+              // reader announced an unnamed selected button and then read the
+              // toggle text as a separate loose node — the same defect as the
+              // nav bar. See docs/a11y-semantics-checklist.md sections 2 and 3.
+              container: true,
               button: true,
               selected: isActive,
+              inMutuallyExclusiveGroup: true,
+              label: '${entry.value}, ${entry.key + 1} of ${toggles.length}',
+              excludeSemantics: true,
+              onTap: handleTap,
               child: GestureDetector(
                 behavior: HitTestBehavior.opaque,
-                onTap: () {
-                  HapticFeedback.selectionClick();
-                  setState(() => _activeToggleIndex = entry.key);
-                },
+                onTap: handleTap,
                 child: Container(
                   constraints: const BoxConstraints(minHeight: 48),
                   alignment: Alignment.center,
