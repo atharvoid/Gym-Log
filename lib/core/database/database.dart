@@ -134,6 +134,14 @@ class AppDatabase extends _$AppDatabase {
       await delete(syncOutbox).go();
       await delete(exercises).go(); // catalog + user customs
       await delete(userProfiles).go();
+      // sync_failures (A5): a raw SQL table created in beforeOpen, not a
+      // Drift Table object, so none of the delete(...) calls above touch it.
+      // Left alone, a user's quarantined-object rows survive account
+      // deletion — a data-retention gap on the deletion path — and would
+      // survive any future "reset local data" flow built on this method,
+      // leaving the sync-failures badge (quarantinedSyncCountProvider)
+      // reporting stale counts for objects that no longer exist locally.
+      await customStatement('DELETE FROM sync_failures');
     });
   }
 
