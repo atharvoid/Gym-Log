@@ -41,53 +41,72 @@ class _StepCompletionState extends ConsumerState<StepCompletion> {
 
     try {
       final user = ref.read(authProvider);
-      if (user != null) {
-        final draft = ref.read(onboardingDraftProvider);
-
-        // 1. Submit display name (local write + background remote sync).
-        //    Mark onboarding complete remotely so future logins treat this
-        //    profile authoritatively as finished.
-        await ref.read(profileSyncProvider).submitDisplayName(
-              userId: user.id,
-              email: user.email ?? '',
-              name: draft.name,
-              onboardingComplete: true,
-            );
-
-        // 2. Set age in local DB if present
-        if (draft.age != null) {
-          await ref.read(databaseProvider).userDao.setAge(user.id, draft.age);
+      if (user == null) {
+        // Session dropped mid-onboarding (e.g. token expired while the user
+        // was filling in steps). Previously this branch silently skipped
+        // every persistence call below — name, age, gender, experience,
+        // unit, and weekly goal were all discarded with no error, and the
+        // user was still waved into the tour/home as if setup had
+        // succeeded. Surface it instead of pretending onboarding finished.
+        debugPrint(
+            '[StepCompletion] Aborting: no authenticated user at completion');
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                  'Your session expired. Please sign in again to finish setup.'),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
         }
-
-        // Set gender in local DB
-        final genderValue =
-            draft.gender == 'prefer_not_to_say' ? null : draft.gender;
-        await ref
-            .read(databaseProvider)
-            .userDao
-            .setGender(user.id, genderValue);
-
-        // 3. Set experience level in local DB
-        await ref
-            .read(databaseProvider)
-            .userDao
-            .setExperienceLevel(user.id, draft.level);
-
-        // 4. Set weight unit
-        await ref.read(settingsActionsProvider).setWeightUnit(draft.unit);
-
-        // 5. Set weekly goal
-        await ref.read(weeklyGoalProvider.notifier).setGoal(draft.weeklyGoal);
-
-        // 6. Mark onboarding complete in local DB
-        await ref
-            .read(databaseProvider)
-            .userDao
-            .setOnboardingComplete(user.id, complete: true);
-
-        // 7. Invalidate profile so observers refresh
-        ref.invalidate(currentUserProfileProvider);
+        return;
       }
+
+      final draft = ref.read(onboardingDraftProvider);
+
+      // 1. Submit display name (local write + background remote sync).
+      //    Mark onboarding complete remotely so future logins treat this
+      //    profile authoritatively as finished.
+      await ref.read(profileSyncProvider).submitDisplayName(
+            userId: user.id,
+            email: user.email ?? '',
+            name: draft.name,
+            onboardingComplete: true,
+          );
+
+      // 2. Set age in local DB if present
+      if (draft.age != null) {
+        await ref.read(databaseProvider).userDao.setAge(user.id, draft.age);
+      }
+
+      // Set gender in local DB
+      final genderValue =
+          draft.gender == 'prefer_not_to_say' ? null : draft.gender;
+      await ref
+          .read(databaseProvider)
+          .userDao
+          .setGender(user.id, genderValue);
+
+      // 3. Set experience level in local DB
+      await ref
+          .read(databaseProvider)
+          .userDao
+          .setExperienceLevel(user.id, draft.level);
+
+      // 4. Set weight unit
+      await ref.read(settingsActionsProvider).setWeightUnit(draft.unit);
+
+      // 5. Set weekly goal
+      await ref.read(weeklyGoalProvider.notifier).setGoal(draft.weeklyGoal);
+
+      // 6. Mark onboarding complete in local DB
+      await ref
+          .read(databaseProvider)
+          .userDao
+          .setOnboardingComplete(user.id, complete: true);
+
+      // 7. Invalidate profile so observers refresh
+      ref.invalidate(currentUserProfileProvider);
 
       if (mounted) {
         if (startTour) {

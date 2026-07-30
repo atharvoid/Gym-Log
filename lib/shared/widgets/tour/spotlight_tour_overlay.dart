@@ -45,7 +45,20 @@ class _SpotlightTourOverlayState extends ConsumerState<SpotlightTourOverlay>
   bool _autoAdvanced = false;
   bool _isLooping = false;
 
+  /// Consecutive frames the resolved target rect has been unchanged.
+  int _stableFrameCount = 0;
+
   static const _maxResolveAttempts = 10;
+
+  /// Once the target rect has been stable for this many consecutive frames,
+  /// stop re-measuring on every single frame and fall back to polling every
+  /// [_slowPollInterval] instead. Re-running findRenderObject/localToGlobal/
+  /// globalToLocal on every frame for the entire (potentially indefinite)
+  /// lifetime of a tour step is unnecessary CPU/battery cost once layout has
+  /// settled — most targets (cards, buttons) never move again after the
+  /// initial scroll-into-view settles.
+  static const _fastPollStableFrames = 12;
+  static const _slowPollInterval = Duration(milliseconds: 400);
 
   @override
   void initState() {
@@ -91,6 +104,7 @@ class _SpotlightTourOverlayState extends ConsumerState<SpotlightTourOverlay>
       _scrolledToVisible = false;
       _resolveAttempts = 0;
       _autoAdvanced = false;
+      _stableFrameCount = 0;
       if (_targetRect != null) {
         setState(() {
           _targetRect = null;
@@ -140,6 +154,7 @@ class _SpotlightTourOverlayState extends ConsumerState<SpotlightTourOverlay>
       final localTopLeft = selfBox.globalToLocal(globalTopLeft);
       final newRect = localTopLeft & targetBox.size;
       if (newRect != _targetRect) {
+        _stableFrameCount = 0;
         setState(() {
           _targetRect = newRect;
         });
@@ -150,8 +165,17 @@ class _SpotlightTourOverlayState extends ConsumerState<SpotlightTourOverlay>
             _fadeCtrl.value = 1.0;
           }
         }
+      } else {
+        _stableFrameCount++;
       }
-      WidgetsBinding.instance.addPostFrameCallback((_) => _loop());
+
+      if (_stableFrameCount < _fastPollStableFrames) {
+        WidgetsBinding.instance.addPostFrameCallback((_) => _loop());
+      } else {
+        // Layout has settled — poll infrequently instead of re-measuring on
+        // every single frame for as long as this step stays on screen.
+        Future.delayed(_slowPollInterval, _loop);
+      }
     } else {
       _resolveAttempts++;
       if (_resolveAttempts >= _maxResolveAttempts) {
@@ -188,200 +212,228 @@ class _SpotlightTourOverlayState extends ConsumerState<SpotlightTourOverlay>
     final targetCenterY = target.center.dy;
     final isBalloonBelow = targetCenterY < size.height * 0.55;
 
-    return FadeTransition(
-      opacity: _fadeAnim,
-      child: Stack(
-        children: [
-          // Custom Painter for the dark mask and circular cut-out
-          Positioned.fill(
-            child: IgnorePointer(
-              child: CustomPaint(
-                painter: _SpotlightMaskPainter(
-                  targetRect: target,
-                  overlayColor: Colors.black.withValues(alpha: 0.55),
-                  borderRadius: widget.borderRadius,
-                  accentColor: accent.base,
+    // Semantics: the interceptors below have no visible content and must not
+    // leave stray, unlabeled tappable nodes in the accessibility tree (a
+    // screen-reader user swiping through the screen would otherwise land on
+    // silent "buttons" that do nothing). The whole region is announced as a
+    // single live-region label instead, matching the Semantics conventions
+    // already used elsewhere in this codebase (see e.g. _ImportPill,
+    // _FeaturedCard) which this file previously had none of.
+    return Semantics(
+      container: true,
+      liveRegion: true,
+      label: '${widget.title}. ${widget.description}',
+      child: FadeTransition(
+        opacity: _fadeAnim,
+        child: Stack(
+          children: [
+            // Custom Painter for the dark mask and circular cut-out
+            Positioned.fill(
+              child: IgnorePointer(
+                child: CustomPaint(
+                  painter: _SpotlightMaskPainter(
+                    targetRect: target,
+                    overlayColor: Colors.black.withValues(alpha: 0.55),
+                    borderRadius: widget.borderRadius,
+                    accentColor: accent.base,
+                  ),
                 ),
               ),
             ),
-          ),
 
-          // Touch interceptor: top block
-          Positioned(
-            left: 0,
-            right: 0,
-            top: 0,
-            height: target.top > 0 ? target.top : 0,
-            child: GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              onTap: () {},
+            // Touch interceptor: top block
+            Positioned(
+              left: 0,
+              right: 0,
+              top: 0,
+              height: target.top > 0 ? target.top : 0,
+              child: ExcludeSemantics(
+                child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () {},
+                ),
+              ),
             ),
-          ),
-          // Touch interceptor: bottom block
-          Positioned(
-            left: 0,
-            right: 0,
-            top: target.bottom < size.height ? target.bottom : size.height,
-            bottom: 0,
-            child: GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              onTap: () {},
+            // Touch interceptor: bottom block
+            Positioned(
+              left: 0,
+              right: 0,
+              top: target.bottom < size.height ? target.bottom : size.height,
+              bottom: 0,
+              child: ExcludeSemantics(
+                child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () {},
+                ),
+              ),
             ),
-          ),
-          // Touch interceptor: left block
-          Positioned(
-            left: 0,
-            width: target.left > 0 ? target.left : 0,
-            top: target.top,
-            height: target.height,
-            child: GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              onTap: () {},
+            // Touch interceptor: left block
+            Positioned(
+              left: 0,
+              width: target.left > 0 ? target.left : 0,
+              top: target.top,
+              height: target.height,
+              child: ExcludeSemantics(
+                child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () {},
+                ),
+              ),
             ),
-          ),
-          // Touch interceptor: right block
-          Positioned(
-            left: target.right < size.width ? target.right : size.width,
-            right: 0,
-            top: target.top,
-            height: target.height,
-            child: GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              onTap: () {},
+            // Touch interceptor: right block
+            Positioned(
+              left: target.right < size.width ? target.right : size.width,
+              right: 0,
+              top: target.top,
+              height: target.height,
+              child: ExcludeSemantics(
+                child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () {},
+                ),
+              ),
             ),
-          ),
 
-          // Balloon Card
-          Positioned(
-            left: 20,
-            right: 20,
-            top: isBalloonBelow ? target.bottom + 16 : null,
-            bottom: !isBalloonBelow ? (size.height - target.top) + 16 : null,
-            child: PressableScale(
-              child: Material(
-                color: Colors.transparent,
-                child: Container(
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: surface.surface2,
-                    borderRadius: BorderRadius.circular(18),
-                    border: Border.all(
-                      color: accent.light.withValues(alpha: 0.22),
-                      width: 1.5,
+            // Balloon Card
+            Positioned(
+              left: 20,
+              right: 20,
+              top: isBalloonBelow ? target.bottom + 16 : null,
+              bottom: !isBalloonBelow ? (size.height - target.top) + 16 : null,
+              child: PressableScale(
+                child: Material(
+                  color: Colors.transparent,
+                  child: Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: surface.surface2,
+                      borderRadius: BorderRadius.circular(18),
+                      border: Border.all(
+                        color: accent.light.withValues(alpha: 0.22),
+                        width: 1.5,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.55),
+                          blurRadius: 32,
+                          offset: const Offset(0, 10),
+                        ),
+                        BoxShadow(
+                          color: accent.glow.withValues(alpha: 0.08),
+                          blurRadius: 48,
+                          spreadRadius: -4,
+                        ),
+                      ],
                     ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.55),
-                        blurRadius: 32,
-                        offset: const Offset(0, 10),
-                      ),
-                      BoxShadow(
-                        color: accent.glow.withValues(alpha: 0.08),
-                        blurRadius: 48,
-                        spreadRadius: -4,
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      // ── Top row: step pill + Skip ──────────────────────────
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          // Step indicator pill
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 10, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: accent.base.withValues(alpha: 0.14),
-                              borderRadius: BorderRadius.circular(99),
-                            ),
-                            child: Text(
-                              'STEP ${widget.step + 1} OF ${FirstRunTourNotifier.totalSteps}',
-                              style:
-                                  AppText.caption(color: accent.light).copyWith(
-                                fontWeight: FontWeight.w800,
-                                letterSpacing: 0.8,
-                                fontSize: 10,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // ── Top row: step pill + Skip ──────────────────────────
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            // Step indicator pill
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 10, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: accent.base.withValues(alpha: 0.14),
+                                borderRadius: BorderRadius.circular(99),
                               ),
-                            ),
-                          ),
-                          // Skip tour
-                          TextButton(
-                            onPressed: () {
-                              HapticFeedback.selectionClick();
-                              ref
-                                  .read(firstRunTourProvider.notifier)
-                                  .skipOrEnd();
-                            },
-                            style: TextButton.styleFrom(
-                              padding: EdgeInsets.zero,
-                              minimumSize: Size.zero,
-                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                            ),
-                            child: Text(
-                              'Skip tour',
-                              style:
-                                  AppText.caption(color: surface.textTertiary),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-
-                      // ── Title ──────────────────────────────────────────────
-                      Text(
-                        widget.title,
-                        style:
-                            AppText.body(color: surface.textPrimary).copyWith(
-                          fontWeight: FontWeight.w700,
-                          fontSize: 17,
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-
-                      // ── Description ───────────────────────────────────────
-                      Text(
-                        widget.description,
-                        style: AppText.caption(color: surface.textSecondary)
-                            .copyWith(height: 1.40),
-                      ),
-                      const SizedBox(height: 16),
-
-                      // ── Next / Got it button ───────────────────────────────
-                      SizedBox(
-                        width: double.infinity,
-                        height: 44,
-                        child: Material(
-                          color: accent.base,
-                          borderRadius: BorderRadius.circular(12),
-                          child: InkWell(
-                            borderRadius: BorderRadius.circular(12),
-                            onTap: () {
-                              HapticFeedback.selectionClick();
-                              ref
-                                  .read(firstRunTourProvider.notifier)
-                                  .nextStep();
-                            },
-                            child: Center(
                               child: Text(
-                                isLastStep ? 'Got it' : 'Next',
-                                style: AppText.button(color: accent.onAccent)
-                                    .copyWith(fontWeight: FontWeight.w700),
+                                'STEP ${widget.step + 1} OF ${FirstRunTourNotifier.totalSteps}',
+                                style: AppText.caption(color: accent.light)
+                                    .copyWith(
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: 0.8,
+                                  fontSize: 10,
+                                ),
+                              ),
+                            ),
+                            // Skip tour
+                            TextButton(
+                              onPressed: () {
+                                HapticFeedback.selectionClick();
+                                ref
+                                    .read(firstRunTourProvider.notifier)
+                                    .skipOrEnd();
+                              },
+                              style: TextButton.styleFrom(
+                                padding: EdgeInsets.zero,
+                                minimumSize: Size.zero,
+                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                              ),
+                              child: Text(
+                                'Skip tour',
+                                style: AppText.caption(
+                                    color: surface.textTertiary),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+
+                        // ── Title ──────────────────────────────────────────────
+                        Text(
+                          widget.title,
+                          style: AppText.body(color: surface.textPrimary)
+                              .copyWith(
+                            fontWeight: FontWeight.w700,
+                            fontSize: 17,
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+
+                        // ── Description ───────────────────────────────────────
+                        Text(
+                          widget.description,
+                          style: AppText.caption(color: surface.textSecondary)
+                              .copyWith(height: 1.40),
+                        ),
+                        const SizedBox(height: 16),
+
+                        // ── Next / Got it button ───────────────────────────────
+                        // Semantics(button: true) added explicitly: unlike
+                        // TextButton above, a raw Material+InkWell does not
+                        // expose a button role to screen readers on its own.
+                        Semantics(
+                          button: true,
+                          label: isLastStep ? 'Got it' : 'Next',
+                          child: SizedBox(
+                            width: double.infinity,
+                            height: 44,
+                            child: Material(
+                              color: accent.base,
+                              borderRadius: BorderRadius.circular(12),
+                              child: InkWell(
+                                borderRadius: BorderRadius.circular(12),
+                                onTap: () {
+                                  HapticFeedback.selectionClick();
+                                  ref
+                                      .read(firstRunTourProvider.notifier)
+                                      .nextStep();
+                                },
+                                child: Center(
+                                  child: Text(
+                                    isLastStep ? 'Got it' : 'Next',
+                                    style: AppText.button(
+                                            color: accent.onAccent)
+                                        .copyWith(fontWeight: FontWeight.w700),
+                                  ),
+                                ),
                               ),
                             ),
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
