@@ -62,6 +62,8 @@ class BottomNavBar extends StatelessWidget {
                   child: _NavButton(
                     item: _tabs[i],
                     isActive: i == currentIndex,
+                    index: i,
+                    total: _tabs.length,
                     onTap: () {
                       HapticFeedback.selectionClick();
                       onTap(i);
@@ -85,11 +87,15 @@ class _NavItem {
 class _NavButton extends StatelessWidget {
   final _NavItem item;
   final bool isActive;
+  final int index;
+  final int total;
   final VoidCallback onTap;
 
   const _NavButton({
     required this.item,
     required this.isActive,
+    required this.index,
+    required this.total,
     required this.onTap,
   });
 
@@ -98,9 +104,27 @@ class _NavButton extends StatelessWidget {
     final accent = context.accent;
     final color = isActive ? accent.light : context.chrome.textSecondary;
     final reduceMotion = MediaQuery.disableAnimationsOf(context);
+    // ACCESSIBILITY CONTRACT for a tab cell. All four parts matter:
+    //
+    //   container + excludeSemantics — the cell is ONE stop in the traversal.
+    //     Without excludeSemantics the inner Text publishes its own node, so a
+    //     screen reader lands on a nameless button and then, separately, on the
+    //     word "Home". Two stops, neither of them complete.
+    //   label — the annotation node has no name of its own; the icon is
+    //     decorative and Text semantics are now excluded, so the name must be
+    //     supplied here or the tab is announced as an unlabelled button.
+    //   inMutuallyExclusiveGroup — tells the platform these three are a radio
+    //     set, which is what makes `selected` read as "selected" rather than
+    //     "checked".
+    //   position in the label — a bare "Home, selected" gives no sense of where
+    //     you are in the bar. Tab N of M is the platform convention.
     return Semantics(
-      selected: isActive,
+      container: true,
       button: true,
+      selected: isActive,
+      inMutuallyExclusiveGroup: true,
+      label: '${item.label}, tab ${index + 1} of $total',
+      excludeSemantics: true,
       child: GestureDetector(
         onTap: onTap,
         behavior: HitTestBehavior.opaque,
