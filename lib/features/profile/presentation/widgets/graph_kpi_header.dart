@@ -12,10 +12,15 @@ class GraphKpiHeader extends StatelessWidget {
   final List<WeeklyAggregate> aggregates;
   final ProfileGraphMetric metric;
 
+  /// Active weight unit ('kg' | 'lbs'). Only consulted for the volume metric;
+  /// duration and reps are unit-invariant.
+  final String unit;
+
   const GraphKpiHeader({
     super.key,
     required this.aggregates,
     required this.metric,
+    required this.unit,
   });
 
   @override
@@ -63,11 +68,12 @@ class GraphKpiHeader extends StatelessWidget {
   }
 
   String _formatValue(double value) {
-    final rounded = value.round();
     return switch (metric) {
-      ProfileGraphMetric.volume => '${groupThousands(rounded)} kg',
-      ProfileGraphMetric.duration => '${groupThousands(rounded)} min',
-      ProfileGraphMetric.reps => '${groupThousands(rounded)} reps',
+      // Aggregate volume is stored in kilograms; formatVolume converts it to
+      // the active unit and appends the matching label.
+      ProfileGraphMetric.volume => formatVolume(value, unit),
+      ProfileGraphMetric.duration => '${groupThousands(value.round())} min',
+      ProfileGraphMetric.reps => '${groupThousands(value.round())} reps',
     };
   }
 }
@@ -95,6 +101,8 @@ class _DeltaPill extends StatelessWidget {
       );
     }
 
+    // Ratio of two same-unit values — unit-invariant, so this pill needs no
+    // conversion and deliberately takes the raw kilogram figures.
     final delta = (latest - previous) / previous;
     final isPositive = delta >= 0;
     final pct = (delta * 100).round().abs();

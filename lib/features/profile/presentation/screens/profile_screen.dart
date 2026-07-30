@@ -8,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../core/providers/premium_provider.dart';
+import '../../../../core/providers/settings_provider.dart';
 import '../../../../core/services/profile_image_sync_service.dart';
 import '../../../../core/services/profile_sync_service.dart';
 import '../../../../core/services/sync_entitlement_gate.dart';
@@ -644,6 +645,10 @@ class _TrainingChartSectionState extends ConsumerState<_TrainingChartSection> {
     final metric = ref.watch(profileChartMetricProvider);
     final aggregates = ref.watch(weeklyAggregatesProvider);
     final isPremium = ref.watch(isPremiumProvider);
+    // Weekly aggregates are stored in kilograms; the KPI header and the chart
+    // both need the active unit to render volume the way the rest of the app
+    // does.
+    final unit = ref.watch(weightUnitProvider);
     final filledWeeks = aggregates.where((a) => a.workoutCount > 0).length;
     final isEmpty = filledWeeks == 0;
 
@@ -670,7 +675,11 @@ class _TrainingChartSectionState extends ConsumerState<_TrainingChartSection> {
         if (isEmpty)
           ProfileGraphEmptyState(onStartWorkout: onStartWorkout)
         else ...[
-          GraphKpiHeader(aggregates: aggregates, metric: metric),
+          GraphKpiHeader(
+            aggregates: aggregates,
+            metric: metric,
+            unit: unit,
+          ),
           const SizedBox(height: 24),
           AnimatedSwitcher(
             duration: MediaQuery.disableAnimationsOf(context)
@@ -683,6 +692,7 @@ class _TrainingChartSectionState extends ConsumerState<_TrainingChartSection> {
               aggregates: aggregates,
               metric: metric,
               isPremium: isPremium,
+              unit: unit,
             ),
           ),
         ],

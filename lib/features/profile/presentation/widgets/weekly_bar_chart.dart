@@ -24,16 +24,25 @@ import 'package:intl/intl.dart';
 ///   - Value labels printed above bars (when ≤ 6 bars)
 ///   - Horizontal X-axis labels (no rotation) when ≤ 4 bars; 30° for more
 ///   - White-8% gridlines (barely-there guides, not competing with bars)
+///
+/// **Units:** aggregates always arrive in kilograms. Every read of an aggregate
+/// goes through [_displayValue] so the bar heights, the axis, the printed
+/// labels, the tooltip and the accessibility summary are all in the same unit
+/// and cannot drift apart.
 class WeeklyBarChart extends StatefulWidget {
   final List<WeeklyAggregate> aggregates;
   final ProfileGraphMetric metric;
   final bool isPremium;
+
+  /// Active weight unit ('kg' | 'lbs'). Only applied to the volume metric.
+  final String unit;
 
   const WeeklyBarChart({
     super.key,
     required this.aggregates,
     required this.metric,
     required this.isPremium,
+    required this.unit,
   });
 
   @override
@@ -56,6 +65,17 @@ class _WeeklyBarChartState extends State<WeeklyBarChart> {
   int _filledWeeks = 0;
   List<WeeklyAggregate> _gatedAggregates = const [];
 
+  /// Converts a raw aggregate figure into the unit the user actually reads.
+  ///
+  /// Volume is persisted in kilograms and is the only unit-bearing metric here;
+  /// duration is minutes and reps are a count, so both pass through unchanged.
+  /// Everything that surfaces a number must call this exactly once — never
+  /// twice, or the value is converted squared.
+  double _displayValue(double raw) =>
+      widget.metric == ProfileGraphMetric.volume
+          ? kgToDisplay(raw, widget.unit)
+          : raw;
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -72,6 +92,7 @@ class _WeeklyBarChartState extends State<WeeklyBarChart> {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.aggregates != widget.aggregates ||
         oldWidget.metric != widget.metric ||
+        oldWidget.unit != widget.unit ||
         oldWidget.isPremium != widget.isPremium) {
       _computeBars();
     }
@@ -80,7 +101,10 @@ class _WeeklyBarChartState extends State<WeeklyBarChart> {
   void _computeBars() {
     final metric = widget.metric;
     _gatedAggregates = gateChartSamples(widget.aggregates, widget.isPremium);
-    final values = _gatedAggregates.map((a) => a.valueFor(metric)).toList();
+    // Converted once, here. Bar heights, _maxY and the tick interval are all
+    // derived from these values so the axis always matches the labels.
+    final values =
+        _gatedAggregates.map((a) => _displayValue(a.valueFor(metric))).toList();
 
     // Count filled weeks from the FULL ungated window so free users with
     // ≥4 filled weeks across 8 weeks still unlock the full chart.
@@ -123,7 +147,7 @@ class _WeeklyBarChartState extends State<WeeklyBarChart> {
     final isTouched = index == _touchedIndex;
     final hasValue = value > 0;
 
-    // ── Semantic color rule ─────────────────────────────────────────────────────
+    // ── Semantic color rule ────────────────────────────────────────
     // current week (complete)  → accent base
     // current week (in-flight) → accent base 50% (shows progress, not done)
     // previous weeks with data → neutral cool-gray (historical reference)
@@ -216,6 +240,7 @@ class _WeeklyBarChartState extends State<WeeklyBarChart> {
     return day.subtract(Duration(days: day.weekday - 1));
   }
 
+  /// Takes an ALREADY-CONVERTED value.
   String _yAxisLabel(double value) {
     return switch (widget.metric) {
       ProfileGraphMetric.volume => BrandedLineChart.defaultAxisFormat(value),
@@ -224,10 +249,13 @@ class _WeeklyBarChartState extends State<WeeklyBarChart> {
     };
   }
 
+  /// Takes an ALREADY-CONVERTED value and only appends the unit label.
+  /// Do not pass a raw aggregate here — run it through [_displayValue] first.
   String _valueLabel(double value) {
     final rounded = value.round();
     return switch (widget.metric) {
-      ProfileGraphMetric.volume => '${groupThousands(rounded)} kg',
+      ProfileGraphMetric.volume =>
+        '${groupThousands(rounded)} ${unitLabel(widget.unit)}',
       ProfileGraphMetric.duration => '${groupThousands(rounded)} min',
       ProfileGraphMetric.reps => '${groupThousands(rounded)} reps',
     };
@@ -238,7 +266,7 @@ class _WeeklyBarChartState extends State<WeeklyBarChart> {
     return '${DateFormat('MMM d').format(start)} - ${DateFormat('MMM d').format(end)}';
   }
 
-  // ── Low-data comparison view ─────────────────────────────────────────────────
+  // ── Low-data comparison view ──────────────────────────────────────
 
   /// Renders when filledWeeks < 4. Shows an honest stat comparison instead of
   /// a broken/half-empty chart sitting under a "data not ready" banner.
@@ -249,9 +277,13 @@ class _WeeklyBarChartState extends State<WeeklyBarChart> {
     final previous =
         filledAggs.length >= 2 ? filledAggs[filledAggs.length - 2] : null;
 
-    final latestValue = latest?.valueFor(widget.metric) ?? 0;
-    final prevValue = previous?.valueFor(widget.metric) ?? 0;
+    final latestValue =
+        latest == null ? 0.0 : _displayValue(latest.valueFor(widget.metric));
+    final prevValue = previous == null
+        ? 0.0
+        : _displayValue(previous.valueFor(widget.metric));
 
+    // Both sides are in the same unit, so the ratio is unaffected by it.
     final double? deltaFraction = (prevValue > 0 && latestValue > 0)
         ? (latestValue - prevValue) / prevValue
         : null;
@@ -339,7 +371,7 @@ class _WeeklyBarChartState extends State<WeeklyBarChart> {
     );
   }
 
-  // ── Full bar chart ─────────────────────────────────────────────────────────
+  // ── Full bar chart ──────────────────────────────────────────
 
   @override
   Widget build(BuildContext context) {
@@ -399,7 +431,7 @@ class _WeeklyBarChartState extends State<WeeklyBarChart> {
                         return const SizedBox.shrink();
                       }
                       final agg = _gatedAggregates[index];
-                      final v = agg.valueFor(widget.metric);
+                      final v = _displayValue(agg.valueFor(widget.metric));
                       if (v <= 0) return const SizedBox.shrink();
                       return SideTitleWidget(
                         axisSide: meta.axisSide,
@@ -503,7 +535,8 @@ class _WeeklyBarChartState extends State<WeeklyBarChart> {
                   fitInsideVertically: true,
                   getTooltipItem: (group, groupIndex, rod, rodIndex) {
                     final aggregate = _gatedAggregates[groupIndex];
-                    final value = aggregate.valueFor(widget.metric);
+                    final value =
+                        _displayValue(aggregate.valueFor(widget.metric));
                     return BarTooltipItem(
                       '${_weekRangeLabel(aggregate.weekStart)}\n',
                       AppText.caption(color: surface.textSecondary).copyWith(
@@ -567,12 +600,14 @@ class _WeeklyBarChartState extends State<WeeklyBarChart> {
     final latest = _gatedAggregates.lastOrNull;
     if (latest == null) return 'Weekly training chart';
 
-    final latestValue = _valueLabel(latest.valueFor(widget.metric));
+    final latestValue =
+        _valueLabel(_displayValue(latest.valueFor(widget.metric)));
     final previous = _gatedAggregates.length >= 2
         ? _gatedAggregates[_gatedAggregates.length - 2]
         : null;
     String change = '';
     if (previous != null && previous.valueFor(widget.metric) != 0) {
+      // Raw values are fine here — a ratio is unit-invariant.
       final delta =
           (latest.valueFor(widget.metric) - previous.valueFor(widget.metric)) /
               previous.valueFor(widget.metric);
@@ -585,7 +620,7 @@ class _WeeklyBarChartState extends State<WeeklyBarChart> {
   }
 }
 
-// ── Supporting widgets for the comparison/low-data view ──────────────────────────
+// ── Supporting widgets for the comparison/low-data view ────────────────────────
 
 class _StatBlock extends StatelessWidget {
   final String label;
