@@ -205,8 +205,17 @@ class ExerciseBlock extends ConsumerWidget {
             const SizedBox(height: 16),
 
             // ── Column labels — share SetRow's exact column geometry ─────
-            SizedBox(
-              height: 22,
+            //
+            // TEXT SCALING: this strip used to be SizedBox(height: 22). The
+            // labels are AppText.columnHeader (11sp), whose line box is already
+            // ~20px at the app's current 1.4 clamp — about one pixel of
+            // headroom. Raise the clamp toward the 200% accessibility budget
+            // and the same text needs ~29px inside a 22px box, overflowing the
+            // densest screen in the app. A minimum keeps today's pixels
+            // identical wherever the text still fits and lets the strip grow
+            // where it does not. Do not pin this back to a fixed height.
+            ConstrainedBox(
+              constraints: const BoxConstraints(minHeight: 22),
               child: Row(
                 children: [
                   SizedBox(
@@ -257,11 +266,14 @@ class ExerciseBlock extends ConsumerWidget {
                                         color: surface.textSecondary,
                                       ),
                                       const SizedBox(width: 3),
-                                      Text(
-                                        mType.fixedWeightColumnLabel ??
-                                            unit.toUpperCase(),
-                                        style: AppText.columnHeader(
-                                            color: surface.textSecondary),
+                                      Flexible(
+                                        child: Text(
+                                          mType.fixedWeightColumnLabel ??
+                                              unit.toUpperCase(),
+                                          overflow: TextOverflow.ellipsis,
+                                          style: AppText.columnHeader(
+                                              color: surface.textSecondary),
+                                        ),
                                       ),
                                     ],
                                   ),

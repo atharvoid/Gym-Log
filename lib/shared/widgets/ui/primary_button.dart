@@ -75,14 +75,26 @@ class PrimaryButton extends StatelessWidget {
                   ),
                 )
               : icon != null
+                  // TEXT SCALING: the icon is a fixed 20px but the label grows
+                  // with the user's text-size setting, so a long label on a
+                  // narrow phone overruns this Row. Flexible lets the label
+                  // ellipsise instead of overflowing. The accessible name is
+                  // supplied by the Semantics wrapper below and is NOT
+                  // truncated, so a screen reader still hears the full label
+                  // even when the visual one is clipped.
                   ? Row(
                       mainAxisSize: MainAxisSize.min,
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Icon(icon, size: 20),
                         const SizedBox(width: 8),
-                        Text(label,
-                            style: AppText.button(color: accent.onAccent)),
+                        Flexible(
+                          child: Text(
+                            label,
+                            overflow: TextOverflow.ellipsis,
+                            style: AppText.button(color: accent.onAccent),
+                          ),
+                        ),
                       ],
                     )
                   : Text(
