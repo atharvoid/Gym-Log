@@ -124,6 +124,20 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
       // fallback avatar is a perfectly good result, so this must never be the
       // reason the user is still looking at a spinner.
       final prefs = await SharedPreferences.getInstance();
+
+      // Drain any profile-image upload that failed and was queued for retry
+      // (see ProfileImageSyncService.uploadIfEntitled's catch block, which
+      // promises "the user never sees a failure"). Before this call, nothing
+      // in the app ever invoked retryPendingUpload — a single failed cloud
+      // upload silently and permanently disabled avatar backup until the
+      // user manually re-picked a photo. Fire-and-forget: a retry is never
+      // worth blocking launch on.
+      unawaited(
+        ref
+            .read(profileImageSyncProvider)
+            .retryPendingUpload(isPremium: isPremium),
+      );
+
       final localImage = prefs.getString('profile_image_path');
       if (localImage == null || localImage.isEmpty) {
         final imagePath = await ref
