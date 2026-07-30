@@ -1,18 +1,35 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../core/theme/app_colors.dart';
 import '../../core/theme/chrome_tokens.dart';
 import '../../core/theme/app_text.dart';
 import '../../core/theme/dynamic_accent_theme.dart';
 import '../../features/workout/presentation/providers/active_workout_provider.dart';
 import '../../features/workout/presentation/providers/workout_timer_provider.dart';
+import '../providers/bottom_chrome_provider.dart';
 
-/// Minimized "workout in progress" bar shown above the bottom nav while a
-/// session is live. Decluttered & compact: a pulsing active indicator,
-/// the workout name, and the elapsed timer. Tapping anywhere expands /workout/active.
+/// Minimized "workout in progress" mini player.
+///
+/// PLACEMENT CONTRACT: this widget FLOATS. It is positioned in [AppShell]'s
+/// body Stack, [kActiveBarGap] above the nav bar, and is exactly
+/// [kActiveBarHeight] tall. It must never be placed inside
+/// `bottomNavigationBar` again — doing that changes the height of the bottom
+/// chrome when a session starts, which re-lays-out every tab and makes the nav
+/// bar itself animate downward.
+///
+/// Because it floats, it occludes content. Scroll views inside the shell pad
+/// against [bottomChromeInsetProvider], which already accounts for this bar.
+///
+/// Interaction: tap OR swipe up to expand — the same two gestures every
+/// now-playing bar on the platform supports, so it needs no discovery.
 class ActiveWorkoutBar extends ConsumerWidget {
   const ActiveWorkoutBar({super.key});
+
+  void _expand(BuildContext context) {
+    HapticFeedback.selectionClick();
+    context.push('/workout/active');
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -27,37 +44,79 @@ class ActiveWorkoutBar extends ConsumerWidget {
 
     return Semantics(
       button: true,
-      label: 'Resume workout, elapsed $timer',
+      label: 'Resume $workoutName, elapsed $timer',
       child: GestureDetector(
-        onTap: () => context.push('/workout/active'),
+        onTap: () => _expand(context),
+        // Swipe up to expand. Threshold is on velocity rather than distance so
+        // a flick works without traversing the full bar height.
+        onVerticalDragEnd: (details) {
+          if ((details.primaryVelocity ?? 0) < -180) _expand(context);
+        },
         child: Container(
-          margin: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          height: kActiveBarHeight,
+          padding: const EdgeInsets.symmetric(horizontal: 10),
           decoration: BoxDecoration(
             color: context.chrome.activeBarBg,
             borderRadius: BorderRadius.circular(AppRadius.buttonSecondary),
-            border: Border.all(color: context.surface.borderDefault, width: 1),
+            border: Border.all(
+              color: accent.base.withValues(alpha: 0.35),
+              width: 1,
+            ),
+            boxShadow: [
+              // Lifts the pill off the nav bar. Without this the two chrome
+              // layers read as one 130dp slab.
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.55),
+                blurRadius: 18,
+                offset: const Offset(0, 6),
+              ),
+              BoxShadow(
+                color: accent.base.withValues(alpha: 0.10),
+                blurRadius: 20,
+                spreadRadius: -4,
+              ),
+            ],
           ),
           child: Row(
             children: [
-              // Subtle pulsing active indicator
-              _ActiveIndicator(color: accent.base),
-              const SizedBox(width: 12),
-              // Workout Title
+              // Leading accent tile with the live pulse inside it.
+              Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  color: accent.muted,
+                  borderRadius: AppRadius.badgeAll,
+                ),
+                child: Center(child: _ActiveIndicator(color: accent.base)),
+              ),
+              const SizedBox(width: 10),
+              // Name + elapsed, stacked. Both facts stay legible instead of
+              // fighting for a single row.
               Expanded(
-                child: Text(
-                  workoutName,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: AppText.cardTitle(),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      workoutName,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: AppText.rowLabel(),
+                    ),
+                    const SizedBox(height: 1),
+                    Text(
+                      timer,
+                      maxLines: 1,
+                      style: AppText.statLabel(color: accent.light),
+                    ),
+                  ],
                 ),
               ),
-              const SizedBox(width: 12),
-              // Elapsed duration/timer
-              Text(
-                timer,
-                style: AppText.value(color: accent.light),
-              ),
+              const SizedBox(width: 8),
+              // Affordance for both gestures.
+              Icon(Icons.keyboard_arrow_up_rounded,
+                  size: 22, color: context.chrome.textSecondary),
+              const SizedBox(width: 2),
             ],
           ),
         ),
@@ -99,6 +158,14 @@ class _ActiveIndicatorState extends State<_ActiveIndicator>
 
   @override
   Widget build(BuildContext context) {
+    // Reduce-motion: a steady dot, no breathing.
+    if (MediaQuery.disableAnimationsOf(context)) {
+      return Container(
+        width: 8,
+        height: 8,
+        decoration: BoxDecoration(shape: BoxShape.circle, color: widget.color),
+      );
+    }
     return AnimatedBuilder(
       animation: _animation,
       builder: (context, child) {

@@ -20,11 +20,13 @@ import 'package:gymlog/features/auth/presentation/providers/auth_provider.dart';
 import 'package:gymlog/features/auth/presentation/providers/tour_provider.dart';
 import 'package:gymlog/features/profile/presentation/providers/profile_provider.dart';
 import 'package:gymlog/features/profile/presentation/providers/profile_stats_provider.dart';
+import 'package:gymlog/features/workout/presentation/providers/rest_timer_provider.dart';
 import 'package:gymlog/shared/widgets/premium_paywall.dart';
 import 'package:gymlog/shared/widgets/ui/app_action_row.dart';
 import 'package:gymlog/shared/widgets/ui/app_card.dart';
 import 'package:gymlog/shared/widgets/ui/app_dialog.dart';
 import 'package:gymlog/shared/widgets/ui/branded_bottom_sheet.dart';
+import 'package:gymlog/shared/widgets/ui/duration_slider.dart';
 import 'package:gymlog/shared/widgets/ui/time_range_filter.dart';
 import 'package:gymlog/core/config/legal_links.dart';
 import 'package:gymlog/shared/widgets/tour/spotlight_tour_overlay.dart';
@@ -326,9 +328,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           icon: Icons.timer_outlined,
                           iconColor: accent.light,
                           title: 'Rest timer',
+                          // m:ss, matching the mid-workout rest tile. The old
+                          // "$restSeconds seconds" made the same value read
+                          // differently in two places ("90 seconds" vs "1:30").
                           subtitle: restSeconds == 0
                               ? 'Off'
-                              : '$restSeconds seconds between sets',
+                              : '${formatDurationLabel(restSeconds)} between sets',
                           onTap: () =>
                               _pickRestTimer(context, ref, restSeconds),
                         ),
@@ -611,8 +616,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   title: 'Automatic rest timer',
                   description:
                       'GymLog starts a countdown after every completed set. '
-                      'Set your preferred rest duration here — 90 seconds is '
-                      'great for compound lifts, 60 s for isolation work.',
+                      'Drag to set your preferred rest here — 1:30 is great '
+                      'for compound lifts, 1:00 for isolation work.',
                   step: 3,
                 ),
             ],
@@ -756,26 +761,44 @@ Future<void> _pickWeightUnit(
   }
 }
 
+/// Rest duration — a continuous slider, replacing a 7-item preset list.
+///
+/// The list could not express 45s, 75s, or anything above 3:00, and it labelled
+/// values in raw seconds ("120 seconds") when lifters read rest as m:ss. See
+/// [DurationSlider] for the interaction rationale.
+///
+/// Persistence happens in `onChangeEnd` only. A single drag emits dozens of
+/// intermediate values; writing each one would hammer SharedPreferences and
+/// invalidate the provider on every frame of the gesture.
 Future<void> _pickRestTimer(
     BuildContext context, WidgetRef ref, int restSeconds) async {
   HapticFeedback.lightImpact();
-  final selected = await showBrandedPickerSheet<int>(
+  var value = restSeconds.clamp(0, kRestMaxSeconds);
+
+  await showBrandedBottomSheet<void>(
     context: context,
     title: 'Rest Between Sets',
-    selected: restSeconds,
-    options: [
-      for (final s in const [0, 30, 60, 90, 120, 150, 180])
-        PickerOption(
-          value: s,
-          label: s == 0 ? 'Off' : '$s seconds',
-          subtitle: s == 90 ? 'Recommended' : null,
-          icon: s == 0 ? Icons.timer_off_outlined : Icons.timer_outlined,
-          color: context.surface.textSecondary,
+    subtitle: 'Drag to set the countdown that starts after each completed set. '
+        'Slide to zero to turn it off.',
+    child: StatefulBuilder(
+      builder: (context, setSheetState) => Padding(
+        padding: const EdgeInsets.only(bottom: 8),
+        child: DurationSlider(
+          valueSeconds: value,
+          maxSeconds: kRestMaxSeconds,
+          stepSeconds: 5,
+          onChanged: (v) => setSheetState(() => value = v),
+          onChangeEnd: (v) =>
+              ref.read(settingsActionsProvider).setDefaultRestSeconds(v),
         ),
-    ],
+      ),
+    ),
   );
-  if (selected != null) {
-    await ref.read(settingsActionsProvider).setDefaultRestSeconds(selected);
+
+  // Safety net: if the sheet is dismissed by a back gesture between the last
+  // detent and the drag-end callback, the final value would otherwise be lost.
+  if (value != restSeconds) {
+    await ref.read(settingsActionsProvider).setDefaultRestSeconds(value);
   }
 }
 

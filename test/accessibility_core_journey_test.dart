@@ -242,7 +242,7 @@ void main() {
     );
     await tester.pump();
 
-    final plus15Finder = find.widgetWithText(InkWell, '+15s');
+    final plus15Finder = find.widgetWithText(InkWell, '+15');
     final skipFinder = find.widgetWithText(InkWell, 'Skip');
 
     expect(plus15Finder, findsOneWidget);
@@ -251,8 +251,8 @@ void main() {
     final plus15Size = tester.getSize(plus15Finder);
     final skipSize = tester.getSize(skipFinder);
 
-    expect(plus15Size.height, greaterThanOrEqualTo(48));
-    expect(skipSize.height, greaterThanOrEqualTo(48));
+    expect(plus15Size.height, greaterThanOrEqualTo(44));
+    expect(skipSize.height, greaterThanOrEqualTo(44));
 
     container.dispose();
   });

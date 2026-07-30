@@ -21,6 +21,16 @@ const int kPrevFlex = 5; // "999kg x 99" — read-only reference, widest
 const int kWeightFlex = 4; // editable number
 const int kRepsFlex = 4; // editable number
 
+/// Background wash on a completed set row: 6% green over #000000.
+///
+/// WHY A LOCAL CONSTANT: [AppColors.completionTint] is an alias of
+/// `successTint` (0x24 = 14% alpha) and is used for success SURFACES elsewhere,
+/// where a visible fill is correct. A completed set row is not a surface — it is
+/// a 44dp line of numbers that must stay readable, and it already carries two
+/// other completion signals (the 3px left bar and the solid green check).
+/// Retuning the shared token would silently wash out every other consumer.
+const Color _kCompletionRowTint = Color(0x0F34C759);
+
 /// One set inside the active workout — the most-touched interaction in the app.
 ///
 /// Hevy-inspired restraint: weight/reps are plain numbers on the row surface
@@ -36,6 +46,11 @@ const int kRepsFlex = 4; // editable number
 /// | repsOnly            | hidden             | REPS             |
 /// | duration            | hidden             | SECS             |
 /// | distance            | DIST (raw metres)  | hidden           |
+///
+/// DO NOT BOX THE INPUTS. Bordered/filled input boxes were tried and rejected:
+/// at four sets per exercise and six exercises per session, 48 outlined boxes
+/// turn a set table into a form. The row surface, the column headers, and the
+/// cursor carry all the affordance that is needed — see [_numberField].
 class SetRow extends StatefulWidget {
   final int setIndex;
   final WorkoutSetState setData;
@@ -256,6 +271,13 @@ class _SetRowState extends State<SetRow> {
   ///
   /// When [flashHint] is true the hint text briefly renders in a dim accent
   /// tint, signalling which field is missing a required value.
+  ///
+  /// Horizontal padding expands the tap target so a finger lands on the
+  /// number field with room, not edge-to-edge.
+  ///
+  /// The four `InputBorder.none` / `filled: false` lines below are LOAD-BEARING
+  /// design, not leftovers. Removing them restores Material's default underline
+  /// or outline and turns the set table back into a form.
   Widget _numberField({
     required TextEditingController controller,
     required FocusNode focusNode,
@@ -269,26 +291,12 @@ class _SetRowState extends State<SetRow> {
     final completed = widget.setData.isCompleted;
     final accent = context.accent;
     final surface = context.surface;
-    final hasFocus = focusNode.hasFocus;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 150),
         constraints: const BoxConstraints(minHeight: 48, minWidth: 48),
-        decoration: BoxDecoration(
-          color:
-              hasFocus ? accent.base.withValues(alpha: 0.12) : surface.surface3,
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(
-            color: flashHint
-                ? accent.base
-                : (hasFocus
-                    ? accent.base.withValues(alpha: 0.80)
-                    : surface.borderSubtle.withValues(alpha: 0.3)),
-            width: hasFocus || flashHint ? 1.5 : 1.0,
-          ),
-        ),
         child: Center(
           child: Semantics(
             label: semanticLabel,
@@ -437,8 +445,12 @@ class _SetRowState extends State<SetRow> {
         duration:
             reduceMotion ? Duration.zero : const Duration(milliseconds: 200),
         curve: Curves.easeInOut,
+        // Completed row = 3px green left border + 6% green tint (not a full fill).
+        // Completion is a fixed success semantic — like reward gold, it never
+        // shifts with the accent palette. See [_kCompletionRowTint] for why this
+        // does not use the shared success token.
         decoration: BoxDecoration(
-          color: isCompleted ? AppColors.completionTint : Colors.transparent,
+          color: isCompleted ? _kCompletionRowTint : Colors.transparent,
           border: isCompleted
               ? const Border(
                   left: BorderSide(color: AppColors.success, width: 3))
@@ -446,7 +458,7 @@ class _SetRowState extends State<SetRow> {
         ),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
         child: Container(
-          constraints: const BoxConstraints(minHeight: 56),
+          constraints: const BoxConstraints(minHeight: 44),
           child: Row(
             children: [
               // ── SET — type letter replaces number, opens the type picker ──

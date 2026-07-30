@@ -172,7 +172,7 @@ void main() {
   });
 
   group('BottomNavBar — geometry and layout', () {
-    testWidgets('nav bar has 60px height', (tester) async {
+    testWidgets('nav bar has 72px height', (tester) async {
       await tester.pumpWidget(
         gymlogApp(
           ThemePalette.neonPurple,
@@ -189,7 +189,7 @@ void main() {
 
       // Find the SizedBox inside the nav bar with the static height.
       final sizedBoxList = find.byWidgetPredicate(
-        (w) => w is SizedBox && w.height == 60.0,
+        (w) => w is SizedBox && w.height == 72.0,
       );
       expect(sizedBoxList, findsAtLeast(1));
     });
