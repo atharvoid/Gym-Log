@@ -334,7 +334,7 @@ class ActiveWorkoutNotifier extends StateNotifier<ActiveWorkoutState?> {
     }
   }
 
-  void loadForEdit(HistoricalWorkout historicalWorkout) {
+  void loadForEdit(HydratedWorkout historicalWorkout) {
     final session = historicalWorkout.session;
 
     final exercises = historicalWorkout.exercises.map((he) {
