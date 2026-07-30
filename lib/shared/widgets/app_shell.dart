@@ -6,6 +6,7 @@ import '../../core/services/workout_draft_store.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text.dart';
 import '../../core/theme/dynamic_accent_theme.dart';
+import '../providers/bottom_chrome_provider.dart';
 import 'active_workout_bar.dart';
 import 'bottom_nav_bar.dart';
 
@@ -13,6 +14,12 @@ import 'bottom_nav_bar.dart';
 /// Purpose: High-Density Tracker - App shell with bottom nav
 /// Mounts once after auth, so it's the natural place to offer to resume an
 /// interrupted workout (a draft persisted by [WorkoutDraftStore]).
+///
+/// LAYOUT CONTRACT: `bottomNavigationBar` holds the nav bar and NOTHING else,
+/// so the bottom chrome height is constant for the life of the app. The
+/// active-workout mini player floats in the body Stack above it. Anything that
+/// needs to know how much bottom space is occluded reads
+/// [bottomChromeInsetProvider].
 
 class AppShell extends ConsumerStatefulWidget {
   /// Drives the tabbed branches. IndexedStack keeps every branch mounted, so
@@ -116,19 +123,23 @@ class _AppShellState extends ConsumerState<AppShell> {
                   ),
                 ),
                 const SizedBox(height: 8),
-                // Discard (secondary)
+                // Discard (destructive — this permanently drops a logged
+                // session, so it is red-on-outline, not a quiet grey label
+                // sitting next to a bright accent-filled Resume).
                 SizedBox(
                   width: double.infinity,
                   height: 50,
-                  child: TextButton(
-                    style: TextButton.styleFrom(
-                      foregroundColor: AppColors.textSecondary,
+                  child: OutlinedButton(
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppColors.error,
+                      side: const BorderSide(
+                          color: AppColors.errorBorder, width: 1),
                       shape: const RoundedRectangleBorder(
                           borderRadius: AppRadius.buttonSecondaryAll),
                     ),
                     onPressed: () => Navigator.of(sheetCtx).pop(false),
-                    child: Text('Discard',
-                        style: AppText.button(color: AppColors.textSecondary)),
+                    child: Text('Discard Workout',
+                        style: AppText.button(color: AppColors.error)),
                   ),
                 ),
               ],
@@ -148,54 +159,71 @@ class _AppShellState extends ConsumerState<AppShell> {
 
   @override
   Widget build(BuildContext context) {
-    final isWorkoutActive = ref.watch(activeWorkoutProvider) != null;
+    final isWorkoutActive =
+        ref.watch(activeWorkoutProvider.select((s) => s != null));
     final reduceMotion = MediaQuery.disableAnimationsOf(context);
 
     return Scaffold(
       backgroundColor: AppColors.bgBase,
       body: SafeArea(
         bottom: false,
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 600),
-            child: widget.navigationShell,
-          ),
+        child: Stack(
+          children: [
+            Positioned.fill(
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 600),
+                  child: widget.navigationShell,
+                ),
+              ),
+            ),
+            // The mini player floats over content. `bottom` is measured from
+            // the body's own bottom edge, which already sits above the nav bar
+            // — so this is a pure 8dp gap with no safe-area math to get wrong.
+            Positioned(
+              left: 16,
+              right: 16,
+              bottom: kActiveBarGap,
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 600 - 32),
+                  child: AnimatedSwitcher(
+                    duration: reduceMotion
+                        ? Duration.zero
+                        : const Duration(milliseconds: 280),
+                    switchInCurve: Curves.easeOutCubic,
+                    switchOutCurve: Curves.easeOutCubic,
+                    // Slide + fade only. Deliberately NOT SizeTransition: the
+                    // bar no longer participates in the nav bar's layout, so
+                    // there is nothing to grow — and animating size here was
+                    // what visibly shoved the nav bar down on workout start.
+                    transitionBuilder: (child, animation) => FadeTransition(
+                      opacity: animation,
+                      child: SlideTransition(
+                        position: Tween<Offset>(
+                          begin: const Offset(0, 0.6),
+                          end: Offset.zero,
+                        ).animate(animation),
+                        child: child,
+                      ),
+                    ),
+                    child: isWorkoutActive
+                        ? const ActiveWorkoutBar(key: ValueKey('activeBar'))
+                        : const SizedBox.shrink(key: ValueKey('emptyBar')),
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
-      bottomNavigationBar: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          AnimatedSwitcher(
-            duration: reduceMotion
-                ? Duration.zero
-                : const Duration(milliseconds: 280),
-            switchInCurve: Curves.easeOutCubic,
-            switchOutCurve: Curves.easeOutCubic,
-            transitionBuilder: (child, animation) {
-              return SizeTransition(
-                sizeFactor: animation,
-                child: SlideTransition(
-                  position: Tween<Offset>(
-                    begin: const Offset(0, 1.0),
-                    end: Offset.zero,
-                  ).animate(animation),
-                  child: child,
-                ),
-              );
-            },
-            child: isWorkoutActive
-                ? const ActiveWorkoutBar(key: ValueKey('activeBar'))
-                : const SizedBox.shrink(key: ValueKey('emptyBar')),
-          ),
-          BottomNavBar(
-            currentIndex: widget.navigationShell.currentIndex,
-            onTap: (index) => widget.navigationShell.goBranch(
-              index,
-              // Re-tapping the active tab pops it back to its branch root.
-              initialLocation: index == widget.navigationShell.currentIndex,
-            ),
-          ),
-        ],
+      bottomNavigationBar: BottomNavBar(
+        currentIndex: widget.navigationShell.currentIndex,
+        onTap: (index) => widget.navigationShell.goBranch(
+          index,
+          // Re-tapping the active tab pops it back to its branch root.
+          initialLocation: index == widget.navigationShell.currentIndex,
+        ),
       ),
     );
   }
