@@ -166,7 +166,7 @@ class SyncEngine {
     _setStatus(const SyncStatus(SyncPhase.paused));
   }
 
-  // ── Enqueue ──────────────────────────────────────────────────
+  // ── Enqueue ────────────────────────────────────────────────────
 
   Future<void> enqueueSession(String userId, String sessionId) async {
     if (!_isSyncAllowed) return;
@@ -239,20 +239,26 @@ class SyncEngine {
             await _db.syncOutboxDao.nextBatch(userId, limit: _batchSize);
         if (batch.isEmpty) break;
 
-        final objects = [
-          for (final row in batch)
-            SyncObject(
-              id: '${row.entityType}:${row.entityId}',
-              userId: row.userId,
-              entityType: row.entityType,
-              entityId: row.entityId,
-              revision: 1,
-              operationId: 'op_${row.id}_${row.updatedAtMs}',
-              updatedAtMs: row.updatedAtMs,
-              deleted: row.op == 'delete',
-              payload: row.payload,
-            )
-        ];
+        // A6: send the revision this device last saw acknowledged for each
+        // entity — NOT a hardcoded 1. Sending 1 unconditionally meant every
+        // push after an entity's first successful sync (server revision >=
+        // 2) was misdetected as a stale conflict below and silently dropped.
+        final objects = <SyncObject>[];
+        for (final row in batch) {
+          final revision = await _db.syncOutboxDao
+              .getRevision(userId, row.entityType, row.entityId);
+          objects.add(SyncObject(
+            id: '${row.entityType}:${row.entityId}',
+            userId: row.userId,
+            entityType: row.entityType,
+            entityId: row.entityId,
+            revision: revision,
+            operationId: 'op_${row.id}_${row.updatedAtMs}',
+            updatedAtMs: row.updatedAtMs,
+            deleted: row.op == 'delete',
+            payload: row.payload,
+          ));
+        }
 
         final results = await _remote.pushBatch(objects).timeout(_netTimeout);
         final ackedIds = <int>[];
@@ -264,6 +270,10 @@ class SyncEngine {
           if (res == null ||
               res.status == PushResultStatus.accepted ||
               res.status == PushResultStatus.duplicateOperation) {
+            if (res?.serverRevision != null) {
+              await _db.syncOutboxDao.setRevision(
+                  userId, row.entityType, row.entityId, res!.serverRevision!);
+            }
             ackedIds.add(row.id);
           } else if (res.status == PushResultStatus.conflict) {
             if (res.serverObject != null &&
@@ -276,10 +286,18 @@ class SyncEngine {
                 diagnostic:
                     'Ownership mismatch for ${row.entityType}:${row.entityId}',
               );
-            } else {
-              // Monotonic conflict — server has newer revision, acknowledge outbox row
+            } else if (res.serverObject != null) {
+              // Genuine same-owner conflict: the server has a newer copy.
+              // Adopt it locally instead of silently discarding the local
+              // edit, and record the server's revision so the *next* local
+              // edit to this entity pushes with the correct number.
+              await _importObject(userId, res.serverObject!);
+              await _db.syncOutboxDao.setRevision(userId, row.entityType,
+                  row.entityId, res.serverObject!.revision);
               ackedIds.add(row.id);
             }
+            // No serverObject to adopt: leave the row queued for retry next
+            // cycle rather than guessing.
           }
         }
 
@@ -334,6 +352,61 @@ class SyncEngine {
     await _db.syncOutboxDao.deleteByEntity(userId, entityType, entityId);
   }
 
+  /// Decode and apply one remote object to the local DB, quarantining it on
+  /// any failure. Shared by pull() and syncNow()'s same-owner conflict path,
+  /// which also needs to adopt a server-side object.
+  Future<void> _importObject(String userId, SyncObject o) async {
+    if (o.deleted || o.payload.isEmpty) return;
+    try {
+      final decoded = SyncCodec.decode(o.payload);
+      final data = decoded.body;
+
+      switch (o.entityType) {
+        case 'session':
+          await _db.workoutsDao.importSessionJson(data);
+          break;
+        case 'routine':
+          await _db.routinesDao.importRoutineJson(data);
+          break;
+        case 'preferences':
+          await _applyPreferences(userId, data);
+          break;
+        default:
+          await quarantineObject(
+            userId: userId,
+            entityType: o.entityType,
+            entityId: o.entityId,
+            reason: SyncFailureReason.invalidPayload,
+            diagnostic: 'Unknown entity type ${o.entityType}',
+          );
+      }
+    } on FormatException catch (e) {
+      await quarantineObject(
+        userId: userId,
+        entityType: o.entityType,
+        entityId: o.entityId,
+        reason: SyncFailureReason.decodeFailure,
+        diagnostic: 'Decode failure: ${e.message}',
+      );
+    } on UnsupportedError catch (e) {
+      await quarantineObject(
+        userId: userId,
+        entityType: o.entityType,
+        entityId: o.entityId,
+        reason: SyncFailureReason.unsupportedVersion,
+        diagnostic: 'Unsupported version: ${e.message}',
+      );
+    } catch (e) {
+      await quarantineObject(
+        userId: userId,
+        entityType: o.entityType,
+        entityId: o.entityId,
+        reason: SyncFailureReason.localConstraintFailure,
+        diagnostic: 'Local DB constraint failure: $e',
+      );
+    }
+  }
+
   /// Restore from the cloud. Rehydrates local DB with per-object isolation & quarantine.
   Future<void> pull(String userId) async {
     try {
@@ -350,55 +423,14 @@ class SyncEngine {
           continue;
         }
 
-        if (o.deleted || o.payload.isEmpty) continue;
+        await _importObject(userId, o);
 
-        try {
-          final decoded = SyncCodec.decode(o.payload);
-          final data = decoded.body;
-
-          switch (o.entityType) {
-            case 'session':
-              await _db.workoutsDao.importSessionJson(data);
-              break;
-            case 'routine':
-              await _db.routinesDao.importRoutineJson(data);
-              break;
-            case 'preferences':
-              await _applyPreferences(userId, data);
-              break;
-            default:
-              await quarantineObject(
-                userId: userId,
-                entityType: o.entityType,
-                entityId: o.entityId,
-                reason: SyncFailureReason.invalidPayload,
-                diagnostic: 'Unknown entity type ${o.entityType}',
-              );
-          }
-        } on FormatException catch (e) {
-          await quarantineObject(
-            userId: userId,
-            entityType: o.entityType,
-            entityId: o.entityId,
-            reason: SyncFailureReason.decodeFailure,
-            diagnostic: 'Decode failure: ${e.message}',
-          );
-        } on UnsupportedError catch (e) {
-          await quarantineObject(
-            userId: userId,
-            entityType: o.entityType,
-            entityId: o.entityId,
-            reason: SyncFailureReason.unsupportedVersion,
-            diagnostic: 'Unsupported version: ${e.message}',
-          );
-        } catch (e) {
-          await quarantineObject(
-            userId: userId,
-            entityType: o.entityType,
-            entityId: o.entityId,
-            reason: SyncFailureReason.localConstraintFailure,
-            diagnostic: 'Local DB constraint failure: $e',
-          );
+        // A6: keep local revision tracking in step with the cloud for every
+        // object this device pulls, so the next local edit to it pushes the
+        // correct revision instead of falling back to the default 0.
+        if (!o.deleted && o.payload.isNotEmpty) {
+          await _db.syncOutboxDao
+              .setRevision(userId, o.entityType, o.entityId, o.revision);
         }
       }
 
