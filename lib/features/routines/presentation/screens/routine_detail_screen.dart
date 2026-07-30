@@ -17,6 +17,7 @@ import 'package:gymlog/core/database/daos/workouts_dao.dart';
 import 'package:gymlog/core/database/database.dart';
 import 'package:gymlog/core/providers/database_provider.dart';
 import 'package:gymlog/core/providers/premium_provider.dart';
+import 'package:gymlog/core/providers/settings_provider.dart';
 import 'package:gymlog/core/theme/app_colors.dart';
 import 'package:gymlog/core/theme/app_text.dart';
 import 'package:gymlog/core/theme/dynamic_accent_theme.dart';
@@ -69,7 +70,7 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen> {
     super.initState();
   }
 
-  // ── Actions ────────────────────────────────────────────────────────
+  // ── Actions ────────────────────────────────────────
 
   void _startRoutine(HydratedRoutineDetail routine) {
     if (!tapGuard()) return;
@@ -211,7 +212,7 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen> {
     ref.invalidate(routineLastSetsProvider(widget.routineId));
   }
 
-  // ── Build ────────────────────────────────────────────────────────
+  // ── Build ────────────────────────────────────────
 
   @override
   Widget build(BuildContext context) {
@@ -227,6 +228,7 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen> {
   Widget _buildLoaded(HydratedRoutineDetail routine) {
     final lastSetsAsync = ref.watch(routineLastSetsProvider(widget.routineId));
     final isPremium = ref.watch(isPremiumProvider);
+    final unit = ref.watch(weightUnitProvider);
     final sessionStats =
         ref.watch(routineSessionStatsProvider(widget.routineId)).valueOrNull;
 
@@ -302,7 +304,9 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen> {
                     return RoutineExerciseBlock(
                       hydratedExercise: exercise,
                       lastSets: sets,
+                      unit: unit,
                       onTap: () {
+                        if (!tapGuard()) return;
                         HapticFeedback.selectionClick();
                         context.push(
                           '/exercise/detail/${exercise.exercise.id}',
@@ -408,7 +412,7 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen> {
     );
   }
 
-  // ── Loading / error / not-found ──────────────────────────────────────────────
+  // ── Loading / error / not-found ───────────────────────────────────────────
 
   Widget _buildSkeleton() {
     final surface = context.surface;
@@ -628,9 +632,9 @@ class _RoutineVolumeSectionState extends ConsumerState<_RoutineVolumeSection> {
   }
 }
 
-// ═════════════════════════════════════════════════════════════════════
+// ════════════════════════════════════════════════════════════════════════
 // Sub-widgets
-// ═══════════════════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════════════════
 
 class _HeroStatStrip extends StatelessWidget {
   final RoutineSessionStats stats;
