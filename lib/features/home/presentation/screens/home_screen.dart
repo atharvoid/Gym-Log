@@ -50,8 +50,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   /// State's Stack) can reference the same key.
   final GlobalKey _weeklyStatsKey = GlobalKey();
 
-  /// Fallback target for the step-4 tour spotlight on fresh installs where the
-  /// weekly-stats card has not yet rendered.
+  /// Key for the header band's outer Padding (see [_HomeHeaderBand.bandKey]).
+  /// NOT currently used as a spotlight target — the step-4 tour always
+  /// targets [_weeklyStatsKey], which is guaranteed to resolve because
+  /// [showWeeklyStatsCard] forces the weekly-stats card to render for the
+  /// duration of that step. Kept only as a stable widget identity for the
+  /// band; update this comment if a real fallback target is wired in.
   final GlobalKey _homeHeaderKey = GlobalKey();
 
   /// Target for the step-0 tour spotlight when the user already has routines
