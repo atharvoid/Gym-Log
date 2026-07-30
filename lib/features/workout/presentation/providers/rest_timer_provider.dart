@@ -130,9 +130,13 @@ class RestTimerNotifier extends StateNotifier<RestTimerState?>
     _currentExerciseId = exerciseId;
     _currentSetId = setId;
 
+    // Clamp for the same reason as _sync(): a clock that moved backward
+    // between persisting endTime and resuming must not resurrect more time
+    // than the timer originally had.
+    final clampedRemaining = math.min(remaining, totalSeconds);
     state = RestTimerState(
       totalSeconds: totalSeconds,
-      remainingSeconds: remaining,
+      remainingSeconds: clampedRemaining,
       endTime: endTime,
       workoutId: workoutId,
       exerciseId: exerciseId,
@@ -153,9 +157,13 @@ class RestTimerNotifier extends StateNotifier<RestTimerState?>
     if (remaining <= 0) {
       _finish();
     } else {
+      // Clamp to _totalSeconds: a backward clock jump (DST fall-back, manual
+      // clock change) must never make the countdown appear to grow past its
+      // starting value.
+      final clampedRemaining = math.min(remaining, _totalSeconds);
       state = RestTimerState(
         totalSeconds: _totalSeconds,
-        remainingSeconds: remaining,
+        remainingSeconds: clampedRemaining,
         endTime: end,
         workoutId: _currentWorkoutId,
         exerciseId: _currentExerciseId,
