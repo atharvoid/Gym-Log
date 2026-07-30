@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../providers/cloud_readiness_provider.dart';
+import '../providers/supabase_client_provider.dart';
 import '../../shared/widgets/app_shell.dart';
 import '../../features/auth/presentation/screens/splash_screen.dart';
 import '../../features/auth/presentation/screens/auth_screen.dart';
@@ -37,11 +38,14 @@ class _DeferredAuthRefreshListenable extends ChangeNotifier {
     unawaited(cloudReady.then((ready) {
       _cloudReady = ready;
       if (ready) {
-        try {
-          _subscription = Supabase.instance.client.auth.onAuthStateChange
-              .listen((_) => notifyListeners());
-        } catch (_) {
+        final client = supabaseClientOrNull();
+        if (client == null) {
+          // Readiness resolved true but the singleton is unusable (e.g. an
+          // abandoned init future after a timeout). Stay local-only.
           _cloudReady = false;
+        } else {
+          _subscription = client.auth.onAuthStateChange
+              .listen((_) => notifyListeners());
         }
       }
       notifyListeners();
@@ -51,13 +55,13 @@ class _DeferredAuthRefreshListenable extends ChangeNotifier {
   bool _cloudReady = false;
   StreamSubscription<AuthState>? _subscription;
 
+  /// Whether cloud initialisation succeeded. False means local-only mode:
+  /// no account system exists, so auth gating must not apply.
+  bool get cloudReady => _cloudReady;
+
   bool get isSignedIn {
     if (!_cloudReady) return false;
-    try {
-      return Supabase.instance.client.auth.currentSession != null;
-    } catch (_) {
-      return false;
-    }
+    return supabaseClientOrNull()?.auth.currentSession != null;
   }
 
   @override
@@ -88,8 +92,18 @@ final routerProvider = Provider<GoRouter>((ref) {
     redirect: (context, state) {
       final location = state.matchedLocation;
 
-      // Allow splash and onboarding to run without interference
-      if (location == '/splash' || location == '/onboarding') return null;
+      // Local-only mode: there is no account system, so gating every route
+      // on auth can only dead-end the app on a sign-in screen that cannot
+      // work. Let navigation proceed; cloud features degrade individually.
+      if (!refreshListenable.cloudReady) return null;
+
+      // Splash owns startup navigation and must run without interference.
+      // Onboarding is NOT exempt: it persists profile data and therefore
+      // requires an authenticated session. Splash only routes there with a
+      // live user; anything else (stale history, a hand-typed URL) falls
+      // through to the auth gate below instead of reaching a screen that
+      // would silently write to no account.
+      if (location == '/splash') return null;
 
       final isSignedIn = refreshListenable.isSignedIn;
       final isAuthRoute = location == '/auth';
@@ -144,7 +158,11 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/exercise/detail/:id',
         builder: (context, state) {
           final exercise = state.extra as Exercise?;
-          final id = int.parse(state.pathParameters['id']!);
+          // Path parameters are untrusted input (hand-typed URLs today,
+          // deep links eventually): a non-numeric id must not throw a
+          // FormatException mid-navigation. Fall back to the library.
+          final id = int.tryParse(state.pathParameters['id'] ?? '');
+          if (id == null) return const ExerciseSelectionScreen(browse: true);
           return ExerciseDetailScreen(exerciseId: id, exercise: exercise);
         },
       ),
