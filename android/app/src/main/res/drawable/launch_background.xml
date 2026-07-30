@@ -7,6 +7,12 @@
   produced a white flash on every cold start of a pure-black app - the flash
   users read as "a logo/splash screen from somewhere else".
 
+  NOTE: minSdk is 21, so drawable-v21/launch_background.xml is the file every
+  supported device actually resolves for this window background, not this
+  one. This file exists only for tooling that expects a base drawable to be
+  present. Keep both files in sync — see drawable-v21/launch_background.xml
+  for the fuller explanation.
+
   If you ever add a brand mark here, add it as a second <item> with a bitmap and
   gravity="center", and mirror it in values-v31/styles.xml so Android 12+ shows
   the same thing. Divergence between those two files is the usual cause of a
