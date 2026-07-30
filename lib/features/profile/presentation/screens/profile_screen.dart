@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../core/providers/premium_provider.dart';
 import '../../../../core/services/profile_image_sync_service.dart';
@@ -103,6 +104,19 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     await Future.delayed(const Duration(milliseconds: 300));
   }
 
+  Future<void> _openBillingSettings() async {
+    HapticFeedback.lightImpact();
+    // No affordance exists in the paywall for this — the paywall is for
+    // purchasing, not fixing a failing payment method. Send the user
+    // straight to the store's native subscription management page.
+    final url = defaultTargetPlatform == TargetPlatform.iOS
+        ? 'https://apps.apple.com/account/subscriptions'
+        : 'https://play.google.com/store/account/subscriptions';
+    final uri = Uri.tryParse(url);
+    if (uri == null) return;
+    await launchUrl(uri, mode: LaunchMode.externalApplication);
+  }
+
   void _openPremium(BuildContext context, {required bool isPremium}) {
     if (!tapGuard()) return;
     if (isPremium) {
@@ -129,6 +143,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     final isPremium = ref.watch(isPremiumProvider);
     final syncAllowed = ref.watch(isSyncAllowedProvider).valueOrNull ?? true;
     final showSyncPausedBadge = isPremium && !syncAllowed;
+    final customerInfo = ref.watch(customerInfoProvider).valueOrNull;
+    final billingIssueMessage =
+        customerInfo != null ? billingIssueBannerCopy(customerInfo) : null;
 
     final bottomClearance =
         BottomNavBar.height + MediaQuery.viewPaddingOf(context).bottom + 24;
@@ -182,6 +199,13 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       ],
                     ),
                     const SizedBox(height: 12),
+                    if (billingIssueMessage != null) ...[
+                      _BillingIssueBanner(
+                        message: billingIssueMessage,
+                        onTap: _openBillingSettings,
+                      ),
+                      const SizedBox(height: 12),
+                    ],
                     Semantics(
                       container: true,
                       label: 'Profile, $displayName, $email',
@@ -227,6 +251,56 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 ),
               );
             },
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _BillingIssueBanner extends StatelessWidget {
+  final String message;
+  final VoidCallback onTap;
+
+  const _BillingIssueBanner({required this.message, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    final surface = context.surface;
+    return Semantics(
+      button: true,
+      label: '$message Double tap to update your payment method.',
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(AppRadius.card),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: onTap,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            decoration: BoxDecoration(
+              color: AppColors.warning.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(AppRadius.card),
+              border:
+                  Border.all(color: AppColors.warning.withValues(alpha: 0.35)),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.error_outline_rounded,
+                    size: 18, color: AppColors.warning),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: ExcludeSemantics(
+                    child: Text(
+                      message,
+                      style: AppText.caption(color: surface.textPrimary),
+                    ),
+                  ),
+                ),
+                Icon(Icons.chevron_right_rounded,
+                    size: 18, color: surface.textTertiary),
+              ],
+            ),
           ),
         ),
       ),
