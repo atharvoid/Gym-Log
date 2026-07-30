@@ -43,6 +43,10 @@ class RoutineVolumeGraph extends StatelessWidget {
       // Values are already converted above, so this must NOT call formatVolume
       // (that would convert a second time).
       valueFormatter: (v) => '${groupThousands(v)} ${unitLabel(unit)}',
+      // What a screen reader calls this chart. NOT derived from the unit:
+      // 'kg' is what the numbers are measured in, 'Volume' is what they mean,
+      // and only the second one belongs in a spoken summary.
+      metricLabel: 'Volume chart',
       emptyTitle: 'No sessions logged yet',
       emptySubtitle: 'Finish a workout to see your volume trend',
     );
