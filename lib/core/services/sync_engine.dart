@@ -166,7 +166,7 @@ class SyncEngine {
     _setStatus(const SyncStatus(SyncPhase.paused));
   }
 
-  // ── Enqueue ────────────────────────────────────────────────────
+  // ── Enqueue ──────────────────────────────────────────────────
 
   Future<void> enqueueSession(String userId, String sessionId) async {
     if (!_isSyncAllowed) return;
@@ -401,6 +401,16 @@ class SyncEngine {
           );
         }
       }
+
+      // A5: quarantineObject() may have written sync_failures rows on any of
+      // the branches above. syncNow() refreshes quarantinedCount after every
+      // push; nothing here did the same for pull, so a session with no local
+      // edits since the last push could quarantine objects during a pull and
+      // never move SyncStatus.quarantinedCount off its previous value. The
+      // live quarantinedSyncCountProvider is unaffected (it watches the DB
+      // directly) — this refreshes the other, non-reactive channel.
+      final count = await _db.syncOutboxDao.quarantinedCount(userId);
+      _setStatus(_status.copyWith(quarantinedCount: count));
     } catch (e, st) {
       // Transient network failure is expected and not quarantined. Anything
       // else here is a defect in the transport or the server contract and
