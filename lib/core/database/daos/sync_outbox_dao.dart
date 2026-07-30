@@ -162,4 +162,35 @@ class SyncOutboxDao extends DatabaseAccessor<AppDatabase>
       [objectId, userId],
     );
   }
+
+  // ── Revision tracking (A6) ───────────────────────────────────────────────
+
+  /// Last revision this device knows the server has for [entityType]:
+  /// [entityId], or 0 if this entity has never been synced from here.
+  Future<int> getRevision(
+      String userId, String entityType, String entityId) async {
+    final rows = await customSelect(
+      'SELECT revision FROM entity_revisions '
+      'WHERE user_id = ? AND entity_type = ? AND entity_id = ?',
+      variables: [
+        Variable.withString(userId),
+        Variable.withString(entityType),
+        Variable.withString(entityId),
+      ],
+    ).get();
+    if (rows.isEmpty) return 0;
+    return rows.first.read<int>('revision');
+  }
+
+  /// Records the last revision the server acknowledged for this entity, so
+  /// the next local push sends the correct number instead of assuming 1.
+  Future<void> setRevision(String userId, String entityType, String entityId,
+      int revision) async {
+    await customStatement('''
+      INSERT INTO entity_revisions (entity_type, entity_id, user_id, revision)
+      VALUES (?, ?, ?, ?)
+      ON CONFLICT(entity_type, entity_id, user_id) DO UPDATE SET
+        revision = excluded.revision
+    ''', [entityType, entityId, userId, revision]);
+  }
 }
