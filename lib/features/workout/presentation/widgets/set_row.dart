@@ -8,7 +8,7 @@ import 'package:gymlog/core/utils/units.dart';
 import 'package:gymlog/features/workout/domain/active_workout_state.dart';
 import 'package:gymlog/shared/widgets/ui/time_range_filter.dart';
 
-// ── Shared column geometry ────────────────────────────────────────
+// ── Shared column geometry ────────────────────────────────
 // The header row (ExerciseBlock) and every data row (SetRow) consume these
 // SAME constants so a caption can never drift from the column it labels.
 // Layout, left → right: SET · PREVIOUS · KG · REPS · ✓
@@ -18,12 +18,27 @@ const int kPrevFlex = 5; // "999kg x 99" — read-only reference, widest
 const int kWeightFlex = 4; // editable number
 const int kRepsFlex = 4; // editable number
 
+/// Background wash on a completed set row: 6% green over #000000.
+///
+/// WHY A LOCAL CONSTANT: [AppColors.completionTint] is an alias of
+/// `successTint` (0x24 = 14% alpha) and is used for success SURFACES elsewhere,
+/// where a visible fill is correct. A completed set row is not a surface — it is
+/// a 44dp line of numbers that must stay readable, and it already carries two
+/// other completion signals (the 3px left bar and the solid green check).
+/// Retuning the shared token would silently wash out every other consumer.
+const Color _kCompletionRowTint = Color(0x0F34C759);
+
 /// One set inside the active workout — the most-touched interaction in the app.
 ///
 /// Hevy-inspired restraint: weight/reps are plain numbers on the row surface
 /// (no boxes), the unit lives in the column header, and the set TYPE letter
 /// replaces the set NUMBER in the SET column. Set-type colors come from the
 /// shared [SetType] enum so they're identical to every other screen.
+///
+/// DO NOT BOX THE INPUTS. Bordered/filled input boxes were tried and rejected:
+/// at four sets per exercise and six exercises per session, 48 outlined boxes
+/// turn a set table into a form. The row surface, the column headers, and the
+/// cursor carry all the affordance that is needed — see [_numberField].
 class SetRow extends StatefulWidget {
   final int setIndex;
   final WorkoutSetState setData;
@@ -163,6 +178,10 @@ class _SetRowState extends State<SetRow> {
   ///
   /// Horizontal padding expands the tap target so a finger lands on the
   /// number field with room, not edge-to-edge.
+  ///
+  /// The four `InputBorder.none` / `filled: false` lines below are LOAD-BEARING
+  /// design, not leftovers. Removing them restores Material's default underline
+  /// or outline and turns the set table back into a form.
   Widget _numberField({
     required TextEditingController controller,
     required FocusNode focusNode,
@@ -223,9 +242,10 @@ class _SetRowState extends State<SetRow> {
       curve: Curves.easeInOut,
       // Completed row = 3px green left border + 6% green tint (not a full fill).
       // Completion is a fixed success semantic — like reward gold, it never
-      // shifts with the accent palette.
+      // shifts with the accent palette. See [_kCompletionRowTint] for why this
+      // does not use the shared success token.
       decoration: BoxDecoration(
-        color: isCompleted ? AppColors.completionTint : Colors.transparent,
+        color: isCompleted ? _kCompletionRowTint : Colors.transparent,
         border: isCompleted
             ? const Border(left: BorderSide(color: AppColors.success, width: 3))
             : null,
@@ -277,7 +297,7 @@ class _SetRowState extends State<SetRow> {
               ),
             ),
 
-            // ── KG — bare number, unit lives in the header ────────────
+            // ── KG — bare number, unit lives in the header ────────
             Expanded(
               flex: kWeightFlex,
               child: _numberField(
@@ -299,7 +319,7 @@ class _SetRowState extends State<SetRow> {
               ),
             ),
 
-            // ── REPS — bare number ───────────────────────────────
+            // ── REPS — bare number ────────────────────
             Expanded(
               flex: kRepsFlex,
               child: _numberField(
