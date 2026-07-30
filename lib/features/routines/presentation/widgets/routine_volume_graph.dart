@@ -15,15 +15,34 @@ import 'package:gymlog/shared/widgets/branded_line_chart.dart';
 /// ringed last dot on this screen vs. compact labels everywhere else).
 class RoutineVolumeGraph extends StatelessWidget {
   final List<DailyVolumeSample> data;
-  const RoutineVolumeGraph({super.key, required this.data});
+
+  /// Active weight unit ('kg' | 'lbs').
+  ///
+  /// Passed in by the owning screen rather than read from a provider here:
+  /// this widget is deliberately dumb and RoutineDetailScreen already watches
+  /// weightUnitProvider. Same pattern as RoutineExerciseBlock's `unit`.
+  final String unit;
+
+  const RoutineVolumeGraph({
+    super.key,
+    required this.data,
+    required this.unit,
+  });
 
   @override
   Widget build(BuildContext context) {
     return BrandedLineChart(
-      data: [for (final s in data) ChartPoint(s.day, s.volume)],
-      // "1,800 kg" — same full-notation volume language as the Home feed
-      // cards and Workout Detail stats (never compact + unit).
-      valueFormatter: (v) => '${groupThousands(v)} kg',
+      // Volume is stored in kg, so the plotted VALUES are converted here — not
+      // just the label. Formatting alone would leave the Y-axis ticks on a kg
+      // scale underneath an lbs header, which reads as a broken chart.
+      data: [
+        for (final s in data) ChartPoint(s.day, kgToDisplay(s.volume, unit))
+      ],
+      // "1,800 kg" / "3,968 lbs" — same full-notation volume language as the
+      // Home feed cards and Workout Detail stats (never compact + unit).
+      // Values are already converted above, so this must NOT call formatVolume
+      // (that would convert a second time).
+      valueFormatter: (v) => '${groupThousands(v)} ${unitLabel(unit)}',
       emptyTitle: 'No sessions logged yet',
       emptySubtitle: 'Finish a workout to see your volume trend',
     );
