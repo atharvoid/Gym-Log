@@ -4,10 +4,10 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../database/database.dart';
 import '../providers/database_provider.dart';
+import '../providers/supabase_client_provider.dart';
 import 'workout_draft_store.dart';
 
 /// Outcome of an account deletion attempt. The flow ALWAYS wipes local data
@@ -51,20 +51,23 @@ class AccountDeletionOutcome {
 ///
 /// There is deliberately NO soft-delete / deactivate path.
 ///
-/// The client is nullable: if Supabase never initialised there is no session
-/// to purge, and we take the existing "no session" branch — which still wipes
-/// local data. Failing closed on the device is the safer outcome.
+/// The client is resolved per call and may be null: if Supabase never
+/// initialised there is no session to purge, and we take the "no session"
+/// branch — which still wipes local data. Failing closed on the device is the
+/// safer outcome. Resolving per call rather than at construction matters here
+/// more than anywhere else: a captured null would mean a user who asked to
+/// delete their account silently kept every byte of their cloud data.
 class AccountDeletionService {
-  AccountDeletionService(this._db, this._client);
+  AccountDeletionService(this._db, this._resolveClient);
 
   final AppDatabase _db;
-  final SupabaseClient? _client;
+  final SupabaseClientResolver _resolveClient;
 
   static const _timeout = Duration(seconds: 12);
   static const _functionName = 'delete-account';
 
   Future<AccountDeletionOutcome> deleteAccount() async {
-    final client = _client;
+    final client = _resolveClient();
     final user = client?.auth.currentUser;
 
     // No session (or no Supabase at all): nothing to purge server-side, but
@@ -145,7 +148,7 @@ class AccountDeletionService {
       // End the session first so the auth-state stream drives the redirect to
       // /auth (no way back to a dead session).
       try {
-        await _client?.auth.signOut();
+        await _resolveClient()?.auth.signOut();
       } catch (_) {
         // Already signed out / offline — proceed with the local wipe anyway.
       }
@@ -177,14 +180,9 @@ class AccountDeletionService {
   }
 }
 
-final accountDeletionServiceProvider = Provider<AccountDeletionService>((ref) {
-  // `Supabase.instance.client` throws when initialize() has not completed.
-  // A throw inside a Provider factory has no fallback, so degrade explicitly.
-  SupabaseClient? client;
-  try {
-    client = Supabase.instance.client;
-  } catch (_) {
-    client = null;
-  }
-  return AccountDeletionService(ref.watch(databaseProvider), client);
-});
+final accountDeletionServiceProvider = Provider<AccountDeletionService>(
+  (ref) => AccountDeletionService(
+    ref.watch(databaseProvider),
+    ref.read(supabaseClientProvider),
+  ),
+);

@@ -6,6 +6,8 @@ import 'package:path_provider/path_provider.dart' as path_provider;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../providers/supabase_client_provider.dart';
+
 /// Silent cloud sync for profile images.
 ///
 /// All users can pick and store a profile image locally. Pro users
@@ -15,17 +17,19 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 /// syncs when entitled and stays local-only otherwise. The user id is
 /// resolved internally from the active Supabase session.
 ///
-/// [client] is nullable: when Supabase never initialised, every method
-/// silently no-ops, which is the same behaviour a signed-out user already
-/// gets. Local image handling is unaffected — it does not live here.
+/// The client is resolved per operation, not captured at construction. This
+/// object lives inside a memoised provider; capturing would pin whatever
+/// availability was true during startup and silently disable avatar backup
+/// for the whole session. Local image handling is unaffected either way — it
+/// does not live here.
 class ProfileImageSyncService {
   ProfileImageSyncService({
-    required SupabaseClient? client,
+    required SupabaseClientResolver resolveClient,
     required Future<SharedPreferences> Function() prefs,
-  })  : _client = client,
+  })  : _resolveClient = resolveClient,
         _prefs = prefs;
 
-  final SupabaseClient? _client;
+  final SupabaseClientResolver _resolveClient;
   final Future<SharedPreferences> Function() _prefs;
 
   static const _bucket = 'profile-images';
@@ -40,7 +44,7 @@ class ProfileImageSyncService {
     required bool isPremium,
     required String localPath,
   }) async {
-    final client = _client;
+    final client = _resolveClient();
     final userId = client?.auth.currentUser?.id;
     if (client == null || userId == null) return;
 
@@ -67,7 +71,7 @@ class ProfileImageSyncService {
   /// Called on login/restore when no local image is present.
   /// Returns the local file path, or null if nothing was downloaded.
   Future<String?> downloadIfEntitled({required bool isPremium}) async {
-    final client = _client;
+    final client = _resolveClient();
     final userId = client?.auth.currentUser?.id;
     if (client == null || userId == null) return null;
 
@@ -104,7 +108,7 @@ class ProfileImageSyncService {
 
   /// Attempt any queued upload (e.g. from the splash/auth listener).
   Future<void> retryPendingUpload({required bool isPremium}) async {
-    final client = _client;
+    final client = _resolveClient();
     final userId = client?.auth.currentUser?.id;
     if (client == null || userId == null) return;
 
@@ -134,7 +138,7 @@ class ProfileImageSyncService {
 
   /// Delete the remote copy (e.g. when the user removes their photo).
   Future<void> deleteRemoteIfEntitled({required bool isPremium}) async {
-    final client = _client;
+    final client = _resolveClient();
     final userId = client?.auth.currentUser?.id;
     if (client == null || userId == null) return;
     try {
@@ -145,17 +149,9 @@ class ProfileImageSyncService {
   }
 }
 
-final profileImageSyncProvider = Provider<ProfileImageSyncService>((ref) {
-  // `Supabase.instance.client` throws when initialize() has not completed.
-  // A throw inside a Provider factory has no fallback, so degrade explicitly.
-  SupabaseClient? client;
-  try {
-    client = Supabase.instance.client;
-  } catch (_) {
-    client = null;
-  }
-  return ProfileImageSyncService(
-    client: client,
+final profileImageSyncProvider = Provider<ProfileImageSyncService>(
+  (ref) => ProfileImageSyncService(
+    resolveClient: ref.read(supabaseClientProvider),
     prefs: SharedPreferences.getInstance,
-  );
-});
+  ),
+);

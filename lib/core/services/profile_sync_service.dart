@@ -4,10 +4,10 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../database/database.dart';
 import '../providers/database_provider.dart';
+import '../providers/supabase_client_provider.dart';
 import '../../features/profile/data/profile_remote.dart';
 
 /// What the splash screen should do after resolving the signed-in user.
@@ -201,17 +201,13 @@ class ProfileSyncService {
 
 /// Authenticated remote, backed by Supabase PostgREST.
 ///
-/// `Supabase.instance.client` THROWS when initialize() has not completed, and
-/// a throw inside a Provider factory has no fallback — it propagates to the
-/// first read. Callers are expected to await `cloudReadinessProvider` first,
-/// but that invariant is not enforced by any type, so degrade explicitly.
-final profileRemoteProvider = Provider<ProfileRemote>((ref) {
-  try {
-    return SupabaseProfileRemote(Supabase.instance.client);
-  } catch (_) {
-    return const UnavailableProfileRemote();
-  }
-});
+/// The remote resolves the Supabase client on every call, so this provider is
+/// safe to build at any point in the app lifecycle — including before
+/// `Supabase.initialize()` completes. See supabase_client_provider.dart for
+/// why the client must not be captured here.
+final profileRemoteProvider = Provider<ProfileRemote>(
+  (ref) => SupabaseProfileRemote(ref.read(supabaseClientProvider)),
+);
 
 /// The profile sync service, wired to the remote + local DB.
 final profileSyncProvider = Provider<ProfileSyncService>(

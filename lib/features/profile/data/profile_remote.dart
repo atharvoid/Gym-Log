@@ -1,5 +1,7 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../../core/providers/supabase_client_provider.dart';
+
 /// A profile as stored on the backend (the cross-device source of truth).
 class RemoteProfile {
   final String id;
@@ -38,12 +40,27 @@ abstract class ProfileRemote {
 /// Supabase-backed implementation, hitting the `profiles` table through
 /// PostgREST with the user's auth JWT (RLS enforces ownership server-side).
 /// See docs/supabase/profiles.sql for the schema this expects.
+///
+/// Holds a [SupabaseClientResolver] rather than a client: this is built
+/// inside a memoised provider, and capturing the client at construction time
+/// would freeze whatever availability happened to be true during startup.
 class SupabaseProfileRemote implements ProfileRemote {
-  SupabaseProfileRemote(this._client);
+  SupabaseProfileRemote(this._resolveClient);
 
-  final SupabaseClient _client;
+  final SupabaseClientResolver _resolveClient;
 
   static const _table = 'profiles';
+
+  /// The live client, or a clear failure. Throwing is within contract —
+  /// ProfileSyncService catches on every path and falls back to local state.
+  SupabaseClient get _client {
+    final client = _resolveClient();
+    if (client == null) {
+      throw StateError('Supabase is not initialised — profile sync '
+          'is unavailable.');
+    }
+    return client;
+  }
 
   @override
   Future<RemoteProfile?> fetch(String userId) async {
@@ -78,13 +95,12 @@ class SupabaseProfileRemote implements ProfileRemote {
   }
 }
 
-/// Degraded implementation used when Supabase never initialised (no config,
-/// or `Bootstrap.cloudInitTimeout` elapsed).
+/// Explicitly unavailable implementation.
 ///
-/// Every method fails, which is exactly what the contract above already
-/// permits — `ProfileSyncService` catches on every path and falls back to
-/// local state. This exists so `profileRemoteProvider` can always produce a
-/// value instead of throwing out of its factory, which has no fallback.
+/// No longer produced by `profileRemoteProvider` — [SupabaseProfileRemote]
+/// now degrades on its own by resolving the client per call. This is kept as
+/// the deliberate test double for "cloud is definitively absent", where a
+/// resolver returning null is less readable than a named type.
 class UnavailableProfileRemote implements ProfileRemote {
   const UnavailableProfileRemote();
 

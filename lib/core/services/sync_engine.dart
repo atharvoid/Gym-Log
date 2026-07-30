@@ -3,11 +3,12 @@ import 'dart:async';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../database/database.dart';
 import '../providers/database_provider.dart';
+import '../providers/supabase_client_provider.dart';
 import 'sync_codec.dart';
 import 'sync_entitlement_gate.dart';
 import 'sync_failure.dart';
@@ -78,6 +79,30 @@ class SyncEngine {
     if (!_statusController.isClosed) _statusController.add(next);
   }
 
+  /// Reports a sync failure that is NOT simply "the network is unavailable".
+  ///
+  /// Timeouts are excluded on purpose. In a local-first app the user is
+  /// routinely offline — in a gym basement, on a plane, on airplane mode —
+  /// and capturing that would flood the issue stream and hide the failures
+  /// that actually indicate a defect.
+  static void _reportSyncFailure(
+    Object error,
+    StackTrace stackTrace, {
+    required String operation,
+    String? reason,
+  }) {
+    if (error is TimeoutException) return;
+    debugPrint('[SyncEngine] $operation failed: $error');
+    unawaited(Sentry.captureException(
+      error,
+      stackTrace: stackTrace,
+      withScope: (scope) {
+        scope.setTag('sync.operation', operation);
+        if (reason != null) scope.setTag('sync.reason', reason);
+      },
+    ));
+  }
+
   static const _kWeeklyGoal = 'weekly_goal_days';
   static const _kUnitOverrides = 'exercise_unit_overrides';
 
@@ -141,7 +166,7 @@ class SyncEngine {
     _setStatus(const SyncStatus(SyncPhase.paused));
   }
 
-  // ── Enqueue ────────────────────────────────────────────────────────────────
+  // ── Enqueue ────────────────────────────────────────────────────
 
   Future<void> enqueueSession(String userId, String sessionId) async {
     if (!_isSyncAllowed) return;
@@ -194,7 +219,7 @@ class SyncEngine {
     if (overrides != null) await prefs.setString(_kUnitOverrides, overrides);
   }
 
-  // ── Triggers ───────────────────────────────────────────────────────────────
+  // ── Triggers ──────────────────────────────────────────────────
 
   void scheduleSync(String userId) {
     if (!_isSyncAllowed) return;
@@ -268,7 +293,11 @@ class SyncEngine {
       final count = await _db.syncOutboxDao.quarantinedCount(userId);
       _setStatus(SyncStatus(SyncPhase.synced,
           lastSyncedAt: now, quarantinedCount: count));
-    } catch (_) {
+    } catch (e, st) {
+      // The user-visible outcome stays "offline": the local database is
+      // untouched and authoritative, so there is nothing for them to act on.
+      // The report is for us.
+      _reportSyncFailure(e, st, operation: 'push', reason: reason);
       _setStatus(_status.copyWith(phase: SyncPhase.offline));
     } finally {
       _running = false;
@@ -372,8 +401,11 @@ class SyncEngine {
           );
         }
       }
-    } catch (_) {
-      // Offline / network failure — transient retry, not quarantined
+    } catch (e, st) {
+      // Transient network failure is expected and not quarantined. Anything
+      // else here is a defect in the transport or the server contract and
+      // must not vanish.
+      _reportSyncFailure(e, st, operation: 'pull');
     }
   }
 
@@ -418,10 +450,15 @@ class SyncEngine {
   }
 }
 
-// ── Providers ────────────────────────────────────────────────────────────────
+// ── Providers ────────────────────────────────────────────────────
 
+/// The Supabase transport.
+///
+/// This provider is memoised, so it must NOT resolve the Supabase client
+/// here — during startup that would capture "unavailable" permanently. It
+/// hands the remote a resolver instead; see supabase_client_provider.dart.
 final syncRemoteProvider = Provider<SyncRemote>(
-  (ref) => SupabaseSyncRemote(Supabase.instance.client),
+  (ref) => SupabaseSyncRemote(ref.read(supabaseClientProvider)),
 );
 
 final syncEngineProvider = Provider<SyncEngine>((ref) {
