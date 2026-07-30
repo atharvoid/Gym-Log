@@ -77,3 +77,30 @@ class SupabaseProfileRemote implements ProfileRemote {
     });
   }
 }
+
+/// Degraded implementation used when Supabase never initialised (no config,
+/// or `Bootstrap.cloudInitTimeout` elapsed).
+///
+/// Every method fails, which is exactly what the contract above already
+/// permits — `ProfileSyncService` catches on every path and falls back to
+/// local state. This exists so `profileRemoteProvider` can always produce a
+/// value instead of throwing out of its factory, which has no fallback.
+class UnavailableProfileRemote implements ProfileRemote {
+  const UnavailableProfileRemote();
+
+  static StateError _unavailable() =>
+      StateError('Supabase is not initialised — profile sync is unavailable.');
+
+  @override
+  Future<RemoteProfile?> fetch(String userId) =>
+      Future<RemoteProfile?>.error(_unavailable());
+
+  @override
+  Future<void> upsert({
+    required String userId,
+    required String displayName,
+    String? email,
+    bool onboardingComplete = false,
+  }) =>
+      Future<void>.error(_unavailable());
+}

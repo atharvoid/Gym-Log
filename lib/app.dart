@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'core/database/database_integrity_signal.dart';
 import 'core/providers/cloud_readiness_provider.dart';
 import 'core/providers/premium_provider.dart';
 import 'core/theme/app_theme.dart';
@@ -121,17 +122,31 @@ class _GymLogAppState extends ConsumerState<GymLogApp> {
 
   @override
   Widget build(BuildContext context) {
-    // Recovery mode: a self-contained MaterialApp with no router/auth deps.
-    // Uses the purple-default theme since it renders before normal wiring.
-    if (widget.databaseCorrupted) {
-      return MaterialApp(
-        title: 'GymLog',
-        theme: appTheme,
-        debugShowCheckedModeBanner: false,
-        home: const DatabaseRecoveryScreen(),
-      );
-    }
+    // Corruption has two arrival times. Launch-time corruption is known before
+    // runApp and arrives as a constructor flag. Deferred corruption is found
+    // by the background integrity scan after the tree is already built, and
+    // arrives through [databaseIntegrityFailed]. Both lead to the same place:
+    // an explicit, user-owned reset rather than silent data loss.
+    return ValueListenableBuilder<bool>(
+      valueListenable: databaseIntegrityFailed,
+      builder: (context, deferredFailure, _) {
+        if (widget.databaseCorrupted || deferredFailure) {
+          // Recovery mode: a self-contained MaterialApp with no router/auth
+          // deps. Uses the purple-default theme since it renders before (or
+          // outside of) normal wiring.
+          return MaterialApp(
+            title: 'GymLog',
+            theme: appTheme,
+            debugShowCheckedModeBanner: false,
+            home: const DatabaseRecoveryScreen(),
+          );
+        }
+        return _buildApp();
+      },
+    );
+  }
 
+  Widget _buildApp() {
     final router = ref.watch(routerProvider);
 
     // Rebuild the theme whenever the user switches accent palettes. The active

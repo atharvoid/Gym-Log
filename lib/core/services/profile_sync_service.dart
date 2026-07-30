@@ -138,8 +138,9 @@ class ProfileSyncService {
 
       return ProfileResolution.needsOnboarding;
     } catch (_) {
-      // Backend unreachable (offline, or table not provisioned yet). Trust
-      // local state; if there's a name and onboarding is complete, proceed — otherwise greet them.
+      // Backend unreachable (offline, Supabase never initialised, or table not
+      // provisioned yet). Trust local state; if there's a name and onboarding
+      // is complete, proceed — otherwise greet them.
       final local = await _db.userDao.getUserOrNull(userId);
       return (local != null &&
               local.onboardingComplete &&
@@ -153,7 +154,7 @@ class ProfileSyncService {
   /// anytime; a no-op when nothing is queued.
   Future<void> retryPending(String userId) => _flushPending(userId);
 
-  // ── internals ────────────────────────────────────────────────────────────
+  // ── internals ──────────────────────────────────────────
 
   Future<void> _queue(
     String userId,
@@ -199,9 +200,18 @@ class ProfileSyncService {
 }
 
 /// Authenticated remote, backed by Supabase PostgREST.
-final profileRemoteProvider = Provider<ProfileRemote>(
-  (ref) => SupabaseProfileRemote(Supabase.instance.client),
-);
+///
+/// `Supabase.instance.client` THROWS when initialize() has not completed, and
+/// a throw inside a Provider factory has no fallback — it propagates to the
+/// first read. Callers are expected to await `cloudReadinessProvider` first,
+/// but that invariant is not enforced by any type, so degrade explicitly.
+final profileRemoteProvider = Provider<ProfileRemote>((ref) {
+  try {
+    return SupabaseProfileRemote(Supabase.instance.client);
+  } catch (_) {
+    return const UnavailableProfileRemote();
+  }
+});
 
 /// The profile sync service, wired to the remote + local DB.
 final profileSyncProvider = Provider<ProfileSyncService>(

@@ -12,6 +12,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../config/env.dart';
 import '../database/database.dart';
+import '../database/database_integrity_signal.dart';
 import '../services/premium_service.dart';
 import '../services/notification_service.dart';
 import '../theme/dynamic_accent_theme.dart';
@@ -63,10 +64,26 @@ abstract final class Bootstrap {
   /// local-only mode.
   static const cloudInitTimeout = Duration(seconds: 4);
 
+  /// Absolute deadline for the cloud-readiness gate to resolve by ANY path.
+  ///
+  /// Deliberately larger than [cloudInitTimeout]: on the healthy path the
+  /// gate resolves well inside the init timeout, so this only ever fires when
+  /// the post-frame callback that owns the gate never ran at all.
+  static const cloudReadyWatchdog = Duration(seconds: 12);
+
+  /// Upper bound on the cheap pre-runApp database probe. This is a single-row
+  /// read, so anything approaching this bound means the file is unhealthy.
+  static const dbOpenProbeTimeout = Duration(seconds: 5);
+
+  /// Upper bound on the deferred full-file integrity scan. Generous, because
+  /// nothing is waiting on it; a timeout here means the scan is reported as
+  /// inconclusive rather than as a failure.
+  static const integrityCheckTimeout = Duration(seconds: 30);
+
   static const _dbFileName = 'gymlog_db.sqlite';
 
   /// Runs nonblocking startup. Block ONLY on Flutter binding, local config,
-  /// and database open/integrity check before calling [runApp].
+  /// and a cheap database open probe before calling [runApp].
   static Future<void> run(
     Widget Function(BootstrapResult result) appBuilder,
   ) async {
@@ -81,14 +98,21 @@ abstract final class Bootstrap {
 
     usePathUrlStrategy();
 
-    // ── Stage 2: Sentry initialization ─────────────────────────────────
+    // ── Stage 2: Sentry initialization ────────────────────────────
     final cloudReady = Completer<bool>();
     await SentryFlutter.init(
       _configureSentry,
       appRunner: () async {
         // ── Stage 3: Essential local configuration (accent palette & DB) ─
-        final accentPalette = await _initAccentPalette();
-        final dbStage = await _initDatabase();
+        //
+        // These are the ONLY two app-owned awaits on the blocking path before
+        // runApp, and they are independent: a preferences read and a database
+        // open. Run them concurrently so the cost is the slower of the two
+        // rather than their sum.
+        final (accentPalette, dbStage) = await (
+          _initAccentPalette(),
+          _initDatabase(),
+        ).wait;
 
         final db = dbStage.db;
         final notificationService = NotificationService();
@@ -124,6 +148,7 @@ abstract final class Bootstrap {
               cloudReady: cloudReady,
             ));
           });
+          _armCloudReadyWatchdog(cloudReady);
         } else {
           cloudReady.complete(false);
         }
@@ -131,6 +156,46 @@ abstract final class Bootstrap {
     );
   }
 
+  /// Liveness guarantee for the cloud-readiness gate.
+  ///
+  /// The gate is completed from exactly one place: [_postLaunchBackgroundWork],
+  /// which is scheduled from a post-frame callback. That callback is not
+  /// guaranteed to run — a launch straight into the background, or a throw
+  /// during the first build, leaves it pending indefinitely. Every surface
+  /// awaiting the gate (SplashScreen first) would then wait forever.
+  ///
+  /// A gate that can never resolve is worse than a gate that resolves
+  /// pessimistically: local-only mode is fully usable, an infinite spinner is
+  /// not.
+  static void _armCloudReadyWatchdog(Completer<bool> cloudReady) {
+    Timer(cloudReadyWatchdog, () {
+      if (cloudReady.isCompleted) return;
+      debugPrint(
+          '[Bootstrap] cloud readiness watchdog fired after '
+          '${cloudReadyWatchdog.inSeconds}s — the post-frame callback never '
+          'completed the gate. Continuing in local-only mode.');
+      unawaited(Sentry.captureMessage(
+        'Cloud readiness watchdog fired — post-frame bootstrap never resolved',
+        level: SentryLevel.warning,
+      ));
+      cloudReady.complete(false);
+    });
+  }
+
+  /// Work deferred past the first frame.
+  ///
+  /// ORDER MATTERS, for two different reasons.
+  ///
+  /// Cloud init is first because SplashScreen gates its first route on
+  /// `cloudReadinessProvider`, so time-to-cloud-ready is the splash's critical
+  /// path.
+  ///
+  /// Catalog hydration is ordered BEFORE integrity verification because both
+  /// hit the same [AppDatabase], which runs on a single background isolate
+  /// with a single connection (`NativeDatabase.createInBackground`). They do
+  /// not run in parallel — they interleave on one worker. Hydration gates the
+  /// exercise library being usable; integrity verification has no deadline and
+  /// no UI waiting on it, so it yields.
   static Future<void> _postLaunchBackgroundWork({
     required AppDatabase db,
     required PremiumService premiumService,
@@ -138,28 +203,40 @@ abstract final class Bootstrap {
     required Completer<bool> cloudReady,
   }) async {
     try {
-      // 1. Media cache maintenance
-      unawaited(ExerciseMediaCacheManager().performMaintenance());
+      // 1. Cloud readiness — the splash is blocked on this. Bounded timeout.
+      final cloudOk = await _initCloud();
+      // Guarded: the watchdog may have already resolved the gate, and
+      // completing a completed Completer throws StateError.
+      if (!cloudReady.isCompleted) cloudReady.complete(cloudOk);
 
-      // 2. Local notifications initialization
+      // 2. Local notifications initialization (fire-and-forget)
       unawaited(notificationService.init());
 
-      // 3. Cloud pull & Supabase readiness check (bounded timeout)
-      final cloudOk = await _initCloud();
-      cloudReady.complete(cloudOk);
+      // 3. Media cache maintenance (fire-and-forget, no database access)
+      unawaited(ExerciseMediaCacheManager().performMaintenance());
 
       // 4. Commerce readiness (RevenueCat refresh)
-      _initCommerce(db);
+      _initCommerce(premiumService);
 
-      // 5. Catalog metadata refresh & nonessential warm-up queries
+      // 5. Catalog hydration & orphan cleanup. Owns the database worker first
+      //    because the exercise library is unusable until this completes.
       await _postLaunchMaintenance(db);
-    } catch (e) {
+
+      // 6. Deep integrity verification. Last on purpose: it walks every page
+      //    in the file and nothing is waiting on its result.
+      await _verifyIntegrityInBackground(db);
+    } catch (e, st) {
+      // Everything below the failure point is abandoned: the user gets a
+      // silently degraded app that still looks fine. debugPrint is compiled
+      // out of release builds, so without this capture the most consequential
+      // failure in bootstrap would leave no trace in production at all.
       debugPrint('[Bootstrap] postLaunchBackgroundWork failed: $e');
+      unawaited(Sentry.captureException(e, stackTrace: st));
       if (!cloudReady.isCompleted) cloudReady.complete(false);
     }
   }
 
-  // ── Stage 1 helpers ────────────────────────────────────────────────────────
+  // ── Stage 1 helpers ───────────────────────────────────────────────
 
   /// Bound the in-memory image cache. GymLog streams animated exercise GIFs
   /// (each frame is a separate decoded bitmap), so the framework default
@@ -170,20 +247,27 @@ abstract final class Bootstrap {
       ..maximumSizeBytes = 80 << 20; // 80 MiB
   }
 
-  // ── Stage 2 helper ─────────────────────────────────────────
+  // ── Stage 2 helper ────────────────────────────────────────
 
+  /// Sentry options. NOTE: `SentryFlutter.init` wraps `runApp`, so everything
+  /// configured here is paid on the launch path and on every frame after it.
+  /// Debug rates are deliberately NOT 1.0: full-rate tracing plus the Dart
+  /// isolate profiler plus verbose SDK logging measurably degrades the very
+  /// frame timings we are trying to observe.
   static FutureOr<void> _configureSentry(SentryFlutterOptions options) {
     options.dsn = Env.sentryDsn;
     // Auto-infers release from pubspec.yaml — do NOT hardcode.
     options.environment = kReleaseMode ? 'production' : 'development';
-    options.tracesSampleRate = kReleaseMode ? 0.1 : 1.0;
+    options.tracesSampleRate = kReleaseMode ? 0.1 : 0.2;
+    // Profiling samples the isolate on a timer; keep it off outside release.
     // ignore: experimental_member_use
-    options.profilesSampleRate = kReleaseMode ? 0.1 : 1.0;
+    options.profilesSampleRate = kReleaseMode ? 0.1 : 0.0;
     options.attachScreenshot = false;
     options.enableAppHangTracking = true; // iOS ANR-like detection
 
-    options.debug = kDebugMode;
-    options.diagnosticLevel = SentryLevel.debug;
+    // Verbose SDK logging formats and prints every breadcrumb synchronously.
+    options.debug = false;
+    options.diagnosticLevel = SentryLevel.warning;
 
     // Scrub PII before sending — only the Supabase UUID is ever attached.
     options.beforeSend = (event, hint) {
@@ -206,30 +290,65 @@ abstract final class Bootstrap {
     }
   }
 
-  // ── Stage 4 helper ─────────────────────────────────────────
+  // ── Stage 4 helper ────────────────────────────────────────
 
-  /// Opens the database and verifies integrity. Returns the handle plus a
-  /// `corrupted` flag; never throws.
+  /// Opens the database and performs a CHEAP liveness probe. Returns the handle
+  /// plus a `corrupted` flag; never throws.
+  ///
+  /// This intentionally does NOT run `PRAGMA quick_check`. quick_check walks
+  /// every page in the file, so its cost scales with the user's logged history
+  /// — the users with the most data paid the longest blank-window wait, and on
+  /// a large database it can exceed the platform ANR budget. A single-row read
+  /// still surfaces the failures that genuinely block launch (unopenable file,
+  /// corrupt header, failed or half-applied migration), because Drift opens the
+  /// file and runs pending migrations on first query. Deep verification happens
+  /// post-first-frame in [_verifyIntegrityInBackground].
   static Future<({AppDatabase db, bool corrupted})> _initDatabase() async {
     final db = AppDatabase();
+    try {
+      await db
+          .customSelect('SELECT 1')
+          .getSingle()
+          .timeout(dbOpenProbeTimeout);
+      return (db: db, corrupted: false);
+    } catch (e, st) {
+      debugPrint('[Bootstrap] database open probe failed: $e');
+      unawaited(Sentry.captureException(e, stackTrace: st));
+      return (db: db, corrupted: true);
+    }
+  }
+
+  /// Full page-level integrity scan, run after the first frame so it never
+  /// delays launch.
+  ///
+  /// A failure here is a real, user-affecting condition, so it does two
+  /// things: reports to Sentry for us, and raises [databaseIntegrityFailed] so
+  /// `GymLogApp` swaps in `DatabaseRecoveryScreen` for the user. Detecting
+  /// corruption without telling the user is worse than not checking, because
+  /// it buys the appearance of safety.
+  ///
+  /// A thrown exception (including a timeout) is NOT treated as corruption —
+  /// only an explicit non-`ok` result is. An inconclusive scan must not
+  /// present the user with a destructive reset prompt.
+  static Future<void> _verifyIntegrityInBackground(AppDatabase db) async {
     try {
       final rows = await db
           .customSelect('PRAGMA quick_check')
           .get()
-          .timeout(const Duration(seconds: 10));
+          .timeout(integrityCheckTimeout);
       final ok = rows.isNotEmpty &&
           rows.first.data.values.first.toString().toLowerCase() == 'ok';
       if (!ok) {
-        debugPrint('[Bootstrap] database quick_check did not return ok');
-        return (db: db, corrupted: true);
+        debugPrint('[Bootstrap] deferred quick_check did not return ok');
+        unawaited(Sentry.captureMessage(
+          'Deferred database quick_check failed',
+          level: SentryLevel.error,
+        ));
+        databaseIntegrityFailed.value = true;
       }
-      // Warm-up query preserves the original first-frame behaviour.
-      await db.customSelect('SELECT 1').getSingle();
-      return (db: db, corrupted: false);
     } catch (e, st) {
-      debugPrint('[Bootstrap] database integrity check failed: $e');
+      debugPrint('[Bootstrap] deferred integrity check failed: $e');
       unawaited(Sentry.captureException(e, stackTrace: st));
-      return (db: db, corrupted: true);
     }
   }
 
@@ -241,7 +360,7 @@ abstract final class Bootstrap {
     if (await file.exists()) await file.delete();
   }
 
-  // ── Stage 4b helper ───────────────────────────────────
+  // ── Stage 4b helper ────────────────────────────────────
 
   /// Reads the user's saved accent palette. Never throws — any failure falls
   /// back to the default accent ([ThemePalette.fallback], Volt) so startup is
@@ -266,7 +385,7 @@ abstract final class Bootstrap {
     }
   }
 
-  // ── Stage 5 helper ───────────────────────────────────
+  // ── Stage 5 helper ──────────────────────────────────
 
   /// Initialises Supabase auth. Config arrives at compile time; a build without
   /// it must not crash. The call is bounded by [cloudInitTimeout]; on timeout
@@ -294,12 +413,20 @@ abstract final class Bootstrap {
     }
   }
 
-  // ── Stage 6 helper ───────────────────────────────────
+  // ── Stage 6 helper ──────────────────────────────────
 
-  /// Configures premium entitlements (RevenueCat). Degrades to free mode when
-  /// keys are absent or the platform is unsupported — never blocks launch.
-  static PremiumService _initCommerce(AppDatabase db) {
-    final premiumService = PremiumService(db);
+  /// Configures premium entitlements (RevenueCat) on the SAME [PremiumService]
+  /// instance the provider scope exposes. Degrades to free mode when keys are
+  /// absent or the platform is unsupported — never blocks launch.
+  ///
+  /// DO NOT CONSTRUCT A SERVICE HERE. This helper previously did
+  /// `PremiumService(db)`, initialised that local instance, wired the auth
+  /// listener to it, and returned it — while the call site discarded the
+  /// return value. The instance actually exposed through
+  /// `premiumServiceProvider` was therefore never initialised: `_configured`
+  /// stayed false, `offerings()` returned null, and the paywall permanently
+  /// showed "Pricing unavailable. Tap to retry." even with valid keys.
+  static void _initCommerce(PremiumService premiumService) {
     String? userId;
     try {
       userId = Supabase.instance.client.auth.currentUser?.id;
@@ -314,10 +441,9 @@ abstract final class Bootstrap {
     } catch (_) {
       // No auth stream available — entitlement stays on the local cache.
     }
-    return premiumService;
   }
 
-  // ── Stage 7 helper ───────────────────────────────────
+  // ── Stage 7 helper ──────────────────────────────────
 
   static Future<void> _postLaunchMaintenance(AppDatabase db) async {
     try {

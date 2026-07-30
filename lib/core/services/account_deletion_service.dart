@@ -50,27 +50,35 @@ class AccountDeletionOutcome {
 ///      and re-seed the bundled exercise catalog.
 ///
 /// There is deliberately NO soft-delete / deactivate path.
+///
+/// The client is nullable: if Supabase never initialised there is no session
+/// to purge, and we take the existing "no session" branch — which still wipes
+/// local data. Failing closed on the device is the safer outcome.
 class AccountDeletionService {
   AccountDeletionService(this._db, this._client);
 
   final AppDatabase _db;
-  final SupabaseClient _client;
+  final SupabaseClient? _client;
 
   static const _timeout = Duration(seconds: 12);
   static const _functionName = 'delete-account';
 
   Future<AccountDeletionOutcome> deleteAccount() async {
-    final user = _client.auth.currentUser;
+    final client = _client;
+    final user = client?.auth.currentUser;
 
-    // No session: nothing to purge server-side, but still wipe local data
-    // defensively so "delete" always leaves a clean device.
-    if (user == null) {
+    // No session (or no Supabase at all): nothing to purge server-side, but
+    // still wipe local data defensively so "delete" always leaves a clean
+    // device.
+    if (client == null || user == null) {
       final wiped = await _wipeLocalAndSignOut();
       return AccountDeletionOutcome(
         cloudPurged: false,
         authUserDeleted: false,
         localWiped: wiped,
-        note: 'No active session — local data wiped only.',
+        note: client == null
+            ? 'Supabase unavailable — local data wiped only.'
+            : 'No active session — local data wiped only.',
       );
     }
 
@@ -82,7 +90,7 @@ class AccountDeletionService {
     // 1 ── Preferred: server-side Edge Function (service role).
     try {
       final res =
-          await _client.functions.invoke(_functionName).timeout(_timeout);
+          await client.functions.invoke(_functionName).timeout(_timeout);
       if (res.status == 200) {
         cloudPurged = true;
         authUserDeleted = true;
@@ -98,12 +106,12 @@ class AccountDeletionService {
     //     personal DATA is purged either way.
     if (!cloudPurged) {
       try {
-        await _client
+        await client
             .from('sync_objects')
             .delete()
             .eq('user_id', uid)
             .timeout(_timeout);
-        await _client.from('profiles').delete().eq('id', uid).timeout(_timeout);
+        await client.from('profiles').delete().eq('id', uid).timeout(_timeout);
         cloudPurged = true; // data gone; authUserDeleted stays false
       } catch (e) {
         note = '${note ?? ''} | direct purge failed: $e';
@@ -137,7 +145,7 @@ class AccountDeletionService {
       // End the session first so the auth-state stream drives the redirect to
       // /auth (no way back to a dead session).
       try {
-        await _client.auth.signOut();
+        await _client?.auth.signOut();
       } catch (_) {
         // Already signed out / offline — proceed with the local wipe anyway.
       }
@@ -170,8 +178,13 @@ class AccountDeletionService {
 }
 
 final accountDeletionServiceProvider = Provider<AccountDeletionService>((ref) {
-  return AccountDeletionService(
-    ref.watch(databaseProvider),
-    Supabase.instance.client,
-  );
+  // `Supabase.instance.client` throws when initialize() has not completed.
+  // A throw inside a Provider factory has no fallback, so degrade explicitly.
+  SupabaseClient? client;
+  try {
+    client = Supabase.instance.client;
+  } catch (_) {
+    client = null;
+  }
+  return AccountDeletionService(ref.watch(databaseProvider), client);
 });

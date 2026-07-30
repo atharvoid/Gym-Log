@@ -19,6 +19,15 @@ import '../providers/auth_provider.dart';
 /// immediately navigates to the resolved destination with no entrance or exit
 /// animations. A solid background matching the app surface is shown so there
 /// is no flash of unstyled content.
+///
+/// There is deliberately no cinematic motion here. There IS a progress
+/// indicator, because resolution can legitimately take several seconds
+/// (cloud readiness, then a profile fetch, then a possible profile-image
+/// download) and a screen with nothing on it for that long reads as a hang.
+/// See [_kProgressDelay].
+///
+/// EVERY await in [_SplashScreenState._resolve] is bounded. This screen sits
+/// between the user and the app; nothing it waits on may wait forever.
 class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
 
@@ -26,13 +35,49 @@ class SplashScreen extends ConsumerStatefulWidget {
   ConsumerState<SplashScreen> createState() => _SplashScreenState();
 }
 
+/// How long resolution may run before we show the user anything.
+///
+/// Tuned so a warm start (the common case) finishes first and the user never
+/// sees a spinner flash. Only genuinely slow starts get an indicator.
+const Duration _kProgressDelay = Duration(milliseconds: 600);
+
+/// Hard ceiling on how long this screen will wait for the cloud-readiness
+/// gate.
+///
+/// Bootstrap arms its own watchdog, so in principle the gate always resolves.
+/// This screen bounds the wait anyway: a screen must never be permanently
+/// unusable because a promise it does not own went unkept. Set above
+/// Bootstrap's watchdog so the ordinary path always wins and this only fires
+/// if the gate itself was never armed.
+const Duration _kGateTimeout = Duration(seconds: 15);
+
+/// Ceiling on the optional profile-image restore.
+///
+/// This is the least important thing on the launch path — a decorative avatar
+/// with a perfectly good local fallback — so it gets the tightest bound. A
+/// timeout is not an error: it just means the user launches with the fallback
+/// avatar and the download is retried on the next launch.
+const Duration _kProfileImageTimeout = Duration(seconds: 8);
+
 class _SplashScreenState extends ConsumerState<SplashScreen> {
+  Timer? _progressTimer;
+  bool _showProgress = false;
+
   @override
   void initState() {
     super.initState();
+    _progressTimer = Timer(_kProgressDelay, () {
+      if (mounted) setState(() => _showProgress = true);
+    });
     // Run resolution in the next microtask so the widget tree is mounted and
     // context.go() can safely be called.
     WidgetsBinding.instance.addPostFrameCallback((_) => _resolve());
+  }
+
+  @override
+  void dispose() {
+    _progressTimer?.cancel();
+    super.dispose();
   }
 
   Future<void> _resolve() async {
@@ -43,7 +88,13 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
     // construct Supabase remotes eagerly) see a ready singleton. In
     // local-only mode this resolves false and the existing null-user path
     // routes to /auth.
-    await ref.read(cloudReadinessProvider);
+    //
+    // Bounded independently of Bootstrap: an unresolved gate must degrade to
+    // local-only, never to a permanent spinner.
+    await ref.read(cloudReadinessProvider).timeout(
+          _kGateTimeout,
+          onTimeout: () => false,
+        );
     if (!mounted) return;
 
     final user = ref.read(authProvider);
@@ -68,13 +119,16 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
     if (resolution == ProfileResolution.needsOnboarding) {
       context.go('/onboarding');
     } else {
-      // Restore profile image if it doesn't exist locally.
+      // Restore profile image if it doesn't exist locally. Bounded: the
+      // fallback avatar is a perfectly good result, so this must never be the
+      // reason the user is still looking at a spinner.
       final prefs = await SharedPreferences.getInstance();
       final localImage = prefs.getString('profile_image_path');
       if (localImage == null || localImage.isEmpty) {
         final imagePath = await ref
             .read(profileImageSyncProvider)
-            .downloadIfEntitled(isPremium: isPremium);
+            .downloadIfEntitled(isPremium: isPremium)
+            .timeout(_kProfileImageTimeout, onTimeout: () => null);
         if (imagePath != null) {
           await prefs.setString('profile_image_path', imagePath);
         }
@@ -85,8 +139,26 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Render a plain scaffold while resolution runs.
-    // No animation controllers, no timers, no decorative motion.
-    return const Scaffold();
+    final theme = Theme.of(context);
+    return Scaffold(
+      body: Center(
+        child: AnimatedOpacity(
+          opacity: _showProgress ? 1.0 : 0.0,
+          duration: const Duration(milliseconds: 200),
+          child: Semantics(
+            label: 'Starting GymLog',
+            liveRegion: true,
+            child: SizedBox(
+              width: 24,
+              height: 24,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                color: theme.colorScheme.primary,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }
