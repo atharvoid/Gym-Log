@@ -185,6 +185,11 @@ class PremiumService with WidgetsBindingObserver {
     }
   }
 
+  /// Restores prior purchases (e.g. after reinstall or a new device).
+  /// Deliberately unwrapped, like [purchasePackage]: this is always a
+  /// user-initiated tap, so a RevenueCat failure rethrows to the caller
+  /// (the restore-purchases UI action) instead of being swallowed, which
+  /// would otherwise make the button look silently broken.
   Future<CustomerInfo?> restorePurchases() async {
     if (!_configured) return null;
     final info = await Purchases.restorePurchases();
