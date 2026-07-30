@@ -160,7 +160,7 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
       (sum, ex) => sum + ex.sets.where((s) => s.isCompleted).length,
     );
 
-    if (completedSets >= 10 && durationMinutes < 5) {
+    if (completedSets > 0 && durationMinutes < 5) {
       final confirmed = await showAppConfirmDialog(
         context: context,
         title: 'Short Workout',
@@ -719,7 +719,7 @@ class _ReorderExercisesSheetState extends State<_ReorderExercisesSheet> {
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
               buildDefaultDragHandles: false,
               onReorderStart: (_) => HapticFeedback.selectionClick(),
-              onReorderItem: (oldIndex, newIndex) {
+              onReorder: (oldIndex, newIndex) {
                 setState(() {
                   final item = _items.removeAt(oldIndex);
                   _items.insert(newIndex, item);
