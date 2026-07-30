@@ -85,13 +85,11 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
 
     // Cloud init runs post-first-frame; wait for it (bounded by
     // Bootstrap.cloudInitTimeout) so profileSync/syncEngine (which
-    // construct Supabase remotes eagerly) see a ready singleton. In
-    // local-only mode this resolves false and the existing null-user path
-    // routes to /auth.
+    // construct Supabase remotes eagerly) see a ready singleton.
     //
     // Bounded independently of Bootstrap: an unresolved gate must degrade to
     // local-only, never to a permanent spinner.
-    await ref.read(cloudReadinessProvider).timeout(
+    final cloudReady = await ref.read(cloudReadinessProvider).timeout(
           _kGateTimeout,
           onTimeout: () => false,
         );
@@ -100,7 +98,10 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
     final user = ref.read(authProvider);
 
     if (user == null) {
-      if (mounted) context.go('/auth');
+      // With no cloud there is no account system and nothing to sign in to,
+      // so /auth would be a dead end. Go straight into the app; without a
+      // cloud, signed-out still means the auth screen.
+      if (mounted) context.go(cloudReady ? '/auth' : '/');
       return;
     }
 
