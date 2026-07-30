@@ -90,23 +90,35 @@ class SupabaseSyncRemote implements SyncRemote {
   Future<List<PushResult>> pushBatch(List<SyncObject> objects) async {
     if (objects.isEmpty) return const [];
     final client = _client;
-    final results = <PushResult>[];
+
+    // A6: one bulk lookup for the whole batch instead of one `select` per
+    // object — up to 200 serial round trips collapsed into 1.
+    final ids = [for (final o in objects) o.id];
+    final existingRows = await client
+        .from(_table)
+        .select(
+            'id, user_id, revision, operation_id, updated_at, deleted, payload')
+        .inFilter('id', ids);
+    final existingById = <String, Map<String, dynamic>>{
+      for (final r in (existingRows as List).cast<Map<String, dynamic>>())
+        r['id'] as String: r,
+    };
+
+    final resultsById = <String, PushResult>{};
+    final toUpsert = <Map<String, dynamic>>[];
+    final nextRevisionById = <String, int>{};
+
     for (final o in objects) {
-      final existing = await client
-          .from(_table)
-          .select(
-              'id, user_id, revision, operation_id, updated_at, deleted, payload')
-          .eq('id', o.id)
-          .maybeSingle();
+      final existing = existingById[o.id];
 
       if (existing != null) {
         final serverUserId = existing['user_id'] as String?;
         if (serverUserId != null && serverUserId != o.userId) {
-          results.add(PushResult(
+          resultsById[o.id] = PushResult(
             id: o.id,
             status: PushResultStatus.conflict,
             serverRevision: (existing['revision'] as num?)?.toInt() ?? 1,
-          ));
+          );
           continue;
         }
 
@@ -114,11 +126,11 @@ class SupabaseSyncRemote implements SyncRemote {
         if (serverOpId != null &&
             serverOpId.isNotEmpty &&
             serverOpId == o.operationId) {
-          results.add(PushResult(
+          resultsById[o.id] = PushResult(
             id: o.id,
             status: PushResultStatus.duplicateOperation,
             serverRevision: (existing['revision'] as num?)?.toInt() ?? 1,
-          ));
+          );
           continue;
         }
 
@@ -136,18 +148,19 @@ class SupabaseSyncRemote implements SyncRemote {
             deleted: (existing['deleted'] as bool?) ?? false,
             payload: (existing['payload'] as String?) ?? '',
           );
-          results.add(PushResult(
+          resultsById[o.id] = PushResult(
             id: o.id,
             status: PushResultStatus.conflict,
             serverRevision: serverRevision,
             serverObject: serverObj,
-          ));
+          );
           continue;
         }
       }
 
       final nextRevision = o.revision + 1;
-      await client.from(_table).upsert({
+      nextRevisionById[o.id] = nextRevision;
+      toUpsert.add({
         'id': o.id,
         'user_id': o.userId,
         'entity_type': o.entityType,
@@ -160,14 +173,24 @@ class SupabaseSyncRemote implements SyncRemote {
         'deleted': o.deleted,
         'payload': o.payload,
       });
-
-      results.add(PushResult(
-        id: o.id,
-        status: PushResultStatus.accepted,
-        serverRevision: nextRevision,
-      ));
     }
-    return results;
+
+    if (toUpsert.isNotEmpty) {
+      // A6: one bulk upsert for every accepted object in the batch instead of
+      // one `upsert` call per object.
+      await client.from(_table).upsert(toUpsert);
+      for (final id in nextRevisionById.keys) {
+        resultsById[id] = PushResult(
+          id: id,
+          status: PushResultStatus.accepted,
+          serverRevision: nextRevisionById[id],
+        );
+      }
+    }
+
+    // Preserve the caller's original ordering: SyncEngine pairs
+    // results[i] with the batch's row at the same index.
+    return [for (final o in objects) resultsById[o.id]!];
   }
 
   @override
