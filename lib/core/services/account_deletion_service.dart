@@ -45,8 +45,14 @@ class AccountDeletionOutcome {
 ///   2. Fallback if the function is unreachable: delete the user's OWN rows
 ///      directly via PostgREST (RLS own-row). Data is gone; the empty auth
 ///      identity may linger until the function runs — surfaced honestly.
-///   3. Sign out (invalidate the session).
-///   4. Wipe the local Drift DB, clear SharedPreferences + secure storage,
+///   3. Best-effort purge of the `profile-images` Storage object. Run
+///      unconditionally regardless of which path above succeeded — this
+///      client cannot verify the Edge Function's server-side implementation
+///      also covers Storage, so it purges its own way defensively. A no-op
+///      (object never existed) is indistinguishable from success here and
+///      that is fine.
+///   4. Sign out (invalidate the session).
+///   5. Wipe the local Drift DB, clear SharedPreferences + secure storage,
 ///      and re-seed the bundled exercise catalog.
 ///
 /// There is deliberately NO soft-delete / deactivate path.
@@ -65,6 +71,12 @@ class AccountDeletionService {
 
   static const _timeout = Duration(seconds: 12);
   static const _functionName = 'delete-account';
+
+  /// Must match ProfileImageSyncService's private `_bucket` / object-path
+  /// convention (`$userId/profile.jpg`). Duplicated rather than imported
+  /// because that service is constructed with its own client resolver and
+  /// prefs dependency; account deletion only needs the bucket name.
+  static const _profileImagesBucket = 'profile-images';
 
   Future<AccountDeletionOutcome> deleteAccount() async {
     final client = _resolveClient();
@@ -121,7 +133,20 @@ class AccountDeletionService {
       }
     }
 
-    // 3 + 4 ── Always sign out and wipe local, regardless of cloud outcome.
+    // 3 ── Best-effort Storage purge (profile photo). Unconditional: this is
+    //     personal data too, and it lives outside every table the steps
+    //     above touch, so neither path above is guaranteed to have removed
+    //     it. Never surfaced as a reason to abort — a lingering image must
+    //     not block the rest of an otherwise-successful deletion.
+    try {
+      await client.storage
+          .from(_profileImagesBucket)
+          .remove(['$uid/profile.jpg']).timeout(_timeout);
+    } catch (e) {
+      note = '${note ?? ''} | profile image purge failed: $e';
+    }
+
+    // 4 + 5 ── Always sign out and wipe local, regardless of cloud outcome.
     final localWiped = await _wipeLocalAndSignOut();
 
     if (kDebugMode) {
