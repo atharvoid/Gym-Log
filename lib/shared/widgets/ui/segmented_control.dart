@@ -61,39 +61,14 @@ class SegmentedControl extends StatelessWidget {
               ),
               Row(
                 children: [
-                  for (final s in segments)
+                  for (var i = 0; i < segments.length; i++)
                     Expanded(
-                      child: Semantics(
-                        button: true,
-                        selected: s == selected,
-                        label: s,
-                        child: Material(
-                          color: Colors.transparent,
-                          child: InkWell(
-                            borderRadius:
-                                BorderRadius.circular(AppRadius.segmentedInner),
-                            onTap: s == selected
-                                ? null
-                                : () {
-                                    HapticFeedback.selectionClick();
-                                    onChanged(s);
-                                  },
-                            child: Center(
-                              child: Text(
-                                s,
-                                style: AppText.rowLabel(
-                                  color: s == selected
-                                      ? context.surface.textPrimary
-                                      : context.surface.textSecondary,
-                                ).copyWith(
-                                  fontWeight: s == selected
-                                      ? FontWeight.w600
-                                      : FontWeight.w400,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
+                      child: _Segment(
+                        label: segments[i],
+                        isSelected: segments[i] == selected,
+                        index: i,
+                        total: segments.length,
+                        onSelect: () => onChanged(segments[i]),
                       ),
                     ),
                 ],
@@ -101,6 +76,72 @@ class SegmentedControl extends StatelessWidget {
             ],
           );
         },
+      ),
+    );
+  }
+}
+
+/// One segment. Extracted so the tap handler can be built once and shared by
+/// the InkWell and the semantics action — inline in a collection-for there is
+/// nowhere to hold the local.
+class _Segment extends StatelessWidget {
+  final String label;
+  final bool isSelected;
+  final int index;
+  final int total;
+  final VoidCallback onSelect;
+
+  const _Segment({
+    required this.label,
+    required this.isSelected,
+    required this.index,
+    required this.total,
+    required this.onSelect,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    // The selected segment is genuinely inert — re-picking it would fire a
+    // redundant rebuild and a haptic for no state change.
+    final VoidCallback? handleTap = isSelected
+        ? null
+        : () {
+            HapticFeedback.selectionClick();
+            onSelect();
+          };
+    return Semantics(
+      container: true,
+      button: true,
+      selected: isSelected,
+      inMutuallyExclusiveGroup: true,
+      // Declared honestly. Previously this said button: true while handing the
+      // InkWell a null onTap, so the active segment announced itself as
+      // actionable and then did nothing when activated.
+      enabled: handleTap != null,
+      label: '$label, ${index + 1} of $total',
+      // Wrapper owns the name; the inner Text must not publish a duplicate
+      // node. Excluding the subtree also discards InkWell's tap action, hence
+      // the explicit onTap.
+      excludeSemantics: true,
+      onTap: handleTap,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(AppRadius.segmentedInner),
+          onTap: handleTap,
+          child: Center(
+            child: Text(
+              label,
+              style: AppText.rowLabel(
+                color: isSelected
+                    ? context.surface.textPrimary
+                    : context.surface.textSecondary,
+              ).copyWith(
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }

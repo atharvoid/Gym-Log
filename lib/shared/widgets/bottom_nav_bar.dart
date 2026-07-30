@@ -104,12 +104,17 @@ class _NavButton extends StatelessWidget {
     final accent = context.accent;
     final color = isActive ? accent.light : context.chrome.textSecondary;
     final reduceMotion = MediaQuery.disableAnimationsOf(context);
-    // ACCESSIBILITY CONTRACT for a tab cell. All four parts matter:
+    // ACCESSIBILITY CONTRACT for a tab cell. All five parts matter:
     //
     //   container + excludeSemantics — the cell is ONE stop in the traversal.
     //     Without excludeSemantics the inner Text publishes its own node, so a
     //     screen reader lands on a nameless button and then, separately, on the
     //     word "Home". Two stops, neither of them complete.
+    //   onTap — MANDATORY whenever excludeSemantics is used. Excluding the
+    //     subtree also discards the GestureDetector's tap action, so without
+    //     re-declaring it here the tab announces as a button and then ignores
+    //     TalkBack's double-tap. Same callback as the gesture, so the haptic
+    //     and the branch switch behave identically either way.
     //   label — the annotation node has no name of its own; the icon is
     //     decorative and Text semantics are now excluded, so the name must be
     //     supplied here or the tab is announced as an unlabelled button.
@@ -125,6 +130,7 @@ class _NavButton extends StatelessWidget {
       inMutuallyExclusiveGroup: true,
       label: '${item.label}, tab ${index + 1} of $total',
       excludeSemantics: true,
+      onTap: onTap,
       child: GestureDetector(
         onTap: onTap,
         behavior: HitTestBehavior.opaque,

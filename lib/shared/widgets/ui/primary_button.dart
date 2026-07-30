@@ -34,6 +34,14 @@ class PrimaryButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final accent = context.accent;
     final disabled = isLoading || onPressed == null;
+    // ONE handler for the button and its semantics action, so a screen-reader
+    // activation fires the same haptic and callback as a sighted tap.
+    final VoidCallback? handlePress = disabled
+        ? null
+        : () {
+            HapticFeedback.mediumImpact();
+            onPressed!();
+          };
     final button = PressableScale(
       child: ConstrainedBox(
         constraints: BoxConstraints(
@@ -41,12 +49,7 @@ class PrimaryButton extends StatelessWidget {
           minWidth: isFullWidth ? double.infinity : 0.0,
         ),
         child: ElevatedButton(
-          onPressed: disabled
-              ? null
-              : () {
-                  HapticFeedback.mediumImpact();
-                  onPressed!();
-                },
+          onPressed: handlePress,
           style: ElevatedButton.styleFrom(
             backgroundColor: accent.base,
             foregroundColor: accent.onAccent,
@@ -91,6 +94,22 @@ class PrimaryButton extends StatelessWidget {
       ),
     );
 
-    return button;
+    // ACCESSIBILITY: the accessible name normally comes from the child Text —
+    // but that Text is REPLACED by a spinner while [isLoading]. So the app's
+    // primary CTA lost its name at precisely the moment a screen-reader user
+    // needs to know which action is running: "button, dimmed", nothing else.
+    //
+    // Naming it from the outside fixes that and also collapses the icon+label
+    // Row into a single traversal stop. excludeSemantics discards the
+    // ElevatedButton's own tap action, so onTap is re-declared here.
+    return Semantics(
+      container: true,
+      button: true,
+      enabled: !disabled,
+      label: isLoading ? '$label, in progress' : label,
+      excludeSemantics: true,
+      onTap: handlePress,
+      child: button,
+    );
   }
 }

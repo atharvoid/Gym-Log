@@ -42,9 +42,24 @@ class ActiveWorkoutBar extends ConsumerWidget {
       return (raw == null || raw.isEmpty) ? 'Workout' : raw;
     }));
 
+    // ACCESSIBILITY: one stop, one name, one action.
+    //
+    // excludeSemantics collapses the name+timer Column and the chevron into
+    // this single node — without it a screen reader reads the composed label
+    // and then the same workout name and elapsed time again as loose text.
+    // It also discards the GestureDetector's tap action, so onTap is
+    // re-declared here; the swipe-up shortcut has no accessible equivalent
+    // and does not need one, since tap does the same thing.
+    //
+    // The elapsed time is a SNAPSHOT in the label, deliberately not a
+    // liveRegion: this timer ticks once a second, and a live region here
+    // would interrupt the user with the running time every second forever.
     return Semantics(
+      container: true,
       button: true,
       label: 'Resume $workoutName, elapsed $timer',
+      excludeSemantics: true,
+      onTap: () => _expand(context),
       child: GestureDetector(
         onTap: () => _expand(context),
         // Swipe up to expand. Threshold is on velocity rather than distance so

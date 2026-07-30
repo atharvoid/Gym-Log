@@ -28,21 +28,32 @@ class TogglePill extends StatelessWidget {
     final motion = MediaQuery.disableAnimationsOf(context)
         ? Duration.zero
         : const Duration(milliseconds: 200);
+    // ONE handler, shared by the visual InkWell and the semantics action below.
+    // They must not drift: if the semantics path skipped the haptic, activating
+    // this pill with a screen reader would feel different from tapping it.
+    final VoidCallback? handleTap = onTap == null
+        ? null
+        : () {
+            HapticFeedback.lightImpact();
+            onTap!();
+          };
     return Semantics(
       container: true,
       button: true,
       selected: isActive,
+      enabled: handleTap != null,
       label: label,
+      // The wrapper owns the name, so the inner Text must not publish a second
+      // node carrying the same string — that is two focus stops and a doubled
+      // announcement. excludeSemantics drops the whole subtree, INCLUDING
+      // InkWell's tap action, which is why onTap is re-declared here.
+      excludeSemantics: true,
+      onTap: handleTap,
       child: Material(
         color: Colors.transparent,
         child: InkWell(
           borderRadius: BorderRadius.circular(999),
-          onTap: onTap == null
-              ? null
-              : () {
-                  HapticFeedback.lightImpact();
-                  onTap!();
-                },
+          onTap: handleTap,
           child: AnimatedContainer(
             duration: motion,
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
