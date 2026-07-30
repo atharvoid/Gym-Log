@@ -15,6 +15,33 @@ import 'features/auth/presentation/providers/auth_provider.dart';
 import 'shared/widgets/database_recovery_screen.dart';
 import 'shared/widgets/tour/tour_navigation_orchestrator.dart';
 
+/// Upper bound on user-requested text scaling, app-wide.
+///
+/// This is an accessibility budget, not a design preference. WCAG 1.4.4 asks
+/// for 200% without loss of content or function, so the bound is 2.0 and any
+/// layout that cannot survive it is treated as a layout bug rather than a
+/// reason to lower this number. It was 1.4 until the C31 pass, which meant a
+/// user on the largest system font size silently received 140%.
+///
+/// A clamp is still needed at all because some Android OEM skins allow scale
+/// factors well above 2.0, and nothing in this app has been designed for that.
+const double kMaxTextScaleFactor = 2.0;
+
+/// Applies [kMaxTextScaleFactor] to the ambient MediaQuery.
+///
+/// Shared by both MaterialApps below. The recovery-mode app used to have no
+/// builder, which left the database-recovery screen rendering at whatever the
+/// OS asked for.
+Widget _withClampedTextScale(BuildContext context, Widget child) {
+  final mq = MediaQuery.of(context);
+  return MediaQuery(
+    data: mq.copyWith(
+      textScaler: mq.textScaler.clamp(maxScaleFactor: kMaxTextScaleFactor),
+    ),
+    child: child,
+  );
+}
+
 class GymLogApp extends ConsumerStatefulWidget {
   /// When true, the local database failed its integrity check during
   /// [Bootstrap]. The app renders a recovery surface instead of the normal
@@ -134,10 +161,17 @@ class _GymLogAppState extends ConsumerState<GymLogApp> {
           // Recovery mode: a self-contained MaterialApp with no router/auth
           // deps. Uses the purple-default theme since it renders before (or
           // outside of) normal wiring.
+          //
+          // It still gets the text-scale clamp. This app had no builder at
+          // all before C31, so the recovery screen — the surface a user only
+          // ever sees when their data is already in trouble — was the one
+          // place in the app running at an unbounded OS text scale.
           return MaterialApp(
             title: 'GymLog',
             theme: appTheme,
             debugShowCheckedModeBanner: false,
+            builder: (context, child) =>
+                _withClampedTextScale(context, child ?? const SizedBox.shrink()),
             home: const DatabaseRecoveryScreen(),
           );
         }
@@ -165,15 +199,10 @@ class _GymLogAppState extends ConsumerState<GymLogApp> {
       highContrastDarkTheme: buildHighContrastTheme(tokens, palette: palette),
       routerConfig: router,
       debugShowCheckedModeBanner: false,
-      builder: (context, child) {
-        final mq = MediaQuery.of(context);
-        return MediaQuery(
-          data: mq.copyWith(
-            textScaler: mq.textScaler.clamp(maxScaleFactor: 1.4),
-          ),
-          child: TourNavigationOrchestrator(child: child!),
-        );
-      },
+      builder: (context, child) => _withClampedTextScale(
+        context,
+        TourNavigationOrchestrator(child: child!),
+      ),
     );
   }
 }
