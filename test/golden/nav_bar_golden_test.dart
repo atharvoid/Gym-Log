@@ -189,7 +189,7 @@ void main() {
 
       // Find the SizedBox inside the nav bar with the static height.
       final sizedBoxList = find.byWidgetPredicate(
-        (w) => w is SizedBox && w.height == 72.0,
+        (w) => w is SizedBox && w.height == BottomNavBar.height,
       );
       expect(sizedBoxList, findsAtLeast(1));
     });
