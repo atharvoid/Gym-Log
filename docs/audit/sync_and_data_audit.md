@@ -4,7 +4,7 @@
 
 ## 1. Local Database Schema
 
-### 1.1 AppDatabase (schemaVersion: 2)
+### 1.1 AppDatabase (schemaVersion: 5)
 
 Defined in [database.dart](file:///c:/Users/Atharva%20Patil/Documents/projects/gymlog/lib/core/database/database.dart):
 ```dart
@@ -28,7 +28,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.executor);
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 5;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -38,6 +38,28 @@ class AppDatabase extends _$AppDatabase {
           // and the upgrade is non-destructive.
           if (from < 2) {
             await m.createTable(syncOutbox);
+          }
+          // v2 → v3: onboarding fields on user_profiles, backfilled for
+          // existing named users so they aren't re-prompted.
+          if (from < 3) {
+            await m.addColumn(userProfiles, userProfiles.age);
+            await m.addColumn(userProfiles, userProfiles.experienceLevel);
+            await m.addColumn(userProfiles, userProfiles.onboardingComplete);
+            await customStatement(
+                "UPDATE user_profiles SET onboarding_complete = 1 WHERE display_name <> ''");
+          }
+          // v3 → v4: gender field on user_profiles.
+          if (from < 4) {
+            await m.addColumn(userProfiles, userProfiles.gender);
+          }
+          // v4 → v5: measurement type on exercises (reps-only vs weighted),
+          // backfilled for bodyweight/assisted equipment, plus a
+          // TableMigration on workout_sets to match the updated schema.
+          if (from < 5) {
+            await m.addColumn(exercises, exercises.measurementType);
+            await customStatement(
+                "UPDATE exercises SET measurement_type = 'reps_only' WHERE LOWER(REPLACE(equipment, ' ', '')) IN ('bodyweight', 'assisted')");
+            await m.alterTable(TableMigration(workoutSets));
           }
         },
         beforeOpen: (details) async {
@@ -66,6 +88,24 @@ class AppDatabase extends _$AppDatabase {
           // Sync queue drains FIFO per user.
           await customStatement(
               'CREATE INDEX IF NOT EXISTS idx_outbox_user_created ON sync_outbox (user_id, created_at_ms)');
+          await customStatement(
+              'CREATE UNIQUE INDEX IF NOT EXISTS idx_outbox_user_entity ON sync_outbox (user_id, entity_type, entity_id)');
+          // Raw table (no Drift Table object) holding quarantined sync
+          // objects — see SyncOutboxDao §1.3.5 and SyncEngine §2.1.
+          await customStatement('''
+            CREATE TABLE IF NOT EXISTS sync_failures (
+              object_id TEXT NOT NULL,
+              user_id TEXT NOT NULL,
+              entity_type TEXT NOT NULL,
+              entity_id TEXT NOT NULL,
+              reason TEXT NOT NULL,
+              attempts INTEGER NOT NULL DEFAULT 1,
+              first_seen_at_ms INTEGER NOT NULL,
+              last_seen_at_ms INTEGER NOT NULL,
+              sanitized_diagnostic TEXT NOT NULL DEFAULT '',
+              PRIMARY KEY (object_id, user_id)
+            );
+          ''');
         },
       );
 
@@ -80,6 +120,10 @@ class AppDatabase extends _$AppDatabase {
       await delete(syncOutbox).go();
       await delete(exercises).go(); // catalog + user customs
       await delete(userProfiles).go();
+      // sync_failures is a raw table (see beforeOpen), invisible to the
+      // delete(...) calls above — cleared explicitly so quarantine history
+      // doesn't survive account deletion or a future local reset (A5).
+      await customStatement('DELETE FROM sync_failures');
     });
   }
 }
@@ -243,6 +287,24 @@ class SyncOutbox extends Table {
 }
 ```
 
+#### sync_failures (raw table, no Drift `Table` object)
+Created via `customStatement` in `beforeOpen` (see §1.1 above), not declared as a Drift table, so it is not listed in `@DriftDatabase(tables: [...])` and Drift's generated `delete(...)`/`select(...)` helpers cannot target it directly — all access goes through raw SQL in `SyncOutboxDao` (§1.3.5):
+```sql
+CREATE TABLE IF NOT EXISTS sync_failures (
+  object_id TEXT NOT NULL,
+  user_id TEXT NOT NULL,
+  entity_type TEXT NOT NULL,
+  entity_id TEXT NOT NULL,
+  reason TEXT NOT NULL,
+  attempts INTEGER NOT NULL DEFAULT 1,
+  first_seen_at_ms INTEGER NOT NULL,
+  last_seen_at_ms INTEGER NOT NULL,
+  sanitized_diagnostic TEXT NOT NULL DEFAULT '',
+  PRIMARY KEY (object_id, user_id)
+);
+```
+Holds one row per quarantined sync object (`object_id` = `<entityType>:<entityId>`), written by `SyncEngine.quarantineObject()` whenever `pull()` or `syncNow()` encounters an ownership mismatch, decode failure, unsupported version, or local constraint failure. Cleared on account deletion / local reset via `wipeAllData()` (A5 fix — see §8.4).
+
 ### 1.3 Data Access Objects (DAOs)
 
 #### 1.3.1 UserDao
@@ -371,6 +433,18 @@ Defined in [sync_outbox_dao.dart](file:///c:/Users/Atharva%20Patil/Documents/pro
   * Query: Gets count of outbox rows for the user.
 * `Stream<int> watchPendingCount(String userId)`
   * Query: Watches count of outbox rows for the user.
+* `Future<void> deleteByEntity(String userId, String entityType, String entityId)`
+  * Query: `(delete(syncOutbox)..where((t) => t.userId.equals(userId) & t.entityType.equals(entityType) & t.entityId.equals(entityId))).go()`. Called by `SyncEngine.quarantineObject()` immediately after writing a `sync_failures` row, so a quarantined object stops being retried.
+* `Future<void> saveQuarantineRecord(SyncFailureRecord record)`
+  * Query: raw upsert into `sync_failures` keyed on `(object_id, user_id)` — inserts a new row, or on conflict bumps `attempts` and refreshes `last_seen_at_ms`/`sanitized_diagnostic` for a repeat failure on the same object.
+* `Future<List<SyncFailureRecord>> getQuarantinedRecords(String userId)`
+  * Query: raw `SELECT * FROM sync_failures WHERE user_id = ?`, mapped into `SyncFailureRecord`.
+* `Future<int> quarantinedCount(String userId)`
+  * Query: raw `SELECT COUNT(*) FROM sync_failures WHERE user_id = ?`. Used by `SyncEngine.syncNow()` and (as of A5) `SyncEngine.pull()` to refresh `SyncStatus.quarantinedCount` — see §2.1 and §8.4.
+* `Stream<int> watchQuarantinedCount(String userId)`
+  * Query: a custom select stream declared with `readsFrom: {syncOutbox}` — Drift cannot natively watch `sync_failures` since it isn't a declared `Table`, so this re-runs the `sync_failures` count whenever `syncOutbox` changes instead. That happens to stay correct today because `quarantineObject()` always pairs a `sync_failures` write with a `syncOutbox` delete via `deleteByEntity`. Backs the live `quarantinedSyncCountProvider`.
+* `Future<void> removeQuarantinedRecord(String userId, String objectId)`
+  * Query: raw `DELETE FROM sync_failures WHERE object_id = ? AND user_id = ?`.
 
 ---
 
@@ -394,6 +468,7 @@ Defined in [sync_engine.dart](file:///c:/Users/Atharva%20Patil/Documents/project
   - Server-side database trigger `trg_sync_objects_lww` applies **Last-Write-Wins** via `updated_at`. Stale writes (older timestamp) are ignored server-side.
 * **Failure Handling:**
   - Network timeouts (`20 seconds`) are caught. Failed transfers leave items in the local queue, and the status changes to `offline`. It retries on the next sync event.
+  - Per-object failures on either `pull()` or `syncNow()` (ownership mismatch, decode failure, unsupported version, local constraint failure) call `quarantineObject()`, which writes a `sync_failures` row and removes the object from `syncOutbox`. Both `syncNow()` and (as of A5) `pull()` refresh `SyncStatus.quarantinedCount` from `SyncOutboxDao.quarantinedCount()` afterwards — see §8.4.
 
 ### 2.2 Sync Remote (`SupabaseSyncRemote`)
 Defined in [sync_remote.dart](file:///c:/Users/Atharva%20Patil/Documents/projects/gymlog/lib/core/services/sync_remote.dart).
@@ -728,3 +803,8 @@ create table if not exists public.deletion_requests (
 
 ### 8.3 Reinstall / Sign-In Sync Bug
 - **Redirect bypass:** When a user completes Google Sign-In on a fresh install, GoRouter immediately redirects them from `/auth` to `/` (HomeScreen). Because this route transition bypasses the `SplashScreen` logic, the initial sync engine listeners, state restoration, and cloud data pull (`engine.pull`) are never executed. The user sees an empty home state until they manually restart the app.
+
+### 8.4 sync_failures Retention & Badge Staleness (Fixed, A5)
+Found during the A5 DB-schema audit pass, alongside the documentation gap this section itself corrects (§1.1, §1.2, §1.3.5 previously described only a v2 schema with no mention of `sync_failures`):
+- **Retention gap (fixed):** `AppDatabase.wipeAllData()` cleared every Drift-declared table but not `sync_failures` (a raw table, invisible to `delete(...)`). A user's quarantined-object history survived account deletion. Fixed by adding an explicit `DELETE FROM sync_failures` inside `wipeAllData()`'s transaction.
+- **Badge staleness (fixed):** `SyncEngine.pull()` calls `quarantineObject()` on failure branches, which writes to `sync_failures`, but only `syncNow()` (the push path) refreshed `SyncStatus.quarantinedCount` afterwards. A pull-only session could quarantine objects without that count ever updating. Fixed by refreshing `quarantinedCount` at the end of `pull()`'s try block as well. Note the live `quarantinedSyncCountProvider` (§1.3.5, `watchQuarantinedCount`) was never affected by this, since it watches `syncOutbox` directly rather than reading `SyncStatus`.
