@@ -4,6 +4,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/config/env.dart';
+import '../../../core/providers/supabase_client_provider.dart';
 import '../../../core/services/workout_draft_store.dart';
 
 sealed class AuthFailure implements Exception {
@@ -35,11 +36,32 @@ final class AuthUnknownFailure extends AuthFailure {
 }
 
 class AuthRepository {
-  final SupabaseClient? _client;
+  final SupabaseClientResolver _resolveClient;
   final WorkoutDraftStore _draftStore;
 
-  AuthRepository(this._client, [WorkoutDraftStore? draftStore])
+  /// Fixed-client construction. Behaves exactly as this class always has;
+  /// kept so existing call sites (including tests with fakes) compile and
+  /// run unchanged.
+  AuthRepository(SupabaseClient? client, [WorkoutDraftStore? draftStore])
+      : _resolveClient = (() => client),
+        _draftStore = draftStore ?? WorkoutDraftStore();
+
+  /// Resolver-backed construction: the client is looked up on EVERY call.
+  ///
+  /// Provider wiring must use this form. This object is created inside a
+  /// memoised provider, so capturing the client at construction time would
+  /// freeze whatever was true during startup — usually "not initialised
+  /// yet" — and silently disable the entire auth path for the process
+  /// lifetime: authStateChanges would be a permanently empty stream and no
+  /// auth event could ever propagate. Resolving per call lets the same
+  /// instance work before, during, and after cloud init. See
+  /// supabase_client_provider.dart.
+  AuthRepository.withResolver(this._resolveClient,
+      [WorkoutDraftStore? draftStore])
       : _draftStore = draftStore ?? WorkoutDraftStore();
+
+  /// The live Supabase client, or null when the cloud is unavailable.
+  SupabaseClient? get _client => _resolveClient();
 
   /// Tracks an in-flight Google sign-in. The `google_sign_in` plugin keeps a
   /// single global pending operation and throws
