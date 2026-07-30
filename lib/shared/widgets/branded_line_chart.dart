@@ -51,7 +51,24 @@ class BrandedLineChart extends StatefulWidget {
   /// Optional unit suffix for Y-axis labels (e.g. "kg", "min", "reps").
   /// The value formatter still owns the full header value; this only affects
   /// the compact axis ticks so the chart reads as a standard labelled plot.
+  ///
+  /// This is a UNIT and nothing else. It must never be used to describe what
+  /// the chart is plotting — see [metricLabel].
   final String? yAxisUnit;
+
+  /// What this chart is PLOTTING, for the screen-reader summary:
+  /// "Volume chart", "Duration chart", "Estimated 1RM chart".
+  ///
+  /// Deliberately separate from [yAxisUnit]. The summary used to be built
+  /// from the unit, which made a chart either announce itself as a "kg chart"
+  /// or fall back to "Volume chart" no matter what was actually on screen.
+  /// A unit is not a metric name, and this component renders volume, duration
+  /// and reps for three different screens.
+  ///
+  /// Optional on purpose: a caller that has not been updated yet gets the
+  /// vague-but-true "Chart" rather than a confident lie. Every caller in the
+  /// app should pass it.
+  final String? metricLabel;
 
   BrandedLineChart({
     super.key,
@@ -64,6 +81,7 @@ class BrandedLineChart extends StatefulWidget {
     this.emptyActionLabel,
     this.onEmptyAction,
     this.yAxisUnit,
+    this.metricLabel,
     this.height = 180,
   })  : axisFormatter = axisFormatter ?? defaultAxisFormat,
         dateFormatter = dateFormatter ?? ((d) => DateFormat('MMM d').format(d));
@@ -89,6 +107,11 @@ class BrandedLineChart extends StatefulWidget {
 class _BrandedLineChartState extends State<BrandedLineChart> {
   int? _touchedIndex;
   bool _showDataTable = false;
+
+  /// The accessible name for whatever is being plotted. One resolution point
+  /// so the multi-point summary and the single-session state can never
+  /// describe the same chart differently.
+  String get _metricName => widget.metricLabel ?? 'Chart';
 
   double _niceInterval(double maxV) {
     if (maxV <= 0) return 1;
@@ -372,10 +395,8 @@ class _BrandedLineChartState extends State<BrandedLineChart> {
     final latestStr = widget.valueFormatter(data.last.value);
     final minStr = widget.valueFormatter(minV);
     final maxStr = widget.valueFormatter(maxV);
-    final metricName =
-        widget.yAxisUnit != null ? '${widget.yAxisUnit} chart' : 'Volume chart';
 
-    final semanticsSummary = '$metricName, $dateRangeStr. '
+    final semanticsSummary = '$_metricName, $dateRangeStr. '
         'Latest: $latestStr, Min: $minStr, Max: $maxStr, '
         'Trend: $trendStr, ${data.length} points.';
 
@@ -470,7 +491,7 @@ class _BrandedLineChartState extends State<BrandedLineChart> {
     final accent = context.accent;
     return Semantics(
       container: true,
-      label: 'Volume chart, one session: '
+      label: '$_metricName, one session: '
           '${widget.valueFormatter(p.value)} on ${widget.dateFormatter(p.date)}.',
       child: Container(
         height: 150,
