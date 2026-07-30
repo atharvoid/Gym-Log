@@ -9,6 +9,7 @@ import '../../../../core/theme/app_text.dart';
 import '../../../../core/theme/dynamic_accent_theme.dart';
 import '../../../../core/utils/tap_guard.dart';
 import '../../../../core/utils/relative_time.dart';
+import '../../../../shared/providers/bottom_chrome_provider.dart';
 import '../../../../shared/widgets/async_error_state.dart';
 import '../../../../shared/widgets/ui/app_card.dart';
 import '../../../../shared/widgets/ui/secondary_button.dart';
@@ -21,10 +22,13 @@ import '../providers/active_workout_provider.dart';
 
 /// [workout_screen.dart]
 /// Routines tab — the user's saved routines (reactive via hydratedRoutinesProvider).
-/// The list collapses with a smooth AnimatedSize height tween. Kept as a box
-/// list (not SliverList) on purpose: routines are bounded (free cap 4, realistic
-/// <30) so eager build is sub-ms, and a box list is what enables the buttery
-/// collapse — virtualization would only let the collapse snap.
+///
+/// HEADER DISCIPLINE: this screen earns its vertical space or gives it up. The
+/// previous version spent ~100dp on gaps plus a collapsible "My Routines (n)"
+/// section header before the first card. That header duplicated the screen
+/// title and the count already in the subtitle, and its collapse toggle could
+/// only ever collapse the single list on the page — i.e. blank the screen. Both
+/// are gone; the list starts immediately after the action row.
 class WorkoutScreen extends ConsumerStatefulWidget {
   const WorkoutScreen({super.key});
 
@@ -33,8 +37,6 @@ class WorkoutScreen extends ConsumerStatefulWidget {
 }
 
 class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
-  bool _routinesExpanded = true;
-
   void _startRoutine(HydratedRoutine routine) async {
     if (routine.exerciseIds.isEmpty) {
       return; // guarded again in the card (with feedback)
@@ -86,171 +88,145 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
   @override
   Widget build(BuildContext context) {
     final routinesAsync = ref.watch(hydratedRoutinesProvider);
-    final reduceMotion = MediaQuery.disableAnimationsOf(context);
     final surface = context.surface;
+    // Reserve room for the nav bar and, when a session is live, the floating
+    // mini player. Replaces the old hardcoded 24dp bottom padding, which hid
+    // the last card behind the mini player mid-workout.
+    final bottomInset = ref.watch(bottomChromeInsetProvider);
 
     return Scaffold(
       backgroundColor: surface.bgBase,
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Identity header (replaces AppBar — matches Home's no-AppBar chrome)
-              EntranceFade(
-                index: 0,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Semantics(
-                      header: true,
-                      child: Text(
-                        'Routines',
-                        style: AppText.screenTitle(color: surface.textPrimary)
-                            .copyWith(letterSpacing: -0.5),
+        child: CustomScrollView(
+          slivers: [
+            // ── Identity header (replaces AppBar — matches Home's chrome) ──
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+                child: EntranceFade(
+                  index: 0,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Semantics(
+                        header: true,
+                        child: Text(
+                          'Routines',
+                          style: AppText.screenTitle(color: surface.textPrimary)
+                              .copyWith(letterSpacing: -0.5),
+                        ),
+                      ),
+                      routinesAsync.maybeWhen(
+                        data: (routines) => routines.isEmpty
+                            ? const SizedBox.shrink()
+                            : Padding(
+                                padding: const EdgeInsets.only(top: 4),
+                                child: Text(_summaryLine(routines),
+                                    style: AppText.body(
+                                        color: surface.textSecondary)),
+                              ),
+                        orElse: () => const SizedBox.shrink(),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+
+            // ── Action row: New (solid accent CTA) + Explore (neutral) ──
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+                child: EntranceFade(
+                  index: 1,
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: SecondaryButton(
+                          label: 'New Routine',
+                          icon: Icons.add_rounded,
+                          solid:
+                              true, // solid accent fill + onAccent label — the one focal CTA
+                          onPressed: () => _push('/routines/edit'),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: SecondaryButton(
+                          label: 'Explore',
+                          icon: Icons.explore_rounded,
+                          onPressed: () => _push('/routines/explore'),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+
+            // ── The list itself — no section header, no disclosure toggle ──
+            ...routinesAsync.when(
+              loading: () => [
+                const SliverPadding(
+                  padding: EdgeInsets.fromLTRB(16, 14, 16, 0),
+                  sliver: SliverToBoxAdapter(child: _RoutinesLoading()),
+                ),
+              ],
+              error: (e, _) => [
+                SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(16, 14, 16, 0),
+                  sliver: SliverToBoxAdapter(
+                    child: Semantics(
+                      liveRegion: true,
+                      child: AsyncErrorState(
+                        message: "Couldn't load your routines.",
+                        onRetry: () => ref.invalidate(hydratedRoutinesProvider),
                       ),
                     ),
-                    routinesAsync.maybeWhen(
-                      data: (routines) => routines.isEmpty
-                          ? const SizedBox.shrink()
-                          : Padding(
-                              padding: const EdgeInsets.only(top: 4),
-                              child: Text(_summaryLine(routines),
-                                  style: AppText.body(
-                                      color: surface.textSecondary)),
+                  ),
+                ),
+              ],
+              data: (routines) {
+                if (routines.isEmpty) {
+                  return [
+                    SliverPadding(
+                      padding: const EdgeInsets.fromLTRB(16, 14, 16, 0),
+                      sliver: SliverToBoxAdapter(
+                        child: _EmptyRoutines(
+                            onNew: () => _push('/routines/edit')),
+                      ),
+                    ),
+                  ];
+                }
+                return [
+                  SliverPadding(
+                    padding: const EdgeInsets.fromLTRB(16, 14, 16, 0),
+                    sliver: SliverList(
+                      delegate: SliverChildBuilderDelegate(
+                        (context, i) => EntranceFade(
+                          index: 2 + i,
+                          child: Padding(
+                            padding: const EdgeInsets.only(bottom: 12),
+                            child: RoutineCard(
+                              routineId: routines[i].routine.id,
+                              routineName: routines[i].routine.name,
+                              exerciseNames: routines[i].exerciseNames,
+                              muscleTags: routines[i].muscleTags,
+                              lastTrained: routines[i].lastTrained,
+                              onStartTap: () => _startRoutine(routines[i]),
                             ),
-                      orElse: () => const SizedBox.shrink(),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 20),
-
-              // ── Action row: New (solid accent CTA) + Explore (neutral) ─────────────
-              EntranceFade(
-                index: 1,
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: SecondaryButton(
-                        label: 'New Routine',
-                        icon: Icons.add_rounded,
-                        solid:
-                            true, // solid accent fill + onAccent label — the one focal CTA
-                        onPressed: () => _push('/routines/edit'),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: SecondaryButton(
-                        label: 'Explore',
-                        icon: Icons.explore_rounded,
-                        onPressed: () => _push('/routines/explore'),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 22),
-
-              // ── Collapsible section header ──────────────────────────
-              EntranceFade(
-                index: 2,
-                child: _collapsibleHeader(routinesAsync, reduceMotion),
-              ),
-              const SizedBox(height: 10),
-
-              // ── Routine list — smooth height collapse ──────────────────
-              AnimatedSize(
-                duration: reduceMotion
-                    ? Duration.zero
-                    : const Duration(milliseconds: 220),
-                curve: Curves.easeInOut,
-                alignment: Alignment.topCenter,
-                child: !_routinesExpanded
-                    ? const SizedBox(width: double.infinity)
-                    : routinesAsync.when(
-                        loading: () => const _RoutinesLoading(),
-                        error: (e, _) => Semantics(
-                          liveRegion: true,
-                          child: AsyncErrorState(
-                            message: "Couldn't load your routines.",
-                            onRetry: () =>
-                                ref.invalidate(hydratedRoutinesProvider),
                           ),
                         ),
-                        data: (routines) {
-                          if (routines.isEmpty) {
-                            return _EmptyRoutines(
-                                onNew: () => _push('/routines/edit'));
-                          }
-                          return Column(
-                            children: [
-                              for (int i = 0; i < routines.length; i++)
-                                EntranceFade(
-                                  index: 3 + i,
-                                  child: Padding(
-                                    padding: const EdgeInsets.only(bottom: 12),
-                                    child: RoutineCard(
-                                      routineId: routines[i].routine.id,
-                                      routineName: routines[i].routine.name,
-                                      exerciseNames: routines[i].exerciseNames,
-                                      muscleTags: routines[i].muscleTags,
-                                      lastTrained: routines[i].lastTrained,
-                                      onStartTap: () =>
-                                          _startRoutine(routines[i]),
-                                    ),
-                                  ),
-                                ),
-                            ],
-                          );
-                        },
+                        childCount: routines.length,
                       ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
+                    ),
+                  ),
+                ];
+              },
+            ),
 
-  Widget _collapsibleHeader(
-    AsyncValue<List<HydratedRoutine>> routinesAsync,
-    bool reduceMotion,
-  ) {
-    return Semantics(
-      button: true,
-      expanded: _routinesExpanded,
-      label: 'My Routines',
-      child: GestureDetector(
-        onTap: () {
-          HapticFeedback.selectionClick();
-          setState(() => _routinesExpanded = !_routinesExpanded);
-        },
-        behavior: HitTestBehavior.opaque,
-        child: Padding(
-          // ~48dp tap target for the disclosure control.
-          padding: const EdgeInsets.symmetric(vertical: 14),
-          child: Row(
-            children: [
-              AnimatedRotation(
-                turns: _routinesExpanded ? 0 : -0.25,
-                duration: reduceMotion
-                    ? Duration.zero
-                    : const Duration(milliseconds: 200),
-                child: Icon(Icons.keyboard_arrow_down_rounded,
-                    color: context.surface.textSecondary, size: 20),
-              ),
-              const SizedBox(width: 4),
-              routinesAsync.maybeWhen(
-                data: (r) => Text('My Routines (${r.length})',
-                    style: AppText.exerciseName()),
-                orElse: () =>
-                    Text('My Routines', style: AppText.exerciseName()),
-              ),
-            ],
-          ),
+            SliverToBoxAdapter(child: SizedBox(height: bottomInset + 16)),
+          ],
         ),
       ),
     );
