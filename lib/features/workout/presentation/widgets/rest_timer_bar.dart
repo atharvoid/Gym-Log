@@ -19,21 +19,56 @@ import 'package:gymlog/features/workout/presentation/providers/rest_timer_provid
 /// COLOR: rest now follows the app's live BRAND ACCENT so the timer feels
 /// integrated with the chosen theme. The previously fixed cyan semantic is
 /// replaced by `context.accent.base` everywhere in this widget.
+///
+/// INTERACTION: the tile is a scrubber. Dragging horizontally trims or extends
+/// rest in [_scrubStepSeconds] increments without having to hit a small button
+/// — the same gesture model as the rest slider in Appearance, so the control
+/// vocabulary is consistent. Discrete -15s / +15s remain for precise taps.
 const double kRestTileHeight = 84;
 
-class RestTimerBar extends ConsumerWidget {
+/// Pixels of horizontal drag per 5-second change. Tuned so a full thumb-swipe
+/// across a phone (~300dp) is about 2 minutes — coarse enough to be fast,
+/// fine enough to land on a specific value.
+const double _scrubPixelsPerStep = 12;
+const int _scrubStepSeconds = 5;
+
+class RestTimerBar extends ConsumerStatefulWidget {
   final RestTimerState state;
 
   const RestTimerBar({super.key, required this.state});
 
+  @override
+  ConsumerState<RestTimerBar> createState() => _RestTimerBarState();
+}
+
+class _RestTimerBarState extends ConsumerState<RestTimerBar> {
+  /// Sub-step drag accumulator, so slow drags still register instead of being
+  /// rounded away on every frame.
+  double _scrubAccum = 0;
+  bool _scrubbing = false;
+
   String get _label {
-    final m = state.remainingSeconds ~/ 60;
-    final s = state.remainingSeconds % 60;
+    final m = widget.state.remainingSeconds ~/ 60;
+    final s = widget.state.remainingSeconds % 60;
     return '$m:${s.toString().padLeft(2, '0')}';
   }
 
+  void _onScrubUpdate(DragUpdateDetails d) {
+    _scrubAccum += d.delta.dx;
+    final steps = (_scrubAccum / _scrubPixelsPerStep).truncate();
+    if (steps == 0) return;
+    _scrubAccum -= steps * _scrubPixelsPerStep;
+    final notifier = ref.read(restTimerProvider.notifier);
+    final next = widget.state.remainingSeconds + steps * _scrubStepSeconds;
+    final clamped = next.clamp(kRestMinRunningSeconds, kRestMaxSeconds);
+    if (clamped != widget.state.remainingSeconds) {
+      HapticFeedback.selectionClick();
+      notifier.setRemaining(clamped);
+    }
+  }
+
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final notifier = ref.read(restTimerProvider.notifier);
     final rest = context.accent.base; // reactive timer hue
 
@@ -45,91 +80,114 @@ class RestTimerBar extends ConsumerWidget {
         // Screen-reader: announce the remaining time, not just the visual ring.
         child: Semantics(
           container: true,
-          label: 'Rest timer, $_label remaining',
-          child: _AmbientPulse(
-            radius: AppRadius.cardAll,
-            color: rest,
-            child: SizedBox(
-              height: kRestTileHeight,
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Color.alphaBlend(
-                        rest.withValues(alpha: 0.16),
-                        AppColors.bgBase,
-                      ),
-                      AppColors.bgBase,
-                    ],
-                  ),
-                  borderRadius: AppRadius.cardAll,
-                  border: Border.all(
-                    color: rest.withValues(alpha: 0.40),
-                    width: 1.2,
-                  ),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Row(
-                    children: [
-                      SizedBox(
-                        width: 44,
-                        height: 44,
-                        child: CustomPaint(
-                          painter: _RestRingPainter(
-                            progress: state.progress,
-                            arcColor: rest,
-                          ),
-                          child: Center(
-                            child: Icon(Icons.timer_outlined,
-                                size: 18, color: rest),
-                          ),
+          label: 'Rest timer, $_label remaining. Swipe left or right to adjust.',
+          child: GestureDetector(
+            onHorizontalDragStart: (_) {
+              _scrubAccum = 0;
+              setState(() => _scrubbing = true);
+            },
+            onHorizontalDragUpdate: _onScrubUpdate,
+            onHorizontalDragEnd: (_) {
+              setState(() => _scrubbing = false);
+              HapticFeedback.lightImpact();
+            },
+            onHorizontalDragCancel: () => setState(() => _scrubbing = false),
+            child: _AmbientPulse(
+              radius: AppRadius.cardAll,
+              color: rest,
+              child: SizedBox(
+                height: kRestTileHeight,
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Color.alphaBlend(
+                          rest.withValues(alpha: _scrubbing ? 0.24 : 0.16),
+                          AppColors.bgBase,
                         ),
-                      ),
-                      const SizedBox(width: 14),
-                      Column(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('REST',
-                              style: AppText.columnHeader(
-                                  color: AppColors.textSecondary)),
-                          // S3: text-depth shadow on timer display
-                          Text(
-                            _label,
-                            style: AppText.timer(
-                                    color: AppColors.textPrimary,
-                                    shadows: AppText.depthFor(context))
-                                .copyWith(
-                              fontSize: 36,
-                              fontWeight: FontWeight.w800,
-                              height: 1.0,
+                        AppColors.bgBase,
+                      ],
+                    ),
+                    borderRadius: AppRadius.cardAll,
+                    border: Border.all(
+                      color: rest.withValues(alpha: _scrubbing ? 0.70 : 0.40),
+                      width: 1.2,
+                    ),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 14),
+                    child: Row(
+                      children: [
+                        SizedBox(
+                          width: 44,
+                          height: 44,
+                          child: CustomPaint(
+                            painter: _RestRingPainter(
+                              progress: widget.state.progress,
+                              arcColor: rest,
+                            ),
+                            child: Center(
+                              child: Icon(Icons.timer_outlined,
+                                  size: 18, color: rest),
                             ),
                           ),
-                        ],
-                      ),
-                      const Spacer(),
-                      _RestAction(
-                        label: '+15s',
-                        accent: rest,
-                        onTap: () {
-                          HapticFeedback.selectionClick();
-                          notifier.addSeconds(15);
-                        },
-                      ),
-                      const SizedBox(width: 8),
-                      _RestAction(
-                        label: 'Skip',
-                        emphasized: true,
-                        accent: rest,
-                        onTap: () {
-                          HapticFeedback.lightImpact();
-                          notifier.skip();
-                        },
-                      ),
-                    ],
+                        ),
+                        const SizedBox(width: 12),
+                        Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('REST',
+                                style: AppText.columnHeader(
+                                    color: AppColors.textSecondary)),
+                            // S3: text-depth shadow on timer display
+                            Text(
+                              _label,
+                              style: AppText.timer(
+                                      color: AppColors.textPrimary,
+                                      shadows: AppText.depthFor(context))
+                                  .copyWith(
+                                fontSize: 34,
+                                fontWeight: FontWeight.w800,
+                                height: 1.0,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const Spacer(),
+                        // -15s was missing entirely at HEAD: an over-long rest
+                        // could only be escaped by skipping it.
+                        _RestAction(
+                          label: '\u221215',
+                          accent: rest,
+                          onTap: () {
+                            HapticFeedback.selectionClick();
+                            notifier.addSeconds(-15);
+                          },
+                        ),
+                        const SizedBox(width: 6),
+                        _RestAction(
+                          label: '+15',
+                          accent: rest,
+                          onTap: () {
+                            HapticFeedback.selectionClick();
+                            notifier.addSeconds(15);
+                          },
+                        ),
+                        const SizedBox(width: 6),
+                        _RestAction(
+                          label: 'Skip',
+                          emphasized: true,
+                          accent: rest,
+                          onTap: () {
+                            HapticFeedback.lightImpact();
+                            notifier.skip();
+                          },
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -165,7 +223,9 @@ class _RestAction extends StatelessWidget {
         onTap: onTap,
         child: Container(
           height: 44,
-          padding: const EdgeInsets.symmetric(horizontal: 16),
+          // Three controls now share the tile, so horizontal padding drops
+          // from 16 to 11 — the 44dp height keeps the touch target legal.
+          padding: const EdgeInsets.symmetric(horizontal: 11),
           alignment: Alignment.center,
           child: Text(
             label,

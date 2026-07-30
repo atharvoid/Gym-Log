@@ -4,6 +4,14 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+/// Shortest rest a running timer may hold. Zero means "no rest", which is
+/// represented by a null state rather than a 0-second countdown.
+const int kRestMinRunningSeconds = 1;
+
+/// Longest rest the app allows. The rest slider and every +/- control clamp to
+/// this, so the UI can never offer a value this notifier would reject.
+const int kRestMaxSeconds = 600;
+
 class RestTimerState {
   final int totalSeconds;
   final int remainingSeconds;
@@ -36,6 +44,7 @@ class RestTimerNotifier extends StateNotifier<RestTimerState?>
   }
 
   void start(int seconds) {
+    if (seconds <= 0) return; // "Off" — never spin up a 0-second countdown
     _ticker?.cancel();
     _finished = false;
     _totalSeconds = seconds;
@@ -77,14 +86,28 @@ class RestTimerNotifier extends StateNotifier<RestTimerState?>
 
   void addSeconds(int delta) {
     final current = state;
+    if (current == null) return;
+    setRemaining(current.remainingSeconds + delta);
+  }
+
+  /// Sets the remaining rest to an ABSOLUTE value.
+  ///
+  /// Scrubbing used to be expressed as repeated [addSeconds] deltas, which
+  /// recomputed `_totalSeconds` on every step and made the ring progress drift
+  /// (the denominator kept growing as you dragged). Setting an absolute value
+  /// keeps the ring honest: the total only ever grows to accommodate a longer
+  /// remaining time, never as a side effect of many small nudges.
+  void setRemaining(int seconds) {
+    final current = state;
     final end = _endTime;
     if (current == null || end == null) return;
-    final remaining = (current.remainingSeconds + delta).clamp(1, 600);
-    final total =
-        delta > 0 && remaining > _totalSeconds ? remaining : _totalSeconds;
-    _totalSeconds = total;
+    final remaining = seconds.clamp(kRestMinRunningSeconds, kRestMaxSeconds);
+    _totalSeconds = math_max(remaining, _totalSeconds);
     _endTime = DateTime.now().add(Duration(seconds: remaining));
-    state = RestTimerState(totalSeconds: total, remainingSeconds: remaining);
+    state = RestTimerState(
+      totalSeconds: _totalSeconds,
+      remainingSeconds: remaining,
+    );
   }
 
   void skip() {
@@ -107,6 +130,9 @@ class RestTimerNotifier extends StateNotifier<RestTimerState?>
     super.dispose();
   }
 }
+
+/// Local int max — avoids importing dart:math into a provider for one call.
+int math_max(int a, int b) => a > b ? a : b;
 
 final restTimerProvider =
     StateNotifierProvider<RestTimerNotifier, RestTimerState?>(
