@@ -13,6 +13,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../config/env.dart';
 import '../database/database.dart';
 import '../database/database_integrity_signal.dart';
+import '../providers/supabase_client_provider.dart';
 import '../services/premium_service.dart';
 import '../services/notification_service.dart';
 import '../theme/dynamic_accent_theme.dart';
@@ -426,21 +427,19 @@ abstract final class Bootstrap {
   /// `premiumServiceProvider` was therefore never initialised: `_configured`
   /// stayed false, `offerings()` returned null, and the paywall permanently
   /// showed "Pricing unavailable. Tap to retry." even with valid keys.
+  ///
+  /// Uses [supabaseClientOrNull] rather than touching `Supabase.instance`
+  /// directly — the ONLY seam every other cloud consumer in this codebase
+  /// goes through. This function used to bypass it with ad hoc try/catch,
+  /// which was safe only by accident of call order in
+  /// [_postLaunchBackgroundWork]; nothing enforced that ordering.
   static void _initCommerce(PremiumService premiumService) {
-    String? userId;
-    try {
-      userId = Supabase.instance.client.auth.currentUser?.id;
-    } catch (_) {
-      // Supabase instance not ready — premium stays in free mode.
-    }
+    final client = supabaseClientOrNull();
+    final userId = client?.auth.currentUser?.id;
     unawaited(premiumService.initialize(userId: userId));
-    try {
-      Supabase.instance.client.auth.onAuthStateChange.listen(
-        (state) => premiumService.setUser(state.session?.user.id),
-      );
-    } catch (_) {
-      // No auth stream available — entitlement stays on the local cache.
-    }
+    client?.auth.onAuthStateChange.listen(
+      (state) => premiumService.setUser(state.session?.user.id),
+    );
   }
 
   // ── Stage 7 helper ──────────────────────────────────
@@ -449,12 +448,13 @@ abstract final class Bootstrap {
     try {
       await db.exercisesDao.hydrateFromJson(); // One-time JSON seed
 
-      final user = Supabase.instance.client.auth.currentUser;
+      final user = supabaseClientOrNull()?.auth.currentUser;
       if (user != null) {
         await db.workoutsDao.deleteOrphanedSessions(user.id);
       }
-    } catch (e) {
+    } catch (e, st) {
       debugPrint('[Bootstrap] post-launch maintenance failed: $e');
+      unawaited(Sentry.captureException(e, stackTrace: st));
     }
   }
 }
