@@ -9,7 +9,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:gymlog/core/exercises/body_map.dart';
 import 'package:gymlog/features/auth/presentation/providers/tour_provider.dart';
 import 'package:gymlog/features/profile/presentation/providers/profile_provider.dart';
-import 'package:gymlog/shared/widgets/body/muscle_map.dart';
+import 'package:gymlog/shared/widgets/body/muscle_summary.dart';
 import 'package:gymlog/shared/widgets/tour/spotlight_tour_overlay.dart';
 
 import 'package:gymlog/core/database/daos/routines_dao.dart';
@@ -45,6 +45,11 @@ final DateFormat _monthDay = DateFormat('MMM d');
 
 /// RoutineDetailScreen — the launchpad for a saved routine: one dominant Start
 /// CTA, a personal stat line, a volume trend, and the exercise set tables.
+///
+/// Muscle coverage is shown as a one-line [MuscleSummaryStrip] rather than an
+/// inline anatomical map. See muscle_summary.dart for why: the map is low
+/// re-read-rate reference content and was consuming the space where the
+/// exercise list should start.
 class RoutineDetailScreen extends ConsumerStatefulWidget {
   final String routineId;
 
@@ -88,7 +93,7 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
     super.dispose();
   }
 
-  // ── Actions ─────────────────────────────────────────────────────────────────
+  // ── Actions ────────────────────────────────────────────────────────
 
   void _startRoutine(HydratedRoutineDetail routine) {
     if (!tapGuard()) return;
@@ -230,7 +235,7 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
     ref.invalidate(routineLastSetsProvider(widget.routineId));
   }
 
-  // ── Build ─────────────────────────────────────────────────────────────────
+  // ── Build ────────────────────────────────────────────────────────
 
   @override
   Widget build(BuildContext context) {
@@ -297,8 +302,8 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
                         const SizedBox(height: 16),
                         _HeroStatStrip(stats: sessionStats),
                       ],
-                      const SizedBox(height: 16),
-                      _MusclesWorkedMap(routine: routine),
+                      const SizedBox(height: 12),
+                      _MusclesWorkedStrip(routine: routine),
                     ],
                   ),
                 ),
@@ -457,7 +462,7 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
     );
   }
 
-  // ── Loading / error / not-found ──────────────────────────────────────────────
+  // ── Loading / error / not-found ───────────────────────────────────────
 
   Widget _buildSkeleton() {
     final surface = context.surface;
@@ -485,6 +490,9 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const SkeletonBox(width: 200, height: 16),
+                    const SizedBox(height: 16),
+                    // Matches the 44dp muscle strip, not the old ~400dp map.
+                    const SkeletonBox(height: 44, radius: AppRadius.badge),
                     const SizedBox(height: 24),
                     const SkeletonBox(height: 198, radius: AppRadius.card),
                     const SizedBox(height: 24),
@@ -556,9 +564,14 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen>
   return (primary: primary, secondary: secondary);
 }
 
-class _MusclesWorkedMap extends ConsumerWidget {
+/// Muscle coverage, compressed to one row.
+///
+/// Previously this rendered a "Muscles Worked" heading plus a full front/back
+/// [MuscleMap] inline. The heading is gone too: the chips name the muscles
+/// themselves, so a label above them was pure redundancy.
+class _MusclesWorkedStrip extends ConsumerWidget {
   final HydratedRoutineDetail routine;
-  const _MusclesWorkedMap({required this.routine});
+  const _MusclesWorkedStrip({required this.routine});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -568,24 +581,13 @@ class _MusclesWorkedMap extends ConsumerWidget {
     }
     final gender =
         ref.watch(currentUserProfileProvider).valueOrNull?.gender ?? 'male';
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Semantics(
-          header: true,
-          child: Text('Muscles Worked',
-              style: AppText.cardTitle(color: context.surface.textPrimary)),
-        ),
-        const SizedBox(height: 10),
-        MuscleMap(
-          primaryGroups: groups.primary,
-          secondaryGroups: groups.secondary,
-          gender: gender,
-          showBack: true,
-          showLegend: true,
-        ),
-        const SizedBox(height: 16),
-      ],
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: MuscleSummaryStrip(
+        primaryGroups: groups.primary,
+        secondaryGroups: groups.secondary,
+        gender: gender,
+      ),
     );
   }
 }
@@ -678,9 +680,9 @@ class _RoutineVolumeSectionState extends ConsumerState<_RoutineVolumeSection> {
   }
 }
 
-// ════════════════════════════════════════════════════════════════════════════
+// ═════════════════════════════════════════════════════════════════════
 // Sub-widgets
-// ══════════════════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════════════
 
 class _HeroStatStrip extends StatelessWidget {
   final RoutineSessionStats stats;
