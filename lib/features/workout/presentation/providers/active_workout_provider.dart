@@ -71,8 +71,10 @@ class ActiveWorkoutNotifier extends StateNotifier<ActiveWorkoutState?> {
     AppDatabase? db;
     try {
       db = _ref.read(databaseProvider);
-    } catch (_) {
-      // Ignored if databaseProvider is not overridden in test environment
+    } catch (e, stackTrace) {
+      // Expected when databaseProvider is not overridden in test environment;
+      // report so a genuine production failure isn't invisible.
+      unawaited(Sentry.captureException(e, stackTrace: stackTrace));
     }
 
     final upgradedExercises = <WorkoutExerciseState>[];
@@ -302,11 +304,7 @@ class ActiveWorkoutNotifier extends StateNotifier<ActiveWorkoutState?> {
       return WorkoutSaveResult.success(prs);
     } catch (e, stackTrace) {
       debugPrint('[finishWorkout] transaction failed: $e');
-      final errSummary = e.toString().split('\n').first;
-      unawaited(Sentry.captureException(
-        Exception('Workout finish transaction failed: $errSummary'),
-        stackTrace: stackTrace,
-      ));
+      unawaited(Sentry.captureException(e, stackTrace: stackTrace));
       return WorkoutSaveResult.failure('Database transaction failed.');
     }
   }
@@ -376,11 +374,7 @@ class ActiveWorkoutNotifier extends StateNotifier<ActiveWorkoutState?> {
       return WorkoutSaveResult.success(const []);
     } catch (e, stackTrace) {
       debugPrint('[saveEditedWorkout] transaction failed: $e');
-      final errSummary = e.toString().split('\n').first;
-      unawaited(Sentry.captureException(
-        Exception('Workout edit transaction failed: $errSummary'),
-        stackTrace: stackTrace,
-      ));
+      unawaited(Sentry.captureException(e, stackTrace: stackTrace));
       return WorkoutSaveResult.failure('Database transaction failed.');
     }
   }
@@ -409,9 +403,10 @@ class ActiveWorkoutNotifier extends StateNotifier<ActiveWorkoutState?> {
           resolvedType = row.measurementType;
           resolvedEquipment = row.equipment;
         }
-      } catch (e) {
+      } catch (e, stackTrace) {
         debugPrint(
             '[ActiveWorkoutNotifier] Failed to resolve measurementType for exercise $exerciseId: $e');
+        unawaited(Sentry.captureException(e, stackTrace: stackTrace));
       }
     }
     final mType = MeasurementType.resolve(
@@ -535,9 +530,10 @@ class ActiveWorkoutNotifier extends StateNotifier<ActiveWorkoutState?> {
           resolvedType = row.measurementType;
           resolvedEquipment = row.equipment;
         }
-      } catch (e) {
+      } catch (e, stackTrace) {
         debugPrint(
             '[ActiveWorkoutNotifier] Failed to resolve replacement measurementType for exercise $exerciseId: $e');
+        unawaited(Sentry.captureException(e, stackTrace: stackTrace));
       }
     }
     final mType = MeasurementType.resolve(
@@ -582,9 +578,10 @@ class ActiveWorkoutNotifier extends StateNotifier<ActiveWorkoutState?> {
           resolvedType = row.measurementType;
           resolvedEquipment = row.equipment;
         }
-      } catch (e) {
+      } catch (e, stackTrace) {
         debugPrint(
             '[ActiveWorkoutNotifier] Failed to resolve replacement measurementType for exercise $newExerciseId: $e');
+        unawaited(Sentry.captureException(e, stackTrace: stackTrace));
       }
     }
     final oldMType = oldExercise.resolvedMeasurementType;
