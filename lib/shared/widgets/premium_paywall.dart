@@ -3,7 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:purchases_flutter/purchases_flutter.dart'
-    show IntroductoryPrice, Offerings, Package, PackageType, PeriodUnit;
+    show
+        IntroductoryPrice,
+        Offerings,
+        Package,
+        PackageType,
+        PeriodUnit,
+        PurchasesErrorCode,
+        PurchasesErrorHelper;
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/config/legal_links.dart';
@@ -298,6 +305,20 @@ class _PaywallSheetState extends ConsumerState<_PaywallSheet> {
         _snack(
           'Purchase completed, but Premium is still being verified. Try Restore Purchases.',
         );
+      }
+    } on PlatformException catch (e) {
+      if (!mounted) return;
+      if (PurchasesErrorHelper.getErrorCode(e) ==
+          PurchasesErrorCode.paymentPendingError) {
+        // Payment is pending approval (e.g. a delayed Play Billing payment
+        // method) — it may still complete later. Telling the user "you
+        // were not charged" here would be a false promise.
+        _snack(
+          "Your payment is pending approval. We'll unlock Pro automatically "
+          'once it clears.',
+        );
+      } else {
+        _snack('Purchase failed. You were not charged.');
       }
     } catch (e) {
       if (mounted) _snack('Purchase failed. You were not charged.');
