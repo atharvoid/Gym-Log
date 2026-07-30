@@ -21,6 +21,7 @@ import 'package:gymlog/core/utils/formatters.dart';
 import 'package:gymlog/core/database/database.dart';
 import 'package:gymlog/core/providers/database_provider.dart';
 import 'package:gymlog/core/utils/tap_guard.dart';
+import 'package:gymlog/shared/providers/bottom_chrome_provider.dart';
 import 'package:gymlog/shared/widgets/feedback/undoable_delete.dart';
 import 'package:gymlog/features/auth/presentation/providers/tour_provider.dart';
 import 'package:gymlog/features/routines/presentation/providers/routines_provider.dart';
@@ -92,6 +93,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final historyState = ref.watch(workoutHistoryProvider);
     final totalItems = historyState.items.length;
     final surface = context.surface;
+    // Reserve room for the floating active-workout mini player, same as the
+    // Routines tab. Without this the last card / footer sits behind the bar
+    // whenever a session is live.
+    final bottomInset = ref.watch(bottomChromeInsetProvider);
 
     final routines = ref.watch(hydratedRoutinesProvider).valueOrNull ?? [];
     final tourStep = ref.watch(firstRunTourProvider);
@@ -122,7 +127,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           child: SkeletonPulse(
             child: ListView(
               physics: const NeverScrollableScrollPhysics(),
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+              padding: EdgeInsets.fromLTRB(16, 16, 16, bottomInset + 24),
               children: const [
                 SkeletonBox(height: 96, radius: AppRadius.card),
                 SizedBox(height: 20),
@@ -158,7 +163,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 key: const PageStorageKey('home_feed'),
                 controller: _scrollController,
                 physics: const AlwaysScrollableScrollPhysics(),
-                padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+                padding: EdgeInsets.fromLTRB(16, 16, 16, bottomInset + 24),
                 itemCount: itemCount,
                 itemBuilder: (context, index) {
                   if (index == 0) {
