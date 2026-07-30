@@ -69,14 +69,16 @@ String? chartLimitBannerCopy({
         ? 'Log 1 more week to unlock your trend chart'
         : 'Log $remaining more weeks to unlock your trend chart';
   } else {
-    // Free user
+    // Free user — the plan caps visible history at 3 samples permanently;
+    // logging further weeks alone never unlocks the rest without upgrading,
+    // so the copy below must say so instead of echoing the premium copy.
     if (totalLoggedSamples >= 3) {
       return 'Free plan shows your last 3 weeks. Upgrade to see your full history.';
     }
-    final remaining = minSamplesForTrend - totalLoggedSamples;
+    final remaining = 3 - totalLoggedSamples;
     return remaining == 1
-        ? 'Log 1 more week to unlock your trend chart'
-        : 'Log $remaining more weeks to unlock your trend chart';
+        ? 'Log 1 more week, then upgrade to unlock your full trend chart'
+        : 'Log $remaining more weeks, then upgrade to unlock your full trend chart';
   }
 }
 
