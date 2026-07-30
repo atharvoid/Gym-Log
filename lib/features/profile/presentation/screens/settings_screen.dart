@@ -642,6 +642,65 @@ class _GroupHeader extends StatelessWidget {
       );
 }
 
+/// The unsynced-work sign-out choice.
+///
+/// This was the last stock [AlertDialog] on a destructive path: untokenised
+/// Material chrome on an AMOLED-black app, three equal-weight text buttons in
+/// a row where the only safe option looked identical to the two that end the
+/// session, and no statement of what each choice costs the user's unsynced
+/// data.
+///
+/// Now a branded sheet with stacked rows. The safe option is first and
+/// labelled as recommended; every option says what actually happens. A
+/// drag-dismiss returns null, which the caller already treats as "stay signed
+/// in" — the safe default is also the accidental one.
+Future<SignOutStrategy?> _showUnsyncedWorkSheet(BuildContext context) {
+  HapticFeedback.mediumImpact();
+  final accent = context.accent;
+
+  void choose(SignOutStrategy strategy) {
+    HapticFeedback.selectionClick();
+    Navigator.of(context, rootNavigator: true).pop(strategy);
+  }
+
+  return showBrandedBottomSheet<SignOutStrategy>(
+    context: context,
+    title: 'Unsynced workouts',
+    subtitle: 'Some workouts on this device have not reached the cloud yet. '
+        'Signing out now would leave them only on this phone.',
+    child: AppCard(
+      padding: EdgeInsets.zero,
+      child: Column(
+        children: [
+          AppActionRow(
+            icon: Icons.shield_outlined,
+            iconColor: accent.light,
+            title: 'Stay signed in',
+            subtitle: 'Recommended — nothing leaves this device unsynced',
+            onTap: () => choose(SignOutStrategy.keepSignedIn),
+          ),
+          const AppActionDivider(),
+          AppActionRow(
+            icon: Icons.cloud_upload_outlined,
+            iconColor: accent.light,
+            title: 'Sync, then sign out',
+            subtitle: 'Uploads first. Signs out anyway if the upload fails.',
+            onTap: () => choose(SignOutStrategy.signOutAfterSync),
+          ),
+          const AppActionDivider(),
+          AppActionRow(
+            icon: Icons.ios_share_rounded,
+            iconColor: accent.light,
+            title: 'Export a CSV, then sign out',
+            subtitle: 'Saves a copy you keep, then ends the session',
+            onTap: () => choose(SignOutStrategy.exportAndSignOut),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
 class _SignOutButton extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -663,32 +722,7 @@ class _SignOutButton extends ConsumerWidget {
             final prep = await coordinator.prepare(user.id);
             if (prep == SignOutResult.unsyncedWork) {
               if (!context.mounted) return;
-              final strategy = await showDialog<SignOutStrategy>(
-                context: context,
-                builder: (context) => AlertDialog(
-                  title: const Text('Unsynced Work'),
-                  content: const Text(
-                    'You have workouts that are not synchronized with the cloud. What would you like to do?',
-                  ),
-                  actions: [
-                    TextButton(
-                      child: const Text('Keep me signed in'),
-                      onPressed: () =>
-                          Navigator.pop(context, SignOutStrategy.keepSignedIn),
-                    ),
-                    TextButton(
-                      child: const Text('Sign out after sync'),
-                      onPressed: () => Navigator.pop(
-                          context, SignOutStrategy.signOutAfterSync),
-                    ),
-                    TextButton(
-                      child: const Text('Export and sign out'),
-                      onPressed: () => Navigator.pop(
-                          context, SignOutStrategy.exportAndSignOut),
-                    ),
-                  ],
-                ),
-              );
+              final strategy = await _showUnsyncedWorkSheet(context);
               if (strategy == null ||
                   strategy == SignOutStrategy.keepSignedIn) {
                 return;
