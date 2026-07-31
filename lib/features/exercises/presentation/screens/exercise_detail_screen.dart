@@ -12,6 +12,7 @@ import 'package:gymlog/core/theme/app_text.dart';
 import 'package:gymlog/core/theme/dynamic_accent_theme.dart';
 import 'package:gymlog/core/utils/units.dart';
 import 'package:gymlog/features/profile/presentation/providers/profile_provider.dart';
+import 'package:gymlog/shared/layout/adaptive.dart';
 import 'package:gymlog/shared/widgets/async_error_state.dart';
 import 'package:gymlog/shared/widgets/body/muscle_summary.dart';
 import 'package:gymlog/shared/widgets/exercise_hero_thumb.dart';
@@ -56,77 +57,82 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
 
     return Scaffold(
       backgroundColor: surface.bgBase,
-      body: CustomScrollView(
-        slivers: [
-          SliverAppBar(
-            pinned: true,
-            backgroundColor: surface.bgBase,
-            surfaceTintColor: Colors.transparent,
-            scrolledUnderElevation: 0,
-            elevation: 0,
-            leading: IconButton(
-              tooltip: 'Back',
-              icon: Icon(Icons.arrow_back_rounded,
-                  size: 24, color: surface.textPrimary),
-              constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
-              onPressed: () => context.pop(),
-            ),
-          ),
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Center(
-                    child: ExerciseHeroThumb(
-                      exercise: exercise,
-                      size: 140,
-                      enableHero: true,
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  Text(exercise.name,
-                      style: AppText.pageTitle(
-                          color: surface.textPrimary,
-                          shadows: AppText.depthFor(context))),
-                  const SizedBox(height: 4),
-                  Text('${exercise.bodyPart} • ${exercise.equipment}',
-                      style: AppText.body(color: surface.textSecondary)),
-                  const SizedBox(height: 16),
-                  MuscleSummaryStrip(
-                    primaryGroups: groups.primary,
-                    secondaryGroups: groups.secondary,
-                    gender: gender,
-                  ),
-                  const SizedBox(height: 28),
-                  historyAsync.when(
-                    loading: () => _wrapPulse(
-                      label: 'Loading exercise history',
-                      child: const _HistorySkeleton(),
-                    ),
-                    error: (_, __) => AsyncErrorState(
-                      message: "Couldn't load exercise history.",
-                      onRetry: () => ref.invalidate(
-                          exerciseHistoryProvider(
-                              (exercise.id, _selectedTimeRange))),
-                    ),
-                    data: (history) => history.sessions.isEmpty
-                        ? const _NoHistoryState()
-                        : _HistoryContent(
-                            history: history,
-                            isPremium: isPremium,
-                            unit: unit,
-                            selectedTimeRange: _selectedTimeRange,
-                            onTimeRangeChanged: (r) =>
-                                setState(() => _selectedTimeRange = r),
-                          ),
-                  ),
-                ],
+      // C32: this route is pushed outside AppShell and never opted into the
+      // AdaptiveContent width cap -- hero image, chart, and session rows
+      // stretched edge-to-edge on tablets/foldables.
+      body: AdaptiveContent(
+        child: CustomScrollView(
+          slivers: [
+            SliverAppBar(
+              pinned: true,
+              backgroundColor: surface.bgBase,
+              surfaceTintColor: Colors.transparent,
+              scrolledUnderElevation: 0,
+              elevation: 0,
+              leading: IconButton(
+                tooltip: 'Back',
+                icon: Icon(Icons.arrow_back_rounded,
+                    size: 24, color: surface.textPrimary),
+                constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
+                onPressed: () => context.pop(),
               ),
             ),
-          ),
-        ],
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Center(
+                      child: ExerciseHeroThumb(
+                        exercise: exercise,
+                        size: 140,
+                        enableHero: true,
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    Text(exercise.name,
+                        style: AppText.pageTitle(
+                            color: surface.textPrimary,
+                            shadows: AppText.depthFor(context))),
+                    const SizedBox(height: 4),
+                    Text('${exercise.bodyPart} • ${exercise.equipment}',
+                        style: AppText.body(color: surface.textSecondary)),
+                    const SizedBox(height: 16),
+                    MuscleSummaryStrip(
+                      primaryGroups: groups.primary,
+                      secondaryGroups: groups.secondary,
+                      gender: gender,
+                    ),
+                    const SizedBox(height: 28),
+                    historyAsync.when(
+                      loading: () => _wrapPulse(
+                        label: 'Loading exercise history',
+                        child: const _HistorySkeleton(),
+                      ),
+                      error: (_, __) => AsyncErrorState(
+                        message: "Couldn't load exercise history.",
+                        onRetry: () => ref.invalidate(
+                            exerciseHistoryProvider(
+                                (exercise.id, _selectedTimeRange))),
+                      ),
+                      data: (history) => history.sessions.isEmpty
+                          ? const _NoHistoryState()
+                          : _HistoryContent(
+                              history: history,
+                              isPremium: isPremium,
+                              unit: unit,
+                              selectedTimeRange: _selectedTimeRange,
+                              onTimeRangeChanged: (r) =>
+                                  setState(() => _selectedTimeRange = r),
+                            ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
