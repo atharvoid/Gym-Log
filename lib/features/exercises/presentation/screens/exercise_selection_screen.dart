@@ -404,7 +404,16 @@ class _ExerciseSelectionScreenState
     final computed = _computeList(exercises, recentIds);
 
     if (computed.recent.isEmpty && computed.catalog.isEmpty) {
-      return _EmptyState(isSearching: _isSearching, onCreate: _createCustom);
+      final hasFilters = _muscleFilter != null || _equipmentFilter != null;
+      return _EmptyState(
+        isSearching: _isSearching,
+        hasFilters: hasFilters,
+        onCreate: _createCustom,
+        onClearFilters: () => setState(() {
+          _muscleFilter = null;
+          _equipmentFilter = null;
+        }),
+      );
     }
 
     return ListView.builder(
@@ -490,43 +499,62 @@ class _ExerciseRow extends StatelessWidget {
       enableHero: browse,
     );
 
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-          child: Row(
-            children: [
-              thumbnailWidget,
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(exercise.name,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: AppText.exerciseName(
-                            color: surface.textPrimary,
-                            shadows: AppText.depthFor(context))),
-                    const SizedBox(height: 4),
-                    Text('${exercise.target} • ${exercise.equipment}',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: AppText.caption(color: surface.textSecondary)),
-                  ],
+    // B18-F2: this row used to publish no wrapper Semantics at all, so
+    // InkWell's own unlabeled button node and the name/caption Text widgets
+    // each landed as separate stops -- an unlabeled "button" announcement
+    // followed by two disconnected text fragments, on the single
+    // highest-traffic list in the app after Home. Same wrapper pattern
+    // already used for the explore-routines cards (_FeaturedCard /
+    // _TemplateCard) and docs/a11y-semantics-checklist.md section 2: one
+    // Semantics container owns the name + hint, excludeSemantics drops the
+    // child subtree's duplicate nodes (including the thumbnail image node),
+    // and onTap is re-declared on the wrapper per checklist 2.2 since
+    // excludeSemantics also discards the InkWell's tap action.
+    return Semantics(
+      container: true,
+      button: true,
+      label: '${exercise.name}, ${exercise.target}, ${exercise.equipment}',
+      hint: browse ? 'Opens exercise details' : 'Selects exercise',
+      onTap: onTap,
+      excludeSemantics: true,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          excludeFromSemantics: true,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            child: Row(
+              children: [
+                thumbnailWidget,
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(exercise.name,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: AppText.exerciseName(
+                              color: surface.textPrimary,
+                              shadows: AppText.depthFor(context))),
+                      const SizedBox(height: 4),
+                      Text('${exercise.target} • ${exercise.equipment}',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style:
+                              AppText.caption(color: surface.textSecondary)),
+                    ],
+                  ),
                 ),
-              ),
-              if (browse) ...[
-                const SizedBox(width: 8),
-                ExcludeSemantics(
-                  child: Icon(Icons.chevron_right_rounded,
+                if (browse) ...[
+                  const SizedBox(width: 8),
+                  Icon(Icons.chevron_right_rounded,
                       size: 20, color: surface.textTertiary),
-                ),
+                ],
               ],
-            ],
+            ),
           ),
         ),
       ),
@@ -536,42 +564,71 @@ class _ExerciseRow extends StatelessWidget {
 
 class _EmptyState extends StatelessWidget {
   final bool isSearching;
+  final bool hasFilters;
   final VoidCallback onCreate;
-  const _EmptyState({required this.isSearching, required this.onCreate});
+  final VoidCallback onClearFilters;
+  const _EmptyState({
+    required this.isSearching,
+    required this.hasFilters,
+    required this.onCreate,
+    required this.onClearFilters,
+  });
 
   @override
   Widget build(BuildContext context) {
     final accent = context.accent;
     final surface = context.surface;
+    // B18-F4: the "create custom exercise" invite used to show regardless of
+    // whether a muscle/equipment filter was active. A filtered-out real match
+    // and a genuine catalog miss look identical from here, so the old copy
+    // told users to "add it yourself" even when the exercise already existed
+    // and was just hidden by their own filter -- inviting a duplicate. Once a
+    // filter is active, the honest next step is clearing it, not creating.
+    final String subtitle = hasFilters
+        ? (isSearching
+            ? 'No matches for this search under the current filter.'
+            : 'No exercises under the current filter.')
+        : (isSearching
+            ? 'Not in the library? Add it yourself.'
+            : 'Try changing the search.');
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.search_off_rounded,
-                size: 30,
-                color: surface.isLight
-                    ? Colors.black.withValues(alpha: 0.25)
-                    : Colors.white.withValues(alpha: 0.25)),
+            ExcludeSemantics(
+              child: Icon(Icons.search_off_rounded,
+                  size: 30,
+                  color: surface.isLight
+                      ? Colors.black.withValues(alpha: 0.25)
+                      : Colors.white.withValues(alpha: 0.25)),
+            ),
             const SizedBox(height: 10),
             Text('No exercises match',
                 style: AppText.rowLabel(color: surface.textPrimary)),
             const SizedBox(height: 3),
             Text(
-              isSearching
-                  ? 'Not in the library? Add it yourself.'
-                  : 'Try clearing a filter or changing the search.',
+              subtitle,
               textAlign: TextAlign.center,
               style: AppText.caption(color: surface.textSecondary),
             ),
             const SizedBox(height: 14),
-            TextButton.icon(
-              onPressed: onCreate,
-              icon: Icon(Icons.add_rounded, size: 18, color: accent.light),
-              label: Text('Create custom exercise',
-                  style: AppText.statLabel(color: accent.light)),
-            ),
+            if (hasFilters)
+              TextButton.icon(
+                onPressed: onClearFilters,
+                icon: Icon(Icons.filter_alt_off_rounded,
+                    size: 18, color: accent.light),
+                label: Text('Clear filters',
+                    style: AppText.statLabel(color: accent.light)),
+              )
+            else
+              TextButton.icon(
+                onPressed: onCreate,
+                icon: Icon(Icons.add_rounded, size: 18, color: accent.light),
+                label: Text('Create custom exercise',
+                    style: AppText.statLabel(color: accent.light)),
+              ),
           ],
         ),
       ),

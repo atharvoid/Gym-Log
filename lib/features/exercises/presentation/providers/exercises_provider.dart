@@ -35,14 +35,19 @@ class ExerciseList extends _$ExerciseList {
     return db.exercisesDao.getAllExercises(userId: user?.id);
   }
 
+  /// Runs a live search debounced by the caller. Failures are caught and
+  /// surfaced as AsyncError rather than left unhandled: this used to await a
+  /// bare Future with no try/catch, so a DB error mid-search vanished into an
+  /// unhandled-exception log line while the screen kept showing stale results
+  /// forever, with no error state and no retry path (B18-F1).
   Future<void> search(String query) async {
     final epoch = ++_searchEpoch;
     final db = ref.read(databaseProvider);
     final user = ref.read(authProvider);
-    final results = query.isEmpty
-        ? await db.exercisesDao.getAllExercises(userId: user?.id)
-        : await db.exercisesDao.searchExercises(query, userId: user?.id);
+    final result = await AsyncValue.guard(() => query.isEmpty
+        ? db.exercisesDao.getAllExercises(userId: user?.id)
+        : db.exercisesDao.searchExercises(query, userId: user?.id));
     if (epoch != _searchEpoch) return;
-    state = AsyncData(results);
+    state = result;
   }
 }
