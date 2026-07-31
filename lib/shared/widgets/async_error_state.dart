@@ -11,6 +11,14 @@ import '../../core/theme/dynamic_accent_theme.dart';
 /// is the shared replacement: a calm message plus a retry affordance. It is a
 /// plain widget (not a Scaffold) so it slots into an existing body; pair it
 /// with [AppNotFoundScreen] for full-screen / deleted-entity cases.
+///
+/// The default [icon] is deliberately *not* a cloud/offline glyph. GymLog is
+/// local-first: workout history, routines and stats all come from on-device
+/// SQLite, so a failure on those paths is a database error, and drawing it as
+/// a connectivity problem tells the user to wait for signal when the correct
+/// action is to retry. Pass `Icons.cloud_off_rounded` explicitly on the two
+/// surfaces that genuinely reach the network — Explore Programs and exercise
+/// media.
 class AsyncErrorState extends StatelessWidget {
   final String message;
   final VoidCallback? onRetry;
@@ -20,7 +28,7 @@ class AsyncErrorState extends StatelessWidget {
     super.key,
     this.message = "Something went wrong. Your data is safe.",
     this.onRetry,
-    this.icon = Icons.cloud_off_rounded,
+    this.icon = Icons.error_outline_rounded,
   });
 
   @override
@@ -34,12 +42,20 @@ class AsyncErrorState extends StatelessWidget {
           children: [
             Icon(icon, size: 30, color: Colors.white.withValues(alpha: 0.30)),
             const SizedBox(height: 12),
-            Text(
-              message,
-              textAlign: TextAlign.center,
-              // textPrimary, not a dim grey — AA contrast on OLED black.
-              style: AppText.rowLabel(color: AppColors.textPrimary)
-                  .copyWith(height: 1.4),
+            // liveRegion: this widget replaces a skeleton in place, so without
+            // an announcement the screen silently swaps loading for failure
+            // and a screen-reader user is never told anything went wrong.
+            // Only the message is a live region — the retry button keeps its
+            // own button semantics and must not be swallowed.
+            Semantics(
+              liveRegion: true,
+              child: Text(
+                message,
+                textAlign: TextAlign.center,
+                // textPrimary, not a dim grey — AA contrast on OLED black.
+                style: AppText.rowLabel(color: AppColors.textPrimary)
+                    .copyWith(height: 1.4),
+              ),
             ),
             if (onRetry != null) ...[
               const SizedBox(height: 14),

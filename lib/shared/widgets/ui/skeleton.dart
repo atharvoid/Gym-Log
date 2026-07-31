@@ -5,9 +5,25 @@ import 'app_card.dart';
 
 /// Soft-pulsing skeleton bone. One shared animation phase per subtree via
 /// [SkeletonPulse] so bones breathe in unison instead of flickering apart.
+///
+/// [SkeletonPulse] is also the single place the app declares what a loading
+/// state *sounds* like. Wrap every skeleton tree in one.
 class SkeletonPulse extends StatefulWidget {
   final Widget child;
-  const SkeletonPulse({super.key, required this.child});
+
+  /// Announced to screen readers for as long as this skeleton is on screen.
+  ///
+  /// The bones publish no text of their own, so without this a loading
+  /// screen is indistinguishable from an empty one under TalkBack: there is
+  /// simply nothing to focus. Override with something specific to the
+  /// surface ("Loading your workouts") where the generic default is vague.
+  final String label;
+
+  const SkeletonPulse({
+    super.key,
+    required this.child,
+    this.label = 'Loading',
+  });
 
   @override
   State<SkeletonPulse> createState() => _SkeletonPulseState();
@@ -32,12 +48,26 @@ class _SkeletonPulseState extends State<SkeletonPulse>
     // against pure-black OLED — they read as "content arriving", not blank.
     // Reduce-motion: hold steady at full opacity instead of pulsing.
     final reduceMotion = MediaQuery.disableAnimationsOf(context);
-    if (reduceMotion) return widget.child;
-    return FadeTransition(
-      opacity: Tween<double>(begin: 0.70, end: 1.0).animate(
-        CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
-      ),
-      child: widget.child,
+    final Widget bones = reduceMotion
+        ? widget.child
+        : FadeTransition(
+            opacity: Tween<double>(begin: 0.70, end: 1.0).animate(
+              CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+            ),
+            child: widget.child,
+          );
+
+    // The bones are decorative by definition and carry no tap actions, so
+    // excluding them is safe here — this is deliberately NOT the mistake made
+    // on the nav bar in C30, where excludeSemantics threw away a child's
+    // activate action along with its label. Nothing inside a skeleton is
+    // interactive; without the exclusion a screen reader would otherwise
+    // sweep through a dozen unlabelled empty boxes.
+    return Semantics(
+      container: true,
+      liveRegion: true,
+      label: widget.label,
+      child: ExcludeSemantics(child: bones),
     );
   }
 }
