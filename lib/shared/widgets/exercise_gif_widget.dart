@@ -13,6 +13,10 @@ class ExerciseGifWidget extends StatelessWidget {
   final BorderRadius borderRadius;
   final bool animate;
 
+  /// What a screen reader should call this animation. Optional and added last
+  /// so no existing call site changes; when null the generic label is used.
+  final String? semanticLabel;
+
   const ExerciseGifWidget({
     super.key,
     required this.gifUrl,
@@ -21,12 +25,16 @@ class ExerciseGifWidget extends StatelessWidget {
     this.fit = BoxFit.contain,
     this.borderRadius = const BorderRadius.all(Radius.circular(12)),
     this.animate = true,
+    this.semanticLabel,
   });
+
+  String get _label => semanticLabel ?? 'Exercise demonstration';
 
   @override
   Widget build(BuildContext context) {
     if (gifUrl == null || gifUrl!.isEmpty) {
-      return _buildFallback();
+      // No media in the catalog for this exercise. Permanent, not a failure.
+      return _buildFallback(failed: false);
     }
 
     final reduceMotion =
@@ -44,6 +52,16 @@ class ExerciseGifWidget extends StatelessWidget {
           fit: fit,
           memCacheWidth:
               width != null && width! > 0 ? (width! * 2).toInt() : 512,
+          imageBuilder: (context, imageProvider) => Semantics(
+            image: true,
+            label: _label,
+            child: Image(
+              image: imageProvider,
+              width: width,
+              height: height,
+              fit: fit,
+            ),
+          ),
           placeholder: (context, url) => _buildPlaceholder(),
           errorWidget: (context, url, error) {
             debugPrint(
@@ -51,7 +69,7 @@ class ExerciseGifWidget extends StatelessWidget {
               '  URL  : $url\n'
               '  Error: $error',
             );
-            return _buildFallback();
+            return _buildFallback(failed: true);
           },
         ),
       );
@@ -68,14 +86,22 @@ class ExerciseGifWidget extends StatelessWidget {
           borderRadius: borderRadius,
           child: frameAsync.when(
             loading: () => _buildPlaceholder(),
-            error: (_, __) => _buildFallback(),
+            error: (_, __) => _buildFallback(failed: true),
             data: (img) {
-              if (img == null) return _buildFallback();
-              return RawImage(
-                image: img,
-                width: width,
-                height: height,
-                fit: fit,
+              // A null frame means the fetch or decode gave up — that is a
+              // failure, not an exercise without media (B19-F4).
+              if (img == null) return _buildFallback(failed: true);
+              return Semantics(
+                image: true,
+                label: _label,
+                child: RawImage(
+                  // Borrowed from the shared bounded frame cache; never
+                  // disposed here (see gif_last_frame_provider).
+                  image: img,
+                  width: width,
+                  height: height,
+                  fit: fit,
+                ),
               );
             },
           ),
@@ -85,41 +111,59 @@ class ExerciseGifWidget extends StatelessWidget {
   }
 
   Widget _buildPlaceholder() {
-    return Container(
-      width: width,
-      height: height,
-      decoration: BoxDecoration(
-        color: AppColors.bgSurface,
-        borderRadius: borderRadius,
-      ),
-      // Color intentionally omitted — inherits the active palette base via
-      // app_theme's progressIndicatorTheme, so the spinner tracks the user's
-      // chosen accent instead of a hardcoded purple.
-      child: const Center(
-        child: SizedBox(
-          width: 28,
-          height: 28,
-          child: CircularProgressIndicator(
-            strokeWidth: 2.5,
+    return Semantics(
+      label: 'Loading exercise demonstration',
+      child: ExcludeSemantics(
+        child: Container(
+          width: width,
+          height: height,
+          decoration: BoxDecoration(
+            color: AppColors.bgSurface,
+            borderRadius: borderRadius,
+          ),
+          // Color intentionally omitted — inherits the active palette base via
+          // app_theme's progressIndicatorTheme, so the spinner tracks the user's
+          // chosen accent instead of a hardcoded purple.
+          child: const Center(
+            child: SizedBox(
+              width: 28,
+              height: 28,
+              child: CircularProgressIndicator(
+                strokeWidth: 2.5,
+              ),
+            ),
           ),
         ),
       ),
     );
   }
 
-  Widget _buildFallback() {
-    return Container(
-      width: width,
-      height: height,
-      decoration: BoxDecoration(
-        color: AppColors.bgSurface,
-        borderRadius: borderRadius,
-      ),
-      child: const Center(
-        child: Icon(
-          Icons.fitness_center_rounded,
-          color: AppColors.textSecondary,
-          size: 48,
+  /// [failed] false = this exercise has no animation at all (nothing is wrong).
+  /// [failed] true  = an animation exists but could not be fetched or decoded.
+  /// These used to render identically, which left the user unable to tell a
+  /// gap in the catalog from a dropped network request.
+  Widget _buildFallback({required bool failed}) {
+    return Semantics(
+      label: failed
+          ? 'Exercise demonstration could not be loaded'
+          : 'No demonstration available for this exercise',
+      child: ExcludeSemantics(
+        child: Container(
+          width: width,
+          height: height,
+          decoration: BoxDecoration(
+            color: AppColors.bgSurface,
+            borderRadius: borderRadius,
+          ),
+          child: Center(
+            child: Icon(
+              failed
+                  ? Icons.broken_image_rounded
+                  : Icons.fitness_center_rounded,
+              color: AppColors.textSecondary,
+              size: 48,
+            ),
+          ),
         ),
       ),
     );

@@ -17,12 +17,18 @@ class ExerciseHeroImage extends ConsumerStatefulWidget {
   final int exerciseId;
   final double height;
   final bool enableHero;
+
+  /// What a screen reader should call this banner. Optional and added last so
+  /// no existing call site changes; pass the exercise name where it is known.
+  final String? semanticLabel;
+
   const ExerciseHeroImage({
     super.key,
     required this.gifUrl,
     required this.exerciseId,
     this.height = 220,
     this.enableHero = true,
+    this.semanticLabel,
   });
 
   @override
@@ -58,6 +64,7 @@ class _ExerciseHeroImageState extends ConsumerState<ExerciseHeroImage> {
   Widget build(BuildContext context) {
     final reduceMotion = MediaQuery.disableAnimationsOf(context);
     final showAnimated = _showAnimated && !reduceMotion;
+    final hasMedia = widget.gifUrl != null && widget.gifUrl!.isNotEmpty;
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -74,9 +81,7 @@ class _ExerciseHeroImageState extends ConsumerState<ExerciseHeroImage> {
                 fit: StackFit.expand,
                 children: [
                   _Poster(gifUrl: widget.gifUrl),
-                  if (showAnimated &&
-                      widget.gifUrl != null &&
-                      widget.gifUrl!.isNotEmpty)
+                  if (showAnimated && hasMedia)
                     AnimatedOpacity(
                       opacity: 1,
                       duration: Duration(milliseconds: reduceMotion ? 0 : 220),
@@ -95,8 +100,24 @@ class _ExerciseHeroImageState extends ConsumerState<ExerciseHeroImage> {
             ),
           ),
         );
-        if (!widget.enableHero || reduceMotion) return box;
-        return Hero(tag: 'exercise-hero-${widget.exerciseId}', child: box);
+
+        final Widget hero = (!widget.enableHero || reduceMotion)
+            ? box
+            : Hero(tag: 'exercise-hero-${widget.exerciseId}', child: box);
+
+        // The largest element on the detail screen published nothing to a
+        // screen reader (B19-F5). It is meaningful content — it is the only
+        // thing that shows how the movement is performed — so it gets an image
+        // role and a label. Applied outside the Hero so the flight geometry is
+        // untouched.
+        return Semantics(
+          container: true,
+          image: true,
+          label: hasMedia
+              ? (widget.semanticLabel ?? 'Exercise demonstration')
+              : 'No demonstration available for this exercise',
+          child: hero,
+        );
       },
     );
   }
@@ -112,19 +133,33 @@ class _Poster extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final url = gifUrl;
     if (url == null || url.isEmpty) {
-      return const Center(child: _FallbackIcon());
+      return const Center(child: _FallbackIcon(failed: false));
     }
-    final frame = ref
-        .watch(gifLastFrameProvider((url: url, targetWidth: null)))
-        .valueOrNull;
-    if (frame == null) return const SizedBox.shrink();
-    return RawImage(image: frame, fit: BoxFit.contain);
+    // Previously .valueOrNull, which flattened "still decoding", "decode
+    // failed" and "no frames" into one blank box (B19-F4). Loading stays blank
+    // by design — the no-spinner Hero contract — but a real failure now shows
+    // a distinct glyph instead of an empty canvas the user cannot interpret.
+    return ref.watch(gifLastFrameProvider((url: url, targetWidth: null))).when(
+          loading: () => const SizedBox.shrink(),
+          error: (_, __) => const Center(child: _FallbackIcon(failed: true)),
+          data: (frame) => frame == null
+              ? const Center(child: _FallbackIcon(failed: true))
+              // Borrowed from the shared bounded frame cache; never disposed
+              // here (see gif_last_frame_provider).
+              : RawImage(image: frame, fit: BoxFit.contain),
+        );
   }
 }
 
 class _FallbackIcon extends StatelessWidget {
-  const _FallbackIcon();
+  const _FallbackIcon({required this.failed});
+
+  final bool failed;
+
   @override
-  Widget build(BuildContext context) => const Icon(Icons.fitness_center_rounded,
-      color: AppColors.thumbIcon, size: 48);
+  Widget build(BuildContext context) => Icon(
+        failed ? Icons.broken_image_rounded : Icons.fitness_center_rounded,
+        color: AppColors.thumbIcon,
+        size: 48,
+      );
 }
