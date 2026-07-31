@@ -7,6 +7,7 @@ import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 import 'package:gymlog/core/theme/app_colors.dart';
 import 'package:gymlog/core/theme/app_text.dart';
@@ -87,6 +88,16 @@ class _ProfileAvatarState extends State<ProfileAvatar> {
         content: Text(msg, style: AppText.button()),
         backgroundColor: bgSurface,
         behavior: SnackBarBehavior.floating,
+        // C39: telling the user to "check Settings" with no way to get there
+        // left every denied-permission pick a dead end. openAppSettings
+        // (permission_handler) opens this app's own OS settings page
+        // directly, same as the Notifications row in Settings now does.
+        action: SnackBarAction(
+          label: 'Open Settings',
+          onPressed: () {
+            openAppSettings();
+          },
+        ),
       ));
       return;
     }
@@ -181,6 +192,14 @@ class _ProfileAvatarState extends State<ProfileAvatar> {
                 onTap: () {
                   Navigator.of(sheetCtx).pop();
                   _pickImage(ImageSource.gallery);
+                },
+              ),
+              _SheetOption(
+                icon: Icons.camera_alt_rounded,
+                label: 'Take Photo',
+                onTap: () {
+                  Navigator.of(sheetCtx).pop();
+                  _pickImage(ImageSource.camera);
                 },
               ),
               if (hasImage)
