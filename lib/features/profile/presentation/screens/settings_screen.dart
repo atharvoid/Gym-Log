@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -25,6 +26,7 @@ import 'package:gymlog/shared/widgets/premium_paywall.dart';
 import 'package:gymlog/shared/widgets/ui/app_action_row.dart';
 import 'package:gymlog/shared/widgets/ui/app_card.dart';
 import 'package:gymlog/shared/widgets/ui/app_dialog.dart';
+import 'package:gymlog/shared/widgets/ui/app_snack_bar.dart';
 import 'package:gymlog/shared/widgets/ui/branded_bottom_sheet.dart';
 import 'package:gymlog/shared/widgets/ui/duration_slider.dart';
 import 'package:gymlog/shared/widgets/ui/time_range_filter.dart';
@@ -55,7 +57,7 @@ Future<void> showWeeklyGoalSheet(BuildContext context, WidgetRef ref) async {
               child: Semantics(
                 button: true,
                 selected: days == current,
-                toggled: days == current,
+                excludeSemantics: true,
                 label: '$days day${days == 1 ? '' : 's'} per week',
                 child: GestureDetector(
                   onTap: () {
@@ -115,11 +117,17 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   Future<void> _loadSyncPref() async {
-    final prefs = await SharedPreferences.getInstance();
+    // A preferences read should never be able to take the screen down. If it
+    // fails we fall back to the same default the getter already used.
+    var enabled = true;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      enabled = prefs.getBool(kSyncEnabledKey) ?? true;
+    } catch (_) {
+      enabled = true;
+    }
     if (mounted) {
-      setState(() {
-        _syncEnabled = prefs.getBool(kSyncEnabledKey) ?? true;
-      });
+      setState(() => _syncEnabled = enabled);
     }
   }
 
@@ -132,14 +140,27 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     HapticFeedback.selectionClick();
     final gate = ref.read(syncEntitlementGateProvider);
     final engine = ref.read(syncEngineProvider);
+    final previous = _syncEnabled;
 
-    await gate.setSyncEnabled(value);
-    if (mounted) setState(() => _syncEnabled = value);
+    try {
+      await gate.setSyncEnabled(value);
+      if (mounted) setState(() => _syncEnabled = value);
 
-    if (!value) {
-      engine.pauseSync(userId);
-    } else {
-      await engine.resumeSync(userId, isPremium: isPremium);
+      if (!value) {
+        engine.pauseSync(userId);
+      } else {
+        await engine.resumeSync(userId, isPremium: isPremium);
+      }
+    } catch (_) {
+      // The switch must not sit in a position the engine never reached. A
+      // toggle reading ON over a sync that failed to resume is a silent
+      // data-loss story: the user believes they are backed up.
+      if (!mounted) return;
+      setState(() => _syncEnabled = previous);
+      showAppSnackBar(
+        context,
+        message: "Couldn't change sync. Please try again.",
+      );
     }
   }
 
@@ -233,24 +254,32 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                             onTap: () async {
                               if (!tapGuard()) return;
                               HapticFeedback.lightImpact();
-                              final messenger = ScaffoldMessenger.of(context);
                               final service = ref.read(premiumServiceProvider);
                               final info = await service.getCustomerInfo();
                               final urlString = info?.managementURL;
-                              if (urlString != null) {
-                                final Uri url = Uri.parse(urlString);
-                                if (await canLaunchUrl(url)) {
-                                  await launchUrl(url,
-                                      mode: LaunchMode.externalApplication);
-                                }
-                              } else {
-                                messenger.showSnackBar(
-                                  const SnackBar(
-                                    content:
-                                        Text('No active subscription found.'),
-                                  ),
+                              if (!context.mounted) return;
+                              if (urlString == null) {
+                                showAppSnackBar(
+                                  context,
+                                  message: 'No active subscription found.',
                                 );
+                                return;
                               }
+                              var opened = false;
+                              try {
+                                opened = await launchUrl(
+                                  Uri.parse(urlString),
+                                  mode: LaunchMode.externalApplication,
+                                );
+                              } catch (_) {
+                                opened = false;
+                              }
+                              if (opened || !context.mounted) return;
+                              showAppSnackBar(
+                                context,
+                                message:
+                                    "Couldn't open the subscription page.",
+                              );
                             },
                           ),
                         ],
@@ -263,36 +292,29 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           onTap: () async {
                             if (!tapGuard()) return;
                             HapticFeedback.lightImpact();
-                            final messenger = ScaffoldMessenger.of(context);
-                            final bgSurface = context.surface.bgSurface;
                             try {
                               final service = ref.read(premiumServiceProvider);
                               final info = await service.restorePurchases();
+                              if (!context.mounted) return;
                               if (info != null && hasPremium(info)) {
-                                messenger.showSnackBar(SnackBar(
-                                  content: Text(
+                                showAppSnackBar(
+                                  context,
+                                  message:
                                       'Purchases restored successfully. You are now Pro!',
-                                      style: AppText.button()),
-                                  backgroundColor: bgSurface,
-                                  behavior: SnackBarBehavior.floating,
-                                ));
+                                );
                               } else {
-                                messenger.showSnackBar(SnackBar(
-                                  content: Text(
+                                showAppSnackBar(
+                                  context,
+                                  message:
                                       'No active purchases found to restore.',
-                                      style: AppText.button()),
-                                  backgroundColor: bgSurface,
-                                  behavior: SnackBarBehavior.floating,
-                                ));
+                                );
                               }
-                            } catch (e) {
-                              messenger.showSnackBar(SnackBar(
-                                content: Text(
-                                    'Restore failed. Please try again.',
-                                    style: AppText.button()),
-                                backgroundColor: bgSurface,
-                                behavior: SnackBarBehavior.floating,
-                              ));
+                            } catch (_) {
+                              if (!context.mounted) return;
+                              showAppSnackBar(
+                                context,
+                                message: 'Restore failed. Please try again.',
+                              );
                             }
                           },
                         ),
@@ -389,15 +411,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                             HapticFeedback.lightImpact();
                             await ExerciseMediaCacheManager().clearMediaCache();
                             if (!context.mounted) return;
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  'Exercise media cache cleared',
-                                  style: AppText.button(),
-                                ),
-                                backgroundColor: context.surface.bgSurface,
-                                behavior: SnackBarBehavior.floating,
-                              ),
+                            showAppSnackBar(
+                              context,
+                              message: 'Exercise media cache cleared',
                             );
                           },
                         ),
@@ -575,6 +591,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           onTap: () {
                             if (!tapGuard()) return;
                             HapticFeedback.lightImpact();
+                            // Sentry smoke test: five taps throw on purpose.
+                            // DEBUG ONLY. Shipped unguarded, this handed a
+                            // real uncaught StateError to any user curious
+                            // enough to tap the version number five times.
+                            if (!kDebugMode) return;
                             setState(() {
                               _devTapCount++;
                               if (_devTapCount >= 5) {
@@ -840,14 +861,10 @@ void _openPremium(BuildContext context, {required bool isPremium}) {
   if (!tapGuard()) return;
   if (isPremium) {
     HapticFeedback.lightImpact();
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text(
-        'You are on GymLog Pro. Thanks for the support!',
-        style: AppText.button(),
-      ),
-      backgroundColor: context.surface.bgSurface,
-      behavior: SnackBarBehavior.floating,
-    ));
+    showAppSnackBar(
+      context,
+      message: 'You are on GymLog Pro. Thanks for the support!',
+    );
   } else {
     showPremiumPaywall(context);
   }
@@ -856,8 +873,6 @@ void _openPremium(BuildContext context, {required bool isPremium}) {
 Future<void> _exportWorkouts(BuildContext context, WidgetRef ref, String userId,
     String displayName) async {
   HapticFeedback.lightImpact();
-  final messenger = ScaffoldMessenger.of(context);
-  final bgSurface = context.surface.bgSurface;
   try {
     final service = WorkoutExportService(ref.read(databaseProvider));
     final file = await service.writeCsvFile(userId);
@@ -867,15 +882,9 @@ Future<void> _exportWorkouts(BuildContext context, WidgetRef ref, String userId,
       subject: 'GymLog workout export$who',
       text: 'GymLog training history$who',
     ));
-  } catch (e) {
-    messenger.showSnackBar(SnackBar(
-      content: Text(
-        'Export failed. Please try again.',
-        style: AppText.button(),
-      ),
-      backgroundColor: bgSurface,
-      behavior: SnackBarBehavior.floating,
-    ));
+  } catch (_) {
+    if (!context.mounted) return;
+    showAppSnackBar(context, message: 'Export failed. Please try again.');
   }
 }
 
@@ -898,22 +907,21 @@ void _showDataInfo(BuildContext context, bool isPremium) {
   );
 }
 
+/// launchUrl THROWS a PlatformException when the platform has no handler for
+/// the scheme - it does not merely return false. The original code inspected
+/// only the bool, so on a device with no browser the Privacy Policy and Terms
+/// rows raised an uncaught async exception and told the user nothing at all.
 Future<void> _openExternalUrl(BuildContext context, String url) async {
   HapticFeedback.lightImpact();
-  final messenger = ScaffoldMessenger.of(context);
-  final bgSurface = context.surface.bgSurface;
-  final ok = await launchUrl(
-    Uri.parse(url),
-    mode: LaunchMode.externalApplication,
-  );
-  if (!ok) {
-    messenger.showSnackBar(SnackBar(
-      content: Text(
-        'Could not open link.',
-        style: AppText.button(),
-      ),
-      backgroundColor: bgSurface,
-      behavior: SnackBarBehavior.floating,
-    ));
+  var opened = false;
+  try {
+    opened = await launchUrl(
+      Uri.parse(url),
+      mode: LaunchMode.externalApplication,
+    );
+  } catch (_) {
+    opened = false;
   }
+  if (opened || !context.mounted) return;
+  showAppSnackBar(context, message: "Couldn't open the link.");
 }
