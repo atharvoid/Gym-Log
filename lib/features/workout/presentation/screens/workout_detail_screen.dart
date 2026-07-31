@@ -53,6 +53,9 @@ class WorkoutDetailScreen extends ConsumerWidget {
 
   // ── State shells ───────────────────────────────────────────────────────────
 
+  // C32: loading/error states now share the same AdaptiveContent width cap
+  // as the loaded state below, so a slow or failed load no longer flashes
+  // full-bleed content on tablets/foldables before snapping narrower.
   Widget _buildLoading(BuildContext context) => Scaffold(
         backgroundColor: context.surface.bgBase,
         appBar: AppBar(
@@ -60,22 +63,24 @@ class WorkoutDetailScreen extends ConsumerWidget {
           scrolledUnderElevation: 0,
           leading: BackButton(color: context.surface.textPrimary),
         ),
-        body: SkeletonPulse(
-          label: 'Loading this workout',
-          child: ListView(
-            physics: const NeverScrollableScrollPhysics(),
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
-            children: const [
-              SkeletonBox(width: 180, height: 24),
-              SizedBox(height: 8),
-              SkeletonBox(width: 120, height: 13),
-              SizedBox(height: 24),
-              SkeletonBox(height: 8, radius: AppRadius.badge),
-              SizedBox(height: 20),
-              _DetailCardSkeleton(),
-              SizedBox(height: 12),
-              _DetailCardSkeleton(),
-            ],
+        body: AdaptiveContent(
+          child: SkeletonPulse(
+            label: 'Loading this workout',
+            child: ListView(
+              physics: const NeverScrollableScrollPhysics(),
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+              children: const [
+                SkeletonBox(width: 180, height: 24),
+                SizedBox(height: 8),
+                SkeletonBox(width: 120, height: 13),
+                SizedBox(height: 24),
+                SkeletonBox(height: 8, radius: AppRadius.badge),
+                SizedBox(height: 20),
+                _DetailCardSkeleton(),
+                SizedBox(height: 12),
+                _DetailCardSkeleton(),
+              ],
+            ),
           ),
         ),
       );
@@ -87,13 +92,15 @@ class WorkoutDetailScreen extends ConsumerWidget {
           scrolledUnderElevation: 0,
           leading: BackButton(color: context.surface.textPrimary),
         ),
-        body: AsyncErrorState(
-          message:
-              "Couldn't load this workout. Your data is safe on this device.",
-          onRetry: () {
-            HapticFeedback.lightImpact();
-            ref.invalidate(workoutDetailProvider(sessionId));
-          },
+        body: AdaptiveContent(
+          child: AsyncErrorState(
+            message:
+                "Couldn't load this workout. Your data is safe on this device.",
+            onRetry: () {
+              HapticFeedback.lightImpact();
+              ref.invalidate(workoutDetailProvider(sessionId));
+            },
+          ),
         ),
       );
 
@@ -131,46 +138,45 @@ class WorkoutDetailScreen extends ConsumerWidget {
       heroEnabledList.add(seen.add(ex.exerciseMetadata.id));
     }
 
-    // ConstrainedBox keeps the column readable on tablets/foldables (this
-    // screen is pushed outside the shell, which caps width at 600 elsewhere).
-    return Center(
-      child: ConstrainedBox(
-        constraints: BoxConstraints(maxWidth: context.adaptive.contentMaxWidth),
-        // Physics intentionally unset → platform-aware via ScrollConfiguration
-        // (iOS bounce, Android stretch). Was hardcoded BouncingScrollPhysics.
-        child: CustomScrollView(
-          slivers: [
-            WorkoutHeroSliver(
-              // RC3-09: Hero flying-title animation removed — pass null so
-              // the sliver renders a plain Text with no Hero widget.
-              workoutId: null,
-              name: name,
-              dateStr: dateStr,
-              durationStr: durationStr,
-              volumeStr: volumeStr,
-              totalSets: totalSets,
-              onMoreTap: () => _showActions(context, ref, workout),
-            ),
-            SliverToBoxAdapter(
-              child: MuscleSplitSection(muscleSetCounts: muscleSetCounts),
-            ),
-            const SliverToBoxAdapter(child: SizedBox(height: 12)),
-            SliverList(
-              delegate: SliverChildListDelegate([
-                for (int i = 0; i < workout.exercises.length; i++)
-                  DetailExerciseCard(
-                    key: ValueKey(workout.exercises[i].workoutExercise.id),
-                    hydratedExercise: workout.exercises[i],
-                    enableHero: heroEnabledList[i],
-                  ),
-              ]),
-            ),
-            SliverToBoxAdapter(
-              child:
-                  SizedBox(height: 24 + MediaQuery.paddingOf(context).bottom),
-            ),
-          ],
-        ),
+    // C32: was a manual Center(ConstrainedBox(...)) duplicating the
+    // AdaptiveContent token used everywhere else -- switched to the shared
+    // widget so the loading/error states above (and any future change to
+    // the content width) stay in sync with this screen automatically.
+    return AdaptiveContent(
+      // Physics intentionally unset → platform-aware via ScrollConfiguration
+      // (iOS bounce, Android stretch). Was hardcoded BouncingScrollPhysics.
+      child: CustomScrollView(
+        slivers: [
+          WorkoutHeroSliver(
+            // RC3-09: Hero flying-title animation removed — pass null so
+            // the sliver renders a plain Text with no Hero widget.
+            workoutId: null,
+            name: name,
+            dateStr: dateStr,
+            durationStr: durationStr,
+            volumeStr: volumeStr,
+            totalSets: totalSets,
+            onMoreTap: () => _showActions(context, ref, workout),
+          ),
+          SliverToBoxAdapter(
+            child: MuscleSplitSection(muscleSetCounts: muscleSetCounts),
+          ),
+          const SliverToBoxAdapter(child: SizedBox(height: 12)),
+          SliverList(
+            delegate: SliverChildListDelegate([
+              for (int i = 0; i < workout.exercises.length; i++)
+                DetailExerciseCard(
+                  key: ValueKey(workout.exercises[i].workoutExercise.id),
+                  hydratedExercise: workout.exercises[i],
+                  enableHero: heroEnabledList[i],
+                ),
+            ]),
+          ),
+          SliverToBoxAdapter(
+            child:
+                SizedBox(height: 24 + MediaQuery.paddingOf(context).bottom),
+          ),
+        ],
       ),
     );
   }
