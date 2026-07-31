@@ -356,7 +356,14 @@ abstract class AppText {
           color: color,
           shadows: shadows);
 
-  /// Label / badge style (uppercase subheadlines/badges): 12 / 500.
+  /// Label / badge style (uppercase subheadlines/badges): 12 / 600.
+  /// C37-F2: was FontWeight.w500 (Inter Medium), which isn't one of the
+  /// three weights bundled in assets/google_fonts/ (Bold/Regular/SemiBold).
+  /// GoogleFonts.inter() silently falls back to a runtime network fetch for
+  /// any weight it can't find locally, so every label() call was quietly
+  /// depending on network access this app's font-bundling strategy exists to
+  /// avoid. w600 matches this class's own documented weight set and the
+  /// other all-caps label styles (groupHeader, columnHeader).
   static TextStyle label({
     Color color = AppColors.textSecondary,
     double letterSpacing = 0.0,
@@ -364,7 +371,7 @@ abstract class AppText {
   }) =>
       GoogleFonts.inter(
         fontSize: 12,
-        fontWeight: FontWeight.w500,
+        fontWeight: FontWeight.w600,
         color: color,
         letterSpacing: letterSpacing,
         shadows: shadows,
