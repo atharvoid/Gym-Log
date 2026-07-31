@@ -31,10 +31,15 @@ const List<String> kDestructiveVerbs = <String>[
 ///
 /// COLOR CONTRACT — this is the only place in a confirm flow allowed to read
 /// [BuildContext.accent]:
-///   * `isDestructive: false` → informational. Icon wash, icon, and confirm
-///     fill track the user's accent palette.
-///   * `isDestructive: true`  → danger. Everything is [AppColors.error], which
-///     is a FIXED semantic and never follows the brand accent.
+///   * `isDestructive: false` → informational. Icon wash, icon, TITLE, and
+///     confirm fill track the user's accent palette.
+///   * `isDestructive: true`  → danger. Everything — icon, icon wash, TITLE,
+///     confirm fill, confirm hairline — is [AppColors.error], which is a FIXED
+///     semantic and never follows the brand accent.
+///
+/// The title is called out in both branches deliberately. It was the one
+/// element that stayed `accent.base` unconditionally, which put a lime
+/// "Delete Workout?" headline above a red icon and a red confirm button.
 ///
 /// Why the guard below exists: the default accent palette is Volt (#C8FF00, an
 /// electric lime). A destructive confirm that forgets `isDestructive: true`
@@ -94,6 +99,9 @@ Future<bool> showAppConfirmDialog({
           : Icon(Icons.info_outline_rounded, size: 36, color: accent.light);
       final confirmBg = isDestructive ? AppColors.error : accent.base;
       final bottomInset = MediaQuery.viewPaddingOf(sheetCtx).bottom;
+      // The headline follows the same semantic as the rest of the dialog.
+      // Danger is red end to end; informational tracks the brand accent.
+      final titleColor = isDestructive ? AppColors.error : accent.base;
       // Informational confirms sit on the accent fill, which may be a very
       // high-luminance color (Volt lime, Cyan, White). Those need dark text.
       final confirmFg = isDestructive ? AppColors.textPrimary : accent.onAccent;
@@ -142,7 +150,7 @@ Future<bool> showAppConfirmDialog({
                 const SizedBox(height: 16),
                 // Title
                 Text(title,
-                    style: AppText.sheetTitle(color: accent.base),
+                    style: AppText.sheetTitle(color: titleColor),
                     textAlign: TextAlign.center),
                 const SizedBox(height: 8),
                 // Message
