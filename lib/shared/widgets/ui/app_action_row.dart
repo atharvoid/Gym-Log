@@ -8,6 +8,22 @@ import 'package:gymlog/core/theme/app_text.dart';
 /// and optional trailing chevron into one Semantics-aware, InkWell-ripple row.
 ///
 /// Replaces the duplicated `_ActionRow` (Profile) and `_Row` (Settings) widgets.
+///
+/// SEMANTICS CONTRACT — see `docs/a11y-semantics-checklist.md` §2.2.
+/// This row publishes exactly ONE node: a button whose label is
+/// "<title>, <subtitle>". Two things make that true and both are load-bearing:
+///
+///   * `excludeSemantics: true` suppresses the child Text nodes. Without it the
+///     wrapper's label is announced and then the title and subtitle are
+///     announced again underneath it — three utterances for one row, on the
+///     two most row-dense screens in the app.
+///   * `onTap` is declared on the Semantics node ITSELF, not left on the
+///     InkWell. Excluding descendants also discards the InkWell's tap action,
+///     which would leave a node that announces as a button and cannot be
+///     activated. That is precisely the nav-bar regression C30 shipped and
+///     then had to repair, so it is spelled out here rather than rediscovered.
+///
+/// Do not "simplify" this by deleting either line. They only work as a pair.
 class AppActionRow extends StatelessWidget {
   final IconData icon;
   final Color? iconColor;
@@ -81,11 +97,16 @@ class AppActionRow extends StatelessWidget {
       ),
     );
 
+    // A row with no onTap is decorative chrome, not a control. It keeps its
+    // children's own nodes so the text is still readable, and declares no
+    // button role it could not honour.
     if (onTap == null) return child;
 
     return Semantics(
       button: true,
+      excludeSemantics: true,
       label: subtitle == null ? title : '$title, $subtitle',
+      onTap: onTap,
       child: child,
     );
   }
