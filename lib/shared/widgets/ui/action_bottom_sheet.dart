@@ -69,12 +69,17 @@ class _ActionBottomSheetContent extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             const SizedBox(height: 12),
+            // 36x4 on borderEmphasis, matching app_dialog exactly. This was
+            // 40x4 on borderDefault, which made the comment above false:
+            // two sheet families sitting on top of each other with visibly
+            // different handles. app_dialog is the reference because it is
+            // the destructive-confirm surface and was audited in A12.
             Container(
-              width: 40,
+              width: 36,
               height: 4,
               decoration: BoxDecoration(
-                color: context.surface.borderDefault,
-                borderRadius: AppRadius.badgeAll,
+                color: context.surface.borderEmphasis,
+                borderRadius: BorderRadius.circular(2),
               ),
             ),
             const SizedBox(height: 20),
@@ -107,6 +112,19 @@ class _ActionBottomSheetContent extends StatelessWidget {
   }
 }
 
+/// SEMANTICS CONTRACT — see `docs/a11y-semantics-checklist.md` §2.2.
+///
+/// A row whose title and subtitle are separate `Text` widgets publishes two
+/// semantics nodes, so a screen reader stops on each half and the button role
+/// belongs to neither. [MergeSemantics] collapses the whole row into one
+/// focusable node and lets the `InkWell`'s tap action attach to it.
+///
+/// This is the third place in the app that needed this fix (C30's chart rows,
+/// B18's exercise rows, now here). [MergeSemantics] is used instead of the
+/// explicit `Semantics(label: '$title, $subtitle')` wrapper that
+/// [AppActionRow] uses: both produce one node, but merging composes the label
+/// out of the text actually on screen, so it cannot drift out of sync the way
+/// a hand-written label can.
 class _ActionSheetItemWidget extends StatelessWidget {
   final ActionSheetItem item;
 
@@ -117,61 +135,70 @@ class _ActionSheetItemWidget extends StatelessWidget {
     final accent = context.accent;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: () => item.onTap(context),
-          borderRadius: AppRadius.buttonPrimaryAll,
-          splashColor: accent.base.withValues(alpha: 0.1),
-          highlightColor: accent.base.withValues(alpha: 0.04),
-          child: SizedBox(
-            height: 56,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8),
-              child: Row(
-                children: [
-                  Container(
-                    width: 40,
-                    height: 40,
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      color: item.iconBackground,
-                      borderRadius: AppRadius.buttonPrimaryAll,
+      child: MergeSemantics(
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: () => item.onTap(context),
+            borderRadius: AppRadius.buttonPrimaryAll,
+            splashColor: accent.base.withValues(alpha: 0.1),
+            highlightColor: accent.base.withValues(alpha: 0.04),
+            // minHeight, not a fixed height. 56 is the touch-target floor,
+            // not a design constant: with kMaxTextScaleFactor now at 2.0
+            // (C31) a title plus a wrapped subtitle no longer fits in 56dp,
+            // and a SizedBox would have clipped it.
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(minHeight: 56),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 8, vertical: 8),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 40,
+                      height: 40,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: item.iconBackground,
+                        borderRadius: AppRadius.buttonPrimaryAll,
+                      ),
+                      child: Icon(item.icon, color: item.iconColor, size: 20),
                     ),
-                    child: Icon(item.icon, color: item.iconColor, size: 20),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          item.title,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          // 16/500 — off the standard scale, so derive the family
-                          // from AppText.button and pin the medium weight here.
-                          style: AppText.button(
-                                  color: item.titleColor ??
-                                      context.surface.textPrimary)
-                              .copyWith(fontWeight: FontWeight.w500),
-                        ),
-                        if (item.subtitle != null) ...[
-                          const SizedBox(height: 2),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
                           Text(
-                            item.subtitle!,
-                            maxLines: 1,
+                            item.title,
+                            maxLines: 2,
                             overflow: TextOverflow.ellipsis,
-                            style: AppText.meta(
-                                color: item.subtitleColor ??
-                                    context.surface.textSecondary),
+                            // 16/500 — off the standard scale, so derive the
+                            // family from AppText.button and pin the medium
+                            // weight here.
+                            style: AppText.button(
+                                    color: item.titleColor ??
+                                        context.surface.textPrimary)
+                                .copyWith(fontWeight: FontWeight.w500),
                           ),
+                          if (item.subtitle != null) ...[
+                            const SizedBox(height: 2),
+                            Text(
+                              item.subtitle!,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: AppText.meta(
+                                  color: item.subtitleColor ??
+                                      context.surface.textSecondary),
+                            ),
+                          ],
                         ],
-                      ],
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
