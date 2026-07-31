@@ -205,6 +205,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         backgroundColor: surface.bgBase,
         body: SafeArea(
           child: SkeletonPulse(
+            label: 'Loading your workouts',
             child: ListView(
               physics: const NeverScrollableScrollPhysics(),
               padding: EdgeInsets.fromLTRB(16, 16, 16, bottomInset + 24),
@@ -422,7 +423,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     if (state.isLoadingMore) {
       return const Padding(
         padding: EdgeInsets.only(top: 4),
-        child: SkeletonPulse(child: WorkoutHistoryCardSkeleton()),
+        child: SkeletonPulse(
+          label: 'Loading more workouts',
+          child: WorkoutHistoryCardSkeleton(),
+        ),
       );
     }
 
