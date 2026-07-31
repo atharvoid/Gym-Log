@@ -10,6 +10,7 @@ import 'package:gymlog/core/providers/premium_provider.dart';
 import 'package:gymlog/core/providers/settings_provider.dart';
 import 'package:gymlog/core/services/sync_engine.dart';
 import 'package:gymlog/core/services/sync_entitlement_gate.dart';
+import 'package:gymlog/core/services/sync_status_provider.dart';
 import 'package:gymlog/core/services/workout_export_service.dart';
 import 'package:gymlog/core/services/sign_out_coordinator.dart';
 import 'package:gymlog/core/services/exercise_media_cache_manager.dart';
@@ -182,11 +183,28 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
     final version = versionAsync.valueOrNull ?? kAppVersionFallback;
 
+    // C35: the engine already tracks phase (syncing/offline/error) and
+    // exposes it live via syncStatusControllerProvider, but until now
+    // nothing watched it — this row's subtitle was static regardless of
+    // whether a sync was in flight, stuck offline, or failing outright. On
+    // a slow or flapping connection that left the user with no signal that
+    // anything was wrong.
+    final syncPhase = ref.watch(syncStatusControllerProvider).valueOrNull?.phase;
+    final syncDegraded =
+        syncPhase == SyncPhase.offline || syncPhase == SyncPhase.error;
+
     final String syncSubtitle;
     if (!isPremium) {
       syncSubtitle = 'Upgrade to Pro to sync across devices';
     } else if (_syncEnabled == false) {
       syncSubtitle = 'Sync paused. Your data stays on this device.';
+    } else if (syncPhase == SyncPhase.syncing) {
+      syncSubtitle = 'Syncing…';
+    } else if (syncPhase == SyncPhase.offline) {
+      syncSubtitle =
+          "Offline — your workouts are saved and will sync when you're back online";
+    } else if (syncPhase == SyncPhase.error) {
+      syncSubtitle = "Couldn't sync. Will retry automatically";
     } else {
       syncSubtitle = 'Backup across devices and protect against data loss';
     }
@@ -452,7 +470,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                                 Icon(
                                   Icons.sync_rounded,
                                   size: 20,
-                                  color: surface.textSecondary,
+                                  color: syncDegraded
+                                      ? Colors.amber
+                                      : surface.textSecondary,
                                 ),
                                 const SizedBox(width: 14),
                                 Expanded(
