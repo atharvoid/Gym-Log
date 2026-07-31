@@ -7,6 +7,7 @@ import 'package:gymlog/core/theme/app_colors.dart';
 import 'package:gymlog/core/theme/app_text.dart';
 import 'package:gymlog/core/theme/dynamic_accent_theme.dart';
 import 'package:gymlog/core/import/import_service.dart';
+import 'package:gymlog/shared/layout/adaptive.dart';
 import 'package:gymlog/shared/widgets/ui/app_dialog.dart';
 
 class ImportScreen extends ConsumerStatefulWidget {
@@ -119,50 +120,56 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
         scrolledUnderElevation: 0,
         leading: BackButton(color: surface.textPrimary),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Import a GymLog backup file exported from this or another device.',
-              style: AppText.body(color: surface.textSecondary),
-            ),
-            const SizedBox(height: 24),
-            if (_summary != null) _SummaryCard(summary: _summary!),
-            if (_error != null) _ErrorCard(message: _error!),
-            if (_status != null)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 16),
-                child: Row(
-                  children: [
-                    const SizedBox(
-                      width: 16,
-                      height: 16,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    ),
-                    const SizedBox(width: 12),
-                    Text(_status!, style: AppText.body(color: surface.textSecondary)),
-                  ],
+      // C32: this route (/settings/import) is pushed outside AppShell and
+      // never opted into the AdaptiveContent width cap -- the summary/error
+      // cards and Choose File button stretched edge-to-edge on
+      // tablets/foldables.
+      body: AdaptiveContent(
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Import a GymLog backup file exported from this or another device.',
+                style: AppText.body(color: surface.textSecondary),
+              ),
+              const SizedBox(height: 24),
+              if (_summary != null) _SummaryCard(summary: _summary!),
+              if (_error != null) _ErrorCard(message: _error!),
+              if (_status != null)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 16),
+                  child: Row(
+                    children: [
+                      const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      ),
+                      const SizedBox(width: 12),
+                      Text(_status!, style: AppText.body(color: surface.textSecondary)),
+                    ],
+                  ),
+                ),
+              SizedBox(
+                width: double.infinity,
+                height: 48,
+                child: ElevatedButton(
+                  onPressed: _busy ? null : _pickAndImport,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: context.accent.base,
+                    foregroundColor: context.accent.onAccent,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                        borderRadius:
+                            BorderRadius.circular(AppRadius.buttonPrimary)),
+                  ),
+                  child: Text('Choose File', style: AppText.button()),
                 ),
               ),
-            SizedBox(
-              width: double.infinity,
-              height: 48,
-              child: ElevatedButton(
-                onPressed: _busy ? null : _pickAndImport,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: context.accent.base,
-                  foregroundColor: context.accent.onAccent,
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(
-                      borderRadius:
-                          BorderRadius.circular(AppRadius.buttonPrimary)),
-                ),
-                child: Text('Choose File', style: AppText.button()),
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
