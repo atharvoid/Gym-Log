@@ -113,7 +113,7 @@ class WorkoutDraftStore {
       };
       await _storage.write(key: _kDraftKeyV2, value: jsonEncode(data));
     } catch (e) {
-      debugPrint('[WorkoutDraftStore] save failed: $e');
+      if (kDebugMode) debugPrint('[WorkoutDraftStore] save failed: $e');
     }
   }
 
@@ -169,15 +169,19 @@ class WorkoutDraftStore {
       if (currentUserId != null &&
           payloadUserId.isNotEmpty &&
           payloadUserId != currentUserId) {
-        debugPrint(
-            '[WorkoutDraftStore] Ignoring draft from different user ($payloadUserId vs $currentUserId)');
+        if (kDebugMode) {
+          debugPrint(
+              '[WorkoutDraftStore] Ignoring draft from different user ($payloadUserId vs $currentUserId)');
+        }
         return null;
       }
 
       // Stale check (>24 hours)
       if (savedAtMillis > 0 &&
           DateTime.now().difference(savedAt).inHours >= 24) {
-        debugPrint('[WorkoutDraftStore] Draft expired (>24h), clearing.');
+        if (kDebugMode) {
+          debugPrint('[WorkoutDraftStore] Draft expired (>24h), clearing.');
+        }
         await clear();
         return null;
       }
@@ -211,8 +215,10 @@ class WorkoutDraftStore {
         restTimer: restTimerSnapshot,
       );
     } catch (e) {
-      debugPrint(
-          '[WorkoutDraftStore] Corrupted or invalid draft payload: $e. Clearing draft.');
+      if (kDebugMode) {
+        debugPrint(
+            '[WorkoutDraftStore] Corrupted or invalid draft payload: $e. Clearing draft.');
+      }
       await clear();
       return null;
     }
@@ -235,7 +241,7 @@ class WorkoutDraftStore {
 final workoutDraftStoreProvider =
     Provider<WorkoutDraftStore>((_) => WorkoutDraftStore());
 
-// ── Hand-written serialization (mirror the Freezed fields) ──────────────────
+// ── Hand-written serialization (mirror the Freezed fields) ─────────────────
 
 Map<String, dynamic> _setToJson(WorkoutSetState s) => {
       'id': s.id,

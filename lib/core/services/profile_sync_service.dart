@@ -69,7 +69,9 @@ class ProfileSyncService {
       await _db.userDao
           .upsertProfile(id: userId, email: email, displayName: clean);
     } catch (e, st) {
-      debugPrint('[ProfileSyncService] Local upsert failed: $e\n$st');
+      if (kDebugMode) {
+        debugPrint('[ProfileSyncService] Local upsert failed: $e\n$st');
+      }
     }
 
     // 2. Queue the remote intent, then attempt to flush it immediately.
@@ -78,7 +80,9 @@ class ProfileSyncService {
       await _flushPendingOrThrow(userId);
       return true;
     } catch (e, st) {
-      debugPrint('[ProfileSyncService] Remote sync failed: $e\n$st');
+      if (kDebugMode) {
+        debugPrint('[ProfileSyncService] Remote sync failed: $e\n$st');
+      }
       return false;
     }
   }
@@ -154,7 +158,7 @@ class ProfileSyncService {
   /// anytime; a no-op when nothing is queued.
   Future<void> retryPending(String userId) => _flushPending(userId);
 
-  // ── internals ──────────────────────────────────────────
+  // ── internals ───────────────────────
 
   Future<void> _queue(
     String userId,

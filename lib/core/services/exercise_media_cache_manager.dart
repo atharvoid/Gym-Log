@@ -90,7 +90,9 @@ class ExerciseMediaCacheManager extends CacheManager {
       if (!await cacheDir.exists()) return null;
       return cacheDir;
     } catch (e) {
-      debugPrint('[ExerciseMediaCacheManager] cache dir resolve error: $e');
+      if (kDebugMode) {
+        debugPrint('[ExerciseMediaCacheManager] cache dir resolve error: $e');
+      }
       return null;
     }
   }
@@ -141,19 +143,26 @@ class ExerciseMediaCacheManager extends CacheManager {
           await file.delete();
           reclaimed += size;
         } on FileSystemException catch (e) {
-          debugPrint('[ExerciseMediaCacheManager] sweep skip ${file.path}: $e');
+          if (kDebugMode) {
+            debugPrint(
+                '[ExerciseMediaCacheManager] sweep skip ${file.path}: $e');
+          }
         }
       }
 
       if (reclaimed > 0) {
-        debugPrint(
-          '[ExerciseMediaCacheManager] swept ${reclaimed ~/ 1024} KB '
-          'to stay under ${kExerciseMediaMaxCacheBytes ~/ (1024 * 1024)} MB.',
-        );
+        if (kDebugMode) {
+          debugPrint(
+            '[ExerciseMediaCacheManager] swept ${reclaimed ~/ 1024} KB '
+            'to stay under ${kExerciseMediaMaxCacheBytes ~/ (1024 * 1024)} MB.',
+          );
+        }
       }
       return reclaimed;
     } catch (e) {
-      debugPrint('[ExerciseMediaCacheManager] performMaintenance error: $e');
+      if (kDebugMode) {
+        debugPrint('[ExerciseMediaCacheManager] performMaintenance error: $e');
+      }
       return 0;
     }
   }
@@ -163,7 +172,9 @@ class ExerciseMediaCacheManager extends CacheManager {
     try {
       await emptyCache();
     } catch (e) {
-      debugPrint('[ExerciseMediaCacheManager] clearMediaCache error: $e');
+      if (kDebugMode) {
+        debugPrint('[ExerciseMediaCacheManager] clearMediaCache error: $e');
+      }
     }
   }
 
@@ -178,7 +189,9 @@ class ExerciseMediaCacheManager extends CacheManager {
       if (cacheDir == null) return 0;
       return await compute(_sumDirectorySizeSync, cacheDir.path);
     } catch (e) {
-      debugPrint('[ExerciseMediaCacheManager] getCacheSizeBytes error: $e');
+      if (kDebugMode) {
+        debugPrint('[ExerciseMediaCacheManager] getCacheSizeBytes error: $e');
+      }
       return 0;
     }
   }

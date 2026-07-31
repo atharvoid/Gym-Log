@@ -70,7 +70,9 @@ class PremiumService with WidgetsBindingObserver {
 
     final key = _apiKey;
     if (key == null || key.isEmpty) {
-      debugPrint('[PremiumService] No RevenueCat key — running in free mode.');
+      if (kDebugMode) {
+        debugPrint('[PremiumService] No RevenueCat key — running in free mode.');
+      }
       return;
     }
 
@@ -84,7 +86,7 @@ class PremiumService with WidgetsBindingObserver {
       WidgetsBinding.instance.addObserver(this);
       unawaited(refresh());
     } catch (e) {
-      debugPrint('[PremiumService] configure failed: $e');
+      if (kDebugMode) debugPrint('[PremiumService] configure failed: $e');
       _configured = false;
     }
   }
@@ -108,7 +110,7 @@ class PremiumService with WidgetsBindingObserver {
         _onCustomerInfo(result.customerInfo);
       }
     } catch (e) {
-      debugPrint('[PremiumService] setUser failed: $e');
+      if (kDebugMode) debugPrint('[PremiumService] setUser failed: $e');
     }
   }
 
@@ -119,7 +121,7 @@ class PremiumService with WidgetsBindingObserver {
     try {
       _onCustomerInfo(await Purchases.getCustomerInfo());
     } catch (e) {
-      debugPrint('[PremiumService] refresh failed: $e');
+      if (kDebugMode) debugPrint('[PremiumService] refresh failed: $e');
     }
   }
 
@@ -148,7 +150,7 @@ class PremiumService with WidgetsBindingObserver {
       _offeringsFetchedAt = DateTime.now();
       return result;
     } catch (e) {
-      debugPrint('[PremiumService] offerings failed: $e');
+      if (kDebugMode) debugPrint('[PremiumService] offerings failed: $e');
       // Serve stale cache rather than nothing, if we have it.
       return cached;
     }
@@ -163,7 +165,9 @@ class PremiumService with WidgetsBindingObserver {
       final status = result[productId]?.status;
       return status == IntroEligibilityStatus.introEligibilityStatusEligible;
     } catch (e) {
-      debugPrint('[PremiumService] eligibility check failed: $e');
+      if (kDebugMode) {
+        debugPrint('[PremiumService] eligibility check failed: $e');
+      }
       return false;
     }
   }
@@ -235,7 +239,7 @@ class PremiumService with WidgetsBindingObserver {
         premiumExpiry: expiry,
       );
     } catch (e) {
-      debugPrint('[PremiumService] local sync failed: $e');
+      if (kDebugMode) debugPrint('[PremiumService] local sync failed: $e');
     }
   }
 

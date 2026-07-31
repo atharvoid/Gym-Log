@@ -92,7 +92,7 @@ class SyncEngine {
     String? reason,
   }) {
     if (error is TimeoutException) return;
-    debugPrint('[SyncEngine] $operation failed: $error');
+    if (kDebugMode) debugPrint('[SyncEngine] $operation failed: $error');
     unawaited(Sentry.captureException(
       error,
       stackTrace: stackTrace,
@@ -166,7 +166,7 @@ class SyncEngine {
     _setStatus(const SyncStatus(SyncPhase.paused));
   }
 
-  // ── Enqueue ────────────────────────────────────────────────────
+  // ── Enqueue ───────────────────────────────────
 
   Future<void> enqueueSession(String userId, String sessionId) async {
     if (!_isSyncAllowed) return;
@@ -219,7 +219,7 @@ class SyncEngine {
     if (overrides != null) await prefs.setString(_kUnitOverrides, overrides);
   }
 
-  // ── Triggers ──────────────────────────────────────────────────
+  // ── Triggers ───────────────────────────────────
 
   void scheduleSync(String userId, {String reason = 'debounce'}) {
     if (!_isSyncAllowed) return;
@@ -332,9 +332,14 @@ class SyncEngine {
   }) async {
     final objectId = '$entityType:$entityId';
     final now = DateTime.now();
-    // Privacy-safe log: entityType:entityId and reason name ONLY (no payloads/emails/tokens)
-    debugPrint(
-        '[SyncEngine] Quarantined object $objectId (reason: ${reason.name})');
+    // Privacy-safe log: entityType:entityId and reason name ONLY (no
+    // payloads/emails/tokens). Still gated behind kDebugMode (C38) because
+    // "privacy-safe content" and "safe to ship to a production device log"
+    // are different bars — this keeps both.
+    if (kDebugMode) {
+      debugPrint(
+          '[SyncEngine] Quarantined object $objectId (reason: ${reason.name})');
+    }
 
     final record = SyncFailureRecord(
       objectId: objectId,
@@ -502,7 +507,7 @@ class SyncEngine {
   }
 }
 
-// ── Providers ────────────────────────────────────────────────────
+// ── Providers ───────────────────────────────────
 
 /// The Supabase transport.
 ///
