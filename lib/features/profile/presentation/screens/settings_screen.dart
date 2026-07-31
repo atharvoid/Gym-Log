@@ -8,6 +8,7 @@ import 'package:gymlog/core/providers/app_info_provider.dart';
 import 'package:gymlog/core/providers/database_provider.dart';
 import 'package:gymlog/core/providers/premium_provider.dart';
 import 'package:gymlog/core/providers/settings_provider.dart';
+import 'package:gymlog/core/services/notification_service.dart';
 import 'package:gymlog/core/services/sync_engine.dart';
 import 'package:gymlog/core/services/sync_entitlement_gate.dart';
 import 'package:gymlog/core/services/sync_status_provider.dart';
@@ -35,6 +36,7 @@ import 'package:gymlog/core/config/legal_links.dart';
 import 'package:gymlog/shared/widgets/tour/spotlight_tour_overlay.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:gymlog/shared/layout/adaptive.dart';
 
 /// Weekly-goal picker, shared by Settings and the Profile goal ring.
@@ -108,9 +110,16 @@ class SettingsScreen extends ConsumerStatefulWidget {
   ConsumerState<SettingsScreen> createState() => _SettingsScreenState();
 }
 
-class _SettingsScreenState extends ConsumerState<SettingsScreen> {
+class _SettingsScreenState extends ConsumerState<SettingsScreen>
+    with WidgetsBindingObserver {
   bool? _syncEnabled;
   int _devTapCount = 0;
+  // C39: hasPermission() existed with zero call sites anywhere in the app —
+  // once a user denied the cold-start notification prompt (see C36), nothing
+  // in-app could ever show that, or offer a way back. This mirrors it live
+  // and refreshes on resume so returning from the OS Settings app (via the
+  // row below) reflects the change immediately.
+  bool? _notificationsEnabled;
 
   /// Key attached to the Rest timer row — used by the step-3 tour spotlight
   /// so the overlay can locate its screen position from the Settings route.
@@ -119,7 +128,27 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _loadSyncPref();
+    _loadNotificationPermission();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _loadNotificationPermission();
+    }
+  }
+
+  Future<void> _loadNotificationPermission() async {
+    final enabled = await ref.read(notificationServiceProvider).hasPermission();
+    if (mounted) setState(() => _notificationsEnabled = enabled);
   }
 
   Future<void> _loadSyncPref() async {
@@ -392,6 +421,24 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                             if (!tapGuard()) return;
                             HapticFeedback.lightImpact();
                             context.push('/settings/appearance');
+                          },
+                        ),
+                        const AppActionDivider(),
+                        AppActionRow(
+                          icon: _notificationsEnabled == false
+                              ? Icons.notifications_off_outlined
+                              : Icons.notifications_outlined,
+                          iconColor: accent.light,
+                          title: 'Notifications',
+                          subtitle: _notificationsEnabled == null
+                              ? 'Rest timer alerts'
+                              : _notificationsEnabled == true
+                                  ? 'Enabled — rest timer alerts'
+                                  : 'Disabled — tap to enable in Settings',
+                          onTap: () {
+                            if (!tapGuard()) return;
+                            HapticFeedback.lightImpact();
+                            openAppSettings();
                           },
                         ),
                       ],
