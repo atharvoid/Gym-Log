@@ -234,6 +234,7 @@ class _RoutinesLoading extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const SkeletonPulse(
+      label: 'Loading your routines',
       child: Column(
         children: [
           _RoutineCardSkeleton(),

@@ -768,6 +768,7 @@ class _LoadingBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SkeletonPulse(
+      label: 'Loading your profile',
       child: ListView(
         padding: EdgeInsets.fromLTRB(16, 4, 16, bottomClearance),
         children: [

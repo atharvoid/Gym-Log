@@ -61,6 +61,7 @@ class WorkoutDetailScreen extends ConsumerWidget {
           leading: BackButton(color: context.surface.textPrimary),
         ),
         body: SkeletonPulse(
+          label: 'Loading this workout',
           child: ListView(
             physics: const NeverScrollableScrollPhysics(),
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
