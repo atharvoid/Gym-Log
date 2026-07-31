@@ -10,6 +10,7 @@ import 'package:gymlog/core/providers/premium_provider.dart';
 import 'package:gymlog/core/theme/app_colors.dart';
 import 'package:gymlog/core/theme/app_text.dart';
 import 'package:gymlog/core/theme/dynamic_accent_theme.dart';
+import 'package:gymlog/shared/layout/adaptive.dart';
 import 'package:gymlog/shared/widgets/body/muscle_map.dart';
 import 'package:gymlog/features/auth/presentation/providers/auth_provider.dart';
 import 'package:gymlog/features/auth/presentation/providers/tour_provider.dart';
@@ -342,7 +343,14 @@ class _ExploreRoutinesScreenState extends ConsumerState<ExploreRoutinesScreen>
       backgroundColor: surface.bgBase,
       body: Stack(
         children: [
-          CustomScrollView(
+          // C32: this route (/routines/explore) is pushed outside AppShell and
+          // never opted into the AdaptiveContent width cap -- the featured
+          // card and program list stretched edge-to-edge on tablets/
+          // foldables. Only the scroll content is wrapped; the tour overlays
+          // below still need to target buttons at their real on-screen
+          // position, so they are left outside the constraint.
+          AdaptiveContent(
+            child: CustomScrollView(
             slivers: [
               SliverAppBar(
                 pinned: true,
@@ -465,7 +473,7 @@ class _ExploreRoutinesScreenState extends ConsumerState<ExploreRoutinesScreen>
                 ),
               ),
             ],
-          ),
+          )),
           if (tourStep == 1)
             SpotlightTourOverlay(
               targetKey: _importButtonKey,
