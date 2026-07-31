@@ -221,10 +221,10 @@ class SyncEngine {
 
   // ── Triggers ──────────────────────────────────────────────────
 
-  void scheduleSync(String userId) {
+  void scheduleSync(String userId, {String reason = 'debounce'}) {
     if (!_isSyncAllowed) return;
     _debounceTimer?.cancel();
-    _debounceTimer = Timer(debounce, () => syncNow(userId, reason: 'debounce'));
+    _debounceTimer = Timer(debounce, () => syncNow(userId, reason: reason));
   }
 
   Future<void> syncNow(String userId, {String reason = 'manual'}) async {
@@ -480,7 +480,17 @@ class SyncEngine {
     _connSub?.cancel();
     _connSub = Connectivity().onConnectivityChanged.listen((results) {
       final online = results.any((r) => r != ConnectivityResult.none);
-      if (online) syncNow(userId, reason: 'connectivity');
+      // C35: this used to call syncNow() directly on every transition to
+      // online, bypassing the same 5s debounce that already protects the
+      // outbox-triggered path above. onConnectivityChanged fires on every
+      // flap of a marginal connection (elevator, subway, a weak signal
+      // handing off between Wi-Fi and cellular), and each direct call was a
+      // real batch fetch/push against the network with its own 20s
+      // timeout — a burst of flaps could queue up repeated full sync
+      // attempts back to back with nothing new to send in between. Routing
+      // through scheduleSync() coalesces a burst into a single attempt once
+      // the connection settles.
+      if (online) scheduleSync(userId, reason: 'connectivity');
     });
   }
 
