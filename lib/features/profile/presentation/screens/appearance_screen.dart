@@ -7,6 +7,7 @@ import 'package:gymlog/core/theme/app_colors.dart';
 import 'package:gymlog/core/theme/app_text.dart';
 import 'package:gymlog/core/theme/dynamic_accent_theme.dart';
 import 'package:gymlog/core/theme/theme_palette.dart';
+import 'package:gymlog/shared/layout/adaptive.dart';
 
 /// Appearance — the settings sub-screen that houses the accent-color picker.
 ///
@@ -46,46 +47,51 @@ class AppearanceScreen extends ConsumerWidget {
         ),
         title: Text('Appearance', style: AppText.sheetTitle()),
       ),
-      body: ListView(
-        padding: EdgeInsets.fromLTRB(
-            AppSpacing.screenH, 8, AppSpacing.screenH, 24 + bottomInset),
-        children: [
-          Semantics(
-            header: true,
-            child: Text('ACCENT COLOR',
-                style: AppText.columnHeader(color: surface.textSecondary)),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Sets the accent used across buttons, the active tab, charts, and '
-            'highlights. Tap a color — it applies instantly.',
-            style: AppText.caption(color: surface.textTertiary)
-                .copyWith(height: 1.45),
-          ),
-          const SizedBox(height: 22),
-          GridView.count(
-            crossAxisCount: 3,
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            mainAxisSpacing: 20,
-            crossAxisSpacing: 12,
-            childAspectRatio: 0.78,
-            children: [
-              for (final palette in ThemePalette.values)
-                _AccentSwatchTile(
-                  palette: palette,
-                  selected: palette == selected,
-                  onTap: () {
-                    if (palette == selected) return;
-                    HapticFeedback.selectionClick();
-                    ref
-                        .read(dynamicAccentThemeProvider.notifier)
-                        .setPalette(palette);
-                  },
-                ),
-            ],
-          ),
-        ],
+      // C32: this settings sub-screen never opted into the AdaptiveContent
+      // width cap used elsewhere (Settings, Routine Detail) -- the swatch
+      // grid stretched edge-to-edge on tablets/foldables.
+      body: AdaptiveContent(
+        child: ListView(
+          padding: EdgeInsets.fromLTRB(
+              AppSpacing.screenH, 8, AppSpacing.screenH, 24 + bottomInset),
+          children: [
+            Semantics(
+              header: true,
+              child: Text('ACCENT COLOR',
+                  style: AppText.columnHeader(color: surface.textSecondary)),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Sets the accent used across buttons, the active tab, charts, and '
+              'highlights. Tap a color — it applies instantly.',
+              style: AppText.caption(color: surface.textTertiary)
+                  .copyWith(height: 1.45),
+            ),
+            const SizedBox(height: 22),
+            GridView.count(
+              crossAxisCount: 3,
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              mainAxisSpacing: 20,
+              crossAxisSpacing: 12,
+              childAspectRatio: 0.78,
+              children: [
+                for (final palette in ThemePalette.values)
+                  _AccentSwatchTile(
+                    palette: palette,
+                    selected: palette == selected,
+                    onTap: () {
+                      if (palette == selected) return;
+                      HapticFeedback.selectionClick();
+                      ref
+                          .read(dynamicAccentThemeProvider.notifier)
+                          .setPalette(palette);
+                    },
+                  ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
