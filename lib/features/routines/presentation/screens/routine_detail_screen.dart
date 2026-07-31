@@ -70,7 +70,7 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen> {
     super.initState();
   }
 
-  // ── Actions ────────────────────────────────
+  // ── Actions ────────────────────────
 
   void _startRoutine(HydratedRoutineDetail routine) {
     if (!tapGuard()) return;
@@ -212,7 +212,7 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen> {
     ref.invalidate(routineLastSetsProvider(widget.routineId));
   }
 
-  // ── Build ────────────────────────────────
+  // ── Build ────────────────────────
 
   @override
   Widget build(BuildContext context) {
@@ -412,11 +412,12 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen> {
     );
   }
 
-  // ── Loading / error / not-found ────────────────────────────────
+  // ── Loading / error / not-found ────────────────────────
 
   Widget _buildSkeleton() {
     final surface = context.surface;
     return SkeletonPulse(
+      label: 'Loading this routine',
       child: Scaffold(
         backgroundColor: surface.bgBase,
         body: AdaptiveContent(
@@ -615,6 +616,7 @@ class _RoutineVolumeSectionState extends ConsumerState<_RoutineVolumeSection> {
         RepaintBoundary(
           child: volumeAsync.when(
             loading: () => const SkeletonPulse(
+              label: 'Loading volume chart',
               child: SkeletonBox(
                 height: 198,
                 radius: AppRadius.card,
@@ -639,9 +641,9 @@ class _RoutineVolumeSectionState extends ConsumerState<_RoutineVolumeSection> {
   }
 }
 
-// ═══════════════════════════════════════════════════════════════════════
+// ════════════════════════════════════════════════════════════
 // Sub-widgets
-// ═════════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════
 
 class _HeroStatStrip extends StatelessWidget {
   final RoutineSessionStats stats;

@@ -642,6 +642,7 @@ class _LoadingList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SkeletonPulse(
+      label: 'Loading exercises',
       child: ListView.builder(
         physics: const NeverScrollableScrollPhysics(),
         padding: const EdgeInsets.symmetric(vertical: 8),
