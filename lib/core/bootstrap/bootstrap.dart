@@ -210,8 +210,19 @@ abstract final class Bootstrap {
       // completing a completed Completer throws StateError.
       if (!cloudReady.isCompleted) cloudReady.complete(cloudOk);
 
-      // 2. Local notifications initialization (fire-and-forget)
-      unawaited(notificationService.init());
+      // 2. Local notifications initialization (fire-and-forget). Chained
+      //    requestPermissions() after init() — C36-F2 found this method
+      //    existed but had no call site anywhere in the app, so notification
+      //    permission was never actually requested on Android 13+ or iOS and
+      //    the rest-timer background notification could never fire in
+      //    production. Whether this should instead be asked contextually
+      //    (e.g. the first time a rest timer starts) is a product-timing
+      //    question booked to D42, not fixed here.
+      unawaited(
+        notificationService.init().then(
+          (_) => notificationService.requestPermissions(),
+        ),
+      );
 
       // 3. Media cache maintenance (fire-and-forget, no database access)
       unawaited(ExerciseMediaCacheManager().performMaintenance());
