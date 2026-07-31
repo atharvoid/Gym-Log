@@ -155,11 +155,10 @@ class _NavButton extends StatelessWidget {
             const SizedBox(height: 2),
             Text(
               item.label,
-              style: AppText.rowLabel(
-                color: color,
-              ).copyWith(
-                fontSize: 11,
-              ),
+              // Was AppText.rowLabel(...).copyWith(fontSize: 11) — an ad-hoc
+              // override with no named rung. navLabel is the proper 11/600
+              // token for sentence-case nav labels (C28).
+              style: AppText.navLabel(color: color),
             ),
             const SizedBox(height: 3),
             AnimatedContainer(

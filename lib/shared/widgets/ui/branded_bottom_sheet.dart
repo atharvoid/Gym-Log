@@ -19,7 +19,10 @@ class BrandedBottomSheet extends StatelessWidget {
     required this.child,
     this.title,
     this.subtitle,
-    this.padding = const EdgeInsets.fromLTRB(24, 12, 24, 18),
+    // Was EdgeInsets.fromLTRB(24, 12, 24, 18) — 18 matched no AppSpacing rung.
+    // Now reads entirely from the spacing scale (C28).
+    this.padding = const EdgeInsets.fromLTRB(
+        AppSpacing.x6, AppSpacing.x3, AppSpacing.x6, AppSpacing.x5),
     this.scrollable = false,
   });
 
@@ -42,7 +45,10 @@ class BrandedBottomSheet extends StatelessWidget {
                 height: 4,
                 decoration: BoxDecoration(
                   color: accent.base,
-                  borderRadius: BorderRadius.circular(6),
+                  // 2px — matches every other sheet's drag handle (app_dialog,
+                  // action_bottom_sheet, finish_summary_sheet, the in-screen
+                  // reorder sheet). This one alone had drifted to 6 (C28).
+                  borderRadius: BorderRadius.circular(2),
                 ),
               ),
             ),

@@ -161,7 +161,11 @@ Future<bool> showAppConfirmDialog({
                 // Confirm button
                 SizedBox(
                   width: double.infinity,
-                  height: 50,
+                  // 52px — matches PrimaryButton's canonical filled-CTA height
+                  // (this IS the filled/primary action in the sheet). Was 50,
+                  // an orphan value matching neither PrimaryButton (52) nor
+                  // SecondaryButton (48) (C28).
+                  height: 52,
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
                       backgroundColor: confirmBg,
@@ -189,7 +193,9 @@ Future<bool> showAppConfirmDialog({
                 // Cancel button
                 SizedBox(
                   width: double.infinity,
-                  height: 50,
+                  // 48px — matches SecondaryButton's canonical height (this is
+                  // the lower-emphasis dismiss action). Was 50 (C28).
+                  height: 48,
                   child: TextButton(
                     style: TextButton.styleFrom(
                       foregroundColor: cancelFg,
