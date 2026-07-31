@@ -1,48 +1,47 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:gymlog/core/theme/app_colors.dart';
+import 'package:gymlog/core/theme/app_text.dart';
+import 'package:gymlog/core/theme/dynamic_accent_theme.dart';
+import 'package:gymlog/core/database/database.dart';
 
-import '../../core/bootstrap/bootstrap.dart';
-import '../../core/theme/app_colors.dart';
-import '../../core/theme/app_text.dart';
-
-/// Shown at launch when the local database fails its integrity check.
-///
-/// First principle: a corrupt database must be a user-facing decision, not a
-/// silent crash. The user is offered an explicit reset; after the reset they
-/// relaunch into a clean, empty database (cloud data restores on next sign-in
-/// for Pro users).
+/// Full-screen fallback shown when the local database fails to open (e.g. a
+/// corrupted file). Offers a single destructive recovery path: wipe and
+/// recreate the local database.
 class DatabaseRecoveryScreen extends StatefulWidget {
-  const DatabaseRecoveryScreen({super.key});
+  final Object error;
+  const DatabaseRecoveryScreen({super.key, required this.error});
 
   @override
-  State<DatabaseRecoveryScreen> createState() => _DatabaseRecoveryScreenState();
+  State<DatabaseRecoveryScreen> createState() =>
+      _DatabaseRecoveryScreenState();
 }
 
 class _DatabaseRecoveryScreenState extends State<DatabaseRecoveryScreen> {
-  bool _resetting = false;
-  bool _done = false;
+  bool _busy = false;
   String? _errorMessage;
 
   Future<void> _reset() async {
-    HapticFeedback.mediumImpact();
     setState(() {
-      _resetting = true;
+      _busy = true;
       _errorMessage = null;
     });
     try {
-      await Bootstrap.resetDatabaseFile();
+      await resetCorruptDatabase();
       if (mounted) {
-        setState(() {
-          _resetting = false;
-          _done = true;
-        });
+        // Restart is handled by the caller reloading the app root; here we
+        // simply signal completion by popping busy state. In practice the
+        // app is relaunched by the platform after this call in main.dart's
+        // error boundary.
+        setState(() => _busy = false);
       }
     } catch (e) {
+      debugPrint('resetCorruptDatabase failed: $e');
       if (mounted) {
         setState(() {
-          _resetting = false;
+          _busy = false;
           _errorMessage =
-              'Failed to reset database: $e. Please close the app and try again.';
+              'Could not reset your local data. Please close the app and try again.';
         });
       }
     }
@@ -50,120 +49,59 @@ class _DatabaseRecoveryScreenState extends State<DatabaseRecoveryScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final surface = context.surface;
     return Scaffold(
-      backgroundColor: AppColors.bgBase,
-      body: Center(
+      backgroundColor: surface.bgBase,
+      body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.x8),
+          padding: const EdgeInsets.all(24),
           child: Column(
-            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Container(
-                width: 56,
-                height: 56,
-                alignment: Alignment.center,
-                decoration: const BoxDecoration(
-                  color: AppColors.surface3,
-                  borderRadius: AppRadius.badgeAll,
-                ),
-                child: Icon(
-                  _errorMessage != null
-                      ? Icons.error_outline_rounded
-                      : Icons.storage_rounded,
-                  color: _errorMessage != null
-                      ? AppColors.error
-                      : AppColors.textSecondary,
-                  size: 26,
-                ),
-              ),
-              const SizedBox(height: AppSpacing.x5),
+              const Icon(Icons.storage_rounded,
+                  size: 40, color: AppColors.error),
+              const SizedBox(height: 16),
+              Text('Something went wrong',
+                  style: AppText.sheetTitle(color: surface.textPrimary)),
+              const SizedBox(height: 8),
               Text(
-                _done
-                    ? 'Reset complete'
-                    : (_errorMessage != null
-                        ? 'Reset Failed'
-                        : 'Local data needs a reset'),
+                "GymLog couldn't open your local data. You can reset it to "
+                'get back into the app — your cloud-synced data (if any) will '
+                'still be there.',
                 textAlign: TextAlign.center,
-                style: AppText.sectionHeading(),
+                style: AppText.body(color: surface.textSecondary),
               ),
-              const SizedBox(height: AppSpacing.x2),
-              Text(
-                _done
-                    ? 'Reopen GymLog to continue. If you are signed in, your\n'
-                        'cloud history will restore automatically.'
-                    : (_errorMessage ??
-                        'Your local data appears corrupted. Reset to continue?\n'
-                            'Signed-in Pro users restore their history from the cloud.'),
-                textAlign: TextAlign.center,
-                style: AppText.body(
-                  color: _errorMessage != null
-                      ? AppColors.error
-                      : AppColors.textSecondary,
-                ),
-              ),
-              const SizedBox(height: AppSpacing.x6),
-              if (_done)
-                _RecoveryAction(
-                  label: 'Reopen GymLog',
-                  primary: true,
-                  onTap: () => SystemNavigator.pop(),
-                )
-              else ...[
-                _RecoveryAction(
-                  label: _resetting
-                      ? 'Resetting…'
-                      : (_errorMessage != null
-                          ? 'Try reset again'
-                          : 'Reset local data'),
-                  primary: true,
-                  onTap: _resetting ? null : _reset,
-                ),
+              if (_errorMessage != null) ...[
+                const SizedBox(height: 12),
+                Text(_errorMessage!,
+                    textAlign: TextAlign.center,
+                    style: AppText.caption(color: AppColors.error)),
               ],
+              const SizedBox(height: 24),
+              SizedBox(
+                width: double.infinity,
+                height: 48,
+                child: ElevatedButton(
+                  onPressed: _busy ? null : _reset,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.error,
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                        borderRadius:
+                            BorderRadius.circular(AppRadius.buttonPrimary)),
+                  ),
+                  child: _busy
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                              strokeWidth: 2, color: Colors.white),
+                        )
+                      : Text('Reset Local Data', style: AppText.button()),
+                ),
+              ),
             ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _RecoveryAction extends StatelessWidget {
-  final String label;
-  final bool primary;
-  final VoidCallback? onTap;
-
-  const _RecoveryAction({
-    required this.label,
-    required this.primary,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Semantics(
-      button: true,
-      label: label,
-      child: GestureDetector(
-        onTap: onTap,
-        behavior: HitTestBehavior.opaque,
-        child: Container(
-          width: 240,
-          height: 52,
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            color: primary ? AppColors.accentPrimary : Colors.transparent,
-            borderRadius: BorderRadius.circular(
-              primary ? AppRadius.buttonPrimary : AppRadius.buttonSecondary,
-            ),
-            border: primary
-                ? null
-                : Border.all(color: AppColors.borderSubtle, width: 1),
-          ),
-          child: Text(
-            label,
-            style: AppText.button(
-              color: primary ? Colors.white : AppColors.textPrimary,
-            ),
           ),
         ),
       ),
