@@ -17,6 +17,7 @@ import 'package:gymlog/features/workout/presentation/providers/workout_actions_p
 import 'package:gymlog/features/home/presentation/providers/home_provider.dart';
 import 'package:gymlog/features/home/presentation/widgets/workout_history_card.dart';
 import 'package:gymlog/features/profile/presentation/providers/profile_stats_provider.dart';
+import 'package:gymlog/core/providers/settings_provider.dart';
 import 'package:gymlog/core/utils/formatters.dart';
 import 'package:gymlog/core/database/database.dart';
 import 'package:gymlog/core/providers/database_provider.dart';
@@ -102,6 +103,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     // whenever a session is live.
     final bottomInset = ref.watch(bottomChromeInsetProvider);
 
+    // Display unit for every aggregate figure in the feed. Watched once here
+    // and threaded down; the cards themselves stay provider-free.
+    final unit = ref.watch(weightUnitProvider);
+
     final routines = ref.watch(hydratedRoutinesProvider).valueOrNull ?? [];
     final tourStep = ref.watch(firstRunTourProvider);
     final streak = ref.watch(streakStatsProvider);
@@ -123,7 +128,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       });
     }
 
-    // ── Initial load: skeleton feed (no spinner, no layout jump) ───────────
+    // ── Initial load: skeleton feed (no spinner, no layout jump) ───────
     if (historyState.isInitialLoad) {
       return Scaffold(
         backgroundColor: surface.bgBase,
@@ -195,6 +200,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       child: WorkoutHistoryCard(
                         key: ValueKey(preview.session.id),
                         preview: preview,
+                        unit: unit,
                         // RC3-09: Hero flying-title animation removed.
                         enableHero: false,
                         onMenuPressed: () {
@@ -289,7 +295,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  // ── Quick Start ────────────────────────────────────────────────
+  // ── Quick Start ───────────────────────────────
   Widget _quickStart() {
     return Padding(
       padding: const EdgeInsets.only(bottom: 20),
@@ -338,7 +344,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  // ── Footer: loading | error | empty | all-caught-up ─────────────────────
+  // ── Footer: loading | error | empty | all-caught-up ───────────────────
   Widget _footer(WorkoutHistoryState state) {
     if (state.isLoadingMore) {
       return const Padding(

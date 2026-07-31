@@ -189,6 +189,7 @@ void main() {
         home: Scaffold(
           body: WorkoutHistoryCard(
             preview: preview,
+            unit: 'kg',
             onMenuPressed: () {},
           ),
         ),
