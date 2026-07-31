@@ -125,6 +125,23 @@ class NotificationService {
 
     final scheduledUtc = tz.TZDateTime.from(endTime.toUtc(), tz.UTC);
 
+    // C36-F1: exactAllowWhileIdle requires the user-revocable
+    // SCHEDULE_EXACT_ALARM grant on Android 12+. Scheduling exact without
+    // checking first meant a revoked grant surfaced only as a caught,
+    // debug-only PlatformException below — the rest timer notification
+    // silently never fired. Falling back to inexact keeps the notification
+    // roughly on time instead of not firing at all.
+    var scheduleMode = AndroidScheduleMode.exactAllowWhileIdle;
+    if (Platform.isAndroid) {
+      final androidImpl = _plugin.resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin>();
+      final canScheduleExact =
+          await androidImpl?.canScheduleExactNotifications() ?? false;
+      if (!canScheduleExact) {
+        scheduleMode = AndroidScheduleMode.inexactAllowWhileIdle;
+      }
+    }
+
     try {
       await _plugin.zonedSchedule(
         id: _restTimerNotificationId,
@@ -147,7 +164,7 @@ class NotificationService {
             presentSound: true,
           ),
         ),
-        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+        androidScheduleMode: scheduleMode,
       );
     } catch (e) {
       debugPrint('[NotificationService] Schedule notification error: $e');
