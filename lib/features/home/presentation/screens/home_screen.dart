@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -49,6 +51,37 @@ bool showWeeklyStatsCard({
 }) =>
     hasActivity || tourStep == 4 || statsPending;
 
+/// Time-of-day greeting. Pure and top-level so it can be tested directly
+/// instead of by pumping the header at a mocked wall-clock time.
+@visibleForTesting
+String greetingForHour(int hour) {
+  if (hour < 12) return 'Good morning';
+  if (hour < 17) return 'Good afternoon';
+  return 'Good evening';
+}
+
+/// The next instant at which [greetingForHour] would return something
+/// different: noon, 5pm, or the following midnight.
+///
+/// Deliberately boundary-based rather than a periodic tick — Home is kept
+/// alive for the whole session by the indexed-stack shell, so a repeating
+/// timer would burn frames all day to change two words twice.
+///
+/// Local-time arithmetic is intentional. On a DST transition the boundary can
+/// land an hour early or late; the greeting is then briefly wrong and
+/// self-corrects at the next boundary, which is an acceptable trade against
+/// carrying a timezone database for this.
+@visibleForTesting
+DateTime nextGreetingBoundary(DateTime now) {
+  final startOfDay = DateTime(now.year, now.month, now.day);
+  for (final hour in const [12, 17]) {
+    final boundary = DateTime(now.year, now.month, now.day, hour);
+    if (boundary.isAfter(now)) return boundary;
+  }
+  // Past 5pm — next change is midnight, back to "Good morning".
+  return startOfDay.add(const Duration(days: 1));
+}
+
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
@@ -64,17 +97,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   /// State's Stack) can reference the same key.
   final GlobalKey _weeklyStatsKey = GlobalKey();
 
-  /// Key for the header band's outer Padding (see [_HomeHeaderBand.bandKey]).
-  /// NOT currently used as a spotlight target — the step-4 tour always
-  /// targets [_weeklyStatsKey], which is guaranteed to resolve because
-  /// [showWeeklyStatsCard] forces the weekly-stats card to render for the
-  /// duration of that step. Kept only as a stable widget identity for the
-  /// band; update this comment if a real fallback target is wired in.
-  final GlobalKey _homeHeaderKey = GlobalKey();
-
   /// Target for the step-0 tour spotlight when the user already has routines
   /// (deferred tour start) and the "Find a program" card is not shown.
   final GlobalKey _quickStartKey = GlobalKey();
+
+  /// Latch for the deferred-tour kickoff. Without it, build scheduled a fresh
+  /// post-frame callback on every rebuild while the deferred condition held.
+  bool _tourKickoffScheduled = false;
 
   // Pagination is driven from real scroll position — NOT scheduled as a
   // side-effect inside itemBuilder (which fired a microtask on every rebuild).
@@ -106,6 +135,25 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     }
   }
 
+  /// Starts the first-run tour that was deferred because the user had no
+  /// content to point at yet.
+  ///
+  /// Latched, and the callback re-reads the step before acting: a callback
+  /// queued one frame ago must not force the user back to step 0 if the
+  /// notifier has moved on in the meantime.
+  void _scheduleDeferredTourStart() {
+    if (_tourKickoffScheduled) return;
+    _tourKickoffScheduled = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      if (ref.read(firstRunTourProvider) !=
+          FirstRunTourNotifier.deferredStep) {
+        return;
+      }
+      ref.read(firstRunTourProvider.notifier).setStep(0);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final historyState = ref.watch(workoutHistoryProvider);
@@ -120,7 +168,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     // and threaded down; the cards themselves stay provider-free.
     final unit = ref.watch(weightUnitProvider);
 
-    final routines = ref.watch(hydratedRoutinesProvider).valueOrNull ?? [];
+    // Home only ever asks "does this user have any routines at all?", so it
+    // selects that one boolean. Watching the whole hydrated list rebuilt the
+    // entire screen — every visible history card included — whenever any
+    // routine, exercise or set anywhere in the library changed.
+    final hasNoRoutines = ref.watch(
+      hydratedRoutinesProvider
+          .select((async) => (async.valueOrNull ?? const []).isEmpty),
+    );
     final tourStep = ref.watch(firstRunTourProvider);
     final streak = ref.watch(streakStatsProvider);
 
@@ -134,17 +189,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       tourStep: tourStep,
       statsPending: !streak.isResolved,
     );
-    final hasNoRoutines = routines.isEmpty;
     final showFindProgram = hasNoRoutines ||
         tourStep == 0 ||
         tourStep == FirstRunTourNotifier.deferredStep;
 
     // If the tour is deferred and the user now has real content, kick it off.
     if (tourStep == FirstRunTourNotifier.deferredStep &&
-        (routines.isNotEmpty || hasActivity)) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        ref.read(firstRunTourProvider.notifier).setStep(0);
-      });
+        (!hasNoRoutines || hasActivity)) {
+      _scheduleDeferredTourStart();
     }
 
     // ── Initial load: skeleton feed (no spinner, no layout jump) ───────
@@ -196,7 +248,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 itemBuilder: (context, index) {
                   if (index == 0) {
                     return _HomeHeaderBand(
-                      bandKey: _homeHeaderKey,
                       weeklyStatsKey: _weeklyStatsKey,
                       showWeeklyStats: showStats,
                     );
@@ -303,8 +354,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 minimumSize: const Size(0, 36),
                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
               ),
+              // The arrow is decoration. Left inside the Text it was read out
+              // as "right arrow" by TalkBack.
               child: Text(
                 'Browse programs →',
+                semanticsLabel: 'Browse programs',
                 style: AppText.label(color: context.accent.base),
               ),
             ),
@@ -418,6 +472,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               ),
               child: Text(
                 'Start your first workout →',
+                semanticsLabel: 'Start your first workout',
                 style: AppText.label(color: context.accent.base),
               ),
             ),
@@ -505,11 +560,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 }
 
-class _HomeHeaderBand extends ConsumerWidget {
-  /// Key attached to this band so the step-4 tour spotlight can anchor on a
-  /// day-one element when the weekly-stats card is not yet rendered.
-  final GlobalKey? bandKey;
-
+class _HomeHeaderBand extends ConsumerStatefulWidget {
   /// Key attached to the weekly-stats AppCard so the step-4 tour spotlight
   /// can locate its position on screen. Exactly one of the three mutually
   /// exclusive card states below carries it, so it always resolves to a
@@ -523,25 +574,61 @@ class _HomeHeaderBand extends ConsumerWidget {
   final bool showWeeklyStats;
 
   const _HomeHeaderBand({
-    this.bandKey,
     this.weeklyStatsKey,
     this.showWeeklyStats = false,
   });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<_HomeHeaderBand> createState() => _HomeHeaderBandState();
+}
+
+class _HomeHeaderBandState extends ConsumerState<_HomeHeaderBand> {
+  late String _greeting;
+  Timer? _greetingTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    _greeting = greetingForHour(DateTime.now().hour);
+    _scheduleGreetingRefresh();
+  }
+
+  /// One-shot timer aimed at the next greeting boundary, rescheduled each
+  /// time it fires. Home is never disposed while the app is foregrounded
+  /// (indexed-stack shell), so without this the greeting is frozen at
+  /// whatever it was when the app launched.
+  void _scheduleGreetingRefresh() {
+    _greetingTimer?.cancel();
+    final now = DateTime.now();
+    // One second past the boundary, so the hour has definitely rolled over.
+    final delay =
+        nextGreetingBoundary(now).difference(now) + const Duration(seconds: 1);
+    _greetingTimer = Timer(delay, () {
+      if (!mounted) return;
+      setState(() => _greeting = greetingForHour(DateTime.now().hour));
+      _scheduleGreetingRefresh();
+    });
+  }
+
+  @override
+  void dispose() {
+    _greetingTimer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final streak = ref.watch(streakStatsProvider);
     final goal = ref.watch(weeklyGoalProvider);
     final surface = context.surface;
 
     return Padding(
-      key: bandKey,
       padding: const EdgeInsets.only(bottom: 20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Identity (always present — top is never empty)
-          Text(_greeting(DateTime.now().hour),
+          Text(_greeting,
               style: AppText.screenTitle(color: surface.textPrimary)
                   .copyWith(letterSpacing: -0.5)),
           const SizedBox(height: 4),
@@ -550,12 +637,12 @@ class _HomeHeaderBand extends ConsumerWidget {
 
           // Promoted week stats. Three mutually exclusive states, matching
           // the rigour the history feed below already had.
-          if (showWeeklyStats) ...[
+          if (widget.showWeeklyStats) ...[
             const SizedBox(height: 20),
             if (streak.isLoading)
               _statsSkeleton()
             else if (streak.hasError)
-              _statsError(ref)
+              _statsError()
             else
               _statsCard(context, streak, goal),
           ],
@@ -567,7 +654,7 @@ class _HomeHeaderBand extends ConsumerWidget {
   /// Placeholder with the same internal geometry as the real card, so the
   /// feed does not shift when the numbers arrive.
   Widget _statsSkeleton() => AppCard(
-        key: weeklyStatsKey,
+        key: widget.weeklyStatsKey,
         radius: AppRadius.card,
         child: const SkeletonPulse(
           label: 'Loading your weekly progress',
@@ -585,8 +672,8 @@ class _HomeHeaderBand extends ConsumerWidget {
       );
 
   /// An honest failure with a real retry, rather than a confident "0".
-  Widget _statsError(WidgetRef ref) => AppCard(
-        key: weeklyStatsKey,
+  Widget _statsError() => AppCard(
+        key: widget.weeklyStatsKey,
         radius: AppRadius.card,
         child: AsyncErrorState(
           message: "Couldn't load your weekly progress.",
@@ -603,7 +690,7 @@ class _HomeHeaderBand extends ConsumerWidget {
         goal > 0 ? (streak.workoutsThisWeek / goal).clamp(0.0, 1.0) : 0.0;
 
     return AppCard(
-      key: weeklyStatsKey,
+      key: widget.weeklyStatsKey,
       radius: AppRadius.card,
       child: Semantics(
         // Merge-and-relabel: safe here because the subtree is presentational
@@ -676,11 +763,5 @@ class _HomeHeaderBand extends ConsumerWidget {
         ),
       ),
     );
-  }
-
-  String _greeting(int hour) {
-    if (hour < 12) return 'Good morning';
-    if (hour < 17) return 'Good afternoon';
-    return 'Good evening';
   }
 }
