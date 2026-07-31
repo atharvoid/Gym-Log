@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import '../../core/theme/chrome_tokens.dart';
 import '../../core/theme/dynamic_accent_theme.dart';
 import '../../core/theme/app_text.dart';
+import '../layout/adaptive.dart';
 
 /// [bottom_nav_bar.dart]
 /// 3-tab navigation (Home, Routines, Profile). Driven by the parent
@@ -55,22 +56,35 @@ class BottomNavBar extends StatelessWidget {
         top: false,
         child: SizedBox(
           height: height,
-          child: Row(
-            children: [
-              for (var i = 0; i < _tabs.length; i++)
-                Expanded(
-                  child: _NavButton(
-                    item: _tabs[i],
-                    isActive: i == currentIndex,
-                    index: i,
-                    total: _tabs.length,
-                    onTap: () {
-                      HapticFeedback.selectionClick();
-                      onTap(i);
-                    },
-                  ),
-                ),
-            ],
+          // The background and top separator above deliberately stay
+          // full-bleed — that's the platform convention for a bottom tab bar.
+          // Only the tap targets themselves are capped to the same
+          // contentMaxWidth as AppShell's body and centered, so on
+          // medium/expanded (tablet, large foldable) layouts the tabs sit
+          // under the centered content column instead of spanning the full
+          // screen width while everything above them is narrower. See B16.
+          child: Center(
+            child: ConstrainedBox(
+              constraints:
+                  BoxConstraints(maxWidth: context.adaptive.contentMaxWidth),
+              child: Row(
+                children: [
+                  for (var i = 0; i < _tabs.length; i++)
+                    Expanded(
+                      child: _NavButton(
+                        item: _tabs[i],
+                        isActive: i == currentIndex,
+                        index: i,
+                        total: _tabs.length,
+                        onTap: () {
+                          HapticFeedback.selectionClick();
+                          onTap(i);
+                        },
+                      ),
+                    ),
+                ],
+              ),
+            ),
           ),
         ),
       ),
