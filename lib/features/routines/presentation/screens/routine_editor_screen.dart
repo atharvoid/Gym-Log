@@ -9,6 +9,7 @@ import 'package:gymlog/core/providers/premium_provider.dart';
 import 'package:gymlog/core/theme/app_colors.dart';
 import 'package:gymlog/core/theme/app_text.dart';
 import 'package:gymlog/core/theme/dynamic_accent_theme.dart';
+import 'package:gymlog/shared/layout/adaptive.dart';
 import 'package:gymlog/shared/widgets/premium_paywall.dart';
 import 'package:gymlog/features/auth/presentation/providers/auth_provider.dart';
 import 'package:gymlog/shared/widgets/exercise_gif_widget.dart';
@@ -288,14 +289,18 @@ class _RoutineEditorScreenState extends ConsumerState<RoutineEditorScreen> {
             ),
           ],
         ),
-        body: _loading
+        // C32: this route (/routines/edit) is pushed outside AppShell and
+        // never opted into the AdaptiveContent width cap -- the name field
+        // and exercise list stretched edge-to-edge on tablets/foldables.
+        body: AdaptiveContent(
+          child: _loading
             ? Center(
                 child: CircularProgressIndicator(
                     color: surface.textSecondary, strokeWidth: 2),
               )
             : Column(
                 children: [
-                  // ── Routine name ─────────────────────────────────
+                  // ── Routine name ───────────────────────
                   Padding(
                     padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
                     child: Semantics(
@@ -333,7 +338,7 @@ class _RoutineEditorScreenState extends ConsumerState<RoutineEditorScreen> {
                     ),
                   ),
 
-                  // ── Exercise list ────────────────────────────────
+                  // ── Exercise list ──────────────────────
                   Expanded(
                     child: _exercises.isEmpty
                         ? _EmptyEditorState(onAdd: _addExercises)
@@ -444,6 +449,7 @@ class _RoutineEditorScreenState extends ConsumerState<RoutineEditorScreen> {
                   ),
                 ],
               ),
+        ),
         // S12.2: bottomNavigationBar removed — "Add Exercise" is now the
         // last item in the scrollable ReorderableListView.
       ),
@@ -451,7 +457,7 @@ class _RoutineEditorScreenState extends ConsumerState<RoutineEditorScreen> {
   }
 }
 
-// ── Sub-widgets ──────────────────────────────────────────────────
+// ── Sub-widgets ────────────────────────
 
 class _EmptyEditorState extends StatelessWidget {
   final VoidCallback onAdd;
