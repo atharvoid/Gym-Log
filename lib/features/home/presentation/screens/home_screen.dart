@@ -28,13 +28,26 @@ import 'package:gymlog/features/auth/presentation/providers/tour_provider.dart';
 import 'package:gymlog/features/routines/presentation/providers/routines_provider.dart';
 import 'package:gymlog/shared/widgets/tour/spotlight_tour_overlay.dart';
 
-/// Whether the weekly-stats card should be rendered. Normally it is shown only
-/// once the user has logged at least one workout; during the step-4 spotlight
-/// we force it so the tour always anchors on a real, personalized card
-/// (showing "0 / {goal}" if necessary) rather than a placeholder band.
+/// Whether the weekly-stats card should be rendered.
+///
+/// Normally it is shown only once the user has logged at least one workout;
+/// during the step-4 spotlight we force it so the tour always anchors on a
+/// real, personalized card (showing "0 / {goal}" if necessary) rather than a
+/// placeholder band.
+///
+/// [statsPending] forces it as well, in a skeleton/error form. Without that
+/// the card was absent while the stats stream was still loading — because a
+/// loading stream reported zero activity — and then appeared a moment later,
+/// shifting the whole feed. Reserving the space from the first frame is the
+/// entire point. It is optional and defaulted so this function's existing
+/// call sites and tests keep compiling.
 @visibleForTesting
-bool showWeeklyStatsCard({required bool hasActivity, required int tourStep}) =>
-    hasActivity || tourStep == 4;
+bool showWeeklyStatsCard({
+  required bool hasActivity,
+  required int tourStep,
+  bool statsPending = false,
+}) =>
+    hasActivity || tourStep == 4 || statsPending;
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -110,10 +123,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final routines = ref.watch(hydratedRoutinesProvider).valueOrNull ?? [];
     final tourStep = ref.watch(firstRunTourProvider);
     final streak = ref.watch(streakStatsProvider);
-    final hasActivity = streak.currentStreak > 0 || streak.workoutsThisWeek > 0;
+
+    // Only ever true once the stats have actually resolved. A loading or
+    // failed stream reports zeroes, and treating those as "no activity" is
+    // what used to hide the card and then pop it back in.
+    final hasActivity = streak.isResolved &&
+        (streak.currentStreak > 0 || streak.workoutsThisWeek > 0);
     final showStats = showWeeklyStatsCard(
       hasActivity: hasActivity,
       tourStep: tourStep,
+      statsPending: !streak.isResolved,
     );
     final hasNoRoutines = routines.isEmpty;
     final showFindProgram = hasNoRoutines ||
@@ -295,7 +314,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  // ── Quick Start ───────────────────────────────
+  // ── Quick Start ────────────────────────────────────────────────
   Widget _quickStart() {
     return Padding(
       padding: const EdgeInsets.only(bottom: 20),
@@ -328,7 +347,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  // ── Section header ──────────────────────────────
+  // ── Section header ─────────────────────────────────────────────
   Widget _header() {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
@@ -492,12 +511,15 @@ class _HomeHeaderBand extends ConsumerWidget {
   final GlobalKey? bandKey;
 
   /// Key attached to the weekly-stats AppCard so the step-4 tour spotlight
-  /// can locate its position on screen.
+  /// can locate its position on screen. Exactly one of the three mutually
+  /// exclusive card states below carries it, so it always resolves to a
+  /// single element.
   final GlobalKey? weeklyStatsKey;
 
   /// When true, force the weekly-stats card to render even if the user has
-  /// not yet logged a workout. Used only so the step-4 spotlight has a real
-  /// target (showing "0 / {goal}") rather than a placeholder band.
+  /// not yet logged a workout. Used so the step-4 spotlight has a real
+  /// target (showing "0 / {goal}"), and so the card's space is reserved
+  /// while the stats are still loading.
   final bool showWeeklyStats;
 
   const _HomeHeaderBand({
@@ -511,11 +533,6 @@ class _HomeHeaderBand extends ConsumerWidget {
     final streak = ref.watch(streakStatsProvider);
     final goal = ref.watch(weeklyGoalProvider);
     final surface = context.surface;
-    final accent = context.accent;
-
-    final goalMet = streak.workoutsThisWeek >= goal;
-    final progress =
-        goal > 0 ? (streak.workoutsThisWeek / goal).clamp(0.0, 1.0) : 0.0;
 
     return Padding(
       key: bandKey,
@@ -531,84 +548,132 @@ class _HomeHeaderBand extends ConsumerWidget {
           Text('Ready to train?',
               style: AppText.body(color: surface.textSecondary)),
 
-          // Promoted week stats (only once there's activity, or forced during
-          // the step-4 tour so the spotlight anchors on a real card).
+          // Promoted week stats. Three mutually exclusive states, matching
+          // the rigour the history feed below already had.
           if (showWeeklyStats) ...[
             const SizedBox(height: 20),
-            AppCard(
-              key: weeklyStatsKey,
-              radius: AppRadius.card,
-              child: Semantics(
-                container: true,
-                excludeSemantics: true,
-                label: 'This week: ${streak.workoutsThisWeek} of $goal workouts'
-                    '${goalMet ? ', goal met' : ''}'
-                    '${streak.currentStreak > 0 ? '. ${streak.currentStreak} day streak' : ''}',
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text('This week',
-                                  style: AppText.meta(
-                                      color: surface.textSecondary)),
-                              const SizedBox(height: 2),
-                              Row(
-                                crossAxisAlignment: CrossAxisAlignment.baseline,
-                                textBaseline: TextBaseline.alphabetic,
-                                children: [
-                                  Text('${streak.workoutsThisWeek}',
-                                      style: AppText.heroStat(
-                                          color: goalMet
-                                              ? accent.base
-                                              : surface.textPrimary)),
-                                  Text(' / $goal',
-                                      style: AppText.statLabel(
-                                          color: surface.textSecondary)),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-                        if (streak.currentStreak > 0)
-                          Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Icon(Icons.local_fire_department_rounded,
-                                  size: 18,
-                                  color: AppColors.warning), // allow-listed
-                              const SizedBox(width: 4),
-                              Text('${streak.currentStreak}',
-                                  style: AppText.statLabel(
-                                      color: surface.textPrimary)),
-                              const SizedBox(width: 4),
-                              Text('day streak',
-                                  style: AppText.meta(
-                                      color: surface.textSecondary)),
-                            ],
-                          ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(99),
-                      child: LinearProgressIndicator(
-                        value: progress,
-                        minHeight: 6,
-                        backgroundColor: surface.surface2,
-                        valueColor: AlwaysStoppedAnimation<Color>(accent.base),
+            if (streak.isLoading)
+              _statsSkeleton()
+            else if (streak.hasError)
+              _statsError(ref)
+            else
+              _statsCard(context, streak, goal),
+          ],
+        ],
+      ),
+    );
+  }
+
+  /// Placeholder with the same internal geometry as the real card, so the
+  /// feed does not shift when the numbers arrive.
+  Widget _statsSkeleton() => AppCard(
+        key: weeklyStatsKey,
+        radius: AppRadius.card,
+        child: const SkeletonPulse(
+          label: 'Loading your weekly progress',
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SkeletonBox(width: 72, height: 12),
+              SizedBox(height: 6),
+              SkeletonBox(width: 96, height: 28),
+              SizedBox(height: 12),
+              SkeletonBox(height: 6, radius: AppRadius.badge),
+            ],
+          ),
+        ),
+      );
+
+  /// An honest failure with a real retry, rather than a confident "0".
+  Widget _statsError(WidgetRef ref) => AppCard(
+        key: weeklyStatsKey,
+        radius: AppRadius.card,
+        child: AsyncErrorState(
+          message: "Couldn't load your weekly progress.",
+          onRetry: () => ref.invalidate(trainingDatesProvider),
+        ),
+      );
+
+  Widget _statsCard(BuildContext context, StreakStats streak, int goal) {
+    final surface = context.surface;
+    final accent = context.accent;
+
+    final goalMet = streak.workoutsThisWeek >= goal;
+    final progress =
+        goal > 0 ? (streak.workoutsThisWeek / goal).clamp(0.0, 1.0) : 0.0;
+
+    return AppCard(
+      key: weeklyStatsKey,
+      radius: AppRadius.card,
+      child: Semantics(
+        // Merge-and-relabel: safe here because the subtree is presentational
+        // only — Text plus a LinearProgressIndicator, no actions and no
+        // focusable descendants — so nothing operable is being hidden. This
+        // is the same shape that caused the C30 regression, where it DID
+        // wrap tappable children; the distinction is the reason it stays.
+        container: true,
+        excludeSemantics: true,
+        label: 'This week: ${streak.workoutsThisWeek} of $goal workouts'
+            '${goalMet ? ', goal met' : ''}'
+            '${streak.currentStreak > 0 ? '. ${streak.currentStreak} day streak' : ''}',
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('This week',
+                          style: AppText.meta(color: surface.textSecondary)),
+                      const SizedBox(height: 2),
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.baseline,
+                        textBaseline: TextBaseline.alphabetic,
+                        children: [
+                          Text('${streak.workoutsThisWeek}',
+                              style: AppText.heroStat(
+                                  color: goalMet
+                                      ? accent.base
+                                      : surface.textPrimary)),
+                          Text(' / $goal',
+                              style: AppText.statLabel(
+                                  color: surface.textSecondary)),
+                        ],
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
+                if (streak.currentStreak > 0)
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.local_fire_department_rounded,
+                          size: 18, color: AppColors.warning), // allow-listed
+                      const SizedBox(width: 4),
+                      Text('${streak.currentStreak}',
+                          style:
+                              AppText.statLabel(color: surface.textPrimary)),
+                      const SizedBox(width: 4),
+                      Text('day streak',
+                          style: AppText.meta(color: surface.textSecondary)),
+                    ],
+                  ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(99),
+              child: LinearProgressIndicator(
+                value: progress,
+                minHeight: 6,
+                backgroundColor: surface.surface2,
+                valueColor: AlwaysStoppedAnimation<Color>(accent.base),
               ),
             ),
           ],
-        ],
+        ),
       ),
     );
   }

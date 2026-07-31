@@ -5,6 +5,11 @@ import 'package:gymlog/features/auth/presentation/providers/auth_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// Derived streak + weekly numbers for Home and Profile.
+///
+/// [isLoading] and [hasError] exist so consumers can tell "the user has not
+/// trained" apart from "we do not know yet" and "we could not find out".
+/// Before they existed, all three rendered as a confident 0, which is the
+/// worst of the three answers: it is wrong and it looks certain.
 class StreakStats {
   /// Consecutive training days ending today (or yesterday, if today is
   /// still pending). 0 means the chain is broken.
@@ -17,15 +22,32 @@ class StreakStats {
   /// Distinct training days inside the current week (Monday-start).
   final int workoutsThisWeek;
 
+  /// True while the underlying session-date stream has not emitted yet.
+  /// The three numeric fields are meaningless in this state — render a
+  /// placeholder, not a zero.
+  final bool isLoading;
+
+  /// True when the session-date stream failed. Same rule as [isLoading]:
+  /// the numbers are not real, and the surface should offer a retry.
+  final bool hasError;
+
   const StreakStats({
     this.currentStreak = 0,
     this.trainedToday = false,
     this.workoutsThisWeek = 0,
+    this.isLoading = false,
+    this.hasError = false,
   });
+
+  /// Whether the numbers in this object are safe to display as fact.
+  bool get isResolved => !isLoading && !hasError;
 }
 
 /// Live list of completed-session start timestamps (newest first).
-final _trainingDatesProvider = StreamProvider<List<DateTime>>((ref) {
+///
+/// Public so surfaces that render an error state can offer a real retry with
+/// `ref.invalidate(trainingDatesProvider)`.
+final trainingDatesProvider = StreamProvider<List<DateTime>>((ref) {
   final user = ref.watch(authProvider);
   if (user == null) return Stream.value(const []);
   final db = ref.watch(databaseProvider);
@@ -34,13 +56,24 @@ final _trainingDatesProvider = StreamProvider<List<DateTime>>((ref) {
 
 /// Streak math happens in Dart on LOCAL dates — SQLite's DATE() would
 /// bucket by UTC and break streaks for anyone training late at night.
+///
+/// The AsyncValue is mapped explicitly rather than flattened through
+/// `.valueOrNull ?? const []`. That shortcut is what made a loading stream
+/// and a failed stream both report "0 workouts, no streak".
 final streakStatsProvider = Provider<StreakStats>((ref) {
-  final dates = ref.watch(_trainingDatesProvider).valueOrNull;
-  return computeStreakStats(dates ?? const []);
+  return ref.watch(trainingDatesProvider).when(
+        loading: () => const StreakStats(isLoading: true),
+        error: (_, __) => const StreakStats(hasError: true),
+        data: (dates) => computeStreakStats(dates),
+      );
 });
 
 /// Pure streak computation — exposed for unit testing.
 /// [now] is injectable so tests are deterministic.
+///
+/// Intentionally knows nothing about loading or error states: it is a
+/// function from a list of dates to numbers, and the provider above owns the
+/// question of whether that list is trustworthy yet.
 StreakStats computeStreakStats(List<DateTime> dates, {DateTime? now}) {
   if (dates.isEmpty) return const StreakStats();
 
