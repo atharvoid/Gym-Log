@@ -7,6 +7,7 @@ import 'package:gymlog/core/database/daos/workouts_dao.dart';
 import 'package:gymlog/core/theme/app_colors.dart';
 import 'package:gymlog/core/theme/app_text.dart';
 import 'package:gymlog/core/utils/formatters.dart';
+import 'package:gymlog/core/utils/units.dart';
 import 'package:gymlog/shared/providers/gif_last_frame_provider.dart';
 import 'package:gymlog/shared/widgets/ui/app_card.dart';
 
@@ -25,14 +26,23 @@ final _kDayMonth = DateFormat('MMM d');
 ///   Stats row: volume   duration            [🏆 N PRs badge]
 ///
 /// Surface/radius/border come from the shared [AppCard]; type from [AppText].
+///
+/// [unit] is passed in rather than read from `weightUnitProvider` here: this
+/// is a plain render widget and the owning screen already watches the unit.
+/// It is intentionally REQUIRED and not defaulted to 'kg' - a default is how
+/// this card came to print kilograms to pounds users in the first place.
 class WorkoutHistoryCard extends StatelessWidget {
   final WorkoutSessionPreview preview;
   final VoidCallback? onMenuPressed;
   final bool enableHero;
 
+  /// Active weight unit ('kg' | 'lbs'). Display only - storage stays kg.
+  final String unit;
+
   const WorkoutHistoryCard({
     super.key,
     required this.preview,
+    required this.unit,
     this.onMenuPressed,
     this.enableHero = true,
   });
@@ -56,7 +66,7 @@ class WorkoutHistoryCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // ── Row 1: name + date, with the options menu ───────────────
+          // ── Row 1: name + date, with the options menu ───────────
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.center,
@@ -110,7 +120,7 @@ class WorkoutHistoryCard extends StatelessWidget {
             ],
           ),
 
-          // ── Exercise preview rows ──────────────────────────────
+          // ── Exercise preview rows ────────────────────
           if (preview.topExercises.isNotEmpty) ...[
             const SizedBox(height: 12),
             ...preview.topExercises.map(
@@ -131,14 +141,14 @@ class WorkoutHistoryCard extends StatelessWidget {
           Container(height: 1, color: context.surface.borderSubtle),
           const SizedBox(height: 11),
 
-          _StatsRow(preview: preview, durationStr: durationStr),
+          _StatsRow(preview: preview, durationStr: durationStr, unit: unit),
         ],
       ),
     );
   }
 }
 
-// ── Sub-widgets ─────────────────────────────────────────────
+// ── Sub-widgets ────────────────────────
 
 class _ExerciseRow extends ConsumerWidget {
   final ExercisePreviewItem item;
@@ -216,8 +226,13 @@ class _ExerciseRow extends ConsumerWidget {
 class _StatsRow extends StatelessWidget {
   final WorkoutSessionPreview preview;
   final String durationStr;
+  final String unit;
 
-  const _StatsRow({required this.preview, required this.durationStr});
+  const _StatsRow({
+    required this.preview,
+    required this.durationStr,
+    required this.unit,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -230,7 +245,9 @@ class _StatsRow extends StatelessWidget {
           if (hasVolume)
             _StatChip(
               icon: Icons.inventory_2_outlined,
-              label: _formatVolume(preview.totalVolumeKg),
+              // Shared aggregate-volume helper: converts kg -> the active unit
+              // and labels it. Never append a unit literal here.
+              label: formatVolume(preview.totalVolumeKg, unit),
             )
           else
             _StatChip(
@@ -247,12 +264,6 @@ class _StatsRow extends StatelessWidget {
         ],
       ),
     );
-  }
-
-  static final _volumeFormat = NumberFormat('#,##0.##');
-
-  static String _formatVolume(double kg) {
-    return '${_volumeFormat.format(kg)} kg';
   }
 }
 

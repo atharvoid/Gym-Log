@@ -31,6 +31,7 @@ void main() {
         home: Scaffold(
           body: WorkoutHistoryCard(
             preview: preview,
+            unit: 'kg',
             enableHero: true,
           ),
         ),
@@ -69,6 +70,7 @@ void main() {
         home: Scaffold(
           body: WorkoutHistoryCard(
             preview: preview,
+            unit: 'kg',
             enableHero: false,
           ),
         ),
