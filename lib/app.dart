@@ -159,16 +159,23 @@ class _GymLogAppState extends ConsumerState<GymLogApp> {
       builder: (context, deferredFailure, _) {
         if (widget.databaseCorrupted || deferredFailure) {
           // Recovery mode: a self-contained MaterialApp with no router/auth
-          // deps. Uses the purple-default theme since it renders before (or
-          // outside of) normal wiring.
+          // deps. Uses the Volt-default theme (ThemePalette.fallback) since
+          // it renders before (or outside of) normal wiring.
           //
           // It still gets the text-scale clamp. This app had no builder at
           // all before C31, so the recovery screen — the surface a user only
           // ever sees when their data is already in trouble — was the one
           // place in the app running at an unbounded OS text scale.
+          //
+          // It also carries highContrastTheme/highContrastDarkTheme (added in
+          // C27) — before that fix this was the one surface that dropped the
+          // OS "increase contrast" boost, on exactly the screen a user sees
+          // when their data is already at risk.
           return MaterialApp(
             title: 'GymLog',
             theme: appTheme,
+            highContrastTheme: appHighContrastTheme,
+            highContrastDarkTheme: appHighContrastTheme,
             debugShowCheckedModeBanner: false,
             builder: (context, child) =>
                 _withClampedTextScale(context, child ?? const SizedBox.shrink()),

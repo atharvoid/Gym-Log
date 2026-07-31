@@ -246,8 +246,8 @@ enum ThemePalette {
       'red' => ThemePalette.neonMagenta,
       // 6-palette premium system
       'spectralViolet' => ThemePalette.neonPurple,
-      'phosphorAmber' => ThemePalette.neonMagenta,
-      'steelBlue' => ThemePalette.blazeOrange,
+      'phosphorAmber' => ThemePalette.blazeOrange,
+      'steelBlue' => ThemePalette.neonCyan,
       'chromaticRose' => ThemePalette.neonMagenta,
       'tacticalGreen' => ThemePalette.higgsfield,
       // 'neutralWhite' previously mapped to neonPurple; now maps to White.
