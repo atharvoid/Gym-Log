@@ -13,6 +13,7 @@ import 'package:gymlog/features/auth/presentation/providers/auth_provider.dart';
 import 'package:gymlog/shared/widgets/async_error_state.dart';
 import 'package:gymlog/shared/widgets/exercise_hero_thumb.dart';
 import 'package:gymlog/shared/widgets/ui/skeleton.dart';
+import 'package:gymlog/shared/layout/adaptive.dart';
 import '../providers/exercises_provider.dart';
 import '../widgets/create_exercise_dialog.dart';
 
@@ -272,7 +273,11 @@ class _ExerciseSelectionScreenState
           ),
         ],
       ),
-      body: Column(
+      // C32: this route is pushed outside AppShell (no adaptive width
+      // constraint applied there), and unlike Settings/Routine Detail it never
+      // opted in on its own — search bar, filter chips, and the exercise list
+      // stretched edge-to-edge on tablets/foldables.
+      body: AdaptiveContent(child: Column(
         children: [
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 10),
@@ -396,7 +401,7 @@ class _ExerciseSelectionScreenState
             ),
           ),
         ],
-      ),
+      )),
     );
   }
 
@@ -551,222 +556,4 @@ class _ExerciseRow extends StatelessWidget {
                 if (browse) ...[
                   const SizedBox(width: 8),
                   Icon(Icons.chevron_right_rounded,
-                      size: 20, color: surface.textTertiary),
-                ],
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _EmptyState extends StatelessWidget {
-  final bool isSearching;
-  final bool hasFilters;
-  final VoidCallback onCreate;
-  final VoidCallback onClearFilters;
-  const _EmptyState({
-    required this.isSearching,
-    required this.hasFilters,
-    required this.onCreate,
-    required this.onClearFilters,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final accent = context.accent;
-    final surface = context.surface;
-    // B18-F4: the "create custom exercise" invite used to show regardless of
-    // whether a muscle/equipment filter was active. A filtered-out real match
-    // and a genuine catalog miss look identical from here, so the old copy
-    // told users to "add it yourself" even when the exercise already existed
-    // and was just hidden by their own filter -- inviting a duplicate. Once a
-    // filter is active, the honest next step is clearing it, not creating.
-    final String subtitle = hasFilters
-        ? (isSearching
-            ? 'No matches for this search under the current filter.'
-            : 'No exercises under the current filter.')
-        : (isSearching
-            ? 'Not in the library? Add it yourself.'
-            : 'Try changing the search.');
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ExcludeSemantics(
-              child: Icon(Icons.search_off_rounded,
-                  size: 30,
-                  color: surface.isLight
-                      ? Colors.black.withValues(alpha: 0.25)
-                      : Colors.white.withValues(alpha: 0.25)),
-            ),
-            const SizedBox(height: 10),
-            Text('No exercises match',
-                style: AppText.rowLabel(color: surface.textPrimary)),
-            const SizedBox(height: 3),
-            Text(
-              subtitle,
-              textAlign: TextAlign.center,
-              style: AppText.caption(color: surface.textSecondary),
-            ),
-            const SizedBox(height: 14),
-            if (hasFilters)
-              TextButton.icon(
-                onPressed: onClearFilters,
-                icon: Icon(Icons.filter_alt_off_rounded,
-                    size: 18, color: accent.light),
-                label: Text('Clear filters',
-                    style: AppText.statLabel(color: accent.light)),
-              )
-            else
-              TextButton.icon(
-                onPressed: onCreate,
-                icon: Icon(Icons.add_rounded, size: 18, color: accent.light),
-                label: Text('Create custom exercise',
-                    style: AppText.statLabel(color: accent.light)),
-              ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _LoadingList extends StatelessWidget {
-  const _LoadingList();
-
-  @override
-  Widget build(BuildContext context) {
-    return SkeletonPulse(
-      label: 'Loading exercises',
-      child: ListView.builder(
-        physics: const NeverScrollableScrollPhysics(),
-        padding: const EdgeInsets.symmetric(vertical: 8),
-        itemCount: 9,
-        itemBuilder: (_, __) => const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-          child: Row(
-            children: [
-              SkeletonBox(width: 52, height: 52, radius: AppRadius.thumbnail),
-              SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    SkeletonBox(width: 160, height: 13),
-                    SizedBox(height: 4),
-                    SkeletonBox(width: 100, height: 11),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _FilterOptionRow extends StatelessWidget {
-  final String label;
-  final bool selected;
-  final VoidCallback onTap;
-  const _FilterOptionRow({
-    required this.label,
-    required this.selected,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final accent = context.accent;
-    final surface = context.surface;
-    return Semantics(
-      button: true,
-      selected: selected,
-      child: InkWell(
-        onTap: onTap,
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 14),
-          decoration: BoxDecoration(
-            border: Border(bottom: BorderSide(color: surface.borderSubtle)),
-          ),
-          child: Row(
-            children: [
-              Expanded(
-                child: Text(
-                  label,
-                  style: AppText.body(
-                      color: selected ? accent.base : surface.textPrimary),
-                ),
-              ),
-              if (selected)
-                Icon(Icons.check_rounded, size: 18, color: accent.base),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _FilterChipButton extends StatelessWidget {
-  final String label;
-  final bool active;
-  final VoidCallback onTap;
-
-  const _FilterChipButton({
-    required this.label,
-    required this.active,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final accent = context.accent;
-    final surface = context.surface;
-    final fg = active ? accent.onAccent : surface.textPrimary;
-    return Semantics(
-      button: true,
-      label: '$label filter${active ? ', active' : ''}',
-      excludeSemantics: true,
-      child: Material(
-        color: active ? accent.base : surface.surface3,
-        borderRadius: AppRadius.buttonSecondaryAll,
-        clipBehavior: Clip.antiAlias,
-        child: InkWell(
-          onTap: onTap,
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 150),
-            constraints: const BoxConstraints(minHeight: 48),
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: const BoxDecoration(
-              borderRadius: AppRadius.buttonSecondaryAll,
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.max,
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(label,
-                    style: AppText.statLabel(
-                        color: fg,
-                        shadows: active
-                            ? TextDepth.onAccentHalo(context.accent.palette)
-                            : null)),
-                const SizedBox(width: 4),
-                Icon(Icons.keyboard_arrow_down_rounded,
-                    size: 16,
-                    color: active ? accent.onAccent : surface.textSecondary),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
+                      size: 20, color: surface.

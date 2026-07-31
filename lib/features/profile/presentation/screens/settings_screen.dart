@@ -47,43 +47,48 @@ Future<void> showWeeklyGoalSheet(BuildContext context, WidgetRef ref) async {
     context: context,
     title: 'Weekly goal',
     subtitle: 'How many days a week do you want to train?',
-    child: Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    // C32: was a 7-way Expanded Row. Splitting a sheet only ~24dp-inset on
+    // each side into 7 equal flex slots, each further shrunk by 4dp/side of
+    // its own padding, left the actual tap target under 44dp on effectively
+    // every phone width up to ~410dp (as low as ~31dp at 320dp) — a real
+    // touch-target miss on the single most common device band (booked from
+    // B20). Fixed-size buttons in a centered Wrap guarantee 46x48 everywhere
+    // and simply drop to a second row on screens too narrow for all seven.
+    child: Wrap(
+      alignment: WrapAlignment.center,
+      spacing: 10,
+      runSpacing: 10,
       children: [
         for (var days = 1; days <= 7; days++)
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 4),
-              child: Semantics(
-                button: true,
-                selected: days == current,
-                excludeSemantics: true,
-                label: '$days day${days == 1 ? '' : 's'} per week',
-                child: GestureDetector(
-                  onTap: () {
-                    HapticFeedback.selectionClick();
-                    ref.read(weeklyGoalProvider.notifier).setGoal(days);
-                    Navigator.of(context, rootNavigator: true).pop();
-                  },
-                  child: AnimatedContainer(
-                    duration: MediaQuery.disableAnimationsOf(context)
-                        ? Duration.zero
-                        : const Duration(milliseconds: 150),
-                    height: 48,
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      color: days == current ? accent.base : surface.surface2,
-                      borderRadius:
-                          BorderRadius.circular(AppRadius.buttonSecondary),
-                    ),
-                    child: Text(
-                      '$days',
-                      style: AppText.button(
-                        color: days == current
-                            ? accent.onAccent
-                            : surface.textPrimary,
-                      ),
-                    ),
+          Semantics(
+            button: true,
+            selected: days == current,
+            excludeSemantics: true,
+            label: '$days day${days == 1 ? '' : 's'} per week',
+            child: GestureDetector(
+              onTap: () {
+                HapticFeedback.selectionClick();
+                ref.read(weeklyGoalProvider.notifier).setGoal(days);
+                Navigator.of(context, rootNavigator: true).pop();
+              },
+              child: AnimatedContainer(
+                duration: MediaQuery.disableAnimationsOf(context)
+                    ? Duration.zero
+                    : const Duration(milliseconds: 150),
+                width: 46,
+                height: 48,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: days == current ? accent.base : surface.surface2,
+                  borderRadius:
+                      BorderRadius.circular(AppRadius.buttonSecondary),
+                ),
+                child: Text(
+                  '$days',
+                  style: AppText.button(
+                    color: days == current
+                        ? accent.onAccent
+                        : surface.textPrimary,
                   ),
                 ),
               ),
