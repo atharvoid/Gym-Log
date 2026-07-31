@@ -390,13 +390,22 @@ class _RoutineEditorScreenState extends ConsumerState<RoutineEditorScreen> {
                                 },
                               );
                             },
-                            onReorderItem: (oldIndex, newIndex) {
+                            onReorder: (oldIndex, newIndex) {
                               // Last slot is the non-reorderable "Add Exercise" footer.
                               if (oldIndex >= _exercises.length) return;
                               HapticFeedback.mediumImpact();
                               setState(() {
                                 _dirty = true;
-                                // onReorderItem delivers a pre-adjusted newIndex — no manual -1.
+                                // `onReorder` reports newIndex against the
+                                // pre-removal list (Flutter's documented
+                                // contract) — without this adjustment every
+                                // downward drag lands one slot past where it
+                                // was dropped (B25). Note: `onReorderItem` is
+                                // not a real ReorderableListView.builder
+                                // parameter — omitting the required
+                                // `onReorder` here was a compile-breaking
+                                // typo (B25), fixed alongside this.
+                                if (newIndex > oldIndex) newIndex -= 1;
                                 // Clamp so an exercise can't be dropped past the footer.
                                 if (newIndex > _exercises.length - 1) {
                                   newIndex = _exercises.length - 1;
