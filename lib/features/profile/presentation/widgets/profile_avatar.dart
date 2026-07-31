@@ -353,6 +353,12 @@ class _CropScreenState extends State<_CropScreen> {
     });
   }
 
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
   Future<void> _onCropped(CropResult result) async {
     if (result is! CropSuccess) {
       if (mounted) {
