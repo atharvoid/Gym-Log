@@ -31,9 +31,9 @@ import 'dynamic_accent_theme.dart';
 /// The reactive helpers live on [AccentColors] (tint/selectionBorder/glow);
 /// the fixed-token tints below mirror the same ladder for semantic color.
 abstract class AppColors {
-  // ═══════════════════════════════════════════════════════════════════════════
+  // ════════════════════════════════════════════════════════════════════════════════════════════
   // DARK SURFACE HIERARCHY (AMOLED, build upward in steps)
-  // ═══════════════════════════════════════════════════════════════════════════
+  // ════════════════════════════════════════════════════════════════════════════════════════════
   static const bgBase = Color(0xFF000000); // Background — pure void
   static const bgSurface =
       Color(0xFF0D0D0D); // Surface 1 — default card (most used)
@@ -44,11 +44,19 @@ abstract class AppColors {
   static const surface4 =
       Color(0xFF242424); // Surface 4 — menus, action sheets, tooltips
 
-  // ═══════════════════════════════════════════════════════════════════════════
+  // ════════════════════════════════════════════════════════════════════════════════════════════
   // LIGHT SURFACE HIERARCHY (White palette — inverted luminance ladder)
   // Build DOWNWARD in steps from a near-white base toward darker surfaces.
   // This mirrors the dark hierarchy so the same visual depth layering works.
-  // ═══════════════════════════════════════════════════════════════════════════
+  //
+  // C29 audit note: UNREACHABLE in production today — ThemePalette.isLightSurface
+  // is hardcoded false for every palette (see theme_palette.dart), so
+  // SurfaceContextX.surface never resolves to these tokens; only two mock-based
+  // widget tests exercise this branch. The alpha values below also do not
+  // preserve the dark ladder's WCAG contrast ratios (spot-checked: textSecondary
+  // ≈7.4:1 dark vs ≈2.8:1 here). Treat this block as an unverified draft, not a
+  // ready-to-ship light theme, if it is ever activated.
+  // ════════════════════════════════════════════════════════════════════════════════════════════
   static const bgBaseLight =
       Color(0xFFF5F5F7); // Background — premium pearl white
   static const bgSurfaceLight = Color(0xFFEBEBEE); // Surface 1 — default card
@@ -67,7 +75,7 @@ abstract class AppColors {
   static const borderEmphasisLight =
       Color(0x4D000000); // black 30% — focused/selected
 
-  // ── Light text — black at controlled opacity ────────────────────────────
+  // ── Light text — black at controlled opacity ───────────────────────
   static const textPrimaryLight = Color(0xFF1C1C1E); // headings, key numbers
   static const textSecondaryLight =
       Color(0x66000000); // black 40% — dates, subtitles
@@ -89,7 +97,7 @@ abstract class AppColors {
     colors: [Color(0xFF0E0E11), Color(0xFF09090B)],
   );
 
-  // ── Card surface gradient — LIGHT variant ──────────────────────────────
+  // ── Card surface gradient — LIGHT variant ─────────────────────
   static const cardGradientLight = LinearGradient(
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,
@@ -177,7 +185,7 @@ abstract class AppColors {
   static const prBadgeBg = Color(0x26E6C84A); // gold 15%
   static const prBadgeBorder = Color(0x4DE6C84A); // gold 30%
 
-  // ── Text — white at controlled opacity (NOT hardcoded grey) ─────────────
+  // ── Text — white at controlled opacity (NOT hardcoded grey) ───────────
   static const textPrimary =
       Color(0xFFFFFFFF); // headings, key numbers, exercise names
   static const textSecondary =
@@ -186,7 +194,7 @@ abstract class AppColors {
       Color(0x59FFFFFF); // white 35% — placeholders, column headers
   static const textDisabled = Color(0x33FFFFFF); // white 20% — inactive states
 
-  // ── Charts ──────────────────────────────────────────────────────────────
+  // ── Charts ─────────────────────────────────────────────
   static const chartAxisLabel = Color(0x59FFFFFF); // == textTertiary
 
   // Profile analytics bar chart.
@@ -225,10 +233,10 @@ abstract class AppColors {
   ];
 }
 
-// ═══════════════════════════════════════════════════════════════════════════
+// ════════════════════════════════════════════════════════════════════════════════════════════
 // SurfaceContextX — context-aware surface tokens that switch between dark
 // and light hierarchies based on the active palette.
-// ═══════════════════════════════════════════════════════════════════════════
+// ════════════════════════════════════════════════════════════════════════════════════════════
 
 /// A bundle of surface tokens for the current brightness mode.
 /// Access via `context.surface` — returns [SurfaceTokensDark] for dark

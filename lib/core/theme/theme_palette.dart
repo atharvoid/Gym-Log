@@ -226,6 +226,14 @@ enum ThemePalette {
   /// Whether this palette has a light base surface. The app is AMOLED-dark for
   /// EVERY palette — White is a white ACCENT on the dark canvas, not a light
   /// theme — so this is always false. Retained as a hook only.
+  ///
+  /// C29 audit note: this hook has never been flipped to true in production,
+  /// and [SurfaceTokens.light] (app_colors.dart) has never been contrast-
+  /// verified against [SurfaceTokens.dark] as a result — a spot check found
+  /// its text/border alpha values do NOT preserve the dark ladder's contrast
+  /// ratios (e.g. textSecondary ≈7.4:1 on dark vs ≈2.8:1 on light, which
+  /// fails WCAG's 3:1 floor). Re-derive and re-verify every SurfaceTokens.light
+  /// value against WCAG 1.4.3/1.4.11 before ever wiring this to true.
   bool get isLightSurface => false;
 
   /// Resolves a persisted key back to a palette, defaulting to [fallback] when

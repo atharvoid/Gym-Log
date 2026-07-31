@@ -194,8 +194,12 @@ class _GymLogAppState extends ConsumerState<GymLogApp> {
     // tokens flow into colorScheme, buttons, inputs, switches, and the
     // AccentColors extension consumed via `context.accent`.
     //
-    // Task 11: we also watch the palette enum so buildAppTheme can switch
-    // brightness/surfaces for the White palette.
+    // Task 11: we also watch the palette enum so buildAppTheme can stamp it
+    // onto the AccentColors extension (context.accent.palette / isLightSurface).
+    // This does NOT switch brightness or surfaces: buildAppTheme is hardcoded
+    // to Brightness.dark / SurfaceTokens.dark for every palette, including
+    // White. ThemePalette.isLightSurface is permanently false (see
+    // theme_palette.dart) — no palette has ever driven a real light surface.
     final palette = ref.watch(dynamicAccentThemeProvider);
     final tokens = palette.tokens;
 
