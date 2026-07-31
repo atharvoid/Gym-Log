@@ -22,6 +22,7 @@ import '../../../../shared/providers/bottom_chrome_provider.dart';
 import '../../../../shared/widgets/premium_paywall.dart';
 import '../../../../shared/widgets/ui/app_action_row.dart';
 import '../../../../shared/widgets/ui/app_card.dart';
+import '../../../../shared/widgets/ui/app_snack_bar.dart';
 import '../../../../shared/widgets/ui/goal_ring.dart';
 import '../../../../shared/widgets/ui/app_refresh_indicator.dart';
 import '../../../../shared/widgets/ui/segmented_control.dart';
@@ -122,14 +123,13 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     if (!tapGuard()) return;
     if (isPremium) {
       HapticFeedback.lightImpact();
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text(
-          'You are on GymLog Pro. Thanks for the support!',
-          style: AppText.button(),
-        ),
-        backgroundColor: context.surface.bgSurface,
-        behavior: SnackBarBehavior.floating,
-      ));
+      // Was a raw ScaffoldMessenger.showSnackBar bypassing showAppSnackBar —
+      // lost the standardized shape/border/2-line clamp/bottom-clearance math
+      // every other snackbar in the app gets (C28).
+      showAppSnackBar(
+        context,
+        message: 'You are on GymLog Pro. Thanks for the support!',
+      );
     } else {
       showPremiumPaywall(context);
     }
@@ -358,8 +358,6 @@ class _IdentityHeader extends ConsumerWidget {
                           if (!context.mounted) return;
                           final user = ref.read(authProvider);
                           if (user != null) {
-                            final messenger = ScaffoldMessenger.of(context);
-                            final bgSurface = context.surface.bgSurface;
                             final success = await ref
                                 .read(profileSyncProvider)
                                 .submitDisplayName(
@@ -370,13 +368,19 @@ class _IdentityHeader extends ConsumerWidget {
                             if (success) {
                               ref.invalidate(currentUserProfileProvider);
                             } else {
-                              messenger.showSnackBar(SnackBar(
-                                content: Text(
+                              // Was: pre-capture messenger/bgSurface, then hand-roll
+                              // a SnackBar via messenger.showSnackBar after the
+                              // await. Re-checking context.mounted here and
+                              // calling showAppSnackBar directly is both the
+                              // modern-lint-correct pattern AND routes through
+                              // the standardized helper (shape/border/clamp/
+                              // clearance) instead of bypassing it (C28).
+                              if (!context.mounted) return;
+                              showAppSnackBar(
+                                context,
+                                message:
                                     "Couldn't save your name. Try again.",
-                                    style: AppText.button()),
-                                backgroundColor: bgSurface,
-                                behavior: SnackBarBehavior.floating,
-                              ));
+                              );
                             }
                           }
                         }
@@ -702,206 +706,4 @@ class _TrainingChartSectionState extends ConsumerState<_TrainingChartSection> {
           child: SegmentedControl(
             segments: const ['Volume', 'Duration', 'Reps'],
             selected: metric.label,
-            onChanged: (label) {
-              final next = ProfileGraphMetric.values.firstWhere(
-                (m) => m.label == label,
-              );
-              if (next == metric) return;
-              HapticFeedback.selectionClick();
-              setState(() => _switchVersion++);
-              ref.read(profileChartMetricProvider.notifier).setMetric(next);
-            },
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _QuickLinks extends StatelessWidget {
-  final bool isPremium;
-  final VoidCallback onPremiumTap;
-  final VoidCallback onExerciseLibraryTap;
-  final VoidCallback onSettingsTap;
-
-  const _QuickLinks({
-    required this.isPremium,
-    required this.onPremiumTap,
-    required this.onExerciseLibraryTap,
-    required this.onSettingsTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return AppCard(
-      radius: AppRadius.card,
-      padding: EdgeInsets.zero,
-      child: Column(
-        children: [
-          AppActionRow(
-            icon: Icons.workspace_premium_rounded,
-            iconColor: context.accent.light,
-            title: isPremium ? 'GymLog Pro' : 'Upgrade to Pro',
-            subtitle: isPremium
-                ? 'Active (full history unlocked)'
-                : 'Full analytics history & more',
-            onTap: onPremiumTap,
-          ),
-          const AppActionDivider(),
-          AppActionRow(
-            icon: Icons.fitness_center_rounded,
-            title: 'Exercise Library',
-            subtitle: 'Browse exercises, form guides & records',
-            onTap: onExerciseLibraryTap,
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _LoadingBody extends StatelessWidget {
-  final double bottomClearance;
-
-  const _LoadingBody({required this.bottomClearance});
-
-  @override
-  Widget build(BuildContext context) {
-    return SkeletonPulse(
-      label: 'Loading your profile',
-      child: ListView(
-        padding: EdgeInsets.fromLTRB(16, 4, 16, bottomClearance),
-        children: [
-          const Row(
-            children: [
-              SkeletonBox(
-                  width: 56, height: 56, radius: AppRadius.buttonPrimary),
-              SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    SkeletonBox(
-                        width: 140, height: 19, radius: AppRadius.input),
-                    SizedBox(height: 6),
-                    SkeletonBox(
-                        width: 180, height: 13, radius: AppRadius.input),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
-          AppCard(
-            radius: AppRadius.card,
-            child: Row(
-              children: [
-                for (var i = 0; i < 3; i++) ...[
-                  const Expanded(
-                    child: Column(
-                      children: [
-                        SkeletonBox(
-                            width: 50, height: 17, radius: AppRadius.input),
-                        SizedBox(height: 5),
-                        SkeletonBox(
-                            width: 56, height: 10, radius: AppRadius.input),
-                      ],
-                    ),
-                  ),
-                  if (i < 2) const SizedBox(width: 1),
-                ],
-              ],
-            ),
-          ),
-          const SizedBox(height: 28),
-          const AppCard(
-            radius: AppRadius.card,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                SkeletonBox(width: 120, height: 16, radius: AppRadius.input),
-                SizedBox(height: 12),
-                SkeletonBox(
-                    width: double.infinity,
-                    height: 150,
-                    radius: AppRadius.card),
-                SizedBox(height: 14),
-                SkeletonBox(
-                    width: double.infinity,
-                    height: 36,
-                    radius: AppRadius.segmentedOuter),
-              ],
-            ),
-          ),
-          const SizedBox(height: 28),
-          AppCard(
-            radius: AppRadius.card,
-            child: Column(
-              children: [
-                for (var i = 0; i < 2; i++) ...[
-                  const SkeletonBox(
-                      width: double.infinity,
-                      height: 48,
-                      radius: AppRadius.input),
-                  if (i < 1) const SizedBox(height: 1),
-                ],
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _ErrorBody extends StatelessWidget {
-  final double bottomClearance;
-  final VoidCallback onRetry;
-
-  const _ErrorBody({required this.bottomClearance, required this.onRetry});
-
-  @override
-  Widget build(BuildContext context) {
-    final surface = context.surface;
-    return ListView(
-      padding: EdgeInsets.fromLTRB(16, 4, 16, bottomClearance),
-      children: [
-        AppCard(
-          radius: AppRadius.card,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Icon(Icons.error_outline_rounded,
-                  color: AppColors.error, size: 28),
-              const SizedBox(height: 12),
-              Text('Could not load profile',
-                  style: AppText.sheetTitle(color: surface.textPrimary)),
-              const SizedBox(height: 6),
-              Text(
-                'We had trouble reading your local profile. Your workouts are safe.',
-                style: AppText.body(color: surface.textSecondary),
-              ),
-              const SizedBox(height: 16),
-              SizedBox(
-                width: double.infinity,
-                height: 48,
-                child: ElevatedButton(
-                  onPressed: onRetry,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: context.accent.base,
-                    foregroundColor: context.accent.onAccent,
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                        borderRadius:
-                            BorderRadius.circular(AppRadius.buttonPrimary)),
-                  ),
-                  child: Text('Retry', style: AppText.button()),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-}
+            on

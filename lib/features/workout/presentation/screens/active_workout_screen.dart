@@ -824,22 +824,12 @@ Future<ReplacementChoice?> _showReplaceExerciseDialog(BuildContext context) {
             children: [
               Text(
                 'Replace exercise?',
-                style: TextStyle(
-                  fontFamily: 'Inter',
-                  fontSize: 18,
-                  fontWeight: FontWeight.w700,
-                  color: surface.textPrimary,
-                ),
+                style: AppText.sheetTitle(color: surface.textPrimary),
               ),
               const SizedBox(height: 8),
               Text(
                 'This exercise has logged data. Choose how to handle your existing sets.',
-                style: TextStyle(
-                  fontFamily: 'Inter',
-                  fontSize: 14,
-                  fontWeight: FontWeight.w400,
-                  color: surface.textSecondary,
-                ),
+                style: AppText.meta(color: surface.textSecondary),
               ),
               const SizedBox(height: 20),
               Material(
@@ -855,12 +845,7 @@ Future<ReplacementChoice?> _showReplaceExerciseDialog(BuildContext context) {
                     child: Center(
                       child: Text(
                         'Replace and clear sets',
-                        style: TextStyle(
-                          fontFamily: 'Inter',
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: surface.textPrimary,
-                        ),
+                        style: AppText.button(color: surface.textPrimary),
                       ),
                     ),
                   ),
@@ -880,12 +865,7 @@ Future<ReplacementChoice?> _showReplaceExerciseDialog(BuildContext context) {
                     child: Center(
                       child: Text(
                         'Replace and keep compatible values',
-                        style: TextStyle(
-                          fontFamily: 'Inter',
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: accent.light,
-                        ),
+                        style: AppText.button(color: accent.light),
                       ),
                     ),
                   ),
@@ -897,12 +877,7 @@ Future<ReplacementChoice?> _showReplaceExerciseDialog(BuildContext context) {
                     Navigator.pop(dialogContext, ReplacementChoice.cancel),
                 child: Text(
                   'Cancel',
-                  style: TextStyle(
-                    fontFamily: 'Inter',
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                    color: surface.textSecondary,
-                  ),
+                  style: AppText.button(color: surface.textSecondary),
                 ),
               ),
             ],

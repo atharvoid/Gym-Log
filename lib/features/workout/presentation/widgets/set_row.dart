@@ -322,20 +322,10 @@ class _SetRowState extends State<SetRow> {
                   FilteringTextInputFormatter.digitsOnly,
                 LengthLimitingTextInputFormatter(isDecimal ? 6 : 5),
               ],
-              style: TextStyle(
-                fontFamily: 'Inter',
-                fontFeatures: const [FontFeature.tabularFigures()],
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: surface.textPrimary,
-              ),
+              style: AppText.value(color: surface.textPrimary),
               decoration: InputDecoration(
                 hintText: hintText ?? '0',
-                hintStyle: TextStyle(
-                  fontFamily: 'Inter',
-                  fontFeatures: const [FontFeature.tabularFigures()],
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
+                hintStyle: AppText.value(
                   color: flashHint
                       ? accent.base.withValues(alpha: 0.85)
                       : surface.textTertiary,

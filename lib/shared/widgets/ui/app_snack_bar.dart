@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:gymlog/core/theme/app_colors.dart';
+import 'package:gymlog/core/theme/app_text.dart';
 import 'package:gymlog/core/theme/dynamic_accent_theme.dart';
 
 /// Global snackbar helper providing standardized floating snackbar alerts.
@@ -32,7 +33,7 @@ void showAppSnackBar(
       elevation: 4,
       backgroundColor: surface.surface3,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(AppRadius.snackbar),
         side: BorderSide(color: surface.borderSubtle, width: 1.0),
       ),
       margin: EdgeInsets.fromLTRB(16, 0, 16, bottomPadding),
@@ -40,12 +41,7 @@ void showAppSnackBar(
         message,
         maxLines: 2,
         overflow: TextOverflow.ellipsis,
-        style: TextStyle(
-          fontFamily: 'Inter',
-          fontSize: 14,
-          fontWeight: FontWeight.w500,
-          color: surface.textPrimary,
-        ),
+        style: AppText.body(color: surface.textPrimary),
       ),
       action: actionLabel != null
           ? SnackBarAction(

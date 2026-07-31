@@ -369,6 +369,22 @@ abstract class AppText {
         letterSpacing: letterSpacing,
         shadows: shadows,
       );
+
+  /// Bottom-nav tab label: 11 / 600. Metrically identical to [columnHeader]/
+  /// [groupHeader] (also 11/600) but WITHOUT their +0.8 letterSpacing — nav
+  /// labels ("Home", "Routines", "Profile") are sentence case, not the all-caps
+  /// text those two tracking-heavy styles exist for. Added for C28 to replace
+  /// an ad-hoc `rowLabel(...).copyWith(fontSize: 11)` override that had no
+  /// named rung of its own.
+  static TextStyle navLabel({
+    Color color = AppColors.textPrimary,
+    List<Shadow>? shadows,
+  }) =>
+      GoogleFonts.inter(
+          fontSize: 11,
+          fontWeight: FontWeight.w600,
+          color: color,
+          shadows: shadows);
 }
 
 /// Border-radius scale. The premium "sweet spot" curvature: cards and
@@ -386,6 +402,11 @@ abstract class AppRadius {
   static const double segmentedOuter = 14;
   static const double segmentedInner = 12;
   static const double nav = 0;
+
+  /// Snackbar corner radius. Shares [buttonPrimary]'s 14px curvature by
+  /// design coincidence, not by reference — named separately so a future
+  /// change to CTA curvature doesn't silently reshape every snackbar too.
+  static const double snackbar = 14;
 
   static const BorderRadius cardAll = BorderRadius.all(Radius.circular(card));
   static const BorderRadius buttonPrimaryAll =
