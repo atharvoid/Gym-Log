@@ -171,10 +171,12 @@ abstract final class Bootstrap {
   static void _armCloudReadyWatchdog(Completer<bool> cloudReady) {
     Timer(cloudReadyWatchdog, () {
       if (cloudReady.isCompleted) return;
-      debugPrint(
-          '[Bootstrap] cloud readiness watchdog fired after '
-          '${cloudReadyWatchdog.inSeconds}s — the post-frame callback never '
-          'completed the gate. Continuing in local-only mode.');
+      if (kDebugMode) {
+        debugPrint(
+            '[Bootstrap] cloud readiness watchdog fired after '
+            '${cloudReadyWatchdog.inSeconds}s — the post-frame callback never '
+            'completed the gate. Continuing in local-only mode.');
+      }
       unawaited(Sentry.captureMessage(
         'Cloud readiness watchdog fired — post-frame bootstrap never resolved',
         level: SentryLevel.warning,
@@ -239,10 +241,15 @@ abstract final class Bootstrap {
       await _verifyIntegrityInBackground(db);
     } catch (e, st) {
       // Everything below the failure point is abandoned: the user gets a
-      // silently degraded app that still looks fine. debugPrint is compiled
-      // out of release builds, so without this capture the most consequential
-      // failure in bootstrap would leave no trace in production at all.
-      debugPrint('[Bootstrap] postLaunchBackgroundWork failed: $e');
+      // silently degraded app that still looks fine. debugPrint runs in every
+      // build mode (release included) but nobody is watching a production
+      // device's console, so Sentry.captureException below is what actually
+      // surfaces this failure in practice — the local debugPrint is dev-
+      // console convenience only and is gated so it does not also write raw
+      // exception text to the release-build system log (see C38).
+      if (kDebugMode) {
+        debugPrint('[Bootstrap] postLaunchBackgroundWork failed: $e');
+      }
       unawaited(Sentry.captureException(e, stackTrace: st));
       if (!cloudReady.isCompleted) cloudReady.complete(false);
     }
@@ -295,10 +302,12 @@ abstract final class Bootstrap {
     };
 
     if (!Env.hasSentryConfig) {
-      debugPrint(
-          '[Bootstrap] No SENTRY_DSN in this build — Sentry will initialize but '
-          'events will not be sent. Build with --dart-define-from-file=.env '
-          'to enable crash reporting.');
+      if (kDebugMode) {
+        debugPrint(
+            '[Bootstrap] No SENTRY_DSN in this build — Sentry will initialize but '
+            'events will not be sent. Build with --dart-define-from-file=.env '
+            'to enable crash reporting.');
+      }
     }
   }
 
@@ -324,7 +333,9 @@ abstract final class Bootstrap {
           .timeout(dbOpenProbeTimeout);
       return (db: db, corrupted: false);
     } catch (e, st) {
-      debugPrint('[Bootstrap] database open probe failed: $e');
+      if (kDebugMode) {
+        debugPrint('[Bootstrap] database open probe failed: $e');
+      }
       unawaited(Sentry.captureException(e, stackTrace: st));
       return (db: db, corrupted: true);
     }
@@ -351,7 +362,9 @@ abstract final class Bootstrap {
       final ok = rows.isNotEmpty &&
           rows.first.data.values.first.toString().toLowerCase() == 'ok';
       if (!ok) {
-        debugPrint('[Bootstrap] deferred quick_check did not return ok');
+        if (kDebugMode) {
+          debugPrint('[Bootstrap] deferred quick_check did not return ok');
+        }
         unawaited(Sentry.captureMessage(
           'Deferred database quick_check failed',
           level: SentryLevel.error,
@@ -359,7 +372,9 @@ abstract final class Bootstrap {
         databaseIntegrityFailed.value = true;
       }
     } catch (e, st) {
-      debugPrint('[Bootstrap] deferred integrity check failed: $e');
+      if (kDebugMode) {
+        debugPrint('[Bootstrap] deferred integrity check failed: $e');
+      }
       unawaited(Sentry.captureException(e, stackTrace: st));
     }
   }
@@ -392,7 +407,10 @@ abstract final class Bootstrap {
       }
       return ThemePalette.fromStorage(prefs.getString(kAccentPaletteKey));
     } catch (e) {
-      debugPrint('[Bootstrap] accent palette load failed — default accent: $e');
+      if (kDebugMode) {
+        debugPrint(
+            '[Bootstrap] accent palette load failed — default accent: $e');
+      }
       return ThemePalette.fallback;
     }
   }
@@ -405,9 +423,11 @@ abstract final class Bootstrap {
   /// `Supabase.instance` singleton exists for the rest of the app.
   static Future<bool> _initCloud() async {
     if (!Env.hasSupabaseConfig) {
-      debugPrint(
-          '[Bootstrap] No Supabase config — auth unavailable; local logging '
-          'still works.');
+      if (kDebugMode) {
+        debugPrint(
+            '[Bootstrap] No Supabase config — auth unavailable; local logging '
+            'still works.');
+      }
     }
     try {
       await Supabase.initialize(
@@ -416,11 +436,15 @@ abstract final class Bootstrap {
       ).timeout(cloudInitTimeout);
       return Env.hasSupabaseConfig;
     } on TimeoutException {
-      debugPrint(
-          '[Bootstrap] Supabase init timed out — continuing in local-only mode.');
+      if (kDebugMode) {
+        debugPrint(
+            '[Bootstrap] Supabase init timed out — continuing in local-only mode.');
+      }
       return false;
     } catch (e) {
-      debugPrint('[Bootstrap] Supabase init failed — local-only mode: $e');
+      if (kDebugMode) {
+        debugPrint('[Bootstrap] Supabase init failed — local-only mode: $e');
+      }
       return false;
     }
   }
@@ -464,7 +488,9 @@ abstract final class Bootstrap {
         await db.workoutsDao.deleteOrphanedSessions(user.id);
       }
     } catch (e, st) {
-      debugPrint('[Bootstrap] post-launch maintenance failed: $e');
+      if (kDebugMode) {
+        debugPrint('[Bootstrap] post-launch maintenance failed: $e');
+      }
       unawaited(Sentry.captureException(e, stackTrace: st));
     }
   }
