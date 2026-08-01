@@ -103,6 +103,17 @@ class RestTimerNotifier extends StateNotifier<RestTimerState?>
           exerciseName: exerciseName,
         ));
 
+    // D42: ask for notification permission here — the first moment the user
+    // is actually experiencing the feature the permission is for ("notify me
+    // when rest is over") — instead of at cold start (see bootstrap.dart).
+    // Cold start had no context for the OS prompt: a user who had not yet
+    // started a single set, let alone backgrounded the app mid-rest, could
+    // permanently lose the ability to be re-prompted (both platforms suppress
+    // the native dialog after one decision) for a feature they had not yet
+    // seen. hasPermission() is checked first so this is a no-op once already
+    // resolved, rather than a platform-channel round trip on every set.
+    unawaited(_ensureNotificationPermission());
+
     _ticker = Timer.periodic(const Duration(seconds: 1), (_) => _sync());
   }
 
@@ -287,6 +298,16 @@ class RestTimerNotifier extends StateNotifier<RestTimerState?>
         endTime: endTime,
       );
     }
+  }
+
+  /// Requests notification permission if not already granted. Called from
+  /// [start] — see the D42 comment there for why this replaced the
+  /// unconditional cold-start request in bootstrap.dart.
+  Future<void> _ensureNotificationPermission() async {
+    final notifService = _ref.read(notificationServiceProvider);
+    final already = await notifService.hasPermission();
+    if (already) return;
+    await notifService.requestPermissions();
   }
 
   @override

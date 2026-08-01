@@ -212,19 +212,20 @@ abstract final class Bootstrap {
       // completing a completed Completer throws StateError.
       if (!cloudReady.isCompleted) cloudReady.complete(cloudOk);
 
-      // 2. Local notifications initialization (fire-and-forget). Chained
-      //    requestPermissions() after init() — C36-F2 found this method
-      //    existed but had no call site anywhere in the app, so notification
-      //    permission was never actually requested on Android 13+ or iOS and
-      //    the rest-timer background notification could never fire in
-      //    production. Whether this should instead be asked contextually
-      //    (e.g. the first time a rest timer starts) is a product-timing
-      //    question booked to D42, not fixed here.
-      unawaited(
-        notificationService.init().then(
-          (_) => notificationService.requestPermissions(),
-        ),
-      );
+      // 2. Local notifications initialization (fire-and-forget). C36-F2
+      //    found requestPermissions() existed but had no call site anywhere
+      //    in the app, so notification permission was never actually
+      //    requested and the rest-timer background notification could never
+      //    fire in production; chaining requestPermissions() after init()
+      //    fixed that. D42 revisits the resulting cold-start timing: asking
+      //    before the user has ever started a single set gives the one-shot
+      //    OS prompt zero context, and a denial here is permanent on both
+      //    platforms. The channel setup in init() still has to happen at
+      //    cold start — rest-timer notifications need somewhere to land the
+      //    moment they're needed — but the permission REQUEST itself has
+      //    moved to RestTimerNotifier.start(), the first moment the user is
+      //    actually using the feature the permission exists for.
+      unawaited(notificationService.init());
 
       // 3. Media cache maintenance (fire-and-forget, no database access)
       unawaited(ExerciseMediaCacheManager().performMaintenance());
