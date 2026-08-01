@@ -60,6 +60,18 @@ class _GymLogAppState extends ConsumerState<GymLogApp> {
   /// even when GoRouter bypasses SplashScreen (e.g. fresh install).
   StreamSubscription<AuthState>? _authSub;
 
+  /// At-most-once latch for the backgrounding flush.
+  ///
+  /// [_flush] is deliberately wired to BOTH `onHide` and `onPause`: the two
+  /// events are not reliably interchangeable across platforms, and dropping
+  /// either one risks a backgrounding that never flushes at all. But on
+  /// Android a normal backgrounding fires hide and then pause, so the naive
+  /// wiring ran the whole flush twice — two `enqueuePreferences` writes and
+  /// two `syncNow` passes — at exactly the moment the OS is trying to suspend
+  /// the process. This latch keeps both subscriptions and makes the work
+  /// happen once per background episode, reset on resume.
+  bool _flushedForThisBackgrounding = false;
+
   @override
   void initState() {
     super.initState();
@@ -115,8 +127,12 @@ class _GymLogAppState extends ConsumerState<GymLogApp> {
   String? get _userId => ref.read(authProvider)?.id;
 
   void _flush() {
+    // Android fires onHide and onPause back to back on a single backgrounding;
+    // without this latch the entire flush would run twice. See the field doc.
+    if (_flushedForThisBackgrounding) return;
     final id = _userId;
     if (id == null) return;
+    _flushedForThisBackgrounding = true;
     // The gate is checked inside the engine — if sync is not allowed,
     // enqueuePreferences and syncNow are silent no-ops.
     final engine = ref.read(syncEngineProvider);
@@ -126,6 +142,8 @@ class _GymLogAppState extends ConsumerState<GymLogApp> {
   }
 
   void _onResume() {
+    // Re-arm the backgrounding flush for the next hide/pause episode.
+    _flushedForThisBackgrounding = false;
     final id = _userId;
     if (id != null) ref.read(syncEngineProvider).scheduleSync(id);
   }
