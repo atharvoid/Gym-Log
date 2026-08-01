@@ -119,3 +119,24 @@ Each of the 6 user-selectable palettes exposes:
 > MUST render its label and icon in `context.accent.onAccent` (near-black) — never
 > `AppColors.textPrimary` (white). White-on-accent is invisible on light palettes
 > (White, Cyan, Higgsfield) and looks wrong everywhere else.
+
+---
+
+## Identity Assets — Source of Truth (E51, 1 Aug 2026)
+
+- `gymlog_app_icon.png` (repo root) is the master app icon artwork. The
+  platform-embedded icons (`ios/Runner/Assets.xcassets/AppIcon.appiconset/*`,
+  `android/app/src/main/res/mipmap-*/ic_launcher.png`) were generated from it
+  by hand — there is no `flutter_launcher_icons` (or equivalent) dependency
+  in `pubspec.yaml` wiring them together. Any future update to the root PNG
+  must be manually re-exported to every platform size, or the shipped icon
+  will silently drift from the master artwork.
+- `android_backup/` at the repo root is a stale, fully duplicated Android
+  Gradle project (its own `build.gradle`, `settings.gradle`, gradle
+  wrapper, `.iml`) sitting beside the real `android/`. It is not referenced
+  by any build script or CI config found in this audit. Do not edit it —
+  it is a kill-list candidate, not a second build target.
+- `play_store_screenshots/` and `screenshots/` were last captured
+  2026-07-08, before most of this audit's motion, haptic, and token fixes
+  landed. Treat them as stale reference material, not proof of current
+  UI, until they are recaptured against a current build.
