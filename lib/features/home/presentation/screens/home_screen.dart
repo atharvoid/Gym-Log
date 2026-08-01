@@ -290,6 +290,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             // already has routines and the tour was deferred).
             // Guard: only render when Home is the active top route so the
             // mask cannot leak through to another screen during transitions.
+            //
+            // The description must name the control the spotlight is actually
+            // highlighting. The card's action reads "Browse programs"; the
+            // word "Explore" belongs to a different button on the Routines
+            // tab, so naming it here sent the user looking for a control that
+            // is not on the screen — and the mask hid everything else.
             if (tourStep == 0 && (ModalRoute.of(context)?.isCurrent ?? false))
               SpotlightTourOverlay(
                 targetKey: hasNoRoutines ? _findProgramKey : _quickStartKey,
@@ -297,7 +303,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     ? 'Find a training program'
                     : 'Ready to train?',
                 description: hasNoRoutines
-                    ? 'Choose a trainer-built routine. Tap "Explore Programs" to browse workouts tailored for your experience level.'
+                    ? 'Choose a trainer-built routine. Tap "Browse programs" to see workouts tailored for your experience level.'
                     : 'Tap "Start Empty Workout" to log a session, or browse your routine library for a structured program.',
                 step: 0,
                 borderRadius: AppRadius.card,
