@@ -6,6 +6,14 @@ enum PushResultStatus {
   accepted,
   conflict,
   duplicateOperation,
+
+  /// The server row with this id belongs to a different user.
+  ///
+  /// A6 re-run: this used to be reported as [conflict] with a null
+  /// serverObject, which made SyncEngine's quarantine branch unreachable.
+  /// It is a distinct outcome from a revision conflict — there is nothing to
+  /// merge and nothing to retry — so it gets a distinct status.
+  ownershipMismatch,
 }
 
 class PushResult {
@@ -114,9 +122,13 @@ class SupabaseSyncRemote implements SyncRemote {
       if (existing != null) {
         final serverUserId = existing['user_id'] as String?;
         if (serverUserId != null && serverUserId != o.userId) {
+          // A6 re-run: report this as its own status. Returning `conflict`
+          // with no serverObject left SyncEngine with no branch that could
+          // fire, so the row was neither quarantined nor acked and came back
+          // at the head of every subsequent batch.
           resultsById[o.id] = PushResult(
             id: o.id,
-            status: PushResultStatus.conflict,
+            status: PushResultStatus.ownershipMismatch,
             serverRevision: (existing['revision'] as num?)?.toInt() ?? 1,
           );
           continue;
