@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:gymlog/core/theme/app_colors.dart';
 import 'package:gymlog/core/theme/app_text.dart';
 import 'package:gymlog/core/theme/dynamic_accent_theme.dart';
@@ -71,8 +70,13 @@ class _FinishSummarySheetState extends State<_FinishSummarySheet> {
   @override
   void initState() {
     super.initState();
-    // The session is done — a definitive success cue.
-    HapticFeedback.heavyImpact();
+    // E49: the "session is done" heavyImpact() used to fire right here, the
+    // moment this sheet opens — before the user could still tap Cancel, or
+    // before the save could fail. A cancelled or failed finish was getting
+    // the app's heaviest, rarest success cue for an outcome that hadn't
+    // happened yet. The real completion haptic now fires exactly once, only
+    // on a confirmed WorkoutSaveSuccess, in
+    // ActiveWorkoutScreen._retryFinish.
   }
 
   @override

@@ -60,7 +60,7 @@ layers, never decorative borders.
 - `HapticFeedback.mediumImpact()` on primary CTA taps, including workout start (`PrimaryButton`, `StartButton`) — corrected 1 Aug 2026; this section used to say `heavyImpact()` on workout start, which no call site in the app actually implements
 - `HapticFeedback.selectionClick()` on segment/tab changes and most other selection changes
 - `HapticFeedback.mediumImpact()` on a valid set completion (not `lightImpact()` as previously documented here); `HapticFeedback.heavyImpact()` on a rejected completion tap (missing weight/reps)
-- `HapticFeedback.heavyImpact()` is otherwise reserved for destructive confirmations (delete, database reset) and the rest timer's end-of-rest double-buzz
+- `HapticFeedback.heavyImpact()` is otherwise reserved for destructive confirmations (delete, database reset), a successful (non-PR) workout finish (`ActiveWorkoutScreen._retryFinish`) — corrected 1 Aug 2026; a duplicate, premature firing of this same cue at sheet-open time (before Cancel or a save failure could still happen) was removed from `finish_summary_sheet.dart` the same day — and the rest timer's end-of-rest double-buzz
 - Personal records get their own escalated sequence, undocumented until now: `HapticFeedback.heavyImpact()` when the celebration appears, then `HapticFeedback.mediumImpact()` roughly 240ms later as the card settles (`pr_celebration_overlay.dart`)
 
 **Known exception:** `TogglePill` fires `lightImpact()` for its own selection changes instead of `selectionClick()`, unlike every other segmented/tab-style control in the app. Not yet reconciled — flagged in `toggle_pill.dart`.
