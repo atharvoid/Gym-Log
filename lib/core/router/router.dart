@@ -7,6 +7,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../providers/cloud_readiness_provider.dart';
 import '../providers/supabase_client_provider.dart';
 import '../../shared/widgets/app_shell.dart';
+import '../../shared/widgets/app_error_screen.dart';
 import '../../features/auth/presentation/screens/splash_screen.dart';
 import '../../features/auth/presentation/screens/auth_screen.dart';
 import '../../features/auth/presentation/screens/onboarding_screen.dart';
@@ -32,10 +33,18 @@ import '../../core/database/database.dart';
 /// post-first-frame — see Bootstrap). Notifies GoRouter once at creation and
 /// again when readiness resolves, so redirects re-evaluate with the real
 /// auth state: a restored session sitting on /auth self-heals into /splash.
+///
+/// DISPOSAL CONTRACT: the readiness future is started in the constructor and
+/// outlives nothing — it can resolve after this notifier is gone (cloud init
+/// is bounded at 4s and the watchdog at 12s, both longer than a fast
+/// container teardown). Every notifyListeners() below is therefore guarded by
+/// [_disposed], and the auth subscription is cancelled immediately if
+/// disposal wins the race against its own assignment.
 class _DeferredAuthRefreshListenable extends ChangeNotifier {
   _DeferredAuthRefreshListenable(Future<bool> cloudReady) {
     notifyListeners();
     unawaited(cloudReady.then((ready) {
+      if (_disposed) return;
       _cloudReady = ready;
       if (ready) {
         final client = supabaseClientOrNull();
@@ -44,15 +53,27 @@ class _DeferredAuthRefreshListenable extends ChangeNotifier {
           // abandoned init future after a timeout). Stay local-only.
           _cloudReady = false;
         } else {
-          _subscription = client.auth.onAuthStateChange
-              .listen((_) => notifyListeners());
+          final subscription = client.auth.onAuthStateChange.listen((_) {
+            if (_disposed) return;
+            notifyListeners();
+          });
+          if (_disposed) {
+            // dispose() ran while we were awaiting readiness, so it already
+            // cancelled a still-null _subscription. Cancel ours directly or
+            // it leaks for the life of the process.
+            unawaited(subscription.cancel());
+            return;
+          }
+          _subscription = subscription;
         }
       }
+      if (_disposed) return;
       notifyListeners();
     }));
   }
 
   bool _cloudReady = false;
+  bool _disposed = false;
   StreamSubscription<AuthState>? _subscription;
 
   /// Whether cloud initialisation succeeded. False means local-only mode:
@@ -66,6 +87,7 @@ class _DeferredAuthRefreshListenable extends ChangeNotifier {
 
   @override
   void dispose() {
+    _disposed = true;
     _subscription?.cancel();
     super.dispose();
   }
@@ -89,6 +111,18 @@ final routerProvider = Provider<GoRouter>((ref) {
     initialLocation: '/splash',
     refreshListenable: refreshListenable,
     observers: [SentryNavigatorObserver()],
+    // Unmatched location: a stale deep link, a hand-typed URL, or a path
+    // renamed out from under an old notification payload. Without this,
+    // go_router falls back to its own unstyled error page — a white Material
+    // scaffold with a raw exception dump — which is both an abrupt visual
+    // break on an AMOLED-black app and a near dead end. [AppErrorScreen] is
+    // deliberately self-contained (no Material/Theme ancestor required), and
+    // its two actions — Restart GymLog (/splash) and Go Home (/) — are
+    // exactly the two recoveries an unmatched route needs. It paints from
+    // the static palette rather than the live accent, which is the accepted
+    // cost of reusing the one branded error surface instead of inventing a
+    // second one.
+    errorBuilder: (context, state) => const AppErrorScreen(),
     redirect: (context, state) {
       final location = state.matchedLocation;
 

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 import '../../features/auth/presentation/providers/auth_provider.dart';
 import '../../features/workout/presentation/providers/active_workout_provider.dart';
 import '../../features/workout/presentation/providers/rest_timer_provider.dart';
@@ -186,8 +187,17 @@ class _AppShellState extends ConsumerState<AppShell> {
       if (confirm) {
         try {
           await store.clear();
-        } catch (e) {
-          debugPrint('[AppShell] Draft clear error: $e');
+        } catch (e, st) {
+          // Straggler from C38's debugPrint sweep: this ran unguarded in
+          // release, writing the draft store's exception text to the
+          // production device log. It was also swallowed outright — but a
+          // failed clear silently un-honours the user's Discard, so the
+          // draft reappears on the next launch and the resume sheet asks
+          // again about a workout they already deleted. Report it.
+          if (kDebugMode) {
+            debugPrint('[AppShell] Draft clear error: $e');
+          }
+          await Sentry.captureException(e, stackTrace: st);
         }
       }
     }
