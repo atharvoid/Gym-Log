@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'core/database/database_integrity_signal.dart';
 import 'core/providers/cloud_readiness_provider.dart';
@@ -65,10 +64,20 @@ class _GymLogAppState extends ConsumerState<GymLogApp> {
   void initState() {
     super.initState();
 
-    // Capture Flutter framework errors and forward them to Sentry.
+    // SentryFlutter.init() (see Bootstrap) already installs its own
+    // FlutterError.onError hook before this widget is ever built, and that
+    // hook reports Flutter framework errors as UNHANDLED exceptions -- the
+    // mechanism metadata Sentry's own dashboards use to compute crash-free
+    // sessions/users. This used to replace that hook outright with a
+    // duplicate that called Sentry.captureException(...) directly: the event
+    // still reached Sentry, but without the "unhandled" mechanism tag, so it
+    // never counted as a crash in Sentry's session-health metrics — the
+    // exact top-line stability signal a team reads post-launch (D45). Chain
+    // to whatever handler is already installed instead of replacing it.
+    final sentryFlutterErrorHandler = FlutterError.onError;
     FlutterError.onError = (FlutterErrorDetails details) {
       FlutterError.presentError(details);
-      Sentry.captureException(details.exception, stackTrace: details.stack);
+      sentryFlutterErrorHandler?.call(details);
     };
 
     // In recovery mode the database is unusable — do not wire sync at all.
