@@ -228,14 +228,18 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                         goal: goal,
                         workoutCount: workoutCount,
                         onGoalTap: () => showWeeklyGoalSheet(context, ref),
+                        onRetryStreak: () =>
+                            ref.invalidate(trainingDatesProvider),
                       ),
                     ),
-                    if (goal > 0 && streak.workoutsThisWeek >= goal) ...[
-                      const SizedBox(height: 10),
-                      const _GoalReachedBanner(),
-                    ] else if (!streak.trainedToday) ...[
-                      const SizedBox(height: 10),
-                      _StreakReminder(streak: streak),
+                    if (streak.isResolved) ...[
+                      if (goal > 0 && streak.workoutsThisWeek >= goal) ...[
+                        const SizedBox(height: 10),
+                        const _GoalReachedBanner(),
+                      ] else if (!streak.trainedToday) ...[
+                        const SizedBox(height: 10),
+                        _StreakReminder(streak: streak),
+                      ],
                     ],
                     const SizedBox(height: 28),
                     const _TrainingChartSection(),
@@ -474,12 +478,14 @@ class _StatsStrip extends StatelessWidget {
   final int goal;
   final int workoutCount;
   final VoidCallback onGoalTap;
+  final VoidCallback onRetryStreak;
 
   const _StatsStrip({
     required this.streak,
     required this.goal,
     required this.workoutCount,
     required this.onGoalTap,
+    required this.onRetryStreak,
   });
 
   @override
@@ -489,40 +495,49 @@ class _StatsStrip extends StatelessWidget {
     return Row(
       children: [
         Expanded(
-          child: _StatCell(
-            value: '${streak.currentStreak}',
-            label: 'DAY STREAK',
-            leading: Icon(
-              Icons.local_fire_department_rounded,
-              size: iconSize,
-              color: streak.currentStreak > 0
-                  ? AppColors.warning
-                  : context.surface.textTertiary,
-            ),
-          ),
+          child: streak.isLoading
+              ? const _StatCellSkeleton()
+              : streak.hasError
+                  ? _StatCellError(onRetry: onRetryStreak)
+                  : _StatCell(
+                      value: '${streak.currentStreak}',
+                      label: 'DAY STREAK',
+                      leading: Icon(
+                        Icons.local_fire_department_rounded,
+                        size: iconSize,
+                        color: streak.currentStreak > 0
+                            ? AppColors.warning
+                            : context.surface.textTertiary,
+                      ),
+                    ),
         ),
         const _StatDivider(),
         Expanded(
-          child: Semantics(
-            button: true,
-            label:
-                'Weekly goal: ${streak.workoutsThisWeek} of $goal workouts. Tap to change goal.',
-            child: GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              onTap: onGoalTap,
-              child: _StatCell(
-                value: streak.workoutsThisWeek >= goal
-                    ? '${streak.workoutsThisWeek}'
-                    : '${streak.workoutsThisWeek}/$goal',
-                label: 'THIS WEEK',
-                leading: GoalRing(
-                  progress: goal == 0
-                      ? 0
-                      : (streak.workoutsThisWeek / goal).clamp(0.0, 1.0),
-                ),
-              ),
-            ),
-          ),
+          child: streak.isLoading
+              ? const _StatCellSkeleton()
+              : streak.hasError
+                  ? _StatCellError(onRetry: onRetryStreak)
+                  : Semantics(
+                      button: true,
+                      label:
+                          'Weekly goal: ${streak.workoutsThisWeek} of $goal workouts. Tap to change goal.',
+                      child: GestureDetector(
+                        behavior: HitTestBehavior.opaque,
+                        onTap: onGoalTap,
+                        child: _StatCell(
+                          value: streak.workoutsThisWeek >= goal
+                              ? '${streak.workoutsThisWeek}'
+                              : '${streak.workoutsThisWeek}/$goal',
+                          label: 'THIS WEEK',
+                          leading: GoalRing(
+                            progress: goal == 0
+                                ? 0
+                                : (streak.workoutsThisWeek / goal)
+                                    .clamp(0.0, 1.0),
+                          ),
+                        ),
+                      ),
+                    ),
         ),
         const _StatDivider(),
         Expanded(
@@ -575,6 +590,54 @@ class _StatCell extends StatelessWidget {
           Text(label,
               style: AppText.statCellLabel(color: surface.textSecondary)),
         ],
+      ),
+    );
+  }
+}
+
+/// Rendered instead of [_StatCell] while [StreakStats.isLoading] is true —
+/// the streak/week numbers are not real yet and must not read as fact.
+class _StatCellSkeleton extends StatelessWidget {
+  const _StatCellSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Column(
+      children: [
+        SkeletonBox(width: 40, height: 17, radius: AppRadius.input),
+        SizedBox(height: 5),
+        SkeletonBox(width: 56, height: 10, radius: AppRadius.input),
+      ],
+    );
+  }
+}
+
+/// Rendered instead of [_StatCell] while [StreakStats.hasError] is true —
+/// offers the real retry `trainingDatesProvider` was made public for,
+/// instead of a silent, confident 0.
+class _StatCellError extends StatelessWidget {
+  final VoidCallback onRetry;
+
+  const _StatCellError({required this.onRetry});
+
+  @override
+  Widget build(BuildContext context) {
+    final surface = context.surface;
+    return Semantics(
+      button: true,
+      label: 'Could not load. Double tap to retry.',
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: onRetry,
+        child: Column(
+          children: [
+            Icon(Icons.refresh_rounded,
+                size: 18, color: surface.textTertiary),
+            const SizedBox(height: 5),
+            Text('RETRY',
+                style: AppText.statCellLabel(color: surface.textTertiary)),
+          ],
+        ),
       ),
     );
   }
@@ -647,6 +710,7 @@ class _TrainingChartSectionState extends ConsumerState<_TrainingChartSection> {
   @override
   Widget build(BuildContext context) {
     final metric = ref.watch(profileChartMetricProvider);
+    final sessionStatsAsync = ref.watch(sessionStatsProvider);
     final aggregates = ref.watch(weeklyAggregatesProvider);
     final isPremium = ref.watch(isPremiumProvider);
     // Weekly aggregates are stored in kilograms; the KPI header and the chart
@@ -654,7 +718,16 @@ class _TrainingChartSectionState extends ConsumerState<_TrainingChartSection> {
     // does.
     final unit = ref.watch(weightUnitProvider);
     final filledWeeks = aggregates.where((a) => a.workoutCount > 0).length;
-    final isEmpty = filledWeeks == 0;
+    // sessionStatsProvider's AsyncValue — not weeklyAggregatesProvider's
+    // flattened `valueOrNull ?? []` — decides loading vs. error vs. truly
+    // empty. Flattening here is exactly the shortcut
+    // profile_stats_provider.dart's own comment warns against: it made
+    // "still loading" and "failed" both render as "no workouts yet, start
+    // one", for users with months of history.
+    final isLoadingStats =
+        sessionStatsAsync.isLoading && !sessionStatsAsync.hasValue;
+    final hasStatsError = sessionStatsAsync.hasError;
+    final isEmpty = !isLoadingStats && !hasStatsError && filledWeeks == 0;
 
     void onStartWorkout() {
       if (!tapGuard()) return;
@@ -676,7 +749,13 @@ class _TrainingChartSectionState extends ConsumerState<_TrainingChartSection> {
                   shadows: AppText.depthFor(context))),
         ),
         const SizedBox(height: 24),
-        if (isEmpty)
+        if (isLoadingStats)
+          const _ChartLoadingPlaceholder()
+        else if (hasStatsError)
+          _ChartErrorPlaceholder(
+            onRetry: () => ref.invalidate(sessionStatsProvider),
+          )
+        else if (isEmpty)
           ProfileGraphEmptyState(onStartWorkout: onStartWorkout)
         else ...[
           GraphKpiHeader(
@@ -716,6 +795,66 @@ class _TrainingChartSectionState extends ConsumerState<_TrainingChartSection> {
               ref.read(profileChartMetricProvider.notifier).setMetric(next);
             },
           ),
+        ),
+      ],
+    );
+  }
+}
+
+/// Rendered instead of the chart while [sessionStatsProvider] has not yet
+/// emitted a value — a genuinely-empty chart and a not-yet-known chart must
+/// not look identical.
+class _ChartLoadingPlaceholder extends StatelessWidget {
+  const _ChartLoadingPlaceholder();
+
+  @override
+  Widget build(BuildContext context) {
+    return const SkeletonPulse(
+      label: 'Loading your training history',
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SkeletonBox(width: 120, height: 16, radius: AppRadius.input),
+          SizedBox(height: 12),
+          SkeletonBox(
+              width: double.infinity, height: 150, radius: AppRadius.card),
+          SizedBox(height: 14),
+          SkeletonBox(
+              width: double.infinity,
+              height: 36,
+              radius: AppRadius.segmentedOuter),
+        ],
+      ),
+    );
+  }
+}
+
+/// Rendered instead of the chart when [sessionStatsProvider] failed —
+/// offers a real retry rather than the "log your first workout" empty state.
+class _ChartErrorPlaceholder extends StatelessWidget {
+  final VoidCallback onRetry;
+
+  const _ChartErrorPlaceholder({required this.onRetry});
+
+  @override
+  Widget build(BuildContext context) {
+    final surface = context.surface;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Icon(Icons.error_outline_rounded,
+            size: 40, color: surface.textTertiary),
+        const SizedBox(height: 12),
+        Text(
+          "Couldn't load your training history",
+          style: AppText.body(color: surface.textSecondary),
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: 12),
+        TextButton(
+          onPressed: onRetry,
+          child:
+              Text('Retry', style: AppText.button(color: context.accent.base)),
         ),
       ],
     );
