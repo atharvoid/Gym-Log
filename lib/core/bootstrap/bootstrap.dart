@@ -81,7 +81,22 @@ abstract final class Bootstrap {
   /// inconclusive rather than as a failure.
   static const integrityCheckTimeout = Duration(seconds: 30);
 
+  /// How many times [_initCommerce] re-resolves the Supabase client before
+  /// concluding that cloud really is unavailable for this process, and how
+  /// long it waits between attempts. Sized to comfortably outlast a cold
+  /// start that merely ran slow (~30s total) without holding a retry timer
+  /// alive for the session.
+  static const _commerceAuthRetries = 6;
+  static const _commerceAuthRetryDelay = Duration(seconds: 5);
+
   static const _dbFileName = 'gymlog_db.sqlite';
+
+  /// The auth-state subscription that keeps RevenueCat's identity in step with
+  /// Supabase. Held for the lifetime of the process (both [PremiumService] and
+  /// the Supabase client are app-lifetime singletons), but stored rather than
+  /// discarded so [_initCommerce]'s retry path can never leave two live
+  /// subscriptions delivering duplicate identity changes.
+  static StreamSubscription<AuthState>? _authSubscription;
 
   /// Runs nonblocking startup. Block ONLY on Flutter binding, local config,
   /// and a cheap database open probe before calling [runApp].
@@ -230,8 +245,10 @@ abstract final class Bootstrap {
       // 3. Media cache maintenance (fire-and-forget, no database access)
       unawaited(ExerciseMediaCacheManager().performMaintenance());
 
-      // 4. Commerce readiness (RevenueCat refresh)
-      _initCommerce(premiumService);
+      // 4. Commerce readiness (RevenueCat refresh). Fire-and-forget: on the
+      //    slow-cloud path this schedules bounded re-resolve attempts (see
+      //    [_initCommerce]) and must not hold up hydration or the scan.
+      unawaited(_initCommerce(premiumService));
 
       // 5. Catalog hydration & orphan cleanup. Owns the database worker first
       //    because the exercise library is unusable until this completes.
@@ -256,7 +273,7 @@ abstract final class Bootstrap {
     }
   }
 
-  // ── Stage 1 helpers ───────────────────────────────────────────────
+  // ── Stage 1 helpers ───────────────────────────────────────
 
   /// Bound the in-memory image cache. GymLog streams animated exercise GIFs
   /// (each frame is a separate decoded bitmap), so the framework default
@@ -267,7 +284,7 @@ abstract final class Bootstrap {
       ..maximumSizeBytes = 80 << 20; // 80 MiB
   }
 
-  // ── Stage 2 helper ────────────────────────────────────────
+  // ── Stage 2 helper ─────────────────────────────────────
 
   /// Sentry options. NOTE: `SentryFlutter.init` wraps `runApp`, so everything
   /// configured here is paid on the launch path and on every frame after it.
@@ -312,7 +329,7 @@ abstract final class Bootstrap {
     }
   }
 
-  // ── Stage 4 helper ────────────────────────────────────────
+  // ── Stage 4 helper ─────────────────────────────────────
 
   /// Opens the database and performs a CHEAP liveness probe. Returns the handle
   /// plus a `corrupted` flag; never throws.
@@ -388,7 +405,7 @@ abstract final class Bootstrap {
     if (await file.exists()) await file.delete();
   }
 
-  // ── Stage 4b helper ────────────────────────────────────
+  // ── Stage 4b helper ───────────────────────────────────
 
   /// Reads the user's saved accent palette. Never throws — any failure falls
   /// back to the default accent ([ThemePalette.fallback], Volt) so startup is
@@ -416,12 +433,19 @@ abstract final class Bootstrap {
     }
   }
 
-  // ── Stage 5 helper ──────────────────────────────────
+  // ── Stage 5 helper ───────────────────────────────────
 
   /// Initialises Supabase auth. Config arrives at compile time; a build without
   /// it must not crash. The call is bounded by [cloudInitTimeout]; on timeout
   /// we proceed in local-only mode. We always attempt initialize so the
   /// `Supabase.instance` singleton exists for the rest of the app.
+  ///
+  /// IMPORTANT: `.timeout()` is a BOUND, not a CANCELLATION. Returning false
+  /// here means "cloud was not ready in time", NOT "cloud will never be
+  /// ready" — `Supabase.initialize()` keeps running and may succeed moments
+  /// later. Any consumer that resolves the client exactly once off the back of
+  /// this result will be permanently wrong on a merely-slow launch. See
+  /// [_initCommerce] for the re-resolve pattern.
   static Future<bool> _initCloud() async {
     if (!Env.hasSupabaseConfig) {
       if (kDebugMode) {
@@ -450,7 +474,7 @@ abstract final class Bootstrap {
     }
   }
 
-  // ── Stage 6 helper ──────────────────────────────────
+  // ── Stage 6 helper ───────────────────────────────────
 
   /// Configures premium entitlements (RevenueCat) on the SAME [PremiumService]
   /// instance the provider scope exposes. Degrades to free mode when keys are
@@ -469,16 +493,65 @@ abstract final class Bootstrap {
   /// goes through. This function used to bypass it with ad hoc try/catch,
   /// which was safe only by accident of call order in
   /// [_postLaunchBackgroundWork]; nothing enforced that ordering.
-  static void _initCommerce(PremiumService premiumService) {
-    final client = supabaseClientOrNull();
-    final userId = client?.auth.currentUser?.id;
-    unawaited(premiumService.initialize(userId: userId));
-    client?.auth.onAuthStateChange.listen(
-      (state) => premiumService.setUser(state.session?.user.id),
+  ///
+  /// DO NOT RESOLVE THE CLIENT ONLY ONCE. [_initCloud] bounds
+  /// `Supabase.initialize()` with a timeout, and a timeout is not a
+  /// cancellation: initialisation keeps running and can complete seconds after
+  /// the bound elapses. A single resolve meant that a launch which merely ran
+  /// slow saw `null`, made `client?.auth.onAuthStateChange.listen(...)` a
+  /// no-op, and left the process with NO auth listener at all. Supabase then
+  /// finished initialising, the user signed in, and nothing ever told
+  /// RevenueCat: `PremiumService._userId` stayed null, `_syncToLocalCache()`
+  /// early-returned on it, and a paying user's entitlement was never mirrored
+  /// into the Drift offline cache until the next cold start. So we re-resolve
+  /// on a bounded schedule before concluding cloud is genuinely absent.
+  static Future<void> _initCommerce(PremiumService premiumService) async {
+    var client = supabaseClientOrNull();
+
+    // Configure immediately with whatever identity we can see now, so a
+    // healthy launch pays no extra latency. The retry loop below only ever
+    // adds work on the degraded path.
+    unawaited(premiumService.initialize(userId: client?.auth.currentUser?.id));
+
+    for (var attempt = 0;
+        client == null && attempt < _commerceAuthRetries;
+        attempt++) {
+      await Future<void>.delayed(_commerceAuthRetryDelay);
+      client = supabaseClientOrNull();
+    }
+
+    // Genuinely local-only for this process: no client will ever appear, so
+    // there is no auth to track. PremiumService stays in its free/cached mode.
+    if (client == null) return;
+
+    // Late resolution means the identity we configured with above may be
+    // stale. Re-assert it — but only when non-null, because setUser(null) on a
+    // configured SDK issues a pointless Purchases.logOut() for a user who was
+    // never logged in.
+    final resolvedUserId = client.auth.currentUser?.id;
+    if (resolvedUserId != null) {
+      unawaited(premiumService.setUser(resolvedUserId));
+    }
+
+    // Idempotent by construction: the retry path must never leave two live
+    // subscriptions delivering duplicate identity changes to RevenueCat.
+    unawaited(_authSubscription?.cancel());
+    _authSubscription = client.auth.onAuthStateChange.listen(
+      (state) => unawaited(premiumService.setUser(state.session?.user.id)),
+      // onAuthStateChange is a broadcast stream and can emit AuthException —
+      // a failed token refresh is the common case. Without a handler that
+      // surfaced as an unhandled async error in the root zone, invisible in
+      // release and untraceable in Sentry.
+      onError: (Object e, StackTrace st) {
+        if (kDebugMode) {
+          debugPrint('[Bootstrap] auth state stream error: $e');
+        }
+        unawaited(Sentry.captureException(e, stackTrace: st));
+      },
     );
   }
 
-  // ── Stage 7 helper ──────────────────────────────────
+  // ── Stage 7 helper ───────────────────────────────────
 
   static Future<void> _postLaunchMaintenance(AppDatabase db) async {
     try {
