@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text.dart';
 import '../../../core/theme/dynamic_accent_theme.dart';
+import '../motion/pressable_scale.dart';
 
 /// [secondary_button.dart]
 /// Shared secondary button. Neutral by default (dark surface, white label —
@@ -47,41 +48,43 @@ class SecondaryButton extends StatelessWidget {
         ? BorderSide(color: accentColors.base.withValues(alpha: 0.45))
         : BorderSide.none;
 
-    return ConstrainedBox(
-      constraints: BoxConstraints(
-        minHeight: 48,
-        minWidth: isFullWidth ? double.infinity : 0.0,
-      ),
-      child: ElevatedButton(
-        onPressed: onPressed,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: bg,
-          foregroundColor: fg,
-          minimumSize: Size(isFullWidth ? double.infinity : 88, 48),
-          disabledBackgroundColor: solid
-              ? accentColors.base.withValues(alpha: 0.6)
-              : context.surface.bgSurface,
-          disabledForegroundColor:
-              solid ? accentColors.onAccent : context.surface.textDisabled,
-          elevation: 0,
-          shadowColor: Colors.transparent,
-          side: side,
-          shape: const RoundedRectangleBorder(
-            borderRadius: AppRadius.buttonSecondaryAll,
-          ),
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+    return PressableScale(
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          minHeight: 48,
+          minWidth: isFullWidth ? double.infinity : 0.0,
         ),
-        child: icon != null
-            ? Row(
-                mainAxisSize: MainAxisSize.min,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(icon, size: 18, color: fg),
-                  const SizedBox(width: 8),
-                  Text(label, style: AppText.button(color: fg)),
-                ],
-              )
-            : Text(label, style: AppText.button(color: fg)),
+        child: ElevatedButton(
+          onPressed: onPressed,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: bg,
+            foregroundColor: fg,
+            minimumSize: Size(isFullWidth ? double.infinity : 88, 48),
+            disabledBackgroundColor: solid
+                ? accentColors.base.withValues(alpha: 0.6)
+                : context.surface.bgSurface,
+            disabledForegroundColor:
+                solid ? accentColors.onAccent : context.surface.textDisabled,
+            elevation: 0,
+            shadowColor: Colors.transparent,
+            side: side,
+            shape: const RoundedRectangleBorder(
+              borderRadius: AppRadius.buttonSecondaryAll,
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+          ),
+          child: icon != null
+              ? Row(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(icon, size: 18, color: fg),
+                    const SizedBox(width: 8),
+                    Text(label, style: AppText.button(color: fg)),
+                  ],
+                )
+              : Text(label, style: AppText.button(color: fg)),
+        ),
       ),
     );
   }

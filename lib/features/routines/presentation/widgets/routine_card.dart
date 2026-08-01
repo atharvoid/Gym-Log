@@ -12,6 +12,7 @@ import '../../../../core/providers/database_provider.dart';
 import '../../../../shared/widgets/ui/action_bottom_sheet.dart';
 import '../../../../shared/widgets/ui/app_dialog.dart';
 import '../../../../shared/widgets/feedback/undoable_delete.dart';
+import '../../../../shared/widgets/motion/pressable_scale.dart';
 
 /// Premium routine card for the Routines list.
 /// - Tapping the body opens the routine detail (`/routines/:id`).
@@ -73,128 +74,130 @@ class RoutineCard extends ConsumerWidget {
     final tags = muscleTags.take(3).toList();
     final extraTags = muscleTags.length - tags.length;
 
-    return Container(
-      decoration: BoxDecoration(
-        gradient: surface.isLight
-            ? AppColors.cardGradientLight
-            : AppColors.cardGradient,
-        borderRadius: AppRadius.cardAll,
-        border: Border.all(color: surface.borderSubtle),
-      ),
-      clipBehavior: Clip.antiAlias,
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: () {
-            if (!tapGuard()) return;
-            HapticFeedback.selectionClick();
-            context.push('/routines/$routineId');
-          },
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(15, 14, 10, 13),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // ── Header: title/meta + menu ─────────────────────────────
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      child: Padding(
-                        padding: const EdgeInsets.only(top: 2),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(routineName,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: AppText.cardTitle()),
-                            const SizedBox(height: 3),
-                            Text(meta,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: AppText.caption()),
-                          ],
-                        ),
-                      ),
-                    ),
-                    IconButton(
-                      tooltip: 'More options',
-                      padding: EdgeInsets.zero,
-                      constraints:
-                          const BoxConstraints(minWidth: 48, minHeight: 48),
-                      iconSize: 20,
-                      icon: Icon(Icons.more_horiz_rounded,
-                          color: surface.textSecondary),
-                      onPressed: () => _showOptions(context, ref),
-                    ),
-                  ],
-                ),
-
-                // ── Muscle tags (first accent, rest neutral) ───────────────
-                if (tags.isNotEmpty)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 10),
-                    child: Wrap(
-                      spacing: 6,
-                      runSpacing: 6,
-                      children: [
-                        _tag(context, tags.first,
-                            backgroundColor: accent.muted,
-                            textColor: accent.base),
-                        for (final t in tags.skip(1)) _tag(context, t),
-                        if (extraTags > 0) _tag(context, '+$extraTags'),
-                      ],
-                    ),
-                  ),
-
-                // ── Divider ───────────────────────────────
-                Padding(
-                  padding: const EdgeInsets.only(top: 13),
-                  child: Container(height: 1, color: surface.borderSubtle),
-                ),
-
-                // ── Footer: preview + Start pill ────────────────────
-                Padding(
-                  padding: const EdgeInsets.only(top: 12),
-                  child: Row(
+    return PressableScale(
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: surface.isLight
+              ? AppColors.cardGradientLight
+              : AppColors.cardGradient,
+          borderRadius: AppRadius.cardAll,
+          border: Border.all(color: surface.borderSubtle),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: () {
+              if (!tapGuard()) return;
+              HapticFeedback.selectionClick();
+              context.push('/routines/$routineId');
+            },
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(15, 14, 10, 13),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // ── Header: title/meta + menu ─────────────────────────────
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Expanded(
-                        child: Text(
-                          preview,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: AppText.caption(),
+                        child: Padding(
+                          padding: const EdgeInsets.only(top: 2),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(routineName,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: AppText.cardTitle()),
+                              const SizedBox(height: 3),
+                              Text(meta,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: AppText.caption()),
+                            ],
+                          ),
                         ),
                       ),
-                      const SizedBox(width: 12),
-                      StartButton(
-                        label: 'Start',
-                        enabled: exerciseNames.isNotEmpty,
-                        onPressed: () {
-                          // 0-exercise routine: don't silently no-op — tell
-                          // the user why nothing happened.
-                          if (exerciseNames.isEmpty) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  'Add exercises to this routine first',
-                                  style:
-                                      AppText.body(color: surface.textPrimary),
-                                ),
-                                backgroundColor: surface.surface2,
-                                behavior: SnackBarBehavior.floating,
-                              ),
-                            );
-                            return;
-                          }
-                          onStartTap();
-                        },
+                      IconButton(
+                        tooltip: 'More options',
+                        padding: EdgeInsets.zero,
+                        constraints:
+                            const BoxConstraints(minWidth: 48, minHeight: 48),
+                        iconSize: 20,
+                        icon: Icon(Icons.more_horiz_rounded,
+                            color: surface.textSecondary),
+                        onPressed: () => _showOptions(context, ref),
                       ),
                     ],
                   ),
-                ),
-              ],
+
+                  // ── Muscle tags (first accent, rest neutral) ───────────────
+                  if (tags.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 10),
+                      child: Wrap(
+                        spacing: 6,
+                        runSpacing: 6,
+                        children: [
+                          _tag(context, tags.first,
+                              backgroundColor: accent.muted,
+                              textColor: accent.base),
+                          for (final t in tags.skip(1)) _tag(context, t),
+                          if (extraTags > 0) _tag(context, '+$extraTags'),
+                        ],
+                      ),
+                    ),
+
+                  // ── Divider ───────────────────────────────
+                  Padding(
+                    padding: const EdgeInsets.only(top: 13),
+                    child: Container(height: 1, color: surface.borderSubtle),
+                  ),
+
+                  // ── Footer: preview + Start pill ────────────────────
+                  Padding(
+                    padding: const EdgeInsets.only(top: 12),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            preview,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: AppText.caption(),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        StartButton(
+                          label: 'Start',
+                          enabled: exerciseNames.isNotEmpty,
+                          onPressed: () {
+                            // 0-exercise routine: don't silently no-op — tell
+                            // the user why nothing happened.
+                            if (exerciseNames.isEmpty) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    'Add exercises to this routine first',
+                                    style: AppText.body(
+                                        color: surface.textPrimary),
+                                  ),
+                                  backgroundColor: surface.surface2,
+                                  behavior: SnackBarBehavior.floating,
+                                ),
+                              );
+                              return;
+                            }
+                            onStartTap();
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
