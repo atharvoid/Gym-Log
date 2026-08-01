@@ -7,4 +7,6 @@ android/key.properties
 android/app/upload-keystore.jks
 custom_lint.log
 .claude-flow/
+node_modules/
+android_backup/
 
