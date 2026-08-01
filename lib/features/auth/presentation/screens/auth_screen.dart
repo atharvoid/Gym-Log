@@ -4,8 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gymlog/core/theme/app_colors.dart';
 import 'package:gymlog/core/theme/app_text.dart';
 import 'package:gymlog/core/theme/dynamic_accent_theme.dart';
+import 'package:gymlog/features/auth/data/auth_repository.dart';
 import 'package:gymlog/features/auth/presentation/providers/auth_provider.dart';
-import 'package:gymlog/shared/widgets/ui/app_dialog.dart';
 
 class AuthScreen extends ConsumerStatefulWidget {
   const AuthScreen({super.key});
@@ -27,21 +27,46 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     ));
   }
 
+  /// Starts Google sign-in.
+  ///
+  /// Goes through [authRepositoryProvider], not [authProvider]. authProvider
+  /// is a Provider<User?> — a read-only view of who is signed in. It has no
+  /// .notifier and User? has no sign-in method, so the previous call here
+  /// could not compile. The repository is the object that owns the action,
+  /// and it is the same one both sign-out call sites already use.
+  ///
+  /// The repository throws a sealed AuthFailure hierarchy, so every case is
+  /// caught by type. The previous string match on 'network' never fired:
+  /// AuthNetworkFailure.toString() is "Instance of 'AuthNetworkFailure'",
+  /// which has no lowercase 'network' in it.
   Future<void> _signInWithGoogle() async {
     if (_busy) return;
     setState(() => _busy = true);
     HapticFeedback.mediumImpact();
     try {
-      await ref.read(authProvider.notifier).signInWithGoogle();
-    } on UnsupportedError {
+      await ref.read(authRepositoryProvider).signInWithGoogle();
+    } on AuthCancelled {
+      // Dismissing the account picker is a deliberate choice, not a failure.
+      // The button re-enables and nothing is said; an error here would scold
+      // the user for changing their mind.
+    } on AuthNetworkFailure {
+      _showError("You're offline. Check your connection and try again.");
+    } on AuthConfigurationFailure catch (e) {
+      // Surfacing the diagnostic code is the whole reason it is carried:
+      // this failure is unrecoverable for the user but immediately
+      // actionable for whoever receives the support report.
+      _showError("Google sign-in isn't set up correctly in this build. "
+          "Please update the app or contact support (${e.diagnosticCode}).");
+    } on AuthProviderFailure {
       _showError(
-          "Google sign-in isn't available in this build. Please update the app or contact support.");
-    } on Exception catch (e) {
-      if (e.toString().contains('network')) {
-        _showError("You're offline. Check your connection and try again.");
-      } else {
-        _showError("Couldn't sign in. Please try again.");
-      }
+          'Google sign-in is temporarily unavailable. Please try again in a moment.');
+    } on AuthUnknownFailure {
+      _showError("Couldn't sign in. Please try again.");
+    } catch (_) {
+      // Defence in depth. The repository funnels everything into AuthFailure,
+      // so reaching this means a new escape route opened upstream; the user
+      // still gets a recoverable message rather than a stuck spinner.
+      _showError("Couldn't sign in. Please try again.");
     } finally {
       if (mounted) setState(() => _busy = false);
     }
