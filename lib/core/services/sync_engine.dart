@@ -61,6 +61,15 @@ class SyncEngine {
   static const debounce = Duration(seconds: 5);
   static const _batchSize = 200;
   static const _netTimeout = Duration(seconds: 20);
+
+  /// A6 re-run: hard ceiling on how many batches one syncNow() will drain.
+  ///
+  /// The loop below terminates on its own in every case we can reason about,
+  /// but every pass is real network I/O. A bound means a server that keeps
+  /// moving under us degrades into "finish on the next trigger" rather than
+  /// an unbounded push loop on a phone in someone's gym bag.
+  static const _maxDrainPasses = 50;
+
   static const _lastSyncedKey = 'sync_last_synced_ms';
 
   SyncStatus _status = const SyncStatus(SyncPhase.idle);
@@ -166,7 +175,7 @@ class SyncEngine {
     _setStatus(const SyncStatus(SyncPhase.paused));
   }
 
-  // ── Enqueue ───────────────────────────────────
+  // ── Enqueue ─────────────────────────────
 
   Future<void> enqueueSession(String userId, String sessionId) async {
     if (!_isSyncAllowed) return;
@@ -219,7 +228,7 @@ class SyncEngine {
     if (overrides != null) await prefs.setString(_kUnitOverrides, overrides);
   }
 
-  // ── Triggers ───────────────────────────────────
+  // ── Triggers ─────────────────────────────
 
   void scheduleSync(String userId, {String reason = 'debounce'}) {
     if (!_isSyncAllowed) return;
@@ -234,7 +243,15 @@ class SyncEngine {
     _running = true;
     _setStatus(_status.copyWith(phase: SyncPhase.syncing));
     try {
+      var passes = 0;
       while (true) {
+        // A6 re-run: bound the drain. The loop used to be `while (true)` with
+        // the only exits being an empty batch or a short one — so a full
+        // batch in which nothing could be acked (see the ownership-mismatch
+        // case below, which matched no branch at all) re-pushed the same 200
+        // objects over the network forever inside a single syncNow().
+        if (passes++ >= _maxDrainPasses) break;
+
         final batch =
             await _db.syncOutboxDao.nextBatch(userId, limit: _batchSize);
         if (batch.isEmpty) break;
@@ -263,6 +280,11 @@ class SyncEngine {
         final results = await _remote.pushBatch(objects).timeout(_netTimeout);
         final ackedIds = <int>[];
 
+        // A6 re-run: "progress" means a row left the queue or its recorded
+        // revision advanced. A pass with neither will behave identically next
+        // time, so it must stop rather than retry.
+        var progressed = false;
+
         for (var i = 0; i < batch.length; i++) {
           final row = batch[i];
           final res = i < results.length ? results[i] : null;
@@ -275,35 +297,61 @@ class SyncEngine {
                   userId, row.entityType, row.entityId, res!.serverRevision!);
             }
             ackedIds.add(row.id);
+          } else if (res.status == PushResultStatus.ownershipMismatch) {
+            // A6 re-run: the transport reports this as its own status now.
+            // It used to arrive as `conflict` with a null serverObject, and
+            // the quarantine branch tested `serverObject!.userId != userId`
+            // — a condition the transport could not satisfy. The row was
+            // therefore never quarantined, never acked and never deleted: it
+            // returned at the head of every FIFO batch indefinitely.
+            await quarantineObject(
+              userId: userId,
+              entityType: row.entityType,
+              entityId: row.entityId,
+              reason: SyncFailureReason.ownershipMismatch,
+              diagnostic:
+                  'Ownership mismatch for ${row.entityType}:${row.entityId}',
+            );
+            // quarantineObject() removes the outbox row itself.
+            progressed = true;
           } else if (res.status == PushResultStatus.conflict) {
-            if (res.serverObject != null &&
-                res.serverObject!.userId != userId) {
-              await quarantineObject(
-                userId: userId,
-                entityType: row.entityType,
-                entityId: row.entityId,
-                reason: SyncFailureReason.ownershipMismatch,
-                diagnostic:
-                    'Ownership mismatch for ${row.entityType}:${row.entityId}',
-              );
-            } else if (res.serverObject != null) {
-              // Genuine same-owner conflict: the server has a newer copy.
-              // Adopt it locally instead of silently discarding the local
-              // edit, and record the server's revision so the *next* local
-              // edit to this entity pushes with the correct number.
-              await _importObject(userId, res.serverObject!);
-              await _db.syncOutboxDao.setRevision(userId, row.entityType,
-                  row.entityId, res.serverObject!.revision);
+            final server = res.serverObject;
+            if (server == null) {
+              // Nothing to adopt and nothing to learn. Leave the row queued
+              // rather than guessing; the no-progress break below keeps this
+              // from spinning.
+              continue;
+            }
+
+            if (row.updatedAtMs > server.updatedAtMs) {
+              // A6 re-run: the local edit is genuinely newer in wall-clock
+              // terms. Adopting the server copy here — which is what a
+              // revision-only rule does — destroys a newer user edit purely
+              // because this device had not pulled recently. Record the
+              // server's revision and leave the row queued so the next pass
+              // re-pushes the same payload with a revision the server will
+              // accept.
+              await _db.syncOutboxDao.setRevision(
+                  userId, row.entityType, row.entityId, server.revision);
+              progressed = true;
+            } else {
+              // The server copy is the newer one. Adopt it locally instead
+              // of silently discarding the local edit, and record the
+              // server's revision so the *next* local edit to this entity
+              // pushes with the correct number.
+              await _importObject(userId, server);
+              await _db.syncOutboxDao.setRevision(
+                  userId, row.entityType, row.entityId, server.revision);
               ackedIds.add(row.id);
             }
-            // No serverObject to adopt: leave the row queued for retry next
-            // cycle rather than guessing.
           }
         }
 
         await _db.syncOutboxDao.deleteByIds(ackedIds);
 
-        if (batch.length < _batchSize) break;
+        // A6 re-run: a pass that changed nothing will change nothing next
+        // time either. Stop and leave the rows for a later trigger.
+        if (ackedIds.isEmpty && !progressed) break;
       }
 
       final now = DateTime.now();
@@ -507,7 +555,7 @@ class SyncEngine {
   }
 }
 
-// ── Providers ───────────────────────────────────
+// ── Providers ─────────────────────────────
 
 /// The Supabase transport.
 ///
