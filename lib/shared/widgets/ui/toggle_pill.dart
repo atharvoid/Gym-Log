@@ -8,7 +8,9 @@ import '../../../core/theme/dynamic_accent_theme.dart';
 /// Purpose: TogglePill - Pill-shaped toggle, active=accent bg, inactive=dark grey.
 /// The active fill follows the user's chosen accent palette (purple/copper/
 /// teal/red) via [BuildContext.accent] — never a hardcoded hue.
-/// Selection fires a light impact, per the app-wide haptic map.
+/// Selection fires a light impact — a deliberate, named exception to the app's
+/// selectionClick() convention for segment/tab-style controls; see
+/// DESIGN_NORTH_STAR.md §6. Not yet reconciled with that convention.
 
 class TogglePill extends StatelessWidget {
   final String label;
