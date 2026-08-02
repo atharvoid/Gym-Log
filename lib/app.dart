@@ -204,8 +204,8 @@ class _GymLogAppState extends ConsumerState<GymLogApp> {
             highContrastTheme: appHighContrastTheme,
             highContrastDarkTheme: appHighContrastTheme,
             debugShowCheckedModeBanner: false,
-            builder: (context, child) =>
-                _withClampedTextScale(context, child ?? const SizedBox.shrink()),
+            builder: (context, child) => _withClampedTextScale(
+                context, child ?? const SizedBox.shrink()),
             home: const DatabaseRecoveryScreen(),
           );
         }

@@ -43,8 +43,7 @@ void main() {
       expect(identical(cacheManager, ExerciseMediaCacheManager()), isTrue);
     });
 
-    testWidgets('2. Maintenance policy runs safely',
-        (WidgetTester tester) async {
+    test('2. Maintenance policy runs safely', () async {
       final cacheManager = ExerciseMediaCacheManager();
       await cacheManager.performMaintenance();
       expect(cacheManager, isNotNull);

@@ -12,6 +12,7 @@ import 'package:gymlog/features/auth/presentation/providers/auth_provider.dart';
 import 'package:gymlog/features/profile/presentation/providers/profile_provider.dart';
 import 'package:gymlog/core/services/workout_export_service.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:gymlog/shared/layout/adaptive.dart';
 
 /// Irreversible account deletion. Reached from Settings (not buried). The user
 /// reads exactly what is destroyed vs preserved, types DELETE to confirm, and
@@ -105,155 +106,157 @@ class _DeleteAccountScreenState extends ConsumerState<DeleteAccountScreen> {
             ),
             title: Text('Delete account', style: AppText.sheetTitle()),
           ),
-          body: AbsorbPointer(
-            absorbing: _deleting,
-            child: SafeArea(
-              child: ListView(
-                padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
-                children: [
-                  Container(
-                    width: 48,
-                    height: 48,
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      color: AppColors.error.withValues(alpha: 0.12),
-                      borderRadius: AppRadius.buttonPrimaryAll,
+          body: AdaptiveContent(
+            child: AbsorbPointer(
+              absorbing: _deleting,
+              child: SafeArea(
+                child: ListView(
+                  padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+                  children: [
+                    Container(
+                      width: 48,
+                      height: 48,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: AppColors.error.withValues(alpha: 0.12),
+                        borderRadius: AppRadius.buttonPrimaryAll,
+                      ),
+                      child: const Icon(Icons.delete_forever_rounded,
+                          color: AppColors.error, size: 26),
                     ),
-                    child: const Icon(Icons.delete_forever_rounded,
-                        color: AppColors.error, size: 26),
-                  ),
-                  const SizedBox(height: 16),
-                  MergeSemantics(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'This is permanent',
-                          style: AppText.sectionHeading(),
-                        ),
-                        const SizedBox(height: 6),
-                        Text(
-                          'Deleting your account cannot be undone. Once you confirm, your '
-                          'data will be permanently deleted. There is no recovery.',
-                          style: AppText.body(),
-                        ),
+                    const SizedBox(height: 16),
+                    MergeSemantics(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'This is permanent',
+                            style: AppText.sectionHeading(),
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            'Deleting your account cannot be undone. Once you confirm, your '
+                            'data will be permanently deleted. There is no recovery.',
+                            style: AppText.body(),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const _ExportBackupButton(),
+                    const SizedBox(height: 24),
+                    const _SectionCard(
+                      title: 'What will be permanently deleted',
+                      tone: AppColors.error,
+                      icon: Icons.remove_circle_outline_rounded,
+                      lines: [
+                        'Your sign-in account and profile on our servers.',
+                        'Any workout, routine, or preference data synced to the cloud.',
+                        'All workout history, routines, and custom exercises stored on '
+                            'this device.',
                       ],
                     ),
-                  ),
-                  const _ExportBackupButton(),
-                  const SizedBox(height: 24),
-                  const _SectionCard(
-                    title: 'What will be permanently deleted',
-                    tone: AppColors.error,
-                    icon: Icons.remove_circle_outline_rounded,
-                    lines: [
-                      'Your sign-in account and profile on our servers.',
-                      'Any workout, routine, or preference data synced to the cloud.',
-                      'All workout history, routines, and custom exercises stored on '
-                          'this device.',
-                    ],
-                  ),
-                  const SizedBox(height: 14),
-                  const _SectionCard(
-                    title: 'What stays yours',
-                    tone: AppColors.success,
-                    icon: Icons.check_circle_outline_rounded,
-                    lines: [
-                      'Any CSV files you exported to your phone (Downloads / Files) '
-                          'are your property. They are never touched or removed.',
-                    ],
-                  ),
-                  const SizedBox(height: 14),
-                  const _SectionCard(
-                    title: 'Active Subscriptions (Store Managed)',
-                    tone: AppColors.warning,
-                    icon: Icons.info_outline_rounded,
-                    lines: [
-                      'Deleting your GymLog account does NOT cancel your subscription.',
-                      'You must cancel active billing in your App Store / Google Play account settings to prevent future renewals.',
-                      'Any refund requests must be initiated directly through the store processor.',
-                    ],
-                  ),
-                  const SizedBox(height: 26),
-                  Text(
-                    'Type $_confirmWord to confirm',
-                    style: AppText.columnHeader(),
-                  ),
-                  const SizedBox(height: 8),
-                  TextField(
-                    controller: _confirm,
-                    autocorrect: false,
-                    enableSuggestions: false,
-                    textCapitalization: TextCapitalization.characters,
-                    textInputAction: TextInputAction.done,
-                    onSubmitted: (_) => _canDelete ? _delete() : null,
-                    onChanged: (_) => setState(() {}),
-                    cursorColor: AppColors.error,
-                    style: AppText.button(
-                      color: surface.textPrimary,
-                    ).copyWith(
-                      letterSpacing: 1.5,
+                    const SizedBox(height: 14),
+                    const _SectionCard(
+                      title: 'What stays yours',
+                      tone: AppColors.success,
+                      icon: Icons.check_circle_outline_rounded,
+                      lines: [
+                        'Any CSV files you exported to your phone (Downloads / Files) '
+                            'are your property. They are never touched or removed.',
+                      ],
                     ),
-                    decoration: InputDecoration(
-                      hintText: _confirmWord,
-                      hintStyle: AppText.button(
-                        color: surface.textDisabled,
+                    const SizedBox(height: 14),
+                    const _SectionCard(
+                      title: 'Active Subscriptions (Store Managed)',
+                      tone: AppColors.warning,
+                      icon: Icons.info_outline_rounded,
+                      lines: [
+                        'Deleting your GymLog account does NOT cancel your subscription.',
+                        'You must cancel active billing in your App Store / Google Play account settings to prevent future renewals.',
+                        'Any refund requests must be initiated directly through the store processor.',
+                      ],
+                    ),
+                    const SizedBox(height: 26),
+                    Text(
+                      'Type $_confirmWord to confirm',
+                      style: AppText.columnHeader(),
+                    ),
+                    const SizedBox(height: 8),
+                    TextField(
+                      controller: _confirm,
+                      autocorrect: false,
+                      enableSuggestions: false,
+                      textCapitalization: TextCapitalization.characters,
+                      textInputAction: TextInputAction.done,
+                      onSubmitted: (_) => _canDelete ? _delete() : null,
+                      onChanged: (_) => setState(() {}),
+                      cursorColor: AppColors.error,
+                      style: AppText.button(
+                        color: surface.textPrimary,
                       ).copyWith(
                         letterSpacing: 1.5,
                       ),
-                      filled: true,
-                      fillColor: surface.surface2,
-                      contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 14),
-                      enabledBorder: const OutlineInputBorder(
-                        borderRadius: BorderRadius.zero,
-                        borderSide: BorderSide.none,
-                      ),
-                      focusedBorder: const OutlineInputBorder(
-                        borderRadius: BorderRadius.zero,
-                        borderSide:
-                            BorderSide(color: AppColors.error, width: 1.5),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  SizedBox(
-                    width: double.infinity,
-                    height: 54,
-                    child: ElevatedButton(
-                      onPressed: _canDelete ? _delete : null,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.error,
-                        disabledBackgroundColor:
-                            AppColors.error.withValues(alpha: 0.18),
-                        foregroundColor: Colors.white,
-                        disabledForegroundColor:
-                            Colors.white.withValues(alpha: 0.5),
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                            borderRadius:
-                                BorderRadius.circular(AppRadius.buttonPrimary)),
-                      ),
-                      child: _deleting
-                          ? const CupertinoActivityIndicator(
-                              color: Colors.white)
-                          : Text(
-                              'Delete my account permanently',
-                              style: AppText.button(),
-                            ),
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  Center(
-                    child: TextButton(
-                      onPressed: _deleting ? null : () => context.pop(),
-                      child: Text(
-                        'Cancel',
-                        style: AppText.button(color: surface.textSecondary),
+                      decoration: InputDecoration(
+                        hintText: _confirmWord,
+                        hintStyle: AppText.button(
+                          color: surface.textDisabled,
+                        ).copyWith(
+                          letterSpacing: 1.5,
+                        ),
+                        filled: true,
+                        fillColor: surface.surface2,
+                        contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 14),
+                        enabledBorder: const OutlineInputBorder(
+                          borderRadius: BorderRadius.zero,
+                          borderSide: BorderSide.none,
+                        ),
+                        focusedBorder: const OutlineInputBorder(
+                          borderRadius: BorderRadius.zero,
+                          borderSide:
+                              BorderSide(color: AppColors.error, width: 1.5),
+                        ),
                       ),
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 20),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 54,
+                      child: ElevatedButton(
+                        onPressed: _canDelete ? _delete : null,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.error,
+                          disabledBackgroundColor:
+                              AppColors.error.withValues(alpha: 0.18),
+                          foregroundColor: Colors.white,
+                          disabledForegroundColor:
+                              Colors.white.withValues(alpha: 0.5),
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(
+                                  AppRadius.buttonPrimary)),
+                        ),
+                        child: _deleting
+                            ? const CupertinoActivityIndicator(
+                                color: Colors.white)
+                            : Text(
+                                'Delete my account permanently',
+                                style: AppText.button(),
+                              ),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Center(
+                      child: TextButton(
+                        onPressed: _deleting ? null : () => context.pop(),
+                        child: Text(
+                          'Cancel',
+                          style: AppText.button(color: surface.textSecondary),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),

@@ -150,8 +150,7 @@ class _ActionSheetItemWidget extends StatelessWidget {
             child: ConstrainedBox(
               constraints: const BoxConstraints(minHeight: 56),
               child: Padding(
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 8, vertical: 8),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
                 child: Row(
                   children: [
                     Container(

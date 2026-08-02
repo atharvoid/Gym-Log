@@ -71,10 +71,9 @@ class _WeeklyBarChartState extends State<WeeklyBarChart> {
   /// duration is minutes and reps are a count, so both pass through unchanged.
   /// Everything that surfaces a number must call this exactly once — never
   /// twice, or the value is converted squared.
-  double _displayValue(double raw) =>
-      widget.metric == ProfileGraphMetric.volume
-          ? kgToDisplay(raw, widget.unit)
-          : raw;
+  double _displayValue(double raw) => widget.metric == ProfileGraphMetric.volume
+      ? kgToDisplay(raw, widget.unit)
+      : raw;
 
   @override
   void didChangeDependencies() {

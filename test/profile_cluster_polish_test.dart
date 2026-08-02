@@ -166,6 +166,7 @@ void main() {
             aggregates: aggregates,
             metric: ProfileGraphMetric.volume,
             isPremium: false,
+            unit: 'kg',
           ),
         ),
       ),

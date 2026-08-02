@@ -49,7 +49,7 @@ TextStyle _ct({
 /// light theme — so this always returns a [Brightness.dark] ThemeData built
 /// from [SurfaceTokens.dark].
 ThemeData buildAppTheme(ThemePaletteTokens tokens,
-    {ThemePalette palette = ThemePalette.fallback}) {
+    {ThemePalette palette = ThemePalette.higgsfield}) {
   // AMOLED dark for every palette. White is a white ACCENT, not a light theme.
   const s = SurfaceTokens.dark;
 
@@ -232,7 +232,7 @@ const _hcBorder = Color(0xFF8A8A8E);
 
 /// High-contrast variant of [buildAppTheme] for the given accent tokens.
 ThemeData buildHighContrastTheme(ThemePaletteTokens tokens,
-    {ThemePalette palette = ThemePalette.fallback}) {
+    {ThemePalette palette = ThemePalette.higgsfield}) {
   final base = buildAppTheme(tokens, palette: palette);
   const hcSecondary = _hcSecondary;
   const hcBorder = _hcBorder;

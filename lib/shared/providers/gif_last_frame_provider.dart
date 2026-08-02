@@ -210,7 +210,8 @@ Future<ui.Image?> _decodeFrame({
     }
   });
 
-  final ui.Image? alreadyDecoded = _DecodedFrameCache.instance.acquire(cacheKey);
+  final ui.Image? alreadyDecoded =
+      _DecodedFrameCache.instance.acquire(cacheKey);
   if (alreadyDecoded != null) {
     holdsLease = true;
     if (isDisposed) {

@@ -719,14 +719,7 @@ class _ReorderExercisesSheetState extends State<_ReorderExercisesSheet> {
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
               buildDefaultDragHandles: false,
               onReorderStart: (_) => HapticFeedback.selectionClick(),
-              onReorder: (oldIndex, newIndex) {
-                // Flutter's onReorder reports newIndex against the
-                // pre-removal list — without this adjustment every
-                // downward drag (to any position but the very last slot)
-                // lands one slot past where the user dropped it (B25).
-                // Adjust once here so both the local preview list and the
-                // persisted provider state (via widget.onReorder) agree.
-                if (newIndex > oldIndex) newIndex -= 1;
+              onReorderItem: (oldIndex, newIndex) {
                 setState(() {
                   final item = _items.removeAt(oldIndex);
                   _items.insert(newIndex, item);

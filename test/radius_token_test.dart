@@ -82,7 +82,7 @@ void main() {
           authProvider.overrideWithValue(null),
           databaseProvider.overrideWithValue(db),
           accountDeletionServiceProvider.overrideWithValue(
-              MockAccountDeletionService(db, supabaseClient)),
+              MockAccountDeletionService(db, () => supabaseClient)),
         ],
         child: const MaterialApp(
           home: DeleteAccountScreen(),

@@ -350,7 +350,7 @@ class _ExploreRoutinesScreenState extends ConsumerState<ExploreRoutinesScreen>
           // below still need to target buttons at their real on-screen
           // position, so they are left outside the constraint.
           AdaptiveContent(
-            child: CustomScrollView(
+              child: CustomScrollView(
             slivers: [
               SliverAppBar(
                 pinned: true,

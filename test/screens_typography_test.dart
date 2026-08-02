@@ -137,7 +137,7 @@ void main() {
           authRepositoryProvider.overrideWithValue(mockAuthRepository),
           databaseProvider.overrideWithValue(db),
           accountDeletionServiceProvider.overrideWithValue(
-              MockAccountDeletionService(db, supabaseClient)),
+              MockAccountDeletionService(db, () => supabaseClient)),
         ],
         child: MaterialApp.router(
           routerConfig: router,

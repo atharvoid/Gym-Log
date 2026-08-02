@@ -89,9 +89,8 @@ Future<void> showWeeklyGoalSheet(BuildContext context, WidgetRef ref) async {
                 child: Text(
                   '$days',
                   style: AppText.button(
-                    color: days == current
-                        ? accent.onAccent
-                        : surface.textPrimary,
+                    color:
+                        days == current ? accent.onAccent : surface.textPrimary,
                   ),
                 ),
               ),
@@ -218,7 +217,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
     // whether a sync was in flight, stuck offline, or failing outright. On
     // a slow or flapping connection that left the user with no signal that
     // anything was wrong.
-    final syncPhase = ref.watch(syncStatusControllerProvider).valueOrNull?.phase;
+    final syncPhase =
+        ref.watch(syncStatusControllerProvider).valueOrNull?.phase;
     final syncDegraded =
         syncPhase == SyncPhase.offline || syncPhase == SyncPhase.error;
 
@@ -329,8 +329,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
                               if (opened || !context.mounted) return;
                               showAppSnackBar(
                                 context,
-                                message:
-                                    "Couldn't open the subscription page.",
+                                message: "Couldn't open the subscription page.",
                               );
                             },
                           ),

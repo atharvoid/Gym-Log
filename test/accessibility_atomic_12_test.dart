@@ -151,6 +151,7 @@ void main() {
                 data: points,
                 valueFormatter: (v) => '${v.toInt()} kg',
                 yAxisUnit: 'kg',
+                metricLabel: 'kg chart',
               ),
             ),
           ),

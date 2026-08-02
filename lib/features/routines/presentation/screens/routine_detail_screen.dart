@@ -622,8 +622,7 @@ class _RoutineVolumeSectionState extends ConsumerState<_RoutineVolumeSection> {
                 radius: AppRadius.card,
               ),
             ),
-            error: (_, __) =>
-                RoutineVolumeGraph(data: const [], unit: unit),
+            error: (_, __) => RoutineVolumeGraph(data: const [], unit: unit),
             data: (_) => AnimatedSwitcher(
               duration: const Duration(milliseconds: 300),
               child: RoutineVolumeGraph(

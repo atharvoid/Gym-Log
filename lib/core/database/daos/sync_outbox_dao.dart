@@ -184,8 +184,8 @@ class SyncOutboxDao extends DatabaseAccessor<AppDatabase>
 
   /// Records the last revision the server acknowledged for this entity, so
   /// the next local push sends the correct number instead of assuming 1.
-  Future<void> setRevision(String userId, String entityType, String entityId,
-      int revision) async {
+  Future<void> setRevision(
+      String userId, String entityType, String entityId, int revision) async {
     await customStatement('''
       INSERT INTO entity_revisions (entity_type, entity_id, user_id, revision)
       VALUES (?, ?, ?, ?)

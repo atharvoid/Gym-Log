@@ -146,8 +146,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     _tourKickoffScheduled = true;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      if (ref.read(firstRunTourProvider) !=
-          FirstRunTourNotifier.deferredStep) {
+      if (ref.read(firstRunTourProvider) != FirstRunTourNotifier.deferredStep) {
         return;
       }
       ref.read(firstRunTourProvider.notifier).setStep(0);
@@ -750,8 +749,7 @@ class _HomeHeaderBandState extends ConsumerState<_HomeHeaderBand> {
                           size: 18, color: AppColors.warning), // allow-listed
                       const SizedBox(width: 4),
                       Text('${streak.currentStreak}',
-                          style:
-                              AppText.statLabel(color: surface.textPrimary)),
+                          style: AppText.statLabel(color: surface.textPrimary)),
                       const SizedBox(width: 4),
                       Text('day streak',
                           style: AppText.meta(color: surface.textSecondary)),

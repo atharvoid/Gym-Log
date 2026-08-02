@@ -1,221 +1,136 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:purchases_flutter/purchases_flutter.dart';
+import 'package:purchases_flutter/purchases_flutter.dart'
+    show
+        IntroductoryPrice,
+        Offerings,
+        Package,
+        PackageType,
+        PeriodUnit,
+        PurchasesErrorCode,
+        PurchasesErrorHelper;
 import 'package:url_launcher/url_launcher.dart';
-import 'package:gymlog/core/providers/premium_provider.dart';
-import 'package:gymlog/core/theme/app_colors.dart';
-import 'package:gymlog/core/theme/app_text.dart';
-import 'package:gymlog/core/theme/dynamic_accent_theme.dart';
-import 'package:gymlog/shared/widgets/ui/app_dialog.dart';
 
-/// Shared "couldn't open this link" feedback. Matches the snackbar pattern
-/// used by auth_screen.dart / settings_screen.dart, rather than the bare
-/// ScaffoldMessenger call (or a raw AlertDialog) other call sites used to
-/// show.
-void _openUrl(BuildContext context, String url) async {
+import '../../core/config/legal_links.dart';
+import '../../core/providers/premium_provider.dart';
+import '../../core/services/premium_service.dart';
+import '../../core/theme/app_colors.dart' show SurfaceContextX;
+import '../../core/theme/app_text.dart';
+import '../../core/theme/dynamic_accent_theme.dart';
+
+Future<void> _openUrl(BuildContext context, String url) async {
   final uri = Uri.tryParse(url);
-  bool ok = false;
-  if (uri != null) {
-    ok = await launchUrl(uri, mode: LaunchMode.externalApplication);
+  if (uri == null) return;
+  if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Could not open link.')),
+      );
+    }
   }
-  if (!ok && context.mounted) {
-    final surface = context.surface;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text("Couldn't open the link.",
-            style: AppText.body(color: surface.textPrimary)),
-        backgroundColor: surface.surface2,
-        behavior: SnackBarBehavior.floating,
+}
+
+enum PaywallSource { generic, routineLimit, chartFilter, timeRange, sync }
+
+/// Opens the Premium paywall as a modal bottom sheet.
+/// Safe to call when RevenueCat is unconfigured — it renders a graceful
+/// "pricing unavailable" state instead of crashing.
+Future<void> showPremiumPaywall(BuildContext context,
+    {PaywallSource source = PaywallSource.generic}) {
+  HapticFeedback.lightImpact();
+  return showModalBottomSheet<void>(
+    context: context,
+    useRootNavigator: true,
+    useSafeArea: true,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    builder: (_) => _PaywallSheet(source: source),
+  );
+}
+
+class _SheetHandle extends StatelessWidget {
+  const _SheetHandle();
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Container(
+        width: 36,
+        height: 4,
+        decoration: BoxDecoration(
+          // Slightly more visible than textSecondary — machined feel.
+          color: context.surface.borderEmphasis,
+          borderRadius: BorderRadius.circular(6),
+        ),
       ),
     );
   }
 }
 
-Future<void> showPremiumPaywall(BuildContext context) async {
-  HapticFeedback.lightImpact();
-  await showModalBottomSheet(
-    context: context,
-    isScrollControlled: true,
-    useRootNavigator: true,
-    backgroundColor: Colors.transparent,
-    builder: (context) => const _PremiumPaywallSheet(),
-  );
-}
-
-class _PremiumPaywallSheet extends ConsumerStatefulWidget {
-  const _PremiumPaywallSheet();
-
-  @override
-  ConsumerState<_PremiumPaywallSheet> createState() =>
-      _PremiumPaywallSheetState();
-}
-
-class _PremiumPaywallSheetState extends ConsumerState<_PremiumPaywallSheet> {
-  bool _busy = false;
-  Package? _selected;
-
-  Future<void> _purchase(Package package) async {
-    if (_busy) return;
-    setState(() => _busy = true);
-    HapticFeedback.mediumImpact();
-    try {
-      await Purchases.purchasePackage(package);
-      if (mounted) Navigator.of(context).pop();
-    } catch (e) {
-      if (mounted) {
-        setState(() => _busy = false);
-        final surface = context.surface;
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text('Purchase could not be completed.',
-              style: AppText.body(color: surface.textPrimary)),
-          backgroundColor: surface.surface2,
-          behavior: SnackBarBehavior.floating,
-        ));
-      }
-    }
-  }
-
-  Future<void> _restore() async {
-    if (_busy) return;
-    setState(() => _busy = true);
-    try {
-      final info = await Purchases.restorePurchases();
-      if (!mounted) return;
-      final isPremium = info.entitlements.active.isNotEmpty;
-      setState(() => _busy = false);
-      final surface = context.surface;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text(
-            isPremium ? 'Purchases restored.' : 'No purchases to restore.',
-            style: AppText.body(color: surface.textPrimary)),
-        backgroundColor: surface.surface2,
-        behavior: SnackBarBehavior.floating,
-      ));
-      if (isPremium) Navigator.of(context).pop();
-    } catch (e) {
-      if (mounted) setState(() => _busy = false);
-    }
-  }
+/// PRO wordmark badge — a compact pill with "PRO" in the accent color on a
+/// tinted accent surface. Replaces the generic star icon that every tutorial
+/// paywall uses. The wordmark reads as a brand, not a decorative emoji.
+class _PaywallIcon extends StatelessWidget {
+  const _PaywallIcon();
 
   @override
   Widget build(BuildContext context) {
-    final offeringsAsync = ref.watch(offeringsProvider);
-    final surface = context.surface;
-    return DraggableScrollableSheet(
-      initialChildSize: 0.85,
-      minChildSize: 0.5,
-      maxChildSize: 0.95,
-      expand: false,
-      builder: (context, scrollController) => Container(
-        decoration: BoxDecoration(
-          color: surface.surface2,
-          borderRadius: AppRadius.sheetTop,
+    final accent = context.accent;
+    return Container(
+      width: 56,
+      height: 56,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: accent.base.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(AppRadius.buttonPrimary),
+        border: Border.all(
+          color: accent.base.withValues(alpha: 0.3),
+          width: 1,
         ),
-        child: SafeArea(
-          top: false,
-          child: offeringsAsync.when(
-            loading: () =>
-                const Center(child: CircularProgressIndicator()),
-            error: (_, __) => Center(
-              child: Text('Could not load plans.',
-                  style: AppText.body(color: surface.textPrimary)),
+      ),
+      child: Text(
+        'PRO',
+        style: AppText.cardTitle(color: accent.base)
+            .copyWith(fontWeight: FontWeight.w800, letterSpacing: 1.2),
+      ),
+    );
+  }
+}
+
+/// Small "PRO" lock pill used next to gated features.
+/// Subtle by design — a hint, not a banner. Tapping opens the paywall.
+class ProLockPill extends StatelessWidget {
+  final String label;
+
+  const ProLockPill({super.key, this.label = 'PRO'});
+
+  @override
+  Widget build(BuildContext context) {
+    final accent = context.accent;
+    return Semantics(
+      button: true,
+      label: 'Premium feature. Double tap to learn more.',
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: AppRadius.badgeAll,
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: () => showPremiumPaywall(context),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+            decoration: BoxDecoration(
+              color: accent.muted,
+              borderRadius: AppRadius.badgeAll,
+              border: Border.all(
+                color: accent.base.withValues(alpha: 0.3),
+                width: 1,
+              ),
             ),
-            data: (offering) {
-              final packages = offering?.availablePackages ?? [];
-              _selected ??= packages.isNotEmpty ? packages.first : null;
-              return ListView(
-                controller: scrollController,
-                padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
-                children: [
-                  Center(
-                    child: Container(
-                      width: 36,
-                      height: 4,
-                      decoration: BoxDecoration(
-                        color: surface.borderEmphasis,
-                        borderRadius: BorderRadius.circular(2),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  Text('GymLog Pro',
-                      style: AppText.pageTitle(color: surface.textPrimary)),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Unlock full analytics history and more.',
-                    style: AppText.body(color: surface.textSecondary),
-                  ),
-                  const SizedBox(height: 20),
-                  for (final package in packages)
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 10),
-                      child: _PackageTile(
-                        package: package,
-                        selected: _selected == package,
-                        onTap: () => setState(() => _selected = package),
-                      ),
-                    ),
-                  const SizedBox(height: 12),
-                  SizedBox(
-                    width: double.infinity,
-                    height: 48,
-                    child: ElevatedButton(
-                      onPressed: (_busy || _selected == null)
-                          ? null
-                          : () => _purchase(_selected!),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: context.accent.base,
-                        foregroundColor: context.accent.onAccent,
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(
-                                AppRadius.buttonPrimary)),
-                      ),
-                      child: _busy
-                          ? const SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(
-                                  strokeWidth: 2, color: Colors.white),
-                            )
-                          : Text('Continue', style: AppText.button()),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Center(
-                    child: TextButton(
-                      onPressed: _busy ? null : _restore,
-                      child: Text('Restore Purchases',
-                          style: AppText.statLabel(
-                              color: surface.textSecondary)),
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Center(
-                    child: Wrap(
-                      alignment: WrapAlignment.center,
-                      children: [
-                        TextButton(
-                          onPressed: () => _openUrl(context,
-                              'https://gymlog.app/terms'),
-                          child: Text('Terms',
-                              style: AppText.caption(
-                                  color: surface.textTertiary)),
-                        ),
-                        TextButton(
-                          onPressed: () => _openUrl(context,
-                              'https://gymlog.app/privacy'),
-                          child: Text('Privacy',
-                              style: AppText.caption(
-                                  color: surface.textTertiary)),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              );
-            },
+            // No padlock — it communicates "you can't have this" while the user
+            // looks at their own data. Just the label; tap opens the paywall.
+            child: Text(label, style: AppText.badge(color: accent.base)),
           ),
         ),
       ),
@@ -223,56 +138,664 @@ class _PremiumPaywallSheetState extends ConsumerState<_PremiumPaywallSheet> {
   }
 }
 
-class _PackageTile extends StatelessWidget {
-  final Package package;
+class _PaywallSheet extends ConsumerStatefulWidget {
+  final PaywallSource source;
+
+  const _PaywallSheet({this.source = PaywallSource.generic});
+
+  @override
+  ConsumerState<_PaywallSheet> createState() => _PaywallSheetState();
+}
+
+class _PaywallSheetState extends ConsumerState<_PaywallSheet> {
+  Offerings? _offerings;
+  bool _loading = true;
+  bool _purchasing = false;
+  bool _restoring = false;
+  bool _trialEligible = false;
+  Package? _selected;
+
+  // HONESTY RULE: this list may only name things that exist in the app
+  // today. Advertising unbuilt features in a paid subscription is a
+  // Play/App Store rejection risk and a user-trust killer. Accent palettes
+  // are FREE personalization and deliberately not sold here.
+  //
+  // Icons are FILLED (not outline). Outline icons are the #1 signature of
+  // "I didn't hire a designer." Filled icons read as intentional.
+  static const _features = [
+    (
+      Icons.fitness_center, // filled
+      'Unlimited routines',
+      'No more $kFreeRoutineLimit-routine cap',
+    ),
+    (
+      Icons.sync_rounded, // filled
+      'Sync across devices',
+      'Your data, on any device',
+    ),
+    (
+      Icons.insights, // filled
+      'Full analytics history',
+      'Every chart, all of it',
+    ),
+    (
+      Icons.calendar_month, // filled
+      'All time ranges',
+      '1Y and All Time unlocked',
+    ),
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadOfferings();
+  }
+
+  Future<void> _loadOfferings() async {
+    if (mounted) setState(() => _loading = true);
+    final offerings = await ref.read(premiumServiceProvider).offerings();
+    if (!mounted) return;
+    setState(() {
+      _offerings = offerings;
+      _loading = false;
+      _selected = _annual ?? _monthly;
+    });
+    await _refreshTrialEligibility();
+  }
+
+  Package? get _monthly => _offerings?.current?.availablePackages
+      .where((p) => p.packageType == PackageType.monthly)
+      .firstOrNull;
+
+  Package? get _annual => _offerings?.current?.availablePackages
+      .where((p) => p.packageType == PackageType.annual)
+      .firstOrNull;
+
+  bool get _storeReady => _monthly != null || _annual != null;
+
+  void _selectPackage(Package pkg) {
+    HapticFeedback.selectionClick();
+    setState(() => _selected = pkg);
+    unawaited(_refreshTrialEligibility());
+  }
+
+  Future<void> _refreshTrialEligibility() async {
+    final package = _selected;
+    final intro = package?.storeProduct.introductoryPrice;
+    if (package == null || intro == null || intro.price > 0) {
+      if (mounted) setState(() => _trialEligible = false);
+      return;
+    }
+    final eligible = await ref
+        .read(premiumServiceProvider)
+        .isEligibleForTrial(package.storeProduct.identifier);
+    if (mounted) setState(() => _trialEligible = eligible);
+  }
+
+  bool get _hasFreeTrial {
+    final intro = _selected?.storeProduct.introductoryPrice;
+    return intro != null && intro.price == 0 && _trialEligible;
+  }
+
+  /// CTA + caption derive from the live offering — never hardcode trial
+  /// terms the store may not actually grant.
+  String get _ctaLabel => _hasFreeTrial ? 'Start Free Trial' : 'Upgrade to Pro';
+
+  String get _ctaCaption {
+    if (!_hasFreeTrial) return 'Cancel anytime.';
+    final intro = _selected!.storeProduct.introductoryPrice!;
+    return '${_trialLength(intro)} free, cancel anytime.';
+  }
+
+  static String _trialLength(IntroductoryPrice intro) {
+    final n = intro.periodNumberOfUnits;
+    return switch (intro.periodUnit) {
+      PeriodUnit.day => n == 1 ? '1 day' : '$n days',
+      PeriodUnit.week => '${n * 7} days',
+      PeriodUnit.month => n == 1 ? '1 month' : '$n months',
+      PeriodUnit.year => n == 1 ? '1 year' : '$n years',
+      _ => '$n days',
+    };
+  }
+
+  double? get _annualSavingsPercent {
+    final annual = _annual;
+    final monthly = _monthly;
+    if (annual == null || monthly == null) return null;
+    final monthlyPrice = monthly.storeProduct.price;
+    if (monthlyPrice <= 0) return null;
+    final annualMonthlyEquivalent = annual.storeProduct.price / 12;
+    final savings = 1 - (annualMonthlyEquivalent / monthlyPrice);
+    return savings > 0 ? savings * 100 : null;
+  }
+
+  String? _perMonthEquivalent(Package annual) {
+    final full = annual.storeProduct.priceString;
+    final match = RegExp(r'^[^\d-]*').firstMatch(full);
+    final prefix = match?.group(0) ?? '';
+    final perMonth = annual.storeProduct.price / 12;
+    return '$prefix${perMonth.toStringAsFixed(2)}/mo';
+  }
+
+  Future<void> _purchase() async {
+    final package = _selected;
+    if (package == null || _purchasing) return;
+    HapticFeedback.mediumImpact();
+    setState(() => _purchasing = true);
+
+    try {
+      final info =
+          await ref.read(premiumServiceProvider).purchasePackage(package);
+      if (!mounted) return;
+      if (info == null) {
+        // User cancelled the purchase
+        return;
+      }
+      if (hasPremium(info)) {
+        HapticFeedback.heavyImpact();
+        Navigator.of(context).pop();
+        _snack('Welcome to GymLog Pro — everything is unlocked.');
+      } else {
+        HapticFeedback.heavyImpact();
+        debugPrint(
+          '[PremiumPaywall] Purchase completed for package "${package.identifier}", '
+          'but entitlement "${PremiumService.entitlementId}" is not active. '
+          'Active entitlements: ${info.entitlements.active.keys.join(", ")}',
+        );
+        _snack(
+          'Purchase completed, but Premium is still being verified. Try Restore Purchases.',
+        );
+      }
+    } on PlatformException catch (e) {
+      if (!mounted) return;
+      if (PurchasesErrorHelper.getErrorCode(e) ==
+          PurchasesErrorCode.paymentPendingError) {
+        // Payment is pending approval (e.g. a delayed Play Billing payment
+        // method) — it may still complete later. Telling the user "you
+        // were not charged" here would be a false promise.
+        _snack(
+          "Your payment is pending approval. We'll unlock Pro automatically "
+          'once it clears.',
+        );
+      } else {
+        _snack('Purchase failed. You were not charged.');
+      }
+    } catch (e) {
+      if (mounted) _snack('Purchase failed. You were not charged.');
+    } finally {
+      if (mounted) setState(() => _purchasing = false);
+    }
+  }
+
+  Future<void> _restore() async {
+    if (_restoring) return;
+    HapticFeedback.lightImpact();
+    setState(() => _restoring = true);
+    try {
+      final info = await ref.read(premiumServiceProvider).restorePurchases();
+      if (!mounted) return;
+      if (info != null && hasPremium(info)) {
+        HapticFeedback.heavyImpact();
+        Navigator.of(context).pop();
+        _snack('Pro restored. Welcome back.');
+      } else {
+        _snack('No active Pro subscription found for this account.');
+      }
+    } catch (_) {
+      if (mounted) _snack('Restore failed. Try again later.');
+    } finally {
+      if (mounted) setState(() => _restoring = false);
+    }
+  }
+
+  void _snack(String message) {
+    final surface = context.surface;
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(message, style: AppText.body(color: surface.textPrimary)),
+      backgroundColor: surface.bgSurface,
+      behavior: SnackBarBehavior.floating,
+    ));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final accent = context.accent;
+    final savings = _annualSavingsPercent;
+    final String headline;
+    final String subheadline;
+
+    switch (widget.source) {
+      case PaywallSource.generic:
+        headline = 'Unlock Premium';
+        subheadline = 'Go deeper on the data behind your training.';
+        break;
+      case PaywallSource.routineLimit:
+        headline = 'Routine limit reached';
+        subheadline =
+            'The free plan includes up to $kFreeRoutineLimit routines — enough for a Push / Pull / Legs / Full-Body split. Upgrade to Pro for unlimited routines and full analytics history.';
+        break;
+      case PaywallSource.chartFilter:
+        headline = 'Full history locked';
+        subheadline =
+            'Free plan shows your last 3 weeks. Upgrade to see your full history.';
+        break;
+      case PaywallSource.timeRange:
+        headline = 'Long-term trends';
+        subheadline = '1Y and All Time ranges unlocked with Pro.';
+        break;
+      case PaywallSource.sync:
+        headline = 'Sync across devices';
+        subheadline =
+            'Cloud sync is a Pro feature. Upgrade to back up your data and pick up where you left off on any device.';
+        break;
+    }
+
+    final surface = context.surface;
+    return Container(
+      decoration: BoxDecoration(
+        color: surface.surface2,
+        borderRadius: AppRadius.sheetTop,
+        // Hairline border — defines the sheet edge against the black canvas.
+        // This is what separates "material" from "grey blob on black."
+        border: Border(
+          top: BorderSide(color: surface.surface3, width: 1),
+          left: BorderSide(color: surface.surface3, width: 1),
+          right: BorderSide(color: surface.surface3, width: 1),
+        ),
+      ),
+      child: SafeArea(
+        top: false,
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // ── Top glow — light leak at sheet edge ──────────────────
+              // Premium apps use light to create depth, not shadow.
+              // This 1px row emits a faint accent luminance above the handle.
+              Container(
+                height: 1,
+                decoration: BoxDecoration(
+                  boxShadow: [
+                    BoxShadow(
+                      color: accent.glow,
+                      blurRadius: 12,
+                      spreadRadius: 2,
+                    ),
+                  ],
+                ),
+              ),
+
+              Padding(
+                padding: const EdgeInsets.fromLTRB(24, 12, 24, 16),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const _SheetHandle(),
+                    const SizedBox(height: 24),
+
+                    // ── Header ──────────────────────────────────────────
+                    const _PaywallIcon(),
+                    const SizedBox(height: 14),
+                    Text(
+                      headline,
+                      style: AppText.sheetTitle(color: surface.textPrimary),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      subheadline,
+                      style: AppText.body(color: surface.textSecondary),
+                    ),
+                    const SizedBox(height: 20),
+
+                    // ── Features ────────────────────────────────────────
+                    // Subtitles are sentence case — uppercase reads like a
+                    // system alert. Sentence case reads like a human wrote it.
+                    for (final (icon, title, subtitle) in _features)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 14),
+                        child: Semantics(
+                          label: '$title, $subtitle',
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Icon(icon, size: 20, color: accent.base),
+                              const SizedBox(width: 14),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    ExcludeSemantics(
+                                      child: Text(
+                                        title,
+                                        style: AppText.body(
+                                                color: surface.textPrimary)
+                                            .copyWith(
+                                                fontWeight: FontWeight.w600),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 1),
+                                    ExcludeSemantics(
+                                      child: Text(
+                                        subtitle,
+                                        style: AppText.label(
+                                            color: surface.textSecondary),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    const SizedBox(height: 8),
+
+                    // ── Pricing ─────────────────────────────────────────
+                    if (_loading)
+                      Center(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 24),
+                          child: CircularProgressIndicator(
+                              color: surface.textPrimary, strokeWidth: 2),
+                        ),
+                      )
+                    else if (_storeReady) ...[
+                      if (_annual != null)
+                        _PackageRow(
+                          title: 'Yearly',
+                          price: _annual!.storeProduct.priceString,
+                          caption: _perMonthEquivalent(_annual!) ?? 'per year',
+                          badge: savings != null
+                              ? 'SAVE ${savings.round()}%'
+                              : null,
+                          selected: _selected == _annual,
+                          onTap: () => _selectPackage(_annual!),
+                        ),
+                      if (_annual != null && _monthly != null)
+                        const SizedBox(height: 10),
+                      if (_monthly != null)
+                        _PackageRow(
+                          title: 'Monthly',
+                          price: _monthly!.storeProduct.priceString,
+                          caption: 'per month',
+                          selected: _selected == _monthly,
+                          onTap: () => _selectPackage(_monthly!),
+                        ),
+                      const SizedBox(height: 18),
+                      Material(
+                        color: _purchasing
+                            ? accent.base.withValues(alpha: 0.85)
+                            : accent.base,
+                        borderRadius:
+                            BorderRadius.circular(AppRadius.buttonPrimary),
+                        elevation: 0,
+                        child: InkWell(
+                          onTap: _purchasing ? null : _purchase,
+                          borderRadius:
+                              BorderRadius.circular(AppRadius.buttonPrimary),
+                          child: Container(
+                            height: 52,
+                            width: double.infinity,
+                            alignment: Alignment.center,
+                            child: _purchasing
+                                ? SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: CircularProgressIndicator(
+                                        color: accent.onAccent, strokeWidth: 2),
+                                  )
+                                : Text(
+                                    _ctaLabel,
+                                    style: AppText.body(color: accent.onAccent)
+                                        .copyWith(fontWeight: FontWeight.bold),
+                                  ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Center(
+                        child: Text(
+                          _ctaCaption,
+                          style: AppText.caption(color: surface.textSecondary),
+                        ),
+                      ),
+                    ] else ...[
+                      // RevenueCat unreachable — actionable, not apologetic.
+                      // A premium app never shows a "broken" UI; it shows a
+                      // minimal, tappable state that lets the user retry.
+                      const SizedBox(height: 8),
+                      Center(
+                        child: GestureDetector(
+                          onTap: _loadOfferings,
+                          behavior: HitTestBehavior.opaque,
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            child: Text(
+                              'Pricing unavailable. Tap to retry.',
+                              style:
+                                  AppText.caption(color: surface.textSecondary),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+
+                    const SizedBox(height: 8),
+
+                    // ── Secondary actions ───────────────────────────────
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        TextButton(
+                          onPressed: () => Navigator.of(context).pop(),
+                          style: TextButton.styleFrom(
+                            minimumSize: const Size(0, 48),
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                          ),
+                          child: Text(
+                            'Maybe Later',
+                            style: AppText.body(color: surface.textSecondary),
+                          ),
+                        ),
+                        Container(
+                          width: 3,
+                          height: 3,
+                          decoration: BoxDecoration(
+                            color: surface.textSecondary,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                        TextButton(
+                          onPressed: _restoring ? null : _restore,
+                          style: TextButton.styleFrom(
+                            minimumSize: const Size(0, 48),
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                          ),
+                          child: Text(
+                            _restoring ? 'Restoring…' : 'Restore Purchases',
+                            style: AppText.body(color: surface.textSecondary),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+
+                    // ── Legal disclosure ────────────────────────────────────
+                    Center(
+                      child: Text(
+                        'Subscription auto-renews unless cancelled at least '
+                        '24 hours before the end of the current period. '
+                        'Manage or cancel in your store account settings.',
+                        textAlign: TextAlign.center,
+                        style: AppText.caption(color: surface.textTertiary),
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        TextButton(
+                          onPressed: () => _openUrl(context, kPrivacyPolicyUrl),
+                          style: TextButton.styleFrom(
+                            minimumSize: const Size(0, 40),
+                            padding: const EdgeInsets.symmetric(horizontal: 8),
+                          ),
+                          child: Text(
+                            'Privacy Policy',
+                            style:
+                                AppText.caption(color: surface.textSecondary),
+                          ),
+                        ),
+                        Container(
+                          width: 3,
+                          height: 3,
+                          decoration: BoxDecoration(
+                            color: surface.textTertiary,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                        TextButton(
+                          onPressed: () =>
+                              _openUrl(context, kTermsOfServiceUrl),
+                          style: TextButton.styleFrom(
+                            minimumSize: const Size(0, 40),
+                            padding: const EdgeInsets.symmetric(horizontal: 8),
+                          ),
+                          child: Text(
+                            'Terms of Use',
+                            style:
+                                AppText.caption(color: surface.textSecondary),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _PackageRow extends StatelessWidget {
+  final String title;
+  final String price;
+  final String caption;
+  final String? badge;
   final bool selected;
   final VoidCallback onTap;
 
-  const _PackageTile({
-    required this.package,
+  const _PackageRow({
+    required this.title,
+    required this.price,
+    required this.caption,
+    this.badge,
     required this.selected,
     required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    final surface = context.surface;
     final accent = context.accent;
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(AppRadius.card),
-        child: Container(
-          padding: const EdgeInsets.all(14),
-          decoration: BoxDecoration(
-            color: surface.surface3,
-            borderRadius: BorderRadius.circular(AppRadius.card),
-            border: Border.all(
-              color: selected ? accent.base : surface.borderSubtle,
-              width: selected ? 1.5 : 1,
-            ),
+    final surface = context.surface;
+    return Semantics(
+      button: true,
+      selected: selected,
+      label: '$title plan, $price $caption',
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        clipBehavior: Clip.antiAlias,
+        decoration: BoxDecoration(
+          // Unselected cards are transparent — no grey blob pattern.
+          // Only the selected card gets a tinted fill.
+          color: selected
+              ? accent.base.withValues(alpha: 0.10)
+              : Colors.transparent,
+          borderRadius: BorderRadius.circular(AppRadius.buttonSecondary),
+          border: Border.all(
+            color: selected ? accent.base : surface.borderDefault,
+            width: 1,
           ),
-          child: Row(
-            children: [
-              Icon(
-                selected
-                    ? Icons.radio_button_checked_rounded
-                    : Icons.radio_button_unchecked_rounded,
-                color: selected ? accent.base : surface.textTertiary,
+        ),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: onTap,
+            borderRadius: BorderRadius.circular(AppRadius.buttonSecondary),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              child: Row(
+                children: [
+                  Icon(
+                    selected
+                        ? Icons.radio_button_checked_rounded
+                        : Icons.radio_button_off_rounded,
+                    size: 18,
+                    color: selected ? accent.base : surface.textSecondary,
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Wrap(
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      spacing: 8,
+                      runSpacing: 4,
+                      children: [
+                        Text(
+                          title,
+                          style:
+                              AppText.body(color: surface.textPrimary).copyWith(
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        if (badge != null)
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 7, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: accent.base.withValues(alpha: 0.16),
+                              borderRadius:
+                                  BorderRadius.circular(AppRadius.badge),
+                            ),
+                            child: Text(
+                              badge!.toUpperCase(),
+                              style: AppText.label(
+                                color: accent.base,
+                                letterSpacing: 12 * 0.05,
+                              ).copyWith(
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(
+                        price,
+                        style:
+                            AppText.value(color: surface.textPrimary).copyWith(
+                          fontSize: 17,
+                        ),
+                      ),
+                      Text(
+                        caption,
+                        style: AppText.caption(color: surface.textSecondary),
+                      ),
+                    ],
+                  ),
+                ],
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  package.storeProduct.title,
-                  style: AppText.body(color: surface.textPrimary),
-                ),
-              ),
-              Text(
-                package.storeProduct.priceString,
-                style: AppText.button(color: surface.textPrimary),
-              ),
-            ],
+            ),
           ),
         ),
       ),

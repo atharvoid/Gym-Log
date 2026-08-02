@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -382,8 +383,7 @@ class _IdentityHeader extends ConsumerWidget {
                               if (!context.mounted) return;
                               showAppSnackBar(
                                 context,
-                                message:
-                                    "Couldn't save your name. Try again.",
+                                message: "Couldn't save your name. Try again.",
                               );
                             }
                           }
@@ -631,8 +631,7 @@ class _StatCellError extends StatelessWidget {
         onTap: onRetry,
         child: Column(
           children: [
-            Icon(Icons.refresh_rounded,
-                size: 18, color: surface.textTertiary),
+            Icon(Icons.refresh_rounded, size: 18, color: surface.textTertiary),
             const SizedBox(height: 5),
             Text('RETRY',
                 style: AppText.statCellLabel(color: surface.textTertiary)),

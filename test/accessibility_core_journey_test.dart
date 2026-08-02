@@ -135,10 +135,12 @@ void main() {
 
     await setupAndPumpWorkout(tester, container);
 
-    final chipFinder = find.descendant(
-      of: find.bySemanticsLabel(RegExp(r'Set rest duration override.*')),
-      matching: find.byType(InkWell),
-    );
+    final chipFinder = find
+        .descendant(
+          of: find.bySemanticsLabel(RegExp(r'Set rest duration override.*')),
+          matching: find.byType(InkWell),
+        )
+        .first;
 
     expect(chipFinder, findsOneWidget);
     final size = tester.getSize(chipFinder);
@@ -163,10 +165,12 @@ void main() {
     await setupAndPumpWorkout(tester, container);
 
     // Tap RestOverrideChip to open sheet
-    final chipFinder = find.descendant(
-      of: find.bySemanticsLabel(RegExp(r'Set rest duration override.*')),
-      matching: find.byType(InkWell),
-    );
+    final chipFinder = find
+        .descendant(
+          of: find.bySemanticsLabel(RegExp(r'Set rest duration override.*')),
+          matching: find.byType(InkWell),
+        )
+        .first;
     expect(chipFinder, findsOneWidget);
     await tester.tap(chipFinder);
     await tester.pumpAndSettle(); // Let bottom sheet slide up animation finish

@@ -222,7 +222,7 @@ void main() {
               authProvider.overrideWithValue(null),
               databaseProvider.overrideWithValue(db),
               accountDeletionServiceProvider.overrideWithValue(
-                  MockAccountDeletionService(db, supabaseClient)),
+                  MockAccountDeletionService(db, () => supabaseClient)),
             ],
             child: MaterialApp.router(
               theme: buildAppTheme(palette.tokens, palette: palette),

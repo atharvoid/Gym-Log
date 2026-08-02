@@ -81,7 +81,7 @@ void main() {
     test(
         'Idempotency — wipes local storage and finishes safely even when user is null (signed out)',
         () async {
-      final service = AccountDeletionService(db, supabase);
+      final service = AccountDeletionService(db, () => supabase);
       final outcome = await service.deleteAccount();
 
       expect(outcome.localWiped, isTrue);
@@ -98,7 +98,7 @@ void main() {
       // Populate some fake user profile info in SQLite
       await db.userDao.setPremiumStatus('user-A', isPremium: true);
 
-      final service = AccountDeletionService(db, supabase);
+      final service = AccountDeletionService(db, () => supabase);
       final outcome = await service.deleteAccount();
 
       expect(outcome.localWiped, isTrue);

@@ -334,8 +334,7 @@ class _ExerciseSelectionScreenState
                       borderRadius: AppRadius.buttonSecondaryAll,
                       borderSide: BorderSide(color: accent.base, width: 1.5),
                     ),
-                    contentPadding:
-                        const EdgeInsets.symmetric(horizontal: 16),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16),
                   ),
                 ),
               ),
@@ -552,8 +551,7 @@ class _ExerciseRow extends StatelessWidget {
                       Text('${exercise.target} • ${exercise.equipment}',
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style:
-                              AppText.caption(color: surface.textSecondary)),
+                          style: AppText.caption(color: surface.textSecondary)),
                     ],
                   ),
                 ),

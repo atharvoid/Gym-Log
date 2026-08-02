@@ -294,161 +294,153 @@ class _RoutineEditorScreenState extends ConsumerState<RoutineEditorScreen> {
         // and exercise list stretched edge-to-edge on tablets/foldables.
         body: AdaptiveContent(
           child: _loading
-            ? Center(
-                child: CircularProgressIndicator(
-                    color: surface.textSecondary, strokeWidth: 2),
-              )
-            : Column(
-                children: [
-                  // ── Routine name ───────────────────────
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
-                    child: Semantics(
-                      label: 'Routine name',
-                      child: TextField(
-                        controller: _nameController,
-                        maxLength: 50,
-                        textCapitalization: TextCapitalization.words,
-                        cursorColor: accent.base,
-                        style: AppText.sheetTitle(color: surface.textPrimary)
-                            .copyWith(fontWeight: FontWeight.w600),
-                        decoration: InputDecoration(
-                          hintText: 'Routine name',
-                          counterText: '',
-                          hintStyle:
-                              AppText.sheetTitle(color: surface.textSecondary)
-                                  .copyWith(fontWeight: FontWeight.w500),
-                          filled: true,
-                          fillColor: surface.surface2,
-                          border: OutlineInputBorder(
-                            borderRadius: AppRadius.cardAll,
-                            borderSide: BorderSide(color: surface.borderSubtle),
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: AppRadius.cardAll,
-                            borderSide: BorderSide(color: surface.borderSubtle),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: AppRadius.cardAll,
-                            borderSide:
-                                BorderSide(color: accent.base, width: 1.5),
+              ? Center(
+                  child: CircularProgressIndicator(
+                      color: surface.textSecondary, strokeWidth: 2),
+                )
+              : Column(
+                  children: [
+                    // ── Routine name ───────────────────────
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+                      child: Semantics(
+                        label: 'Routine name',
+                        child: TextField(
+                          controller: _nameController,
+                          maxLength: 50,
+                          textCapitalization: TextCapitalization.words,
+                          cursorColor: accent.base,
+                          style: AppText.sheetTitle(color: surface.textPrimary)
+                              .copyWith(fontWeight: FontWeight.w600),
+                          decoration: InputDecoration(
+                            hintText: 'Routine name',
+                            counterText: '',
+                            hintStyle:
+                                AppText.sheetTitle(color: surface.textSecondary)
+                                    .copyWith(fontWeight: FontWeight.w500),
+                            filled: true,
+                            fillColor: surface.surface2,
+                            border: OutlineInputBorder(
+                              borderRadius: AppRadius.cardAll,
+                              borderSide:
+                                  BorderSide(color: surface.borderSubtle),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: AppRadius.cardAll,
+                              borderSide:
+                                  BorderSide(color: surface.borderSubtle),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: AppRadius.cardAll,
+                              borderSide:
+                                  BorderSide(color: accent.base, width: 1.5),
+                            ),
                           ),
                         ),
                       ),
                     ),
-                  ),
 
-                  // ── Exercise list ──────────────────────
-                  Expanded(
-                    child: _exercises.isEmpty
-                        ? _EmptyEditorState(onAdd: _addExercises)
-                        : ReorderableListView.builder(
-                            padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
-                            // +1 item: the last slot is the "Add Exercise" button.
-                            itemCount: _exercises.length + 1,
-                            // The card supplies its own drag handle
-                            // (ReorderableDragStartListener). Leaving the
-                            // default handles on too gives every item TWO
-                            // competing drag listeners — the source of the
-                            // mid-drag index confusion. Exactly one handle.
-                            buildDefaultDragHandles: false,
-                            onReorderStart: (_) =>
-                                HapticFeedback.selectionClick(),
-                            proxyDecorator: (child, index, animation) {
-                              if (MediaQuery.disableAnimationsOf(context)) {
-                                return child;
-                              }
-                              return AnimatedBuilder(
-                                animation: animation,
-                                child: child,
-                                builder: (context, child) {
-                                  final t =
-                                      Curves.easeOut.transform(animation.value);
-                                  final accent = context.accent;
-                                  return Transform.scale(
-                                    scale: 1.0 + 0.04 * t,
-                                    child: Container(
-                                      decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(
-                                            AppRadius.card),
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color: accent.base
-                                                .withValues(alpha: 0.18 * t),
-                                            blurRadius: 16 * t,
-                                            spreadRadius: 2 * t,
-                                            offset: Offset(0, 4 * t),
-                                          ),
-                                        ],
-                                        border: Border.all(
-                                          color: Color.lerp(
-                                            context.surface.borderSubtle,
-                                            context.surface.borderEmphasis,
-                                            t,
-                                          )!,
-                                          width: 1.0,
-                                        ),
-                                      ),
-                                      child: child,
-                                    ),
-                                  );
-                                },
-                              );
-                            },
-                            onReorder: (oldIndex, newIndex) {
-                              // Last slot is the non-reorderable "Add Exercise" footer.
-                              if (oldIndex >= _exercises.length) return;
-                              HapticFeedback.mediumImpact();
-                              setState(() {
-                                _dirty = true;
-                                // `onReorder` reports newIndex against the
-                                // pre-removal list (Flutter's documented
-                                // contract) — without this adjustment every
-                                // downward drag lands one slot past where it
-                                // was dropped (B25). Note: `onReorderItem` is
-                                // not a real ReorderableListView.builder
-                                // parameter — omitting the required
-                                // `onReorder` here was a compile-breaking
-                                // typo (B25), fixed alongside this.
-                                if (newIndex > oldIndex) newIndex -= 1;
-                                // Clamp so an exercise can't be dropped past the footer.
-                                if (newIndex > _exercises.length - 1) {
-                                  newIndex = _exercises.length - 1;
+                    // ── Exercise list ──────────────────────
+                    Expanded(
+                      child: _exercises.isEmpty
+                          ? _EmptyEditorState(onAdd: _addExercises)
+                          : ReorderableListView.builder(
+                              padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+                              // +1 item: the last slot is the "Add Exercise" button.
+                              itemCount: _exercises.length + 1,
+                              // The card supplies its own drag handle
+                              // (ReorderableDragStartListener). Leaving the
+                              // default handles on too gives every item TWO
+                              // competing drag listeners — the source of the
+                              // mid-drag index confusion. Exactly one handle.
+                              buildDefaultDragHandles: false,
+                              onReorderStart: (_) =>
+                                  HapticFeedback.selectionClick(),
+                              proxyDecorator: (child, index, animation) {
+                                if (MediaQuery.disableAnimationsOf(context)) {
+                                  return child;
                                 }
-                                final item = _exercises.removeAt(oldIndex);
-                                _exercises.insert(newIndex, item);
-                              });
-                            },
-                            itemBuilder: (context, index) {
-                              // Last item → non-reorderable Add Exercise button.
-                              if (index == _exercises.length) {
-                                return _buildAddExerciseButton();
-                              }
-                              final e = _exercises[index];
-                              return Padding(
-                                key: ValueKey(e.uid),
-                                padding: const EdgeInsets.only(bottom: 10),
-                                child: _EditorExerciseCard(
-                                  exercise: e,
-                                  index: index,
-                                  onSetsChanged: (sets) => setState(() {
-                                    _dirty = true;
-                                    e.sets = sets;
-                                  }),
-                                  onRemove: () {
-                                    HapticFeedback.lightImpact();
-                                    setState(() {
-                                      _dirty = true;
-                                      _exercises.removeAt(index);
-                                    });
+                                return AnimatedBuilder(
+                                  animation: animation,
+                                  child: child,
+                                  builder: (context, child) {
+                                    final t = Curves.easeOut
+                                        .transform(animation.value);
+                                    final accent = context.accent;
+                                    return Transform.scale(
+                                      scale: 1.0 + 0.04 * t,
+                                      child: Container(
+                                        decoration: BoxDecoration(
+                                          borderRadius: BorderRadius.circular(
+                                              AppRadius.card),
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: accent.base
+                                                  .withValues(alpha: 0.18 * t),
+                                              blurRadius: 16 * t,
+                                              spreadRadius: 2 * t,
+                                              offset: Offset(0, 4 * t),
+                                            ),
+                                          ],
+                                          border: Border.all(
+                                            color: Color.lerp(
+                                              context.surface.borderSubtle,
+                                              context.surface.borderEmphasis,
+                                              t,
+                                            )!,
+                                            width: 1.0,
+                                          ),
+                                        ),
+                                        child: child,
+                                      ),
+                                    );
                                   },
-                                ),
-                              );
-                            },
-                          ),
-                  ),
-                ],
-              ),
+                                );
+                              },
+                              onReorderItem: (oldIndex, newIndex) {
+                                // Last slot is the non-reorderable "Add Exercise" footer.
+                                if (oldIndex >= _exercises.length) return;
+                                HapticFeedback.mediumImpact();
+                                setState(() {
+                                  _dirty = true;
+                                  // Clamp so an exercise can't be dropped past the footer.
+                                  if (newIndex > _exercises.length - 1) {
+                                    newIndex = _exercises.length - 1;
+                                  }
+                                  final item = _exercises.removeAt(oldIndex);
+                                  _exercises.insert(newIndex, item);
+                                });
+                              },
+                              itemBuilder: (context, index) {
+                                // Last item → non-reorderable Add Exercise button.
+                                if (index == _exercises.length) {
+                                  return _buildAddExerciseButton();
+                                }
+                                final e = _exercises[index];
+                                return Padding(
+                                  key: ValueKey(e.uid),
+                                  padding: const EdgeInsets.only(bottom: 10),
+                                  child: _EditorExerciseCard(
+                                    exercise: e,
+                                    index: index,
+                                    onSetsChanged: (sets) => setState(() {
+                                      _dirty = true;
+                                      e.sets = sets;
+                                    }),
+                                    onRemove: () {
+                                      HapticFeedback.lightImpact();
+                                      setState(() {
+                                        _dirty = true;
+                                        _exercises.removeAt(index);
+                                      });
+                                    },
+                                  ),
+                                );
+                              },
+                            ),
+                    ),
+                  ],
+                ),
         ),
         // S12.2: bottomNavigationBar removed — "Add Exercise" is now the
         // last item in the scrollable ReorderableListView.

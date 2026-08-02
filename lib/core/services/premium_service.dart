@@ -71,7 +71,8 @@ class PremiumService with WidgetsBindingObserver {
     final key = _apiKey;
     if (key == null || key.isEmpty) {
       if (kDebugMode) {
-        debugPrint('[PremiumService] No RevenueCat key — running in free mode.');
+        debugPrint(
+            '[PremiumService] No RevenueCat key — running in free mode.');
       }
       return;
     }

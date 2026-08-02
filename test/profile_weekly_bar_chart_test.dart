@@ -99,6 +99,7 @@ void main() {
             body: GraphKpiHeader(
               aggregates: twoWeeks,
               metric: ProfileGraphMetric.volume,
+              unit: 'kg',
             ),
           ),
         ),
@@ -116,6 +117,7 @@ void main() {
             body: GraphKpiHeader(
               aggregates: twoWeeks,
               metric: ProfileGraphMetric.volume,
+              unit: 'kg',
             ),
           ),
         ),
@@ -133,6 +135,7 @@ void main() {
             body: GraphKpiHeader(
               aggregates: _fourWeeks(),
               metric: ProfileGraphMetric.volume,
+              unit: 'kg',
             ),
           ),
         ),
@@ -185,6 +188,7 @@ void main() {
             body: GraphKpiHeader(
               aggregates: withZeroPrevious,
               metric: ProfileGraphMetric.volume,
+              unit: 'kg',
             ),
           ),
         ),
@@ -217,6 +221,7 @@ void main() {
               aggregates: aggregates,
               metric: ProfileGraphMetric.volume,
               isPremium: true,
+              unit: 'kg',
             ),
           ),
         ),
@@ -242,6 +247,7 @@ void main() {
               aggregates: aggregates,
               metric: ProfileGraphMetric.duration,
               isPremium: true,
+              unit: 'kg',
             ),
           ),
         ),
@@ -260,6 +266,7 @@ void main() {
               aggregates: aggregates,
               metric: ProfileGraphMetric.volume,
               isPremium: true,
+              unit: 'kg',
             ),
           ),
         ),
@@ -295,6 +302,7 @@ void main() {
               aggregates: twoFilled,
               metric: ProfileGraphMetric.volume,
               isPremium: false,
+              unit: 'kg',
             ),
           ),
         ),

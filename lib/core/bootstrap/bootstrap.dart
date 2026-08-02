@@ -187,8 +187,7 @@ abstract final class Bootstrap {
     Timer(cloudReadyWatchdog, () {
       if (cloudReady.isCompleted) return;
       if (kDebugMode) {
-        debugPrint(
-            '[Bootstrap] cloud readiness watchdog fired after '
+        debugPrint('[Bootstrap] cloud readiness watchdog fired after '
             '${cloudReadyWatchdog.inSeconds}s — the post-frame callback never '
             'completed the gate. Continuing in local-only mode.');
       }
@@ -345,10 +344,7 @@ abstract final class Bootstrap {
   static Future<({AppDatabase db, bool corrupted})> _initDatabase() async {
     final db = AppDatabase();
     try {
-      await db
-          .customSelect('SELECT 1')
-          .getSingle()
-          .timeout(dbOpenProbeTimeout);
+      await db.customSelect('SELECT 1').getSingle().timeout(dbOpenProbeTimeout);
       return (db: db, corrupted: false);
     } catch (e, st) {
       if (kDebugMode) {

@@ -377,8 +377,8 @@ class _SpotlightTourOverlayState extends ConsumerState<SpotlightTourOverlay>
                         // ── Title ──────────────────────────────────────────────
                         Text(
                           widget.title,
-                          style: AppText.body(color: surface.textPrimary)
-                              .copyWith(
+                          style:
+                              AppText.body(color: surface.textPrimary).copyWith(
                             fontWeight: FontWeight.w700,
                             fontSize: 17,
                           ),
