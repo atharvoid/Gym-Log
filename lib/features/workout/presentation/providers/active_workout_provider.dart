@@ -493,6 +493,7 @@ class ActiveWorkoutNotifier extends StateNotifier<ActiveWorkoutState?> {
 
     exercises[exerciseIndex] = exercise.copyWith(sets: sets);
     state = state!.copyWith(exercises: exercises);
+    saveDraftNow();
   }
 
   void toggleSetCompletion(int exerciseIndex, int setIndex) {

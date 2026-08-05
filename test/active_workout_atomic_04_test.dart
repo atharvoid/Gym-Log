@@ -234,6 +234,46 @@ void main() {
       expect(savedDraft!.exercises.first.sets.length, 1);
     });
 
+    test('5b. AWP-7 replaceSet persists draft immediately on weight edit',
+        () async {
+      final container = ProviderContainer(
+        overrides: [
+          workoutDraftStoreProvider.overrideWith((ref) => store),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      final notifier = container.read(activeWorkoutProvider.notifier);
+      await notifier.startWorkout(
+        initialExercises: [
+          const WorkoutExerciseState(
+            id: 'ex-1',
+            exerciseId: 101,
+            name: 'Bench Press',
+            measurementType: 'weight_and_reps',
+            sets: [
+              WorkoutSetState(id: 's1', weightKg: 100, reps: 8),
+            ],
+          ),
+        ],
+      );
+
+      // Simulate the user editing a weight. No saveDraftNow() is called by
+      // the test — the draft must already reflect the edit right after
+      // replaceSet returns, so a process kill cannot lose the edit to the
+      // 800ms debounce window.
+      notifier.replaceSet(
+        'ex-1',
+        's1',
+        const WorkoutSetState(id: 's1', weightKg: 102.5, reps: 8),
+      );
+
+      final savedDraft = await store.load();
+      expect(savedDraft, isNotNull);
+      expect(savedDraft!.exercises.first.sets.first.weightKg, 102.5,
+          reason: 'replaceSet must persist the edit synchronously (AWP-7)');
+    });
+
     test('6. replacement Cancel changes nothing', () async {
       const originalEx = WorkoutExerciseState(
         id: 'ex-1',
