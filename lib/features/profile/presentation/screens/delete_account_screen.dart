@@ -51,15 +51,26 @@ class _DeleteAccountScreenState extends ConsumerState<DeleteAccountScreen> {
 
     if (!mounted) return;
 
-    // Local wipe always signs the user out. Show the confirmation snackbar on
-    // the current scaffold first, then navigate — the current route's Scaffold
-    // remains mounted long enough for the message to be visible.
+    // Completion is derived from ALL three outcome flags. A cloud-failure
+    // deletion must never present itself as success.
+    final fullyDeleted =
+        outcome.localWiped && outcome.cloudPurged && outcome.authUserDeleted;
+
+    // Local wipe always signs the user out, so the session is gone even on
+    // partial failure. Show the honest copy on the current scaffold first,
+    // then navigate — the current route's Scaffold remains mounted long
+    // enough for the message to be visible.
     if (outcome.localWiped) {
       final router = GoRouter.of(context);
-      ScaffoldMessenger.of(context).showSnackBar(
+      final messenger = ScaffoldMessenger.of(context);
+      messenger.showSnackBar(
         SnackBar(
           content: Text(
-            'Your account and data have been permanently deleted.',
+            fullyDeleted
+                ? 'Your account and data have been permanently deleted.'
+                : 'Your data on this device was deleted, but some cloud data '
+                    'could not be removed. Contact support to finish the '
+                    'purge.',
             style: AppText.button(),
           ),
           backgroundColor: surface.bgSurface,
