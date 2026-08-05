@@ -653,3 +653,61 @@ When the deferred tour reached step 4 for a user who had added a routine but not
 - [x] Tests Suite: **PASS** (201 tests passed)
 
 **Gate Verdict:** PASS
+
+## Phase 1: P0 Fix Sheet (verification + mechanical fixes)
+
+**Date:** 2026-08-05
+**Slice:** P0 sheet per full work queue
+
+### Phase 0 — Tree verification first (analyzer cleaned before any P0 work)
+
+- Analyzer: 0 issues (106.4s fresh run saved to nalyze_raw.txt).
+- Tests: 529/529 (captured 	est_raw.txt); format 0 changed; custom_lint pass.
+- Release APK builds (79.6MB) — proves toolchain end-to-end; manifest namespace
+  typo confirmed already fixed at HEAD (pk/res/android).
+- Stash list: 2 stashes, both on 11y-resilience; no audit-branch stashes.
+- git merge-base HEAD a11y-resilience = empty ? **no common ancestor**.
+  Tree diff (lib/test/scripts) = 353 files, ~80k deletions on the a11y side ?
+  11y-resilience is *independent unmerged work*, NOT a regression source.
+  Canonical tree = udit/a1-cold-start (green with the full audit test suite).
+  This did not change the plan.
+
+### Fixes landed
+
+1. **AWP-7** (64ed2b7) — eplaceSet in ctive_workout_provider.dart is the
+   only active-workout mutator that never called saveDraftNow; every numeric
+   set edit sat inside the 800ms debounce window unprotected. Persist
+   synchronously now. Regression test 5b added to
+   ctive_workout_atomic_04_test.dart asserts the draft reflects a weight
+   edit in the same tick as the replaceSet call.
+2. **DAS-1** (8b6f250) — delete_account_screen.dart completion keyed only on
+   localWiped, so a cloud-side failure showed full success copy. Now derives
+   completion from localWiped + cloudPurged + authUserDeleted; partial
+   failure surfaces honest "contact support to finish the purge" copy.
+   Regression: 	est/das1_delete_completion_test.dart — 3 outcomes.
+3. **DBG-F6** (96ea610) — the /exercise/detail/:id route was re-verified at
+   HEAD to already require exerciseId with exercise as optional hint and
+   a DB fallback load by id. The missing piece was regression coverage:
+   	est/core/router_deeplink_test.dart proves a null-extra deep link loads
+   by id, and a non-numeric id falls back to the library without throwing.
+
+### Verified, no change needed
+
+- **RV-1** — both reorder call sites (ctive_workout_screen.dart:722,
+  outine_editor_screen.dart:400) use onReorderItem with no manual
+  
+ewIndex adjustment.
+- **ANALYZE-64** — baseline was stale (branch force-pushed to 7a168a3);
+  analyzer is 0.
+- **AUTH-1** — external: release-keystore SHA-1 must be registered in Google
+  Cloud Console / Firebase. Not doable in-repo. Reminder given.
+
+### Gate Verification Result
+- [x] Format: **PASS** (0 changed)
+- [x] Static Analysis: **PASS** (0 issues, 166.4s re-run after fixes)
+- [x] Custom Linter: **PASS**
+- [x] Tests Suite: **PASS** (529/529 at HEAD before P0s; targeted suites re-run
+      after each fix and pass)
+- [x] Regression Tests: **PASS** (AWP-7 atomic-04 5b, DAS-1 trio, DBG-F6 pair)
+
+**Gate Verdict:** PASS (Phase 1 P0 sheet complete)

@@ -2,6 +2,17 @@
 
 This file tracks every finding ID with its severity, owning screen, status (`open | in-progress | done`), and the closing commit.
 
+## Phase 1 — P0 Fix Sheet
+
+| Finding ID | Screen | Description | Status | Closing Commit |
+|---|---|---|---|---|
+| **AWP-7** | ActiveWorkoutProvider | `replaceSet` was the only mutator of 13 that never called `saveDraftNow`; a numeric set edit sat unprotected inside the 800ms debounce window and a process kill lost it | `done` | 64ed2b7 |
+| **DAS-1** | DeleteAccountScreen | Completion branched only on `localWiped`, ignoring `cloudPurged`/`authUserDeleted` — a cloud-failure deletion showed success copy. Now derives completion from all three flags with honest partial-failure copy | `done` | 8b6f250 |
+| **DBG-F6** | Router `/exercise/detail/:id` | Deep link with null extra used to crash; route now requires `exerciseId`, treats `exercise` as optional hint, screen loads by id + non-numeric fallback. Verified already-at-HEAD; regression tests added | `done` | 96ea610 |
+| **RV-1** | Reorder call sites | Verify-first: both sites re-read at HEAD use `onReorderItem` with no manual index adjustment — compliant | `done` | stale (verified) |
+| **ANALYZE-64** | System | 64-analyzer-error baseline was stale — branch force-pushed to `7a168a3`; `flutter analyze` = 0 at HEAD | `done` | stale (verified) |
+| **AUTH-1** | AuthScreen | Google Sign-in release SHA-1 registration | `open` (external) | — |
+
 ## Tier 0 — Critical
 
 | Finding ID | Screen | Description | Status | Closing Commit |
