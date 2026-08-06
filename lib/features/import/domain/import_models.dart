@@ -185,6 +185,8 @@ class ImportResult {
     required this.exercisesCreated,
     required this.prsDetected,
     required this.warnings,
+    this.cancelled = false,
+    this.failure,
   });
 
   final ImportSource source;
@@ -195,6 +197,15 @@ class ImportResult {
   final List<String> exercisesCreated; // newly added custom exercises
   final int prsDetected;
   final List<String> warnings;
+
+  /// True when the user cancelled an in-flight import; earlier sessions were
+  /// kept, later ones were not attempted.
+  final bool cancelled;
+
+  /// Set when an import stopped midway because a session could not be written.
+  /// Earlier sessions remain imported — [sessionsImported] reports the real
+  /// partial count so the UI can be honest about it.
+  final String? failure;
 }
 
 /// Stable key used to detect a session that's already been imported:

@@ -170,9 +170,9 @@ abstract final class WorkoutCsvParser {
         skipped++;
         continue;
       }
-      final start = DateTime.tryParse(startStr) ??
+      final start = _toLocal(DateTime.tryParse(startStr) ??
           _tryDate(_strongDate, startStr) ??
-          _tryDate(_hevyDate, startStr);
+          _tryDate(_hevyDate, startStr));
       if (start == null) {
         warnings.add('Row $rowNum skipped: date or exercise name is missing.');
         skipped++;
@@ -181,14 +181,14 @@ abstract final class WorkoutCsvParser {
 
       final endStr = cell('workout_ended_at');
       final endedAt = endStr.isNotEmpty
-          ? (DateTime.tryParse(endStr) ??
+          ? _toLocal(DateTime.tryParse(endStr) ??
               _tryDate(_strongDate, endStr) ??
               _tryDate(_hevyDate, endStr))
           : null;
 
       final completedStr = cell('completed_at');
       final completedAt = completedStr.isNotEmpty
-          ? (DateTime.tryParse(completedStr) ??
+          ? _toLocal(DateTime.tryParse(completedStr) ??
               _tryDate(_strongDate, completedStr) ??
               _tryDate(_hevyDate, completedStr))
           : null;
@@ -222,6 +222,23 @@ abstract final class WorkoutCsvParser {
             durationSeconds: durationSeconds,
             distanceMeters: distanceMeters,
           );
+
+      final validationError = _validateRowMetrics(
+        mType: inferredMType,
+        weightKg: weightKg,
+        reps: reps,
+        durationSeconds: durationSeconds,
+        distanceMeters: distanceMeters,
+        rawWeightPresent: _cell(r, idx, 'weight_kg').trim().isNotEmpty,
+        rawRepsPresent: _cell(r, idx, 'reps').trim().isNotEmpty,
+        exerciseName: exName,
+      );
+
+      if (validationError != null) {
+        warnings.add('Row $rowNum skipped: $validationError');
+        skipped++;
+        continue;
+      }
 
       builder.add(
         sessionName: wkName.isEmpty ? 'Workout' : wkName,
@@ -701,6 +718,11 @@ abstract final class WorkoutCsvParser {
     }
   }
 
+  /// GymLog exports write UTC (`...Z`) ISO strings; convert them to local so
+  /// imported sessions match the wall-clock times the app stores for locally
+  /// logged workouts (Hevy/Strong dates already parse as local).
+  static DateTime? _toLocal(DateTime? d) => d?.toLocal();
+
   static DateTime? _tryStrongDate(String s) {
     final t = s.trim();
     if (t.isEmpty) return null;
@@ -748,10 +770,11 @@ class _SessionBuilder {
     double? estimated1rm,
     DateTime? completedAt,
   }) {
-    final key = '$sessionName|${startedAt.millisecondsSinceEpoch}';
+    final key = '${sessionName.trim().toLowerCase()}|'
+        '${startedAt.millisecondsSinceEpoch}';
     final session = _sessionByKey.putIfAbsent(key, () {
       final s = ParsedSession(
-        name: sessionName,
+        name: sessionName.trim(),
         startedAt: startedAt,
         endedAt: endedAt,
         notes: sessionNotes,
@@ -761,9 +784,9 @@ class _SessionBuilder {
     });
 
     final exMap = _exByKey.putIfAbsent(key, () => <String, ParsedExercise>{});
-    final ex = exMap.putIfAbsent(exerciseName, () {
+    final ex = exMap.putIfAbsent(exerciseName.trim().toLowerCase(), () {
       final e = ParsedExercise(
-        name: exerciseName,
+        name: exerciseName.trim(),
         notes: (exerciseNotes == null || exerciseNotes.isEmpty)
             ? null
             : exerciseNotes,

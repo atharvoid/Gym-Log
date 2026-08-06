@@ -23,6 +23,36 @@ class WorkoutExportService {
   static const csvHeaderV1 =
       'date,workout,exercise,set_number,set_type,weight_kg,reps,rpe,is_pr,estimated_1rm';
 
+  /// A blank-ish GymLog v2 template with one example row per measurement type.
+  /// The header matches [csvHeader] exactly, so a filled-in template round-trips
+  /// losslessly through the import parser (the version cell is '2').
+  static String buildTemplateCsv() {
+    final buffer = StringBuffer()..writeln(csvHeader);
+    buffer.writeln([
+      '2', // gymlog_schema_version
+      'example-workout-1',
+      'Example Workout',
+      '2026-07-01T18:00:00.000Z',
+      '2026-07-01T19:00:00.000Z',
+      'Replace these rows with your data.',
+      '',
+      'Barbell Bench Press',
+      'weight_and_reps',
+      '0',
+      'normal',
+      '60',
+      '10',
+      '',
+      '',
+      '',
+      'false',
+      'none',
+      '',
+      '',
+    ].join(','));
+    return buffer.toString();
+  }
+
   /// Builds the full version 2 CSV string for [userId] (completed sessions only),
   /// ordered chronologically, then by exercise order, then set order.
   Future<String> buildCsv(String userId) async {

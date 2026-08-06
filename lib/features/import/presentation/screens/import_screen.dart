@@ -8,9 +8,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
 
 import 'package:intl/intl.dart';
 
+import 'package:gymlog/core/services/workout_export_service.dart';
 import 'package:gymlog/core/theme/app_colors.dart';
 import 'package:gymlog/core/theme/app_text.dart';
 import 'package:gymlog/core/theme/dynamic_accent_theme.dart';
@@ -44,13 +47,16 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
 
   /// The unit the SOURCE FILE was logged in, used to parse it. This is not the
   /// user's display preference and must never be used to render a total — see
-  /// _buildPreview.
+  /// _buildPreview. Defaults to kg (the parser's own default) until a Strong
+  /// file that carries a unit column says otherwise; the preview unit chooser
+  /// lets the user correct an assumption.
   String _assumedUnit = 'kg';
   ImportSummary? _summary;
   ImportResult? _result;
   String? _error;
   int _done = 0;
   int _total = 0;
+  bool _cancelRequested = false;
 
   String? get _userId => ref.read(currentUserProfileProvider).valueOrNull?.id;
 
@@ -90,7 +96,7 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
 
     _content = content;
     _fileName = file.name;
-    _assumedUnit = ref.read(weightUnitProvider);
+    _assumedUnit = 'kg';
     await _runPreview();
   }
 
@@ -133,21 +139,26 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
     setState(() {
       _phase = _Phase.importing;
       _done = 0;
-      _total = _summary?.sessionCount ?? 0;
+      _total = _summary?.newSessionCount ?? 0;
+      _cancelRequested = false;
     });
     try {
-      final result = await ref.read(workoutImportServiceProvider).import(
-        content,
-        userId: userId,
-        assumedStrongUnit: _assumedUnit,
-        onProgress: (done, total) {
-          if (!mounted) return;
-          setState(() {
-            _done = done;
-            _total = total;
-          });
-        },
-      ).timeout(const Duration(minutes: 5));
+      final result = await ref
+          .read(workoutImportServiceProvider)
+          .import(
+            content,
+            userId: userId,
+            assumedStrongUnit: _assumedUnit,
+            onProgress: (done, total) {
+              if (!mounted) return;
+              setState(() {
+                _done = done;
+                _total = total;
+              });
+            },
+            isCancelled: () => _cancelRequested,
+          )
+          .timeout(const Duration(minutes: 5));
       if (!mounted) return;
       HapticFeedback.mediumImpact();
       setState(() {
@@ -157,8 +168,8 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
     } on TimeoutException catch (_) {
       if (!mounted) return;
       setState(() {
-        _error =
-            'The import timed out. Please try again with a smaller file or check your device performance.';
+        _error = 'The import timed out. Any workouts imported before the '
+            'timeout have been kept; try again with a smaller file.';
         _phase = _Phase.preview;
       });
     } catch (_) {
@@ -168,6 +179,24 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
             'for the failed workout.';
         _phase = _Phase.preview;
       });
+    }
+  }
+
+  Future<void> _shareTemplate() async {
+    HapticFeedback.selectionClick();
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      final dir = await getTemporaryDirectory();
+      final file = File('${dir.path}/gymlog_import_template.csv');
+      await file.writeAsString(WorkoutExportService.buildTemplateCsv());
+      await SharePlus.instance.share(ShareParams(
+        files: [XFile(file.path, mimeType: 'text/csv')],
+        subject: 'GymLog import template',
+        text:
+            'Fill this CSV with your workouts and import it in GymLog (template matches the app\'s own export format).',
+      ));
+    } catch (_) {
+      messenger.showSnackBar(_snack("Couldn't share the template."));
     }
   }
 
@@ -271,6 +300,18 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
             icon: Icons.folder_open_rounded,
             onTap: _pickFile),
         const SizedBox(height: 14),
+        Center(
+          child: TextButton.icon(
+            onPressed: _shareTemplate,
+            icon: Icon(Icons.download_rounded,
+                size: 18, color: surface.textSecondary),
+            label: Text('Download CSV template',
+                style: AppText.rowLabel(
+                  color: surface.textSecondary,
+                )),
+          ),
+        ),
+        const SizedBox(height: 8),
         Text(
           'Your data never leaves your device during import.',
           textAlign: TextAlign.center,
@@ -434,6 +475,19 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
             style: AppText.meta(
               color: surface.textSecondary,
             )),
+        const SizedBox(height: 24),
+        TextButton(
+          onPressed: _cancelRequested
+              ? null
+              : () {
+                  HapticFeedback.selectionClick();
+                  setState(() => _cancelRequested = true);
+                },
+          child: Text(
+            _cancelRequested ? 'Cancelling…' : 'Cancel import',
+            style: AppText.rowLabel(color: surface.textSecondary),
+          ),
+        ),
       ]),
     );
   }
@@ -443,6 +497,7 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
   Widget _buildDone() {
     final r = _result!;
     final surface = context.surface;
+    final stopped = r.cancelled || r.failure != null;
     return ListView(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
       children: [
@@ -452,11 +507,13 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
             width: 64,
             height: 64,
             decoration: BoxDecoration(
-              color: AppColors.success.withValues(alpha: 0.12),
+              color: (stopped ? AppColors.warning : AppColors.success)
+                  .withValues(alpha: 0.12),
               shape: BoxShape.circle,
             ),
-            child: const Icon(Icons.check_rounded,
-                color: AppColors.success, size: 34),
+            child: Icon(stopped ? Icons.pause_rounded : Icons.check_rounded,
+                color: stopped ? AppColors.warning : AppColors.success,
+                size: 34),
           ),
         ),
         const SizedBox(height: 18),
@@ -465,7 +522,7 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
             r.sessionsImported > 0
                 ? 'Imported ${r.sessionsImported} '
                     'workout${r.sessionsImported == 1 ? '' : 's'}'
-                : 'Nothing new to import',
+                : (r.cancelled ? 'Import cancelled' : 'Nothing new to import'),
             style: AppText.sectionHeading(
               color: surface.textPrimary,
             ).copyWith(
@@ -473,6 +530,20 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
             ),
           ),
         ),
+        if (stopped) ...[
+          const SizedBox(height: 10),
+          _Banner(
+            icon: r.cancelled
+                ? Icons.stop_circle_outlined
+                : Icons.error_outline_rounded,
+            color: AppColors.warning,
+            text: r.cancelled
+                ? 'Import cancelled — the workouts listed below were kept.'
+                : (r.failure ??
+                    'The import stopped early — the workouts listed below '
+                        'were kept.'),
+          ),
+        ],
         const SizedBox(height: 20),
         _Card(
           child: Column(children: [

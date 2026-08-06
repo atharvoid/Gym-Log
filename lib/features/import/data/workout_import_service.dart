@@ -74,12 +74,19 @@ class WorkoutImportService {
     );
   }
 
-  /// Performs the import. [onProgress] is called as each session is processed.
+  /// Performs the import. [onProgress] is called for each session that is
+  /// actually written (duplicate skips are silent, so the counter reaches the
+  /// importable count exactly). [isCancelled] is polled between sessions; when
+  /// it returns true the import stops early and returns an [ImportResult]
+  /// describing what was imported before cancellation. Throws [ImportException]
+  /// only for pre-write failures (unrecognised file); mid-import failures are
+  /// returned as a partial result with [ImportResult.failureMessage] set.
   Future<ImportResult> import(
     String text, {
     required String userId,
     String assumedStrongUnit = 'kg',
     void Function(int done, int total)? onProgress,
+    bool Function()? isCancelled,
   }) async {
     final parsed = await compute(
       _parseCsvIsolate,
@@ -91,7 +98,9 @@ class WorkoutImportService {
         await _resolveAndValidateSessions(parsed, matcher);
 
     // 1) Resolve every distinct exercise name to a catalog id, creating
-    //    custom exercises (once each) for anything unmatched.
+    //    custom exercises (once each) for anything unmatched. Created inside
+    //    the session's transaction (IM-H) so a rolled-back session never
+    //    orphans a custom exercise.
     final resolved = <String, int>{}; // lower-cased name → exercise id
     final created = <String>[];
     var matched = 0;
@@ -125,83 +134,106 @@ class WorkoutImportService {
     final ordered = [...validatedSessions]
       ..sort((a, b) => a.startedAt.compareTo(b.startedAt));
 
+    // 3) Importable count = sessions that are not already in the DB. This is
+    //    the progress denominator and the number of onProgress calls.
+    var importableCount = 0;
+    for (final s in ordered) {
+      if (!seenKeys.contains(importDedupKey(s.startedAt, s.name))) {
+        importableCount++;
+      }
+    }
+
     var imported = 0;
     var skipped = 0;
     var setsImported = 0;
     var prs = 0;
-    final total = ordered.length;
+    var cancelled = false;
+    String? failure;
     var done = 0;
 
     for (final s in ordered) {
+      if (isCancelled?.call() ?? false) {
+        cancelled = true;
+        break;
+      }
       final key = importDedupKey(s.startedAt, s.name);
       if (seenKeys.contains(key)) {
         skipped++;
-        onProgress?.call(++done, total);
         continue;
       }
       seenKeys.add(key);
 
-      // Resolve ids up front (may create custom exercises outside the txn).
-      final exerciseIds = <int>[];
-      for (final e in s.exercises) {
-        exerciseIds.add(await resolve(
-            e.name, e.measurementType ?? MeasurementType.weightAndReps));
-      }
-
-      final sessionId = _uuid.v4();
+      var sessionId = '';
       var volume = 0.0;
 
-      await _db.transaction(() async {
-        await _db.into(_db.workoutSessions).insert(
-              WorkoutSessionsCompanion.insert(
-                id: Value(sessionId),
-                userId: userId,
-                name: Value(s.name),
-                startedAt: s.startedAt,
-                endedAt: Value(s.endedAt ?? s.startedAt),
-                notes: Value(s.notes),
-                synced: const Value(false),
-              ),
-            );
+      try {
+        await _db.transaction(() async {
+          // Resolve ids first — custom exercise creation happens inside the
+          // txn so a rollback cleans it up too.
+          final exerciseIds = <int>[];
+          for (final e in s.exercises) {
+            exerciseIds.add(await resolve(
+                e.name, e.measurementType ?? MeasurementType.weightAndReps));
+          }
 
-        for (var ei = 0; ei < s.exercises.length; ei++) {
-          final e = s.exercises[ei];
-          final weId = _uuid.v4();
-          await _db.into(_db.workoutExercises).insert(
-                WorkoutExercisesCompanion.insert(
-                  id: Value(weId),
-                  sessionId: sessionId,
-                  exerciseId: exerciseIds[ei],
-                  orderIndex: ei,
-                  notes: Value(e.notes),
+          sessionId = _uuid.v4();
+          volume = 0.0;
+
+          await _db.into(_db.workoutSessions).insert(
+                WorkoutSessionsCompanion.insert(
+                  id: Value(sessionId),
+                  userId: userId,
+                  name: Value(s.name),
+                  startedAt: s.startedAt,
+                  endedAt: Value(s.endedAt ?? s.startedAt),
+                  notes: Value(s.notes),
+                  synced: const Value(false),
                 ),
               );
-          for (final st in e.sets) {
-            volume += st.volumeKg;
-            setsImported++;
-            await _db.into(_db.workoutSets).insert(
-                  WorkoutSetsCompanion.insert(
-                    id: Value(_uuid.v4()),
-                    workoutExerciseId: weId,
+
+          for (var ei = 0; ei < s.exercises.length; ei++) {
+            final e = s.exercises[ei];
+            final weId = _uuid.v4();
+            await _db.into(_db.workoutExercises).insert(
+                  WorkoutExercisesCompanion.insert(
+                    id: Value(weId),
+                    sessionId: sessionId,
                     exerciseId: exerciseIds[ei],
-                    orderIndex: st.orderIndex,
-                    setType: Value(st.setType),
-                    weightKg: Value(st.weightKg),
-                    reps: st.reps ?? 0,
-                    rpe: Value(st.rpe),
-                    isPr: Value(st.isPr),
-                    estimated1rm: Value(st.estimated1rm),
-                    completedAt:
-                        Value(st.completedAt ?? s.endedAt ?? s.startedAt),
+                    orderIndex: ei,
+                    notes: Value(e.notes),
                   ),
                 );
+            for (final st in e.sets) {
+              volume += st.volumeKg;
+              setsImported++;
+              await _db.into(_db.workoutSets).insert(
+                    WorkoutSetsCompanion.insert(
+                      id: Value(_uuid.v4()),
+                      workoutExerciseId: weId,
+                      exerciseId: exerciseIds[ei],
+                      orderIndex: st.orderIndex,
+                      setType: Value(st.setType),
+                      weightKg: Value(st.weightKg),
+                      reps: st.reps ?? 0,
+                      rpe: Value(st.rpe),
+                      isPr: Value(st.isPr),
+                      estimated1rm: Value(st.estimated1rm),
+                      completedAt:
+                          Value(st.completedAt ?? s.endedAt ?? s.startedAt),
+                    ),
+                  );
+            }
           }
-        }
 
-        await (_db.update(_db.workoutSessions)
-              ..where((t) => t.id.equals(sessionId)))
-            .write(WorkoutSessionsCompanion(totalVolumeKg: Value(volume)));
-      });
+          await (_db.update(_db.workoutSessions)
+                ..where((t) => t.id.equals(sessionId)))
+              .write(WorkoutSessionsCompanion(totalVolumeKg: Value(volume)));
+        });
+      } catch (_) {
+        failure = 'The import could not be completed. The failing workout was '
+            'rolled back; however earlier workouts remain imported.';
+        break;
+      }
 
       // PR detection runs after the session is committed; earlier (older)
       // sessions are already persisted, so historical bests are correct.
@@ -210,7 +242,7 @@ class WorkoutImportService {
       prs += found.length;
 
       imported++;
-      onProgress?.call(++done, total);
+      onProgress?.call(++done, importableCount);
     }
 
     return ImportResult(
@@ -222,6 +254,8 @@ class WorkoutImportService {
       exercisesCreated: created,
       prsDetected: prs,
       warnings: warnings,
+      cancelled: cancelled,
+      failure: failure,
     );
   }
 
