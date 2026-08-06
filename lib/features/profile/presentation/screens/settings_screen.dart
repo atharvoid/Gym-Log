@@ -600,8 +600,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
                               color: AppColors.warning.withValues(alpha: 0.1),
                               borderRadius: AppRadius.cardAll,
                               border: Border.all(
-                                  color: AppColors.warning
-                                      .withValues(alpha: 0.3)),
+                                  color:
+                                      AppColors.warning.withValues(alpha: 0.3)),
                             ),
                             child: Row(
                               children: [
@@ -864,7 +864,6 @@ class _SignOutButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final surface = context.surface;
     // N11 hierarchy: session-end is outline + error text — not a filled red
     // slab competing with Delete account one row below. Permanent purge keeps
     // the sole high-weight destructive treatment.

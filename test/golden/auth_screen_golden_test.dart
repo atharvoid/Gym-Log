@@ -74,6 +74,13 @@ void main() {
   }
 
   group('AuthScreen Golden Tests', () {
+    /// Bounded settle: the atmosphere drift (14s Lissajous loop) never lets
+    /// pumpAndSettle finish, so drive the entrance frames explicitly.
+    Future<void> settle(WidgetTester tester) async {
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 700));
+    }
+
     // Helper to configure viewport size in tests
     Future<void> setViewport(WidgetTester tester, Size size) async {
       tester.view.physicalSize = size * 3.0; // scale factor
@@ -87,7 +94,7 @@ void main() {
     testWidgets('1. Dark Purple Palette 390x844', (tester) async {
       await setViewport(tester, const Size(390, 844));
       await tester.pumpWidget(buildScenario(palette: ThemePalette.neonPurple));
-      await tester.pumpAndSettle();
+      await settle(tester);
       await expectLater(
         find.byType(AuthScreen),
         matchesGoldenFile('goldens/auth_screen_purple.png'),
@@ -97,7 +104,7 @@ void main() {
     testWidgets('2. Dark Cyan Palette 390x844', (tester) async {
       await setViewport(tester, const Size(390, 844));
       await tester.pumpWidget(buildScenario(palette: ThemePalette.neonCyan));
-      await tester.pumpAndSettle();
+      await settle(tester);
       await expectLater(
         find.byType(AuthScreen),
         matchesGoldenFile('goldens/auth_screen_cyan.png'),
@@ -107,7 +114,7 @@ void main() {
     testWidgets('3. Dark Magenta Palette 390x844', (tester) async {
       await setViewport(tester, const Size(390, 844));
       await tester.pumpWidget(buildScenario(palette: ThemePalette.neonMagenta));
-      await tester.pumpAndSettle();
+      await settle(tester);
       await expectLater(
         find.byType(AuthScreen),
         matchesGoldenFile('goldens/auth_screen_magenta.png'),
@@ -117,7 +124,7 @@ void main() {
     testWidgets('4. Electric Indigo Palette 390x844', (tester) async {
       await setViewport(tester, const Size(390, 844));
       await tester.pumpWidget(buildScenario(palette: ThemePalette.blazeOrange));
-      await tester.pumpAndSettle();
+      await settle(tester);
       await expectLater(
         find.byType(AuthScreen),
         matchesGoldenFile('goldens/auth_screen_orange.png'),
@@ -127,7 +134,7 @@ void main() {
     testWidgets('5. Higgsfield Palette 390x844', (tester) async {
       await setViewport(tester, const Size(390, 844));
       await tester.pumpWidget(buildScenario(palette: ThemePalette.higgsfield));
-      await tester.pumpAndSettle();
+      await settle(tester);
       await expectLater(
         find.byType(AuthScreen),
         matchesGoldenFile('goldens/auth_screen_higgsfield.png'),
@@ -137,7 +144,7 @@ void main() {
     testWidgets('6. White Palette 390x844', (tester) async {
       await setViewport(tester, const Size(390, 844));
       await tester.pumpWidget(buildScenario(palette: ThemePalette.white));
-      await tester.pumpAndSettle();
+      await settle(tester);
       await expectLater(
         find.byType(AuthScreen),
         matchesGoldenFile('goldens/auth_screen_white.png'),
@@ -147,7 +154,7 @@ void main() {
     testWidgets('7. Small Viewport 320x568', (tester) async {
       await setViewport(tester, const Size(320, 568));
       await tester.pumpWidget(buildScenario(palette: ThemePalette.neonPurple));
-      await tester.pumpAndSettle();
+      await settle(tester);
       await expectLater(
         find.byType(AuthScreen),
         matchesGoldenFile('goldens/auth_screen_small.png'),
@@ -157,7 +164,7 @@ void main() {
     testWidgets('8. Landscape 844x390', (tester) async {
       await setViewport(tester, const Size(844, 390));
       await tester.pumpWidget(buildScenario(palette: ThemePalette.neonPurple));
-      await tester.pumpAndSettle();
+      await settle(tester);
       await expectLater(
         find.byType(AuthScreen),
         matchesGoldenFile('goldens/auth_screen_landscape.png'),
@@ -168,7 +175,7 @@ void main() {
       await setViewport(tester, const Size(390, 844));
       await tester.pumpWidget(
           buildScenario(palette: ThemePalette.neonPurple, textScale: 1.3));
-      await tester.pumpAndSettle();
+      await settle(tester);
       await expectLater(
         find.byType(AuthScreen),
         matchesGoldenFile('goldens/auth_screen_text_scale_1_3.png'),
@@ -179,7 +186,7 @@ void main() {
       await setViewport(tester, const Size(390, 844));
       await tester.pumpWidget(
           buildScenario(palette: ThemePalette.neonPurple, textScale: 2.0));
-      await tester.pumpAndSettle();
+      await settle(tester);
       await expectLater(
         find.byType(AuthScreen),
         matchesGoldenFile('goldens/auth_screen_text_scale_2_0.png'),
@@ -192,7 +199,7 @@ void main() {
       fakeRepo.delayFuture = delayCompleter.future;
 
       await tester.pumpWidget(buildScenario(palette: ThemePalette.neonPurple));
-      await tester.pumpAndSettle();
+      await settle(tester);
 
       await tester.tap(find.text('Continue with Google'));
       await tester.pump(); // Enter loading state
@@ -203,14 +210,14 @@ void main() {
       );
 
       delayCompleter.complete();
-      await tester.pumpAndSettle();
+      await settle(tester);
     });
 
     testWidgets('12. Reduced Motion Final Frame', (tester) async {
       await setViewport(tester, const Size(390, 844));
       await tester.pumpWidget(buildScenario(
           palette: ThemePalette.neonPurple, disableAnimations: true));
-      await tester.pumpAndSettle();
+      await settle(tester);
       await expectLater(
         find.byType(AuthScreen),
         matchesGoldenFile('goldens/auth_screen_reduced_motion.png'),
@@ -222,10 +229,10 @@ void main() {
       fakeRepo.errorToThrow = const AuthNetworkFailure();
 
       await tester.pumpWidget(buildScenario(palette: ThemePalette.neonPurple));
-      await tester.pumpAndSettle();
+      await settle(tester);
 
       await tester.tap(find.text('Continue with Google'));
-      await tester.pumpAndSettle();
+      await settle(tester);
 
       await expectLater(
         find.byType(AuthScreen),
@@ -240,10 +247,10 @@ void main() {
       );
 
       await tester.pumpWidget(buildScenario(palette: ThemePalette.neonPurple));
-      await tester.pumpAndSettle();
+      await settle(tester);
 
       await tester.tap(find.text('Continue with Google'));
-      await tester.pumpAndSettle();
+      await settle(tester);
 
       await expectLater(
         find.byType(AuthScreen),

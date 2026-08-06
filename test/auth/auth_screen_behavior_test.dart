@@ -102,23 +102,39 @@ void main() {
     );
   }
 
+  /// Bounded settle: the atmosphere drift (14s Lissajous loop) never lets
+  /// pumpAndSettle finish, so drive the entrance + snackbar frames instead.
+  Future<void> settle(WidgetTester tester) async {
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 700));
+  }
+
   group('AuthScreen Behavior Tests (AUTH-01 to AUTH-20)', () {
     testWidgets('AUTH-01: Initial screen contains one primary CTA',
         (tester) async {
       await tester.pumpWidget(buildAuthScreen());
-      await tester.pumpAndSettle();
+      await settle(tester);
 
       final ctaFinder = find.text('Continue with Google');
       expect(ctaFinder, findsOneWidget);
     });
 
-    testWidgets('AUTH-02: No continuously repeating AnimationController exists',
+    testWidgets(
+        'AUTH-02: Only the atmosphere drift repeats; reduced motion halts it',
         (tester) async {
       await tester.pumpWidget(buildAuthScreen());
-      // A continuously repeating AnimationController would cause pumpAndSettle to timeout.
-      // Settling successfully proves there are no looping tickers.
-      final frames = await tester.pumpAndSettle();
-      expect(frames, lessThan(100));
+      await settle(tester);
+
+      // The Lissajous backdrop drift is the single intentional repeating
+      // controller on this screen (AUTH-02 re-spec'd for the UX-95-02
+      // atmosphere). A looping ticker is provably alive...
+      expect(tester.binding.transientCallbackCount, greaterThan(0));
+      expect(find.text('Continue with Google'), findsOneWidget);
+
+      // ...and the reduced-motion gate halts every loop so the tree settles.
+      await tester.pumpWidget(buildAuthScreen(disableAnimations: true));
+      await settle(tester);
+      expect(tester.binding.transientCallbackCount, equals(0));
     });
 
     testWidgets('AUTH-03: Reduced motion renders final state with no animation',
@@ -137,7 +153,7 @@ void main() {
       fakeAuthRepository.signInDelayFuture = delayCompleter.future;
 
       await tester.pumpWidget(buildAuthScreen());
-      await tester.pumpAndSettle();
+      await settle(tester);
 
       await tester.tap(find.text('Continue with Google'));
       await tester.pump(); // Start sign-in process
@@ -149,7 +165,7 @@ void main() {
 
       // Resolve the sign in
       delayCompleter.complete();
-      await tester.pumpAndSettle();
+      await settle(tester);
 
       final buttonAfter =
           tester.widget<ElevatedButton>(find.byType(ElevatedButton));
@@ -162,7 +178,7 @@ void main() {
       fakeAuthRepository.signInDelayFuture = delayCompleter.future;
 
       await tester.pumpWidget(buildAuthScreen());
-      await tester.pumpAndSettle();
+      await settle(tester);
 
       // Double tap quickly
       await tester.tap(find.text('Continue with Google'));
@@ -173,7 +189,7 @@ void main() {
       expect(fakeAuthRepository.signInCallCount, equals(1));
 
       delayCompleter.complete();
-      await tester.pumpAndSettle();
+      await settle(tester);
     });
 
     testWidgets('AUTH-06: Account picker cancellation shows no error',
@@ -181,10 +197,10 @@ void main() {
       fakeAuthRepository.errorToThrow = const AuthCancelled();
 
       await tester.pumpWidget(buildAuthScreen());
-      await tester.pumpAndSettle();
+      await settle(tester);
 
       await tester.tap(find.text('Continue with Google'));
-      await tester.pumpAndSettle();
+      await settle(tester);
 
       // Snackbars shouldn't be shown
       expect(find.byType(SnackBar), findsNothing);
@@ -194,10 +210,10 @@ void main() {
       fakeAuthRepository.errorToThrow = const AuthNetworkFailure();
 
       await tester.pumpWidget(buildAuthScreen());
-      await tester.pumpAndSettle();
+      await settle(tester);
 
       await tester.tap(find.text('Continue with Google'));
-      await tester.pumpAndSettle();
+      await settle(tester);
 
       expect(find.text('You’re offline. Check your connection and try again.'),
           findsOneWidget);
@@ -211,10 +227,10 @@ void main() {
       );
 
       await tester.pumpWidget(buildAuthScreen());
-      await tester.pumpAndSettle();
+      await settle(tester);
 
       await tester.tap(find.text('Continue with Google'));
-      await tester.pumpAndSettle();
+      await settle(tester);
 
       final errorText = find.textContaining('isn’t available in this build');
       expect(errorText, findsOneWidget);
@@ -227,10 +243,10 @@ void main() {
       fakeAuthRepository.errorToThrow = const AuthUnknownFailure();
 
       await tester.pumpWidget(buildAuthScreen());
-      await tester.pumpAndSettle();
+      await settle(tester);
 
       await tester.tap(find.text('Continue with Google'));
-      await tester.pumpAndSettle();
+      await settle(tester);
 
       expect(find.text('Couldn’t sign in. Please try again.'), findsOneWidget);
     });
@@ -248,7 +264,7 @@ void main() {
 
     testWidgets('AUTH-12: Legal links expose link semantics', (tester) async {
       await tester.pumpWidget(buildAuthScreen());
-      await tester.pumpAndSettle();
+      await settle(tester);
 
       final termsFinder = find.text('Terms of Service');
       final privacyFinder = find.text('Privacy Policy');
@@ -263,7 +279,7 @@ void main() {
 
     testWidgets('AUTH-13: GymLog exposes heading semantics', (tester) async {
       await tester.pumpWidget(buildAuthScreen());
-      await tester.pumpAndSettle();
+      await settle(tester);
 
       final titleSemantics = tester.getSemantics(find.text('GymLog'));
       expect(
@@ -273,7 +289,7 @@ void main() {
     testWidgets('AUTH-15: All actions meet minimum 48dp target',
         (tester) async {
       await tester.pumpWidget(buildAuthScreen());
-      await tester.pumpAndSettle();
+      await settle(tester);
 
       final buttonSize = tester.getSize(find.byType(ElevatedButton));
       expect(buttonSize.height, greaterThanOrEqualTo(48.0));
@@ -302,7 +318,7 @@ void main() {
         tester.view.devicePixelRatio = 3.0;
 
         await tester.pumpWidget(buildAuthScreen());
-        await tester.pumpAndSettle();
+        await settle(tester);
 
         // If overflow is present, Flutter throws an assertion error during paint.
         // Expect no exceptions
@@ -328,7 +344,7 @@ void main() {
       fakeAuthRepository.signInDelayFuture = delayCompleter.future;
 
       await tester.pumpWidget(buildAuthScreen());
-      await tester.pumpAndSettle();
+      await settle(tester);
 
       final Size originalSize = tester.getSize(find.byType(ElevatedButton));
 
@@ -340,7 +356,7 @@ void main() {
       expect(loadingSize.height, equals(originalSize.height));
 
       delayCompleter.complete();
-      await tester.pumpAndSettle();
+      await settle(tester);
     });
 
     testWidgets(
@@ -350,7 +366,7 @@ void main() {
       fakeAuthRepository.signInDelayFuture = delayCompleter.future;
 
       await tester.pumpWidget(buildAuthScreen());
-      await tester.pumpAndSettle();
+      await settle(tester);
 
       await tester.tap(find.text('Continue with Google'));
       await tester.pump(); // Enter loading state
@@ -369,7 +385,7 @@ void main() {
       expect(find.text('Sign-in is already in progress.'), findsOneWidget);
 
       delayCompleter.complete();
-      await tester.pumpAndSettle();
+      await settle(tester);
     });
 
     testWidgets(
@@ -379,7 +395,7 @@ void main() {
       fakeAuthRepository.signInDelayFuture = delayCompleter.future;
 
       await tester.pumpWidget(buildAuthScreen());
-      await tester.pumpAndSettle();
+      await settle(tester);
 
       await tester.tap(find.text('Continue with Google'));
       await tester.pump();
@@ -393,7 +409,7 @@ void main() {
           greaterThanOrEqualTo(48.0));
 
       await tester.tap(cancelFinder);
-      await tester.pumpAndSettle();
+      await settle(tester);
 
       expect(fakeAuthRepository.cancelSignInCallCount, equals(1));
       expect(find.text('Continue with Google'), findsOneWidget,
@@ -406,10 +422,10 @@ void main() {
       fakeAuthRepository.errorToThrow = const AuthTimeoutFailure();
 
       await tester.pumpWidget(buildAuthScreen());
-      await tester.pumpAndSettle();
+      await settle(tester);
 
       await tester.tap(find.text('Continue with Google'));
-      await tester.pumpAndSettle();
+      await settle(tester);
 
       expect(find.text('Sign-in timed out. Please try again.'), findsOneWidget);
     });

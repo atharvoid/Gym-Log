@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text.dart';
-import '../../../core/theme/dynamic_accent_theme.dart';
 import 'muscle_summary.dart';
 
 /// [muscle_load_bar.dart]
@@ -47,7 +46,7 @@ class MuscleLoadBar extends StatelessWidget {
     final surface = context.surface;
     final visible = entries.take(_kMaxLegendItems).toList();
     final overflow = entries.length - visible.length;
-    final palette = AppColors.muscleSplitPalette;
+    const palette = AppColors.muscleSplitPalette;
 
     final semanticsLabel =
         'Muscles worked: ${entries.map((e) => '${muscleGroupTitleCase(e.group)} ${(e.share * 100).round()}%').join(', ')}. '
@@ -109,8 +108,7 @@ class MuscleLoadBar extends StatelessWidget {
                     ),
                   if (overflow > 0)
                     Text('+$overflow',
-                        style:
-                            AppText.statLabel(color: surface.textTertiary)),
+                        style: AppText.statLabel(color: surface.textTertiary)),
                 ],
               ),
             ],
@@ -157,19 +155,17 @@ class _LegendItem extends StatelessWidget {
 class _LoadBarPainter extends CustomPainter {
   final List<double> shares;
   final List<Color> colors;
-  final double gap;
-  final double radius;
 
   _LoadBarPainter({
     required this.shares,
     required this.colors,
-    this.gap = 2,
-    this.radius = 4,
   });
 
   @override
   void paint(Canvas canvas, Size size) {
     var x = 0.0;
+    const gap = 2.0;
+    const radius = 4.0;
     final usable = size.width - gap * (shares.length - 1);
     for (var i = 0; i < shares.length; i++) {
       var w = usable * shares[i];
@@ -182,10 +178,10 @@ class _LoadBarPainter extends CustomPainter {
       canvas.drawRRect(
         RRect.fromRectAndCorners(
           Rect.fromLTWH(x, 0, w, size.height),
-          topLeft: isFirst ? Radius.circular(radius) : Radius.zero,
-          bottomLeft: isFirst ? Radius.circular(radius) : Radius.zero,
-          topRight: isLast ? Radius.circular(radius) : Radius.zero,
-          bottomRight: isLast ? Radius.circular(radius) : Radius.zero,
+          topLeft: isFirst ? const Radius.circular(radius) : Radius.zero,
+          bottomLeft: isFirst ? const Radius.circular(radius) : Radius.zero,
+          topRight: isLast ? const Radius.circular(radius) : Radius.zero,
+          bottomRight: isLast ? const Radius.circular(radius) : Radius.zero,
         ),
         Paint()..color = colors[i],
       );

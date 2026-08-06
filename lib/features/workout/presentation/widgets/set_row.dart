@@ -537,9 +537,8 @@ class _SetRowState extends State<SetRow> {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: AppText.statLabel(
-                color: prev != null
-                    ? surface.textSecondary
-                    : surface.textTertiary,
+                color:
+                    prev != null ? surface.textSecondary : surface.textTertiary,
               ),
             ),
           ),
@@ -561,8 +560,7 @@ class _SetRowState extends State<SetRow> {
                   flashHint: _weightShouldFlash,
                   onChanged: (val) {
                     if (val.trim().isEmpty) {
-                      _queueCommit(
-                          _effectiveSetData.copyWith(weightKg: null));
+                      _queueCommit(_effectiveSetData.copyWith(weightKg: null));
                       return;
                     }
                     final parsed = double.tryParse(val);
@@ -572,8 +570,7 @@ class _SetRowState extends State<SetRow> {
                       final stored = widget.measurementType ==
                               MeasurementType.distance
                           ? parsed.clamp(0.0, 99999.0)
-                          : displayToKg(parsed, widget.unit)
-                              .clamp(0.0, 999.5);
+                          : displayToKg(parsed, widget.unit).clamp(0.0, 999.5);
                       _queueCommit(
                           _effectiveSetData.copyWith(weightKg: stored));
                     }
@@ -590,8 +587,7 @@ class _SetRowState extends State<SetRow> {
                   controller: _repsController,
                   focusNode: _repsFocus,
                   isDecimal: false,
-                  semanticLabel:
-                      widget.measurementType.repsFieldSemanticLabel,
+                  semanticLabel: widget.measurementType.repsFieldSemanticLabel,
                   hintText: widget.previousReps != null
                       ? '${widget.previousReps!}'
                       : '0',
@@ -603,8 +599,8 @@ class _SetRowState extends State<SetRow> {
                     }
                     final parsed = int.tryParse(val);
                     if (parsed != null) {
-                      _queueCommit(_effectiveSetData
-                          .copyWith(reps: parsed.clamp(0, 99999)));
+                      _queueCommit(_effectiveSetData.copyWith(
+                          reps: parsed.clamp(0, 99999)));
                     }
                   },
                 ),
@@ -652,16 +648,14 @@ class _SetRowState extends State<SetRow> {
                     height: 32,
                     decoration: BoxDecoration(
                       borderRadius: AppRadius.badgeAll,
-                      color: isCompleted
-                          ? AppColors.success
-                          : Colors.transparent,
+                      color:
+                          isCompleted ? AppColors.success : Colors.transparent,
                       border: isCompleted
                           ? null
                           : Border.all(
                               color: _canComplete
                                   ? AppColors.success.withValues(alpha: 0.55)
-                                  : surface.textPrimary
-                                      .withValues(alpha: 0.15),
+                                  : surface.textPrimary.withValues(alpha: 0.15),
                             ),
                     ),
                     child: Icon(

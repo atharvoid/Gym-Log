@@ -144,15 +144,14 @@ void main() {
       final rowSize = tester.getSize(find.byType(SetRow));
       expect(rowSize.height, greaterThanOrEqualTo(56));
 
-      final cellContainers = find.byWidgetPredicate(
+      final cellFields = find.byWidgetPredicate(
         (w) =>
-            w is AnimatedContainer &&
-            w.constraints?.minHeight == 48 &&
-            w.constraints?.minWidth == 48,
+            w is ConstrainedBox &&
+            w.constraints == const BoxConstraints(minHeight: 48, minWidth: 48),
       );
-      expect(cellContainers, findsNWidgets(2));
-      for (final container in cellContainers.evaluate()) {
-        final box = container.renderObject as RenderBox;
+      expect(cellFields, findsNWidgets(2)); // weight + reps
+      for (final field in cellFields.evaluate()) {
+        final box = field.renderObject as RenderBox;
         expect(box.size.height, greaterThanOrEqualTo(48));
       }
     });

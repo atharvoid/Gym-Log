@@ -25,7 +25,8 @@ class ExerciseGifWidget extends StatelessWidget {
     this.width,
     this.height,
     this.fit = BoxFit.contain,
-    this.borderRadius = const BorderRadius.all(Radius.circular(AppRadius.thumbnail)),
+    this.borderRadius =
+        const BorderRadius.all(Radius.circular(AppRadius.thumbnail)),
     this.animate = true,
     this.semanticLabel,
   });
@@ -56,8 +57,7 @@ class ExerciseGifWidget extends StatelessWidget {
     // recommends deferred loading, hold the skeleton and do not start a
     // new fetch/decode. No device-tuned constants — uses the framework
     // signal directly. When the fling settles the next build resumes.
-    final deferDecode =
-        Scrollable.recommendDeferredLoadingForContext(context);
+    final deferDecode = Scrollable.recommendDeferredLoadingForContext(context);
     if (deferDecode) {
       return RepaintBoundary(
         child: ClipRRect(

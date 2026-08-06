@@ -20,7 +20,6 @@ import '../../../../core/theme/app_text.dart';
 import '../../../../core/theme/dynamic_accent_theme.dart';
 import '../../../../core/utils/tap_guard.dart';
 import '../../../../shared/providers/bottom_chrome_provider.dart';
-import '../../../../shared/widgets/premium_paywall.dart';
 import '../../../../shared/widgets/ui/app_action_row.dart';
 import '../../../../shared/widgets/ui/app_button_shell.dart';
 import '../../../../shared/widgets/ui/app_card.dart';

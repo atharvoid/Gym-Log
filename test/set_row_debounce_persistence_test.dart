@@ -76,9 +76,9 @@ void main() {
                 ),
                 // Sibling that can steal focus without disposing the row —
                 // models the app-background / focus-loss flush path.
-                TextField(
-                  key: const ValueKey('other'),
-                  decoration: const InputDecoration(hintText: 'other'),
+                const TextField(
+                  key: ValueKey('other'),
+                  decoration: InputDecoration(hintText: 'other'),
                 ),
               ],
             ),

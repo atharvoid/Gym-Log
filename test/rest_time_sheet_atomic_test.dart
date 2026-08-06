@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gymlog/core/models/rest_preference.dart';
 import 'package:gymlog/features/workout/presentation/widgets/rest_time_sheet.dart';
+import 'package:gymlog/shared/widgets/ui/duration_slider.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -61,7 +62,8 @@ void main() {
       expect(find.text('Rest Timer Override'), findsNothing);
     });
 
-    testWidgets('2. only one selection active and presets wrap used',
+    testWidgets(
+        '2. option buttons replace preset chips; steppers + slider used',
         (tester) async {
       await tester.pumpWidget(buildTestableSheet(
         exerciseName: 'Squat',
@@ -72,10 +74,18 @@ void main() {
       await tester.tap(find.text('Open Sheet'));
       await tester.pumpAndSettle();
 
-      expect(find.byType(Wrap), findsWidgets);
+      // Preset chips are gone (ship-readiness #9): one Default·global option,
+      // one Off option, and the shared DurationSlider with ±15s steppers.
+      expect(find.text('Default · 1:30'), findsOneWidget);
+      expect(find.text('Off'), findsOneWidget);
+      expect(find.text('−15s'), findsOneWidget);
+      expect(find.text('+15s'), findsOneWidget);
+      expect(find.byType(DurationSlider), findsOneWidget);
 
-      expect(find.text('1:00'), findsNWidgets(2));
-      expect(find.text('1:30'), findsOneWidget);
+      // No preset chips: '1:00' appears only as the slider readout (60s draft),
+      // and the global 1:30 exists solely inside the Default option label.
+      expect(find.text('1:00'), findsOneWidget);
+      expect(find.textContaining('1:30'), findsOneWidget);
     });
 
     testWidgets('3. sheet below 72% height at normal scale', (tester) async {
@@ -182,8 +192,11 @@ void main() {
       await tester.tap(find.text('Open'));
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('1:00'));
-      await tester.pumpAndSettle();
+      // Draft starts at Default → 90s (global). Step down twice to 60s.
+      await tester.tap(find.text('−15s'));
+      await tester.pump();
+      await tester.tap(find.text('−15s'));
+      await tester.pump();
 
       await tester.tap(find.text('Save'));
       await tester.pumpAndSettle();
@@ -221,8 +234,12 @@ void main() {
       await tester.tap(find.text('Open'));
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('1:30'));
-      await tester.pumpAndSettle();
+      // Custom 60s is not the global 90s, so the slider starts at 60s.
+      // Step up twice to 90s — equal to global → normalizes to Default.
+      await tester.tap(find.text('+15s'));
+      await tester.pump();
+      await tester.tap(find.text('+15s'));
+      await tester.pump();
 
       await tester.tap(find.text('Save'));
       await tester.pumpAndSettle();

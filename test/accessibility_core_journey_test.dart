@@ -191,20 +191,23 @@ void main() {
     expect(minusSize.height, greaterThanOrEqualTo(48));
     expect(plusSize.height, greaterThanOrEqualTo(48));
 
-    // Find preset chips (e.g. '1:00', '0:30')
-    final oneMinChip = find.widgetWithText(InkWell, '1:00');
-    final thirtySecsChip = find.widgetWithText(InkWell, '0:30');
+    // Option buttons: 'Default · <global>' and 'Off' (option height 48)
+    final defaultOption = find.ancestor(
+      of: find.textContaining('Default ·'),
+      matching: find.byType(InkWell),
+    );
+    final offOption = find.widgetWithText(InkWell, 'Off');
 
-    expect(oneMinChip, findsOneWidget);
-    expect(thirtySecsChip, findsOneWidget);
+    expect(defaultOption, findsOneWidget);
+    expect(offOption, findsOneWidget);
 
-    final oneMinSize = tester.getSize(oneMinChip);
-    final thirtySize = tester.getSize(thirtySecsChip);
+    final defaultSize = tester.getSize(defaultOption.first);
+    final offSize = tester.getSize(offOption);
 
-    expect(oneMinSize.height, greaterThanOrEqualTo(48));
-    expect(oneMinSize.width, greaterThanOrEqualTo(48));
-    expect(thirtySize.height, greaterThanOrEqualTo(48));
-    expect(thirtySize.width, greaterThanOrEqualTo(48));
+    expect(defaultSize.height, greaterThanOrEqualTo(48));
+    expect(defaultSize.width, greaterThanOrEqualTo(48));
+    expect(offSize.height, greaterThanOrEqualTo(48));
+    expect(offSize.width, greaterThanOrEqualTo(48));
 
     container.dispose();
   });

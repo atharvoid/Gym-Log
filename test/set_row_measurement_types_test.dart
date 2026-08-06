@@ -338,7 +338,7 @@ void main() {
 
   group('R8 — Focus order and keyboard actions', () {
     testWidgets(
-        'weightAndReps: weight has TextInputAction.next, reps has .done',
+        'weightAndReps: weight has TextInputAction.next, reps has .next',
         (tester) async {
       await tester.pumpWidget(_host(_row(type: MeasurementType.weightAndReps)));
 
@@ -347,28 +347,30 @@ void main() {
       expect(fields.length, 2);
       expect(fields[0].textInputAction, TextInputAction.next,
           reason: 'weight field should advance to reps');
-      expect(fields[1].textInputAction, TextInputAction.done,
-          reason: 'reps field should dismiss keyboard');
+      expect(fields[1].textInputAction, TextInputAction.next,
+          reason: 'reps chains to the next row (P1.3 zero-dismissal flow)');
     });
 
-    testWidgets('repsOnly: the single field has TextInputAction.done',
+    testWidgets('repsOnly: the single field has TextInputAction.next',
         (tester) async {
       await tester.pumpWidget(_host(_row(type: MeasurementType.repsOnly)));
 
       final fields =
           tester.widgetList<TextField>(find.byType(TextField)).toList();
       expect(fields.length, 1);
-      expect(fields[0].textInputAction, TextInputAction.done);
+      expect(fields[0].textInputAction, TextInputAction.next,
+          reason: 'single field chains to the next row (P1.3)');
     });
 
-    testWidgets('duration: the single field has TextInputAction.done',
+    testWidgets('duration: the single field has TextInputAction.next',
         (tester) async {
       await tester.pumpWidget(_host(_row(type: MeasurementType.duration)));
 
       final fields =
           tester.widgetList<TextField>(find.byType(TextField)).toList();
       expect(fields.length, 1);
-      expect(fields[0].textInputAction, TextInputAction.done);
+      expect(fields[0].textInputAction, TextInputAction.next,
+          reason: 'single field chains to the next row (P1.3)');
     });
 
     testWidgets(

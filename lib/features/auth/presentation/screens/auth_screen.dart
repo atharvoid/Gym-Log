@@ -133,8 +133,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     // can only distribute surplus, never deficit. Compressing the fixed gaps
     // brings the minimum back under the extent; ClampingScrollPhysics below
     // means even a device-specific edge case can never bounce-reveal itself.
-    final compact =
-        textScale >= 1.6 || MediaQuery.sizeOf(context).height < 640;
+    final compact = textScale >= 1.6 || MediaQuery.sizeOf(context).height < 640;
     final double topPadding = compact ? 12 : 24;
     final double gapAfterBrand = compact ? 12 : 24;
     final double gapBeforeButton = compact ? 12 : 24;
@@ -422,18 +421,16 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
 class _EntranceFade extends StatelessWidget {
   final Widget child;
   final Duration delay;
-  final Duration duration;
 
   const _EntranceFade({
     required this.child,
     this.delay = Duration.zero,
-    this.duration = const Duration(milliseconds: 500),
   });
 
   @override
   Widget build(BuildContext context) {
     if (MediaQuery.disableAnimationsOf(context)) return child;
-    final total = duration + delay;
+    final total = delay + const Duration(milliseconds: 500);
     return TweenAnimationBuilder<double>(
       tween: Tween(begin: 0, end: 1),
       duration: total,

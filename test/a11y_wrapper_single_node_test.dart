@@ -2,7 +2,7 @@ import 'package:flutter/semantics.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gymlog/core/theme/theme_palette.dart';
 import 'package:gymlog/shared/widgets/app_error_screen.dart';
-import 'package:gymlog/shared/widgets/body/muscle_summary.dart';
+import 'package:gymlog/shared/widgets/body/muscle_load_bar.dart';
 import 'package:gymlog/shared/widgets/premium_paywall.dart';
 import 'package:gymlog/shared/widgets/ui/time_range_filter.dart';
 
@@ -44,13 +44,18 @@ void main() {
     handle.dispose();
   });
 
-  testWidgets('MuscleSummaryStrip publishes one combined node for its chips',
+  testWidgets('MuscleLoadBar publishes one combined node for its legend',
       (tester) async {
     final handle = tester.ensureSemantics();
     await tester.pumpWidget(
       gymlogApp(
         ThemePalette.fallback,
-        const MuscleSummaryStrip(
+        const MuscleLoadBar(
+          entries: [
+            MuscleLoadEntry('chest', 0.6),
+            MuscleLoadEntry('back', 0.3),
+            MuscleLoadEntry('biceps', 0.1),
+          ],
           primaryGroups: {'chest', 'back'},
           secondaryGroups: {'biceps'},
           gender: 'male',

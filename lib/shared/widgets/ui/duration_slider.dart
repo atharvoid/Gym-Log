@@ -118,8 +118,7 @@ class _DurationSliderState extends State<DurationSlider>
       widget.onChanged(next);
       // End-of-range resistance you can feel: a heavy tick on arrival at
       // min/max (latched, so it does not machine-gun while held at the edge).
-      final atEdge =
-          next == widget.minSeconds || next == widget.maxSeconds;
+      final atEdge = next == widget.minSeconds || next == widget.maxSeconds;
       if (atEdge && !_atEdge) HapticFeedback.heavyImpact();
       _atEdge = atEdge;
     }
@@ -222,8 +221,7 @@ class _DurationSliderState extends State<DurationSlider>
                   setState(() => _dragging = false);
                   _press.reverse();
                   HapticFeedback.lightImpact();
-                  widget.onChangeEnd
-                      ?.call(_lastEmitted ?? widget.valueSeconds);
+                  widget.onChangeEnd?.call(_lastEmitted ?? widget.valueSeconds);
                 },
                 onHorizontalDragCancel: () {
                   setState(() => _dragging = false);
@@ -355,8 +353,8 @@ class _TrackPainter extends CustomPainter {
           Offset(x, cy + trackHeight / 2 + 5),
           Offset(x, cy + trackHeight / 2 + 5 + h),
           Paint()
-            ..color = tickColor.withValues(
-                alpha: (isMajor ? 0.55 : 0.28) * fade)
+            ..color =
+                tickColor.withValues(alpha: (isMajor ? 0.55 : 0.28) * fade)
             ..strokeWidth = isMajor ? 1.5 : 1,
         );
       }

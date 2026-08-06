@@ -438,6 +438,8 @@ class _ExploreRoutinesScreenState extends ConsumerState<ExploreRoutinesScreen>
                         case _CardRow(:final template):
                           final imported = _isImported(template, existingIds);
                           final routineId = _routineId(template, existingIds);
+                          final isTarget = targetTemplate != null &&
+                              template.name == targetTemplate.name;
                           child = Padding(
                             padding: const EdgeInsets.only(
                                 bottom: AppSpacing.sectionGap),
@@ -590,7 +592,8 @@ class _FilterChip extends StatelessWidget {
   final String label;
   final bool selected;
   final VoidCallback onTap;
-  const _FilterChip({required this.label, required this.selected, required this.onTap});
+  const _FilterChip(
+      {required this.label, required this.selected, required this.onTap});
 
   @override
   Widget build(BuildContext context) {

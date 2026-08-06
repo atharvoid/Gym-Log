@@ -8,8 +8,8 @@ import 'package:gymlog/features/profile/presentation/screens/help_feedback_scree
 
 void main() {
   group('ATOMIC-13 Documentation & Support Metadata Qualification', () {
-    test('canonical support email and legal URLs are defined and valid', () {
-      expect(kSupportEmail, equals('support@gymlog.app'));
+    test('canonical support identity and legal URLs are defined and valid', () {
+      expect(kTelegramChannelUrl, equals('https://t.me/gym_log'));
       expect(kPrivacyPolicyUrl, contains('privacy-policy.html'));
       expect(kTermsOfServiceUrl, contains('terms-of-service.html'));
       expect(kAccountDeletionUrl, contains('delete-account.html'));
@@ -74,9 +74,9 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Help & Feedback'), findsOneWidget);
-      expect(find.text('Monitored route: support@gymlog.app'), findsOneWidget);
+      expect(find.text('GymLog Support'), findsOneWidget);
+      expect(find.textContaining('t.me/gym_log'), findsWidgets);
       expect(find.text('Report a problem'), findsOneWidget);
-      expect(find.text('Contact support'), findsOneWidget);
       expect(find.text('Privacy Policy'), findsOneWidget);
       expect(find.text('Terms of Service'), findsOneWidget);
     });
@@ -99,7 +99,7 @@ void main() {
       await tester.tap(reportRow);
       await tester.pumpAndSettle();
 
-      expect(find.text('Submit non-sensitive diagnostic details to support'),
+      expect(find.text('Sent to the GymLog Telegram channel — non-sensitive details only'),
           findsOneWidget);
       expect(find.text('CATEGORY'), findsOneWidget);
       expect(find.text('SHORT DESCRIPTION'), findsOneWidget);

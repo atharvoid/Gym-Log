@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text.dart';
-import '../../../core/theme/dynamic_accent_theme.dart';
 import 'muscle_map.dart';
 
 /// [muscle_summary.dart]
