@@ -65,7 +65,26 @@ class MuscleSummaryStrip extends StatelessWidget {
     final overflow = ordered.length - visible.length;
 
     return Semantics(
+      container: true,
       button: true,
+      // Wrapper owns the summary label; the chip Texts must not publish their
+      // own duplicate nodes (docs/a11y-semantics-checklist.md §2).
+      // excludeSemantics also discards the GestureDetector's tap action,
+      // hence the explicit onTap below (kept in sync with the child).
+      excludeSemantics: true,
+      onTap: () {
+        HapticFeedback.selectionClick();
+        if (onTap != null) {
+          onTap!();
+          return;
+        }
+        showMuscleMapSheet(
+          context: context,
+          primaryGroups: primaryGroups,
+          secondaryGroups: secondaryGroups,
+          gender: gender,
+        );
+      },
       label: 'Muscles worked: '
           '${ordered.map((e) => _titleCase(e.label)).join(', ')}. '
           'Opens the full muscle map.',

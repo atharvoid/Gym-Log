@@ -692,7 +692,18 @@ class _StepperButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final surface = context.surface;
     return Semantics(
+      container: true,
       button: true,
+      enabled: enabled,
+      // Wrapper owns the name and action; the GestureDetector's own tap node
+      // must not remain separate (docs/a11y-semantics-checklist.md §2).
+      excludeSemantics: true,
+      onTap: enabled
+          ? () {
+              HapticFeedback.selectionClick();
+              onTap();
+            }
+          : null,
       label: label,
       child: GestureDetector(
         onTap: enabled

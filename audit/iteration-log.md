@@ -788,3 +788,41 @@ no user → `complete` without touching cloud).
 - [x] Regression Tests: **PASS** (sign-out outcome trio)
 
 **Commit:** `4f721ad`
+
+## Phase 2: A11Y-TRIPLE-ANNOUNCE — Single-Node Semantics Wrappers
+
+### Problem
+Wrapper `Semantics(label:)` nodes over children that publish their own text
+or button node announced the same content twice (or three times) to screen
+readers. Violations of `docs/a11y-semantics-checklist.md` §2 existed at HEAD
+despite the merged `a11y-resilience` fixes.
+
+### Diff Summary
+- Added the checklist's full wrapper form (`container: true`,
+  `excludeSemantics: true`, explicit `onTap` re-declared because exclusion
+  discards the inner gesture action, `button` where the child is a button) at:
+  - `premium_paywall.dart` — `ProLockPill` + `_PackageRow`.
+  - `app_error_screen.dart` — `_ErrorAction`; `database_recovery_screen.dart`
+    — `_RecoveryAction`.
+  - `muscle_summary.dart` — strip (chips' texts no longer announce separately).
+  - `settings_screen.dart` — `_SignOutButton` (onTap extracted to
+    `_handleSignOut` so the wrapper and InkWell share one handler).
+  - `time_range_filter.dart` — value no longer announced twice.
+  - `auth_screen.dart` — sign-in button (ElevatedButton child text excluded;
+    `onTap` kept in sync with `onPressed`).
+  - `routine_editor_screen.dart` — `_EditorToolButton` (+`enabled`).
+- `branded_line_chart.dart` — dropped the redundant wrapper around the data
+  table `TextButton.icon` (the button already publishes its own node).
+
+### Files Changed
+11 files + `test/a11y_wrapper_single_node_test.dart` (4 cases: ProLockPill
+single node, TimeRangeFilter value once, MuscleSummaryStrip one combined
+node, AppErrorScreen retry action one button).
+
+### Gate Verification Result
+- [x] Format: **PASS**
+- [x] Static Analysis: **PASS** (0 issues — also repaired a truncated
+  `custom_lint` pub-cache snapshot that crashed the analysis server locally)
+- [x] Custom Linter: **PASS**
+- [x] Tests Suite: **PASS** (543/543, incl. 4 new)
+- [x] Regression Tests: **PASS** (single-node wrapper quartet)

@@ -207,8 +207,15 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     );
 
     final signInButton = Semantics(
+      container: true,
       button: true,
       enabled: !_isSigningIn,
+      // Wrapper owns the name; the ElevatedButton's child Text must not
+      // publish a second node (docs/a11y-semantics-checklist.md §2).
+      // excludeSemantics discards the button's tap action, hence the
+      // explicit onTap kept in sync with onPressed.
+      excludeSemantics: true,
+      onTap: _isSigningIn ? null : _signIn,
       label: _isSigningIn ? 'Signing in with Google' : 'Continue with Google',
       value: _isSigningIn ? 'In progress' : null,
       child: PressableScale(

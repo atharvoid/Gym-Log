@@ -92,8 +92,7 @@ void main() {
   group('SignOutCoordinator.execute outcome', () {
     test('reports cloudSignOutFailed when the Supabase sign-out throws',
         () async {
-      final outcome =
-          await executeWith(_ThrowingAuthRepository());
+      final outcome = await executeWith(_ThrowingAuthRepository());
       expect(outcome, SignOutOutcome.cloudSignOutFailed);
     });
 

@@ -79,8 +79,8 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
-            authRepositoryProvider.overrideWithValue(
-                _MockAuthRepository(supabaseClient)),
+            authRepositoryProvider
+                .overrideWithValue(_MockAuthRepository(supabaseClient)),
             authProvider.overrideWithValue(null),
             databaseProvider.overrideWithValue(db),
             accountDeletionServiceProvider.overrideWithValue(
@@ -125,8 +125,7 @@ void main() {
       expect(find.text('AuthScreen'), findsOneWidget);
     });
 
-    testWidgets(
-        'cloud-failure deletion shows honest partial copy, not success',
+    testWidgets('cloud-failure deletion shows honest partial copy, not success',
         (tester) async {
       await pumpScreen(
         tester,

@@ -160,7 +160,9 @@ class _ProfileAvatarState extends State<ProfileAvatar> {
       // A removal that claims success while the current image still exists on
       // disk is a silent failure: the file would resurrect on next app start.
       final current = widget.imagePath;
-      if (current != null && current.isNotEmpty && await File(current).exists()) {
+      if (current != null &&
+          current.isNotEmpty &&
+          await File(current).exists()) {
         removed = false;
       }
     } catch (_) {

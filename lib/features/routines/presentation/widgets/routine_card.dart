@@ -180,8 +180,7 @@ class RoutineCard extends ConsumerWidget {
                             if (exerciseNames.isEmpty) {
                               showAppSnackBar(
                                 context,
-                                message:
-                                    'Add exercises to this routine first',
+                                message: 'Add exercises to this routine first',
                               );
                               return;
                             }

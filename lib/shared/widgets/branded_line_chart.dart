@@ -420,24 +420,20 @@ class _BrandedLineChartState extends State<BrandedLineChart> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const SizedBox(height: 8),
-        Semantics(
-          button: true,
-          label: _showDataTable ? 'Hide data table' : 'View data table',
-          child: TextButton.icon(
-            onPressed: () => setState(() => _showDataTable = !_showDataTable),
-            icon: Icon(
-              _showDataTable
-                  ? Icons.table_chart_rounded
-                  : Icons.table_chart_outlined,
-              size: 16,
+        TextButton.icon(
+          onPressed: () => setState(() => _showDataTable = !_showDataTable),
+          icon: Icon(
+            _showDataTable
+                ? Icons.table_chart_rounded
+                : Icons.table_chart_outlined,
+            size: 16,
+            color: accent.light,
+          ),
+          label: Text(
+            _showDataTable ? 'Hide data table' : 'View data table',
+            style: AppText.button().copyWith(
               color: accent.light,
-            ),
-            label: Text(
-              _showDataTable ? 'Hide data table' : 'View data table',
-              style: AppText.button().copyWith(
-                color: accent.light,
-                fontSize: 13,
-              ),
+              fontSize: 13,
             ),
           ),
         ),

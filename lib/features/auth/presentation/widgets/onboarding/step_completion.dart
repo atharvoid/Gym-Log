@@ -114,7 +114,8 @@ class _StepCompletionState extends ConsumerState<StepCompletion> {
     } catch (e) {
       debugPrint('[StepCompletion] Error saving onboarding data: $e');
       if (mounted) {
-        showAppSnackBar(context, message: 'Failed to save settings. Please try again.');
+        showAppSnackBar(context,
+            message: 'Failed to save settings. Please try again.');
       }
     } finally {
       if (mounted) {

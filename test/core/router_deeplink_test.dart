@@ -98,7 +98,8 @@ void main() {
             cloudReadinessProvider.overrideWithValue(Future.value(false)),
             databaseProvider.overrideWithValue(db),
             premiumServiceProvider.overrideWithValue(PremiumService(db)),
-            notificationServiceProvider.overrideWithValue(NotificationService()),
+            notificationServiceProvider
+                .overrideWithValue(NotificationService()),
             authRepositoryProvider
                 .overrideWithValue(_MockAuthRepository(client)),
             authProvider.overrideWithValue(null),
@@ -141,7 +142,8 @@ void main() {
             cloudReadinessProvider.overrideWithValue(Future.value(false)),
             databaseProvider.overrideWithValue(db),
             premiumServiceProvider.overrideWithValue(PremiumService(db)),
-            notificationServiceProvider.overrideWithValue(NotificationService()),
+            notificationServiceProvider
+                .overrideWithValue(NotificationService()),
             authRepositoryProvider
                 .overrideWithValue(_MockAuthRepository(client)),
             authProvider.overrideWithValue(null),

@@ -31,8 +31,14 @@ class TimeRangeFilter extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Semantics(
+      container: true,
       label: 'Time range filter, currently $value',
       button: true,
+      // Wrapper owns the name; the inner Text(value) must not publish a second
+      // node (docs/a11y-semantics-checklist.md §2). excludeSemantics discards
+      // the GestureDetector's tap action, hence the explicit onTap.
+      excludeSemantics: true,
+      onTap: () => _showSheet(context, ref),
       child: GestureDetector(
         onTap: () => _showSheet(context, ref),
         behavior: HitTestBehavior.opaque,

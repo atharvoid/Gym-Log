@@ -804,10 +804,69 @@ Future<SignOutStrategy?> _showUnsyncedWorkSheet(BuildContext context) {
 }
 
 class _SignOutButton extends ConsumerWidget {
+  Future<void> _handleSignOut(BuildContext context, WidgetRef ref) async {
+    if (!tapGuard()) return;
+    final user = ref.read(authProvider);
+    if (user == null) return;
+    final profile = ref.read(currentUserProfileProvider).valueOrNull;
+    final coordinator = ref.read(signOutCoordinatorProvider);
+    final prep = await coordinator.prepare(user.id);
+    if (prep == SignOutResult.unsyncedWork) {
+      if (!context.mounted) return;
+      final strategy = await _showUnsyncedWorkSheet(context);
+      if (strategy == null || strategy == SignOutStrategy.keepSignedIn) {
+        return;
+      }
+      if (strategy == SignOutStrategy.exportAndSignOut) {
+        if (!context.mounted) return;
+        await _exportWorkouts(
+            context, ref, user.id, profile?.displayName ?? '');
+      }
+      if (!context.mounted) return;
+      final outcome = await coordinator.execute(strategy);
+      if (outcome == SignOutOutcome.cloudSignOutFailed && context.mounted) {
+        showAppSnackBar(
+          context,
+          message: 'Signed out on this device, but some cloud sessions '
+              'could not be closed. For your security, sign out of '
+              'GymLog on any other device you used.',
+        );
+      }
+    } else {
+      if (!context.mounted) return;
+      final confirmed = await showAppConfirmDialog(
+        context: context,
+        title: 'Sign out?',
+        message: 'Your workouts are stored locally and will be here '
+            'when you sign back in.',
+        confirmLabel: 'Sign Out',
+        isDestructive: true,
+      );
+      if (confirmed) {
+        if (!context.mounted) return;
+        final outcome = await coordinator.execute(SignOutStrategy.forceSignOut);
+        if (outcome == SignOutOutcome.cloudSignOutFailed && context.mounted) {
+          showAppSnackBar(
+            context,
+            message: 'Signed out on this device, but some cloud '
+                'sessions could not be closed. For your security, sign '
+                'out of GymLog on any other device you used.',
+          );
+        }
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Semantics(
+      container: true,
       button: true,
+      // Wrapper owns the name; the inner 'Sign Out' Text must not publish a
+      // second node (docs/a11y-semantics-checklist.md §2). excludeSemantics
+      // discards the InkWell's tap action, hence the explicit onTap.
+      excludeSemantics: true,
+      onTap: () => _handleSignOut(context, ref),
       label: 'Sign out',
       child: Material(
         color: Colors.transparent,
@@ -815,62 +874,7 @@ class _SignOutButton extends ConsumerWidget {
         clipBehavior: Clip.antiAlias,
         child: InkWell(
           borderRadius: AppRadius.cardAll,
-          onTap: () async {
-            if (!tapGuard()) return;
-            final user = ref.read(authProvider);
-            if (user == null) return;
-            final profile = ref.read(currentUserProfileProvider).valueOrNull;
-            final coordinator = ref.read(signOutCoordinatorProvider);
-            final prep = await coordinator.prepare(user.id);
-            if (prep == SignOutResult.unsyncedWork) {
-              if (!context.mounted) return;
-              final strategy = await _showUnsyncedWorkSheet(context);
-              if (strategy == null ||
-                  strategy == SignOutStrategy.keepSignedIn) {
-                return;
-              }
-              if (strategy == SignOutStrategy.exportAndSignOut) {
-                if (!context.mounted) return;
-                await _exportWorkouts(
-                    context, ref, user.id, profile?.displayName ?? '');
-              }
-              if (!context.mounted) return;
-              final outcome = await coordinator.execute(strategy);
-              if (outcome == SignOutOutcome.cloudSignOutFailed &&
-                  context.mounted) {
-                showAppSnackBar(
-                  context,
-                  message: 'Signed out on this device, but some cloud sessions '
-                      'could not be closed. For your security, sign out of '
-                      'GymLog on any other device you used.',
-                );
-              }
-            } else {
-              if (!context.mounted) return;
-              final confirmed = await showAppConfirmDialog(
-                context: context,
-                title: 'Sign out?',
-                message: 'Your workouts are stored locally and will be here '
-                    'when you sign back in.',
-                confirmLabel: 'Sign Out',
-                isDestructive: true,
-              );
-              if (confirmed) {
-                if (!context.mounted) return;
-                final outcome =
-                    await coordinator.execute(SignOutStrategy.forceSignOut);
-                if (outcome == SignOutOutcome.cloudSignOutFailed &&
-                    context.mounted) {
-                  showAppSnackBar(
-                    context,
-                    message: 'Signed out on this device, but some cloud '
-                        'sessions could not be closed. For your security, sign '
-                        'out of GymLog on any other device you used.',
-                  );
-                }
-              }
-            }
-          },
+          onTap: () => _handleSignOut(context, ref),
           child: Container(
             height: 52,
             alignment: Alignment.center,

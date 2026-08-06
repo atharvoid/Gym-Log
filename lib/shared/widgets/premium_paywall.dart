@@ -109,7 +109,12 @@ class ProLockPill extends StatelessWidget {
   Widget build(BuildContext context) {
     final accent = context.accent;
     return Semantics(
+      container: true,
       button: true,
+      // Wrapper owns the name; the inner Text + InkWell must not publish their
+      // own duplicate nodes (see docs/a11y-semantics-checklist.md §2).
+      excludeSemantics: true,
+      onTap: () => showPremiumPaywall(context),
       label: 'Premium feature. Double tap to learn more.',
       child: Material(
         color: Colors.transparent,
@@ -699,8 +704,13 @@ class _PackageRow extends StatelessWidget {
     final accent = context.accent;
     final surface = context.surface;
     return Semantics(
+      container: true,
       button: true,
       selected: selected,
+      // Wrapper owns the name; the row's own title/price Texts must not
+      // announce a second time (docs/a11y-semantics-checklist.md §2).
+      excludeSemantics: true,
+      onTap: onTap,
       label: '$title plan, $price $caption',
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 150),

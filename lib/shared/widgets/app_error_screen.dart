@@ -123,7 +123,13 @@ class _ErrorAction extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Semantics(
+      container: true,
       button: true,
+      // Wrapper owns the name; the inner Text must not publish a second node
+      // (docs/a11y-semantics-checklist.md §2). excludeSemantics also discards
+      // the GestureDetector's tap action, hence the explicit onTap.
+      excludeSemantics: true,
+      onTap: onTap,
       label: label,
       child: GestureDetector(
         onTap: onTap,
