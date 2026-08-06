@@ -13,6 +13,7 @@ import 'package:gymlog/features/profile/presentation/providers/profile_provider.
 import 'package:gymlog/features/profile/presentation/providers/profile_stats_provider.dart';
 import 'package:gymlog/features/routines/presentation/data/explore_catalog.dart';
 import 'package:gymlog/shared/widgets/ui/app_card.dart';
+import 'package:gymlog/shared/widgets/ui/app_snack_bar.dart';
 import 'package:gymlog/shared/widgets/ui/goal_ring.dart';
 import 'package:gymlog/shared/widgets/ui/primary_button.dart';
 import 'package:gymlog/shared/widgets/ui/secondary_button.dart';
@@ -51,12 +52,10 @@ class _StepCompletionState extends ConsumerState<StepCompletion> {
         debugPrint(
             '[StepCompletion] Aborting: no authenticated user at completion');
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text(
-                  'Your session expired. Please sign in again to finish setup.'),
-              behavior: SnackBarBehavior.floating,
-            ),
+          showAppSnackBar(
+            context,
+            message:
+                'Your session expired. Please sign in again to finish setup.',
           );
         }
         return;
@@ -115,12 +114,7 @@ class _StepCompletionState extends ConsumerState<StepCompletion> {
     } catch (e) {
       debugPrint('[StepCompletion] Error saving onboarding data: $e');
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Failed to save settings. Please try again.'),
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
+        showAppSnackBar(context, message: 'Failed to save settings. Please try again.');
       }
     } finally {
       if (mounted) {

@@ -116,15 +116,12 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
   }
 
   void _showSetRemovedSnackbar(RemovedSetSnapshot snapshot) {
-    final restTimer = ref.read(restTimerProvider);
-    final restBarVisible = restTimer != null;
-
     showAppSnackBar(
       context,
       message: 'Set removed',
       actionLabel: 'Undo',
       duration: const Duration(seconds: 5),
-      additionalBottomOffset: restBarVisible ? kRestTileHeight + 18 : 0,
+      ref: ref,
       onAction: () {
         ref.read(activeWorkoutProvider.notifier).restoreRemovedSet(snapshot);
       },
@@ -259,31 +256,21 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
     String? name,
     required String reason,
   }) {
-    final bottomMargin = ref.read(restTimerProvider) != null ? 80.0 : 16.0;
-    ScaffoldMessenger.of(context).hideCurrentSnackBar();
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          isEditing
-              ? "Failed to save changes. Try again."
-              : "Failed to finish workout. Try again.",
-          style: AppText.body(color: context.surface.textPrimary),
-        ),
-        backgroundColor: AppColors.error.withValues(alpha: 0.92),
-        behavior: SnackBarBehavior.floating,
-        margin: EdgeInsets.only(left: 16, right: 16, bottom: bottomMargin),
-        action: SnackBarAction(
-          label: 'Retry',
-          textColor: context.surface.textPrimary,
-          onPressed: () {
-            if (isEditing) {
-              _saveChanges();
-            } else {
-              _retryFinish(name);
-            }
-          },
-        ),
-      ),
+    showAppSnackBar(
+      context,
+      message: isEditing
+          ? "Failed to save changes. Try again."
+          : "Failed to finish workout. Try again.",
+      ref: ref,
+      backgroundColor: AppColors.error.withValues(alpha: 0.92),
+      actionLabel: 'Retry',
+      onAction: () {
+        if (isEditing) {
+          _saveChanges();
+        } else {
+          _retryFinish(name);
+        }
+      },
     );
   }
 

@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:gymlog/core/models/measurement_type.dart';
 import 'package:gymlog/features/workout/domain/active_workout_state.dart';
 import 'package:gymlog/features/workout/presentation/providers/active_workout_provider.dart';
+import 'package:gymlog/features/workout/presentation/providers/rest_timer_provider.dart';
 import 'package:gymlog/features/workout/presentation/widgets/compact_rest_chip.dart';
 import 'package:gymlog/features/workout/presentation/widgets/set_row.dart';
 import 'package:gymlog/shared/widgets/ui/app_snack_bar.dart';
@@ -11,6 +12,19 @@ import 'package:gymlog/shared/widgets/ui/app_snack_bar.dart';
 class MockActiveWorkoutNotifier extends ActiveWorkoutNotifier {
   MockActiveWorkoutNotifier(super.ref, ActiveWorkoutState? initialState) {
     state = initialState;
+  }
+}
+
+class _ActiveRestNotifier extends RestTimerNotifier {
+  _ActiveRestNotifier(super.ref) {
+    state = RestTimerState(
+      totalSeconds: 60,
+      remainingSeconds: 60,
+      endTime: DateTime.now().add(const Duration(seconds: 60)),
+      workoutId: 'w1',
+      exerciseId: 1,
+      setId: 's1',
+    );
   }
 }
 
@@ -208,25 +222,34 @@ void main() {
       expect(shape.borderRadius, BorderRadius.circular(14));
     });
 
-    testWidgets('6. showAppSnackBar clears timer bar offset when present',
+    testWidgets('6. showAppSnackBar clears rest timer bar offset when active',
         (tester) async {
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: Builder(
-              builder: (context) {
-                return ElevatedButton(
-                  onPressed: () {
-                    showAppSnackBar(
-                      context,
-                      message: 'Set removed',
-                      actionLabel: 'Undo',
-                      additionalBottomOffset: 102,
-                    );
-                  },
-                  child: const Text('Show'),
-                );
-              },
+        ProviderScope(
+          overrides: [
+            restTimerProvider.overrideWith((ref) => _ActiveRestNotifier(ref)),
+          ],
+          child: MaterialApp(
+            home: Scaffold(
+              body: Builder(
+                builder: (context) {
+                  return Consumer(
+                    builder: (context, ref, _) {
+                      return ElevatedButton(
+                        onPressed: () {
+                          showAppSnackBar(
+                            context,
+                            message: 'Set removed',
+                            actionLabel: 'Undo',
+                            ref: ref,
+                          );
+                        },
+                        child: const Text('Show'),
+                      );
+                    },
+                  );
+                },
+              ),
             ),
           ),
         ),
@@ -237,7 +260,9 @@ void main() {
 
       final snackBar = tester.widget<SnackBar>(find.byType(SnackBar));
       final margin = snackBar.margin as EdgeInsets;
-      expect(margin.bottom, greaterThan(100));
+      // kRestTileHeight (84) + 18 gap + 12 base is the sole rest-bar-aware
+      // offset; callers no longer hand-invent their own values.
+      expect(margin.bottom, greaterThanOrEqualTo(84 + 18 + 12));
     });
   });
 }

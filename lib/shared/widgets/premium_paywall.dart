@@ -19,15 +19,14 @@ import '../../core/services/premium_service.dart';
 import '../../core/theme/app_colors.dart' show SurfaceContextX;
 import '../../core/theme/app_text.dart';
 import '../../core/theme/dynamic_accent_theme.dart';
+import 'ui/app_snack_bar.dart';
 
 Future<void> _openUrl(BuildContext context, String url) async {
   final uri = Uri.tryParse(url);
   if (uri == null) return;
   if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
     if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Could not open link.')),
-      );
+      showAppSnackBar(context, message: 'Could not open link.');
     }
   }
 }
@@ -349,12 +348,7 @@ class _PaywallSheetState extends ConsumerState<_PaywallSheet> {
   }
 
   void _snack(String message) {
-    final surface = context.surface;
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text(message, style: AppText.body(color: surface.textPrimary)),
-      backgroundColor: surface.bgSurface,
-      behavior: SnackBarBehavior.floating,
-    ));
+    showAppSnackBar(context, message: message);
   }
 
   @override

@@ -13,6 +13,7 @@ import 'package:gymlog/features/profile/presentation/providers/profile_provider.
 import 'package:gymlog/core/services/workout_export_service.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:gymlog/shared/layout/adaptive.dart';
+import 'package:gymlog/shared/widgets/ui/app_snack_bar.dart';
 
 /// Irreversible account deletion. Reached from Settings (not buried). The user
 /// reads exactly what is destroyed vs preserved, types DELETE to confirm, and
@@ -44,7 +45,6 @@ class _DeleteAccountScreenState extends ConsumerState<DeleteAccountScreen> {
     if (!_canDelete) return;
     HapticFeedback.heavyImpact();
     setState(() => _deleting = true);
-    final surface = context.surface;
 
     final outcome =
         await ref.read(accountDeletionServiceProvider).deleteAccount();
@@ -62,34 +62,17 @@ class _DeleteAccountScreenState extends ConsumerState<DeleteAccountScreen> {
     // enough for the message to be visible.
     if (outcome.localWiped) {
       final router = GoRouter.of(context);
-      final messenger = ScaffoldMessenger.of(context);
-      messenger.showSnackBar(
-        SnackBar(
-          content: Text(
-            fullyDeleted
-                ? 'Your account and data have been permanently deleted.'
-                : 'Your data on this device was deleted, but some cloud data '
-                    'could not be removed. Contact support to finish the '
-                    'purge.',
-            style: AppText.button(),
-          ),
-          backgroundColor: surface.bgSurface,
-          behavior: SnackBarBehavior.floating,
-        ),
+      showAppSnackBar(
+        context,
+        message: fullyDeleted
+            ? 'Your account and data have been permanently deleted.'
+            : 'Your data on this device was deleted, but some cloud data '
+                'could not be removed. Contact support to finish the purge.',
       );
       router.go('/auth');
     } else {
       setState(() => _deleting = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Deletion failed. Please try again.',
-            style: AppText.button(),
-          ),
-          backgroundColor: surface.bgSurface,
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+      showAppSnackBar(context, message: 'Deletion failed. Please try again.');
     }
   }
 

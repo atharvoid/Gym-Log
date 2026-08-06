@@ -13,6 +13,7 @@ import '../../../../shared/widgets/ui/action_bottom_sheet.dart';
 import '../../../../shared/widgets/ui/app_dialog.dart';
 import '../../../../shared/widgets/feedback/undoable_delete.dart';
 import '../../../../shared/widgets/motion/pressable_scale.dart';
+import '../../../../shared/widgets/ui/app_snack_bar.dart';
 
 /// Premium routine card for the Routines list.
 /// - Tapping the body opens the routine detail (`/routines/:id`).
@@ -177,16 +178,10 @@ class RoutineCard extends ConsumerWidget {
                             // 0-exercise routine: don't silently no-op — tell
                             // the user why nothing happened.
                             if (exerciseNames.isEmpty) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
+                              showAppSnackBar(
+                                context,
+                                message:
                                     'Add exercises to this routine first',
-                                    style: AppText.body(
-                                        color: surface.textPrimary),
-                                  ),
-                                  backgroundColor: surface.surface2,
-                                  behavior: SnackBarBehavior.floating,
-                                ),
                               );
                               return;
                             }

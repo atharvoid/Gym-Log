@@ -22,6 +22,7 @@ import '../providers/workout_actions_provider.dart';
 import '../providers/active_workout_provider.dart';
 import 'package:gymlog/core/utils/tap_guard.dart';
 import 'package:gymlog/shared/widgets/feedback/undoable_delete.dart';
+import 'package:gymlog/shared/widgets/ui/app_snack_bar.dart';
 
 /// Hoisted, locale-stable date formatter ("Thu, 18 Jun 2026").
 final _kDateFormat = DateFormat('EEE, d MMM yyyy');
@@ -198,15 +199,7 @@ class WorkoutDetailScreen extends ConsumerWidget {
         .read(workoutActionsProvider.notifier)
         .saveWorkoutAsRoutine(workout, defaultName);
     if (context.mounted) {
-      final surface = context.surface;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Saved as "$defaultName"',
-              style: AppText.body(color: surface.textPrimary)),
-          backgroundColor: surface.surface2,
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+      showAppSnackBar(context, message: 'Saved as "$defaultName"');
     }
   }
 

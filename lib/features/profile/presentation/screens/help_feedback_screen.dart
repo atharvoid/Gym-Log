@@ -12,6 +12,7 @@ import 'package:gymlog/core/theme/dynamic_accent_theme.dart';
 import 'package:gymlog/core/utils/tap_guard.dart';
 import 'package:gymlog/shared/widgets/ui/app_action_row.dart';
 import 'package:gymlog/shared/widgets/ui/app_card.dart';
+import 'package:gymlog/shared/widgets/ui/app_snack_bar.dart';
 import 'package:gymlog/shared/widgets/ui/branded_bottom_sheet.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -110,8 +111,9 @@ class _ReportProblemFormState extends State<ReportProblemForm> {
 
   Future<void> _submitReport() async {
     if (_shortDescriptionController.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter a short description.')),
+      showAppSnackBar(
+        context,
+        message: 'Please enter a short description.',
       );
       return;
     }
@@ -120,16 +122,7 @@ class _ReportProblemFormState extends State<ReportProblemForm> {
     await Clipboard.setData(ClipboardData(text: reportText));
 
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          'Diagnostic report copied to clipboard',
-          style: AppText.body(color: context.surface.textPrimary),
-        ),
-        backgroundColor: context.surface.surface2,
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
+    showAppSnackBar(context, message: 'Diagnostic report copied to clipboard');
 
     Navigator.of(context, rootNavigator: true).pop();
 

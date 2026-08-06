@@ -9,6 +9,7 @@ import '../../../../core/theme/app_text.dart';
 import '../../../../core/theme/dynamic_accent_theme.dart';
 import '../../../../shared/layout/adaptive.dart';
 import '../../../../shared/widgets/motion/pressable_scale.dart';
+import '../../../../shared/widgets/ui/app_snack_bar.dart';
 import '../../data/auth_repository.dart';
 import '../providers/auth_provider.dart';
 
@@ -78,14 +79,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
   }
 
   void _snack(String message) {
-    final surface = context.surface;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message, style: AppText.body(color: surface.textPrimary)),
-        backgroundColor: surface.surface2,
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
+    showAppSnackBar(context, message: message);
   }
 
   Future<void> _openUrl(String url) async {

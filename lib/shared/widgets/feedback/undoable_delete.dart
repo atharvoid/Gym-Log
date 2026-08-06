@@ -3,6 +3,16 @@ import 'package:gymlog/core/theme/app_colors.dart';
 import 'package:gymlog/core/theme/app_text.dart';
 import 'package:gymlog/core/theme/dynamic_accent_theme.dart';
 
+/// Number of undoable-delete snackbars currently queued/visible.
+///
+/// [showAppSnackBar] consults this before calling `clearSnackBars`, so a
+/// generic toast can never dismiss an in-flight undo window (which would
+/// silently finalize the pending deletion via [onCommitDelete]).
+int _activeUndoSnackbars = 0;
+
+/// Whether an undoable-delete snackbar is on-screen or queued.
+bool get hasActiveUndoSnackBar => _activeUndoSnackbars > 0;
+
 /// Shared helper to show a SnackBar with an "Undo" action for reversible deletes.
 ///
 /// It must be called with a captured [ScaffoldMessengerState] before any async/pop.
@@ -33,10 +43,16 @@ ScaffoldFeatureController<SnackBar, SnackBarClosedReason> showUndoableDelete({
     persist: false,
   );
 
-  messenger.hideCurrentSnackBar();
+  // Only evict a *non-undo* snackbar. A rapid second delete must queue behind
+  // the first so its undo window stays open instead of being force-finalized.
+  if (!hasActiveUndoSnackBar) {
+    messenger.hideCurrentSnackBar();
+  }
+  _activeUndoSnackbars++;
   final controller = messenger.showSnackBar(snackBar);
 
   controller.closed.then((reason) {
+    if (_activeUndoSnackbars > 0) _activeUndoSnackbars--;
     if (reason != SnackBarClosedReason.action) {
       onCommitDelete?.call();
     }
