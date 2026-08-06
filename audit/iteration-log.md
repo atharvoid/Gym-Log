@@ -848,3 +848,24 @@ node, AppErrorScreen retry action one button).
 - [x] Static Analysis: PASS (flutter analyze, 0 issues)
 - [x] Custom Linter: PASS
 - [x] Tests Suite: PASS (558/558)
+
+---
+
+## Iteration: AUTH-CLUSTER (AU-A/B/C) + M-F5 (E47 motion policy)
+
+**Date:** 2026-08-06
+**Slice:** Phase 2 queue items 6-8 (AU-A, AU-B, AU-C) + M-F5 recommendation record
+
+### Diff Summary
+- **AU-A**: Auth body + trust copy rewritten — sign-in is required; storage is local-first with sync ("Sign in with Google to get started. Your workouts are stored on your device and synced securely when you sign in." + trust line "Your data is stored on your device first and synced with your Google account."). No local-only mode.
+- **AU-B**: CTA stays enabled during in-flight sign-in; a re-press fires haptic + "Sign-in is already in progress." snackbar and never starts a second repository operation. Semantics stays enabled: true with In progress value.
+- **AU-C**: signInWithGoogle() bounded by a 31s _signInTimeout ? AuthTimeoutFailure surfaced as "Sign-in timed out. Please try again."; new cancelGoogleSignIn() completes a canceller raced (Future.any) against the native Google sheet + id-token exchange so cancellation surfaces as AuthCancelled and the screen returns to idle; "Cancel" TextButton (48dp) shown only while signing in.
+- **M-F5**: docs/CONVENTIONS.md gains "Motion & Animation Policy (E47)" — EntranceFade/AppMotion.effective/PressableScale policy, bounded-list rule, reduced-motion contract; recorded only, no rollout.
+- **Tests**: behavior fake reworked to completer-backed contract (cancel mirrors real repo); AUTH-04 rewritten to the live-CTA contract; AUTH-21 (cancel affordance), AUTH-22 (timeout copy) added; 14 auth goldens regenerated.
+- Committed as eebb251 (17 files, 204+/28-).
+
+### Gate Verification Result
+- [x] Format: PASS
+- [x] Static Analysis: PASS (flutter analyze, 0 issues)
+- [x] Custom Linter: PASS (custom_lint, 0 issues)
+- [x] Tests Suite: PASS (561/561)

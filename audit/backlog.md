@@ -119,3 +119,7 @@ This file tracks every finding ID with its severity, owning screen, status (`ope
 | **AP-1** | AppearanceScreen | OLED theme switcher micro-delights | `open` | |
 | **AP-2** | AppearanceScreen | Live preview card updates | `open` | |
 | **IM-3** | ImportScreen | Import progress bar animations | `open` | |
+| **AU-A** | AuthScreen | Body/trust copy implied an optional local-only mode; sign-in is required — copy now states "Sign in with Google to get started" + local-first storage with sync (no local-only mode) | `done` | eebb251 |
+| **AU-B** | AuthScreen | Re-pressing the CTA during an in-flight sign-in was a dead tap — button now stays live and gives haptic + "Sign-in is already in progress." feedback without a second repository op | `done` | eebb251 |
+| **AU-C** | AuthScreen | Sign-in attempt was unbounded (infinite "Signing in…"); now bounded to ~31s (`AuthTimeoutFailure` + honest timed-out copy) with a Cancel affordance (`cancelGoogleSignIn()` abort signal raced against native ops) | `done` | eebb251 |
+| **M-F5 (E47)** | Motion system | Recorded in docs/CONVENTIONS.md "Motion & Animation Policy": new surfaces must use EntranceFade / AppMotion.effective / PressableScale instead of ad-hoc controllers (policy only — no rollout implementation) | `done` | pending doc commit |

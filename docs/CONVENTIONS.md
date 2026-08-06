@@ -198,6 +198,33 @@ showModalBottomSheet(
 | `TogglePill` | Horizontal scrollable metric selector (Duration / Volume / Reps) |
 | `ExerciseGifWidget` | Any place an exercise GIF is needed — handles null URL, loading, error |
 | `ActiveWorkoutBar` | Rendered by `AppShell` automatically when `activeWorkoutProvider != null` |
+| `EntranceFade` | One-shot entry (fade + 0.05 slide, easeOutCubic, 320ms) for bounded lists/sections |
+| `PressableScale` | Press feedback wrapper (scale down while pressed) |
+| `AppMotion.effective()` | Resolve any explicit animation duration; returns `Duration.zero` under OS reduced motion |
+
+---
+
+## Motion & Animation Policy (E47)
+
+**Policy (recorded — no rollout work in this pass):** new and refactored
+surfaces must use the shared motion primitives under `lib/shared/widgets/motion/`
+instead of ad-hoc `AnimationController`s:
+
+- **Entry animations** → `EntranceFade` (the packaged `exercise_detail_screen.dart`
+  `_entryFade` idiom: easeOutCubic, `Offset(0, 0.05)` → zero, 320ms, runs once).
+  - Use on **bounded** content only. Never wrap items inside a virtualized
+    `ListView.builder`/`GridView.builder` — one-shot animations replay on scroll
+    entry; put a single `EntranceFade` around the whole list instead.
+  - Stagger with `index`/`stagger`/`maxStaggerIndex` (clamped at index 6).
+- **Explicit durations** → `AppMotion.effective(context, duration)` so reduced
+  motion yields `Duration.zero`.
+- **Press feedback** → `PressableScale` (or the framework's built-in ripple;
+  never hand-rolled scale-on-press listeners).
+- **Reduced motion:** all motion primitives are safe by construction — check
+  `MediaQuery.disableAnimationsOf` behavior is preserved when composing them.
+
+Exceptions: route transitions (owned by `go_router` in `core/router/router.dart`)
+and loader spinners (indeterminate by design) are out of scope.
 
 ---
 
