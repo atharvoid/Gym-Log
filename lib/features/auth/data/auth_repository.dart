@@ -156,10 +156,12 @@ class AuthRepository {
   Future<void> signOut() async {
     await _draftStore.clear();
     final client = _client;
+    // A cloud sign-out that fails must be visible to callers: the user asked
+    // to end their session and a swallowed failure leaves a live cloud
+    // session that signs them back in on next launch. Callers decide whether
+    // to surface or (deliberately) proceed offline.
     if (client != null) {
-      try {
-        await client.auth.signOut();
-      } catch (_) {}
+      await client.auth.signOut();
     }
   }
 

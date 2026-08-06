@@ -17,6 +17,7 @@ import '../providers/bottom_chrome_provider.dart';
 import 'active_workout_bar.dart';
 import 'bottom_nav_bar.dart';
 import 'ui/app_dialog.dart';
+import 'ui/app_snack_bar.dart';
 
 /// [app_shell.dart]
 /// Purpose: High-Density Tracker - App shell with bottom nav
@@ -56,6 +57,15 @@ class _AppShellState extends ConsumerState<AppShell> {
     try {
       snapshot = await store.loadSnapshot(currentUserId: user?.id);
     } catch (_) {
+      // A draft the user was mid-way through exists on disk but could not be
+      // read. It is silently skipped — worse, the user believes the resume
+      // offer simply never happened. Tell them instead.
+      if (mounted) {
+        showAppSnackBar(
+          context,
+          message: "Couldn't check for an in-progress workout.",
+        );
+      }
       return;
     }
     if (snapshot == null || !mounted) return;

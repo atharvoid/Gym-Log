@@ -143,6 +143,9 @@ class _ProfileAvatarState extends State<ProfileAvatar> {
 
   Future<void> _removeImage() async {
     HapticFeedback.lightImpact();
+    final messenger = ScaffoldMessenger.of(context);
+    final bgSurface = context.surface.bgSurface;
+    var removed = true;
     try {
       final dir = await getApplicationDocumentsDirectory();
       final List<FileSystemEntity> entities = dir.listSync();
@@ -154,7 +157,24 @@ class _ProfileAvatarState extends State<ProfileAvatar> {
           }
         }
       }
-    } catch (_) {/* best-effort cleanup */}
+      // A removal that claims success while the current image still exists on
+      // disk is a silent failure: the file would resurrect on next app start.
+      final current = widget.imagePath;
+      if (current != null && current.isNotEmpty && await File(current).exists()) {
+        removed = false;
+      }
+    } catch (_) {
+      removed = false;
+    }
+    if (!removed) {
+      messenger.showSnackBar(SnackBar(
+        content: Text("Couldn't remove that photo. Try again.",
+            style: AppText.button()),
+        backgroundColor: bgSurface,
+        behavior: SnackBarBehavior.floating,
+      ));
+      return;
+    }
     if (mounted) widget.onImageChanged(null);
   }
 

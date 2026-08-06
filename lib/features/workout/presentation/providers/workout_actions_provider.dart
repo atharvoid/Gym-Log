@@ -29,7 +29,7 @@ class WorkoutActionsNotifier extends StateNotifier<AsyncValue<void>> {
   /// happens (it's a local Drift write), but it won't be pushed until the
   /// gate opens. This is correct — the tombstone is harmless locally and
   /// ensures the deletion propagates if sync is later enabled.
-  Future<void> deleteSession(String sessionId) async {
+  Future<bool> deleteSession(String sessionId) async {
     state = const AsyncValue.loading();
     try {
       final db = _ref.read(databaseProvider);
@@ -54,12 +54,14 @@ class WorkoutActionsNotifier extends StateNotifier<AsyncValue<void>> {
 
       await db.workoutsDao.deleteSession(sessionId);
       state = const AsyncValue.data(null);
+      return true;
     } catch (e, st) {
       state = AsyncValue.error(e, st);
+      return false;
     }
   }
 
-  Future<void> restoreSession(Map<String, dynamic> data) async {
+  Future<bool> restoreSession(Map<String, dynamic> data) async {
     state = const AsyncValue.loading();
     try {
       final db = _ref.read(databaseProvider);
@@ -86,8 +88,10 @@ class WorkoutActionsNotifier extends StateNotifier<AsyncValue<void>> {
         );
       }
       state = const AsyncValue.data(null);
+      return true;
     } catch (e, st) {
       state = AsyncValue.error(e, st);
+      return false;
     }
   }
 

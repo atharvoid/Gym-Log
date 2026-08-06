@@ -151,17 +151,27 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
   }
 
   Future<void> _loadSyncPref() async {
-    // A preferences read should never be able to take the screen down. If it
-    // fails we fall back to the same default the getter already used.
+    // A preferences read falling back to the getter's default is fine, but a
+    // failure must still be surfaced — silently assuming sync is ON for a
+    // sync that may not actually be configured is the same silent-failure
+    // data-loss story as the toggle path below.
     var enabled = true;
+    var readOk = true;
     try {
       final prefs = await SharedPreferences.getInstance();
       enabled = prefs.getBool(kSyncEnabledKey) ?? true;
     } catch (_) {
       enabled = true;
+      readOk = false;
     }
     if (mounted) {
       setState(() => _syncEnabled = enabled);
+      if (!readOk) {
+        showAppSnackBar(
+          context,
+          message: "Couldn't read your sync setting. The default is shown.",
+        );
+      }
     }
   }
 
@@ -824,7 +834,17 @@ class _SignOutButton extends ConsumerWidget {
                 await _exportWorkouts(
                     context, ref, user.id, profile?.displayName ?? '');
               }
-              await coordinator.execute(strategy);
+              if (!context.mounted) return;
+              final outcome = await coordinator.execute(strategy);
+              if (outcome == SignOutOutcome.cloudSignOutFailed &&
+                  context.mounted) {
+                showAppSnackBar(
+                  context,
+                  message: 'Signed out on this device, but some cloud sessions '
+                      'could not be closed. For your security, sign out of '
+                      'GymLog on any other device you used.',
+                );
+              }
             } else {
               if (!context.mounted) return;
               final confirmed = await showAppConfirmDialog(
@@ -836,7 +856,18 @@ class _SignOutButton extends ConsumerWidget {
                 isDestructive: true,
               );
               if (confirmed) {
-                await coordinator.execute(SignOutStrategy.forceSignOut);
+                if (!context.mounted) return;
+                final outcome =
+                    await coordinator.execute(SignOutStrategy.forceSignOut);
+                if (outcome == SignOutOutcome.cloudSignOutFailed &&
+                    context.mounted) {
+                  showAppSnackBar(
+                    context,
+                    message: 'Signed out on this device, but some cloud '
+                        'sessions could not be closed. For your security, sign '
+                        'out of GymLog on any other device you used.',
+                  );
+                }
               }
             }
           },

@@ -12,6 +12,7 @@ import 'package:gymlog/shared/widgets/ui/app_refresh_indicator.dart';
 import 'package:gymlog/shared/widgets/ui/start_button.dart';
 import 'package:gymlog/shared/widgets/ui/action_bottom_sheet.dart';
 import 'package:gymlog/shared/widgets/ui/app_dialog.dart';
+import 'package:gymlog/shared/widgets/ui/app_snack_bar.dart';
 import 'package:gymlog/shared/widgets/ui/skeleton.dart';
 import 'package:gymlog/shared/widgets/async_error_state.dart';
 import 'package:gymlog/features/workout/presentation/providers/active_workout_provider.dart';
@@ -553,7 +554,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             );
             if (confirmed) {
               HapticFeedback.mediumImpact();
-              await actions.deleteSession(session.id);
+              final ok = await actions.deleteSession(session.id);
+              if (!mounted) return;
+              if (!ok) {
+                showAppSnackBar(
+                  context,
+                  message: "Couldn't delete that workout. Try again.",
+                );
+                return;
+              }
               showUndoableDelete(
                 messenger: messenger,
                 label: 'Workout deleted',

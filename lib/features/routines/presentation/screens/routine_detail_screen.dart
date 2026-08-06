@@ -30,6 +30,7 @@ import 'package:gymlog/shared/widgets/async_error_state.dart';
 import 'package:gymlog/shared/widgets/premium_paywall.dart';
 import 'package:gymlog/shared/widgets/ui/action_bottom_sheet.dart';
 import 'package:gymlog/shared/widgets/ui/app_dialog.dart';
+import 'package:gymlog/shared/widgets/ui/app_snack_bar.dart';
 import 'package:gymlog/shared/widgets/ui/app_refresh_indicator.dart';
 import 'package:gymlog/shared/widgets/feedback/undoable_delete.dart';
 import 'package:gymlog/shared/widgets/ui/secondary_button.dart';
@@ -194,7 +195,20 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen> {
 
     HapticFeedback.mediumImpact();
 
-    await db.routinesDao.deleteRoutine(routineId);
+    var deleted = true;
+    try {
+      await db.routinesDao.deleteRoutine(routineId);
+    } catch (_) {
+      deleted = false;
+    }
+    if (!deleted) {
+      if (!mounted) return;
+      showAppSnackBar(
+        context,
+        message: "Couldn't delete that routine. Try again.",
+      );
+      return;
+    }
     router.pop();
 
     showUndoableDelete(

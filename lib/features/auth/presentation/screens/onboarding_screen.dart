@@ -82,7 +82,12 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       );
       if (!discard) return;
     }
-    await ref.read(authRepositoryProvider).signOut();
+    try {
+      await ref.read(authRepositoryProvider).signOut();
+    } catch (_) {
+      // Cancelling setup must never be blocked by a failed cloud sign-out;
+      // the local session is dropped below and the user returns to /auth.
+    }
     if (mounted) context.go('/auth');
   }
 

@@ -289,7 +289,16 @@ class WorkoutDetailScreen extends ConsumerWidget {
 
     HapticFeedback.mediumImpact();
 
-    await actions.deleteSession(sessionId);
+    final ok = await actions.deleteSession(sessionId);
+    if (!ok) {
+      if (context.mounted) {
+        showAppSnackBar(
+          context,
+          message: "Couldn't delete that workout. Try again.",
+        );
+      }
+      return;
+    }
     router.pop();
 
     showUndoableDelete(

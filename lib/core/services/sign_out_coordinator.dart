@@ -23,12 +23,22 @@ enum SignOutStrategy {
   forceSignOut,
 }
 
+/// Result of a sign-out execution. A cloud sign-out failure means the user is
+/// signed out on this device but the cloud session (Supabase/RevenueCat) may
+/// still be live — the caller must surface this instead of implying a clean
+/// sign-out.
+enum SignOutOutcome {
+  complete,
+  cloudSignOutFailed,
+}
+
 class SignOutCoordinator {
   final Ref _ref;
   final AppDatabase _db;
   final SyncEngine _syncEngine;
   final WorkoutDraftStore _draftStore;
   final AuthRepository _authRepo;
+  final Future<void> Function() _logoutPurchases;
 
   SignOutCoordinator({
     required Ref ref,
@@ -36,11 +46,15 @@ class SignOutCoordinator {
     required SyncEngine syncEngine,
     required WorkoutDraftStore draftStore,
     required AuthRepository authRepo,
+    Future<void> Function()? logoutPurchases,
   })  : _ref = ref,
         _db = db,
         _syncEngine = syncEngine,
         _draftStore = draftStore,
-        _authRepo = authRepo;
+        _authRepo = authRepo,
+        // Injectable so tests can observe sign-out outcomes without a live
+        // RevenueCat session; defaults to the real SDK call.
+        _logoutPurchases = logoutPurchases ?? Purchases.logOut;
 
   /// Check if there is unsynced work for [userId].
   Future<SignOutResult> prepare(String userId) async {
@@ -52,13 +66,18 @@ class SignOutCoordinator {
   }
 
   /// Execute the chosen strategy.
-  Future<void> execute(SignOutStrategy strategy) async {
+  ///
+  /// Returns [SignOutOutcome.cloudSignOutFailed] when the local sign-out
+  /// succeeded but a cloud session (RevenueCat or Supabase) could not be
+  /// closed — the caller must tell the user, because a device-only sign-out
+  /// with a live cloud session is not the clean sign-out they asked for.
+  Future<SignOutOutcome> execute(SignOutStrategy strategy) async {
     final user = _ref.read(authProvider);
-    if (user == null) return;
+    if (user == null) return SignOutOutcome.complete;
     final userId = user.id;
 
     if (strategy == SignOutStrategy.keepSignedIn) {
-      return;
+      return SignOutOutcome.complete;
     }
 
     // 1. Stop auto-sync for current user.
@@ -82,20 +101,29 @@ class SignOutCoordinator {
     _ref.invalidate(authStateProvider);
 
     // 6. RevenueCat logOut.
+    var cloudFailed = false;
     try {
-      await Purchases.logOut();
-    } catch (_) {}
+      await _logoutPurchases();
+    } catch (_) {
+      cloudFailed = true;
+    }
 
     // 7. Supabase signOut.
     try {
       await _authRepo.signOut();
-    } catch (_) {}
+    } catch (_) {
+      cloudFailed = true;
+    }
 
     // 8. Clear account-specific preferences.
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('weekly_goal_days');
     await prefs.remove('exercise_unit_overrides');
     await prefs.remove('sync_last_synced_ms');
+
+    return cloudFailed
+        ? SignOutOutcome.cloudSignOutFailed
+        : SignOutOutcome.complete;
   }
 }
 

@@ -14,6 +14,7 @@ import 'package:gymlog/features/profile/presentation/screens/settings_screen.dar
 import 'package:gymlog/core/services/profile_sync_service.dart';
 import 'package:gymlog/shared/widgets/ui/app_action_row.dart';
 import 'package:gymlog/shared/widgets/ui/app_card.dart';
+import 'package:gymlog/shared/widgets/ui/app_snack_bar.dart';
 import 'package:gymlog/shared/widgets/ui/branded_bottom_sheet.dart';
 import 'package:gymlog/shared/widgets/ui/time_range_filter.dart';
 import 'package:gymlog/shared/widgets/ui/app_dialog.dart';
@@ -112,8 +113,6 @@ class PersonalDetailsScreen extends ConsumerWidget {
                         );
                         if (newName != null && newName.trim().isNotEmpty) {
                           if (!context.mounted) return;
-                          final messenger = ScaffoldMessenger.of(context);
-                          final bgSurface = context.surface.bgSurface;
                           final success = await ref
                               .read(profileSyncProvider)
                               .submitDisplayName(
@@ -124,13 +123,11 @@ class PersonalDetailsScreen extends ConsumerWidget {
                           if (success) {
                             ref.invalidate(currentUserProfileProvider);
                           } else {
-                            messenger.showSnackBar(SnackBar(
-                              content: Text(
-                                  "Couldn't save your name. Try again.",
-                                  style: AppText.button()),
-                              backgroundColor: bgSurface,
-                              behavior: SnackBarBehavior.floating,
-                            ));
+                            if (!context.mounted) return;
+                            showAppSnackBar(
+                              context,
+                              message: "Couldn't save your name. Try again.",
+                            );
                           }
                         }
                       },
