@@ -13,21 +13,49 @@ import 'package:drift/native.dart';
 import 'package:supabase_flutter/supabase_flutter.dart'
     show User, Session, AuthState;
 
+class FutureCompleter<T> {
+  final Completer<T> _completer = Completer<T>();
+  Future<T> get future => _completer.future;
+  void complete([FutureOr<T>? value]) => _completer.complete(value);
+}
+
 class FakeAuthRepository extends AuthRepository {
   FakeAuthRepository() : super(null);
 
   int signInCallCount = 0;
+  int cancelSignInCallCount = 0;
   Object? errorToThrow;
   Future<void>? signInDelayFuture;
+  Completer<void>? _pendingSignIn;
 
   @override
-  Future<void> signInWithGoogle() async {
+  Future<void> signInWithGoogle() {
     signInCallCount++;
-    if (signInDelayFuture != null) {
-      await signInDelayFuture;
+    final completer = Completer<void>();
+    _pendingSignIn = completer;
+    unawaited(_run(completer));
+    return completer.future;
+  }
+
+  Future<void> _run(Completer<void> completer) async {
+    final delay = signInDelayFuture;
+    if (delay != null) {
+      await delay;
     }
+    if (completer.isCompleted) return;
     if (errorToThrow != null) {
-      throw errorToThrow!;
+      completer.completeError(errorToThrow!);
+    } else {
+      completer.complete();
+    }
+  }
+
+  @override
+  void cancelGoogleSignIn() {
+    cancelSignInCallCount++;
+    final pending = _pendingSignIn;
+    if (pending != null && !pending.isCompleted) {
+      pending.completeError(const AuthCancelled());
     }
   }
 
@@ -114,9 +142,10 @@ void main() {
       await tester.tap(find.text('Continue with Google'));
       await tester.pump(); // Start sign-in process
 
-      // The button should be disabled (onPressed is null)
+      // The button stays live while sign-in is in flight so a re-press can
+      // provide feedback instead of being a dead tap (see AU-B test below).
       final button = tester.widget<ElevatedButton>(find.byType(ElevatedButton));
-      expect(button.onPressed, isNull);
+      expect(button.onPressed, isNotNull);
 
       // Resolve the sign in
       delayCompleter.complete();
@@ -313,11 +342,76 @@ void main() {
       delayCompleter.complete();
       await tester.pumpAndSettle();
     });
-  });
-}
 
-class FutureCompleter<T> {
-  final Completer<T> _completer = Completer<T>();
-  Future<T> get future => _completer.future;
-  void complete([FutureOr<T>? value]) => _completer.complete(value);
+    testWidgets(
+        'AUTH-04 (AU-B): Re-press during in-flight sign-in gives feedback, not a dead tap',
+        (tester) async {
+      final delayCompleter = FutureCompleter<void>();
+      fakeAuthRepository.signInDelayFuture = delayCompleter.future;
+
+      await tester.pumpWidget(buildAuthScreen());
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Continue with Google'));
+      await tester.pump(); // Enter loading state
+
+      // The CTA stays live while signing in so a re-press is never a dead tap.
+      final button = tester.widget<ElevatedButton>(find.byType(ElevatedButton));
+      expect(button.onPressed, isNotNull);
+
+      final callsBefore = fakeAuthRepository.signInCallCount;
+      await tester.tap(find.byType(ElevatedButton));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+
+      expect(fakeAuthRepository.signInCallCount, callsBefore,
+          reason: 're-press must not start a second repository operation');
+      expect(find.text('Sign-in is already in progress.'), findsOneWidget);
+
+      delayCompleter.complete();
+      await tester.pumpAndSettle();
+    });
+
+    testWidgets(
+        'AUTH-21 (AU-C): Cancel affordance appears while signing in and returns the screen to idle',
+        (tester) async {
+      final delayCompleter = FutureCompleter<void>();
+      fakeAuthRepository.signInDelayFuture = delayCompleter.future;
+
+      await tester.pumpWidget(buildAuthScreen());
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Continue with Google'));
+      await tester.pump();
+
+      final cancelFinder = find.text('Cancel');
+      expect(cancelFinder, findsOneWidget);
+
+      final cancelButton = tester.widget<TextButton>(find.byType(TextButton));
+      expect(cancelButton.onPressed, isNotNull);
+      expect(tester.getSize(find.byType(TextButton)).height,
+          greaterThanOrEqualTo(48.0));
+
+      await tester.tap(cancelFinder);
+      await tester.pumpAndSettle();
+
+      expect(fakeAuthRepository.cancelSignInCallCount, equals(1));
+      expect(find.text('Continue with Google'), findsOneWidget,
+          reason: 'cancel returns the CTA to the idle state');
+      expect(cancelFinder, findsNothing);
+    });
+
+    testWidgets('AUTH-22 (AU-C): Timeout failure surfaces honest recovery copy',
+        (tester) async {
+      fakeAuthRepository.errorToThrow = const AuthTimeoutFailure();
+
+      await tester.pumpWidget(buildAuthScreen());
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Continue with Google'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Sign-in timed out. Please try again.'), findsOneWidget);
+    });
+  });
 }

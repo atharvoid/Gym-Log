@@ -39,7 +39,13 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
   bool _isSigningIn = false;
 
   Future<void> _signIn() async {
-    if (_isSigningIn) return;
+    if (_isSigningIn) {
+      // Never a dead tap: a second press while an attempt runs gives
+      // immediate feedback instead of silently dropping the gesture.
+      HapticFeedback.lightImpact();
+      _snack('Sign-in is already in progress.');
+      return;
+    }
     HapticFeedback.lightImpact();
     setState(() => _isSigningIn = true);
 
@@ -66,6 +72,9 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
         message =
             'Google sign-in is temporarily unavailable. Try again in a moment.';
         failure = 'provider';
+      } else if (e is AuthTimeoutFailure) {
+        message = 'Sign-in timed out. Please try again.';
+        failure = 'timeout';
       }
 
       // Sanitized debug output
@@ -80,6 +89,11 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
 
   void _snack(String message) {
     showAppSnackBar(context, message: message);
+  }
+
+  void _cancelSignIn() {
+    HapticFeedback.lightImpact();
+    ref.read(authRepositoryProvider).cancelGoogleSignIn();
   }
 
   Future<void> _openUrl(String url) async {
@@ -175,7 +189,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
         const SizedBox(height: 16),
         Semantics(
           child: Text(
-            'A fast workout log with local storage and signed-in sync across your devices.',
+            'Sign in with Google to get started.\nYour workouts are stored on your device and synced securely when you sign in.',
             style: AppText.body(color: secondaryColor).copyWith(
               fontSize: 15,
               height: 1.45,
@@ -196,7 +210,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
           const SizedBox(width: 8),
           Expanded(
             child: Text(
-              'Google is used for secure sign-in and account sync.',
+              'Your data is stored on your device first and synced with your Google account. Google is used for secure sign-in and sync.',
               style: AppText.caption(color: secondaryColor).copyWith(
                 fontSize: 13,
               ),
@@ -209,26 +223,22 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     final signInButton = Semantics(
       container: true,
       button: true,
-      enabled: !_isSigningIn,
+      enabled: true,
       // Wrapper owns the name; the ElevatedButton's child Text must not
       // publish a second node (docs/a11y-semantics-checklist.md §2).
       // excludeSemantics discards the button's tap action, hence the
       // explicit onTap kept in sync with onPressed.
       excludeSemantics: true,
-      onTap: _isSigningIn ? null : _signIn,
+      onTap: _signIn,
       label: _isSigningIn ? 'Signing in with Google' : 'Continue with Google',
       value: _isSigningIn ? 'In progress' : null,
       child: PressableScale(
-        enabled: !_isSigningIn,
         pressedScale: 0.985,
         child: ElevatedButton(
-          onPressed: _isSigningIn ? null : _signIn,
+          onPressed: _signIn,
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.white,
             foregroundColor: const Color(0xFF111111),
-            disabledBackgroundColor: Colors.white.withValues(alpha: 0.92),
-            disabledForegroundColor:
-                const Color(0xFF111111).withValues(alpha: 0.72),
             elevation: 0,
             minimumSize: const Size.fromHeight(56),
             shape: const RoundedRectangleBorder(
@@ -275,6 +285,26 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                     ),
                   ],
                 ),
+        ),
+      ),
+    );
+
+    final cancelButton = Semantics(
+      container: true,
+      button: true,
+      label: 'Cancel sign-in',
+      excludeSemantics: true,
+      onTap: _isSigningIn ? _cancelSignIn : null,
+      child: PressableScale(
+        pressedScale: 0.985,
+        child: TextButton(
+          onPressed: _isSigningIn ? _cancelSignIn : null,
+          style: TextButton.styleFrom(
+            minimumSize: const Size.fromHeight(48),
+            foregroundColor: secondaryColor,
+            textStyle: AppText.button(),
+          ),
+          child: const Text('Cancel'),
         ),
       ),
     );
@@ -341,6 +371,8 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                               trustBlock,
                               const SizedBox(height: 24),
                               signInButton,
+                              const SizedBox(height: 4),
+                              if (_isSigningIn) cancelButton,
                               const SizedBox(height: 18),
                               legalBlock,
                             ],
