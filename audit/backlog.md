@@ -13,6 +13,13 @@ This file tracks every finding ID with its severity, owning screen, status (`ope
 | **ANALYZE-64** | System | 64-analyzer-error baseline was stale — branch force-pushed to `7a168a3`; `flutter analyze` = 0 at HEAD | `done` | stale (verified) |
 | **AUTH-1** | AuthScreen | Google Sign-in release SHA-1 registration | `open` (external) | — |
 
+## Phase 2 — Systemics
+
+| Finding ID | Screen | Description | Status | Closing Commit |
+|---|---|---|---|---|
+| **SNACKBAR-1** | Systemic | Unify all snackbars under `showAppSnackBar`; undo snackbars exempt from clears; rest-bar-aware vertical offset | `done` | cbe2469 |
+| **SILENT-FAILURE-1** | Systemic | Surface cloud sign-out failures (`SignOutOutcome.cloudSignOutFailed`), local delete/restore failures, routine delete throws, draft-resume drops, sync-pref read failures, avatar removal misses, personal-details raw snackbar | `done` | 4f721ad |
+
 ## Tier 0 — Critical
 
 | Finding ID | Screen | Description | Status | Closing Commit |

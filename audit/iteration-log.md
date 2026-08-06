@@ -659,11 +659,11 @@ When the deferred tour reached step 4 for a user who had added a routine but not
 **Date:** 2026-08-05
 **Slice:** P0 sheet per full work queue
 
-### Phase 0 — Tree verification first (analyzer cleaned before any P0 work)
+### Phase 0 ï¿½ Tree verification first (analyzer cleaned before any P0 work)
 
 - Analyzer: 0 issues (106.4s fresh run saved to nalyze_raw.txt).
 - Tests: 529/529 (captured 	est_raw.txt); format 0 changed; custom_lint pass.
-- Release APK builds (79.6MB) — proves toolchain end-to-end; manifest namespace
+- Release APK builds (79.6MB) ï¿½ proves toolchain end-to-end; manifest namespace
   typo confirmed already fixed at HEAD (pk/res/android).
 - Stash list: 2 stashes, both on 11y-resilience; no audit-branch stashes.
 - git merge-base HEAD a11y-resilience = empty ? **no common ancestor**.
@@ -674,18 +674,18 @@ When the deferred tour reached step 4 for a user who had added a routine but not
 
 ### Fixes landed
 
-1. **AWP-7** (64ed2b7) — eplaceSet in ctive_workout_provider.dart is the
+1. **AWP-7** (64ed2b7) ï¿½ eplaceSet in ctive_workout_provider.dart is the
    only active-workout mutator that never called saveDraftNow; every numeric
    set edit sat inside the 800ms debounce window unprotected. Persist
    synchronously now. Regression test 5b added to
    ctive_workout_atomic_04_test.dart asserts the draft reflects a weight
    edit in the same tick as the replaceSet call.
-2. **DAS-1** (8b6f250) — delete_account_screen.dart completion keyed only on
+2. **DAS-1** (8b6f250) ï¿½ delete_account_screen.dart completion keyed only on
    localWiped, so a cloud-side failure showed full success copy. Now derives
    completion from localWiped + cloudPurged + authUserDeleted; partial
    failure surfaces honest "contact support to finish the purge" copy.
-   Regression: 	est/das1_delete_completion_test.dart — 3 outcomes.
-3. **DBG-F6** (96ea610) — the /exercise/detail/:id route was re-verified at
+   Regression: 	est/das1_delete_completion_test.dart ï¿½ 3 outcomes.
+3. **DBG-F6** (96ea610) ï¿½ the /exercise/detail/:id route was re-verified at
    HEAD to already require exerciseId with exercise as optional hint and
    a DB fallback load by id. The missing piece was regression coverage:
    	est/core/router_deeplink_test.dart proves a null-extra deep link loads
@@ -693,13 +693,13 @@ When the deferred tour reached step 4 for a user who had added a routine but not
 
 ### Verified, no change needed
 
-- **RV-1** — both reorder call sites (ctive_workout_screen.dart:722,
+- **RV-1** ï¿½ both reorder call sites (ctive_workout_screen.dart:722,
   outine_editor_screen.dart:400) use onReorderItem with no manual
   
 ewIndex adjustment.
-- **ANALYZE-64** — baseline was stale (branch force-pushed to 7a168a3);
+- **ANALYZE-64** ï¿½ baseline was stale (branch force-pushed to 7a168a3);
   analyzer is 0.
-- **AUTH-1** — external: release-keystore SHA-1 must be registered in Google
+- **AUTH-1** ï¿½ external: release-keystore SHA-1 must be registered in Google
   Cloud Console / Firebase. Not doable in-repo. Reminder given.
 
 ### Gate Verification Result
@@ -711,3 +711,80 @@ ewIndex adjustment.
 - [x] Regression Tests: **PASS** (AWP-7 atomic-04 5b, DAS-1 trio, DBG-F6 pair)
 
 **Gate Verdict:** PASS (Phase 1 P0 sheet complete)
+
+## Phase 2: SNACKBAR-1 â€” Unify Snackbar Rendering Under showAppSnackBar
+
+### Problem
+`showUndoableDelete` injected its snackbar at `ScaffoldMessenger` root level
+while every other snackbar used `showAppSnackBar`. Resting a set after the
+undo bar appeared made the rest bar overlay the snackbar (or the inverse);
+the undo bar was also force-hidden mid-interaction when a second delete ran.
+
+### Diff Summary
+- `lib/shared/widgets/ui/app_snack_bar.dart`: `showAppSnackBar` is now
+  rest-bar aware (reads `restTimerProvider` via an optional `WidgetRef ref`
+  and lifts the snackbar above the 70px rest bar + margins),
+  `additionalBottomOffset` removed, optional `backgroundColor` added, and it
+  skips `clearSnackBars` while an undo snackbar is live.
+- `lib/shared/widgets/ui/undoable_delete.dart`: `_activeUndoSnackbars`
+  counter + `hasActiveUndoSnackBar`; a second delete while one undo is live
+  now **queues** instead of force-hiding + committing the first delete.
+- Migrated 11 raw `messenger.showSnackBar` call sites: premium_paywall
+  (2), workout_detail_screen (saved-as-routine), active_workout
+  (set-removed + save-error with Retry + error background), step_completion
+  (2), auth_screen (2), help_feedback (2), delete_account (2), routine_card.
+
+### Files Changed
+`lib/shared/widgets/ui/app_snack_bar.dart`,
+`lib/shared/widgets/ui/undoable_delete.dart`, 11 consumer screens/widgets,
+`test/undoable_delete_test.dart` (rewritten: undo, expiry, double-delete
+queue + no silent commit, undo-exemption), `test/active_workout_atomic_03_test.dart`
+(test 6 now overrides the rest notifier), regenerated auth snackbar goldens.
+
+### Gate Verification Result
+- [x] Format: **PASS**
+- [x] Static Analysis: **PASS** (0 issues)
+- [x] Custom Linter: **PASS**
+- [x] Tests Suite: **PASS** (536/536)
+- [x] Regression Tests: **PASS** (new undo-queue + exemption tests)
+
+**Commit:** `cbe2469`
+
+## Phase 2: SILENT-FAILURE-1 â€” Surface Cloud Sign-Out & Local-Delete Failures
+
+### Problem
+Failures that users would experience as silent no-ops: a failed Supabase
+sign-out was swallowed (`auth_repository.dart` caught everything) so the
+device showed "signed out" while the cloud session stayed live; a failed
+local workout delete committed nothing with no feedback; routine delete,
+draft-resume, and sync-pref reads failed silently.
+
+### Diff Summary
+- `lib/features/auth/data/auth_repository.dart`: `signOut()` no longer
+  swallows Supabase errors â€” callers decide whether to surface or proceed.
+- `lib/core/services/sign_out_coordinator.dart`: new `SignOutOutcome`
+  (`complete` | `cloudSignOutFailed`) returned from `execute()`; RevenueCat
+  `logOut` injected as a callback for testability.
+- `lib/features/workout/presentation/providers/workout_actions_provider.dart`:
+  `deleteSession`/`restoreSession` return `Future<bool>`.
+- Failure snackbars added: home_screen + workout_detail_screen (delete
+  failed â†’ "Couldn't delete that workout. Try again."), routine_detail_screen
+  (delete throw), app_shell (draft-resume load failure), settings_screen
+  (both sign-out cloud-failure paths + sync-pref read failure),
+  personal_details_screen (name save via `showAppSnackBar`),
+  profile_avatar (image file not actually removed).
+- `onboarding_screen.dart`: cancel-setup sign-out failure ignored (no crash).
+
+### Files Changed
+12 files (see commit) + `test/sign_out_outcome_test.dart` (3 cases: throwing
+cloud â†’ `cloudSignOutFailed`, clean cloud â†’ `complete` + sign-out called,
+no user â†’ `complete` without touching cloud).
+
+### Gate Verification Result
+- [x] Format: **PASS**
+- [x] Static Analysis: **PASS** (0 issues, 20.6s)
+- [x] Custom Linter: **PASS**
+- [x] Tests Suite: **PASS** (539/539, incl. 3 new)
+- [x] Regression Tests: **PASS** (sign-out outcome trio)
+
+**Commit:** `4f721ad`
