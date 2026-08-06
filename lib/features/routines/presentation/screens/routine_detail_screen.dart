@@ -636,7 +636,14 @@ class _RoutineVolumeSectionState extends ConsumerState<_RoutineVolumeSection> {
                 radius: AppRadius.card,
               ),
             ),
-            error: (_, __) => RoutineVolumeGraph(data: const [], unit: unit),
+            // A failed load must never render as a zeroed chart — that looks
+            // identical to "you did nothing this period" and lies about the
+            // user's data. Show an error state with a real retry instead.
+            error: (_, __) => AsyncErrorState(
+              message: "Couldn't load your volume history. Your data is safe.",
+              onRetry: () => ref.invalidate(routineDailyVolumeProvider(
+                  (widget.routineId, _selectedTimeRange))),
+            ),
             data: (_) => AnimatedSwitcher(
               duration: const Duration(milliseconds: 300),
               child: RoutineVolumeGraph(

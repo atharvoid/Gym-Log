@@ -127,10 +127,13 @@ class RestTimerNotifier extends StateNotifier<RestTimerState?>
   }) {
     final remaining = endTime.difference(DateTime.now()).inSeconds;
     if (remaining <= 0) {
-      _finished = true;
-      _ticker?.cancel();
-      _endTime = null;
-      state = null;
+      // The timer expired while the app was suspended. Take the exact same
+      // completion path as the live ticker would have — TimerExpiredEvent,
+      // haptic buzz, and sound — instead of silently dropping the rest.
+      _currentWorkoutId = workoutId;
+      _currentExerciseId = exerciseId;
+      _currentSetId = setId;
+      _finish();
       return;
     }
     _ticker?.cancel();

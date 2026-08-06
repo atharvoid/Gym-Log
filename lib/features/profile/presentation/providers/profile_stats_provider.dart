@@ -190,8 +190,25 @@ class WeeklyAggregate {
 
 /// Returns exactly 8 Monday-aligned weeks ending in the current week.
 /// Missing weeks are filled with zeroed aggregates so the X-axis is continuous.
-final weeklyAggregatesProvider = Provider<List<WeeklyAggregate>>((ref) {
-  final stats = ref.watch(sessionStatsProvider).valueOrNull ?? const [];
+///
+/// The AsyncValue is mapped explicitly rather than flattened through
+/// `.valueOrNull ?? const []` — the same shortcut [streakStatsProvider]'s
+/// comment warns against. A loading stream and a failed stream must not both
+/// render as "all-zero weeks": loading means "we don't know yet" (skeleton)
+/// and error means "the read failed" (error state with retry), never a zeroed
+/// week or a zeroed chart.
+final weeklyAggregatesProvider =
+    Provider<AsyncValue<List<WeeklyAggregate>>>((ref) {
+  return ref.watch(sessionStatsProvider).when(
+        loading: () => const AsyncLoading(),
+        error: (e, st) => AsyncError(e, st),
+        data: (stats) => AsyncData(_computeWeeklyAggregates(stats)),
+      );
+});
+
+/// Pure aggregation of per-session stats into 8 Monday-aligned weekly buckets.
+/// Exposed for unit testing; the provider above owns loading/error mapping.
+List<WeeklyAggregate> _computeWeeklyAggregates(List<SessionStat> stats) {
   final now = DateTime.now();
 
   DateTime weekStartOf(DateTime d) {
@@ -231,7 +248,7 @@ final weeklyAggregatesProvider = Provider<List<WeeklyAggregate>>((ref) {
         workoutCount: byWeek[week]?.length ?? 0,
       ),
   ];
-});
+}
 
 // ── Last-selected profile chart metric ───────────────────────────────────────
 

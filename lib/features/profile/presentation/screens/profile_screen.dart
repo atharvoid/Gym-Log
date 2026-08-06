@@ -709,23 +709,20 @@ class _TrainingChartSectionState extends ConsumerState<_TrainingChartSection> {
   @override
   Widget build(BuildContext context) {
     final metric = ref.watch(profileChartMetricProvider);
-    final sessionStatsAsync = ref.watch(sessionStatsProvider);
-    final aggregates = ref.watch(weeklyAggregatesProvider);
+    // weeklyAggregatesProvider carries the stream's loading/error/data states
+    // itself (mapped explicitly, never flattened with `valueOrNull ?? []`) so
+    // a loading or failed stream can never masquerade as an all-zero week.
+    final aggregatesAsync = ref.watch(weeklyAggregatesProvider);
     final isPremium = ref.watch(isPremiumProvider);
     // Weekly aggregates are stored in kilograms; the KPI header and the chart
     // both need the active unit to render volume the way the rest of the app
     // does.
     final unit = ref.watch(weightUnitProvider);
-    final filledWeeks = aggregates.where((a) => a.workoutCount > 0).length;
-    // sessionStatsProvider's AsyncValue — not weeklyAggregatesProvider's
-    // flattened `valueOrNull ?? []` — decides loading vs. error vs. truly
-    // empty. Flattening here is exactly the shortcut
-    // profile_stats_provider.dart's own comment warns against: it made
-    // "still loading" and "failed" both render as "no workouts yet, start
-    // one", for users with months of history.
     final isLoadingStats =
-        sessionStatsAsync.isLoading && !sessionStatsAsync.hasValue;
-    final hasStatsError = sessionStatsAsync.hasError;
+        aggregatesAsync.isLoading && !aggregatesAsync.hasValue;
+    final hasStatsError = aggregatesAsync.hasError;
+    final aggregates = aggregatesAsync.valueOrNull ?? const <WeeklyAggregate>[];
+    final filledWeeks = aggregates.where((a) => a.workoutCount > 0).length;
     final isEmpty = !isLoadingStats && !hasStatsError && filledWeeks == 0;
 
     void onStartWorkout() {

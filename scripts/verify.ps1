@@ -20,6 +20,9 @@ if ($gfontMatches) {
 }
 
 Write-Host "`n▸ check non-semantic AppColors in migrated screens" -ForegroundColor Cyan
+# This list must grow with every migrated screen: when a screen is fully on
+# context.accent / context.surface tokens, add its path here so any future
+# hardcoded AppColors usage on it fails the gate.
 $migratedFiles = @(
     "lib/features/home/presentation/screens/home_screen.dart",
     "lib/features/workout/presentation/screens/workout_detail_screen.dart",
@@ -34,7 +37,11 @@ $migratedFiles = @(
     "lib/features/auth/presentation/screens/onboarding_screen.dart",
     "lib/features/profile/presentation/screens/profile_screen.dart",
     "lib/features/profile/presentation/screens/appearance_screen.dart",
-    "lib/features/auth/presentation/screens/splash_screen.dart"
+    "lib/features/auth/presentation/screens/splash_screen.dart",
+    "lib/features/profile/presentation/screens/settings_screen.dart",
+    "lib/features/profile/presentation/screens/personal_details_screen.dart",
+    "lib/features/routines/presentation/screens/routine_editor_screen.dart",
+    "lib/features/exercises/presentation/screens/exercise_selection_screen.dart"
 )
 
 $appColorMatches = @()

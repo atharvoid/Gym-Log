@@ -146,7 +146,11 @@ class PremiumService with WidgetsBindingObserver {
     }
 
     try {
-      final result = await Purchases.getOfferings();
+      // Bound the storefront round-trip: a hung RevenueCat call must degrade
+      // to the graceful "pricing unavailable" state (with its retry) instead
+      // of leaving the paywall spinning forever.
+      final result =
+          await Purchases.getOfferings().timeout(const Duration(seconds: 10));
       _cachedOfferings = result;
       _offeringsFetchedAt = DateTime.now();
       return result;
