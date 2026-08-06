@@ -23,6 +23,18 @@ This file tracks every finding ID with its severity, owning screen, status (`ope
 | **TRY-FINALLY-1** | Systemic | Audit of `finally` blocks for flag/lease reset on async throw | `done` (verified) | stale — all 9 sites correct at HEAD |
 | **PAYWALL-NO-RETRY-1** | PremiumPaywall | Offerings-load failure must offer a retry | `done` (verified) | stale — retry + pending-payment copy already at HEAD (c929173, premium_paywall.dart:565) |
 | **CHART-STATE-1** | BrandedLineChart | Chart must announce live state (region, metric, trend) | `done` (verified) | stale — live region + data-table toggle already at HEAD (c721e81/0a97e22/ad01dea) |
+| **RT-1** | RestTimerProvider | `resumeFromEndTime` expired branch silently cleared state instead of firing `TimerExpiredEvent` + haptic/sound path | `done` | 61a2f57 |
+| **PW-A** | PremiumService | `offerings()` had no timeout — a hung RevenueCat call could spin forever | `done` | 61a2f57 |
+| **VF-1** | verify.ps1 | Color-gate list must grow with new screens (settings, personal details, routine editor, exercise selection) | `done` | 61a2f57 |
+| **CHART-STATE-1** | Weekly chart + routine volume | weeklyAggregatesProvider now exposes loading/error/data; routine volume section renders `AsyncErrorState` + retry instead of a zeroed chart | `done` | 61a2f57 |
+| **IM-A** | ImportScreen | Strong unitless files were seeded from the display pref instead of defaulting to kg | `done` | d206b35 |
+| **IM-B** | ImportScreen | Progress denominator was sessionCount; duplicates inflated `done` | `done` | d206b35 |
+| **IM-C** | ImportScreen | No way to cancel an in-flight import | `done` | d206b35 |
+| **CP-A** | WorkoutCsvParser | GymLog v2 rows skipped `_validateRowMetrics` — bad metrics imported silently | `done` | d206b35 |
+| **CP-B** | WorkoutCsvParser | UTC export timestamps stayed UTC after parse (mixed zones in DB) | `done` | d206b35 |
+| **CP-C** | WorkoutCsvParser | Session/exercise grouping was case-sensitive, diverging from dedup | `done` | d206b35 |
+| **IM-H** | WorkoutImportService | Custom exercises were created outside the session transaction; a rollback orphaned them | `done` | d206b35 |
+| **IM-I** | ImportScreen | Failure copy claimed "no partial data was kept" while earlier sessions persisted | `done` | d206b35 |
 
 ## Tier 0 — Critical
 
@@ -88,7 +100,7 @@ This file tracks every finding ID with its severity, owning screen, status (`ope
 | **SET-1** | SettingsScreen | Settings items list separator lines color | `done` | 5591cf5 |
 | **SET-2** | SettingsScreen | Weight units switcher click target is sub-48dp | `done` | stale |
 | **DA-1** | DeleteAccountScreen | Confirmation input placeholder text styling (fully resolved with SYS-1 and SYS-2) | `done` | 3f41aab |
-| **IM-2** | ImportScreen | CSV template download button styling | `open` | |
+| **IM-2** | ImportScreen | CSV template download button styling — superseded by the CSV template feature (download/share on intro; v2 header round-trips) | `done` | d206b35 |
 
 ## Tier 4 — Polish & Wow
 

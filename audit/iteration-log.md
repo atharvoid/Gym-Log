@@ -828,3 +828,23 @@ node, AppErrorScreen retry action one button).
 - [x] Regression Tests: **PASS** (single-node wrapper quartet)
 
 **Commit:** `177e9ae`
+
+---
+
+## Iteration: Phase 2 Systemics — RT-1/PW-A/VF-1/CHART-STATE-1 + IMPORT-CLUSTER
+
+**Date:** 2026-08-06
+**Slice:** Phase 2 queue items 1-4 (RT-1, PW-A, VF-1, CHART-STATE-1) + IMPORT-CLUSTER (IM-A/B/C/H/I, CP-A/B/C, IM-2)
+
+### Diff Summary
+- **RT-1**: rest_timer_provider resumeFromEndTime expired branch now seeds set context and calls _finish() (TimerExpiredEvent + haptic/sound), regression rest_timer_expired_resume_test.dart.
+- **PW-A**: premium_service offerings() wraps getOfferings() in 10s timeout.
+- **VF-1**: verify.ps1 color-gate grown 14->18 paths.
+- **CHART-STATE-1**: weeklyAggregatesProvider is now Provider<AsyncValue<...>> via sessionStatsProvider.when; profile chart + routine volume error branches render AsyncErrorState + retry (never a zeroed chart). Regressions weekly_aggregates_provider_test.dart (2), routine_volume_error_state_test.dart.
+- **IMPORT-CLUSTER** (d206b35): CP-A v2 metric validation, CP-B UTC->local dates, CP-C case-insensitive grouping, IM-A kg default, IM-B honest progress counter, IM-C cancel mid-import, IM-H customs inside txn, IM-I honest partial result, IM-2 CSV template + download button. Regression import_cluster_regression_test.dart (11 tests).
+
+### Gate Verification Result
+- [x] Format: PASS
+- [x] Static Analysis: PASS (flutter analyze, 0 issues)
+- [x] Custom Linter: PASS
+- [x] Tests Suite: PASS (558/558)
