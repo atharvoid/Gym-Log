@@ -29,6 +29,7 @@ import 'package:gymlog/features/workout/presentation/providers/active_workout_pr
 import 'package:gymlog/shared/widgets/async_error_state.dart';
 import 'package:gymlog/shared/widgets/premium_paywall.dart';
 import 'package:gymlog/shared/widgets/ui/action_bottom_sheet.dart';
+import 'package:gymlog/shared/widgets/ui/app_button_shell.dart';
 import 'package:gymlog/shared/widgets/ui/app_dialog.dart';
 import 'package:gymlog/shared/widgets/ui/app_snack_bar.dart';
 import 'package:gymlog/shared/widgets/ui/app_refresh_indicator.dart';
@@ -768,26 +769,22 @@ class _StartRoutineButton extends StatelessWidget {
       child: GestureDetector(
         onTap: _onTap,
         child: Container(
-          height: 52,
           width: double.infinity,
           decoration: BoxDecoration(
             color: empty ? surface.surface3 : accent.base,
             borderRadius: AppRadius.buttonPrimaryAll,
           ),
-          alignment: Alignment.center,
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(empty ? Icons.add_rounded : Icons.play_arrow_rounded,
-                  color: empty ? surface.textSecondary : accent.onAccent,
-                  size: 22),
-              const SizedBox(width: 8),
-              Text(
-                empty ? 'Add an exercise' : 'Start Routine',
-                style: AppText.button(
-                    color: empty ? surface.textSecondary : accent.onAccent),
-              ),
-            ],
+          // TEXT SCALING: no fixed `height:` — the shell enforces the 52dp
+          // floor as a row child that can grow, and the label sits in
+          // Flexible+ellipsis (ship-readiness #3).
+          child: AppButtonShell(
+            label: empty ? 'Add an exercise' : 'Start Routine',
+            style: AppText.button(
+                color: empty ? surface.textSecondary : accent.onAccent),
+            icon: empty ? Icons.add_rounded : Icons.play_arrow_rounded,
+            iconSize: 22,
+            iconColor: empty ? surface.textSecondary : accent.onAccent,
+            minHeight: 52,
           ),
         ),
       ),
