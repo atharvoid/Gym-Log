@@ -99,7 +99,9 @@ void main() {
       await tester.tap(reportRow);
       await tester.pumpAndSettle();
 
-      expect(find.text('Sent to the GymLog Telegram channel — non-sensitive details only'),
+      expect(
+          find.text(
+              'Sent to the GymLog Telegram channel — non-sensitive details only'),
           findsOneWidget);
       expect(find.text('CATEGORY'), findsOneWidget);
       expect(find.text('SHORT DESCRIPTION'), findsOneWidget);
