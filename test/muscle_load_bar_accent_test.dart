@@ -12,7 +12,7 @@ void main() {
 
   const purpleRampStart = Color(0xff7f00ff);
 
-  MuscleLoadBar _bar({
+  MuscleLoadBar buildBar({
     List<MuscleLoadEntry> entries = const [
       MuscleLoadEntry('chest', 0.6),
       MuscleLoadEntry('back', 0.3),
@@ -21,8 +21,8 @@ void main() {
   }) {
     return MuscleLoadBar(
       entries: entries,
-      primaryGroups: {'chest'},
-      secondaryGroups: {'back', 'legs'},
+      primaryGroups: const {'chest'},
+      secondaryGroups: const {'back', 'legs'},
       gender: 'male',
     );
   }
@@ -43,7 +43,7 @@ void main() {
 
   testWidgets('legend dots equal the higgsfield (Volt, app default) ramp',
       (tester) async {
-    await tester.pumpWidget(gymlogApp(ThemePalette.higgsfield, _bar()));
+    await tester.pumpWidget(gymlogApp(ThemePalette.higgsfield, buildBar()));
 
     expect(
       legendDotColors(tester),
@@ -52,7 +52,7 @@ void main() {
   });
 
   testWidgets('legend dots equal the neonPurple ramp', (tester) async {
-    await tester.pumpWidget(gymlogApp(ThemePalette.neonPurple, _bar()));
+    await tester.pumpWidget(gymlogApp(ThemePalette.neonPurple, buildBar()));
 
     expect(
       legendDotColors(tester),
@@ -62,7 +62,7 @@ void main() {
 
   testWidgets('no legend dot uses the legacy static purple literal',
       (tester) async {
-    await tester.pumpWidget(gymlogApp(ThemePalette.neonPurple, _bar()));
+    await tester.pumpWidget(gymlogApp(ThemePalette.neonPurple, buildBar()));
 
     expect(legendDotColors(tester).contains(purpleRampStart), isFalse);
   });
@@ -71,7 +71,7 @@ void main() {
       (tester) async {
     await tester.pumpWidget(gymlogApp(
       ThemePalette.higgsfield,
-      _bar(entries: const [
+      buildBar(entries: const [
         MuscleLoadEntry('chest', 0.25),
         MuscleLoadEntry('back', 0.2),
         MuscleLoadEntry('legs', 0.15),
