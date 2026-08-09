@@ -515,7 +515,9 @@ class _SetRowState extends State<SetRow> {
 
   /// The static check box. Used both as the steady state and as the child the
   /// pop scales, so the completed/incomplete pixels are identical either way.
-  Widget _checkVisual(bool isCompleted, bool canComplete, dynamic surface) {
+  /// Reads the surface tokens itself so call sites stay fully typed.
+  Widget _checkVisual(bool isCompleted, bool canComplete) {
+    final surface = context.surface;
     return Container(
       width: 32,
       height: 32,
@@ -719,9 +721,9 @@ class _SetRowState extends State<SetRow> {
                         },
                         builder: (context, scale, child) =>
                             Transform.scale(scale: scale, child: child),
-                        child: _checkVisual(isCompleted, canComplete, surface),
+                        child: _checkVisual(isCompleted, canComplete),
                       )
-                    : _checkVisual(isCompleted, canComplete, surface),
+                    : _checkVisual(isCompleted, canComplete),
               ),
             ),
           ),
