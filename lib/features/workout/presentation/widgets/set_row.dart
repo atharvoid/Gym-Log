@@ -110,6 +110,12 @@ class _SetRowState extends State<SetRow> {
   /// Rapid-tap guard — prevents a fast double-tap from toggling twice.
   bool _completing = false;
 
+  /// One-shot request to run the completion pop. Set in [didUpdateWidget]
+  /// ONLY on a false -> true transition, so an already-completed row that
+  /// rebuilds (scroll, a sibling set editing, the 1Hz timer) renders the
+  /// static check instead of replaying a 100ms scale ticker every build.
+  bool _popCheck = false;
+
   /// The in-flight edit not yet committed to the provider (see class doc).
   Timer? _commitTimer;
   WorkoutSetState? _pendingCommit;
@@ -205,6 +211,13 @@ class _SetRowState extends State<SetRow> {
   @override
   void didUpdateWidget(covariant SetRow oldWidget) {
     super.didUpdateWidget(oldWidget);
+
+    // Completion is the ONLY event that earns the pop. Capture the rising
+    // edge here; the check consumes the flag on its next build and clears it
+    // in onEnd, so a steady-state completed row never re-animates.
+    if (!oldWidget.setData.isCompleted && widget.setData.isCompleted) {
+      _popCheck = true;
+    }
 
     // ── Measurement type changed ──────────────────────────────────────────
     // This can happen when the catalog resolves after exercise addition, or
@@ -500,12 +513,42 @@ class _SetRowState extends State<SetRow> {
     return actions;
   }
 
+  /// The static check box. Used both as the steady state and as the child the
+  /// pop scales, so the completed/incomplete pixels are identical either way.
+  Widget _checkVisual(bool isCompleted, bool canComplete, dynamic surface) {
+    return Container(
+      width: 32,
+      height: 32,
+      decoration: BoxDecoration(
+        borderRadius: AppRadius.badgeAll,
+        color: isCompleted ? AppColors.success : Colors.transparent,
+        border: isCompleted
+            ? null
+            : Border.all(
+                color: canComplete
+                    ? AppColors.success.withValues(alpha: 0.55)
+                    : surface.textPrimary.withValues(alpha: 0.15),
+              ),
+      ),
+      child: Icon(
+        Icons.check_rounded,
+        color: isCompleted
+            ? surface.textPrimary
+            : canComplete
+                ? AppColors.success.withValues(alpha: 0.7)
+                : surface.textPrimary.withValues(alpha: 0.10),
+        size: 18,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final isCompleted = widget.setData.isCompleted;
     final surface = context.surface;
     final prev = _previousLabel;
     final reduceMotion = MediaQuery.disableAnimationsOf(context);
+    final canComplete = _canComplete;
 
     final coherentLabel = _buildCoherentSemanticLabel();
     final customActions = _buildCustomSemanticsActions();
@@ -662,44 +705,23 @@ class _SetRowState extends State<SetRow> {
               },
               behavior: HitTestBehavior.opaque,
               child: Center(
-                child: TweenAnimationBuilder<double>(
-                  key: ValueKey(isCompleted),
-                  tween: Tween<double>(
-                    begin: isCompleted ? 1.15 : 1.0,
-                    end: 1.0,
-                  ),
-                  duration: reduceMotion
-                      ? Duration.zero
-                      : const Duration(milliseconds: 100),
-                  curve: Curves.easeOutBack,
-                  builder: (context, scale, child) =>
-                      Transform.scale(scale: scale, child: child),
-                  child: Container(
-                    width: 32,
-                    height: 32,
-                    decoration: BoxDecoration(
-                      borderRadius: AppRadius.badgeAll,
-                      color:
-                          isCompleted ? AppColors.success : Colors.transparent,
-                      border: isCompleted
-                          ? null
-                          : Border.all(
-                              color: _canComplete
-                                  ? AppColors.success.withValues(alpha: 0.55)
-                                  : surface.textPrimary.withValues(alpha: 0.15),
-                            ),
-                    ),
-                    child: Icon(
-                      Icons.check_rounded,
-                      color: isCompleted
-                          ? surface.textPrimary
-                          : _canComplete
-                              ? AppColors.success.withValues(alpha: 0.7)
-                              : surface.textPrimary.withValues(alpha: 0.10),
-                      size: 18,
-                    ),
-                  ),
-                ),
+                // Pop only on the false -> true edge. Steady state (complete or
+                // not) renders the static visual with no ticker — so a row that
+                // was already complete does not re-animate when it scrolls back
+                // into view or when a sibling rebuilds the card.
+                child: _popCheck && !reduceMotion
+                    ? TweenAnimationBuilder<double>(
+                        tween: Tween<double>(begin: 1.15, end: 1.0),
+                        duration: const Duration(milliseconds: 100),
+                        curve: Curves.easeOutBack,
+                        onEnd: () {
+                          _popCheck = false;
+                        },
+                        builder: (context, scale, child) =>
+                            Transform.scale(scale: scale, child: child),
+                        child: _checkVisual(isCompleted, canComplete, surface),
+                      )
+                    : _checkVisual(isCompleted, canComplete, surface),
               ),
             ),
           ),
