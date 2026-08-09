@@ -19,7 +19,7 @@ created: 2026-08-09
 |----------|-------|
 | **Framework** | flutter_test (Dart) + golden_toolkit/alchemist (goldens) |
 | **Config file** | `pubspec.yaml` (dev_dependencies) |
-| **Quick run command** | `flutter test test/golden/muscle_load_bar_golden_test.dart test/widget/muscle_load_bar__test.dart` |
+| **Quick run command** | `flutter test test/muscle_load_bar_accent_test.dart test/golden/muscle_load_bar_golden_test.dart` |
 | **Full suite command** | `.\scripts\verify.ps1` (format → analyze --fatal-infos --fatal-warnings → custom_lint → flutter test) |
 | **Estimated runtime** | ~90 seconds (full verify; quick ~10s) |
 

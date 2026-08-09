@@ -279,15 +279,14 @@ No external services; nothing blocking.
 | A2 | Default theme is Volt (higgsfield) → bar will turn Volt for users who never selected a palette | Summary/Notes | Cosmetic — user-visible but intended; no data impact |
 | A3 | No other live surface uses `muscleSplitPalette` | Root Cause | Verified by grep across lib/ — only the fallback service + the load bar |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **Should `muscle_load_bar.dart` be added to verify.ps1's migrated-screen
-   list?** After the fix the file contains zero `AppColors.` usages; adding it
-   is a free hardening win but changes the gate file. Recommendation: add it
-   to the list (one line) as a follow-up task in the plan.
-2. **Golden regeneration**: no existing goldens touch the bar (verified), so
-   only new goldens; if the CI golden baseline runs all — run with
-   `--update-goldens` on the two new files only.
+   list?** RESOLVED: yes — folded into the plan as Task 3 (gate hardening;
+   adds the file to `$migratedFiles`).
+2. **Golden regeneration**: RESOLVED: no existing goldens touch the bar
+   (verified), so only new goldens; run with `--update-goldens` on the two new
+   files only (sequenced after the code fix so baselines pin accent colors).
 
 ## Metadata
 
