@@ -41,7 +41,8 @@ $migratedFiles = @(
     "lib/features/profile/presentation/screens/settings_screen.dart",
     "lib/features/profile/presentation/screens/personal_details_screen.dart",
     "lib/features/routines/presentation/screens/routine_editor_screen.dart",
-    "lib/features/exercises/presentation/screens/exercise_selection_screen.dart"
+    "lib/features/exercises/presentation/screens/exercise_selection_screen.dart",
+    "lib/shared/widgets/body/muscle_load_bar.dart"
 )
 
 $appColorMatches = @()
