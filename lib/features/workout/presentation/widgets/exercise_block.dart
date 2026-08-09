@@ -319,14 +319,27 @@ class ExerciseBlock extends ConsumerWidget {
                       direction: setData.isCompleted
                           ? DismissDirection.none
                           : DismissDirection.endToStart,
+                      // 0.4, not 0.55: long enough to be deliberate, short
+                      // enough to feel alive (final-seven #6).
                       dismissThresholds: const {
-                        DismissDirection.endToStart: 0.55,
+                        DismissDirection.endToStart: 0.4,
                       },
-                      confirmDismiss: (_) async {
-                        HapticFeedback.heavyImpact(); // feel the danger first
-                        return true;
+                      movementDuration: const Duration(milliseconds: 160),
+                      resizeDuration: const Duration(milliseconds: 180),
+                      // Haptics stay OFF the gesture path: a platform call on
+                      // the UI thread mid-drag was part of the stutter. The
+                      // threshold crossing clicks once; the heavy commit
+                      // lands after the gesture ends.
+                      onUpdate: (details) {
+                        if (details.reached && !details.previousReached) {
+                          HapticFeedback.selectionClick();
+                        }
                       },
-                      onDismissed: (_) => onRemoveSet(setIndex),
+                      confirmDismiss: (_) async => true,
+                      onDismissed: (_) {
+                        HapticFeedback.heavyImpact();
+                        onRemoveSet(setIndex);
+                      },
                       background: Container(
                         color: AppColors.error.withValues(alpha: 0.85),
                         alignment: Alignment.centerRight,
@@ -334,7 +347,12 @@ class ExerciseBlock extends ConsumerWidget {
                         child: Icon(Icons.delete_outline_rounded,
                             color: surface.textPrimary, size: 20),
                       ),
-                      child: row,
+                      // One RepaintBoundary per row: a swipe translates this
+                      // layer on the compositor only. Without it, every drag
+                      // frame repainted the ENTIRE card (all rows, both
+                      // fields each, the thumbnail). The stutter was a
+                      // repaint storm, not a heavy child (final-seven #6).
+                      child: RepaintBoundary(child: row),
                     );
                   },
                 );

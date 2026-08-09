@@ -62,6 +62,14 @@ const Color _kCompletionRowTint = Color(0x0F34C759);
 /// tap, measurement-type change, or disposal (navigation). Validation and
 /// backfill read [_effectiveSetData] — the in-flight value, never the stale
 /// prop — so nothing the user typed can be lost or second-guessed.
+///
+/// ## Empty-tick behavior (final-seven #5)
+///
+/// Tapping the check with empty required fields used to fire a heavy haptic
+/// and flash the hint in accent for 1.4s — an alarm for a missing input.
+/// Now: a light haptic, the caret moves to the first empty required field,
+/// and screen readers get the reason. The button moves you to the work
+/// instead of scolding you.
 class SetRow extends StatefulWidget {
   final int setIndex;
   final WorkoutSetState setData;
@@ -102,10 +110,6 @@ class _SetRowState extends State<SetRow> {
   /// Rapid-tap guard — prevents a fast double-tap from toggling twice.
   bool _completing = false;
 
-  /// When true, empty required fields briefly flash in the accent tint to
-  /// signal which value is missing (instead of a silent non-response).
-  bool _showValidationHint = false;
-
   /// The in-flight edit not yet committed to the provider (see class doc).
   Timer? _commitTimer;
   WorkoutSetState? _pendingCommit;
@@ -135,6 +139,24 @@ class _SetRowState extends State<SetRow> {
 
   void _flushOnFocusLoss() {
     if (!_weightFocus.hasFocus && !_repsFocus.hasFocus) _flushCommit();
+  }
+
+  /// Focus gained: once the keyboard finishes animating, ride the focused
+  /// row above it (final-seven #5). No-op when neither field holds focus.
+  void _scrollIntoViewOnFocus() {
+    if (!_weightFocus.hasFocus && !_repsFocus.hasFocus) return;
+    Future.delayed(const Duration(milliseconds: 300), () {
+      if (!mounted) return;
+      if (!_weightFocus.hasFocus && !_repsFocus.hasFocus) return;
+      Scrollable.ensureVisible(
+        context,
+        duration: MediaQuery.disableAnimationsOf(context)
+            ? Duration.zero
+            : const Duration(milliseconds: 250),
+        curve: Curves.easeOutCubic,
+        alignmentPolicy: ScrollPositionAlignmentPolicy.keepVisibleAtEnd,
+      );
+    });
   }
 
   // ── Formatting ────────────────────────────────────────────────────────────
@@ -168,6 +190,8 @@ class _SetRowState extends State<SetRow> {
     );
     _weightFocus.addListener(_flushOnFocusLoss);
     _repsFocus.addListener(_flushOnFocusLoss);
+    _weightFocus.addListener(_scrollIntoViewOnFocus);
+    _repsFocus.addListener(_scrollIntoViewOnFocus);
   }
 
   @override
@@ -242,17 +266,15 @@ class _SetRowState extends State<SetRow> {
         previousReps: widget.previousReps,
       );
 
-  // ── Validation flash targets ───────────────────────────────────────────
+  // ── Where the tick sends you when required input is missing ───────────
 
-  bool get _weightShouldFlash =>
-      _showValidationHint &&
+  bool get _weightNeedsInput =>
       widget.measurementType.showsWeightColumn &&
       (_effectiveSetData.weightKg == null ||
           _effectiveSetData.weightKg! <= 0) &&
       widget.previousWeight == null;
 
-  bool get _repsShouldFlash =>
-      _showValidationHint &&
+  bool get _repsNeedsInput =>
       widget.measurementType.showsRepsColumn &&
       _effectiveSetData.reps <= 0 &&
       widget.previousReps == null;
@@ -321,9 +343,6 @@ class _SetRowState extends State<SetRow> {
   /// directly on the row surface; focus is signalled only by the cursor
   /// (tinted with the active accent palette).
   ///
-  /// When [flashHint] is true the hint text briefly renders in a dim accent
-  /// tint, signalling which field is missing a required value.
-  ///
   /// The four `InputBorder.none` / `filled: false` lines below are LOAD-BEARING
   /// design, not leftovers. Removing them restores Material's default underline
   /// or outline and turns the set table back into a form.
@@ -341,7 +360,6 @@ class _SetRowState extends State<SetRow> {
     required ValueChanged<String> onChanged,
     TextInputAction action = TextInputAction.next,
     String? hintText,
-    bool flashHint = false,
   }) {
     final completed = widget.setData.isCompleted;
     final accent = context.accent;
@@ -377,11 +395,7 @@ class _SetRowState extends State<SetRow> {
             style: AppText.value(color: surface.textPrimary),
             decoration: InputDecoration(
               hintText: hintText ?? '0',
-              hintStyle: AppText.value(
-                color: flashHint
-                    ? accent.base.withValues(alpha: 0.85)
-                    : surface.textTertiary,
-              ),
+              hintStyle: AppText.value(color: surface.textTertiary),
               border: InputBorder.none,
               focusedBorder: InputBorder.none,
               enabledBorder: InputBorder.none,
@@ -488,10 +502,11 @@ class _SetRowState extends State<SetRow> {
       container: true,
       label: coherentLabel,
       customSemanticsActions: customActions,
-      child: AnimatedContainer(
-        duration:
-            reduceMotion ? Duration.zero : const Duration(milliseconds: 200),
-        curve: Curves.easeInOut,
+      // Static decoration (was AnimatedContainer(200ms)): the completion pop
+      // on the check already carries the transition. The tint no longer
+      // animates, and the row stops re-evaluating an implicit animation on
+      // every parent build (final-seven #5 perf pass).
+      child: Container(
         // Completed row = 3px green left border + 6% green tint (not a full fill).
         // Completion is a fixed success semantic — like reward gold, it never
         // shifts with the accent palette. See [_kCompletionRowTint] for why this
@@ -537,8 +552,9 @@ class _SetRowState extends State<SetRow> {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: AppText.statLabel(
-                color:
-                    prev != null ? surface.textSecondary : surface.textTertiary,
+                color: prev != null
+                    ? surface.textSecondary
+                    : surface.textTertiary,
               ),
             ),
           ),
@@ -557,10 +573,10 @@ class _SetRowState extends State<SetRow> {
                   hintText: widget.previousWeight != null
                       ? _formatWeightField(widget.previousWeight!)
                       : '0',
-                  flashHint: _weightShouldFlash,
                   onChanged: (val) {
                     if (val.trim().isEmpty) {
-                      _queueCommit(_effectiveSetData.copyWith(weightKg: null));
+                      _queueCommit(
+                          _effectiveSetData.copyWith(weightKg: null));
                       return;
                     }
                     final parsed = double.tryParse(val);
@@ -570,7 +586,8 @@ class _SetRowState extends State<SetRow> {
                       final stored = widget.measurementType ==
                               MeasurementType.distance
                           ? parsed.clamp(0.0, 99999.0)
-                          : displayToKg(parsed, widget.unit).clamp(0.0, 999.5);
+                          : displayToKg(parsed, widget.unit)
+                              .clamp(0.0, 999.5);
                       _queueCommit(
                           _effectiveSetData.copyWith(weightKg: stored));
                     }
@@ -587,11 +604,11 @@ class _SetRowState extends State<SetRow> {
                   controller: _repsController,
                   focusNode: _repsFocus,
                   isDecimal: false,
-                  semanticLabel: widget.measurementType.repsFieldSemanticLabel,
+                  semanticLabel:
+                      widget.measurementType.repsFieldSemanticLabel,
                   hintText: widget.previousReps != null
                       ? '${widget.previousReps!}'
                       : '0',
-                  flashHint: _repsShouldFlash,
                   onChanged: (val) {
                     if (val.trim().isEmpty) {
                       _queueCommit(_effectiveSetData.copyWith(reps: 0));
@@ -599,13 +616,13 @@ class _SetRowState extends State<SetRow> {
                     }
                     final parsed = int.tryParse(val);
                     if (parsed != null) {
-                      _queueCommit(_effectiveSetData.copyWith(
-                          reps: parsed.clamp(0, 99999)));
+                      _queueCommit(_effectiveSetData
+                          .copyWith(reps: parsed.clamp(0, 99999)));
                     }
                   },
                 ),
 
-          // ── Completion — always tappable; validation fires on miss ───
+          // ── Completion — always tappable; guidance fires on miss ───
           checkSlot: Semantics(
             button: true,
             label: isCompleted ? 'Mark set incomplete' : 'Complete set',
@@ -616,14 +633,20 @@ class _SetRowState extends State<SetRow> {
                   return;
                 }
                 if (!_canComplete) {
-                  // Show which field(s) are empty for 1.4 s, then fade.
-                  HapticFeedback.heavyImpact();
-                  setState(() => _showValidationHint = true);
-                  Future.delayed(const Duration(milliseconds: 1400), () {
-                    if (mounted) {
-                      setState(() => _showValidationHint = false);
-                    }
-                  });
+                  // Move the user to the work instead of scolding them
+                  // (final-seven #5): light haptic, caret lands in the first
+                  // empty required field, screen readers get the reason.
+                  HapticFeedback.lightImpact();
+                  SemanticsService.sendAnnouncement(
+                    View.of(context),
+                    'Add the missing values to complete this set.',
+                    TextDirection.ltr,
+                  );
+                  if (_weightNeedsInput) {
+                    _weightFocus.requestFocus();
+                  } else if (_repsNeedsInput) {
+                    _repsFocus.requestFocus();
+                  }
                   return;
                 }
                 HapticFeedback.mediumImpact();
@@ -648,14 +671,16 @@ class _SetRowState extends State<SetRow> {
                     height: 32,
                     decoration: BoxDecoration(
                       borderRadius: AppRadius.badgeAll,
-                      color:
-                          isCompleted ? AppColors.success : Colors.transparent,
+                      color: isCompleted
+                          ? AppColors.success
+                          : Colors.transparent,
                       border: isCompleted
                           ? null
                           : Border.all(
                               color: _canComplete
                                   ? AppColors.success.withValues(alpha: 0.55)
-                                  : surface.textPrimary.withValues(alpha: 0.15),
+                                  : surface.textPrimary
+                                      .withValues(alpha: 0.15),
                             ),
                     ),
                     child: Icon(
