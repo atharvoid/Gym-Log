@@ -47,7 +47,7 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
   String? _fileName;
 
   /// The unit the SOURCE FILE was logged in, used to parse it. This is not the
-  /// user's display preference and must never be used to render a total — see
+  /// user's display preference and must never be used to render a total. See
   /// _buildPreview. Defaults to kg (the parser's own default) until a Strong
   /// file that carries a unit column says otherwise; the preview unit chooser
   /// lets the user correct an assumption.
@@ -285,7 +285,7 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
         const SizedBox(height: 8),
         Text(
           'Import every workout you logged in Hevy or Strong. Export a CSV '
-          'from that app, then choose the file here — GymLog detects the '
+          'from that app, then choose the file here. GymLog detects the '
           'format automatically and converts the units for you.',
           style: AppText.body(
             color: surface.textSecondary,
@@ -339,7 +339,7 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
     final df = DateFormat('MMM d, yyyy');
     final range = (s.firstDate != null && s.lastDate != null)
         ? '${df.format(s.firstDate!)} – ${df.format(s.lastDate!)}'
-        : '—';
+        : 'Unknown';
     final surface = context.surface;
     // The user's DISPLAY preference. Deliberately not _assumedUnit: that is the
     // unit the source file was logged in, and the summary total has already
@@ -548,9 +548,9 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
                 : Icons.error_outline_rounded,
             color: AppColors.warning,
             text: r.cancelled
-                ? 'Import cancelled — the workouts listed below were kept.'
+                ? 'Import cancelled. The workouts listed below were kept.'
                 : (r.failure ??
-                    'The import stopped early — the workouts listed below '
+                    'The import stopped early. The workouts listed below '
                         'were kept.'),
           ),
         ],
@@ -866,7 +866,7 @@ class _UnitChooser extends StatelessWidget {
 
     return Semantics(
       container: true,
-      label: 'Unit Selection. This file has no unit — what was it logged in?',
+      label: 'Unit Selection. This file has no unit. What was it logged in?',
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
@@ -877,7 +877,7 @@ class _UnitChooser extends StatelessWidget {
           border: Border.all(color: surface.borderSubtle, width: 1),
         ),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text('This file has no unit — what was it logged in?',
+          Text('This file has no unit. What was it logged in?',
               style: AppText.statLabel(
                 color: surface.textPrimary,
               )),
