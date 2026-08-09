@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text.dart';
+import '../../../core/theme/dynamic_accent_theme.dart';
 import 'muscle_summary.dart';
 
 /// [muscle_load_bar.dart]
@@ -46,7 +47,7 @@ class MuscleLoadBar extends StatelessWidget {
     final surface = context.surface;
     final visible = entries.take(_kMaxLegendItems).toList();
     final overflow = entries.length - visible.length;
-    const palette = AppColors.muscleSplitPalette;
+    final palette = context.accent.muscleSplitRamp;
 
     final semanticsLabel =
         'Muscles worked: ${entries.map((e) => '${muscleGroupTitleCase(e.group)} ${(e.share * 100).round()}%').join(', ')}. '
