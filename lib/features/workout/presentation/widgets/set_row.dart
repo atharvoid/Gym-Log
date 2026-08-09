@@ -114,6 +114,13 @@ class _SetRowState extends State<SetRow> {
   Timer? _commitTimer;
   WorkoutSetState? _pendingCommit;
 
+  /// Deferred focus-ride scroll (see [_scrollIntoViewOnFocus]) and the
+  /// double-tap guard reset (see [_onToggleComplete]). Both must be cancelled
+  /// on dispose: a pending `Future.delayed` would leak a timer past the row's
+  /// lifetime and trips the test binding's `!timersPending` guard.
+  Timer? _scrollTimer;
+  Timer? _completingResetTimer;
+
   /// What logic must read: the user's actual current value — pending edit if
   /// one exists, else the provider's prop. Reading widget.setData directly
   /// during a debounced edit would validate/backfill against a stale value.
@@ -145,7 +152,8 @@ class _SetRowState extends State<SetRow> {
   /// row above it (final-seven #5). No-op when neither field holds focus.
   void _scrollIntoViewOnFocus() {
     if (!_weightFocus.hasFocus && !_repsFocus.hasFocus) return;
-    Future.delayed(const Duration(milliseconds: 300), () {
+    _scrollTimer?.cancel();
+    _scrollTimer = Timer(const Duration(milliseconds: 300), () {
       if (!mounted) return;
       if (!_weightFocus.hasFocus && !_repsFocus.hasFocus) return;
       Scrollable.ensureVisible(
@@ -248,6 +256,10 @@ class _SetRowState extends State<SetRow> {
     // Navigating away or closing mid-debounce must persist the in-flight
     // value — this is the flush point that makes the debounce lossless.
     _flushCommit();
+    _scrollTimer?.cancel();
+    _scrollTimer = null;
+    _completingResetTimer?.cancel();
+    _completingResetTimer = null;
     _weightController.dispose();
     _repsController.dispose();
     _weightFocus.dispose();
@@ -552,9 +564,8 @@ class _SetRowState extends State<SetRow> {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: AppText.statLabel(
-                color: prev != null
-                    ? surface.textSecondary
-                    : surface.textTertiary,
+                color:
+                    prev != null ? surface.textSecondary : surface.textTertiary,
               ),
             ),
           ),
@@ -575,8 +586,7 @@ class _SetRowState extends State<SetRow> {
                       : '0',
                   onChanged: (val) {
                     if (val.trim().isEmpty) {
-                      _queueCommit(
-                          _effectiveSetData.copyWith(weightKg: null));
+                      _queueCommit(_effectiveSetData.copyWith(weightKg: null));
                       return;
                     }
                     final parsed = double.tryParse(val);
@@ -586,8 +596,7 @@ class _SetRowState extends State<SetRow> {
                       final stored = widget.measurementType ==
                               MeasurementType.distance
                           ? parsed.clamp(0.0, 99999.0)
-                          : displayToKg(parsed, widget.unit)
-                              .clamp(0.0, 999.5);
+                          : displayToKg(parsed, widget.unit).clamp(0.0, 999.5);
                       _queueCommit(
                           _effectiveSetData.copyWith(weightKg: stored));
                     }
@@ -604,8 +613,7 @@ class _SetRowState extends State<SetRow> {
                   controller: _repsController,
                   focusNode: _repsFocus,
                   isDecimal: false,
-                  semanticLabel:
-                      widget.measurementType.repsFieldSemanticLabel,
+                  semanticLabel: widget.measurementType.repsFieldSemanticLabel,
                   hintText: widget.previousReps != null
                       ? '${widget.previousReps!}'
                       : '0',
@@ -616,8 +624,8 @@ class _SetRowState extends State<SetRow> {
                     }
                     final parsed = int.tryParse(val);
                     if (parsed != null) {
-                      _queueCommit(_effectiveSetData
-                          .copyWith(reps: parsed.clamp(0, 99999)));
+                      _queueCommit(_effectiveSetData.copyWith(
+                          reps: parsed.clamp(0, 99999)));
                     }
                   },
                 ),
@@ -671,16 +679,14 @@ class _SetRowState extends State<SetRow> {
                     height: 32,
                     decoration: BoxDecoration(
                       borderRadius: AppRadius.badgeAll,
-                      color: isCompleted
-                          ? AppColors.success
-                          : Colors.transparent,
+                      color:
+                          isCompleted ? AppColors.success : Colors.transparent,
                       border: isCompleted
                           ? null
                           : Border.all(
                               color: _canComplete
                                   ? AppColors.success.withValues(alpha: 0.55)
-                                  : surface.textPrimary
-                                      .withValues(alpha: 0.15),
+                                  : surface.textPrimary.withValues(alpha: 0.15),
                             ),
                     ),
                     child: Icon(
@@ -707,7 +713,8 @@ class _SetRowState extends State<SetRow> {
   void _onToggleComplete() {
     if (_completing) return;
     _completing = true;
-    Future.delayed(const Duration(milliseconds: 400), () {
+    _completingResetTimer?.cancel();
+    _completingResetTimer = Timer(const Duration(milliseconds: 400), () {
       if (mounted) _completing = false;
     });
 
