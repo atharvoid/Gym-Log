@@ -19,6 +19,12 @@ import 'rest_time_sheet.dart';
 /// - Radius: AppRadius.badge (closed radius set — was literal 11)
 /// - Touch target: minimum 48×48
 ///
+/// TOUCH TARGET vs INK SURFACE: these are two different rectangles and must
+/// stay two different widgets. The 48dp minimum is a hit area — it is not
+/// painted, so nothing may render into it. Putting the InkWell on the target
+/// made a long press glow a 48dp slab behind a 34dp chip. The ink therefore
+/// lives on the Material that paints the chip and is clipped to it.
+///
 /// Labels:
 /// - Default -> `Rest 1:30`
 /// - Custom -> `Rest 0:45`
@@ -102,42 +108,53 @@ class CompactRestChip extends ConsumerWidget {
         ? accent.light
         : (isDisabled ? surface.textTertiary : surface.textSecondary);
 
+    void handleTap() => _handleTap(context, ref, preference, defaultRest);
+
     return Semantics(
       button: true,
       label:
           'Set rest duration override for $exerciseName. Currently set to $labelText.',
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: AppRadius.badgeAll,
-          onTap: () => _handleTap(context, ref, preference, defaultRest),
-          child: Container(
-            constraints: const BoxConstraints(minHeight: 48, minWidth: 48),
-            alignment: Alignment.centerLeft,
-            child: Container(
-              height: 34,
-              padding: const EdgeInsets.symmetric(horizontal: 10),
-              decoration: BoxDecoration(
-                color: bgColor,
-                borderRadius: AppRadius.badgeAll,
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    iconData,
-                    size: 16,
-                    color: iconColor,
-                  ),
-                  const SizedBox(width: 4),
-                  Flexible(
-                    child: Text(
-                      labelText,
-                      overflow: TextOverflow.ellipsis,
-                      style: AppText.statLabel(color: textColor),
+      child: GestureDetector(
+        // The 48dp target. Opaque so the dead space around the chip still
+        // takes the tap — but it paints nothing, so it can never glow.
+        behavior: HitTestBehavior.opaque,
+        onTap: handleTap,
+        child: Container(
+          constraints: const BoxConstraints(minHeight: 48, minWidth: 48),
+          alignment: Alignment.centerLeft,
+          // The ink surface IS the chip: Material paints the fill and the
+          // radius, and clips the splash to them. A press highlights exactly
+          // the 34dp pill the finger is on.
+          child: Material(
+            color: bgColor,
+            borderRadius: AppRadius.badgeAll,
+            clipBehavior: Clip.antiAlias,
+            child: InkWell(
+              onTap: handleTap,
+              // One button node for the whole control — the Semantics above
+              // already declares it.
+              excludeFromSemantics: true,
+              child: Container(
+                height: 34,
+                padding: const EdgeInsets.symmetric(horizontal: 10),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      iconData,
+                      size: 16,
+                      color: iconColor,
                     ),
-                  ),
-                ],
+                    const SizedBox(width: 4),
+                    Flexible(
+                      child: Text(
+                        labelText,
+                        overflow: TextOverflow.ellipsis,
+                        style: AppText.statLabel(color: textColor),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
