@@ -268,8 +268,8 @@ class _AppShellState extends ConsumerState<AppShell> {
                       reverseDuration: reduceMotion
                           ? Duration.zero
                           : const Duration(milliseconds: 250),
-                      switchInCurve: const Interval(0.25, 1.0,
-                          curve: Curves.easeOutCubic),
+                      switchInCurve:
+                          const Interval(0.25, 1.0, curve: Curves.easeOutCubic),
                       switchOutCurve: Curves.easeInCubic,
                       transitionBuilder: (child, animation) => FadeTransition(
                         opacity: animation,

@@ -74,7 +74,7 @@ void main() {
       (widget) =>
           widget is Semantics &&
           widget.properties.label ==
-              'Unit Selection. This file has no unit — what was it logged in?',
+              'Unit Selection. This file has no unit. What was it logged in?',
     );
     expect(chooserSemanticsFinder, findsOneWidget);
 

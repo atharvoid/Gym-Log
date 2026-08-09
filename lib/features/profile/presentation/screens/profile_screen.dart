@@ -285,7 +285,7 @@ class _BillingIssueBanner extends StatelessWidget {
                 Icon(Icons.chevron_right_rounded,
                     size: 18, color: surface.textTertiary),
               ],
-            ],
+            ),
           ),
         ),
       ),

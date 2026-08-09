@@ -73,8 +73,7 @@ class _ExerciseGifWidgetState extends State<ExerciseGifWidget> {
     // constants — uses the framework signal directly. When the fling settles
     // the next build resumes. E4: the gate NEVER re-hides an image that has
     // already painted; that swap-back churn was the flicker you could feel.
-    final deferDecode =
-        Scrollable.recommendDeferredLoadingForContext(context);
+    final deferDecode = Scrollable.recommendDeferredLoadingForContext(context);
     if (deferDecode && !_everDisplayed) {
       return RepaintBoundary(
         child: ClipRRect(

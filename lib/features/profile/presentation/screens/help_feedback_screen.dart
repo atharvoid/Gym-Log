@@ -9,7 +9,7 @@ import 'package:gymlog/core/providers/app_info_provider.dart';
 import 'package:gymlog/core/theme/app_colors.dart';
 import 'package:gymlog/core/theme/app_text.dart';
 import 'package:gymlog/core/theme/dynamic_accent_theme.dart';
-import 'package:gymlog/core/utils/tap_guard.dart';
+
 import 'package:gymlog/shared/widgets/ui/app_action_row.dart';
 import 'package:gymlog/shared/widgets/ui/app_card.dart';
 import 'package:gymlog/shared/widgets/ui/app_snack_bar.dart';
@@ -286,8 +286,7 @@ class _ReportProblemFormState extends State<ReportProblemForm> {
           controller: _shortDescriptionController,
           style: AppText.body(color: surface.textPrimary),
           textInputAction: TextInputAction.next,
-          onSubmitted: (_) =>
-              FocusScope.of(context).requestFocus(_reproFocus),
+          onSubmitted: (_) => FocusScope.of(context).requestFocus(_reproFocus),
           scrollPadding: const EdgeInsets.only(bottom: 120),
           decoration: _fieldDecoration('What happened?'),
         ),

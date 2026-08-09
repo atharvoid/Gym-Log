@@ -591,8 +591,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
                               color: AppColors.warning.withValues(alpha: 0.1),
                               borderRadius: AppRadius.cardAll,
                               border: Border.all(
-                                  color: AppColors.warning
-                                      .withValues(alpha: 0.3)),
+                                  color:
+                                      AppColors.warning.withValues(alpha: 0.3)),
                             ),
                             child: Row(
                               children: [

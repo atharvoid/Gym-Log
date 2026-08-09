@@ -77,8 +77,9 @@ void main() {
       expect(find.text('GymLog Support'), findsOneWidget);
       expect(find.textContaining('t.me/gym_log'), findsWidgets);
       expect(find.text('Report a problem'), findsOneWidget);
-      expect(find.text('Privacy Policy'), findsOneWidget);
-      expect(find.text('Terms of Service'), findsOneWidget);
+      // E1: legal rows live once, in Settings — never duplicated here.
+      expect(find.text('Privacy Policy'), findsNothing);
+      expect(find.text('Terms of Service'), findsNothing);
     });
 
     testWidgets(
@@ -101,7 +102,7 @@ void main() {
 
       expect(
           find.text(
-              'Sent to the GymLog Telegram channel — non-sensitive details only'),
+              'Sent to the GymLog Telegram channel. Non-sensitive details only.'),
           findsOneWidget);
       expect(find.text('CATEGORY'), findsOneWidget);
       expect(find.text('SHORT DESCRIPTION'), findsOneWidget);
