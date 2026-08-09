@@ -187,25 +187,32 @@ class _ActiveIndicatorState extends State<_ActiveIndicator>
         decoration: BoxDecoration(shape: BoxShape.circle, color: widget.color),
       );
     }
-    return AnimatedBuilder(
-      animation: _animation,
-      builder: (context, child) {
-        return Container(
-          width: 8,
-          height: 8,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: widget.color.withValues(alpha: _animation.value),
-            boxShadow: [
-              BoxShadow(
-                color: widget.color.withValues(alpha: 0.4 * _animation.value),
-                blurRadius: 6,
-                spreadRadius: 2 * _animation.value,
-              ),
-            ],
-          ),
-        );
-      },
+    // This pulse never stops for the length of a session, and it animates a
+    // blurred shadow — the single most expensive thing to repaint per frame.
+    // Without this boundary the damage propagates to the parent, so the mini
+    // player's own two large shadows are re-rasterised at 60Hz forever,
+    // including underneath the minimise/restore slide. Confine it to the dot.
+    return RepaintBoundary(
+      child: AnimatedBuilder(
+        animation: _animation,
+        builder: (context, child) {
+          return Container(
+            width: 8,
+            height: 8,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: widget.color.withValues(alpha: _animation.value),
+              boxShadow: [
+                BoxShadow(
+                  color: widget.color.withValues(alpha: 0.4 * _animation.value),
+                  blurRadius: 6,
+                  spreadRadius: 2 * _animation.value,
+                ),
+              ],
+            ),
+          );
+        },
+      ),
     );
   }
 }
