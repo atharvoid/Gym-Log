@@ -109,7 +109,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
   Future<void> _openBillingSettings() async {
     HapticFeedback.lightImpact();
-    // No affordance exists in the paywall for this — the paywall is for
+    // No affordance exists in the paywall for this. The paywall is for
     // purchasing, not fixing a failing payment method. Send the user
     // straight to the store's native subscription management page.
     final url = defaultTargetPlatform == TargetPlatform.iOS
@@ -285,7 +285,7 @@ class _BillingIssueBanner extends StatelessWidget {
                 Icon(Icons.chevron_right_rounded,
                     size: 18, color: surface.textTertiary),
               ],
-            ),
+            ],
           ),
         ),
       ),
@@ -428,7 +428,7 @@ class _IdentityHeader extends ConsumerWidget {
           ),
         ),
         if (isPremium)
-          // N10: same badge spec as Sync paused — fill + border (was border-only).
+          // N10: same badge spec as Sync paused. Fill + border (was border-only).
           Semantics(
             label: 'Pro status active',
             child: Container(
@@ -571,8 +571,8 @@ class _StatCell extends StatelessWidget {
   }
 }
 
-/// Rendered instead of [_StatCell] while [StreakStats.isLoading] is true —
-/// the streak/week numbers are not real yet and must not read as fact.
+/// Rendered instead of [_StatCell] while [StreakStats.isLoading] is true.
+/// The streak/week numbers are not real yet and must not read as fact.
 class _StatCellSkeleton extends StatelessWidget {
   const _StatCellSkeleton();
 
@@ -588,8 +588,8 @@ class _StatCellSkeleton extends StatelessWidget {
   }
 }
 
-/// Rendered instead of [_StatCell] while [StreakStats.hasError] is true —
-/// offers the real retry `trainingDatesProvider` was made public for,
+/// Rendered instead of [_StatCell] while [StreakStats.hasError] is true.
+/// Offers the real retry `trainingDatesProvider` was made public for,
 /// instead of a silent, confident 0.
 class _StatCellError extends StatelessWidget {
   final VoidCallback onRetry;
@@ -618,7 +618,7 @@ class _StatCellError extends StatelessWidget {
   }
 }
 
-/// Shared height with routine detail's _StatDivider (N5) — one geometry.
+/// Shared height with routine detail's _StatDivider (N5). One geometry.
 class _StatDivider extends StatelessWidget {
   const _StatDivider();
 
@@ -664,7 +664,7 @@ class _GoalReachedBanner extends StatelessWidget {
             size: 14, color: AppColors.warning),
         const SizedBox(width: 6),
         Text(
-          'Weekly goal reached — great work!',
+          'Weekly goal reached. Great work!',
           style: AppText.caption(color: AppColors.warning),
         ),
       ],
@@ -775,7 +775,7 @@ class _TrainingChartSectionState extends ConsumerState<_TrainingChartSection> {
 }
 
 /// Rendered instead of the chart while [sessionStatsProvider] has not yet
-/// emitted a value — a genuinely-empty chart and a not-yet-known chart must
+/// emitted a value. A genuinely-empty chart and a not-yet-known chart must
 /// not look identical.
 class _ChartLoadingPlaceholder extends StatelessWidget {
   const _ChartLoadingPlaceholder();
@@ -802,8 +802,8 @@ class _ChartLoadingPlaceholder extends StatelessWidget {
   }
 }
 
-/// Rendered instead of the chart when [sessionStatsProvider] failed —
-/// offers a real retry rather than the "log your first workout" empty state.
+/// Rendered instead of the chart when [sessionStatsProvider] failed.
+/// Offers a real retry rather than the "log your first workout" empty state.
 class _ChartErrorPlaceholder extends StatelessWidget {
   final VoidCallback onRetry;
 
@@ -977,7 +977,7 @@ class _ErrorBody extends StatelessWidget {
                 style: AppText.body(color: surface.textSecondary),
               ),
               const SizedBox(height: 16),
-              // D2 / #3: no fixed height — AppButtonShell minHeight floor.
+              // D2 / #3: no fixed height. AppButtonShell minHeight floor.
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
