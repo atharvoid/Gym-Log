@@ -36,7 +36,8 @@ void main() {
               (w.decoration as BoxDecoration).color != null;
         })
         .evaluate()
-        .map((e) => ((e.widget as Container).decoration! as BoxDecoration).color!)
+        .map((e) =>
+            ((e.widget as Container).decoration! as BoxDecoration).color!)
         .toList();
   }
 
