@@ -32,6 +32,19 @@ import 'package:gymlog/shared/widgets/feedback/undoable_delete.dart';
 const double _bottomListPadding = 100.0;
 const double _reorderSheetHeightRatio = 0.7;
 
+/// How far outside the viewport exercise cards stay built.
+///
+/// This is a PERFORMANCE contract, not a cosmetic knob. An exercise card is
+/// the heaviest row type in the app — a Dismissible plus a thumbnail plus two
+/// TextFields for every set, and EditableText is expensive to construct. At
+/// Flutter's default 250px, scrolling down then up destroyed and rebuilt those
+/// cards on every reversal, which is precisely when logging felt like it was
+/// dropping frames. Two screens of cache keeps a normal workout resident for
+/// the whole session, so scrolling only moves layers that are already
+/// rasterised. A workout is a handful of exercises, so the memory ceiling is
+/// small and fixed; do not reuse this number for feed-style lists.
+const double _exerciseListCacheExtent = 1200.0;
+
 class ActiveWorkoutScreen extends ConsumerStatefulWidget {
   const ActiveWorkoutScreen({super.key});
 
@@ -509,6 +522,10 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
                           ),
                         )
                       : ListView.builder(
+                          // See [_exerciseListCacheExtent]: this is what keeps
+                          // repeated up/down scrolling from rebuilding whole
+                          // exercise cards, TextFields and all.
+                          cacheExtent: _exerciseListCacheExtent,
                           padding: EdgeInsets.only(
                             top: 8,
                             bottom: MediaQuery.viewPaddingOf(context).bottom +
