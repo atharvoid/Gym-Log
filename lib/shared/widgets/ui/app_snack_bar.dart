@@ -3,8 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gymlog/core/theme/app_colors.dart';
 import 'package:gymlog/core/theme/app_text.dart';
 import 'package:gymlog/core/theme/dynamic_accent_theme.dart';
-import 'package:gymlog/features/workout/presentation/providers/rest_timer_provider.dart';
-import 'package:gymlog/features/workout/presentation/widgets/rest_timer_bar.dart';
 import 'package:gymlog/shared/widgets/feedback/undoable_delete.dart';
 
 /// Semantic meaning of a snackbar. Feedback color is information, not
@@ -36,11 +34,20 @@ class _SnackBarStyle {
 /// - Semantic variants: success (accent tint + check glyph) and error
 ///   (error tint + error glyph) layered on the neutral default
 /// - Maximum two lines of text with ellipsis
-/// - Auto-adjusting bottom offset so it clears the active rest timer bar
-///   (read from [restTimerProvider] via the optional [ref])
 /// - Accent-tinted action button
 /// - Does not dismiss a showing undoable-delete snackbar, so a rapid
 ///   double-action can never silently finalize a pending deletion
+///
+/// BOTTOM OFFSET IS THE FRAMEWORK'S JOB. A floating SnackBar is laid out by
+/// Scaffold, which already lifts it above the bottomNavigationBar, above a
+/// FAB and above the keyboard. On the active workout screen the rest timer
+/// bar IS the bottomNavigationBar, so the hand-rolled `kRestTileHeight + 18`
+/// this helper used to add was a second lift of the same bar — that is how
+/// "Set removed" ended up floating mid-screen when a set was deleted with the
+/// rest timer running. Only the system inset and a 12dp gap are ours to add.
+///
+/// [ref] is retained because ~30 call sites pass it and a future variant may
+/// need workout state; it deliberately no longer influences placement.
 void showAppSnackBar(
   BuildContext context, {
   required String message,
@@ -60,10 +67,7 @@ void showAppSnackBar(
 
   final accent = context.accent;
   final surface = context.surface;
-  final restBarVisible = ref?.read(restTimerProvider) != null;
-  final restBarOffset = restBarVisible ? kRestTileHeight + 18 : 0;
-  final bottomPadding =
-      MediaQuery.viewPaddingOf(context).bottom + restBarOffset + 12;
+  final bottomPadding = MediaQuery.viewPaddingOf(context).bottom + 12;
 
   final style = switch (variant) {
     // Saturation ladder: large tinted fills at 14%/12%, borders at 35%/45%,
