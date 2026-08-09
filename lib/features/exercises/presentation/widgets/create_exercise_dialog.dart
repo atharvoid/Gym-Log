@@ -106,7 +106,7 @@ class _CreateExerciseDialogState extends ConsumerState<_CreateExerciseDialog> {
     }
     final user = ref.read(authProvider);
     if (user == null) {
-      setState(() => _error = "You're signed out — sign in to add exercises.");
+      setState(() => _error = "You're signed out. Sign in to add exercises.");
       return;
     }
 
@@ -220,7 +220,7 @@ class _CreateExerciseDialogState extends ConsumerState<_CreateExerciseDialog> {
             ),
             const SizedBox(height: 12),
             Text(
-              'An animated demo isn’t added for custom exercises yet — the rest '
+              'An animated demo isn’t added for custom exercises yet. The rest '
               'tracks exactly like any other lift.',
               style: AppText.caption(color: surface.textTertiary)
                   .copyWith(height: 1.4),

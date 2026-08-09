@@ -91,7 +91,7 @@ const exploreTemplates = <RoutineTemplate>[
     category: 'Push · Pull · Legs',
     level: TemplateLevel.intermediate,
     focus: 'Chest · Shoulders · Triceps',
-    description: 'The classic pressing session — heavy bench first, then '
+    description: 'The classic pressing session. Heavy bench first, then '
         'shoulders and triceps to finish.',
     featured: true,
     slots: [
@@ -108,7 +108,7 @@ const exploreTemplates = <RoutineTemplate>[
     category: 'Push · Pull · Legs',
     level: TemplateLevel.intermediate,
     focus: 'Back · Biceps · Rear Delts',
-    description: 'Width and thickness — pull from the floor, a vertical pull, '
+    description: 'Width and thickness. Pull from the floor, a vertical pull, '
         'a row, then arms.',
     slots: [
       TemplateSlot('Deadlift (Barbell)', sets: 3, reps: 5),
@@ -139,7 +139,7 @@ const exploreTemplates = <RoutineTemplate>[
     category: 'Push · Pull · Legs',
     level: TemplateLevel.advanced,
     focus: 'Chest · Shoulders · Triceps',
-    description: 'A higher-volume hypertrophy push — dumbbells and cables for '
+    description: 'A higher-volume hypertrophy push. Dumbbells and cables for '
         'time under tension, lighter loads, tighter rest.',
     slots: [
       TemplateSlot('Bench Press (Dumbbell)', sets: 4, reps: 10),
@@ -156,7 +156,7 @@ const exploreTemplates = <RoutineTemplate>[
     category: 'Push · Pull · Legs',
     level: TemplateLevel.advanced,
     focus: 'Back · Biceps · Rear Delts',
-    description: 'Back-building volume — pulldowns and rows for the lats and '
+    description: 'Back-building volume. Pulldowns and rows for the lats and '
         'mid-back, then traps, rear delts and biceps.',
     slots: [
       TemplateSlot('Cable Pulldown', sets: 4, reps: 12),
@@ -173,7 +173,7 @@ const exploreTemplates = <RoutineTemplate>[
     category: 'Push · Pull · Legs',
     level: TemplateLevel.advanced,
     focus: 'Quads · Hamstrings · Glutes',
-    description: 'Quad and glute hypertrophy — front squats, presses, '
+    description: 'Quad and glute hypertrophy. Front squats, presses, '
         'extensions and a rope pull-through for the hips.',
     slots: [
       TemplateSlot('Front Squat (Barbell)', sets: 4, reps: 8),
@@ -190,7 +190,7 @@ const exploreTemplates = <RoutineTemplate>[
     category: 'Upper · Lower',
     level: TemplateLevel.intermediate,
     focus: 'Chest · Back · Shoulders · Arms',
-    description: 'Everything above the waist in one efficient session — '
+    description: 'Everything above the waist in one efficient session, '
         'built for an upper/lower split.',
     slots: [
       TemplateSlot('Bench Press (Barbell)', sets: 4, reps: 6),
@@ -206,7 +206,7 @@ const exploreTemplates = <RoutineTemplate>[
     category: 'Upper · Lower',
     level: TemplateLevel.intermediate,
     focus: 'Quads · Hamstrings · Calves',
-    description: 'The other half of the upper/lower split — squat, hinge and '
+    description: 'The other half of the upper/lower split. Squat, hinge and '
         'single-leg work, capped with calves.',
     slots: [
       TemplateSlot('Barbell Full Squat', sets: 4, reps: 6),
@@ -222,7 +222,7 @@ const exploreTemplates = <RoutineTemplate>[
     category: 'Powerbuilding',
     level: TemplateLevel.advanced,
     focus: 'Strength · Chest · Back · Shoulders',
-    description: 'Heavy upper-body strength — low-rep presses and rows for '
+    description: 'Heavy upper-body strength. Low-rep presses and rows for '
         'force, a little hypertrophy work to finish.',
     slots: [
       TemplateSlot('Bench Press (Barbell)', sets: 5, reps: 5),
@@ -254,8 +254,8 @@ const exploreTemplates = <RoutineTemplate>[
     category: 'Bro Split',
     level: TemplateLevel.intermediate,
     focus: 'Chest · Triceps',
-    description: 'A dedicated chest day with triceps along for the ride — '
-        'press, incline, fly, then push the arms.',
+    description: 'A dedicated chest day with triceps along for the ride. '
+        'Press, incline, fly, then push the arms.',
     slots: [
       TemplateSlot('Bench Press (Barbell)', sets: 4, reps: 8),
       TemplateSlot('Incline Bench Press (Barbell)', sets: 3, reps: 10),
@@ -270,7 +270,7 @@ const exploreTemplates = <RoutineTemplate>[
     category: 'Bro Split',
     level: TemplateLevel.intermediate,
     focus: 'Back · Biceps',
-    description: 'Pull-focused day — a heavy deadlift, vertical and horizontal '
+    description: 'Pull-focused day. A heavy deadlift, vertical and horizontal '
         'pulls, then curls to cap it.',
     slots: [
       TemplateSlot('Deadlift (Barbell)', sets: 3, reps: 5),
@@ -303,7 +303,7 @@ const exploreTemplates = <RoutineTemplate>[
     category: 'Bro Split',
     level: TemplateLevel.beginner,
     focus: 'Biceps · Triceps',
-    description: 'Pure arms — supersets of curls and extensions for a serious '
+    description: 'Pure arms. Supersets of curls and extensions for a serious '
         'pump. Short, focused, effective.',
     slots: [
       TemplateSlot('Barbell Curl', sets: 4, reps: 10),
@@ -320,7 +320,7 @@ const exploreTemplates = <RoutineTemplate>[
     category: 'Full Body',
     level: TemplateLevel.beginner,
     focus: 'Total Body · 45 min',
-    description: 'Three big compounds and two finishers — for the days when '
+    description: 'Three big compounds and two finishers, for the days when '
         'time is the limiting factor.',
     slots: [
       TemplateSlot('Barbell Full Squat', sets: 3, reps: 8),
@@ -335,7 +335,7 @@ const exploreTemplates = <RoutineTemplate>[
     category: 'Full Body',
     level: TemplateLevel.beginner,
     focus: 'Total Body · Foundations',
-    description: 'Day A of a simple 3×/week start — squat and bench focus, '
+    description: 'Day A of a simple 3×/week start. Squat and bench focus, '
         'one pull, a press, and a plank.',
     slots: [
       TemplateSlot('Barbell Full Squat', sets: 3, reps: 8),
@@ -350,7 +350,7 @@ const exploreTemplates = <RoutineTemplate>[
     category: 'Full Body',
     level: TemplateLevel.beginner,
     focus: 'Total Body · Foundations',
-    description: 'Day B of the 3×/week start — deadlift and dumbbell pressing '
+    description: 'Day B of the 3×/week start. Deadlift and dumbbell pressing '
         'balanced with a row and goblet squat.',
     slots: [
       TemplateSlot('Deadlift (Barbell)', sets: 3, reps: 5),
