@@ -77,6 +77,7 @@ class _ReportProblemFormState extends State<ReportProblemForm> {
   bool _submitting = false;
   final _shortDescriptionController = TextEditingController();
   final _reproStepsController = TextEditingController();
+  final _reproFocus = FocusNode();
 
   final List<String> _categories = [
     'Bug / Crash',
@@ -91,6 +92,7 @@ class _ReportProblemFormState extends State<ReportProblemForm> {
   void dispose() {
     _shortDescriptionController.dispose();
     _reproStepsController.dispose();
+    _reproFocus.dispose();
     super.dispose();
   }
 
@@ -102,6 +104,34 @@ class _ReportProblemFormState extends State<ReportProblemForm> {
         'Personal Records' => Icons.emoji_events_outlined,
         _ => Icons.more_horiz_rounded,
       };
+
+  /// Low-density form doctrine (final-seven #3): high-density tables stay
+  /// unboxed (see set_row.dart), but a standalone form field gets a soft box.
+  /// Radius card (10) sits correctly inside the sheet's 12, and the border
+  /// only speaks on focus, in the accent at 45%.
+  InputDecoration _fieldDecoration(String hint) {
+    final accent = context.accent;
+    final surface = context.surface;
+    final radius = BorderRadius.circular(AppRadius.card);
+    return InputDecoration(
+      hintText: hint,
+      hintStyle: AppText.body(color: surface.textSecondary),
+      filled: true,
+      fillColor: surface.surface2,
+      border: OutlineInputBorder(
+        borderRadius: radius,
+        borderSide: BorderSide.none,
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: radius,
+        borderSide: BorderSide(color: surface.borderSubtle),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: radius,
+        borderSide: BorderSide(color: accent.base.withValues(alpha: 0.45)),
+      ),
+    );
+  }
 
   Future<void> _pickCategory() async {
     HapticFeedback.selectionClick();
@@ -224,12 +254,12 @@ class _ReportProblemFormState extends State<ReportProblemForm> {
         Text('CATEGORY', style: AppText.meta(color: surface.textSecondary)),
         const SizedBox(height: 6),
         // Branded picker, not a stock Material DropdownButton. The last
-        // unbranded menu in the app (N4).
+        // unbranded menu in the app (N4). Radius matches the form fields (E2).
         Material(
           color: surface.surface2,
-          borderRadius: BorderRadius.circular(AppRadius.input),
+          borderRadius: BorderRadius.circular(AppRadius.card),
           child: InkWell(
-            borderRadius: BorderRadius.circular(AppRadius.input),
+            borderRadius: BorderRadius.circular(AppRadius.card),
             onTap: _submitting ? null : _pickCategory,
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
@@ -255,16 +285,11 @@ class _ReportProblemFormState extends State<ReportProblemForm> {
         TextField(
           controller: _shortDescriptionController,
           style: AppText.body(color: surface.textPrimary),
-          decoration: InputDecoration(
-            hintText: 'What happened?',
-            hintStyle: AppText.body(color: surface.textSecondary),
-            filled: true,
-            fillColor: surface.surface2,
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppRadius.input),
-              borderSide: BorderSide.none,
-            ),
-          ),
+          textInputAction: TextInputAction.next,
+          onSubmitted: (_) =>
+              FocusScope.of(context).requestFocus(_reproFocus),
+          scrollPadding: const EdgeInsets.only(bottom: 120),
+          decoration: _fieldDecoration('What happened?'),
         ),
         const SizedBox(height: 16),
         Text('REPRODUCTION STEPS (OPTIONAL)',
@@ -272,18 +297,12 @@ class _ReportProblemFormState extends State<ReportProblemForm> {
         const SizedBox(height: 6),
         TextField(
           controller: _reproStepsController,
+          focusNode: _reproFocus,
           maxLines: 3,
           style: AppText.body(color: surface.textPrimary),
-          decoration: InputDecoration(
-            hintText: '1. Tapped X\n2. Opened Y\n3. Saw error Z',
-            hintStyle: AppText.body(color: surface.textSecondary),
-            filled: true,
-            fillColor: surface.surface2,
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppRadius.input),
-              borderSide: BorderSide.none,
-            ),
-          ),
+          scrollPadding: const EdgeInsets.only(bottom: 120),
+          decoration:
+              _fieldDecoration('1. Tapped X\n2. Opened Y\n3. Saw error Z'),
         ),
         const SizedBox(height: 16),
         Container(

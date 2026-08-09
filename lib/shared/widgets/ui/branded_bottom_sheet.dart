@@ -90,6 +90,13 @@ class BrandedBottomSheet extends StatelessWidget {
 }
 
 /// Convenience helper to present a [BrandedBottomSheet].
+///
+/// KEYBOARD CONTRACT (final-seven #3): a scrollable sheet hosts forms, and a
+/// form the keyboard covers is a form no one can finish. Scrollable sheets
+/// therefore always present `isScrollControlled`, and every branded sheet
+/// pads its body by the live `MediaQuery.viewInsetsOf` bottom, so the
+/// keyboard lifts the sheet instead of swallowing the fields. When the
+/// keyboard is closed the inset is zero and nothing about the sheet changes.
 Future<T?> showBrandedBottomSheet<T>({
   required BuildContext context,
   required Widget child,
@@ -103,13 +110,18 @@ Future<T?> showBrandedBottomSheet<T>({
     context: context,
     useRootNavigator: useRootNavigator,
     useSafeArea: true,
-    isScrollControlled: isScrollControlled,
+    isScrollControlled: isScrollControlled || scrollable,
     backgroundColor: Colors.transparent,
-    builder: (_) => BrandedBottomSheet(
-      title: title,
-      subtitle: subtitle,
-      scrollable: scrollable,
-      child: child,
+    builder: (sheetContext) => Padding(
+      padding: EdgeInsets.only(
+        bottom: MediaQuery.viewInsetsOf(sheetContext).bottom,
+      ),
+      child: BrandedBottomSheet(
+        title: title,
+        subtitle: subtitle,
+        scrollable: scrollable,
+        child: child,
+      ),
     ),
   );
 }
