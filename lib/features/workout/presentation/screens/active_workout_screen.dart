@@ -645,15 +645,18 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
                     duration: const Duration(milliseconds: 240),
                     switchInCurve: Curves.easeOutCubic,
                     switchOutCurve: Curves.easeInCubic,
-                    transitionBuilder: (child, animation) => SizeTransition(
-                      sizeFactor: animation,
-                      child: SlideTransition(
-                        position: Tween<Offset>(
-                          begin: const Offset(0, 1),
-                          end: Offset.zero,
-                        ).animate(animation),
-                        child: child,
-                      ),
+                    // Slide only. This bar IS the Scaffold's bottomNavigationBar,
+                    // so a SizeTransition here would change the bottom inset on
+                    // every frame of the entrance and re-lay-out the entire
+                    // exercise list for 240ms — a layout storm exactly when a
+                    // set was just completed. The inset now settles in one
+                    // frame and the bar slides up into the space.
+                    transitionBuilder: (child, animation) => SlideTransition(
+                      position: Tween<Offset>(
+                        begin: const Offset(0, 1),
+                        end: Offset.zero,
+                      ).animate(animation),
+                      child: child,
                     ),
                     child: RestTimerBar(
                         key: const ValueKey('rest'), state: restTimer),
