@@ -56,3 +56,9 @@ migration and partial Help/recovery hardening. This is the active program.
 - `.planning/STATE.md` — This file, state tracking
 - `.planning/config.json` — Workflow preferences
 - `audit/` — 50-section systematic product audit
+
+## Accumulated Context
+
+### Roadmap Evolution
+
+- Phase 1 added: Fix muscle split bar hardcoded purple; use settings theme accent

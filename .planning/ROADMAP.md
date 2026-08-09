@@ -9,6 +9,7 @@ prior to the canonical UX-95 program. These phases addressed the 50-section
 audit but do **not** satisfy the UX-95 acceptance criteria.
 
 ### Phase 1 — Measurement Model Foundation (P0-01)
+
 | | |
 |---|---|
 | **Goal** | Add `repsOnly` as 4th measurement type, sealed rest-preference state, DB migration |
@@ -16,6 +17,7 @@ audit but do **not** satisfy the UX-95 acceptance criteria.
 | **Status** | ✅ Complete |
 
 ### Phase 2 — Compact Rest Timer UI
+
 | | |
 |---|---|
 | **Goal** | Compact rest sheet with expand/collapse, count-up, audio at expiry, background notification |
@@ -23,6 +25,7 @@ audit but do **not** satisfy the UX-95 acceptance criteria.
 | **Status** | ✅ Complete |
 
 ### Phase 3 — Active Workout Visual Reconstruction
+
 | | |
 |---|---|
 | **Goal** | Dense exercise cards, scrollable exercise name in header, stable expansion, elapsed time display |
@@ -30,6 +33,7 @@ audit but do **not** satisfy the UX-95 acceptance criteria.
 | **Status** | ✅ Complete |
 
 ### Phase 4 — Auth Screen First Principles
+
 | | |
 |---|---|
 | **Goal** | Sign-in screen with calm motion, brand, typing feedback, error recovery |
@@ -37,6 +41,7 @@ audit but do **not** satisfy the UX-95 acceptance criteria.
 | **Status** | ✅ Complete |
 
 ### Phase 5 — Reversible Deletion & Exercise Replacement
+
 | | |
 |---|---|
 | **Goal** | Undo snackbar for set deletion, exercise replacement preserves unsaved sets, last-exercise confirm |
@@ -44,6 +49,7 @@ audit but do **not** satisfy the UX-95 acceptance criteria.
 | **Status** | ✅ Complete |
 
 ### Phase 6 — Metric-Aware CSV Import
+
 | | |
 |---|---|
 | **Goal** | Import accepts metric column, decimal weights, reps-only rows |
@@ -51,6 +57,7 @@ audit but do **not** satisfy the UX-95 acceptance criteria.
 | **Status** | ✅ Complete |
 
 ### Phase 7 — Metric-Aware CSV Export
+
 | | |
 |---|---|
 | **Goal** | Export includes metric column, backwards-compatible header |
@@ -58,6 +65,7 @@ audit but do **not** satisfy the UX-95 acceptance criteria.
 | **Status** | ✅ Complete |
 
 ### Phase 8 — Metric-Aware History, Analytics & PRs
+
 | | |
 |---|---|
 | **Goal** | Per-measurement-type PRs, history charts, weekly display |
@@ -65,6 +73,7 @@ audit but do **not** satisfy the UX-95 acceptance criteria.
 | **Status** | ✅ Complete |
 
 ### Phase 9 — Premium Entitlement Integrity
+
 | | |
 |---|---|
 | **Goal** | Strict entitlement ID check, degraded gracefully, offline cache |
@@ -72,6 +81,7 @@ audit but do **not** satisfy the UX-95 acceptance criteria.
 | **Status** | ✅ Complete |
 
 ### Phase 10 — Sync Resilience (Quarantine + Monotonic Versions)
+
 | | |
 |---|---|
 | **Goal** | Corrupt payload quarantine, monotonic revision conflict resolution |
@@ -79,6 +89,7 @@ audit but do **not** satisfy the UX-95 acceptance criteria.
 | **Status** | ✅ Complete |
 
 ### Phase 11 — Account Isolation
+
 | | |
 |---|---|
 | **Goal** | Sign-out purges old subscriptions, scoped sync queries, clean account switch |
@@ -86,6 +97,7 @@ audit but do **not** satisfy the UX-95 acceptance criteria.
 | **Status** | ✅ Complete |
 
 ### Phase 12 — Bounded Media Cache & Nonblocking Startup
+
 | | |
 |---|---|
 | **Goal** | LRU exercise media cache (max 50), deferred media loading |
@@ -93,6 +105,7 @@ audit but do **not** satisfy the UX-95 acceptance criteria.
 | **Status** | ✅ Complete |
 
 ### Phase 13 — Accessibility Core Journey & Charts
+
 | | |
 |---|---|
 | **Goal** | 48×48 tap targets, text scale, screen reader workout flow, chart semantics |
@@ -100,6 +113,7 @@ audit but do **not** satisfy the UX-95 acceptance criteria.
 | **Status** | ✅ Complete |
 
 ### Phase 14 — Documentation & Support Metadata
+
 | | |
 |---|---|
 | **Goal** | Canonical docs/, AGENTS.md truth, release verification document |
@@ -107,6 +121,7 @@ audit but do **not** satisfy the UX-95 acceptance criteria.
 | **Status** | ✅ Complete |
 
 ### Phase 15 — Release Certification
+
 | | |
 |---|---|
 | **Goal** | Signed artifacts, Sentry symbols, store submission, physical device testing |
@@ -170,11 +185,23 @@ The commit numbering does **not** reflect the canonical Notion specification.
 | UX-95-13 | Exact-SHA full-screen visual certification | **Open** |
 | UX-95-14 | Store, billing, monitoring, and release certification | **Open** |
 
+### Phase 1: Fix muscle split bar hardcoded purple; use settings theme accent
+
+**Goal:** Routine-detail muscle split bar renders with the user's selected settings accent palette (reactive `context.accent` ramp), replacing the hardcoded static purple ramp.
+**Requirements**: PH-1, PH-2, PH-3
+**Depends on:** Phase 0
+**Plans:** 1 plan
+
+Plans:
+
+- [ ] 01-01-PLAN.md — Reroute MuscleLoadBar to `context.accent.muscleSplitRamp` (test-first), add 6-accent golden baselines, harden verify.ps1 migrated-screen gate
+
 ---
 
 ## Next Execution
 
 Capture acceptance evidence for **UX-95-02**:
+
 - Physical-device acceptance at 1.0×, 1.6× and 2.0× text scales
 - Gesture and three-button navigation
 - Rest timer visibility alongside reflowed header
