@@ -40,7 +40,7 @@ Future<void> showReportProblemSheet(BuildContext context, WidgetRef ref) async {
     context: context,
     title: 'Report a problem',
     subtitle:
-        'Sent to the GymLog Telegram channel — non-sensitive details only',
+        'Sent to the GymLog Telegram channel. Non-sensitive details only.',
     scrollable: true,
     child: ReportProblemForm(
       appVersion: version,
@@ -142,7 +142,7 @@ class _ReportProblemFormState extends State<ReportProblemForm> {
   }
 
   /// Delivery chain (ship-readiness #5):
-  /// 1. The report goes on the clipboard FIRST — every failure path below can
+  /// 1. The report goes on the clipboard FIRST. Every failure path below can
   ///    honestly tell the user to paste it, and no report is ever lost.
   /// 2. Post to the `report-problem` Supabase Edge Function, which holds the
   ///    Telegram bot token server-side and delivers to the GymLog channel.
@@ -194,11 +194,11 @@ class _ReportProblemFormState extends State<ReportProblemForm> {
       return;
     }
 
-    // Fallback: the report is already on the clipboard — open the channel so
+    // Fallback: the report is already on the clipboard. Open the channel so
     // the user can paste it straight in.
     showAppSnackBar(
       context,
-      message: 'Report copied — paste it in the GymLog channel.',
+      message: 'Report copied. Paste it in the GymLog channel.',
     );
     Navigator.of(context, rootNavigator: true).pop();
 
@@ -209,7 +209,7 @@ class _ReportProblemFormState extends State<ReportProblemForm> {
       }
     } catch (_) {
       // The report is on the clipboard and the channel handle is on the
-      // Help & Feedback screen — nothing more the app can do here.
+      // Help & Feedback screen. Nothing more the app can do here.
     }
   }
 
@@ -223,7 +223,7 @@ class _ReportProblemFormState extends State<ReportProblemForm> {
       children: [
         Text('CATEGORY', style: AppText.meta(color: surface.textSecondary)),
         const SizedBox(height: 6),
-        // Branded picker, not a stock Material DropdownButton — the last
+        // Branded picker, not a stock Material DropdownButton. The last
         // unbranded menu in the app (N4).
         Material(
           color: surface.surface2,
@@ -325,36 +325,10 @@ class _ReportProblemFormState extends State<ReportProblemForm> {
   }
 }
 
-/// Help & Feedback screen — canonical support identity and diagnostic portal.
+/// Help & Feedback screen. One identity: the support portal (report + channel
+/// + diagnostics). Legal documents live once, in Settings, not here too (E1).
 class HelpFeedbackScreen extends ConsumerWidget {
   const HelpFeedbackScreen({super.key});
-
-  Future<void> _launchUrl(BuildContext context, String url) async {
-    if (!tapGuard()) return;
-    HapticFeedback.selectionClick();
-    final uri = Uri.parse(url);
-    try {
-      if (await canLaunchUrl(uri)) {
-        await launchUrl(uri, mode: LaunchMode.externalApplication);
-      }
-    } catch (_) {
-      if (context.mounted) {
-        showDialog<void>(
-          context: context,
-          builder: (c) => AlertDialog(
-            title: const Text('Could not open link'),
-            content: Text('Link: $url'),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(c).pop(),
-                child: const Text('OK'),
-              ),
-            ],
-          ),
-        );
-      }
-    }
-  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -425,37 +399,6 @@ class HelpFeedbackScreen extends ConsumerWidget {
                     title: 'Report a problem',
                     subtitle: 'Sent to the GymLog Telegram channel',
                     onTap: () => showReportProblemSheet(context, ref),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 22),
-            Text('LEGAL & PRIVACY',
-                style: AppText.meta(color: surface.textSecondary)),
-            const SizedBox(height: 8),
-            AppCard(
-              padding: EdgeInsets.zero,
-              child: Column(
-                children: [
-                  AppActionRow(
-                    icon: Icons.privacy_tip_outlined,
-                    title: 'Privacy Policy',
-                    subtitle: 'Local-first. Zero ads, zero selling.',
-                    onTap: () => _launchUrl(context, kPrivacyPolicyUrl),
-                  ),
-                  const AppActionDivider(),
-                  AppActionRow(
-                    icon: Icons.gavel_rounded,
-                    title: 'Terms of Service',
-                    subtitle: 'Subscription terms & data policies',
-                    onTap: () => _launchUrl(context, kTermsOfServiceUrl),
-                  ),
-                  const AppActionDivider(),
-                  AppActionRow(
-                    icon: Icons.delete_outline_rounded,
-                    title: 'Account Deletion',
-                    subtitle: 'Web self-service deletion portal',
-                    onTap: () => _launchUrl(context, kAccountDeletionUrl),
                   ),
                 ],
               ),

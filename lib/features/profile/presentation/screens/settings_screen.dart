@@ -244,7 +244,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
       syncSubtitle = 'Syncing…';
     } else if (syncPhase == SyncPhase.offline) {
       syncSubtitle =
-          "Offline — your workouts are saved and will sync when you're back online";
+          "Offline. Your workouts are saved and will sync when you're back online";
     } else if (syncPhase == SyncPhase.error) {
       syncSubtitle = "Couldn't sync. Will retry automatically";
     } else {
@@ -286,7 +286,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
                         if (profile != null) ...[
                           AppActionRow(
                             icon: Icons.badge_rounded,
-                            iconColor: accent.light,
                             title: 'Personal details',
                             subtitle: 'Age, gender, experience & more',
                             onTap: () {
@@ -300,7 +299,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
                           hint: "Navigates to paywall",
                           child: AppActionRow(
                             icon: Icons.workspace_premium_rounded,
-                            iconColor: accent.light,
                             title: isPremium ? 'GymLog Pro' : 'Upgrade to Pro',
                             subtitle: isPremium
                                 ? 'Active (full history unlocked)'
@@ -313,7 +311,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
                           const AppActionDivider(),
                           AppActionRow(
                             icon: Icons.card_membership_rounded,
-                            iconColor: accent.light,
                             title: 'Manage subscription',
                             subtitle: 'Change plans or cancel',
                             onTap: () async {
@@ -351,7 +348,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
                         const AppActionDivider(),
                         AppActionRow(
                           icon: Icons.restore_rounded,
-                          iconColor: accent.light,
                           title: 'Restore purchases',
                           subtitle: 'Re-verify your Pro status',
                           onTap: () async {
@@ -396,7 +392,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
                       children: [
                         AppActionRow(
                           icon: Icons.scale_rounded,
-                          iconColor: accent.light,
                           title: 'Weight unit',
                           subtitle:
                               unit == 'kg' ? 'Kilograms (kg)' : 'Pounds (lbs)',
@@ -405,7 +400,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
                         const AppActionDivider(),
                         AppActionRow(
                           icon: Icons.flag_rounded,
-                          iconColor: accent.light,
                           title: 'Weekly goal',
                           subtitle:
                               '$goal workout${goal != 1 ? 's' : ''} per week',
@@ -415,7 +409,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
                         AppActionRow(
                           key: _restTimerRowKey,
                           icon: Icons.timer_rounded,
-                          iconColor: accent.light,
                           title: 'Rest timer',
                           // m:ss, matching the mid-workout rest tile. The old
                           // "$restSeconds seconds" made the same value read
@@ -429,7 +422,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
                         const AppActionDivider(),
                         AppActionRow(
                           icon: Icons.palette_rounded,
-                          iconColor: accent.light,
                           title: 'Appearance',
                           subtitle: 'Accent color',
                           onTap: () {
@@ -443,13 +435,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
                           icon: _notificationsEnabled == false
                               ? Icons.notifications_off_rounded
                               : Icons.notifications_rounded,
-                          iconColor: accent.light,
                           title: 'Notifications',
                           subtitle: _notificationsEnabled == null
                               ? 'Rest timer alerts'
                               : _notificationsEnabled == true
-                                  ? 'Enabled — rest timer alerts'
-                                  : 'Disabled — tap to enable in Settings',
+                                  ? 'Enabled. Rest timer alerts'
+                                  : 'Disabled. Tap to enable in Settings',
                           onTap: () {
                             if (!tapGuard()) return;
                             HapticFeedback.lightImpact();
@@ -600,8 +591,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
                               color: AppColors.warning.withValues(alpha: 0.1),
                               borderRadius: AppRadius.cardAll,
                               border: Border.all(
-                                  color:
-                                      AppColors.warning.withValues(alpha: 0.3)),
+                                  color: AppColors.warning
+                                      .withValues(alpha: 0.3)),
                             ),
                             child: Row(
                               children: [
@@ -732,7 +723,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
                   title: 'Automatic rest timer',
                   description:
                       'GymLog starts a countdown after every completed set. '
-                      'Drag to set your preferred rest here — 1:30 is great '
+                      'Drag to set your preferred rest here. 1:30 is great '
                       'for compound lifts, 1:00 for isolation work.',
                   step: 3,
                 ),
@@ -785,7 +776,7 @@ Future<SignOutStrategy?> _showUnsyncedWorkSheet(BuildContext context) {
     context: context,
     title: 'Back up before signing out?',
     subtitle: 'Some workouts on this device have not reached the cloud yet. '
-        'GymLog will upload them first — anything that cannot upload '
+        'GymLog will upload them first. Anything that cannot upload '
         'stays on this device.',
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -1017,11 +1008,11 @@ void _showDataInfo(BuildContext context, bool isPremium) {
     title: isPremium ? 'Local-first, cloud-backed' : 'Local-first privacy',
     message: isPremium
         ? 'Every workout is saved instantly to a private database '
-            'on this device — GymLog works fully offline. Workouts are '
+            'on this device. GymLog works fully offline. Workouts are '
             'automatically backed up to your account so your history survives '
             'a reinstall or a new phone. Only you can read it.'
         : 'Every workout is saved instantly to a private database '
-            'on this device — GymLog works fully offline. Upgrade to '
+            'on this device. GymLog works fully offline. Upgrade to '
             'GymLog Pro to automatically back up your history to the cloud '
             'and sync across devices.',
     confirmLabel: 'Got it',
