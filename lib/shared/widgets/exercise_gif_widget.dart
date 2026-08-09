@@ -7,7 +7,7 @@ import 'package:gymlog/core/theme/app_text.dart';
 import 'package:gymlog/shared/providers/gif_last_frame_provider.dart';
 import 'package:gymlog/shared/widgets/ui/skeleton.dart';
 
-class ExerciseGifWidget extends StatelessWidget {
+class ExerciseGifWidget extends StatefulWidget {
   final String? gifUrl;
   final double? width;
   final double? height;
@@ -31,37 +31,54 @@ class ExerciseGifWidget extends StatelessWidget {
     this.semanticLabel,
   });
 
-  String get _label => semanticLabel ?? 'Exercise demonstration';
+  @override
+  State<ExerciseGifWidget> createState() => _ExerciseGifWidgetState();
+}
+
+class _ExerciseGifWidgetState extends State<ExerciseGifWidget> {
+  /// E4 latch: once a frame has painted, a fling must never swap the tree
+  /// back to the skeleton. The scroll-deferral gate below applies only
+  /// BEFORE first display. Written without setState on purpose: the flag
+  /// gates future defer decisions, which can only occur on later rebuilds
+  /// driven by the scroll scope — an immediate rebuild from here is neither
+  /// needed nor wanted.
+  bool _everDisplayed = false;
+
+  String get _label => widget.semanticLabel ?? 'Exercise demonstration';
 
   @override
   Widget build(BuildContext context) {
-    if (gifUrl == null || gifUrl!.isEmpty) {
+    final gifUrl = widget.gifUrl;
+    if (gifUrl == null || gifUrl.isEmpty) {
       // No media in the catalog for this exercise. Permanent, not a failure.
       return _buildFallback(failed: false);
     }
 
     final reduceMotion =
         MediaQuery.maybeOf(context)?.disableAnimations ?? false;
-    final shouldAnimate = animate && !reduceMotion;
+    final shouldAnimate = widget.animate && !reduceMotion;
 
     // Decode at the exact device-pixel size the widget paints at — never
     // logicalWidth*2 and never the 512px blanket fallback. A 512px animated
     // GIF decodes EVERY frame at 512² on the UI isolate; a 44dp thumbnail on
     // a 3× device needs 132 (ship-readiness #1).
     final dpr = MediaQuery.devicePixelRatioOf(context);
+    final width = widget.width;
     final decodeWidth =
-        width != null && width! > 0 ? (width! * dpr).round() : 512;
+        width != null && width > 0 ? (width * dpr).round() : 512;
 
-    // Scroll-aware decode gate (P2 deferred item, now landed): while a
-    // surrounding Scrollable is flinging hard enough that Flutter itself
-    // recommends deferred loading, hold the skeleton and do not start a
-    // new fetch/decode. No device-tuned constants — uses the framework
-    // signal directly. When the fling settles the next build resumes.
-    final deferDecode = Scrollable.recommendDeferredLoadingForContext(context);
-    if (deferDecode) {
+    // Scroll-aware decode gate: while a surrounding Scrollable is flinging
+    // hard enough that Flutter itself recommends deferred loading, hold the
+    // skeleton and do not start a new fetch/decode. No device-tuned
+    // constants — uses the framework signal directly. When the fling settles
+    // the next build resumes. E4: the gate NEVER re-hides an image that has
+    // already painted; that swap-back churn was the flicker you could feel.
+    final deferDecode =
+        Scrollable.recommendDeferredLoadingForContext(context);
+    if (deferDecode && !_everDisplayed) {
       return RepaintBoundary(
         child: ClipRRect(
-          borderRadius: borderRadius,
+          borderRadius: widget.borderRadius,
           child: _buildPlaceholder(),
         ),
       );
@@ -72,34 +89,37 @@ class ExerciseGifWidget extends StatelessWidget {
       // dirty its ancestors' layers with it.
       return RepaintBoundary(
         child: ClipRRect(
-          borderRadius: borderRadius,
+          borderRadius: widget.borderRadius,
           child: CachedNetworkImage(
             cacheManager: ExerciseMediaCacheManager(),
-            imageUrl: gifUrl!,
-            width: width,
-            height: height,
-            fit: fit,
+            imageUrl: gifUrl,
+            width: widget.width,
+            height: widget.height,
+            fit: widget.fit,
             memCacheWidth: decodeWidth,
-            imageBuilder: (context, imageProvider) => Semantics(
-              image: true,
-              label: _label,
-              // Fade the arrival — a hard spinner→image pop reads as "slow"
-              // even when the decode was fast.
-              child: TweenAnimationBuilder<double>(
-                tween: Tween(begin: 0, end: 1),
-                duration: reduceMotion
-                    ? Duration.zero
-                    : const Duration(milliseconds: 180),
-                builder: (context, t, child) =>
-                    Opacity(opacity: t, child: child),
-                child: Image(
-                  image: imageProvider,
-                  width: width,
-                  height: height,
-                  fit: fit,
+            imageBuilder: (context, imageProvider) {
+              _everDisplayed = true;
+              return Semantics(
+                image: true,
+                label: _label,
+                // Fade the arrival — a hard spinner→image pop reads as "slow"
+                // even when the decode was fast.
+                child: TweenAnimationBuilder<double>(
+                  tween: Tween(begin: 0, end: 1),
+                  duration: reduceMotion
+                      ? Duration.zero
+                      : const Duration(milliseconds: 180),
+                  builder: (context, t, child) =>
+                      Opacity(opacity: t, child: child),
+                  child: Image(
+                    image: imageProvider,
+                    width: widget.width,
+                    height: widget.height,
+                    fit: widget.fit,
+                  ),
                 ),
-              ),
-            ),
+              );
+            },
             placeholder: (context, url) => _buildPlaceholder(),
             errorWidget: (context, url, error) {
               debugPrint(
@@ -123,12 +143,12 @@ class ExerciseGifWidget extends StatelessWidget {
           // is the start-position pose (semantically the better thumbnail)
           // and costs exactly one decode (ship-readiness #1).
           final frameAsync = ref.watch(gifFirstFrameProvider((
-            url: gifUrl!,
+            url: gifUrl,
             targetWidth: decodeWidth,
           )));
 
           return ClipRRect(
-            borderRadius: borderRadius,
+            borderRadius: widget.borderRadius,
             child: frameAsync.when(
               loading: () => _buildPlaceholder(),
               error: (_, __) => _buildFallback(failed: true),
@@ -136,6 +156,7 @@ class ExerciseGifWidget extends StatelessWidget {
                 // A null frame means the fetch or decode gave up — that is a
                 // failure, not an exercise without media (B19-F4).
                 if (img == null) return _buildFallback(failed: true);
+                _everDisplayed = true;
                 return Semantics(
                   image: true,
                   label: _label,
@@ -150,9 +171,9 @@ class ExerciseGifWidget extends StatelessWidget {
                       // Borrowed from the shared bounded frame cache; never
                       // disposed here (see gif_last_frame_provider).
                       image: img,
-                      width: width,
-                      height: height,
-                      fit: fit,
+                      width: widget.width,
+                      height: widget.height,
+                      fit: widget.fit,
                     ),
                   ),
                 );
@@ -165,8 +186,8 @@ class ExerciseGifWidget extends StatelessWidget {
   }
 
   Widget _buildPlaceholder() {
-    final w = width;
-    final h = height;
+    final w = widget.width;
+    final h = widget.height;
     // Skeleton at the EXACT final size: no spinner, zero layout shift when
     // the frame arrives (the old bare CircularProgressIndicator on bgSurface
     // hard-popped into the image).
@@ -179,7 +200,7 @@ class ExerciseGifWidget extends StatelessWidget {
             child: SkeletonBox(
               width: w,
               height: h,
-              radius: borderRadius.topLeft.x,
+              radius: widget.borderRadius.topLeft.x,
             ),
           ),
         ),
@@ -195,7 +216,7 @@ class ExerciseGifWidget extends StatelessWidget {
           height: h,
           decoration: BoxDecoration(
             color: AppColors.bgSurface,
-            borderRadius: borderRadius,
+            borderRadius: widget.borderRadius,
           ),
         ),
       ),
@@ -213,11 +234,11 @@ class ExerciseGifWidget extends StatelessWidget {
           : 'No demonstration available for this exercise',
       child: ExcludeSemantics(
         child: Container(
-          width: width,
-          height: height,
+          width: widget.width,
+          height: widget.height,
           decoration: BoxDecoration(
             color: AppColors.bgSurface,
-            borderRadius: borderRadius,
+            borderRadius: widget.borderRadius,
           ),
           child: Center(
             child: Icon(
