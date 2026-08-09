@@ -190,7 +190,7 @@ The commit numbering does **not** reflect the canonical Notion specification.
 **Goal:** Routine-detail muscle split bar renders with the user's selected settings accent palette (reactive `context.accent` ramp), replacing the hardcoded static purple ramp.
 **Requirements**: PH-1, PH-2, PH-3
 **Depends on:** Phase 0
-**Plans:** 1 plan (1 complete, 0 pending)
+**Plans:** 1/1 plans complete
 
 Plans:
 

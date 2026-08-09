@@ -1,3 +1,18 @@
+---
+gsd_state_version: 1.0
+milestone: v1.0
+milestone_name: milestone
+status: unknown
+stopped_at: Completed 01-01-PLAN.md (muscle split bar accent fix)
+last_updated: "2026-08-09T11:26:32.828Z"
+progress:
+  total_phases: 1
+  completed_phases: 1
+  total_plans: 1
+  completed_plans: 1
+  percent: 100
+---
+
 # Project State — GymLog
 
 **Implementation baseline:** 57e7888f4dbc4089de9fbed4d4f23349677bf1db
@@ -35,13 +50,13 @@ migration and partial Help/recovery hardening. This is the active program.
 | UX-95-12 | Design-system consolidation and visual consistency | **Open** |
 | UX-95-13 | Exact-SHA full-screen visual certification | **Open** |
 | UX-95-14 | Store, billing, monitoring, and release certification | **Open** |
-| 01-fix-muscle-split-bar | Muscle split bar hardcoded purple → settings theme accent | **Source complete; manual device UAT pending** |
+| 01-fix-muscle-split-bar | Muscle split bar hardcoded purple → settings theme accent | **Complete (2026-08-09)** — verified + device UAT passed |
 
 ## Current Work
 
-- **Active phase:** 01-fix-muscle-split-bar-hardcoded-purple-use-settings-theme-acc — **plan 01-01 COMPLETE** (all 3 tasks, verify gate green)
-- **Last action:** Rerouted `MuscleLoadBar` to `context.accent.muscleSplitRamp` (test-first RED→GREEN), added 6-accent golden baselines (windows + ci), hardened verify.ps1 migrated-screen gate, LOOP_LOG H17
-- **Next action:** Manual device UAT — Settings → Appearance → switch palette → open "Pull Day" routine → bar follows accent (default Volt)
+- **Active phase:** none — Phase 1 (muscle split bar accent fix) complete; UX-95 program remains the standing active program
+- **Last action:** Device UAT passed — palette switch repaints the split bar to selected accent (Volt default), no purple remnant. Phase 1 verified and marked complete
+- **Next action:** UX-95-02 acceptance evidence (device 1.0×/1.6×/2.0× text scale, BillingClient API 8+, CI-equivalent result) or plan next GSD phase
 
 ## Branching Strategy
 
@@ -74,5 +89,5 @@ migration and partial Help/recovery hardening. This is the active program.
 ## Last Session
 
 - **Timestamp:** 2026-08-09
-- **Stopped at:** Completed 01-01-PLAN.md (muscle split bar accent fix)
+- **Stopped at:** Phase 1 (muscle split bar accent fix) complete — verified, device UAT passed, ready for next work
 - **Resume file:** None

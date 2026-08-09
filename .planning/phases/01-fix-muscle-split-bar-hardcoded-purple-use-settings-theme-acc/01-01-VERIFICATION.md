@@ -2,11 +2,12 @@
 phase: 01-fix-muscle-split-bar-hardcoded-purple-use-settings-theme-acc
 slug: fix-muscle-split-bar-hardcoded-purple-use-settings-theme-acc
 verified: 2026-08-09T16:20:00Z
-status: human_needed
+status: passed
 score: 6/6 truths verified
 behavior_unverified: 0
 overrides_applied: 0
 human_verification:
+
   - test: "On a physical device: Settings → Appearance → switch the accent palette (default Volt/higgsfield) → open the 'Pull Day' routine → confirm the muscle split bar legend dots and stacked segments render in the newly selected accent, not the legacy purple."
     expected: "The bar repaints with the selected settings accent (e.g. neonPurple) immediately after the palette switch, matching the rest of the themed UI; no purple remnant visible."
     why_human: "Color perception and OLED rendering of the ThemeExtension-driven repaint are only conclusively judgeable on real hardware; automated tests prove the color values, not the perceptual result."

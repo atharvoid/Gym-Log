@@ -83,6 +83,7 @@ Current HEAD: b32af2c09d8cc8a9a51d1149b51bccc0df6e3982 on fix-sha1-auth-issue.
 | Strict entitlement check (not active.isNotEmpty) | Prevents unrelated entitlements from unlocking premium | — Pending (P0-08) |
 | Sync quarantine for corrupt payloads | Prevents infinite retry loops; one bad object doesn't block others | — Pending (P0-09) |
 | Monotonic revisions for sync conflict resolution | Removes clock-skew-dependent last-write-wins | — Pending (P0-09) |
+| MuscleLoadBar reads `context.accent.muscleSplitRamp` | Last live surface on hardcoded purple ramp; sibling already migrated; ThemeExtension fully registered | ✓ Implemented — Phase 1 (2026-08-09); static `AppColors.muscleSplitPalette` kept only as backward-compat fallback; bar added to verify.ps1 migrated-screen gate |
 
 ---
-*Last updated: 2026-07-22 after initialization*
+*Last updated: 2026-08-09 after Phase 1*
