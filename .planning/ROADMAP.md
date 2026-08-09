@@ -190,11 +190,11 @@ The commit numbering does **not** reflect the canonical Notion specification.
 **Goal:** Routine-detail muscle split bar renders with the user's selected settings accent palette (reactive `context.accent` ramp), replacing the hardcoded static purple ramp.
 **Requirements**: PH-1, PH-2, PH-3
 **Depends on:** Phase 0
-**Plans:** 1 plan
+**Plans:** 1 plan (1 complete, 0 pending)
 
 Plans:
 
-- [ ] 01-01-PLAN.md — Reroute MuscleLoadBar to `context.accent.muscleSplitRamp` (test-first), add 6-accent golden baselines, harden verify.ps1 migrated-screen gate
+- [x] 01-01-PLAN.md — Reroute MuscleLoadBar to `context.accent.muscleSplitRamp` (test-first), add 6-accent golden baselines, harden verify.ps1 migrated-screen gate
 
 ---
 

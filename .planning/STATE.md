@@ -4,7 +4,7 @@
 **Current documentation HEAD:** 729cfca3c02065c4483bebe74ad84cfcb0c15e32
 **Branch:** fix-sha1-auth-issue
 **Initialized:** 2026-07-22
-**Last updated:** 2026-07-23
+**Last updated:** 2026-08-09
 
 ## Context
 
@@ -35,12 +35,13 @@ migration and partial Help/recovery hardening. This is the active program.
 | UX-95-12 | Design-system consolidation and visual consistency | **Open** |
 | UX-95-13 | Exact-SHA full-screen visual certification | **Open** |
 | UX-95-14 | Store, billing, monitoring, and release certification | **Open** |
+| 01-fix-muscle-split-bar | Muscle split bar hardcoded purple → settings theme accent | **Source complete; manual device UAT pending** |
 
 ## Current Work
 
-- **Active phase:** UX-95-02 acceptance evidence pending
-- **Last action:** Completed adaptive foundation and Active Workout large-text source work
-- **Next action:** Capture device evidence, verify BillingClient, compile Android native changes, and obtain a CI-equivalent result
+- **Active phase:** 01-fix-muscle-split-bar-hardcoded-purple-use-settings-theme-acc — **plan 01-01 COMPLETE** (all 3 tasks, verify gate green)
+- **Last action:** Rerouted `MuscleLoadBar` to `context.accent.muscleSplitRamp` (test-first RED→GREEN), added 6-accent golden baselines (windows + ci), hardened verify.ps1 migrated-screen gate, LOOP_LOG H17
+- **Next action:** Manual device UAT — Settings → Appearance → switch palette → open "Pull Day" routine → bar follows accent (default Volt)
 
 ## Branching Strategy
 
@@ -62,3 +63,16 @@ migration and partial Help/recovery hardening. This is the active program.
 ### Roadmap Evolution
 
 - Phase 1 added: Fix muscle split bar hardcoded purple; use settings theme accent
+
+## Decisions
+
+- MuscleLoadBar reads `context.accent.muscleSplitRamp` (reactive ThemeExtension) instead of static `AppColors.muscleSplitPalette`; app_colors import kept for `context.surface`
+- `AppColors.muscleSplitPalette` retained only as backward-compat fallback in `app_colors.dart` + `MuscleColorService` (no live-surface consumer remains)
+- `lib/shared/widgets/body/muscle_load_bar.dart` added to verify.ps1 `$migratedFiles` gate
+- Default accent is Volt (higgsfield) — users without a palette choice now see the bar in Volt, not purple (intended behavior, not regression)
+
+## Last Session
+
+- **Timestamp:** 2026-08-09
+- **Stopped at:** Completed 01-01-PLAN.md (muscle split bar accent fix)
+- **Resume file:** None
