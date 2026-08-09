@@ -254,15 +254,21 @@ final routerProvider = Provider<GoRouter>((ref) {
             final curve = animation.status == AnimationStatus.reverse
                 ? Curves.easeInCubic
                 : Curves.easeOutCubic;
-            return SlideTransition(
-              position: Tween<Offset>(
-                begin: const Offset(0.0, 1.0),
-                end: Offset.zero,
-              ).animate(CurvedAnimation(
-                parent: animation,
-                curve: curve,
-              )),
-              child: child,
+            final curved = CurvedAnimation(parent: animation, curve: curve);
+            // E5: the workout lives at the bottom of the app (the mini
+            // player), so it RISES into view and SINKS back into the bar.
+            // A short 12% rise + fade reads as the pill expanding into the
+            // screen; the old full-height slide read as an unrelated page
+            // arriving from offscreen.
+            return FadeTransition(
+              opacity: curved,
+              child: SlideTransition(
+                position: Tween<Offset>(
+                  begin: const Offset(0.0, 0.12),
+                  end: Offset.zero,
+                ).animate(curved),
+                child: child,
+              ),
             );
           },
           transitionDuration: const Duration(milliseconds: 320),

@@ -8,6 +8,7 @@ import '../../core/theme/dynamic_accent_theme.dart';
 import '../../features/workout/presentation/providers/active_workout_provider.dart';
 import '../../features/workout/presentation/providers/workout_timer_provider.dart';
 import '../providers/bottom_chrome_provider.dart';
+import 'motion/pressable_scale.dart';
 
 /// Minimized "workout in progress" mini player.
 ///
@@ -60,79 +61,84 @@ class ActiveWorkoutBar extends ConsumerWidget {
       label: 'Resume $workoutName, elapsed $timer',
       excludeSemantics: true,
       onTap: () => _expand(context),
-      child: GestureDetector(
-        onTap: () => _expand(context),
-        // Swipe up to expand. Threshold is on velocity rather than distance so
-        // a flick works without traversing the full bar height.
-        onVerticalDragEnd: (details) {
-          if ((details.primaryVelocity ?? 0) < -180) _expand(context);
-        },
-        child: Container(
-          height: kActiveBarHeight,
-          padding: const EdgeInsets.symmetric(horizontal: 10),
-          decoration: BoxDecoration(
-            color: context.chrome.activeBarBg,
-            borderRadius: BorderRadius.circular(AppRadius.buttonSecondary),
-            border: Border.all(
-              color: accent.base.withValues(alpha: 0.35),
-              width: 1,
+      // E5: the tap now has weight — the pill compresses on contact (spring
+      // scale, same as the Start Routine CTA) before the screen rises out
+      // of it.
+      child: PressableScale(
+        child: GestureDetector(
+          onTap: () => _expand(context),
+          // Swipe up to expand. Threshold is on velocity rather than distance so
+          // a flick works without traversing the full bar height.
+          onVerticalDragEnd: (details) {
+            if ((details.primaryVelocity ?? 0) < -180) _expand(context);
+          },
+          child: Container(
+            height: kActiveBarHeight,
+            padding: const EdgeInsets.symmetric(horizontal: 10),
+            decoration: BoxDecoration(
+              color: context.chrome.activeBarBg,
+              borderRadius: BorderRadius.circular(AppRadius.buttonSecondary),
+              border: Border.all(
+                color: accent.base.withValues(alpha: 0.35),
+                width: 1,
+              ),
+              boxShadow: [
+                // Lifts the pill off the nav bar. Without this the two chrome
+                // layers read as one 130dp slab.
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.55),
+                  blurRadius: 18,
+                  offset: const Offset(0, 6),
+                ),
+                BoxShadow(
+                  color: accent.base.withValues(alpha: 0.10),
+                  blurRadius: 20,
+                  spreadRadius: -4,
+                ),
+              ],
             ),
-            boxShadow: [
-              // Lifts the pill off the nav bar. Without this the two chrome
-              // layers read as one 130dp slab.
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.55),
-                blurRadius: 18,
-                offset: const Offset(0, 6),
-              ),
-              BoxShadow(
-                color: accent.base.withValues(alpha: 0.10),
-                blurRadius: 20,
-                spreadRadius: -4,
-              ),
-            ],
-          ),
-          child: Row(
-            children: [
-              // Leading accent tile with the live pulse inside it.
-              Container(
-                width: 36,
-                height: 36,
-                decoration: BoxDecoration(
-                  color: accent.muted,
-                  borderRadius: AppRadius.badgeAll,
+            child: Row(
+              children: [
+                // Leading accent tile with the live pulse inside it.
+                Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    color: accent.muted,
+                    borderRadius: AppRadius.badgeAll,
+                  ),
+                  child: Center(child: _ActiveIndicator(color: accent.base)),
                 ),
-                child: Center(child: _ActiveIndicator(color: accent.base)),
-              ),
-              const SizedBox(width: 10),
-              // Name + elapsed, stacked. Both facts stay legible instead of
-              // fighting for a single row.
-              Expanded(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      workoutName,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: AppText.rowLabel(),
-                    ),
-                    const SizedBox(height: 1),
-                    Text(
-                      timer,
-                      maxLines: 1,
-                      style: AppText.statLabel(color: accent.light),
-                    ),
-                  ],
+                const SizedBox(width: 10),
+                // Name + elapsed, stacked. Both facts stay legible instead of
+                // fighting for a single row.
+                Expanded(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        workoutName,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: AppText.rowLabel(),
+                      ),
+                      const SizedBox(height: 1),
+                      Text(
+                        timer,
+                        maxLines: 1,
+                        style: AppText.statLabel(color: accent.light),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              const SizedBox(width: 8),
-              // Affordance for both gestures.
-              Icon(Icons.keyboard_arrow_up_rounded,
-                  size: 22, color: context.chrome.textSecondary),
-              const SizedBox(width: 2),
-            ],
+                const SizedBox(width: 8),
+                // Affordance for both gestures.
+                Icon(Icons.keyboard_arrow_up_rounded,
+                    size: 22, color: context.chrome.textSecondary),
+                const SizedBox(width: 2),
+              ],
+            ),
           ),
         ),
       ),

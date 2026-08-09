@@ -253,21 +253,29 @@ class _AppShellState extends ConsumerState<AppShell> {
                   child: ConstrainedBox(
                     constraints: BoxConstraints(
                         maxWidth: context.adaptive.contentMaxWidth - 32),
+                    // E5: same motion family as the /workout/active route
+                    // (320ms easeOutCubic). The Interval stages the pill ~80ms
+                    // into the slot so it reads as the screen condensing into
+                    // the bar, not two overlapping animations. Slide + fade
+                    // only, deliberately NOT SizeTransition: the bar no longer
+                    // participates in the nav bar's layout, so there is
+                    // nothing to grow — and animating size here was what
+                    // visibly shoved the nav bar down on workout start.
                     child: AnimatedSwitcher(
                       duration: reduceMotion
                           ? Duration.zero
-                          : const Duration(milliseconds: 280),
-                      switchInCurve: Curves.easeOutCubic,
-                      switchOutCurve: Curves.easeOutCubic,
-                      // Slide + fade only. Deliberately NOT SizeTransition: the
-                      // bar no longer participates in the nav bar's layout, so
-                      // there is nothing to grow — and animating size here was
-                      // what visibly shoved the nav bar down on workout start.
+                          : const Duration(milliseconds: 320),
+                      reverseDuration: reduceMotion
+                          ? Duration.zero
+                          : const Duration(milliseconds: 250),
+                      switchInCurve: const Interval(0.25, 1.0,
+                          curve: Curves.easeOutCubic),
+                      switchOutCurve: Curves.easeInCubic,
                       transitionBuilder: (child, animation) => FadeTransition(
                         opacity: animation,
                         child: SlideTransition(
                           position: Tween<Offset>(
-                            begin: const Offset(0, 0.6),
+                            begin: const Offset(0, 1.0),
                             end: Offset.zero,
                           ).animate(animation),
                           child: child,
