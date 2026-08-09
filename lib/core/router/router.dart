@@ -251,28 +251,35 @@ final routerProvider = Provider<GoRouter>((ref) {
             if (disableAnimations) {
               return child;
             }
-            final curve = animation.status == AnimationStatus.reverse
-                ? Curves.easeInCubic
-                : Curves.easeOutCubic;
-            final curved = CurvedAnimation(parent: animation, curve: curve);
-            // E5: the workout lives at the bottom of the app (the mini
-            // player), so it RISES into view and SINKS back into the bar.
-            // A short 12% rise + fade reads as the pill expanding into the
-            // screen; the old full-height slide read as an unrelated page
-            // arriving from offscreen.
-            return FadeTransition(
-              opacity: curved,
-              child: SlideTransition(
-                position: Tween<Offset>(
-                  begin: const Offset(0.0, 0.12),
-                  end: Offset.zero,
-                ).animate(curved),
-                child: child,
-              ),
+            // E6: ONE property animates, and it is the cheapest one there is.
+            //
+            // E5 paired a 12% rise with a FadeTransition. Fading a full-screen
+            // route forces a saveLayer of the entire page on every frame —
+            // that is the stutter felt on open and on minimise — and 12% of
+            // travel reads as a dissolve rather than a sheet moving to and
+            // from the mini player.
+            //
+            // A pure SlideTransition over the full height is a layer
+            // translation: the page rasterises once and the compositor moves
+            // it, so the sheet holds 60Hz (or 120 where the panel allows)
+            // going up AND coming down. easeOutCubic decelerates into place
+            // on open; easeInCubic accelerates away on minimise, so the
+            // screen falls into the pill instead of drifting off it.
+            final curved = CurvedAnimation(
+              parent: animation,
+              curve: Curves.easeOutCubic,
+              reverseCurve: Curves.easeInCubic,
+            );
+            return SlideTransition(
+              position: Tween<Offset>(
+                begin: const Offset(0.0, 1.0),
+                end: Offset.zero,
+              ).animate(curved),
+              child: child,
             );
           },
-          transitionDuration: const Duration(milliseconds: 320),
-          reverseTransitionDuration: const Duration(milliseconds: 250),
+          transitionDuration: const Duration(milliseconds: 340),
+          reverseTransitionDuration: const Duration(milliseconds: 280),
         ),
       ),
       GoRoute(
