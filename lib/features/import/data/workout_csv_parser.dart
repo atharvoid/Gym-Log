@@ -475,7 +475,7 @@ abstract final class WorkoutCsvParser {
     final builder = _SessionBuilder();
     final warnings = <String>[];
     if (!hasUnitCol) {
-      warnings.add('No "Weight Unit" column — weights were read as '
+      warnings.add('No "Weight Unit" column. weights were read as '
           '${assumedUnit.toUpperCase()}.');
     }
     var skipped = 0;

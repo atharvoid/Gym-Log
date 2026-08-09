@@ -34,7 +34,7 @@ Future<void> _openUrl(BuildContext context, String url) async {
 enum PaywallSource { generic, routineLimit, chartFilter, timeRange, sync }
 
 /// Opens the Premium paywall as a modal bottom sheet.
-/// Safe to call when RevenueCat is unconfigured — it renders a graceful
+/// Safe to call when RevenueCat is unconfigured. it renders a graceful
 /// "pricing unavailable" state instead of crashing.
 Future<void> showPremiumPaywall(BuildContext context,
     {PaywallSource source = PaywallSource.generic}) {
@@ -59,7 +59,7 @@ class _SheetHandle extends StatelessWidget {
         width: 36,
         height: 4,
         decoration: BoxDecoration(
-          // Slightly more visible than textSecondary — machined feel.
+          // Slightly more visible than textSecondary. machined feel.
           color: context.surface.borderEmphasis,
           borderRadius: BorderRadius.circular(6),
         ),
@@ -68,7 +68,7 @@ class _SheetHandle extends StatelessWidget {
   }
 }
 
-/// PRO wordmark badge — a compact pill with "PRO" in the accent color on a
+/// PRO wordmark badge. a compact pill with "PRO" in the accent color on a
 /// tinted accent surface. Replaces the generic star icon that every tutorial
 /// paywall uses. The wordmark reads as a brand, not a decorative emoji.
 class _PaywallIcon extends StatelessWidget {
@@ -99,7 +99,7 @@ class _PaywallIcon extends StatelessWidget {
 }
 
 /// Small "PRO" lock pill used next to gated features.
-/// Subtle by design — a hint, not a banner. Tapping opens the paywall.
+/// Subtle by design. a hint, not a banner. Tapping opens the paywall.
 class ProLockPill extends StatelessWidget {
   final String label;
 
@@ -132,7 +132,7 @@ class ProLockPill extends StatelessWidget {
                 width: 1,
               ),
             ),
-            // No padlock — it communicates "you can't have this" while the user
+            // No padlock. it communicates "you can't have this" while the user
             // looks at their own data. Just the label; tap opens the paywall.
             child: Text(label, style: AppText.badge(color: accent.base)),
           ),
@@ -241,7 +241,7 @@ class _PaywallSheetState extends ConsumerState<_PaywallSheet> {
     return intro != null && intro.price == 0 && _trialEligible;
   }
 
-  /// CTA + caption derive from the live offering — never hardcode trial
+  /// CTA + caption derive from the live offering. never hardcode trial
   /// terms the store may not actually grant.
   String get _ctaLabel => _hasFreeTrial ? 'Start Free Trial' : 'Upgrade to Pro';
 
@@ -298,7 +298,7 @@ class _PaywallSheetState extends ConsumerState<_PaywallSheet> {
       if (hasPremium(info)) {
         HapticFeedback.heavyImpact();
         Navigator.of(context).pop();
-        _snack('Welcome to GymLog Pro — everything is unlocked.');
+        _snack('Welcome to GymLog Pro. everything is unlocked.');
       } else {
         HapticFeedback.heavyImpact();
         debugPrint(
@@ -315,7 +315,7 @@ class _PaywallSheetState extends ConsumerState<_PaywallSheet> {
       if (PurchasesErrorHelper.getErrorCode(e) ==
           PurchasesErrorCode.paymentPendingError) {
         // Payment is pending approval (e.g. a delayed Play Billing payment
-        // method) — it may still complete later. Telling the user "you
+        // method). it may still complete later. Telling the user "you
         // were not charged" here would be a false promise.
         _snack(
           "Your payment is pending approval. We'll unlock Pro automatically "
@@ -371,7 +371,7 @@ class _PaywallSheetState extends ConsumerState<_PaywallSheet> {
       case PaywallSource.routineLimit:
         headline = 'Routine limit reached';
         subheadline =
-            'The free plan includes up to $kFreeRoutineLimit routines — enough for a Push / Pull / Legs / Full-Body split. Upgrade to Pro for unlimited routines and full analytics history.';
+            'The free plan includes up to $kFreeRoutineLimit routines. enough for a Push / Pull / Legs / Full-Body split. Upgrade to Pro for unlimited routines and full analytics history.';
         break;
       case PaywallSource.chartFilter:
         headline = 'Full history locked';
@@ -394,7 +394,7 @@ class _PaywallSheetState extends ConsumerState<_PaywallSheet> {
       decoration: BoxDecoration(
         color: surface.surface2,
         borderRadius: AppRadius.sheetTop,
-        // Hairline border — defines the sheet edge against the black canvas.
+        // Hairline border. defines the sheet edge against the black canvas.
         // This is what separates "material" from "grey blob on black."
         border: Border(
           top: BorderSide(color: surface.surface3, width: 1),
@@ -409,7 +409,7 @@ class _PaywallSheetState extends ConsumerState<_PaywallSheet> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // ── Top glow — light leak at sheet edge ──────────────────
+              // ── Top glow. light leak at sheet edge ──────────────────
               // Premium apps use light to create depth, not shadow.
               // This 1px row emits a faint accent luminance above the handle.
               Container(
@@ -449,7 +449,7 @@ class _PaywallSheetState extends ConsumerState<_PaywallSheet> {
                     const SizedBox(height: 20),
 
                     // ── Features ────────────────────────────────────────
-                    // Subtitles are sentence case — uppercase reads like a
+                    // Subtitles are sentence case. uppercase reads like a
                     // system alert. Sentence case reads like a human wrote it.
                     for (final (icon, title, subtitle) in _features)
                       Padding(
@@ -561,7 +561,7 @@ class _PaywallSheetState extends ConsumerState<_PaywallSheet> {
                         ),
                       ),
                     ] else ...[
-                      // RevenueCat unreachable — actionable, not apologetic.
+                      // RevenueCat unreachable. actionable, not apologetic.
                       // A premium app never shows a "broken" UI; it shows a
                       // minimal, tappable state that lets the user retry.
                       const SizedBox(height: 8),
@@ -716,7 +716,7 @@ class _PackageRow extends StatelessWidget {
         duration: const Duration(milliseconds: 150),
         clipBehavior: Clip.antiAlias,
         decoration: BoxDecoration(
-          // Unselected cards are transparent — no grey blob pattern.
+          // Unselected cards are transparent. no grey blob pattern.
           // Only the selected card gets a tinted fill.
           color: selected
               ? accent.base.withValues(alpha: 0.10)

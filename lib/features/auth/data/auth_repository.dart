@@ -55,8 +55,8 @@ class AuthRepository {
   ///
   /// Provider wiring must use this form. This object is created inside a
   /// memoised provider, so capturing the client at construction time would
-  /// freeze whatever was true during startup — usually "not initialised
-  /// yet" — and silently disable the entire auth path for the process
+  /// freeze whatever was true during startup. usually "not initialised
+  /// yet". and silently disable the entire auth path for the process
   /// lifetime: authStateChanges would be a permanently empty stream and no
   /// auth event could ever propagate. Resolving per call lets the same
   /// instance work before, during, and after cloud init. See
@@ -87,7 +87,7 @@ class AuthRepository {
   static const Duration _signInTimeout = Duration(seconds: 31);
 
   /// Returns when sign-in has either completed or been dismissed by the user.
-  /// User cancellation is NOT an error — it resolves normally so the UI can
+  /// User cancellation is NOT an error. it resolves normally so the UI can
   /// simply re-enable the button without showing a failure message.
   ///
   /// The attempt is bounded by [_signInTimeout] so a stuck platform or
@@ -152,7 +152,7 @@ class AuthRepository {
 
       final googleUser = await abortable(googleSignIn.signIn());
       if (googleUser == null) {
-        // User dismissed the picker — a deliberate choice, not a failure.
+        // User dismissed the picker. a deliberate choice, not a failure.
         throw const AuthCancelled();
       }
 
@@ -163,7 +163,7 @@ class AuthRepository {
       if (idToken == null) {
         // Never log account details (email/name/id are PII). The actionable
         // signal is the misconfiguration itself.
-        debugPrint('[GoogleSignIn] No ID token returned — check that '
+        debugPrint('[GoogleSignIn] No ID token returned. check that '
             'GOOGLE_SERVER_CLIENT_ID matches the Google Cloud OAuth client.');
         throw const AuthConfigurationFailure(
           diagnosticCode: 'google_android_configuration',

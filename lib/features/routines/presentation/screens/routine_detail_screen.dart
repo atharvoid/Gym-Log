@@ -43,14 +43,14 @@ import '../providers/routines_provider.dart';
 import '../widgets/routine_exercise_block.dart';
 import '../widgets/routine_volume_graph.dart';
 
-/// Hoisted once — constructing a [DateFormat] parses its pattern, so it must not
+/// Hoisted once. constructing a [DateFormat] parses its pattern, so it must not
 /// be rebuilt per frame.
 final DateFormat _monthDay = DateFormat('MMM d');
 
-/// RoutineDetailScreen — the launchpad for a saved routine: one dominant Start
+/// RoutineDetailScreen. the launchpad for a saved routine: one dominant Start
 /// CTA, a personal stat line, a volume trend, and the exercise set tables.
 ///
-/// Muscle coverage is shown as a one-line [MuscleLoadBar] — a stacked
+/// Muscle coverage is shown as a one-line [MuscleLoadBar]. a stacked
 /// proportional bar rather than an inline anatomical map or a scrolling chip
 /// strip. See muscle_load_bar.dart / muscle_summary.dart for why: the map is
 /// low re-read-rate reference content and was consuming the space where the
@@ -118,7 +118,7 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen> {
     for (final he in routine.exercises) {
       final c = he.config;
       final reps = c.defaultReps != null ? ' × ${c.defaultReps}' : '';
-      b.writeln('• ${he.exercise.name} — ${c.defaultSets} sets$reps');
+      b.writeln('• ${he.exercise.name}. ${c.defaultSets} sets$reps');
     }
     b
       ..writeln()
@@ -379,7 +379,7 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen> {
             targetKey: _startRoutineButtonKey,
             title: 'Your program',
             description:
-                'This is your training hub — exercises, sets, and your personal '
+                'This is your training hub. exercises, sets, and your personal '
                 'records all live here. Tap Next to finish setup.',
             step: 2,
           ),
@@ -537,7 +537,7 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen> {
 
 /// Ranked load shares for the [MuscleLoadBar]: each group's share of the
 /// routine's working sets. Primary groups score full set count, secondaries
-/// half (assistance work is real but not equal) — deterministic, so the bar
+/// half (assistance work is real but not equal). deterministic, so the bar
 /// never reshuffles between builds.
 List<MuscleLoadEntry> _loadEntriesForRoutine(HydratedRoutineDetail routine) {
   final groups = _workedGroupsForRoutine(routine);
@@ -670,7 +670,7 @@ class _RoutineVolumeSectionState extends ConsumerState<_RoutineVolumeSection> {
                 radius: AppRadius.card,
               ),
             ),
-            // A failed load must never render as a zeroed chart — that looks
+            // A failed load must never render as a zeroed chart. that looks
             // identical to "you did nothing this period" and lies about the
             // user's data. Show an error state with a real retry instead.
             error: (_, __) => AsyncErrorState(
@@ -741,7 +741,7 @@ class _HeroStatStrip extends StatelessWidget {
   }
 }
 
-/// Shared with profile's stats strip — one height so the same name never
+/// Shared with profile's stats strip. one height so the same name never
 /// means two different geometries (N5).
 class _StatDivider extends StatelessWidget {
   const _StatDivider();
@@ -759,7 +759,7 @@ class _HeroStat extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // N6: FittedBox(scaleDown) was the same WCAG 1.4.4 class as the closed
-    // C31 residual — arbitrary shrink below readable size. Ellipsis keeps
+    // C31 residual. arbitrary shrink below readable size. Ellipsis keeps
     // the glyph size honest and truncates the tail instead.
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -812,7 +812,7 @@ class _StartRoutineButton extends StatelessWidget {
             color: empty ? surface.surface3 : accent.base,
             borderRadius: AppRadius.buttonPrimaryAll,
           ),
-          // TEXT SCALING: no fixed `height:` — the shell enforces the 52dp
+          // TEXT SCALING: no fixed `height:`. the shell enforces the 52dp
           // floor as a row child that can grow, and the label sits in
           // Flexible+ellipsis (ship-readiness #3).
           child: AppButtonShell(
@@ -843,7 +843,7 @@ class _RoutineProgressPill extends StatelessWidget {
     final latest = samples.last.volume;
     if (first == 0) return const SizedBox.shrink();
 
-    // Percentage delta — unit-invariant by construction, so no conversion is
+    // Percentage delta. unit-invariant by construction, so no conversion is
     // needed here even though the underlying samples are in kilograms.
     final delta = ((latest - first) / first * 100).round();
     final isUp = delta >= 0;

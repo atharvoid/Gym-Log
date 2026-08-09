@@ -18,7 +18,7 @@ class ChartPoint {
 /// through this single component so curve behavior, dot styling, axis
 /// formatting, touch handling and empty states are pixel-identical.
 ///
-/// ACCENT: fl_chart does NOT read ThemeData — every colored element is an
+/// ACCENT: fl_chart does NOT read ThemeData. every colored element is an
 /// explicit argument. So the accent is resolved once per build from the live
 /// palette (`context.accent`) and injected into the line, dots, touch
 /// indicator, area fill AND the selected-date header (via
@@ -26,7 +26,7 @@ class ChartPoint {
 /// TextStyle can't react). No accent hex is hardcoded here.
 ///
 /// Interaction model (Hevy-benchmarked, per design memory): no floating
-/// tooltip box — touching a point updates the value+date header above the
+/// tooltip box. touching a point updates the value+date header above the
 /// plot. The latest point is emphasized with a ringed dot. Data changes
 /// animate implicitly.
 class BrandedLineChart extends StatefulWidget {
@@ -35,7 +35,7 @@ class BrandedLineChart extends StatefulWidget {
   /// Formats the header value ("12,450 kg", "128 min").
   final String Function(double value) valueFormatter;
 
-  /// Formats Y-axis labels (compact, unitless — the section title owns
+  /// Formats Y-axis labels (compact, unitless. the section title owns
   /// the unit).
   final String Function(double value) axisFormatter;
 
@@ -53,7 +53,7 @@ class BrandedLineChart extends StatefulWidget {
   /// the compact axis ticks so the chart reads as a standard labelled plot.
   ///
   /// This is a UNIT and nothing else. It must never be used to describe what
-  /// the chart is plotting — see [metricLabel].
+  /// the chart is plotting. see [metricLabel].
   final String? yAxisUnit;
 
   /// What this chart is PLOTTING, for the screen-reader summary:
@@ -88,7 +88,7 @@ class BrandedLineChart extends StatefulWidget {
 
   /// Compact axis labels with no float noise: 850 → "850", 3000 → "3k",
   /// 9000 → "9k" (never "9.0k"), 12500 → "12.5k". One rule for every
-  /// chart in the app — axis language must not differ between screens.
+  /// chart in the app. axis language must not differ between screens.
   /// Public (not underscored) so the regression test can pin the contract.
   static String defaultAxisFormat(double v) {
     if (v >= 1000) {
@@ -140,11 +140,11 @@ class _BrandedLineChartState extends State<BrandedLineChart> {
     final data = widget.data;
     if (data.isEmpty) return _empty(context);
     // A line needs two points to be a line. With exactly one session a lone
-    // floating dot reads as "broken" — show the value as a confident single
+    // floating dot reads as "broken". show the value as a confident single
     // stat instead (the most common state for a new / just-imported routine).
     if (data.length == 1) return _single(context, data.first);
 
-    // Accent is resolved once per build — every brand-colored mark below
+    // Accent is resolved once per build. every brand-colored mark below
     // (line, dots, touch indicator, area fill, date header) reads from the
     // live palette. fl_chart ignores ThemeData, so this explicit injection is
     // the ONLY way the chart tracks the accent.
@@ -168,7 +168,7 @@ class _BrandedLineChartState extends State<BrandedLineChart> {
     // Intentional X-label density: first, last, and ~2 between.
     final labelStep = n <= 4 ? 1 : (n / 4).ceil();
 
-    // Average reference line — only meaningful with 3+ points AND visible
+    // Average reference line. only meaningful with 3+ points AND visible
     // spread. On a flat series avg == every value, so the dashed line would
     // draw directly on top of the data line and trail past the last point
     // with a stray "avg" caption crowding the selected dot.
@@ -190,7 +190,7 @@ class _BrandedLineChartState extends State<BrandedLineChart> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Value header — updates on touch, no floating tooltip box.
+          // Value header. updates on touch, no floating tooltip box.
           Padding(
             padding: const EdgeInsets.only(left: 6, bottom: 12),
             child: Row(
@@ -238,7 +238,7 @@ class _BrandedLineChartState extends State<BrandedLineChart> {
                 titlesData: FlTitlesData(
                   topTitles: const AxisTitles(
                       sideTitles: SideTitles(showTitles: false)),
-                  // Right axis disabled — no digit labels on the right side.
+                  // Right axis disabled. no digit labels on the right side.
                   rightTitles: const AxisTitles(
                       sideTitles: SideTitles(showTitles: false)),
                   leftTitles: AxisTitles(
@@ -311,7 +311,7 @@ class _BrandedLineChartState extends State<BrandedLineChart> {
                     final i = (resp?.lineBarSpots?.isNotEmpty ?? false)
                         ? resp!.lineBarSpots!.first.spotIndex
                         : null;
-                    // Selecting a point is a discrete selection — buzz like
+                    // Selecting a point is a discrete selection. buzz like
                     // every other selection in the app, only when it changes.
                     if (i != null && i != _touchedIndex) {
                       HapticFeedback.selectionClick();
@@ -330,7 +330,7 @@ class _BrandedLineChartState extends State<BrandedLineChart> {
                       show: true,
                       getDotPainter: (spot, pct, bar, i) {
                         // Only the SELECTED point (defaults to latest, moves
-                        // on tap) gets the emphasized ringed dot — no
+                        // on tap) gets the emphasized ringed dot. no
                         // permanent white ring decorating the last point.
                         final isSelected = i == selIndex;
                         return FlDotCirclePainter(
@@ -354,7 +354,7 @@ class _BrandedLineChartState extends State<BrandedLineChart> {
                     ),
                   ),
                 ],
-                // Dashed average line — a quiet reference the eye can read
+                // Dashed average line. a quiet reference the eye can read
                 // each point against. Hidden for trivial 1-2 point series.
                 extraLinesData: ExtraLinesData(
                   horizontalLines: avg == null
@@ -482,7 +482,7 @@ class _BrandedLineChartState extends State<BrandedLineChart> {
     );
   }
 
-  /// Single-session state — a confident stat, not a lonely dot.
+  /// Single-session state. a confident stat, not a lonely dot.
   Widget _single(BuildContext context, ChartPoint p) {
     final accent = context.accent;
     return Semantics(
@@ -519,7 +519,7 @@ class _BrandedLineChartState extends State<BrandedLineChart> {
                 const SizedBox(width: 6),
                 Flexible(
                   child: Text(
-                    'One session logged — finish another to chart your trend',
+                    'One session logged. finish another to chart your trend',
                     style: RDStyles.emptySub,
                   ),
                 ),
@@ -556,7 +556,7 @@ class _BrandedLineChartState extends State<BrandedLineChart> {
                     margin: const EdgeInsets.symmetric(horizontal: 2.5),
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(6),
-                      // Accent-derived ghost bars — fade the live accent to
+                      // Accent-derived ghost bars. fade the live accent to
                       // transparent so these always match the selected palette.
                       // Previously hardcoded purple [0xFF3A2A55 → 0xFF1A1A1D].
                       gradient: LinearGradient(

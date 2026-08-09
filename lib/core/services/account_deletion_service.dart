@@ -20,7 +20,7 @@ class AccountDeletionOutcome {
   final bool cloudPurged;
 
   /// The Supabase auth identity itself was deleted (requires the server-side
-  /// Edge Function — the client cannot delete its own `auth.users` row).
+  /// Edge Function. the client cannot delete its own `auth.users` row).
   final bool authUserDeleted;
 
   /// Local DB + preferences + secure storage were wiped and the session ended.
@@ -40,13 +40,13 @@ class AccountDeletionOutcome {
 /// Orchestrates irreversible account deletion across the local-first stack.
 ///
 /// Sequence (cloud calls first, while the session is still valid):
-///   1. Edge Function `delete-account` — purges `sync_objects` + `profiles`
+///   1. Edge Function `delete-account`. purges `sync_objects` + `profiles`
 ///      AND the `auth.users` identity with the service role (complete path).
 ///   2. Fallback if the function is unreachable: delete the user's OWN rows
 ///      directly via PostgREST (RLS own-row). Data is gone; the empty auth
-///      identity may linger until the function runs — surfaced honestly.
+///      identity may linger until the function runs. surfaced honestly.
 ///   3. Best-effort purge of the `profile-images` Storage object. Run
-///      unconditionally regardless of which path above succeeded — this
+///      unconditionally regardless of which path above succeeded. this
 ///      client cannot verify the Edge Function's server-side implementation
 ///      also covers Storage, so it purges its own way defensively. A no-op
 ///      (object never existed) is indistinguishable from success here and
@@ -59,7 +59,7 @@ class AccountDeletionOutcome {
 ///
 /// The client is resolved per call and may be null: if Supabase never
 /// initialised there is no session to purge, and we take the "no session"
-/// branch — which still wipes local data. Failing closed on the device is the
+/// branch. which still wipes local data. Failing closed on the device is the
 /// safer outcome. Resolving per call rather than at construction matters here
 /// more than anywhere else: a captured null would mean a user who asked to
 /// delete their account silently kept every byte of their cloud data.
@@ -92,8 +92,8 @@ class AccountDeletionService {
         authUserDeleted: false,
         localWiped: wiped,
         note: client == null
-            ? 'Supabase unavailable — local data wiped only.'
-            : 'No active session — local data wiped only.',
+            ? 'Supabase unavailable. local data wiped only.'
+            : 'No active session. local data wiped only.',
       );
     }
 
@@ -136,7 +136,7 @@ class AccountDeletionService {
     // 3 ── Best-effort Storage purge (profile photo). Unconditional: this is
     //     personal data too, and it lives outside every table the steps
     //     above touch, so neither path above is guaranteed to have removed
-    //     it. Never surfaced as a reason to abort — a lingering image must
+    //     it. Never surfaced as a reason to abort. a lingering image must
     //     not block the rest of an otherwise-successful deletion.
     try {
       await client.storage
@@ -153,7 +153,7 @@ class AccountDeletionService {
       debugPrint('[AccountDeletion] cloud=$cloudPurged auth=$authUserDeleted '
           'local=$localWiped note=$note');
       if (!authUserDeleted) {
-        debugPrint('[AccountDeletion] WARNING: auth.users identity survived — '
+        debugPrint('[AccountDeletion] WARNING: auth.users identity survived. '
             're-login will reuse the same uid unless the Edge Function deletes it.');
       }
     }
@@ -175,7 +175,7 @@ class AccountDeletionService {
       try {
         await _resolveClient()?.auth.signOut();
       } catch (_) {
-        // Already signed out / offline — proceed with the local wipe anyway.
+        // Already signed out / offline. proceed with the local wipe anyway.
       }
 
       await WorkoutDraftStore().clear();

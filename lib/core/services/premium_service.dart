@@ -14,13 +14,13 @@ import '../database/database.dart';
 ///   * GymLog must behave identically whether RevenueCat is reachable,
 ///     unconfigured (no API keys in .env), or unsupported (web/desktop).
 ///   * The local Drift `user_profiles.isPremium` / `premiumExpiry` columns
-///     are the OFFLINE CACHE — every CustomerInfo update is mirrored there,
+///     are the OFFLINE CACHE. every CustomerInfo update is mirrored there,
 ///     and `isPremiumProvider` falls back to them when RC has no answer.
 ///   * No RC types leak into widgets except through [customerInfoStream]
 ///     and the paywall (which needs Offerings/Package for live pricing).
 ///
 /// Expected compile-time config (via --dart-define-from-file=.env,
-/// never hardcoded, never committed — see lib/core/config/env.dart):
+/// never hardcoded, never committed. see lib/core/config/env.dart):
 ///   REVENUECAT_ANDROID_KEY / REVENUECAT_IOS_KEY
 ///
 /// Expected dashboard setup (manual):
@@ -47,7 +47,7 @@ class PremiumService with WidgetsBindingObserver {
   final _customerInfoController = StreamController<CustomerInfo>.broadcast();
 
   /// Live entitlement updates (purchase, renewal, expiration, restore).
-  /// Never emits when RevenueCat is unavailable — consumers must fall back
+  /// Never emits when RevenueCat is unavailable. consumers must fall back
   /// to the local Drift cache.
   Stream<CustomerInfo> get customerInfoStream => _customerInfoController.stream;
 
@@ -62,7 +62,7 @@ class PremiumService with WidgetsBindingObserver {
       ? Env.revenueCatAndroidKey
       : Env.revenueCatIosKey;
 
-  /// Configures the SDK. Safe to call on any platform — degrades to a no-op
+  /// Configures the SDK. Safe to call on any platform. degrades to a no-op
   /// when unsupported or when API keys are absent.
   Future<void> initialize({String? userId}) async {
     _userId = userId;
@@ -71,8 +71,7 @@ class PremiumService with WidgetsBindingObserver {
     final key = _apiKey;
     if (key == null || key.isEmpty) {
       if (kDebugMode) {
-        debugPrint(
-            '[PremiumService] No RevenueCat key — running in free mode.');
+        debugPrint('[PremiumService] No RevenueCat key. running in free mode.');
       }
       return;
     }
@@ -115,7 +114,7 @@ class PremiumService with WidgetsBindingObserver {
     }
   }
 
-  /// Re-fetch entitlements — called on app foreground so a subscription
+  /// Re-fetch entitlements. called on app foreground so a subscription
   /// bought/cancelled outside the app reflects without a restart.
   Future<void> refresh() async {
     if (!_configured) return;
@@ -132,7 +131,7 @@ class PremiumService with WidgetsBindingObserver {
   }
 
   /// Current offerings, or null when RC is unavailable. The paywall renders
-  /// a graceful "pricing unavailable" state on null — it must never crash.
+  /// a graceful "pricing unavailable" state on null. it must never crash.
   Future<Offerings?> offerings({bool forceRefresh = false}) async {
     if (!_configured) return null;
 
@@ -235,7 +234,7 @@ class PremiumService with WidgetsBindingObserver {
       final profile = await _db.userDao.getUserOrNull(userId);
       if (profile == null) return;
       if (profile.isPremium == isPremium && profile.premiumExpiry == expiry) {
-        return; // no-op — avoid useless stream churn
+        return; // no-op. avoid useless stream churn
       }
 
       await _db.userDao.setPremiumStatus(

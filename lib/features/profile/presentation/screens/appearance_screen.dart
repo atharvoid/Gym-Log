@@ -9,14 +9,14 @@ import 'package:gymlog/core/theme/dynamic_accent_theme.dart';
 import 'package:gymlog/core/theme/theme_palette.dart';
 import 'package:gymlog/shared/layout/adaptive.dart';
 
-/// Appearance — the settings sub-screen that houses the accent-color picker.
+/// Appearance. the settings sub-screen that houses the accent-color picker.
 ///
 /// NAV PATH: Profile → Settings → Appearance → Accent Color. Its only job for
 /// now is the accent picker; unrelated settings do not belong here.
 ///
 /// UX CONTRACT (deliberate, per design): a curated grid of named swatches with
 /// NO live preview pane, NO apply button, and NO cancel. Tapping a swatch is
-/// the entire interaction — it applies through [dynamicAccentThemeProvider]
+/// the entire interaction. it applies through [dynamicAccentThemeProvider]
 /// immediately (so the nav bar / header / charts recolor within a frame),
 /// persists the choice, and fires a selection haptic. The user simply taps and
 /// leaves.
@@ -63,7 +63,7 @@ class AppearanceScreen extends ConsumerWidget {
             const SizedBox(height: 8),
             Text(
               'Sets the accent used across buttons, the active tab, charts, and '
-              'highlights. Tap a color — it applies instantly.',
+              'highlights. Tap a color. it applies instantly.',
               style: AppText.caption(color: surface.textTertiary)
                   .copyWith(height: 1.45),
             ),

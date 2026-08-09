@@ -176,7 +176,7 @@ abstract final class Bootstrap {
   ///
   /// The gate is completed from exactly one place: [_postLaunchBackgroundWork],
   /// which is scheduled from a post-frame callback. That callback is not
-  /// guaranteed to run — a launch straight into the background, or a throw
+  /// guaranteed to run. a launch straight into the background, or a throw
   /// during the first build, leaves it pending indefinitely. Every surface
   /// awaiting the gate (SplashScreen first) would then wait forever.
   ///
@@ -188,11 +188,11 @@ abstract final class Bootstrap {
       if (cloudReady.isCompleted) return;
       if (kDebugMode) {
         debugPrint('[Bootstrap] cloud readiness watchdog fired after '
-            '${cloudReadyWatchdog.inSeconds}s — the post-frame callback never '
+            '${cloudReadyWatchdog.inSeconds}s. the post-frame callback never '
             'completed the gate. Continuing in local-only mode.');
       }
       unawaited(Sentry.captureMessage(
-        'Cloud readiness watchdog fired — post-frame bootstrap never resolved',
+        'Cloud readiness watchdog fired. post-frame bootstrap never resolved',
         level: SentryLevel.warning,
       ));
       cloudReady.complete(false);
@@ -210,7 +210,7 @@ abstract final class Bootstrap {
   /// Catalog hydration is ordered BEFORE integrity verification because both
   /// hit the same [AppDatabase], which runs on a single background isolate
   /// with a single connection (`NativeDatabase.createInBackground`). They do
-  /// not run in parallel — they interleave on one worker. Hydration gates the
+  /// not run in parallel. they interleave on one worker. Hydration gates the
   /// exercise library being usable; integrity verification has no deadline and
   /// no UI waiting on it, so it yields.
   static Future<void> _postLaunchBackgroundWork({
@@ -220,7 +220,7 @@ abstract final class Bootstrap {
     required Completer<bool> cloudReady,
   }) async {
     try {
-      // 1. Cloud readiness — the splash is blocked on this. Bounded timeout.
+      // 1. Cloud readiness. the splash is blocked on this. Bounded timeout.
       final cloudOk = await _initCloud();
       // Guarded: the watchdog may have already resolved the gate, and
       // completing a completed Completer throws StateError.
@@ -235,8 +235,8 @@ abstract final class Bootstrap {
       //    before the user has ever started a single set gives the one-shot
       //    OS prompt zero context, and a denial here is permanent on both
       //    platforms. The channel setup in init() still has to happen at
-      //    cold start — rest-timer notifications need somewhere to land the
-      //    moment they're needed — but the permission REQUEST itself has
+      //    cold start. rest-timer notifications need somewhere to land the
+      //    moment they're needed. but the permission REQUEST itself has
       //    moved to RestTimerNotifier.start(), the first moment the user is
       //    actually using the feature the permission exists for.
       unawaited(notificationService.init());
@@ -261,7 +261,7 @@ abstract final class Bootstrap {
       // silently degraded app that still looks fine. debugPrint runs in every
       // build mode (release included) but nobody is watching a production
       // device's console, so Sentry.captureException below is what actually
-      // surfaces this failure in practice — the local debugPrint is dev-
+      // surfaces this failure in practice. the local debugPrint is dev-
       // console convenience only and is gated so it does not also write raw
       // exception text to the release-build system log (see C38).
       if (kDebugMode) {
@@ -292,7 +292,7 @@ abstract final class Bootstrap {
   /// frame timings we are trying to observe.
   static FutureOr<void> _configureSentry(SentryFlutterOptions options) {
     options.dsn = Env.sentryDsn;
-    // Auto-infers release from pubspec.yaml — do NOT hardcode.
+    // Auto-infers release from pubspec.yaml. do NOT hardcode.
     options.environment = kReleaseMode ? 'production' : 'development';
     options.tracesSampleRate = kReleaseMode ? 0.1 : 0.2;
     // Profiling samples the isolate on a timer; keep it off outside release.
@@ -305,7 +305,7 @@ abstract final class Bootstrap {
     options.debug = false;
     options.diagnosticLevel = SentryLevel.warning;
 
-    // Scrub PII before sending — only the Supabase UUID is ever attached.
+    // Scrub PII before sending. only the Supabase UUID is ever attached.
     options.beforeSend = (event, hint) {
       return event.copyWith(
         user: event.user == null
@@ -321,7 +321,7 @@ abstract final class Bootstrap {
     if (!Env.hasSentryConfig) {
       if (kDebugMode) {
         debugPrint(
-            '[Bootstrap] No SENTRY_DSN in this build — Sentry will initialize but '
+            '[Bootstrap] No SENTRY_DSN in this build. Sentry will initialize but '
             'events will not be sent. Build with --dart-define-from-file=.env '
             'to enable crash reporting.');
       }
@@ -335,7 +335,7 @@ abstract final class Bootstrap {
   ///
   /// This intentionally does NOT run `PRAGMA quick_check`. quick_check walks
   /// every page in the file, so its cost scales with the user's logged history
-  /// — the users with the most data paid the longest blank-window wait, and on
+  ///. the users with the most data paid the longest blank-window wait, and on
   /// a large database it can exceed the platform ANR budget. A single-row read
   /// still surfaces the failures that genuinely block launch (unopenable file,
   /// corrupt header, failed or half-applied migration), because Drift opens the
@@ -403,7 +403,7 @@ abstract final class Bootstrap {
 
   // ── Stage 4b helper ───────────────────────────────────
 
-  /// Reads the user's saved accent palette. Never throws — any failure falls
+  /// Reads the user's saved accent palette. Never throws. any failure falls
   /// back to the default accent ([ThemePalette.fallback], Volt) so startup is
   /// never blocked by preferences.
   static Future<ThemePalette> _initAccentPalette() async {
@@ -423,7 +423,7 @@ abstract final class Bootstrap {
     } catch (e) {
       if (kDebugMode) {
         debugPrint(
-            '[Bootstrap] accent palette load failed — default accent: $e');
+            '[Bootstrap] accent palette load failed. default accent: $e');
       }
       return ThemePalette.fallback;
     }
@@ -438,7 +438,7 @@ abstract final class Bootstrap {
   ///
   /// IMPORTANT: `.timeout()` is a BOUND, not a CANCELLATION. Returning false
   /// here means "cloud was not ready in time", NOT "cloud will never be
-  /// ready" — `Supabase.initialize()` keeps running and may succeed moments
+  /// ready". `Supabase.initialize()` keeps running and may succeed moments
   /// later. Any consumer that resolves the client exactly once off the back of
   /// this result will be permanently wrong on a merely-slow launch. See
   /// [_initCommerce] for the re-resolve pattern.
@@ -446,7 +446,7 @@ abstract final class Bootstrap {
     if (!Env.hasSupabaseConfig) {
       if (kDebugMode) {
         debugPrint(
-            '[Bootstrap] No Supabase config — auth unavailable; local logging '
+            '[Bootstrap] No Supabase config. auth unavailable; local logging '
             'still works.');
       }
     }
@@ -459,12 +459,12 @@ abstract final class Bootstrap {
     } on TimeoutException {
       if (kDebugMode) {
         debugPrint(
-            '[Bootstrap] Supabase init timed out — continuing in local-only mode.');
+            '[Bootstrap] Supabase init timed out. continuing in local-only mode.');
       }
       return false;
     } catch (e) {
       if (kDebugMode) {
-        debugPrint('[Bootstrap] Supabase init failed — local-only mode: $e');
+        debugPrint('[Bootstrap] Supabase init failed. local-only mode: $e');
       }
       return false;
     }
@@ -474,18 +474,18 @@ abstract final class Bootstrap {
 
   /// Configures premium entitlements (RevenueCat) on the SAME [PremiumService]
   /// instance the provider scope exposes. Degrades to free mode when keys are
-  /// absent or the platform is unsupported — never blocks launch.
+  /// absent or the platform is unsupported. never blocks launch.
   ///
   /// DO NOT CONSTRUCT A SERVICE HERE. This helper previously did
   /// `PremiumService(db)`, initialised that local instance, wired the auth
-  /// listener to it, and returned it — while the call site discarded the
+  /// listener to it, and returned it. while the call site discarded the
   /// return value. The instance actually exposed through
   /// `premiumServiceProvider` was therefore never initialised: `_configured`
   /// stayed false, `offerings()` returned null, and the paywall permanently
   /// showed "Pricing unavailable. Tap to retry." even with valid keys.
   ///
   /// Uses [supabaseClientOrNull] rather than touching `Supabase.instance`
-  /// directly — the ONLY seam every other cloud consumer in this codebase
+  /// directly. the ONLY seam every other cloud consumer in this codebase
   /// goes through. This function used to bypass it with ad hoc try/catch,
   /// which was safe only by accident of call order in
   /// [_postLaunchBackgroundWork]; nothing enforced that ordering.
@@ -521,7 +521,7 @@ abstract final class Bootstrap {
     if (client == null) return;
 
     // Late resolution means the identity we configured with above may be
-    // stale. Re-assert it — but only when non-null, because setUser(null) on a
+    // stale. Re-assert it. but only when non-null, because setUser(null) on a
     // configured SDK issues a pointless Purchases.logOut() for a user who was
     // never logged in.
     final resolvedUserId = client.auth.currentUser?.id;

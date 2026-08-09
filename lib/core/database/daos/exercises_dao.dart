@@ -49,7 +49,7 @@ class ExercisesDao extends DatabaseAccessor<AppDatabase>
       (select(exercises)..where((t) => t.id.equals(id))).getSingle();
 
   Future<List<Exercise>> searchExercises(String query, {String? userId}) {
-    // Neutralize LIKE wildcards — exercise names never contain % or _,
+    // Neutralize LIKE wildcards. exercise names never contain % or _,
     // so treating them as plain separators keeps search predictable.
     final sanitized = query.replaceAll('%', ' ').replaceAll('_', ' ').trim();
     if (userId == null || userId.isEmpty) {
@@ -66,7 +66,7 @@ class ExercisesDao extends DatabaseAccessor<AppDatabase>
         .get();
   }
 
-  /// Case-insensitive exact-name existence check — guards the manual
+  /// Case-insensitive exact-name existence check. guards the manual
   /// "Create custom exercise" flow against duplicating a catalog entry.
   Future<bool> exerciseNameExists(String name, {String? userId}) async {
     if (userId == null || userId.isEmpty) {
@@ -114,7 +114,7 @@ class ExercisesDao extends DatabaseAccessor<AppDatabase>
         .get();
   }
 
-  /// COUNT(*) in SQL — the old version loaded all ~1,300 rows just to count.
+  /// COUNT(*) in SQL. the old version loaded all ~1,300 rows just to count.
   Future<int> getExerciseCount() {
     final count = exercises.id.count();
     final query = selectOnly(exercises)..addColumns([count]);
@@ -132,7 +132,7 @@ class ExercisesDao extends DatabaseAccessor<AppDatabase>
   /// Creates a user-defined exercise and returns its new row id.
   ///
   /// Used by CSV import when an incoming exercise name has no match in the
-  /// bundled catalog — keeping the import lossless. [exerciseDbId] stays null
+  /// bundled catalog. keeping the import lossless. [exerciseDbId] stays null
   /// (no GIF), [isCustom] is set, and [createdBy] records the owner.
   Future<int> createCustomExercise(
     String name, {
@@ -165,7 +165,7 @@ class ExercisesDao extends DatabaseAccessor<AppDatabase>
   ///
   /// Upserts every catalog entry keyed by `exerciseDbId`: existing rows are
   /// updated in place (standard name, parent→child muscles, refreshed GIF)
-  /// while their integer id — and therefore every workout FK — is preserved;
+  /// while their integer id. and therefore every workout FK. is preserved;
   /// missing rows are inserted. Entries without a GIF yet get a null gifUrl.
   /// User-created custom exercises (null exerciseDbId) are never touched.
   ///
@@ -181,13 +181,13 @@ class ExercisesDao extends DatabaseAccessor<AppDatabase>
       // Parse the 822-entry catalog in a BACKGROUND isolate. jsonDecode of a
       // ~470 KB string blocks the UI isolate long enough to drop frames on a
       // first-launch scroll; compute() moves the parse off the main thread.
-      // The result is plain maps of primitives — cheap to ship across the
+      // The result is plain maps of primitives. cheap to ship across the
       // isolate boundary. The Drift inserts below already run on Drift's own
       // background executor (NativeDatabase.createInBackground).
       final list = await compute(_decodeExerciseCatalog, jsonString);
 
       // Upsert keyed by exerciseDbId. Existing catalog rows are UPDATED in
-      // place — renamed to the standard name, re-muscled, and GIF refreshed —
+      // place. renamed to the standard name, re-muscled, and GIF refreshed —
       // while their integer id is preserved, so every workout_exercises /
       // workout_sets foreign key stays valid. New exercises are inserted.
       // User-created custom exercises (exerciseDbId IS NULL) never collide and
@@ -247,10 +247,10 @@ class ExercisesDao extends DatabaseAccessor<AppDatabase>
     }
   }
 
-  /// DEBUG UTILITY — call once from main.dart, then remove the call.
+  /// DEBUG UTILITY. call once from main.dart, then remove the call.
   ///
   /// Clears the hydration flag so [hydrateFromJson] re-runs on next launch.
-  /// Does NOT delete any rows — existing workout history is fully preserved.
+  /// Does NOT delete any rows. existing workout history is fully preserved.
   /// The Phase-1 UPDATE in [hydrateFromJson] will patch stale gifUrls.
   Future<void> resetHydration() async {
     final prefs = await SharedPreferences.getInstance();
@@ -264,7 +264,7 @@ class ExercisesDao extends DatabaseAccessor<AppDatabase>
     await prefs.remove('exercises_hydrated_v2');
     await prefs.remove('exercises_hydrated_v1');
     debugPrint(
-        '[ExercisesDao] Hydration flag cleared — will re-run on next launch.');
+        '[ExercisesDao] Hydration flag cleared. will re-run on next launch.');
   }
 
   // ── Default Seed (fallback only) ───────────────────────────────────────────

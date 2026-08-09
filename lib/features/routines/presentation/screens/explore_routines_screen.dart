@@ -246,7 +246,7 @@ class _ExploreRoutinesScreenState extends ConsumerState<ExploreRoutinesScreen>
     if (!mounted) return;
     final msg = missed == 0
         ? '"$name" added to My Routines.'
-        : '"$name" added — $missed exercise${missed > 1 ? 's' : ''} not in your library were skipped.';
+        : '"$name" added. $missed exercise${missed > 1 ? 's' : ''} not in your library were skipped.';
     showAppSnackBar(
       context,
       message: msg,
@@ -605,7 +605,7 @@ class _FilterChip extends StatelessWidget {
       excludeSemantics: true,
       child: Material(
         // Neutral segmented-selector language: surface4 raised fill for
-        // selected, surface3 for idle. Intentionally NOT accent.base — filter
+        // selected, surface3 for idle. Intentionally NOT accent.base. filter
         // chips repeat in a row so a saturated fill would flood the header.
         color: selected ? surface.surface4 : surface.surface3,
         borderRadius: AppRadius.buttonSecondaryAll,
@@ -866,7 +866,7 @@ class _TemplateCard extends StatelessWidget {
           color: surface.bgSurface,
           borderRadius: AppRadius.cardAll,
           border: Border.all(color: surface.borderSubtle),
-          // No per-card glow — repeated accent halos down a scrolling list
+          // No per-card glow. repeated accent halos down a scrolling list
           // are visually loud and fight each other. Only the single Featured
           // hero card carries a glow (see _FeaturedCard above).
         ),
@@ -1047,7 +1047,7 @@ class _ImportPill extends StatelessWidget {
     final accent = context.accent;
 
     // Not-imported: neutral-raised "Add" with accent download glyph only.
-    // Imported:     plain "View" — no check icon, no green tint. The snackbar
+    // Imported:     plain "View". no check icon, no green tint. The snackbar
     //               already confirmed the add; a persistent tick + green here
     //               just adds noise. Both states use the same neutral surface.
     final Widget child = importing
@@ -1059,7 +1059,7 @@ class _ImportPill extends StatelessWidget {
                 strokeWidth: 2, color: surface.textPrimary),
           )
         : (imported
-            // Imported: no icon — just "View".
+            // Imported: no icon. just "View".
             ? Text(
                 'View',
                 key: const ValueKey('view'),
@@ -1072,7 +1072,7 @@ class _ImportPill extends StatelessWidget {
                 children: [
                   Icon(Icons.download_rounded, size: 16, color: accent.base),
                   const SizedBox(width: 6),
-                  // No onAccentHalo shadow — label is on a neutral fill.
+                  // No onAccentHalo shadow. label is on a neutral fill.
                   Text('Add',
                       style: AppText.statLabel(color: surface.textPrimary)),
                 ],
@@ -1084,11 +1084,11 @@ class _ImportPill extends StatelessWidget {
       label: importing
           ? 'Adding routine'
           : imported
-              ? 'Added — view routine'
+              ? 'Added. view routine'
               : 'Add this routine',
       excludeSemantics: true,
       child: Material(
-        // Both states neutral-raised — no green tint for imported.
+        // Both states neutral-raised. no green tint for imported.
         color: surface.surface3,
         shape: RoundedRectangleBorder(
           side: BorderSide(color: surface.borderDefault),

@@ -391,7 +391,7 @@ class _AgeStepperSheetState extends State<_AgeStepperSheet> {
               width: 100,
               child: Center(
                 child: Text(
-                  _age == null ? '—' : '$currentAge',
+                  _age == null ? '-' : '$currentAge',
                   style: AppText.heroStat(color: surface.textPrimary).copyWith(
                     fontSize: 48,
                     fontWeight: FontWeight.w800,

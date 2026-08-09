@@ -153,7 +153,7 @@ class _SetTableHeader extends StatelessWidget {
       case MeasurementType.distance:
         return 'DISTANCE & TIME';
       case MeasurementType.unknown:
-        return '—';
+        return '-';
     }
   }
 
@@ -259,7 +259,7 @@ class _DetailSetRow extends StatelessWidget {
           if (hasPrevHistory)
             delta != null
                 ? _DeltaChip(delta: delta)
-                : Text('—', style: AppText.statLabel()),
+                : Text('-', style: AppText.statLabel()),
         ],
       ),
     );

@@ -11,8 +11,8 @@ enum PushResultStatus {
   ///
   /// A6 re-run: this used to be reported as [conflict] with a null
   /// serverObject, which made SyncEngine's quarantine branch unreachable.
-  /// It is a distinct outcome from a revision conflict — there is nothing to
-  /// merge and nothing to retry — so it gets a distinct status.
+  /// It is a distinct outcome from a revision conflict. there is nothing to
+  /// merge and nothing to retry. so it gets a distinct status.
   ownershipMismatch,
 }
 
@@ -70,7 +70,7 @@ abstract class SyncRemote {
 /// Holds a [SupabaseClientResolver], NOT a client. The client is resolved on
 /// every operation because this object is created inside a memoised Riverpod
 /// provider: if it captured the client at construction time it would capture
-/// whatever was true during startup — usually `null` — and never recover.
+/// whatever was true during startup. usually `null`. and never recover.
 /// Resolving per call means the first sync after cloud init succeeds even
 /// though the remote itself was built before it.
 class SupabaseSyncRemote implements SyncRemote {
@@ -89,7 +89,7 @@ class SupabaseSyncRemote implements SyncRemote {
     final client = _resolveClient();
     if (client == null) {
       throw StateError(
-          'Cloud sync is unavailable — Supabase is not initialised.');
+          'Cloud sync is unavailable. Supabase is not initialised.');
     }
     return client;
   }
@@ -100,7 +100,7 @@ class SupabaseSyncRemote implements SyncRemote {
     final client = _client;
 
     // A6: one bulk lookup for the whole batch instead of one `select` per
-    // object — up to 200 serial round trips collapsed into 1.
+    // object. up to 200 serial round trips collapsed into 1.
     final ids = [for (final o in objects) o.id];
     final existingRows = await client
         .from(_table)

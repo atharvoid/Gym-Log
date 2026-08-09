@@ -23,7 +23,7 @@ class RemoteProfile {
 
 /// Authenticated remote profile API. Implementations talk to the backend on
 /// behalf of the signed-in user; callers (ProfileSyncService) are responsible
-/// for catching failures and queueing retries — these methods may throw.
+/// for catching failures and queueing retries. these methods may throw.
 abstract class ProfileRemote {
   /// The current user's profile, or null if they have none yet.
   Future<RemoteProfile?> fetch(String userId);
@@ -56,7 +56,7 @@ class SupabaseProfileRemote implements ProfileRemote {
   SupabaseClient get _client {
     final client = _resolveClient();
     if (client == null) {
-      throw StateError('Supabase is not initialised — profile sync '
+      throw StateError('Supabase is not initialised. profile sync '
           'is unavailable.');
     }
     return client;
@@ -97,7 +97,7 @@ class SupabaseProfileRemote implements ProfileRemote {
 
 /// Explicitly unavailable implementation.
 ///
-/// No longer produced by `profileRemoteProvider` — [SupabaseProfileRemote]
+/// No longer produced by `profileRemoteProvider`. [SupabaseProfileRemote]
 /// now degrades on its own by resolving the client per call. This is kept as
 /// the deliberate test double for "cloud is definitively absent", where a
 /// resolver returning null is less readable than a named type.
@@ -105,7 +105,7 @@ class UnavailableProfileRemote implements ProfileRemote {
   const UnavailableProfileRemote();
 
   static StateError _unavailable() =>
-      StateError('Supabase is not initialised — profile sync is unavailable.');
+      StateError('Supabase is not initialised. profile sync is unavailable.');
 
   @override
   Future<RemoteProfile?> fetch(String userId) =>

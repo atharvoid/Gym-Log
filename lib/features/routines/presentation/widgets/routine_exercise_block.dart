@@ -35,7 +35,7 @@ class RoutineExerciseBlock extends StatelessWidget {
     this.unit = 'kg',
   });
 
-  String _fmtWeight(double? w) => w == null ? '–' : formatWeight(w, unit);
+  String _fmtWeight(double? w) => w == null ? '-' : formatWeight(w, unit);
 
   /// The planned scheme from the routine config — what you're meant to do.
   String get _target {
@@ -50,7 +50,7 @@ class RoutineExerciseBlock extends StatelessWidget {
     if (sets.isEmpty) return 'No history yet';
     final top =
         sets.reduce((a, b) => (a.weightKg ?? 0) >= (b.weightKg ?? 0) ? a : b);
-    final r = top.reps?.toString() ?? '–';
+    final r = top.reps?.toString() ?? '-';
     final unitName = unit == 'lbs' ? 'pounds' : 'kilograms';
     return 'Last session, top set ${_fmtWeight(top.weightKg)} $unitName for $r reps';
   }
@@ -128,7 +128,7 @@ class RoutineExerciseBlock extends StatelessWidget {
             else
               ExcludeSemantics(
                 child: Text(
-                  'No history yet — your last session will show here',
+                  'No history yet. Your last session will show here',
                   style: AppText.caption(color: AppColors.textTertiary),
                 ),
               ),
@@ -147,7 +147,7 @@ class _SetTable extends StatelessWidget {
   /// Right gutter so the numeric columns sit inboard of the screen edge.
   static const double _numGutter = 20;
 
-  String _fmtWeight(double? w) => w == null ? '–' : formatWeight(w, unit);
+  String _fmtWeight(double? w) => w == null ? '-' : formatWeight(w, unit);
 
   @override
   Widget build(BuildContext context) {
@@ -225,7 +225,7 @@ class _SetTable extends StatelessWidget {
                   flex: 3,
                   child: Padding(
                     padding: const EdgeInsets.only(right: _numGutter),
-                    child: Text(sets[i].reps?.toString() ?? '–',
+                    child: Text(sets[i].reps?.toString() ?? '-',
                         style: AppText.value(), textAlign: TextAlign.right),
                   ),
                 ),

@@ -338,7 +338,7 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
     final accent = context.accent;
     final df = DateFormat('MMM d, yyyy');
     final range = (s.firstDate != null && s.lastDate != null)
-        ? '${df.format(s.firstDate!)} – ${df.format(s.lastDate!)}'
+        ? '${df.format(s.firstDate!)} to ${df.format(s.lastDate!)}'
         : 'Unknown';
     final surface = context.surface;
     // The user's DISPLAY preference. Deliberately not _assumedUnit: that is the

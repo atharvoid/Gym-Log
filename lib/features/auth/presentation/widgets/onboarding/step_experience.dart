@@ -62,7 +62,7 @@ class StepExperience extends ConsumerWidget {
           ),
           OnboardingSelectionCard(
             title: 'Intermediate',
-            subtitle: '6 months – 2 years, comfortable with form',
+            subtitle: '6 months to 2 years, comfortable with form',
             selected: draft.level == 'intermediate',
             onTap: () {
               ref

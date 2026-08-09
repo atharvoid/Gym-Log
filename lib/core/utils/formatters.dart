@@ -77,13 +77,13 @@ class MeasurementFormatter {
         }
         return distStr;
       case MeasurementType.unknown:
-        return '—';
+        return '-';
     }
   }
 
   /// Formats pace in MM:SS /km from distance in meters and duration in seconds.
   static String formatPace(double distanceMeters, int durationSeconds) {
-    if (distanceMeters <= 0 || durationSeconds <= 0) return '—';
+    if (distanceMeters <= 0 || durationSeconds <= 0) return '-';
     final paceSecsPerKm = (durationSeconds / (distanceMeters / 1000.0)).round();
     final mins = paceSecsPerKm ~/ 60;
     final secs = paceSecsPerKm % 60;

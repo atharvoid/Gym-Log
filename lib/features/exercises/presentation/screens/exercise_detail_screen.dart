@@ -119,7 +119,7 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
   }
 
   /// [_metricForToggle] in the unit the user actually reads. Call this exactly
-  /// once per value — the formatter downstream only appends a label.
+  /// once per value. the formatter downstream only appends a label.
   double? _displayMetric(
     ExerciseHistoryData e,
     int index,
@@ -150,7 +150,7 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
     final surface = context.surface;
     // Resolved here and threaded down by hand. The chart's valueFormatter runs
     // during painting rather than during build, so it must close over a plain
-    // value — reading the provider from inside it would be unsafe.
+    // value. reading the provider from inside it would be unsafe.
     final unit = ref.watch(weightUnitProvider);
 
     return exerciseAsync.when(
@@ -172,7 +172,7 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
       data: (exercise) {
         final disableAnims = MediaQuery.disableAnimationsOf(context);
 
-        // GIF section — sits OUTSIDE _entryFade so the Hero widget is never
+        // GIF section. sits OUTSIDE _entryFade so the Hero widget is never
         // clipped by the FadeTransition. For reduced-motion users: a static
         // frame with no Hero. BoxFit.cover matches the thumbnail source and
         // the flightShuttleBuilder in exercise_selection_screen.dart.
@@ -254,7 +254,7 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
                               if (m.trim().isNotEmpty) chips.add((m, false));
                             }
                           } catch (_) {
-                            /* malformed JSON — show primary only */
+                            /* malformed JSON. show primary only */
                           }
                           final accent = context.accent;
                           return Wrap(
@@ -427,7 +427,7 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
   }) {
     final toggles = _getToggleLabels(mType);
     // MeasurementType.unknown yields NO toggles, and this used to index into
-    // the empty list on the very next line — a RangeError on every build, so
+    // the empty list on the very next line. a RangeError on every build, so
     // any exercise with an unrecognised measurementType string crashed the
     // detail screen outright. The chart itself degrades gracefully (all its
     // values come back null and it renders the empty state), so a header
@@ -476,7 +476,7 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
             valueFormatter: (v) =>
                 _formatChartValue(v, activeIndex, mType, unit),
             // This screen replots the SAME component for up to four different
-            // metrics, so the spoken name has to follow the active toggle — a
+            // metrics, so the spoken name has to follow the active toggle. a
             // fixed string would be wrong three times out of four. Derived
             // from the toggle label so the repsOnly / duration / distance sets
             // are covered without a second mapping to keep in sync.
@@ -542,7 +542,7 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
             child: Semantics(
               // Was: button + selected and nothing else. No label, so a screen
               // reader announced an unnamed selected button and then read the
-              // toggle text as a separate loose node — the same defect as the
+              // toggle text as a separate loose node. the same defect as the
               // nav bar. See docs/a11y-semantics-checklist.md sections 2 and 3.
               container: true,
               button: true,
@@ -586,7 +586,7 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
 
   /// Formats a stored-kilogram personal record in the active unit.
   String _weightPr(double? kg, String unit) {
-    if (kg == null) return '—';
+    if (kg == null) return '-';
     final v = kgToDisplay(kg, unit);
     return '${v == v.truncateToDouble() ? v.toInt() : v.toStringAsFixed(1)} ${unitLabel(unit)}';
   }
@@ -609,7 +609,7 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
           _prDivider(surface),
           _prRow('Max Session Volume', _weightPr(prs.maxVolume, unit), surface),
           _prDivider(surface),
-          // A rep count, not a weight — left unconverted on purpose.
+          // A rep count, not a weight. left unconverted on purpose.
           _prRow('Max Reps', '${prs.maxReps} reps', surface),
         ]);
         break;
