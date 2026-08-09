@@ -119,9 +119,15 @@ class ExerciseBlock extends ConsumerWidget {
         exerciseMeta.$3.isEmpty ? const <String>[] : exerciseMeta.$3.split(',');
     final MeasurementType mType = exerciseMeta.$4;
 
-    final catalogById =
-        ref.watch(exerciseCatalogByIdProvider).valueOrNull ?? {};
-    final de = catalogById[exerciseId];
+    // Select ONLY this card's catalog entry. Watching exerciseCatalogByIdProvider
+    // directly hands back the whole map, so any catalog emission — hydration,
+    // a background refresh — rebuilt every visible card even though the pixels
+    // depend on exactly one entry. The selector confines the rebuild to the card
+    // whose own record actually changed.
+    final de = ref.watch(
+      exerciseCatalogByIdProvider
+          .select((async) => async.valueOrNull?[exerciseId]),
+    );
 
     final unit = ref.watch(exerciseUnitProvider(exerciseId));
     final previousSets =
@@ -143,7 +149,10 @@ class ExerciseBlock extends ConsumerWidget {
               width: 1.0,
             ),
           ),
-          clipBehavior: Clip.antiAlias,
+          // hardEdge, not antiAlias: at AppRadius.card the corners are
+          // indistinguishable either way, and an antialiased clip is a per-card
+          // cost paid on every scroll frame.
+          clipBehavior: Clip.hardEdge,
           padding: const EdgeInsets.fromLTRB(15, 15, 15, 13),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
