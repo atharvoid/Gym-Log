@@ -140,25 +140,26 @@ enum ThemePalette {
               Color(0xFFFECCFF),
             ],
           ),
-        // 3 — White: white ACCENT on the dark AMOLED canvas. Off-white base
-        // (not pure #FFFFFF) reads as premium pearl, not a blank void. Near-black
-        // onAccent keeps CTA labels legible on the pearl fill; bright light keeps
-        // accent text/hairlines crisp against black.
+        // 3 — White: a cool "ice-chrome" accent, not a flat neutral gray. A
+        // faint blue undertone (not pure #FFFFFF, not warm gray) puts it in
+        // the same cool family as Cyan/Purple instead of reading as "no
+        // theme" next to the other five. Near-black onAccent keeps CTA
+        // labels legible on the light fill; pure white keeps accent text/
+        // hairlines crisp against black.
         ThemePalette.white => const ThemePaletteTokens(
-            base: Color(0xFFF5F5F7), // pearl-white CTA / active / selected
-            light:
-                Color(0xFFE5E5EA), // bright near-white for accent text on black
-            dark: Color(0xFFC7C7CC), // pressed
-            muted: Color(0x24F5F5F7), // ~14% white tinted fill
-            glow: Color(0x1FF5F5F7), // ~12% white glow
-            onAccent: Color(0xFF0A0A0A), // near-black label ON the white fill
+            base: Color(0xFFEAF2FF), // ice-chrome CTA / active / selected
+            light: Color(0xFFFFFFFF), // pure white for accent text on black
+            dark: Color(0xFFB9C9E0), // pressed — cool steel-blue
+            muted: Color(0x24EAF2FF), // ~14% ice-chrome tinted fill
+            glow: Color(0x1FEAF2FF), // ~12% ice-chrome glow
+            onAccent: Color(0xFF0A0A0A), // near-black label ON the light fill
             muscleSplitRamp: [
-              Color(0xFFF5F5F7),
-              Color(0xFFD2D2D4),
-              Color(0xFFB0B0B1),
-              Color(0xFF8D8D8E),
-              Color(0xFF6A6A6B),
-              Color(0xFF474748),
+              Color(0xFFEAF2FF),
+              Color(0xFFCBD9EF),
+              Color(0xFFACC0DE),
+              Color(0xFF8DA7CE),
+              Color(0xFF6E8EBD),
+              Color(0xFF4F75AD),
             ],
           ),
         // 4 — Neon Cyan: bright analytical cyan. Near-black on-accent so a CTA
@@ -197,22 +198,25 @@ enum ThemePalette {
               Color(0xFFFFCCE0),
             ],
           ),
-        // 6 — Blaze Orange: bold, high-visibility warm accent.
+        // 6 — Blaze Orange: shifted off pure red-orange (which read as
+        // hazard-sign, not neon-sign) toward a brighter amber-tangerine —
+        // the same full-saturation, mid-lightness "electric" formula as
+        // Purple/Cyan/Magenta/Volt — so it glows instead of just warning.
         ThemePalette.blazeOrange => const ThemePaletteTokens(
-            base: Color(0xFFFF4D00),
-            light: Color(0xFFFF8A66),
-            dark: Color(0xFFCC3D00),
-            muted: Color(0x24FF4D00),
-            glow: Color(0x1FFF4D00),
+            base: Color(0xFFFF6600),
+            light: Color(0xFFFFA366),
+            dark: Color(0xFFCC5200),
+            muted: Color(0x24FF6600),
+            glow: Color(0x1FFF6600),
             onAccent:
                 Color(0xFF0A0A0A), // near-black on every palette — uniform rule
             muscleSplitRamp: [
-              Color(0xFFFF4D00),
-              Color(0xFFFF6F33),
-              Color(0xFFFF9166),
-              Color(0xFFFFB399),
-              Color(0xFFFFCBB3),
-              Color(0xFFFFE5D9),
+              Color(0xFFFF6600),
+              Color(0xFFFF8533),
+              Color(0xFFFFA366),
+              Color(0xFFFFC299),
+              Color(0xFFFFE0CC),
+              Color(0xFFFFF0E6),
             ],
           ),
       };
