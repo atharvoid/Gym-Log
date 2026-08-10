@@ -136,8 +136,9 @@ class _StepCompletionState extends ConsumerState<StepCompletion> {
     final weeklyGoal = draft.weeklyGoal;
 
     // Dynamically query template count matching user experience level
-    final levelTemplatesCount =
-        exploreTemplates.where((t) => t.level.name == level).length;
+    final levelTemplatesCount = exploreTemplates
+        .where((t) => t.levels.any((l) => l.name == level))
+        .length;
 
     return Padding(
       padding: const EdgeInsets.all(24),

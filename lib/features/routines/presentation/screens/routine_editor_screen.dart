@@ -80,7 +80,7 @@ class _MultiDayWarningBanner extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(Icons.warning_amber_rounded,
+            const Icon(Icons.warning_amber_rounded,
                 size: 18, color: AppColors.warning),
             const SizedBox(width: 10),
             Expanded(
@@ -194,8 +194,7 @@ class _RoutineEditorScreenState extends ConsumerState<RoutineEditorScreen> {
           final proceed = await showAppConfirmDialog(
             context: context,
             title: 'Combine all days into one?',
-            message:
-                'This routine has multiple training days. Saving here '
+            message: 'This routine has multiple training days. Saving here '
                 "combines every day's exercises into a single list and "
                 "can't be undone.",
             confirmLabel: 'Combine and Save',
@@ -401,7 +400,7 @@ class _RoutineEditorScreenState extends ConsumerState<RoutineEditorScreen> {
                       ),
                     ),
 
-                    if (_isMultiDayImported) _MultiDayWarningBanner(),
+                    if (_isMultiDayImported) const _MultiDayWarningBanner(),
 
                     // ── Exercise list ────────────────
                     Expanded(
