@@ -154,6 +154,22 @@ class _SetRowState extends State<SetRow> {
     if (!_weightFocus.hasFocus && !_repsFocus.hasFocus) _flushCommit();
   }
 
+  /// The deferred-field swap in [_numberField] reads `focusNode.hasFocus`
+  /// and [Scrollable.recommendDeferredLoadingForContext] fresh on every
+  /// build, but neither one forces this row to rebuild on its own when
+  /// focus changes without an accompanying scroll notification. RCA on the
+  /// "first exercise block won't take input" report: a row that happens to
+  /// be on-screen and idle the instant a scroll position is first created or
+  /// restored — before the user has scrolled at all, i.e. the first visible
+  /// row on a fresh screen open — can build once as the placeholder and then
+  /// never rebuild again, because nothing else about it changes. Without
+  /// this listener, [FocusNode.requestFocus] in the placeholder's tap
+  /// handler would grant focus silently while the visible child stayed a
+  /// static [Text] forever.
+  void _onFocusRepaint() {
+    if (mounted) setState(() {});
+  }
+
   /// Focus gained: once the keyboard finishes animating, ride the focused
   /// row above it (final-seven #5). No-op when neither field holds focus.
   void _scrollIntoViewOnFocus() {
@@ -206,6 +222,8 @@ class _SetRowState extends State<SetRow> {
     _repsFocus.addListener(_flushOnFocusLoss);
     _weightFocus.addListener(_scrollIntoViewOnFocus);
     _repsFocus.addListener(_scrollIntoViewOnFocus);
+    _weightFocus.addListener(_onFocusRepaint);
+    _repsFocus.addListener(_onFocusRepaint);
   }
 
   @override
@@ -390,6 +408,10 @@ class _SetRowState extends State<SetRow> {
   /// mid-keystroke would be worse than the jank this fixes — and outside an
   /// active fling (including every existing widget test) this always
   /// resolves false, so the live field is exactly what a tap/enterText finds.
+  ///
+  /// A tap on the deferred placeholder itself is never lost: see
+  /// [_onFocusRepaint] for why this row can only recompute [deferField]
+  /// reactively on a focus change, not on its own.
   Widget _numberField({
     required TextEditingController controller,
     required FocusNode focusNode,
@@ -418,13 +440,30 @@ class _SetRowState extends State<SetRow> {
         child: Semantics(
           label: semanticLabel,
           child: deferField
-              ? Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
-                  child: Text(
-                    placeholderText,
-                    textAlign: TextAlign.center,
-                    style: AppText.value(color: placeholderColor),
+              ? GestureDetector(
+                  // A tap must never be a dropped touch (RCA: "sometimes it
+                  // doesn't recognize my touch" + "first exercise block
+                  // cannot take input"). Both share one root cause: this
+                  // placeholder used to have no tap handler at all, so any
+                  // tap that landed while deferField was true — including a
+                  // row that latched here at its very first build and never
+                  // got a reason to rebuild again — was silently swallowed.
+                  // Requesting focus and rebuilding synchronously here means
+                  // the live TextField and keyboard appear on this same
+                  // frame, not "eventually" or "never".
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () {
+                    focusNode.requestFocus();
+                    setState(() {});
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 4, vertical: 8),
+                    child: Text(
+                      placeholderText,
+                      textAlign: TextAlign.center,
+                      style: AppText.value(color: placeholderColor),
+                    ),
                   ),
                 )
               : TextField(
