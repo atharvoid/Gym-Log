@@ -8,7 +8,7 @@ import 'package:gymlog/shared/providers/gif_last_frame_provider.dart';
 import 'package:gymlog/core/services/exercise_media_cache_manager.dart';
 
 /// Detail-screen exercise banner with a stable Hero contract:
-///  - Poster (static last frame, BoxFit.contain) is the ONLY thing in the Hero
+///  - Poster (static first frame, BoxFit.contain) is the ONLY thing in the Hero
 ///    flight → matches the source tile exactly (contain → contain, no resize).
 ///  - The animated GIF cross-fades IN over the poster only after the route
 ///    transition completes, in the same finite box → no spinner, no reflow.
@@ -139,7 +139,7 @@ class _Poster extends ConsumerWidget {
     // failed" and "no frames" into one blank box (B19-F4). Loading stays blank
     // by design — the no-spinner Hero contract — but a real failure now shows
     // a distinct glyph instead of an empty canvas the user cannot interpret.
-    return ref.watch(gifLastFrameProvider((url: url, targetWidth: null))).when(
+    return ref.watch(gifFirstFrameProvider((url: url, targetWidth: null))).when(
           loading: () => const SizedBox.shrink(),
           error: (_, __) => const Center(child: _FallbackIcon(failed: true)),
           data: (frame) => frame == null

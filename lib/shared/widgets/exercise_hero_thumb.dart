@@ -40,7 +40,7 @@ class ExerciseHeroThumb extends StatelessWidget {
                 targetWidth: kGifThumbnailDecodeWidth
               )))
               .valueOrNull;
-          final img = last ?? first;
+          final img = first ?? last;
           return ClipRRect(
             borderRadius: AppRadius.cardAll,
             child: Container(
