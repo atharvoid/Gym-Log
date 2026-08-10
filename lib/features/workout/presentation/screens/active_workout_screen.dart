@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart' show ScrollCacheExtent;
 import 'package:flutter/services.dart';
 import 'package:flutter/semantics.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -525,7 +526,8 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
                           // See [_exerciseListCacheExtent]: this is what keeps
                           // repeated up/down scrolling from rebuilding whole
                           // exercise cards, TextFields and all.
-                          cacheExtent: _exerciseListCacheExtent,
+                          scrollCacheExtent: const ScrollCacheExtent.pixels(
+                              _exerciseListCacheExtent),
                           padding: EdgeInsets.only(
                             top: 8,
                             bottom: MediaQuery.viewPaddingOf(context).bottom +

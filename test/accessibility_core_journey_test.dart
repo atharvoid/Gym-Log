@@ -135,10 +135,14 @@ void main() {
 
     await setupAndPumpWorkout(tester, container);
 
+    // The 48dp hit area is the outer opaque GestureDetector; the InkWell
+    // inside is only the 34dp visual pill (ink/clip), not the touch target.
     final chipFinder = find
         .descendant(
           of: find.bySemanticsLabel(RegExp(r'Set rest duration override.*')),
-          matching: find.byType(InkWell),
+          matching: find.byWidgetPredicate(
+            (w) => w is GestureDetector && w.behavior == HitTestBehavior.opaque,
+          ),
         )
         .first;
 

@@ -259,9 +259,12 @@ void main() {
 
       final snackBar = tester.widget<SnackBar>(find.byType(SnackBar));
       final margin = snackBar.margin as EdgeInsets;
-      // kRestTileHeight (84) + 18 gap + 12 base is the sole rest-bar-aware
-      // offset; callers no longer hand-invent their own values.
-      expect(margin.bottom, greaterThanOrEqualTo(84 + 18 + 12));
+      // The helper adds only the system inset + 12dp gap. Lifting the
+      // floating snackbar above the rest bar is the Scaffold's job: the rest
+      // bar IS the bottomNavigationBar on this screen, and Scaffold already
+      // positions floating snackbars above it — hand-adding kRestTileHeight
+      // here was the double lift that floated "Set removed" mid-screen.
+      expect(margin.bottom, lessThanOrEqualTo(12));
     });
   });
 }
