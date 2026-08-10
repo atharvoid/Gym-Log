@@ -9,4 +9,5 @@ custom_lint.log
 .claude-flow/
 node_modules/
 android_backup/
+test/golden/failures/
 
