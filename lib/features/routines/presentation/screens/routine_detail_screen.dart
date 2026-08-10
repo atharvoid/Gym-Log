@@ -435,7 +435,8 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen> {
                         );
                       },
                       isLoadingHistory: isLoadingHistory,
-                      isLast: exerciseRow.flatIndex == routine.exercises.length - 1,
+                      isLast:
+                          exerciseRow.flatIndex == routine.exercises.length - 1,
                       enableHero: heroEnabledList[exerciseRow.flatIndex],
                     );
                   },

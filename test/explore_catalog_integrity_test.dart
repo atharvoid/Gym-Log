@@ -55,16 +55,14 @@ void main() {
             '${noteNames.join(", ")}');
   });
 
-  test('every template is in a known category, non-empty, and well-formed',
-      () {
+  test('every template is in a known category, non-empty, and well-formed', () {
     for (final t in exploreTemplates) {
       expect(exploreCategoryOrder, contains(t.category),
           reason: '"${t.name}" has uncategorized section "${t.category}"');
       expect(t.days, isNotEmpty, reason: '"${t.name}" has no days');
       expect(t.totalSlots, greaterThan(0),
           reason: '"${t.name}" has no exercises across any day');
-      expect(t.levels, isNotEmpty,
-          reason: '"${t.name}" has no assigned level');
+      expect(t.levels, isNotEmpty, reason: '"${t.name}" has no assigned level');
       for (final day in t.days) {
         expect(day.slots, isNotEmpty,
             reason: '"${t.name}" has an empty day "${day.label}"');

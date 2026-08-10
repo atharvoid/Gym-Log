@@ -464,8 +464,7 @@ class _ExploreRoutinesScreenState extends ConsumerState<ExploreRoutinesScreen>
               SliverPersistentHeader(
                 pinned: true,
                 delegate: _EquipmentFilterHeaderDelegate(
-                    selected: _equipmentFilter,
-                    onSelect: _setEquipmentFilter),
+                    selected: _equipmentFilter, onSelect: _setEquipmentFilter),
               ),
               SliverPadding(
                 padding: EdgeInsets.fromLTRB(AppSpacing.screenH, 8,
@@ -1454,8 +1453,7 @@ class _PreviewDaySection extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Text(day.label.toUpperCase(),
-                    style:
-                        AppText.columnHeader(color: surface.textSecondary)),
+                    style: AppText.columnHeader(color: surface.textSecondary)),
                 if (day.focus.isNotEmpty) ...[
                   const SizedBox(width: 8),
                   Expanded(
@@ -1516,8 +1514,7 @@ class _PreviewSlotRow extends StatelessWidget {
             Tooltip(
               message: 'Not in your exercise library -- log this manually',
               child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
                   color: surface.surface3,
                   borderRadius: AppRadius.badgeAll,

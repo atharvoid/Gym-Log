@@ -457,8 +457,8 @@ class _SetRowState extends State<SetRow> {
                     setState(() {});
                   },
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 4, vertical: 8),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
                     child: Text(
                       placeholderText,
                       textAlign: TextAlign.center,
