@@ -135,23 +135,25 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     // means even a device-specific edge case can never bounce-reveal itself.
     final compact = textScale >= 1.6 || MediaQuery.sizeOf(context).height < 640;
     final double topPadding = compact ? 12 : 24;
-    final double gapAfterBrand = compact ? 12 : 24;
-    final double gapBeforeButton = compact ? 12 : 24;
-    final double gapBeforeLegal = compact ? 9 : 18;
+    final double gapAfterBrand = compact ? 20 : 32;
+    final double gapBeforeLegal = compact ? 16 : 28;
 
     final secondaryColor =
         surface.isLight ? const Color(0xFF555555) : surface.textSecondary;
 
+    // Premium, decluttered composition: one centered brand mark, one short
+    // tagline, one primary action. No inline data-handling explainer here —
+    // that lives in Settings ▸ Your data; repeating it on the sign-in
+    // screen was pure TMI that fought the hero content for attention.
     final brandBlock = Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        SizedBox(height: topPadding),
         ExcludeSemantics(
           child: Container(
-            width: 58,
-            height: 58,
+            width: 64,
+            height: 64,
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(17),
+              borderRadius: BorderRadius.circular(19),
               color: surface.surface3,
               border: Border.all(
                 color: accent.selectionBorder,
@@ -159,8 +161,8 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
               ),
               boxShadow: [
                 BoxShadow(
-                  color: accent.glow.withValues(alpha: 0.12),
-                  blurRadius: 16,
+                  color: accent.glow.withValues(alpha: 0.14),
+                  blurRadius: 20,
                   spreadRadius: 1,
                 ),
               ],
@@ -169,67 +171,37 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
               child: Icon(
                 Icons.fitness_center_rounded,
                 color: accent.base,
-                size: 27,
+                size: 30,
               ),
             ),
           ),
         ),
-        const SizedBox(height: 24),
+        const SizedBox(height: 20),
         Semantics(
           header: true,
           child: Text(
             'GymLog',
+            textAlign: TextAlign.center,
             style: AppText.screenTitle(color: surface.textPrimary).copyWith(
-              fontSize: 32,
+              fontSize: 34,
               fontWeight: FontWeight.w700,
               letterSpacing: -0.5,
             ),
           ),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 10),
         Semantics(
           child: Text(
-            'Track every workout.\nKeep your history.',
-            style: AppText.screenTitle(color: surface.textPrimary).copyWith(
-              fontSize: 27,
-              fontWeight: FontWeight.w700,
-              height: 1.12,
-              letterSpacing: -0.3,
-            ),
-          ),
-        ),
-        const SizedBox(height: 16),
-        Semantics(
-          child: Text(
-            'Sign in with Google to get started.\nYour workouts are stored on your device and synced securely when you sign in.',
+            'Track every workout. Keep your history.',
+            textAlign: TextAlign.center,
             style: AppText.body(color: secondaryColor).copyWith(
-              fontSize: 15,
-              height: 1.45,
+              fontSize: 16,
+              height: 1.4,
+              fontWeight: FontWeight.w500,
             ),
           ),
         ),
       ],
-    );
-
-    final trustBlock = Semantics(
-      child: Row(
-        children: [
-          Icon(
-            Icons.shield_outlined,
-            size: 16,
-            color: secondaryColor,
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              'Your data is stored on your device first and synced with your Google account. Google is used for secure sign-in and sync.',
-              style: AppText.caption(color: secondaryColor).copyWith(
-                fontSize: 13,
-              ),
-            ),
-          ),
-        ],
-      ),
     );
 
     final signInButton = Semantics(
@@ -321,33 +293,41 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
       ),
     );
 
-    final legalBlock = Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Semantics(
-          child: Text(
-            'By continuing, you agree to:',
+    final legalBlock = Semantics(
+      child: Wrap(
+        alignment: WrapAlignment.center,
+        crossAxisAlignment: WrapCrossAlignment.center,
+        spacing: 4,
+        runSpacing: 2,
+        children: [
+          Text(
+            'By continuing, you agree to our',
             style: AppText.caption(color: secondaryColor).copyWith(
               fontSize: 13,
             ),
           ),
-        ),
-        const SizedBox(height: 4),
-        Wrap(
-          spacing: 12,
-          runSpacing: 0,
-          children: [
-            _LegalLink(
-              label: 'Terms of Service',
-              onPressed: () => _openUrl(kTermsOfServiceUrl),
+          _LegalLink(
+            label: 'Terms of Service',
+            onPressed: () => _openUrl(kTermsOfServiceUrl),
+          ),
+          Text(
+            'and',
+            style: AppText.caption(color: secondaryColor).copyWith(
+              fontSize: 13,
             ),
-            _LegalLink(
-              label: 'Privacy Policy',
-              onPressed: () => _openUrl(kPrivacyPolicyUrl),
+          ),
+          _LegalLink(
+            label: 'Privacy Policy',
+            onPressed: () => _openUrl(kPrivacyPolicyUrl),
+          ),
+          Text(
+            '.',
+            style: AppText.caption(color: secondaryColor).copyWith(
+              fontSize: 13,
             ),
-          ],
-        ),
-      ],
+          ),
+        ],
+      ),
     );
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
@@ -379,22 +359,19 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                         sliver: SliverFillRemaining(
                           hasScrollBody: false,
                           child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
+                              SizedBox(height: topPadding),
+                              const Spacer(flex: 3),
                               _EntranceFade(child: brandBlock),
                               SizedBox(height: gapAfterBrand),
-                              const Spacer(),
                               _EntranceFade(
-                                delay: const Duration(milliseconds: 80),
-                                child: trustBlock,
-                              ),
-                              SizedBox(height: gapBeforeButton),
-                              _EntranceFade(
-                                delay: const Duration(milliseconds: 160),
+                                delay: const Duration(milliseconds: 120),
                                 child: signInButton,
                               ),
                               const SizedBox(height: 4),
                               if (_isSigningIn) cancelButton,
+                              const Spacer(flex: 4),
                               SizedBox(height: gapBeforeLegal),
                               _EntranceFade(
                                 delay: const Duration(milliseconds: 220),
