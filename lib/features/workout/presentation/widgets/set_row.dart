@@ -459,8 +459,8 @@ class _SetRowState extends State<SetRow> {
                     enabledBorder: InputBorder.none,
                     filled: false,
                     isDense: true,
-                    contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 4, vertical: 8),
+                    contentPadding:
+                        const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
                   ),
                   onChanged: onChanged,
                   onSubmitted: (_) => action == TextInputAction.next
