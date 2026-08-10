@@ -377,6 +377,19 @@ class _SetRowState extends State<SetRow> {
   /// is centred on exactly the same centre line as the column header above it
   /// (ship-readiness #6). The [Center] is load-bearing: it vertically centres
   /// the ~36dp field inside the 48dp tap target.
+  ///
+  /// PERF (RCA follow-up on the persistent scroll stutter): while an
+  /// unfocused field is off-screen momentum — a hard fling — Flutter itself
+  /// recommends deferred loading via [Scrollable.recommendDeferredLoadingForContext],
+  /// the same signal already used by [ExerciseGifWidget] (E4). On that
+  /// signal this swaps the live [TextField] for a static [Text] at IDENTICAL
+  /// geometry, so the two most expensive widgets in this row (EditableText x2,
+  /// times every set, times every exercise) are skipped for exactly the
+  /// frames the fling makes expensive, and restored the instant the fling
+  /// settles. A focused field is NEVER deferred — dropping the keyboard
+  /// mid-keystroke would be worse than the jank this fixes — and outside an
+  /// active fling (including every existing widget test) this always
+  /// resolves false, so the live field is exactly what a tap/enterText finds.
   Widget _numberField({
     required TextEditingController controller,
     required FocusNode focusNode,
@@ -390,50 +403,70 @@ class _SetRowState extends State<SetRow> {
     final accent = context.accent;
     final surface = context.surface;
 
+    final deferField = !focusNode.hasFocus &&
+        Scrollable.recommendDeferredLoadingForContext(context);
+
+    final placeholderIsHint = controller.text.isEmpty;
+    final placeholderText =
+        placeholderIsHint ? (hintText ?? '0') : controller.text;
+    final placeholderColor =
+        placeholderIsHint ? surface.textTertiary : surface.textPrimary;
+
     return ConstrainedBox(
       constraints: const BoxConstraints(minHeight: 48, minWidth: 48),
       child: Center(
         child: Semantics(
           label: semanticLabel,
-          child: TextField(
-            controller: controller,
-            focusNode: focusNode,
-            readOnly: completed,
-            textAlign: TextAlign.center,
-            textAlignVertical: TextAlignVertical.center,
-            textInputAction: action,
-            keyboardType: TextInputType.numberWithOptions(decimal: isDecimal),
-            cursorColor: accent.base,
-            inputFormatters: [
-              if (isDecimal) ...[
-                FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
-                TextInputFormatter.withFunction((oldValue, newValue) {
-                  if ('.'.allMatches(newValue.text).length > 1) {
-                    return oldValue;
-                  }
-                  return newValue;
-                }),
-              ] else
-                FilteringTextInputFormatter.digitsOnly,
-              LengthLimitingTextInputFormatter(isDecimal ? 6 : 5),
-            ],
-            style: AppText.value(color: surface.textPrimary),
-            decoration: InputDecoration(
-              hintText: hintText ?? '0',
-              hintStyle: AppText.value(color: surface.textTertiary),
-              border: InputBorder.none,
-              focusedBorder: InputBorder.none,
-              enabledBorder: InputBorder.none,
-              filled: false,
-              isDense: true,
-              contentPadding:
-                  const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
-            ),
-            onChanged: onChanged,
-            onSubmitted: (_) => action == TextInputAction.next
-                ? FocusScope.of(context).nextFocus()
-                : FocusScope.of(context).unfocus(),
-          ),
+          child: deferField
+              ? Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+                  child: Text(
+                    placeholderText,
+                    textAlign: TextAlign.center,
+                    style: AppText.value(color: placeholderColor),
+                  ),
+                )
+              : TextField(
+                  controller: controller,
+                  focusNode: focusNode,
+                  readOnly: completed,
+                  textAlign: TextAlign.center,
+                  textAlignVertical: TextAlignVertical.center,
+                  textInputAction: action,
+                  keyboardType:
+                      TextInputType.numberWithOptions(decimal: isDecimal),
+                  cursorColor: accent.base,
+                  inputFormatters: [
+                    if (isDecimal) ...[
+                      FilteringTextInputFormatter.allow(RegExp(r'[0-9.]')),
+                      TextInputFormatter.withFunction((oldValue, newValue) {
+                        if ('.'.allMatches(newValue.text).length > 1) {
+                          return oldValue;
+                        }
+                        return newValue;
+                      }),
+                    ] else
+                      FilteringTextInputFormatter.digitsOnly,
+                    LengthLimitingTextInputFormatter(isDecimal ? 6 : 5),
+                  ],
+                  style: AppText.value(color: surface.textPrimary),
+                  decoration: InputDecoration(
+                    hintText: hintText ?? '0',
+                    hintStyle: AppText.value(color: surface.textTertiary),
+                    border: InputBorder.none,
+                    focusedBorder: InputBorder.none,
+                    enabledBorder: InputBorder.none,
+                    filled: false,
+                    isDense: true,
+                    contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 4, vertical: 8),
+                  ),
+                  onChanged: onChanged,
+                  onSubmitted: (_) => action == TextInputAction.next
+                      ? FocusScope.of(context).nextFocus()
+                      : FocusScope.of(context).unfocus(),
+                ),
         ),
       ),
     );
