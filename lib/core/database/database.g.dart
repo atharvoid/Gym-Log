@@ -1305,9 +1305,15 @@ class $RoutinesTable extends Routines with TableInfo<$RoutinesTable, Routine> {
   late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
       'updated_at', aliasedName, false,
       type: DriftSqlType.dateTime, requiredDuringInsert: true);
+  static const VerificationMeta _sourceProgramNameMeta =
+      const VerificationMeta('sourceProgramName');
+  @override
+  late final GeneratedColumn<String> sourceProgramName =
+      GeneratedColumn<String>('source_program_name', aliasedName, true,
+          type: DriftSqlType.string, requiredDuringInsert: false);
   @override
   List<GeneratedColumn> get $columns =>
-      [id, userId, name, notes, createdAt, updatedAt];
+      [id, userId, name, notes, createdAt, updatedAt, sourceProgramName];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -1349,6 +1355,12 @@ class $RoutinesTable extends Routines with TableInfo<$RoutinesTable, Routine> {
     } else if (isInserting) {
       context.missing(_updatedAtMeta);
     }
+    if (data.containsKey('source_program_name')) {
+      context.handle(
+          _sourceProgramNameMeta,
+          sourceProgramName.isAcceptableOrUnknown(
+              data['source_program_name']!, _sourceProgramNameMeta));
+    }
     return context;
   }
 
@@ -1370,6 +1382,8 @@ class $RoutinesTable extends Routines with TableInfo<$RoutinesTable, Routine> {
           .read(DriftSqlType.dateTime, data['${effectivePrefix}created_at'])!,
       updatedAt: attachedDatabase.typeMapping
           .read(DriftSqlType.dateTime, data['${effectivePrefix}updated_at'])!,
+      sourceProgramName: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}source_program_name']),
     );
   }
 
@@ -1386,13 +1400,22 @@ class Routine extends DataClass implements Insertable<Routine> {
   final String notes;
   final DateTime createdAt;
   final DateTime updatedAt;
+
+  /// The name of the source program when this Routine was imported as one
+  /// day of a multi-day program (e.g. a 6-day PPL import creates 6 Routines
+  /// each tagged with `sourceProgramName = "Push Pull Legs: 6-Day …"`).
+  /// NULL for all routines that were NOT created via a program import,
+  /// including every routine created before schema v6.
+  /// Phase 2: group routines sharing this value under a collapsible folder.
+  final String? sourceProgramName;
   const Routine(
       {required this.id,
       required this.userId,
       required this.name,
       required this.notes,
       required this.createdAt,
-      required this.updatedAt});
+      required this.updatedAt,
+      this.sourceProgramName});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -1402,6 +1425,9 @@ class Routine extends DataClass implements Insertable<Routine> {
     map['notes'] = Variable<String>(notes);
     map['created_at'] = Variable<DateTime>(createdAt);
     map['updated_at'] = Variable<DateTime>(updatedAt);
+    if (!nullToAbsent || sourceProgramName != null) {
+      map['source_program_name'] = Variable<String>(sourceProgramName);
+    }
     return map;
   }
 
@@ -1413,6 +1439,9 @@ class Routine extends DataClass implements Insertable<Routine> {
       notes: Value(notes),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
+      sourceProgramName: sourceProgramName == null && nullToAbsent
+          ? const Value.absent()
+          : Value(sourceProgramName),
     );
   }
 
@@ -1426,6 +1455,8 @@ class Routine extends DataClass implements Insertable<Routine> {
       notes: serializer.fromJson<String>(json['notes']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+      sourceProgramName:
+          serializer.fromJson<String?>(json['sourceProgramName']),
     );
   }
   @override
@@ -1438,6 +1469,7 @@ class Routine extends DataClass implements Insertable<Routine> {
       'notes': serializer.toJson<String>(notes),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
+      'sourceProgramName': serializer.toJson<String?>(sourceProgramName),
     };
   }
 
@@ -1447,7 +1479,8 @@ class Routine extends DataClass implements Insertable<Routine> {
           String? name,
           String? notes,
           DateTime? createdAt,
-          DateTime? updatedAt}) =>
+          DateTime? updatedAt,
+          Value<String?> sourceProgramName = const Value.absent()}) =>
       Routine(
         id: id ?? this.id,
         userId: userId ?? this.userId,
@@ -1455,6 +1488,9 @@ class Routine extends DataClass implements Insertable<Routine> {
         notes: notes ?? this.notes,
         createdAt: createdAt ?? this.createdAt,
         updatedAt: updatedAt ?? this.updatedAt,
+        sourceProgramName: sourceProgramName.present
+            ? sourceProgramName.value
+            : this.sourceProgramName,
       );
   Routine copyWithCompanion(RoutinesCompanion data) {
     return Routine(
@@ -1464,6 +1500,9 @@ class Routine extends DataClass implements Insertable<Routine> {
       notes: data.notes.present ? data.notes.value : this.notes,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      sourceProgramName: data.sourceProgramName.present
+          ? data.sourceProgramName.value
+          : this.sourceProgramName,
     );
   }
 
@@ -1475,14 +1514,15 @@ class Routine extends DataClass implements Insertable<Routine> {
           ..write('name: $name, ')
           ..write('notes: $notes, ')
           ..write('createdAt: $createdAt, ')
-          ..write('updatedAt: $updatedAt')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('sourceProgramName: $sourceProgramName')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode =>
-      Object.hash(id, userId, name, notes, createdAt, updatedAt);
+  int get hashCode => Object.hash(
+      id, userId, name, notes, createdAt, updatedAt, sourceProgramName);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -1492,7 +1532,8 @@ class Routine extends DataClass implements Insertable<Routine> {
           other.name == this.name &&
           other.notes == this.notes &&
           other.createdAt == this.createdAt &&
-          other.updatedAt == this.updatedAt);
+          other.updatedAt == this.updatedAt &&
+          other.sourceProgramName == this.sourceProgramName);
 }
 
 class RoutinesCompanion extends UpdateCompanion<Routine> {
@@ -1502,6 +1543,7 @@ class RoutinesCompanion extends UpdateCompanion<Routine> {
   final Value<String> notes;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
+  final Value<String?> sourceProgramName;
   final Value<int> rowid;
   const RoutinesCompanion({
     this.id = const Value.absent(),
@@ -1510,6 +1552,7 @@ class RoutinesCompanion extends UpdateCompanion<Routine> {
     this.notes = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
+    this.sourceProgramName = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   RoutinesCompanion.insert({
@@ -1519,6 +1562,7 @@ class RoutinesCompanion extends UpdateCompanion<Routine> {
     this.notes = const Value.absent(),
     required DateTime createdAt,
     required DateTime updatedAt,
+    this.sourceProgramName = const Value.absent(),
     this.rowid = const Value.absent(),
   })  : userId = Value(userId),
         name = Value(name),
@@ -1531,6 +1575,7 @@ class RoutinesCompanion extends UpdateCompanion<Routine> {
     Expression<String>? notes,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
+    Expression<String>? sourceProgramName,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -1540,6 +1585,7 @@ class RoutinesCompanion extends UpdateCompanion<Routine> {
       if (notes != null) 'notes': notes,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
+      if (sourceProgramName != null) 'source_program_name': sourceProgramName,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -1551,6 +1597,7 @@ class RoutinesCompanion extends UpdateCompanion<Routine> {
       Value<String>? notes,
       Value<DateTime>? createdAt,
       Value<DateTime>? updatedAt,
+      Value<String?>? sourceProgramName,
       Value<int>? rowid}) {
     return RoutinesCompanion(
       id: id ?? this.id,
@@ -1559,6 +1606,7 @@ class RoutinesCompanion extends UpdateCompanion<Routine> {
       notes: notes ?? this.notes,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      sourceProgramName: sourceProgramName ?? this.sourceProgramName,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -1584,6 +1632,9 @@ class RoutinesCompanion extends UpdateCompanion<Routine> {
     if (updatedAt.present) {
       map['updated_at'] = Variable<DateTime>(updatedAt.value);
     }
+    if (sourceProgramName.present) {
+      map['source_program_name'] = Variable<String>(sourceProgramName.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -1599,6 +1650,7 @@ class RoutinesCompanion extends UpdateCompanion<Routine> {
           ..write('notes: $notes, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
+          ..write('sourceProgramName: $sourceProgramName, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -4894,6 +4946,7 @@ typedef $$RoutinesTableCreateCompanionBuilder = RoutinesCompanion Function({
   Value<String> notes,
   required DateTime createdAt,
   required DateTime updatedAt,
+  Value<String?> sourceProgramName,
   Value<int> rowid,
 });
 typedef $$RoutinesTableUpdateCompanionBuilder = RoutinesCompanion Function({
@@ -4903,6 +4956,7 @@ typedef $$RoutinesTableUpdateCompanionBuilder = RoutinesCompanion Function({
   Value<String> notes,
   Value<DateTime> createdAt,
   Value<DateTime> updatedAt,
+  Value<String?> sourceProgramName,
   Value<int> rowid,
 });
 
@@ -4953,6 +5007,10 @@ class $$RoutinesTableFilterComposer
   ColumnFilters<DateTime> get updatedAt => $composableBuilder(
       column: $table.updatedAt, builder: (column) => ColumnFilters(column));
 
+  ColumnFilters<String> get sourceProgramName => $composableBuilder(
+      column: $table.sourceProgramName,
+      builder: (column) => ColumnFilters(column));
+
   Expression<bool> routineDaysRefs(
       Expression<bool> Function($$RoutineDaysTableFilterComposer f) f) {
     final $$RoutineDaysTableFilterComposer composer = $composerBuilder(
@@ -5001,6 +5059,10 @@ class $$RoutinesTableOrderingComposer
 
   ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
       column: $table.updatedAt, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get sourceProgramName => $composableBuilder(
+      column: $table.sourceProgramName,
+      builder: (column) => ColumnOrderings(column));
 }
 
 class $$RoutinesTableAnnotationComposer
@@ -5029,6 +5091,9 @@ class $$RoutinesTableAnnotationComposer
 
   GeneratedColumn<DateTime> get updatedAt =>
       $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  GeneratedColumn<String> get sourceProgramName => $composableBuilder(
+      column: $table.sourceProgramName, builder: (column) => column);
 
   Expression<T> routineDaysRefs<T extends Object>(
       Expression<T> Function($$RoutineDaysTableAnnotationComposer a) f) {
@@ -5081,6 +5146,7 @@ class $$RoutinesTableTableManager extends RootTableManager<
             Value<String> notes = const Value.absent(),
             Value<DateTime> createdAt = const Value.absent(),
             Value<DateTime> updatedAt = const Value.absent(),
+            Value<String?> sourceProgramName = const Value.absent(),
             Value<int> rowid = const Value.absent(),
           }) =>
               RoutinesCompanion(
@@ -5090,6 +5156,7 @@ class $$RoutinesTableTableManager extends RootTableManager<
             notes: notes,
             createdAt: createdAt,
             updatedAt: updatedAt,
+            sourceProgramName: sourceProgramName,
             rowid: rowid,
           ),
           createCompanionCallback: ({
@@ -5099,6 +5166,7 @@ class $$RoutinesTableTableManager extends RootTableManager<
             Value<String> notes = const Value.absent(),
             required DateTime createdAt,
             required DateTime updatedAt,
+            Value<String?> sourceProgramName = const Value.absent(),
             Value<int> rowid = const Value.absent(),
           }) =>
               RoutinesCompanion.insert(
@@ -5108,6 +5176,7 @@ class $$RoutinesTableTableManager extends RootTableManager<
             notes: notes,
             createdAt: createdAt,
             updatedAt: updatedAt,
+            sourceProgramName: sourceProgramName,
             rowid: rowid,
           ),
           withReferenceMapper: (p0) => p0

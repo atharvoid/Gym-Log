@@ -29,18 +29,25 @@ const Map<String, List<(BodySide, String)>> kGroupToParts = {
   ],
   'Quadriceps': [(BodySide.front, 'quadriceps')],
   'Hamstrings': [(BodySide.back, 'hamstring')],
+  // Known limitation: the vendored body-highlighter asset set has no separate
+  // illustration for Abductors (uses the same 'gluteal' slug as Glutes) or
+  // Hip Flexors (uses the same 'adductors' slug as Adductors). These pairs are
+  // visually indistinguishable in the rendered map. This is a deliberate
+  // approximation because the upstream asset library does not provide separate
+  // SVG parts. Do not mistake this for a regression when both groups highlight
+  // identically.
   'Glutes': [(BodySide.back, 'gluteal')],
   'Adductors': [
     (BodySide.front, 'adductors'),
     (BodySide.back, 'adductors'),
   ],
-  'Abductors': [(BodySide.back, 'gluteal')],
+  'Abductors': [(BodySide.back, 'gluteal')], // shares slug with Glutes
   'Calves': [
     (BodySide.back, 'calves'),
     (BodySide.front, 'tibialis'),
     (BodySide.front, 'calves'),
   ],
-  'Hip Flexors': [(BodySide.front, 'adductors')],
+  'Hip Flexors': [(BodySide.front, 'adductors')], // shares slug with Adductors
   'Core': [
     (BodySide.front, 'abs'),
     (BodySide.front, 'obliques'),

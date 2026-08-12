@@ -19,6 +19,8 @@ import 'daos/sync_outbox_dao.dart';
 
 part 'database.g.dart';
 
+const int kDatabaseSchemaVersion = 6;
+
 @DriftDatabase(
   tables: [
     UserProfiles,
@@ -33,8 +35,6 @@ part 'database.g.dart';
   ],
   daos: [UserDao, ExercisesDao, WorkoutsDao, RoutinesDao, SyncOutboxDao],
 )
-const int kDatabaseSchemaVersion = 5;
-
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
@@ -70,6 +70,19 @@ class AppDatabase extends _$AppDatabase {
                 "UPDATE exercises SET measurement_type = 'reps_only' WHERE LOWER(REPLACE(equipment, ' ', '')) IN ('bodyweight', 'assisted')");
             // ignore: experimental_member_use
             await m.alterTable(TableMigration(workoutSets));
+          }
+          // v5 → v6: source program name grouping breadcrumb on routines.
+          // Nullable TEXT — existing rows get NULL, no data loss.
+          // Guard: migration-unit tests build minimal schemas without a
+          // routines table; real production databases always have it.
+          if (from < 6) {
+            final hasRoutines = await customSelect(
+              "SELECT 1 FROM sqlite_master "
+              "WHERE type='table' AND name='routines'",
+            ).get();
+            if (hasRoutines.isNotEmpty) {
+              await m.addColumn(routines, routines.sourceProgramName);
+            }
           }
         },
         beforeOpen: (details) async {

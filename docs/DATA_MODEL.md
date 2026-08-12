@@ -8,7 +8,7 @@
 
 ## Drift Tables
 
-Schema version: **5** (`AppDatabase.schemaVersion`)  
+Schema version: **6** (`AppDatabase.schemaVersion`)  
 DB file: `gymlog_db.sqlite` in `getApplicationDocumentsDirectory()`
 
 ### `user_profiles` (`UserProfiles` / `UserProfile`)

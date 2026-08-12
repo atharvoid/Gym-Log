@@ -1,10 +1,12 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gymlog/core/database/database.dart';
 import 'package:gymlog/core/database/daos/routines_dao.dart';
-import 'package:gymlog/core/exercises/muscle_taxonomy.dart';
+import 'package:gymlog/core/exercises/body_map.dart';
 import 'package:gymlog/core/providers/database_provider.dart';
 import 'package:gymlog/core/providers/premium_provider.dart';
 import 'package:gymlog/core/theme/app_colors.dart';
@@ -22,32 +24,53 @@ import 'package:gymlog/shared/widgets/tour/spotlight_tour_overlay.dart';
 import 'package:gymlog/shared/widgets/ui/app_snack_bar.dart';
 import 'package:gymlog/shared/widgets/ui/primary_button.dart';
 
-/// Parses the human-readable [focus] string into parent muscle groups suitable
-/// for [MuscleMap]. Non-muscle tokens (e.g. "Strength", "45 min") are dropped,
-/// and "Total Body" is mapped to the full-body sentinel so the entire figure
-/// lights up.
-Set<String> _focusGroups(String focus) {
-  return focus
-      .split(' · ')
-      .map((token) {
-        final trimmed = token.trim();
-        if (trimmed.toLowerCase() == 'total body') return 'Full Body';
-        return MuscleTaxonomy.parentOf(trimmed);
-      })
-      .where((group) => group != 'Other')
-      .toSet();
-}
+/// Resolves primary + secondary muscle groups for [template] from real exercise
+/// data, replacing the marketing-tagline approximation used by
+/// [_focusGroups]. For every importable [TemplateSlot] across all
+/// [ProgramDay]s, looks up the matching [Exercise] (exact case-insensitive
+/// name first, else first search hit — same strategy as [_import]) and calls
+/// [workedGroupsFor] from `body_map.dart`, unioning primary and secondary sets
+/// across every slot.
+///
+/// Async because it hits [ExercisesDao.searchExercises]. Called once per
+/// preview sheet open (event-handler scope), not on every card build.
+Future<({Set<String> primary, Set<String> secondary})>
+    computedMuscleGroupsForTemplate(
+  AppDatabase db,
+  RoutineTemplate template,
+) async {
+  final primary = <String>{};
+  final secondary = <String>{};
+  for (final slot in template.previewSlots) {
+    // previewSlots already filters to importableSlots (isConditioningNote == false).
+    final hits = await db.exercisesDao.searchExercises(slot.name);
+    Exercise? match;
+    for (final e in hits) {
+      if (e.name.toLowerCase() == slot.name.toLowerCase()) {
+        match = e;
+        break;
+      }
+    }
+    match ??= hits.isNotEmpty ? hits.first : null;
+    if (match == null) continue;
 
-/// The first muscle-like token of the focus string mapped to its parent group.
-/// Returns `null` when no token resolves (e.g. pure-strength focus).
-String? _primaryFocusGroup(String focus) {
-  for (final token in focus.split(' · ')) {
-    final trimmed = token.trim();
-    if (trimmed.toLowerCase() == 'total body') return 'Full Body';
-    final group = MuscleTaxonomy.parentOf(trimmed);
-    if (group != 'Other') return group;
+    final secondaryList = (match.secondaryMuscles != null &&
+            match.secondaryMuscles!.isNotEmpty)
+        ? (List<String>.from(
+            (match.secondaryMuscles!.startsWith('['))
+                ? (jsonDecode(match.secondaryMuscles!) as List).cast<String>()
+                : [match.secondaryMuscles!],
+          ))
+        : <String>[];
+    final groups = workedGroupsFor(
+      target: match.target,
+      secondary: secondaryList,
+    );
+    primary.addAll(groups.primary);
+    secondary.addAll(groups.secondary);
   }
-  return null;
+  secondary.removeAll(primary);
+  return (primary: primary, secondary: secondary);
 }
 
 enum _LevelFilter {
@@ -120,6 +143,16 @@ class _CardRow extends _Row {
   const _CardRow(this.template);
 }
 
+class _ResultsHeaderRow extends _Row {
+  final int count;
+  const _ResultsHeaderRow(this.count);
+}
+
+class _EmptyResultsRow extends _Row {
+  final String query;
+  const _EmptyResultsRow(this.query);
+}
+
 class ExploreRoutinesScreen extends ConsumerStatefulWidget {
   const ExploreRoutinesScreen({super.key});
 
@@ -132,10 +165,13 @@ class _ExploreRoutinesScreenState extends ConsumerState<ExploreRoutinesScreen>
     with SingleTickerProviderStateMixin {
   final Set<String> _importing = {};
   final Set<String> _imported = {};
-  final Map<String, String> _importedIds = {};
+  // Maps template.name → list of created routine IDs (one per imported day).
+  final Map<String, List<String>> _importedIds = {};
   _LevelFilter _filter = _LevelFilter.all;
   _EquipmentFilter _equipmentFilter = _EquipmentFilter.all;
   final GlobalKey _importButtonKey = GlobalKey();
+  final TextEditingController _searchController = TextEditingController();
+  String _query = '';
 
   late final AnimationController _reveal;
   bool _initializedFilter = false;
@@ -179,6 +215,7 @@ class _ExploreRoutinesScreenState extends ConsumerState<ExploreRoutinesScreen>
 
   @override
   void dispose() {
+    _searchController.dispose();
     _reveal.dispose();
     super.dispose();
   }
@@ -215,16 +252,22 @@ class _ExploreRoutinesScreenState extends ConsumerState<ExploreRoutinesScreen>
         _imported.contains(template.name)) {
       return;
     }
-    HapticFeedback.selectionClick();
+    // Haptics are fired by the invoking control (mediumImpact on the card
+    // CTA, PrimaryButton's own mediumImpact in the preview sheet) — NOT here,
+    // or an import from the sheet would buzz twice.
     setState(() => _importing.add(template.name));
 
     try {
       final isPremium = ref.read(isPremiumProvider);
       final db = ref.read(databaseProvider);
 
+      // Check cap against ALL days at once: reject the entire import rather
+      // than partially creating some routines (simpler, more predictable UX).
       final count = await db.routinesDao.countRoutinesForUser(user.id);
       if (!mounted) return;
-      if (isAtFreeRoutineLimit(isPremium: isPremium, routineCount: count)) {
+      if (isAtFreeRoutineLimit(
+          isPremium: isPremium,
+          routineCount: count + template.days.length - 1)) {
         await showPremiumPaywall(context, source: PaywallSource.routineLimit);
         return;
       }
@@ -233,10 +276,28 @@ class _ExploreRoutinesScreenState extends ConsumerState<ExploreRoutinesScreen>
       // library match by design — they're skipped here, not counted as
       // "missed". Only slots that SHOULD have resolved but didn't count
       // toward the missed tally shown in the import snackbar.
+      //
+      // Short program name: everything before the first ': ' in the renamed
+      // template name (e.g. "Push Pull Legs" from
+      // "Push Pull Legs: 6-Day High Frequency (Gym)"). See
+      // [RoutineTemplate.shortName].
+      final shortName = template.shortName;
+
       final dayDrafts = <RoutineDayDraft>[];
       var missed = 0;
       var totalImportable = 0;
       for (final day in template.days) {
+        // Strip leading "Day N - " prefix so the per-day routine name is just
+        // the descriptor part (e.g. "Push A" from "Day 1 - Push A").
+        final dayPrefixMatch = RegExp(r'^Day \d+\s*-\s*').firstMatch(day.label);
+        final stripped = dayPrefixMatch != null
+            ? day.label.substring(dayPrefixMatch.end).trim()
+            : day.label;
+        // Final routine name: e.g. "Push Pull Legs · Push A"
+        final routineName = template.days.length == 1
+            ? template.name
+            : '$shortName · $stripped';
+
         final drafts = <RoutineDraftExercise>[];
         for (final slot in day.importableSlots) {
           totalImportable++;
@@ -259,7 +320,7 @@ class _ExploreRoutinesScreenState extends ConsumerState<ExploreRoutinesScreen>
             missed++;
           }
         }
-        dayDrafts.add(RoutineDayDraft(name: day.label, exercises: drafts));
+        dayDrafts.add(RoutineDayDraft(name: routineName, exercises: drafts));
       }
 
       if (!mounted) return;
@@ -268,16 +329,18 @@ class _ExploreRoutinesScreenState extends ConsumerState<ExploreRoutinesScreen>
         return;
       }
 
-      final id = await db.routinesDao.createRoutineWithDays(
+      // Each day becomes its own independent Routine, tagged with
+      // sourceProgramName so the Explore screen can re-detect them on restart.
+      final ids = await db.routinesDao.createRoutinesForProgram(
         userId: user.id,
-        name: template.name,
+        programName: template.name,
         days: dayDrafts,
       );
       if (!mounted) return;
 
       setState(() {
         _imported.add(template.name);
-        _importedIds[template.name] = id;
+        _importedIds[template.name] = ids;
       });
 
       if (ref.read(firstRunTourProvider) == 1) {
@@ -285,7 +348,7 @@ class _ExploreRoutinesScreenState extends ConsumerState<ExploreRoutinesScreen>
       }
 
       HapticFeedback.heavyImpact();
-      _snackImported(template.name, id, missed);
+      _snackImported(template.name, ids, missed);
     } finally {
       if (mounted) setState(() => _importing.remove(template.name));
     }
@@ -300,24 +363,32 @@ class _ExploreRoutinesScreenState extends ConsumerState<ExploreRoutinesScreen>
     );
   }
 
-  void _snackImported(String name, String id, int missed) {
+  void _snackImported(String name, List<String> ids, int missed) {
     if (!mounted) return;
-    final msg = missed == 0
-        ? '"$name" added to My Routines.'
-        : '"$name" added. $missed exercise${missed > 1 ? 's' : ''} not in your library were skipped.';
+    final n = ids.length;
+    final added = n == 1 ? '"$name" added' : '$n routines added';
+    final skipped = missed == 0
+        ? ''
+        : '. $missed exercise${missed > 1 ? 's' : ''} not in your library were skipped';
     showAppSnackBar(
       context,
-      message: msg,
+      message: '$added to My Routines$skipped.',
       variant: AppSnackBarVariant.success,
       actionLabel: 'View',
-      onAction: () => context.push('/routines/$id'),
+      onAction: () => context.push('/routines/${ids.first}'),
     );
   }
 
-  void _showPreview(RoutineTemplate t,
-      {required bool imported, String? routineId}) {
+  Future<void> _showPreview(RoutineTemplate t,
+      {required bool imported, String? routineId}) async {
     final gender =
         ref.read(currentUserProfileProvider).valueOrNull?.gender ?? 'male';
+    final db = ref.read(databaseProvider);
+    // Precompute real muscle groups from exercise data before opening the
+    // sheet so _PreviewSheet stays synchronous. This runs on the event-handler
+    // tap (not on every list build) so the DB lookup is acceptable here.
+    final muscleGroups = await computedMuscleGroupsForTemplate(db, t);
+    if (!mounted) return;
     showModalBottomSheet<void>(
       context: context,
       useRootNavigator: true,
@@ -327,6 +398,8 @@ class _ExploreRoutinesScreenState extends ConsumerState<ExploreRoutinesScreen>
         template: t,
         imported: imported,
         gender: gender,
+        primaryGroups: muscleGroups.primary,
+        secondaryGroups: muscleGroups.secondary,
         onAdd: () {
           Navigator.of(sheetCtx).pop();
           _import(t);
@@ -347,6 +420,7 @@ class _ExploreRoutinesScreenState extends ConsumerState<ExploreRoutinesScreen>
     for (final t in exploreTemplates) {
       if (!_filter.matches(t)) continue;
       if (!_equipmentFilter.matches(t)) continue;
+      if (!_matchesQuery(t)) continue;
       if (identical(t, excluded)) continue;
       byCategory.putIfAbsent(t.category, () => []).add(t);
     }
@@ -356,6 +430,19 @@ class _ExploreRoutinesScreenState extends ConsumerState<ExploreRoutinesScreen>
     ];
   }
 
+  /// Case-insensitive substring match over every scannable field of a
+  /// program. The catalog is only 16 entries — a plain scan is the right
+  /// size; a search index or debounce would be over-engineering.
+  bool _matchesQuery(RoutineTemplate t) {
+    final q = _query.toLowerCase();
+    if (q.isEmpty) return true;
+    return t.name.toLowerCase().contains(q) ||
+        t.category.toLowerCase().contains(q) ||
+        t.focus.toLowerCase().contains(q) ||
+        t.equipmentLabel.toLowerCase().contains(q) ||
+        t.levelLabel.toLowerCase().contains(q);
+  }
+
   @override
   Widget build(BuildContext context) {
     final surface = context.surface;
@@ -363,18 +450,40 @@ class _ExploreRoutinesScreenState extends ConsumerState<ExploreRoutinesScreen>
 
     final existing = ref.watch(hydratedRoutinesProvider).valueOrNull ??
         const <HydratedRoutine>[];
-    final existingIds = <String, String>{
-      for (final r in existing) r.routine.name: r.routine.id,
+
+    // Programs imported under the new model are tagged with sourceProgramName
+    // so they are re-detected correctly on restart (their individual routine
+    // names are "PPL · Push A", not the template name).
+    final existingByProgram = <String, List<String>>{};
+    for (final r in existing) {
+      final src = r.routine.sourceProgramName;
+      if (src != null) {
+        existingByProgram.putIfAbsent(src, () => []).add(r.routine.id);
+      }
+    }
+    // Legacy: programs imported before v6 schema (sourceProgramName == null)
+    // stored the full template name as the routine name. Match those by name
+    // for backward-compat badge display.
+    final existingByName = <String, String>{
+      for (final r in existing)
+        if (r.routine.sourceProgramName == null) r.routine.name: r.routine.id,
     };
 
-    final showFeatured = _filter == _LevelFilter.all;
+    final searching = _query.isNotEmpty;
+    final showFeatured = !searching && _filter == _LevelFilter.all;
     final sections = _sections(excluded: showFeatured ? _featured : null);
+    final totalMatches = sections.fold(0, (a, s) => a + s.items.length);
 
     final rows = <_Row>[
-      if (showFeatured) _FeaturedRow(_featured),
-      for (final s in sections) ...[
-        _HeaderRow(s.category, s.items.length),
-        for (final t in s.items) _CardRow(t),
+      if (searching && totalMatches == 0)
+        _EmptyResultsRow(_query)
+      else ...[
+        if (searching) _ResultsHeaderRow(totalMatches),
+        if (showFeatured) _FeaturedRow(_featured),
+        for (final s in sections) ...[
+          _HeaderRow(s.category, s.items.length),
+          for (final t in s.items) _CardRow(t),
+        ],
       ],
     ];
 
@@ -406,7 +515,10 @@ class _ExploreRoutinesScreenState extends ConsumerState<ExploreRoutinesScreen>
             slivers: [
               SliverAppBar(
                 pinned: true,
-                expandedHeight: 150,
+                // 104px (not the old 150) — the flexible space now hugs the
+                // toolbar instead of leaving a ~150px dead band between the
+                // back arrow and the title.
+                expandedHeight: 104,
                 backgroundColor: surface.bgBase,
                 surfaceTintColor: Colors.transparent,
                 scrolledUnderElevation: 0,
@@ -422,8 +534,8 @@ class _ExploreRoutinesScreenState extends ConsumerState<ExploreRoutinesScreen>
                 ),
                 flexibleSpace: const FlexibleSpaceBar(
                   titlePadding:
-                      EdgeInsetsDirectional.only(start: 56, bottom: 15),
-                  expandedTitleScale: 1.6,
+                      EdgeInsetsDirectional.only(start: 56, bottom: 8),
+                  expandedTitleScale: 1.3,
                   title: _HeroTitle(),
                   background: _HeroGlow(),
                 ),
@@ -448,9 +560,23 @@ class _ExploreRoutinesScreenState extends ConsumerState<ExploreRoutinesScreen>
                               label: '${exploreTemplates.length} programs'),
                           const SizedBox(width: AppSpacing.x2),
                           _CredChip(
-                              icon: Icons.category_rounded,
+                              icon: Icons.grid_view_rounded,
                               label: '${exploreCategoryOrder.length} splits'),
                         ],
+                      ),
+                      const SizedBox(height: AppSpacing.x3),
+                      _SearchField(
+                        controller: _searchController,
+                        query: _query,
+                        onChanged: (value) {
+                          setState(() => _query = value.trim());
+                          _reveal.forward(from: 0);
+                        },
+                        onClear: () {
+                          _searchController.clear();
+                          setState(() => _query = '');
+                          _reveal.forward(from: 0);
+                        },
                       ),
                     ],
                   ),
@@ -476,8 +602,10 @@ class _ExploreRoutinesScreenState extends ConsumerState<ExploreRoutinesScreen>
                       final Widget child;
                       switch (row) {
                         case _FeaturedRow(:final template):
-                          final imported = _isImported(template, existingIds);
-                          final routineId = _routineId(template, existingIds);
+                          final imported = _isImported(
+                              template, existingByProgram, existingByName);
+                          final routineId = _routineId(
+                              template, existingByProgram, existingByName);
                           final isTarget = targetTemplate != null &&
                               template.name == targetTemplate.name;
                           child = Padding(
@@ -499,9 +627,15 @@ class _ExploreRoutinesScreenState extends ConsumerState<ExploreRoutinesScreen>
                           );
                         case _HeaderRow(:final label, :final count):
                           child = _SectionHeader(label: label, count: count);
+                        case _ResultsHeaderRow(:final count):
+                          child = _ResultsHeader(count: count);
+                        case _EmptyResultsRow(:final query):
+                          child = _EmptyResults(query: query);
                         case _CardRow(:final template):
-                          final imported = _isImported(template, existingIds);
-                          final routineId = _routineId(template, existingIds);
+                          final imported = _isImported(
+                              template, existingByProgram, existingByName);
+                          final routineId = _routineId(
+                              template, existingByProgram, existingByName);
                           final isTarget = targetTemplate != null &&
                               template.name == targetTemplate.name;
                           child = Padding(
@@ -552,11 +686,23 @@ class _ExploreRoutinesScreenState extends ConsumerState<ExploreRoutinesScreen>
     );
   }
 
-  bool _isImported(RoutineTemplate t, Map<String, String> existingIds) =>
-      _imported.contains(t.name) || existingIds.containsKey(t.name);
+  bool _isImported(
+    RoutineTemplate t,
+    Map<String, List<String>> existingByProgram,
+    Map<String, String> existingByName,
+  ) =>
+      _imported.contains(t.name) ||
+      existingByProgram.containsKey(t.name) ||
+      existingByName.containsKey(t.name);
 
-  String? _routineId(RoutineTemplate t, Map<String, String> existingIds) =>
-      _importedIds[t.name] ?? existingIds[t.name];
+  String? _routineId(
+    RoutineTemplate t,
+    Map<String, List<String>> existingByProgram,
+    Map<String, String> existingByName,
+  ) =>
+      _importedIds[t.name]?.firstOrNull ??
+      existingByProgram[t.name]?.firstOrNull ??
+      existingByName[t.name];
 }
 
 class _HeroTitle extends StatelessWidget {
@@ -619,20 +765,20 @@ class _FilterHeaderDelegate extends SliverPersistentHeaderDelegate {
   _FilterHeaderDelegate({required this.selected, required this.onSelect});
 
   @override
-  double get minExtent => 54;
+  double get minExtent => 56;
   @override
-  double get maxExtent => 54;
+  double get maxExtent => 56;
 
   @override
   Widget build(
       BuildContext context, double shrinkOffset, bool overlapsContent) {
     return Container(
       color: context.surface.bgBase,
-      alignment: Alignment.centerLeft,
-      child: ListView(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.fromLTRB(
-            AppSpacing.screenH, 8, AppSpacing.screenH, 10),
+      padding: const EdgeInsets.fromLTRB(0, 8, 0, 10),
+      child: _ChipStrip(
+        key: const Key('level-filter-row'),
+        height: 38,
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screenH),
         children: [
           for (final f in _LevelFilter.values)
             Padding(
@@ -671,6 +817,7 @@ class _FilterChip extends StatelessWidget {
         // Neutral segmented-selector language: surface4 raised fill for
         // selected, surface3 for idle. Intentionally NOT accent.base. filter
         // chips repeat in a row so a saturated fill would flood the header.
+        // Accent is reserved for the card CTAs and selection borders.
         color: selected ? surface.surface4 : surface.surface3,
         borderRadius: AppRadius.buttonSecondaryAll,
         clipBehavior: Clip.antiAlias,
@@ -678,9 +825,11 @@ class _FilterChip extends StatelessWidget {
           onTap: onTap,
           child: Container(
             alignment: Alignment.center,
+            constraints: const BoxConstraints(minHeight: 38),
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Text(
               label,
+              maxLines: 1,
               style: AppText.statLabel(
                 color: selected ? surface.textPrimary : surface.textSecondary,
               ).copyWith(
@@ -701,20 +850,20 @@ class _EquipmentFilterHeaderDelegate extends SliverPersistentHeaderDelegate {
       {required this.selected, required this.onSelect});
 
   @override
-  double get minExtent => 46;
+  double get minExtent => 50;
   @override
-  double get maxExtent => 46;
+  double get maxExtent => 50;
 
   @override
   Widget build(
       BuildContext context, double shrinkOffset, bool overlapsContent) {
     return Container(
       color: context.surface.bgBase,
-      alignment: Alignment.centerLeft,
-      child: ListView(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.fromLTRB(
-            AppSpacing.screenH, 0, AppSpacing.screenH, 8),
+      padding: const EdgeInsets.fromLTRB(0, 4, 0, 8),
+      child: _ChipStrip(
+        key: const Key('equipment-filter-row'),
+        height: 38,
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screenH),
         children: [
           for (final f in _EquipmentFilter.values)
             Padding(
@@ -766,18 +915,26 @@ class _EquipmentFilterChip extends StatelessWidget {
       excludeSemantics: true,
       child: Material(
         // Equipment is a secondary refinement, not a peer of the level
-        // selector — selected state uses a light accent tint (not the
-        // heavier surface4 the level chips use) so the two rows read as
-        // distinct hierarchy, not two identical segmented controls stacked.
-        color: selected ? accent.muted : surface.surface3,
-        borderRadius: AppRadius.buttonSecondaryAll,
+        // selector — same neutral-raised fill as the level chips, but the
+        // selected state carries the accent SELECTION BORDER + accent leading
+        // glyph so the two rows still read as distinct hierarchy. Never
+        // accent.muted as a fill: that token is reserved for content tinting
+        // (the muscle tags), and reusing it for selection made two unrelated
+        // meanings share one color.
+        color: selected ? surface.surface4 : surface.surface3,
+        shape: RoundedRectangleBorder(
+          borderRadius: AppRadius.buttonSecondaryAll,
+          side: selected
+              ? BorderSide(color: accent.selectionBorder)
+              : BorderSide.none,
+        ),
         clipBehavior: Clip.antiAlias,
         child: InkWell(
           onTap: onTap,
           child: Container(
             alignment: Alignment.center,
-            padding: const EdgeInsets.symmetric(horizontal: 13),
             constraints: const BoxConstraints(minHeight: 38),
+            padding: const EdgeInsets.symmetric(horizontal: 13),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -787,8 +944,10 @@ class _EquipmentFilterChip extends StatelessWidget {
                 const SizedBox(width: 6),
                 Text(
                   label,
+                  maxLines: 1,
                   style: AppText.statLabel(
-                    color: selected ? accent.base : surface.textSecondary,
+                    color:
+                        selected ? surface.textPrimary : surface.textSecondary,
                   ).copyWith(
                     fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
                   ),
@@ -797,6 +956,115 @@ class _EquipmentFilterChip extends StatelessWidget {
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// Horizontally scrollable, single-line chip strip with soft edge fades that
+/// appear only while content overflows. The fade is the scroll affordance:
+/// clipped text with no cue reads as broken, so the gradient appears exactly
+/// when there is more content in the scroll direction, and disappears once
+/// the strip is scrolled flush. The strip is a real [ListView], so
+/// screen-reader users get a standard scroll action on the row too.
+class _ChipStrip extends StatefulWidget {
+  final List<Widget> children;
+  final double height;
+  final EdgeInsetsGeometry padding;
+  const _ChipStrip({
+    super.key,
+    required this.children,
+    required this.height,
+    required this.padding,
+  });
+
+  @override
+  State<_ChipStrip> createState() => _ChipStripState();
+}
+
+class _ChipStripState extends State<_ChipStrip> {
+  final ScrollController _controller = ScrollController();
+  bool _fadeLeft = false;
+  bool _fadeRight = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller.addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    _controller.removeListener(_onScroll);
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (!_controller.hasClients) return;
+    final position = _controller.position;
+    final right = position.pixels < position.maxScrollExtent - 0.5;
+    final left = position.pixels > 0.5;
+    if (right != _fadeRight || left != _fadeLeft) {
+      setState(() {
+        _fadeRight = right;
+        _fadeLeft = left;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final bg = context.surface.bgBase;
+    return SizedBox(
+      height: widget.height,
+      child: Stack(
+        children: [
+          Positioned.fill(
+            child: ListView(
+              scrollDirection: Axis.horizontal,
+              controller: _controller,
+              padding: widget.padding,
+              children: widget.children,
+            ),
+          ),
+          if (_fadeLeft)
+            Positioned(
+              left: 0,
+              top: 0,
+              bottom: 0,
+              width: 24,
+              child: IgnorePointer(
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.centerLeft,
+                      end: Alignment.centerRight,
+                      colors: [bg, bg.withValues(alpha: 0)],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          if (_fadeRight)
+            Positioned(
+              right: 0,
+              top: 0,
+              bottom: 0,
+              width: 24,
+              child: IgnorePointer(
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.centerRight,
+                      end: Alignment.centerLeft,
+                      colors: [bg, bg.withValues(alpha: 0)],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }
@@ -832,6 +1100,107 @@ class _Reveal extends StatelessWidget {
   }
 }
 
+class _SearchField extends StatelessWidget {
+  final TextEditingController controller;
+  final String query;
+  final ValueChanged<String> onChanged;
+  final VoidCallback onClear;
+  const _SearchField({
+    required this.controller,
+    required this.query,
+    required this.onChanged,
+    required this.onClear,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final surface = context.surface;
+    final accent = context.accent;
+    return TextField(
+      controller: controller,
+      onChanged: onChanged,
+      textInputAction: TextInputAction.search,
+      autocorrect: false,
+      style: AppText.body(color: surface.textPrimary),
+      cursorColor: accent.base,
+      decoration: InputDecoration(
+        hintText: 'Search programs',
+        hintStyle: AppText.body(color: surface.textTertiary),
+        prefixIcon: Icon(Icons.search_rounded, color: surface.textSecondary),
+        suffixIcon: query.isEmpty
+            ? null
+            : IconButton(
+                tooltip: 'Clear',
+                icon:
+                    Icon(Icons.cancel, size: 18, color: surface.textSecondary),
+                onPressed: onClear,
+              ),
+        filled: true,
+        fillColor: surface.surface3,
+        enabledBorder: OutlineInputBorder(
+          borderRadius: AppRadius.buttonSecondaryAll,
+          borderSide: BorderSide(color: surface.borderSubtle, width: 1),
+        ),
+        border: OutlineInputBorder(
+          borderRadius: AppRadius.buttonSecondaryAll,
+          borderSide: BorderSide(color: surface.borderSubtle, width: 1),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: AppRadius.buttonSecondaryAll,
+          borderSide: BorderSide(color: accent.selectionBorder),
+        ),
+      ),
+    );
+  }
+}
+
+class _ResultsHeader extends StatelessWidget {
+  final int count;
+  const _ResultsHeader({required this.count});
+
+  @override
+  Widget build(BuildContext context) {
+    final surface = context.surface;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(0, 18, 0, 10),
+      child: Text(
+        count == 1 ? '1 result' : '$count results',
+        style: AppText.columnHeader(color: surface.textSecondary),
+      ),
+    );
+  }
+}
+
+class _EmptyResults extends StatelessWidget {
+  final String query;
+  const _EmptyResults({required this.query});
+
+  @override
+  Widget build(BuildContext context) {
+    final surface = context.surface;
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 48),
+      child: Column(
+        children: [
+          Icon(Icons.search_off_rounded, size: 40, color: surface.textTertiary),
+          const SizedBox(height: 12),
+          Text(
+            'No programs match "$query"',
+            textAlign: TextAlign.center,
+            style: AppText.body(color: surface.textSecondary),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Try a different name or equipment type.',
+            textAlign: TextAlign.center,
+            style: AppText.caption(color: surface.textTertiary),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _SectionHeader extends StatelessWidget {
   final String label;
   final int count;
@@ -849,8 +1218,10 @@ class _SectionHeader extends StatelessWidget {
             Text(label.toUpperCase(),
                 style: AppText.columnHeader(color: surface.textSecondary)),
             const SizedBox(width: 8),
-            Text('$count',
-                style: AppText.statLabel(color: surface.textSecondary)),
+            Text(
+              '$count program${count == 1 ? '' : 's'}',
+              style: AppText.statLabel(color: surface.textSecondary),
+            ),
           ],
         ),
       ),
@@ -881,10 +1252,10 @@ class _FeaturedCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final accent = context.accent;
     final surface = context.surface;
-    final a11yLabel = 'Featured. ${template.name}. ${template.levelLabel}, '
-        '${template.daysPerWeek}-day split, about ${template.estMinutes} minutes, '
-        '${template.totalImportableSlots} exercises. '
-        '${template.focus}. ${template.description}';
+    final a11yLabel = 'Featured. ${template.displayName}. '
+        '${template.levelLabel}, ${template.daysPerWeek}-day split, about '
+        '${template.estMinutes} minutes, ${template.totalImportableSlots} '
+        'exercises. ${template.focus}. ${template.description}';
 
     return Semantics(
       container: true,
@@ -906,13 +1277,16 @@ class _FeaturedCard extends StatelessWidget {
         ),
         child: Container(
           decoration: BoxDecoration(
+            // Hero card: raised one step above the list cards (which use flat
+            // surface2) so the spotlight program is unmissable against the
+            // page background.
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [surface.surface2, surface.bgSurface],
+              colors: [surface.surface2, surface.surface3],
             ),
             borderRadius: AppRadius.cardAll,
-            border: Border.all(color: surface.borderSubtle),
+            border: Border.all(color: surface.borderDefault),
           ),
           clipBehavior: Clip.antiAlias,
           child: Material(
@@ -940,7 +1314,9 @@ class _FeaturedCard extends StatelessWidget {
                             ],
                           ),
                           const SizedBox(height: 14),
-                          Text(template.name,
+                          Text(template.displayName,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                               style: AppText.sectionHeading(
                                   color: surface.textPrimary,
                                   shadows: AppText.depthFor(context))),
@@ -950,35 +1326,19 @@ class _FeaturedCard extends StatelessWidget {
                               overflow: TextOverflow.ellipsis,
                               style:
                                   AppText.meta(color: surface.textSecondary)),
-                          const SizedBox(height: 14),
-                          Wrap(
-                            spacing: AppSpacing.x2,
-                            runSpacing: 6,
-                            crossAxisAlignment: WrapCrossAlignment.center,
-                            children: [
-                              if (_primaryFocusGroup(template.focus)
-                                  case final primary?)
-                                _AccentPill(label: primary),
-                              _LevelPill(
-                                  label: template.levelLabel,
-                                  color: template.levelColor),
-                              _MetaChip(
-                                  icon: Icons.schedule_rounded,
-                                  label: '~${template.estMinutes} min'),
-                              _MetaChip(
-                                  icon: Icons.fitness_center_rounded,
-                                  label:
-                                      '${template.totalImportableSlots} exercises'),
-                              if (template.daysPerWeek > 1)
-                                _MetaChip(
-                                    icon: Icons.calendar_view_week_rounded,
-                                    label: '${template.daysPerWeek}-day'),
-                            ],
-                          ),
-                          const SizedBox(height: 20),
                         ],
                       ),
                     ),
+                    // One fact language per card: every fact is the
+                    // same neutral chip shape, and the whole row
+                    // collapses into ONE semantic label so screen
+                    // readers announce the facts once, not per chip.
+                    // Outside the excludeSemantics wrapper above so the
+                    // merged label survives as its own semantics node
+                    // (container: true) instead of vanishing.
+                    const SizedBox(height: 14),
+                    _FactRow(template: template),
+                    const SizedBox(height: 20),
                     Row(
                       children: [
                         Expanded(
@@ -1029,7 +1389,7 @@ class _TemplateCard extends StatelessWidget {
     final preview = template.previewSlots.take(3).map((s) => s.name).join(', ');
     final extra = template.totalImportableSlots - 3;
 
-    final a11yLabel = '${template.name}. ${template.levelLabel}, '
+    final a11yLabel = '${template.displayName}. ${template.levelLabel}, '
         '${template.daysPerWeek}-day split, about ${template.estMinutes} minutes, '
         '${template.totalImportableSlots} exercises. '
         '${template.focus}. ${template.description}';
@@ -1042,9 +1402,12 @@ class _TemplateCard extends StatelessWidget {
       onTap: onPreview,
       child: Container(
         decoration: BoxDecoration(
-          color: surface.bgSurface,
+          // surface2 (#141414) on a #000 page: a genuine 8% luminance step
+          // so card boundaries read without squinting — no border-only
+          // separation. The border is reinforcement, not the separation.
+          color: surface.surface2,
           borderRadius: AppRadius.cardAll,
-          border: Border.all(color: surface.borderSubtle),
+          border: Border.all(color: surface.borderDefault),
           // No per-card glow. repeated accent halos down a scrolling list
           // are visually loud and fight each other. Only the single Featured
           // hero card carries a glow (see _FeaturedCard above).
@@ -1065,7 +1428,9 @@ class _TemplateCard extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(template.name,
+                        Text(template.displayName,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                             style: AppText.cardTitle(
                                 color: surface.textPrimary,
                                 shadows: AppText.depthFor(context))),
@@ -1074,40 +1439,17 @@ class _TemplateCard extends StatelessWidget {
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: AppText.meta(color: surface.textSecondary)),
-                        const SizedBox(height: AppSpacing.x3),
-                        Wrap(
-                          spacing: AppSpacing.x2,
-                          runSpacing: 6,
-                          crossAxisAlignment: WrapCrossAlignment.center,
-                          children: [
-                            if (_primaryFocusGroup(template.focus)
-                                case final primary?)
-                              _AccentPill(label: primary),
-                            _LevelPill(
-                                label: template.levelLabel,
-                                color: template.levelColor),
-                            _MetaChip(
-                                icon: Icons.schedule_rounded,
-                                label: '~${template.estMinutes} min'),
-                            _MetaChip(
-                                icon: Icons.fitness_center_rounded,
-                                label:
-                                    '${template.totalImportableSlots} exercises'),
-                            if (template.daysPerWeek > 1)
-                              _MetaChip(
-                                  icon: Icons.calendar_view_week_rounded,
-                                  label: '${template.daysPerWeek}-day'),
-                          ],
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.only(top: 13),
-                          child: Divider(
-                              height: 1,
-                              thickness: 1,
-                              color: surface.borderSubtle),
-                        ),
                       ],
                     ),
+                  ),
+                  // Merged fact-row semantics (same contract as the featured
+                  // card): one label per card, announced once.
+                  const SizedBox(height: AppSpacing.x3),
+                  _FactRow(template: template),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 13),
+                    child: Divider(
+                        height: 1, thickness: 1, color: surface.borderSubtle),
                   ),
                   Padding(
                     padding: const EdgeInsets.only(top: 12),
@@ -1146,68 +1488,94 @@ class _TemplateCard extends StatelessWidget {
   }
 }
 
-class _AccentPill extends StatelessWidget {
-  final String label;
-  const _AccentPill({required this.label});
+/// The single metadata treatment for a program card: difficulty, time,
+/// exercise count, day count and equipment all share ONE chip shape and
+/// weight, and the whole row is announced as one semantic label. The muscle
+/// groups are NOT repeated here — the focus line above carries them, and the
+/// preview sheet has the full muscle map.
+class _FactRow extends StatelessWidget {
+  final RoutineTemplate template;
+  const _FactRow({required this.template});
+
+  String get _label => <String>[
+        template.levelLabel,
+        '~${template.estMinutes} min',
+        '${template.totalImportableSlots} exercises',
+        if (template.daysPerWeek > 1) '${template.daysPerWeek}-day',
+        template.equipmentLabel,
+      ].join(', ');
 
   @override
   Widget build(BuildContext context) {
-    final accent = context.accent;
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
-      decoration: BoxDecoration(
-        color: accent.muted,
-        borderRadius: AppRadius.badgeAll,
-      ),
-      child: Text(label, style: AppText.badge(color: accent.base)),
-    );
-  }
-}
-
-class _LevelPill extends StatelessWidget {
-  final String label;
-  final Color color;
-  const _LevelPill({required this.label, required this.color});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.14),
-        borderRadius: AppRadius.badgeAll,
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
+    final surface = context.surface;
+    final t = template;
+    return Semantics(
+      container: true,
+      label: _label,
+      excludeSemantics: true,
+      child: Wrap(
+        spacing: AppSpacing.x2,
+        runSpacing: 6,
+        crossAxisAlignment: WrapCrossAlignment.center,
         children: [
-          Container(
-            width: 6,
-            height: 6,
-            decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+          _FactChip(
+            leading: Container(
+              width: 6,
+              height: 6,
+              decoration:
+                  BoxDecoration(color: t.levelColor, shape: BoxShape.circle),
+            ),
+            label: t.levelLabel,
           ),
-          const SizedBox(width: 5),
-          Text(label, style: AppText.badge(color: color)),
+          _FactChip(
+            leading: Icon(Icons.schedule_rounded,
+                size: 13, color: surface.textSecondary),
+            label: '~${t.estMinutes} min',
+          ),
+          _FactChip(
+            leading: Icon(Icons.fitness_center_rounded,
+                size: 13, color: surface.textSecondary),
+            label: '${t.totalImportableSlots} exercises',
+          ),
+          if (t.daysPerWeek > 1)
+            _FactChip(
+              leading: Icon(Icons.calendar_view_week_rounded,
+                  size: 13, color: surface.textSecondary),
+              label: '${t.daysPerWeek}-day',
+            ),
+          _FactChip(
+            leading:
+                Icon(t.equipmentIcon, size: 13, color: surface.textSecondary),
+            label: t.equipmentLabel,
+          ),
         ],
       ),
     );
   }
 }
 
-class _MetaChip extends StatelessWidget {
-  final IconData icon;
+class _FactChip extends StatelessWidget {
+  final Widget leading;
   final String label;
-  const _MetaChip({required this.icon, required this.label});
+  const _FactChip({required this.leading, required this.label});
 
   @override
   Widget build(BuildContext context) {
     final surface = context.surface;
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(icon, size: 13, color: surface.textSecondary),
-        const SizedBox(width: 4),
-        Text(label, style: AppText.meta(color: surface.textSecondary)),
-      ],
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+      decoration: BoxDecoration(
+        color: surface.surface3,
+        borderRadius: AppRadius.badgeAll,
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          leading,
+          const SizedBox(width: 5),
+          Text(label, style: AppText.badge(color: surface.textSecondary)),
+        ],
+      ),
     );
   }
 }
@@ -1227,38 +1595,36 @@ class _ImportPill extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final reduceMotion = MediaQuery.disableAnimationsOf(context);
-    final surface = context.surface;
     final accent = context.accent;
 
-    // Not-imported: neutral-raised "Add" with accent download glyph only.
-    // Imported:     plain "View". no check icon, no green tint. The snackbar
-    //               already confirmed the add; a persistent tick + green here
-    //               just adds noise. Both states use the same neutral surface.
+    // Catalog-card CTA carve-out (DESIGN_NORTH_STAR principle 3 amendment):
+    // each card is a self-contained conversion unit, so its primary action
+    // carries the FULL accent fill. The label rides onAccent (near-black) per
+    // the "solid accent -> black label" rule. Imported state keeps the same
+    // filled form — the snackbar already confirmed the add, a persistent
+    // check just adds noise.
     final Widget child = importing
         ? SizedBox(
             key: const ValueKey('spin'),
             width: 16,
             height: 16,
             child: CircularProgressIndicator(
-                strokeWidth: 2, color: surface.textPrimary),
+                strokeWidth: 2, color: accent.onAccent),
           )
         : (imported
-            // Imported: no icon. just "View".
             ? Text(
                 'View',
                 key: const ValueKey('view'),
-                style: AppText.statLabel(color: surface.textPrimary),
+                style: AppText.statLabel(color: accent.onAccent),
               )
-            // Not imported: download glyph (accent) + "Add".
             : Row(
                 key: const ValueKey('add'),
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.download_rounded, size: 16, color: accent.base),
+                  Icon(Icons.download_rounded,
+                      size: 16, color: accent.onAccent),
                   const SizedBox(width: 6),
-                  // No onAccentHalo shadow. label is on a neutral fill.
-                  Text('Add',
-                      style: AppText.statLabel(color: surface.textPrimary)),
+                  Text('Add', style: AppText.statLabel(color: accent.onAccent)),
                 ],
               ));
 
@@ -1272,17 +1638,21 @@ class _ImportPill extends StatelessWidget {
               : 'Add this routine',
       excludeSemantics: true,
       child: Material(
-        // Both states neutral-raised. no green tint for imported.
-        color: surface.surface3,
-        shape: RoundedRectangleBorder(
-          side: BorderSide(color: surface.borderDefault),
+        // Filled accent; dimmed accent (not gray) while importing.
+        color: importing ? accent.base.withValues(alpha: 0.6) : accent.base,
+        shape: const RoundedRectangleBorder(
           borderRadius: AppRadius.buttonSecondaryAll,
         ),
         clipBehavior: Clip.antiAlias,
         child: InkWell(
-          onTap: onTap,
+          onTap: onTap == null
+              ? null
+              : () {
+                  HapticFeedback.mediumImpact();
+                  onTap!();
+                },
           child: Container(
-            constraints: const BoxConstraints(minHeight: 48, minWidth: 86),
+            constraints: const BoxConstraints(minHeight: 48, minWidth: 96),
             padding: const EdgeInsets.symmetric(horizontal: 16),
             alignment: Alignment.center,
             child: AnimatedSwitcher(
@@ -1302,6 +1672,8 @@ class _PreviewSheet extends StatelessWidget {
   final RoutineTemplate template;
   final bool imported;
   final String gender;
+  final Set<String> primaryGroups;
+  final Set<String> secondaryGroups;
   final VoidCallback onAdd;
   final VoidCallback? onView;
 
@@ -1309,6 +1681,8 @@ class _PreviewSheet extends StatelessWidget {
     required this.template,
     required this.imported,
     required this.gender,
+    required this.primaryGroups,
+    required this.secondaryGroups,
     required this.onAdd,
     required this.onView,
   });
@@ -1352,7 +1726,7 @@ class _PreviewSheet extends StatelessWidget {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(template.name,
+                      Text(template.displayName,
                           style: AppText.sectionHeading(
                               color: surface.textPrimary,
                               shadows: AppText.depthFor(context))),
@@ -1362,29 +1736,7 @@ class _PreviewSheet extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: AppSpacing.x4),
-                  Wrap(
-                    spacing: AppSpacing.x2,
-                    runSpacing: 6,
-                    crossAxisAlignment: WrapCrossAlignment.center,
-                    children: [
-                      _LevelPill(
-                          label: template.levelLabel,
-                          color: template.levelColor),
-                      _MetaChip(
-                          icon: Icons.schedule_rounded,
-                          label: '~${template.estMinutes} min'),
-                      _MetaChip(
-                          icon: Icons.fitness_center_rounded,
-                          label: '${template.totalImportableSlots} exercises'),
-                      if (template.daysPerWeek > 1)
-                        _MetaChip(
-                            icon: Icons.calendar_view_week_rounded,
-                            label: '${template.daysPerWeek} days/week'),
-                      _MetaChip(
-                          icon: Icons.category_outlined,
-                          label: template.equipmentLabel),
-                    ],
-                  ),
+                  _FactRow(template: template),
                   const SizedBox(height: AppSpacing.x4),
                   Text(template.description,
                       style: AppText.body(color: surface.textSecondary)
@@ -1400,7 +1752,8 @@ class _PreviewSheet extends StatelessWidget {
                     child: ConstrainedBox(
                       constraints: const BoxConstraints(maxWidth: 260),
                       child: MuscleMap(
-                        primaryGroups: _focusGroups(template.focus),
+                        primaryGroups: primaryGroups,
+                        secondaryGroups: secondaryGroups,
                         gender: gender,
                         showBack: true,
                         showLegend: true,

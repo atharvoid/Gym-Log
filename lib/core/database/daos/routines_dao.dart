@@ -348,6 +348,7 @@ class RoutinesDao extends DatabaseAccessor<AppDatabase>
         'userId': r.userId,
         'name': r.name,
         'notes': r.notes,
+        'sourceProgramName': r.sourceProgramName,
         'createdAt': r.createdAt.millisecondsSinceEpoch,
         'updatedAt': r.updatedAt.millisecondsSinceEpoch,
       },
@@ -368,6 +369,7 @@ class RoutinesDao extends DatabaseAccessor<AppDatabase>
         userId: rj['userId'] as String,
         name: rj['name'] as String,
         notes: Value(rj['notes'] as String? ?? ''),
+        sourceProgramName: Value(rj['sourceProgramName'] as String?),
         createdAt: ms(rj['createdAt']),
         updatedAt: ms(rj['updatedAt']),
       ));
@@ -586,10 +588,17 @@ class RoutinesDao extends DatabaseAccessor<AppDatabase>
   /// its own [RoutineDay] row, in the given order, with its own exercises —
   /// unlike [createRoutine], nothing gets collapsed onto a single day.
   /// Returns the new routine's id.
+  ///
+  /// [sourceProgramName] is the display name of the multi-day program this
+  /// routine was imported from (e.g. `"Push Pull Legs: 6-Day High Frequency
+  /// (Gym)"`). Pass `null` for standalone routines. Used for:
+  ///  • detecting previously-imported programs on the Explore screen
+  ///  • Phase 2 folder grouping in My Routines
   Future<String> createRoutineWithDays({
     required String userId,
     required String name,
     required List<RoutineDayDraft> days,
+    String? sourceProgramName,
   }) async {
     assert(days.isNotEmpty, 'createRoutineWithDays requires at least one day');
     final routineId = await transaction(() async {
@@ -599,6 +608,7 @@ class RoutinesDao extends DatabaseAccessor<AppDatabase>
         id: Value(id),
         userId: userId,
         name: name,
+        sourceProgramName: Value(sourceProgramName),
         createdAt: now,
         updatedAt: now,
       ));
@@ -617,6 +627,30 @@ class RoutinesDao extends DatabaseAccessor<AppDatabase>
     });
     await _enqueueRoutineUpsert(routineId, userId);
     return routineId;
+  }
+
+  /// Imports a multi-day program as N independent Routines, one per day.
+  /// Each Routine contains exactly one [RoutineDay] and is tagged with
+  /// [programName] as its [sourceProgramName] breadcrumb.
+  ///
+  /// Returns the list of created routine IDs in day order. The Explore screen
+  /// uses this list to update its import state and show the correct snackbar.
+  Future<List<String>> createRoutinesForProgram({
+    required String userId,
+    required String programName,
+    required List<RoutineDayDraft> days,
+  }) async {
+    final ids = <String>[];
+    for (final day in days) {
+      final id = await createRoutineWithDays(
+        userId: userId,
+        name: day.name,
+        days: [day],
+        sourceProgramName: programName,
+      );
+      ids.add(id);
+    }
+    return ids;
   }
 
   /// Replaces a routine's name + exercise list with the editor's draft.

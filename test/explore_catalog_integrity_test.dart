@@ -69,4 +69,26 @@ void main() {
       }
     }
   });
+
+  test(
+      'every template day label matches the Day N - pattern or is a known exception',
+      () {
+    final dayLabelPattern = RegExp(r'^Day \d+\s*-\s*.+');
+    final knownExceptions = {
+      'Workout A1',
+      'Workout A2',
+      'Workout B1',
+      'Workout B2'
+    };
+    for (final t in exploreTemplates) {
+      for (final day in t.days) {
+        final ok = dayLabelPattern.hasMatch(day.label) ||
+            knownExceptions.contains(day.label);
+        expect(ok, isTrue,
+            reason: '"${t.name}" day "${day.label}" does not match the '
+                '"Day N - Description" naming pattern. '
+                'Fix the label or add it to knownExceptions.');
+      }
+    }
+  });
 }

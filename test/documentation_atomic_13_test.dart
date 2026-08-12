@@ -16,7 +16,7 @@ void main() {
     });
 
     test('database schema version matches code specification', () {
-      expect(kDatabaseSchemaVersion, equals(5));
+      expect(kDatabaseSchemaVersion, equals(6));
     });
 
     test('documentation files exist and contain document authority headers',
@@ -55,10 +55,10 @@ void main() {
       }
     });
 
-    test('DATA_MODEL.md contains correct schema version 5', () {
+    test('DATA_MODEL.md contains correct schema version 6', () {
       final file = File('docs/DATA_MODEL.md');
       final content = file.readAsStringSync();
-      expect(content, contains('Schema version: **5**'));
+      expect(content, contains('Schema version: **6**'));
     });
 
     testWidgets('HelpFeedbackScreen renders support identity and action rows',
@@ -107,7 +107,7 @@ void main() {
       expect(find.text('CATEGORY'), findsOneWidget);
       expect(find.text('SHORT DESCRIPTION'), findsOneWidget);
       expect(find.text('SYSTEM METADATA (INCLUDED)'), findsOneWidget);
-      expect(find.textContaining('DB: v5'), findsOneWidget);
+      expect(find.textContaining('DB: v6'), findsOneWidget);
       expect(find.textContaining('Catalog: v2'), findsOneWidget);
     });
   });

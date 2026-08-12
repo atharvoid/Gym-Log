@@ -43,6 +43,22 @@ layers, never decorative borders.
 - Solid accent fill appears on **one** focal CTA per view, not on repeating controls
 - Repeating controls (list items, filter chips) use **neutral-raised** treatment: `surface3`/`surface4` fill + bold neutral label + accent only on the leading glyph
 
+> **Catalog-card carve-out (W3, 12 Aug 2026):** the Explore Programs screen's
+> card CTAs are an exception to "one focal CTA per view" — each card is a
+> self-contained conversion unit, so every card's primary action ("Add" /
+> "View") carries the FULL `accent.base` fill with `accent.onAccent` label, per
+> the "solid accent → black label" rule (Accent Palette Tokens section below). Selection is the ONLY
+> accepted dilution of this exception: if CardCTA density on a 400×800 viewport
+> reads as a "coupon flyer" (three or more filled CTAs visibly competing above
+> the fold), the documented fallback is `surface4` fill + `textPrimary` label
+> with the accent reserved for the icon. The feature card rating is locked by
+> `test/golden/explore_screen_golden_test.dart`.
+> 
+> Filter chips (level + equipment rows) are NOT affected — they stay
+> neutral-raised (`surface4` + accent `selectionBorder` on selected), never
+> `accent.muted` (that token is reserved for content tinting, e.g. muscle
+> tags). Locked by `test/explore_filters_layout_test.dart`.
+
 ### 4. Typographic Hierarchy + Tabular Figures
 
 - Google Fonts Inter for all text
