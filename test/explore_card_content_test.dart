@@ -88,4 +88,34 @@ void main() {
     await pumpExplore(tester, textScale: 1.3);
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets('section headers render a category icon glyph', (tester) async {
+    await pumpExplore(tester);
+    // Scroll until the PPL section header is visible.
+    await tester.scrollUntilVisible(
+      find.text('PUSH \u00b7 PULL \u00b7 LEGS'),
+      300,
+      scrollable: find
+          .descendant(
+            of: find.byType(CustomScrollView),
+            matching: find.byType(Scrollable),
+          )
+          .first,
+    );
+    expect(find.text('PUSH \u00b7 PULL \u00b7 LEGS'), findsOneWidget);
+    // The section header Row must contain at least one Icon sibling — the
+    // category glyph introduced in D3. Without this the header is text-only.
+    final headerRow = find
+        .ancestor(
+          of: find.text('PUSH \u00b7 PULL \u00b7 LEGS'),
+          matching: find.byType(Row),
+        )
+        .first;
+    expect(
+      find.descendant(of: headerRow, matching: find.byType(Icon)),
+      findsWidgets,
+      reason: 'section header must render a category icon glyph to the left '
+          'of the label (D3 \u2014 W4 feature)',
+    );
+  });
 }

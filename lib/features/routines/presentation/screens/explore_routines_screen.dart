@@ -24,6 +24,12 @@ import 'package:gymlog/shared/widgets/tour/spotlight_tour_overlay.dart';
 import 'package:gymlog/shared/widgets/ui/app_snack_bar.dart';
 import 'package:gymlog/shared/widgets/ui/primary_button.dart';
 
+/// Atmospheric white bloom behind the "Explore" hero title.
+/// 7% white on OLED black — just enough perceived depth without brightness.
+/// Intentionally a static surface treatment, NOT a brand token: OLED-only
+/// product, the canvas is always pure black.
+const Color _kHeroGlowColor = Color(0x12FFFFFF);
+
 /// Resolves primary + secondary muscle groups for [template] from real exercise
 /// data, replacing the marketing-tagline approximation used by
 /// [_focusGroups]. For every importable [TemplateSlot] across all
@@ -725,7 +731,7 @@ class _HeroGlow extends StatelessWidget {
         gradient: RadialGradient(
           center: Alignment(-0.35, -0.85),
           radius: 1.15,
-          colors: [Color(0x12FFFFFF), Color(0x00000000)],
+          colors: [_kHeroGlowColor, Colors.transparent],
           stops: [0.0, 0.72],
         ),
       ),
@@ -765,9 +771,9 @@ class _FilterHeaderDelegate extends SliverPersistentHeaderDelegate {
   _FilterHeaderDelegate({required this.selected, required this.onSelect});
 
   @override
-  double get minExtent => 56;
+  double get minExtent => 62;
   @override
-  double get maxExtent => 56;
+  double get maxExtent => 62;
 
   @override
   Widget build(
@@ -777,7 +783,7 @@ class _FilterHeaderDelegate extends SliverPersistentHeaderDelegate {
       padding: const EdgeInsets.fromLTRB(0, 8, 0, 10),
       child: _ChipStrip(
         key: const Key('level-filter-row'),
-        height: 38,
+        height: 44,
         padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screenH),
         children: [
           for (final f in _LevelFilter.values)
@@ -808,6 +814,7 @@ class _FilterChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final surface = context.surface;
+    final accent = context.accent;
     return Semantics(
       button: true,
       selected: selected,
@@ -815,17 +822,23 @@ class _FilterChip extends StatelessWidget {
       excludeSemantics: true,
       child: Material(
         // Neutral segmented-selector language: surface4 raised fill for
-        // selected, surface3 for idle. Intentionally NOT accent.base. filter
-        // chips repeat in a row so a saturated fill would flood the header.
-        // Accent is reserved for the card CTAs and selection borders.
+        // selected, surface3 for idle. Accent selection border mirrors the
+        // equipment chip affordance so both rows communicate selection
+        // consistently. Intentionally NOT accent.base fill: repeated saturated
+        // fill down a strip floods the header.
         color: selected ? surface.surface4 : surface.surface3,
-        borderRadius: AppRadius.buttonSecondaryAll,
+        shape: RoundedRectangleBorder(
+          borderRadius: AppRadius.buttonSecondaryAll,
+          side: selected
+              ? BorderSide(color: accent.selectionBorder)
+              : BorderSide.none,
+        ),
         clipBehavior: Clip.antiAlias,
         child: InkWell(
           onTap: onTap,
           child: Container(
             alignment: Alignment.center,
-            constraints: const BoxConstraints(minHeight: 38),
+            constraints: const BoxConstraints(minHeight: 44),
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Text(
               label,
@@ -850,9 +863,9 @@ class _EquipmentFilterHeaderDelegate extends SliverPersistentHeaderDelegate {
       {required this.selected, required this.onSelect});
 
   @override
-  double get minExtent => 50;
+  double get minExtent => 56;
   @override
-  double get maxExtent => 50;
+  double get maxExtent => 56;
 
   @override
   Widget build(
@@ -862,7 +875,7 @@ class _EquipmentFilterHeaderDelegate extends SliverPersistentHeaderDelegate {
       padding: const EdgeInsets.fromLTRB(0, 4, 0, 8),
       child: _ChipStrip(
         key: const Key('equipment-filter-row'),
-        height: 38,
+        height: 44,
         padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screenH),
         children: [
           for (final f in _EquipmentFilter.values)
@@ -933,7 +946,7 @@ class _EquipmentFilterChip extends StatelessWidget {
           onTap: onTap,
           child: Container(
             alignment: Alignment.center,
-            constraints: const BoxConstraints(minHeight: 38),
+            constraints: const BoxConstraints(minHeight: 44),
             padding: const EdgeInsets.symmetric(horizontal: 13),
             child: Row(
               mainAxisSize: MainAxisSize.min,
@@ -1215,6 +1228,15 @@ class _SectionHeader extends StatelessWidget {
         header: true,
         child: Row(
           children: [
+            // Category glyph — quiet chrome (textTertiary), NOT accent, so
+            // each programming family has a scannable visual identity without
+            // competing with the filled CTAs or difficulty dots.
+            Icon(
+              RoutineTemplate.categoryIcon(label),
+              size: 13,
+              color: surface.textTertiary,
+            ),
+            const SizedBox(width: 6),
             Text(label.toUpperCase(),
                 style: AppText.columnHeader(color: surface.textSecondary)),
             const SizedBox(width: 8),
@@ -1714,7 +1736,8 @@ class _PreviewSheet extends StatelessWidget {
               height: 4,
               decoration: BoxDecoration(
                 color: surface.borderEmphasis,
-                borderRadius: BorderRadius.circular(2),
+                // AppRadius.badgeAll = same pill radius as badges/chips.
+                borderRadius: AppRadius.badgeAll,
               ),
             ),
             Expanded(

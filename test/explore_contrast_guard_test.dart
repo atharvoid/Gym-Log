@@ -9,6 +9,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gymlog/core/theme/app_colors.dart';
+import 'package:gymlog/features/routines/presentation/data/explore_catalog.dart';
 
 double _channel(double value) {
   final s = value / 255;
@@ -50,5 +51,41 @@ void main() {
             '(WCAG AA requires >= 4.5:1)',
       );
     }
+  });
+
+  test('intermediate levelColor is never the brand accent hue', () {
+    // On every non-purple palette the intermediate dot was previously rendered
+    // in AppColors.accentText (#D9A6FF, neon-purple light) — a static value
+    // that accidentally matched the default palette but clashed on amber,
+    // fire-red, ice-chrome, higgsfield, and white palettes.
+    // Fixed: intermediate now maps to AppColors.accentInfo (#00D9FF, cyan).
+    //
+    // This test guards the mapping in the data layer (explore_catalog.dart)
+    // independently of any widget pump or theme wiring.
+    const template = RoutineTemplate(
+      name: 'Guard Test Program',
+      category: 'Full Body',
+      levels: [TemplateLevel.intermediate],
+      equipment: ProgramEquipment.fullGym,
+      focus: 'Test',
+      description: 'Guard test',
+      days: [
+        ProgramDay(
+          label: 'Day 1',
+          focus: 'Test',
+          slots: [],
+        ),
+      ],
+    );
+    expect(template.levelColor, AppColors.accentInfo,
+        reason: 'intermediate difficulty must use accentInfo (cyan), not '
+            'accentText (neon-purple light) which clashes with non-purple '
+            'brand accent palettes');
+    expect(template.levelColor, isNot(AppColors.accentText),
+        reason: 'accentText is a brand-accent-derived token — forbidden on '
+            'semantic difficulty signals');
+    expect(template.levelColor, isNot(AppColors.accentPrimary),
+        reason: 'accentPrimary is the brand accent base — forbidden on '
+            'semantic difficulty signals');
   });
 }

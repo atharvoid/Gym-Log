@@ -125,7 +125,8 @@ void main() {
     }
   });
 
-  testWidgets('selected level chip is neutral-raised', (tester) async {
+  testWidgets('selected level chip is neutral-raised with accent border',
+      (tester) async {
     await pumpExplore(tester);
     await tester.tap(find.descendant(
       of: find.byKey(const Key('level-filter-row')),
@@ -141,5 +142,31 @@ void main() {
           .first,
     );
     expect(material.color, ctx.surface.surface4);
+    // D6: level chips must carry the same accent selection border as equipment
+    // chips — consistent affordance across both filter rows.
+    final shape = material.shape! as RoundedRectangleBorder;
+    expect(shape.side.color, ctx.accent.selectionBorder,
+        reason: 'selected level chip must carry accent.selectionBorder');
+  });
+
+  testWidgets('filter chips meet 44pt minimum touch target', (tester) async {
+    await pumpExplore(tester);
+    // Level chips
+    for (final label in _levelLabels) {
+      final chip = find
+          .ancestor(of: find.text(label), matching: find.byType(Material))
+          .first;
+      final height = tester.getSize(chip).height;
+      expect(height, greaterThanOrEqualTo(44),
+          reason: '"$label" chip is ${height}pt — below the 44pt minimum');
+    }
+    // Equipment chips (first visible one — 'Any equipment' is always visible)
+    final chip = find
+        .ancestor(
+            of: find.text('Any equipment'), matching: find.byType(Material))
+        .first;
+    final height = tester.getSize(chip).height;
+    expect(height, greaterThanOrEqualTo(44),
+        reason: '"Any equipment" chip is ${height}pt — below the 44pt minimum');
   });
 }

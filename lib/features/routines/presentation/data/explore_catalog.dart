@@ -145,12 +145,32 @@ class RoutineTemplate {
       .toSet()
       .join(' · ');
 
-  /// Difficulty color, ON-TOKEN. Maps to the semantic palette so "amber" /
-  /// "green" mean one value app-wide.
+  /// Difficulty color. Maps to the fixed SEMANTIC palette (Layer 2 of
+  /// AppColors) so each tier reads as a universal signal regardless of the
+  /// user's chosen brand accent:
+  ///   Beginner     → success green  (#34C759)
+  ///   Intermediate → info cyan      (#00D9FF) — hue-distinct from all 6
+  ///                  brand accent palettes so it never masquerades as the
+  ///                  brand accent on non-purple palettes.
+  ///   Advanced     → warning amber  (#FF9F0A)
   Color get levelColor => switch (primaryLevel) {
         TemplateLevel.beginner => AppColors.success,
-        TemplateLevel.intermediate => AppColors.accentText,
+        TemplateLevel.intermediate => AppColors.accentInfo,
         TemplateLevel.advanced => AppColors.warning,
+      };
+
+  /// Structural icon glyph for the section header of this program's category.
+  /// Uses a neutral chrome icon — NOT the brand accent — so each family has
+  /// a visual identity without competing with the filled CTA or difficulty dots.
+  static IconData categoryIcon(String category) => switch (category) {
+        'Push \u00b7 Pull \u00b7 Legs' => Icons.swap_horiz_rounded,
+        'Upper \u00b7 Lower' => Icons.vertical_split_rounded,
+        'Full Body' => Icons.accessibility_new_rounded,
+        'Powerbuilding' => Icons.bolt_rounded,
+        'Bro Split' => Icons.view_week_rounded,
+        'Arnold Split' => Icons.sync_alt_rounded,
+        'Strength Progression' => Icons.trending_up_rounded,
+        _ => Icons.folder_open_rounded,
       };
 
   String get equipmentLabel => switch (equipment) {
