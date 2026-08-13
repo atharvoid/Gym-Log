@@ -170,7 +170,10 @@ class ExploreRoutinesScreen extends ConsumerStatefulWidget {
 class _ExploreRoutinesScreenState extends ConsumerState<ExploreRoutinesScreen>
     with SingleTickerProviderStateMixin {
   final Set<String> _importing = {};
-  final Set<String> _imported = {};
+  // _imported removed — imported state is now derived from DB-backed
+  // hydratedRoutinesProvider (existingByProgram / existingByName) so that
+  // deletions are reflected immediately. _importedIds is kept as a fast
+  // in-session fallback for the "View" snackbar action before the stream ticks.
   // Maps template.name → list of created routine IDs (one per imported day).
   final Map<String, List<String>> _importedIds = {};
   _LevelFilter _filter = _LevelFilter.all;
@@ -254,10 +257,11 @@ class _ExploreRoutinesScreenState extends ConsumerState<ExploreRoutinesScreen>
   Future<void> _import(RoutineTemplate template) async {
     final user = ref.read(authProvider);
     if (user == null) return;
-    if (_importing.contains(template.name) ||
-        _imported.contains(template.name)) {
-      return;
-    }
+    // Guard: only block if an import is already in-flight for this template.
+    // Do NOT check _imported here — it is session-local and doesn't reflect
+    // deletions. The real "already imported" state is derived from
+    // hydratedRoutinesProvider (existingByProgram) in the build method.
+    if (_importing.contains(template.name)) return;
     // Haptics are fired by the invoking control (mediumImpact on the card
     // CTA, PrimaryButton's own mediumImpact in the preview sheet) — NOT here,
     // or an import from the sheet would buzz twice.
@@ -345,7 +349,6 @@ class _ExploreRoutinesScreenState extends ConsumerState<ExploreRoutinesScreen>
       if (!mounted) return;
 
       setState(() {
-        _imported.add(template.name);
         _importedIds[template.name] = ids;
       });
 
@@ -588,15 +591,17 @@ class _ExploreRoutinesScreenState extends ConsumerState<ExploreRoutinesScreen>
                   ),
                 ),
               ),
-              SliverPersistentHeader(
-                pinned: true,
-                delegate: _FilterHeaderDelegate(
-                    selected: _filter, onSelect: _setFilter),
-              ),
-              SliverPersistentHeader(
-                pinned: true,
-                delegate: _EquipmentFilterHeaderDelegate(
-                    selected: _equipmentFilter, onSelect: _setEquipmentFilter),
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(
+                      AppSpacing.screenH, 0, AppSpacing.screenH, 4),
+                  child: _FilterBar(
+                    levelFilter: _filter,
+                    equipmentFilter: _equipmentFilter,
+                    onLevelTap: () => _showLevelFilterSheet(),
+                    onEquipmentTap: () => _showEquipmentFilterSheet(),
+                  ),
+                ),
               ),
               SliverPadding(
                 padding: EdgeInsets.fromLTRB(AppSpacing.screenH, 8,
@@ -697,7 +702,8 @@ class _ExploreRoutinesScreenState extends ConsumerState<ExploreRoutinesScreen>
     Map<String, List<String>> existingByProgram,
     Map<String, String> existingByName,
   ) =>
-      _imported.contains(t.name) ||
+      // Derive imported state purely from DB-backed maps so deletions are
+      // reflected immediately without stale session-local Set reads.
       existingByProgram.containsKey(t.name) ||
       existingByName.containsKey(t.name);
 
@@ -709,6 +715,42 @@ class _ExploreRoutinesScreenState extends ConsumerState<ExploreRoutinesScreen>
       _importedIds[t.name]?.firstOrNull ??
       existingByProgram[t.name]?.firstOrNull ??
       existingByName[t.name];
+
+  void _showLevelFilterSheet() {
+    HapticFeedback.selectionClick();
+    showModalBottomSheet<void>(
+      context: context,
+      useRootNavigator: true,
+      useSafeArea: true,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (sheetCtx) => _LevelFilterSheet(
+        current: _filter,
+        onSelect: (f) {
+          Navigator.of(sheetCtx).pop();
+          _setFilter(f);
+        },
+      ),
+    );
+  }
+
+  void _showEquipmentFilterSheet() {
+    HapticFeedback.selectionClick();
+    showModalBottomSheet<void>(
+      context: context,
+      useRootNavigator: true,
+      useSafeArea: true,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (sheetCtx) => _EquipmentFilterSheet(
+        current: _equipmentFilter,
+        onSelect: (f) {
+          Navigator.of(sheetCtx).pop();
+          _setEquipmentFilter(f);
+        },
+      ),
+    );
+  }
 }
 
 class _HeroTitle extends StatelessWidget {
@@ -731,7 +773,7 @@ class _HeroGlow extends StatelessWidget {
         gradient: RadialGradient(
           center: Alignment(-0.35, -0.85),
           radius: 1.15,
-          colors: [_kHeroGlowColor, Colors.transparent],
+          colors: [_kHeroGlowColor, Color(0x00FFFFFF)],
           stops: [0.0, 0.72],
         ),
       ),
@@ -765,51 +807,58 @@ class _CredChip extends StatelessWidget {
   }
 }
 
-class _FilterHeaderDelegate extends SliverPersistentHeaderDelegate {
-  final _LevelFilter selected;
-  final ValueChanged<_LevelFilter> onSelect;
-  _FilterHeaderDelegate({required this.selected, required this.onSelect});
+// ── Filter bar & bottom-sheet pickers ──────────────────────────────────────
+
+/// Single-row bar with two tappable pill buttons. Replaces the previous
+/// dual-SliverPersistentHeader chip strip approach.
+class _FilterBar extends StatelessWidget {
+  final _LevelFilter levelFilter;
+  final _EquipmentFilter equipmentFilter;
+  final VoidCallback onLevelTap;
+  final VoidCallback onEquipmentTap;
+
+  const _FilterBar({
+    required this.levelFilter,
+    required this.equipmentFilter,
+    required this.onLevelTap,
+    required this.onEquipmentTap,
+  });
 
   @override
-  double get minExtent => 62;
-  @override
-  double get maxExtent => 62;
-
-  @override
-  Widget build(
-      BuildContext context, double shrinkOffset, bool overlapsContent) {
-    return Container(
-      color: context.surface.bgBase,
-      padding: const EdgeInsets.fromLTRB(0, 8, 0, 10),
-      child: _ChipStrip(
-        key: const Key('level-filter-row'),
-        height: 44,
-        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screenH),
+  Widget build(BuildContext context) {
+    final levelActive = levelFilter != _LevelFilter.all;
+    final equipActive = equipmentFilter != _EquipmentFilter.all;
+    return Semantics(
+      label: 'Filters',
+      child: Row(
         children: [
-          for (final f in _LevelFilter.values)
-            Padding(
-              padding: const EdgeInsets.only(right: AppSpacing.x2),
-              child: _FilterChip(
-                label: f.label,
-                selected: f == selected,
-                onTap: () => onSelect(f),
-              ),
-            ),
+          _FilterPill(
+            label: levelActive ? levelFilter.label : 'Level',
+            active: levelActive,
+            onTap: onLevelTap,
+          ),
+          const SizedBox(width: AppSpacing.x2),
+          _FilterPill(
+            label: equipActive ? equipmentFilter.label : 'Equipment',
+            active: equipActive,
+            onTap: onEquipmentTap,
+          ),
         ],
       ),
     );
   }
-
-  @override
-  bool shouldRebuild(_FilterHeaderDelegate old) => old.selected != selected;
 }
 
-class _FilterChip extends StatelessWidget {
+class _FilterPill extends StatelessWidget {
   final String label;
-  final bool selected;
+  final bool active;
   final VoidCallback onTap;
-  const _FilterChip(
-      {required this.label, required this.selected, required this.onTap});
+
+  const _FilterPill({
+    required this.label,
+    required this.active,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -817,19 +866,14 @@ class _FilterChip extends StatelessWidget {
     final accent = context.accent;
     return Semantics(
       button: true,
-      selected: selected,
+      selected: active,
       label: label,
       excludeSemantics: true,
       child: Material(
-        // Neutral segmented-selector language: surface4 raised fill for
-        // selected, surface3 for idle. Accent selection border mirrors the
-        // equipment chip affordance so both rows communicate selection
-        // consistently. Intentionally NOT accent.base fill: repeated saturated
-        // fill down a strip floods the header.
-        color: selected ? surface.surface4 : surface.surface3,
+        color: active ? accent.muted : surface.surface3,
         shape: RoundedRectangleBorder(
           borderRadius: AppRadius.buttonSecondaryAll,
-          side: selected
+          side: active
               ? BorderSide(color: accent.selectionBorder)
               : BorderSide.none,
         ),
@@ -838,16 +882,38 @@ class _FilterChip extends StatelessWidget {
           onTap: onTap,
           child: Container(
             alignment: Alignment.center,
-            constraints: const BoxConstraints(minHeight: 44),
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Text(
-              label,
-              maxLines: 1,
-              style: AppText.statLabel(
-                color: selected ? surface.textPrimary : surface.textSecondary,
-              ).copyWith(
-                fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
-              ),
+            constraints: const BoxConstraints(minHeight: 36),
+            padding: const EdgeInsets.symmetric(horizontal: 14),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (active) ...[
+                  Container(
+                    width: 6,
+                    height: 6,
+                    decoration: BoxDecoration(
+                      color: accent.base,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                ],
+                Text(
+                  label,
+                  maxLines: 1,
+                  style: AppText.statLabel(
+                    color: active ? accent.base : surface.textSecondary,
+                  ).copyWith(
+                    fontWeight: active ? FontWeight.w600 : FontWeight.w400,
+                  ),
+                ),
+                const SizedBox(width: 4),
+                Icon(
+                  Icons.keyboard_arrow_down_rounded,
+                  size: 14,
+                  color: active ? accent.base : surface.textTertiary,
+                ),
+              ],
             ),
           ),
         ),
@@ -856,62 +922,130 @@ class _FilterChip extends StatelessWidget {
   }
 }
 
-class _EquipmentFilterHeaderDelegate extends SliverPersistentHeaderDelegate {
-  final _EquipmentFilter selected;
-  final ValueChanged<_EquipmentFilter> onSelect;
-  _EquipmentFilterHeaderDelegate(
-      {required this.selected, required this.onSelect});
+// ── Filter bottom-sheet contents ───────────────────────────────────────────
+
+class _LevelFilterSheet extends StatelessWidget {
+  final _LevelFilter current;
+  final ValueChanged<_LevelFilter> onSelect;
+
+  const _LevelFilterSheet({
+    required this.current,
+    required this.onSelect,
+  });
 
   @override
-  double get minExtent => 56;
-  @override
-  double get maxExtent => 56;
-
-  @override
-  Widget build(
-      BuildContext context, double shrinkOffset, bool overlapsContent) {
+  Widget build(BuildContext context) {
+    final surface = context.surface;
     return Container(
-      color: context.surface.bgBase,
-      padding: const EdgeInsets.fromLTRB(0, 4, 0, 8),
-      child: _ChipStrip(
-        key: const Key('equipment-filter-row'),
-        height: 44,
-        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screenH),
-        children: [
-          for (final f in _EquipmentFilter.values)
+      decoration: BoxDecoration(
+        color: surface.surface2,
+        borderRadius: AppRadius.sheetTop,
+      ),
+      child: SafeArea(
+        top: false,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(height: 12),
+            _SheetHandle(),
+            const SizedBox(height: 16),
             Padding(
-              padding: const EdgeInsets.only(right: AppSpacing.x2),
-              child: _EquipmentFilterChip(
-                icon: switch (f) {
-                  _EquipmentFilter.all => Icons.tune_rounded,
-                  _EquipmentFilter.fullGym => Icons.fitness_center_rounded,
-                  _EquipmentFilter.dumbbellOnly =>
-                    Icons.sports_gymnastics_rounded,
-                  _EquipmentFilter.bodyweight =>
-                    Icons.accessibility_new_rounded,
-                },
-                label: f.label,
-                selected: f == selected,
-                onTap: () => onSelect(f),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: AppSpacing.screenH),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  'Level',
+                  style: AppText.caption(color: surface.textSecondary),
+                ),
               ),
             ),
-        ],
+            const SizedBox(height: 8),
+            for (final f in _LevelFilter.values)
+              _FilterSheetOption(
+                label: f.label,
+                selected: f == current,
+                onTap: () => onSelect(f),
+              ),
+            const SizedBox(height: 8),
+          ],
+        ),
       ),
     );
   }
-
-  @override
-  bool shouldRebuild(_EquipmentFilterHeaderDelegate old) =>
-      old.selected != selected;
 }
 
-class _EquipmentFilterChip extends StatelessWidget {
-  final IconData icon;
+class _EquipmentFilterSheet extends StatelessWidget {
+  final _EquipmentFilter current;
+  final ValueChanged<_EquipmentFilter> onSelect;
+
+  const _EquipmentFilterSheet({
+    required this.current,
+    required this.onSelect,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final surface = context.surface;
+    return Container(
+      decoration: BoxDecoration(
+        color: surface.surface2,
+        borderRadius: AppRadius.sheetTop,
+      ),
+      child: SafeArea(
+        top: false,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(height: 12),
+            _SheetHandle(),
+            const SizedBox(height: 16),
+            Padding(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: AppSpacing.screenH),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  'Equipment',
+                  style: AppText.caption(color: surface.textSecondary),
+                ),
+              ),
+            ),
+            const SizedBox(height: 8),
+            for (final f in _EquipmentFilter.values)
+              _FilterSheetOption(
+                label: f.label,
+                selected: f == current,
+                onTap: () => onSelect(f),
+              ),
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _SheetHandle extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 36,
+      height: 4,
+      decoration: BoxDecoration(
+        color: context.surface.borderEmphasis,
+        borderRadius: BorderRadius.circular(2),
+      ),
+    );
+  }
+}
+
+class _FilterSheetOption extends StatelessWidget {
   final String label;
   final bool selected;
   final VoidCallback onTap;
-  const _EquipmentFilterChip({
-    required this.icon,
+
+  const _FilterSheetOption({
     required this.label,
     required this.selected,
     required this.onTap,
@@ -925,159 +1059,32 @@ class _EquipmentFilterChip extends StatelessWidget {
       button: true,
       selected: selected,
       label: label,
-      excludeSemantics: true,
-      child: Material(
-        // Equipment is a secondary refinement, not a peer of the level
-        // selector — same neutral-raised fill as the level chips, but the
-        // selected state carries the accent SELECTION BORDER + accent leading
-        // glyph so the two rows still read as distinct hierarchy. Never
-        // accent.muted as a fill: that token is reserved for content tinting
-        // (the muscle tags), and reusing it for selection made two unrelated
-        // meanings share one color.
-        color: selected ? surface.surface4 : surface.surface3,
-        shape: RoundedRectangleBorder(
-          borderRadius: AppRadius.buttonSecondaryAll,
-          side: selected
-              ? BorderSide(color: accent.selectionBorder)
-              : BorderSide.none,
-        ),
-        clipBehavior: Clip.antiAlias,
-        child: InkWell(
-          onTap: onTap,
-          child: Container(
-            alignment: Alignment.center,
-            constraints: const BoxConstraints(minHeight: 44),
-            padding: const EdgeInsets.symmetric(horizontal: 13),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(icon,
-                    size: 14,
-                    color: selected ? accent.base : surface.textSecondary),
-                const SizedBox(width: 6),
-                Text(
+      child: InkWell(
+        onTap: onTap,
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.screenH, vertical: 14),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
                   label,
-                  maxLines: 1,
-                  style: AppText.statLabel(
+                  style: AppText.body(
                     color:
                         selected ? surface.textPrimary : surface.textSecondary,
                   ).copyWith(
                     fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
                   ),
                 ),
-              ],
-            ),
+              ),
+              if (selected)
+                Icon(Icons.check_rounded, size: 18, color: accent.base)
+              else
+                const SizedBox(width: 18),
+            ],
           ),
         ),
-      ),
-    );
-  }
-}
-
-/// Horizontally scrollable, single-line chip strip with soft edge fades that
-/// appear only while content overflows. The fade is the scroll affordance:
-/// clipped text with no cue reads as broken, so the gradient appears exactly
-/// when there is more content in the scroll direction, and disappears once
-/// the strip is scrolled flush. The strip is a real [ListView], so
-/// screen-reader users get a standard scroll action on the row too.
-class _ChipStrip extends StatefulWidget {
-  final List<Widget> children;
-  final double height;
-  final EdgeInsetsGeometry padding;
-  const _ChipStrip({
-    super.key,
-    required this.children,
-    required this.height,
-    required this.padding,
-  });
-
-  @override
-  State<_ChipStrip> createState() => _ChipStripState();
-}
-
-class _ChipStripState extends State<_ChipStrip> {
-  final ScrollController _controller = ScrollController();
-  bool _fadeLeft = false;
-  bool _fadeRight = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller.addListener(_onScroll);
-  }
-
-  @override
-  void dispose() {
-    _controller.removeListener(_onScroll);
-    _controller.dispose();
-    super.dispose();
-  }
-
-  void _onScroll() {
-    if (!_controller.hasClients) return;
-    final position = _controller.position;
-    final right = position.pixels < position.maxScrollExtent - 0.5;
-    final left = position.pixels > 0.5;
-    if (right != _fadeRight || left != _fadeLeft) {
-      setState(() {
-        _fadeRight = right;
-        _fadeLeft = left;
-      });
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final bg = context.surface.bgBase;
-    return SizedBox(
-      height: widget.height,
-      child: Stack(
-        children: [
-          Positioned.fill(
-            child: ListView(
-              scrollDirection: Axis.horizontal,
-              controller: _controller,
-              padding: widget.padding,
-              children: widget.children,
-            ),
-          ),
-          if (_fadeLeft)
-            Positioned(
-              left: 0,
-              top: 0,
-              bottom: 0,
-              width: 24,
-              child: IgnorePointer(
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.centerLeft,
-                      end: Alignment.centerRight,
-                      colors: [bg, bg.withValues(alpha: 0)],
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          if (_fadeRight)
-            Positioned(
-              right: 0,
-              top: 0,
-              bottom: 0,
-              width: 24,
-              child: IgnorePointer(
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.centerRight,
-                      end: Alignment.centerLeft,
-                      colors: [bg, bg.withValues(alpha: 0)],
-                    ),
-                  ),
-                ),
-              ),
-            ),
-        ],
       ),
     );
   }

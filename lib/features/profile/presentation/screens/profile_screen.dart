@@ -193,7 +193,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     ],
                     Semantics(
                       container: true,
-                      label: 'Profile, $displayName, $email',
+                      label: 'Profile, $displayName',
                       child: _IdentityHeader(
                         displayName: displayName,
                         email: email,
@@ -270,6 +270,7 @@ class _BillingIssueBanner extends StatelessWidget {
                   Border.all(color: AppColors.warning.withValues(alpha: 0.35)),
             ),
             child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 const Icon(Icons.error_outline_rounded,
                     size: 18, color: AppColors.warning),
@@ -314,6 +315,7 @@ class _IdentityHeader extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final surface = context.surface;
     return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         ProfileAvatar(
           displayName: displayName,
@@ -415,15 +417,6 @@ class _IdentityHeader extends ConsumerWidget {
                   ],
                 ],
               ),
-              if (email.isNotEmpty) ...[
-                const SizedBox(height: 2),
-                Text(
-                  email,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: AppText.profileEmail(color: surface.textSecondary),
-                ),
-              ],
             ],
           ),
         ),
@@ -659,6 +652,7 @@ class _GoalReachedBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         const Icon(Icons.emoji_events_rounded,
             size: 14, color: AppColors.warning),

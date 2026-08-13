@@ -105,16 +105,14 @@ class RoutineTemplate {
 
   int get daysPerWeek => days.length;
 
-  /// Card/preview title without the trailing equipment parenthetical
-  /// (e.g. "Push Pull Legs: 6-Day High Frequency (Gym)" → "Push Pull Legs:
-  /// 6-Day High Frequency"). The parenthetical is redundant because the
-  /// equipment fact already renders as a chip in the card's metadata row.
+  /// Card/preview title — same as [name] now that names are plain-English
+  /// without a trailing parenthetical. Kept for API compatibility.
   /// Presentation-only: [name] stays the canonical import/source key.
-  String get displayName => name.replaceFirst(RegExp(r' \([^)]*\)$'), '');
+  String get displayName => name;
 
-  /// Everything before the first ": " — the program family name used when
-  /// naming imported day-routines (e.g. "Push Pull Legs · Push A").
-  String get shortName => name.contains(': ') ? name.split(': ').first : name;
+  /// Everything before the first ' - ' — the program family name used when
+  /// naming imported day-routines (e.g. "Push / Pull / Legs · Push A").
+  String get shortName => name.contains(' - ') ? name.split(' - ').first : name;
 
   int get totalSlots => days.fold(0, (a, d) => a + d.slots.length);
 
@@ -208,7 +206,7 @@ const exploreCategoryOrder = <String>[
 const exploreTemplates = <RoutineTemplate>[
   // ---- full_body_beginner_3day_gym ----
   RoutineTemplate(
-    name: 'Full Body: 3-Day Beginner (Gym)',
+    name: 'Starter Full Body - 3 Days/Week',
     category: 'Full Body',
     levels: [TemplateLevel.beginner],
     equipment: ProgramEquipment.fullGym,
@@ -259,7 +257,7 @@ const exploreTemplates = <RoutineTemplate>[
 
   // ---- upper_lower_4day_gym ----
   RoutineTemplate(
-    name: 'Upper/Lower: 4-Day (Gym)',
+    name: 'Upper & Lower Body - 4 Days/Week',
     featured: true,
     category: 'Upper · Lower',
     levels: [TemplateLevel.intermediate],
@@ -325,7 +323,7 @@ const exploreTemplates = <RoutineTemplate>[
 
   // ---- ppl_6day_gym ----
   RoutineTemplate(
-    name: 'Push Pull Legs: 6-Day High Frequency (Gym)',
+    name: 'Push / Pull / Legs - 6 Days/Week',
     category: 'Push · Pull · Legs',
     levels: [TemplateLevel.intermediate, TemplateLevel.advanced],
     equipment: ProgramEquipment.fullGym,
@@ -414,7 +412,7 @@ const exploreTemplates = <RoutineTemplate>[
 
   // ---- ppl_3day_gym ----
   RoutineTemplate(
-    name: 'Push Pull Legs: 3-Day Low Frequency (Gym)',
+    name: 'Push / Pull / Legs - 3 Days/Week',
     category: 'Push · Pull · Legs',
     levels: [TemplateLevel.beginner, TemplateLevel.intermediate],
     equipment: ProgramEquipment.fullGym,
@@ -464,7 +462,7 @@ const exploreTemplates = <RoutineTemplate>[
 
   // ---- bro_split_5day_gym ----
   RoutineTemplate(
-    name: 'Bro Split: 5-Day Body-Part Split (Gym)',
+    name: 'Body-Part Split - 5 Days/Week',
     category: 'Bro Split',
     levels: [TemplateLevel.intermediate, TemplateLevel.advanced],
     equipment: ProgramEquipment.fullGym,
@@ -539,7 +537,7 @@ const exploreTemplates = <RoutineTemplate>[
 
   // ---- arnold_split_6day_gym ----
   RoutineTemplate(
-    name: 'Arnold Split: 6-Day (Gym)',
+    name: 'Classic Push & Pull Split - 6 Days/Week',
     category: 'Arnold Split',
     levels: [TemplateLevel.advanced],
     equipment: ProgramEquipment.fullGym,
@@ -630,7 +628,7 @@ const exploreTemplates = <RoutineTemplate>[
 
   // ---- phul_4day_gym ----
   RoutineTemplate(
-    name: 'PHUL: Power Hypertrophy Upper Lower (Gym)',
+    name: 'Power + Size - 4 Days/Week',
     category: 'Powerbuilding',
     levels: [TemplateLevel.intermediate],
     equipment: ProgramEquipment.fullGym,
@@ -694,7 +692,7 @@ const exploreTemplates = <RoutineTemplate>[
 
   // ---- phat_5day_gym ----
   RoutineTemplate(
-    name: 'PHAT: Power Hypertrophy Adaptive Training (Gym)',
+    name: 'Power & Hypertrophy - 5 Days/Week',
     category: 'Powerbuilding',
     levels: [TemplateLevel.intermediate, TemplateLevel.advanced],
     equipment: ProgramEquipment.fullGym,
@@ -770,7 +768,7 @@ const exploreTemplates = <RoutineTemplate>[
 
   // ---- gzclp_gym ----
   RoutineTemplate(
-    name: 'GZCLP: Tiered Linear Progression (Gym)',
+    name: 'Linear Strength Builder - 3 Days/Week',
     category: 'Strength Progression',
     levels: [TemplateLevel.beginner, TemplateLevel.intermediate],
     equipment: ProgramEquipment.fullGym,
@@ -827,7 +825,7 @@ const exploreTemplates = <RoutineTemplate>[
 
   // ---- full_body_fatloss_4day_gym ----
   RoutineTemplate(
-    name: 'Full Body Fat-Loss Circuit: 4-Day (Gym)',
+    name: 'Fat-Loss Circuit - 4 Days/Week',
     category: 'Full Body',
     levels: [TemplateLevel.beginner, TemplateLevel.intermediate],
     equipment: ProgramEquipment.fullGym,
@@ -896,7 +894,7 @@ const exploreTemplates = <RoutineTemplate>[
 
   // ---- full_body_beginner_3day_dumbbell ----
   RoutineTemplate(
-    name: 'Full Body: 3-Day Beginner (Dumbbell Only)',
+    name: 'Starter Full Body - 3 Days/Week · Dumbbell',
     category: 'Full Body',
     levels: [TemplateLevel.beginner],
     equipment: ProgramEquipment.dumbbellOnly,
@@ -953,7 +951,7 @@ const exploreTemplates = <RoutineTemplate>[
 
   // ---- upper_lower_4day_dumbbell ----
   RoutineTemplate(
-    name: 'Upper/Lower: 4-Day (Dumbbell Only)',
+    name: 'Upper & Lower Body - 4 Days/Week · Dumbbell',
     category: 'Upper · Lower',
     levels: [TemplateLevel.intermediate],
     equipment: ProgramEquipment.dumbbellOnly,
@@ -1019,7 +1017,7 @@ const exploreTemplates = <RoutineTemplate>[
 
   // ---- ppl_6day_dumbbell ----
   RoutineTemplate(
-    name: 'Push Pull Legs: 6-Day (Dumbbell Only)',
+    name: 'Push / Pull / Legs - 6 Days/Week · Dumbbell',
     category: 'Push · Pull · Legs',
     levels: [TemplateLevel.intermediate, TemplateLevel.advanced],
     equipment: ProgramEquipment.dumbbellOnly,
@@ -1104,7 +1102,7 @@ const exploreTemplates = <RoutineTemplate>[
 
   // ---- full_body_beginner_3day_bodyweight ----
   RoutineTemplate(
-    name: 'Full Body: 3-Day Beginner (No Equipment)',
+    name: 'Starter Full Body - 3 Days/Week · No Equipment',
     category: 'Full Body',
     levels: [TemplateLevel.beginner],
     equipment: ProgramEquipment.bodyweight,
@@ -1155,7 +1153,7 @@ const exploreTemplates = <RoutineTemplate>[
 
   // ---- ppl_6day_bodyweight ----
   RoutineTemplate(
-    name: 'Push Pull Legs: 6-Day (No Equipment)',
+    name: 'Push / Pull / Legs - 6 Days/Week · No Equipment',
     category: 'Push · Pull · Legs',
     levels: [TemplateLevel.intermediate, TemplateLevel.advanced],
     equipment: ProgramEquipment.bodyweight,
@@ -1235,7 +1233,7 @@ const exploreTemplates = <RoutineTemplate>[
 
   // ---- full_body_fatloss_4day_bodyweight ----
   RoutineTemplate(
-    name: 'Full Body HIIT Fat-Loss: 4-Day (No Equipment)',
+    name: 'HIIT Fat-Loss - 4 Days/Week · No Equipment',
     category: 'Full Body',
     levels: [TemplateLevel.beginner, TemplateLevel.intermediate],
     equipment: ProgramEquipment.bodyweight,

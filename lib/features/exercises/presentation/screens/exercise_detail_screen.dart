@@ -669,6 +669,7 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
         ),
         const SizedBox(height: 12),
         Container(
+          clipBehavior: Clip.antiAlias,
           decoration: BoxDecoration(
             color: surface.bgSurface,
             borderRadius: AppRadius.cardAll,
@@ -685,15 +686,19 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         child: Row(
           children: [
-            Text(
-              label,
-              style: AppText.body(
-                color: surface.textSecondary,
-              ).copyWith(
-                fontSize: 14,
+            Flexible(
+              child: Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: AppText.body(
+                  color: surface.textSecondary,
+                ).copyWith(
+                  fontSize: 14,
+                ),
               ),
             ),
-            const Spacer(),
+            const SizedBox(width: 8),
             Text(
               value,
               style: AppText.rowLabel(

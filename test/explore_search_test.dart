@@ -14,11 +14,13 @@ void main() {
     await tester.enterText(find.byType(TextField), 'dumbbell');
     await tester.pumpAndSettle();
 
-    expect(find.text('GZCLP: Tiered Linear Progression'), findsNothing,
+    expect(find.textContaining('Linear Strength Builder'), findsNothing,
         reason: 'gym-only program must not match a "dumbbell" query');
-    expect(find.text('Push Pull Legs: 6-Day'), findsOneWidget,
+    expect(find.textContaining('Push / Pull / Legs - 6 Days/Week · Dumbbell'),
+        findsOneWidget,
         reason: 'the dumbbell-only PPL must be the only "6-Day" PPL shown');
-    expect(find.text('Upper/Lower: 4-Day'), findsOneWidget);
+    expect(find.textContaining('Upper & Lower Body - 4 Days/Week · Dumbbell'),
+        findsOneWidget);
     expect(find.text('FEATURED'), findsNothing,
         reason: 'featured card is suppressed while searching');
   });

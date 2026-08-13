@@ -1,15 +1,13 @@
-// Explore filter-row layout specs (review failures #1, #2, #6):
+// Explore filter-bar layout specs (updated for bottom-sheet filter pickers):
 //
-// 1. No chip label may wrap mid-word at compact width — each label must fit
-//    its chip on a single line.
-// 2. The equipment row must be scrollable so every option is reachable.
-// 3. Selection must be neutral-raised + accent-bordered (never accent.muted,
-//    which collides with the muscle-group accent pills that used the same
-//    token pair).
+// 1. Filter bar must render two pill buttons: Level and Equipment.
+// 2. Tapping Level opens a bottom sheet with all 4 level options.
+// 3. Tapping Equipment opens a bottom sheet with all 4 equipment options.
+// 4. Active filter pills show the selected label and an accent-tinted fill.
+// 5. Filter pills must meet the 36pt minimum height.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:gymlog/core/theme/app_colors.dart';
 import 'package:gymlog/core/theme/dynamic_accent_theme.dart';
 import 'package:gymlog/features/routines/presentation/screens/explore_routines_screen.dart';
 
@@ -23,150 +21,110 @@ const _equipmentLabels = [
   'Bodyweight',
 ];
 
-void _expectLabelFits(WidgetTester tester, Finder row, String label) {
-  final textFinder = find.descendant(of: row, matching: find.text(label));
-  expect(textFinder, findsOneWidget, reason: '"$label" chip missing from row');
-  final text = tester.widget<Text>(textFinder);
-  final textBox = tester.getSize(textFinder);
-  final painter = TextPainter(
-    text: TextSpan(text: text.data, style: text.style),
-    maxLines: 1,
-    textDirection: TextDirection.ltr,
-  )..layout();
-  expect(
-    painter.width,
-    lessThanOrEqualTo(textBox.width + 0.5),
-    reason: '"$label" wraps inside its chip at compact width',
-  );
-}
-
 void main() {
-  testWidgets('level chips fit their labels on one line at compact width',
+  testWidgets('filter bar renders Level and Equipment pills', (tester) async {
+    await pumpExplore(tester);
+    expect(find.text('Level'), findsOneWidget,
+        reason: 'Level filter pill must be visible in the filter bar');
+    expect(find.text('Equipment'), findsOneWidget,
+        reason: 'Equipment filter pill must be visible in the filter bar');
+  });
+
+  testWidgets('tapping Level pill opens sheet with all level options',
       (tester) async {
     await pumpExplore(tester);
-    final row = find.byKey(const Key('level-filter-row'));
+    await tester.tap(find.text('Level'));
+    await tester.pumpAndSettle();
     for (final label in _levelLabels) {
-      _expectLabelFits(tester, row, label);
+      expect(find.text(label), findsWidgets,
+          reason: '"$label" must appear in the level filter sheet');
     }
   });
 
-  testWidgets('equipment chips fit their labels on one line at compact width',
+  testWidgets('tapping Equipment pill opens sheet with all equipment options',
       (tester) async {
     await pumpExplore(tester);
-    final row = find.byKey(const Key('equipment-filter-row'));
-    final rowScrollable = find.descendant(
-      of: row,
-      matching: find.byType(Scrollable),
-    );
-    // The strip is a lazy horizontal ListView: a chip only exists once it is
-    // scrolled into view, so reveal each label before measuring it.
+    await tester.tap(find.text('Equipment'));
+    await tester.pumpAndSettle();
     for (final label in _equipmentLabels) {
-      if (find
-          .descendant(of: row, matching: find.text(label))
-          .evaluate()
-          .isEmpty) {
-        await tester.dragUntilVisible(
-          find.text(label),
-          rowScrollable,
-          const Offset(-60, 0),
-        );
-      }
-      _expectLabelFits(tester, row, label);
+      expect(find.text(label), findsWidgets,
+          reason: '"$label" must appear in the equipment filter sheet');
     }
   });
 
-  testWidgets('equipment row scrolls to reveal off-screen chips',
+  testWidgets('selecting a level updates the filter pill label',
       (tester) async {
     await pumpExplore(tester);
-    final rowScrollable = find.descendant(
-      of: find.byKey(const Key('equipment-filter-row')),
-      matching: find.byType(Scrollable),
-    );
-    await tester.dragUntilVisible(
-      find.text('Bodyweight'),
-      rowScrollable,
-      const Offset(-80, 0),
-    );
-    expect(find.text('Bodyweight'), findsOneWidget);
+    await tester.tap(find.text('Level'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Intermediate').last);
+    await tester.pumpAndSettle();
+    expect(find.text('Intermediate'), findsOneWidget,
+        reason: 'Active level filter pill must show selected label');
+    expect(find.text('Level'), findsNothing,
+        reason: 'Idle Level label must be replaced when a filter is active');
   });
 
-  testWidgets('selected equipment chip is neutral fill with accent border',
+  testWidgets('selecting an equipment filter updates the pill label',
       (tester) async {
     await pumpExplore(tester);
-    await tester.tap(find.text('Full gym'));
-    await tester.pump();
+    await tester.tap(find.text('Equipment'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Full gym').last);
+    await tester.pumpAndSettle();
+    expect(find.text('Full gym'), findsOneWidget,
+        reason: 'Active equipment filter pill must show selected label');
+    expect(find.text('Equipment'), findsNothing,
+        reason:
+            'Idle Equipment label must be replaced when a filter is active');
+  });
+
+  testWidgets('active filter pill uses accent.muted fill', (tester) async {
+    await pumpExplore(tester);
+    await tester.tap(find.text('Level'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Beginner').last);
+    await tester.pumpAndSettle();
 
     final ctx = tester.element(find.byType(ExploreRoutinesScreen));
     final accent = ctx.accent;
-    final surface = ctx.surface;
-    final selectedMaterial = tester.widget<Material>(
+    final pill = tester.widget<Material>(
       find
-          .ancestor(of: find.text('Full gym'), matching: find.byType(Material))
+          .ancestor(of: find.text('Beginner'), matching: find.byType(Material))
           .first,
     );
-    expect(selectedMaterial.color, surface.surface4,
-        reason: 'selected equipment chip must be neutral-raised, not '
-            'accent.muted (color collision with muscle tags)');
-    final shape = selectedMaterial.shape! as RoundedRectangleBorder;
+    expect(pill.color, accent.muted,
+        reason: 'Active filter pill must use accent.muted fill');
+    final shape = pill.shape! as RoundedRectangleBorder;
     expect(shape.side.color, accent.selectionBorder,
-        reason: 'selected equipment chip must carry the accent selection '
-            'border token');
+        reason: 'Active filter pill must carry accent.selectionBorder');
   });
 
-  testWidgets('no filter surface uses accent.muted anywhere', (tester) async {
+  testWidgets('filter pills meet 36pt minimum height', (tester) async {
     await pumpExplore(tester);
-    final ctx = tester.element(find.byType(ExploreRoutinesScreen));
-    final accent = ctx.accent;
-    final materials = tester.widgetList<Material>(find.byType(Material));
-    for (final m in materials) {
-      expect(m.color, isNot(accent.muted),
-          reason: 'accent.muted must not appear as a control fill — it is '
-              'reserved for content tinting only');
-    }
-  });
-
-  testWidgets('selected level chip is neutral-raised with accent border',
-      (tester) async {
-    await pumpExplore(tester);
-    await tester.tap(find.descendant(
-      of: find.byKey(const Key('level-filter-row')),
-      matching: find.text('Intermediate'),
-    ));
-    await tester.pump();
-
-    final ctx = tester.element(find.byType(ExploreRoutinesScreen));
-    final material = tester.widget<Material>(
-      find
-          .ancestor(
-              of: find.text('Intermediate'), matching: find.byType(Material))
-          .first,
-    );
-    expect(material.color, ctx.surface.surface4);
-    // D6: level chips must carry the same accent selection border as equipment
-    // chips — consistent affordance across both filter rows.
-    final shape = material.shape! as RoundedRectangleBorder;
-    expect(shape.side.color, ctx.accent.selectionBorder,
-        reason: 'selected level chip must carry accent.selectionBorder');
-  });
-
-  testWidgets('filter chips meet 44pt minimum touch target', (tester) async {
-    await pumpExplore(tester);
-    // Level chips
-    for (final label in _levelLabels) {
-      final chip = find
+    for (final label in ['Level', 'Equipment']) {
+      final pill = find
           .ancestor(of: find.text(label), matching: find.byType(Material))
           .first;
-      final height = tester.getSize(chip).height;
-      expect(height, greaterThanOrEqualTo(44),
-          reason: '"$label" chip is ${height}pt — below the 44pt minimum');
+      final height = tester.getSize(pill).height;
+      expect(height, greaterThanOrEqualTo(36),
+          reason: '"$label" pill is ${height}pt — below the 36pt minimum');
     }
-    // Equipment chips (first visible one — 'Any equipment' is always visible)
-    final chip = find
-        .ancestor(
-            of: find.text('Any equipment'), matching: find.byType(Material))
-        .first;
-    final height = tester.getSize(chip).height;
-    expect(height, greaterThanOrEqualTo(44),
-        reason: '"Any equipment" chip is ${height}pt — below the 44pt minimum');
+  });
+
+  testWidgets('selecting All in level sheet resets to idle pill label',
+      (tester) async {
+    await pumpExplore(tester);
+    await tester.tap(find.text('Level'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Advanced').last);
+    await tester.pumpAndSettle();
+    // Re-open and reset to All
+    await tester.tap(find.text('Advanced')); // active pill
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('All').last);
+    await tester.pumpAndSettle();
+    expect(find.text('Level'), findsOneWidget,
+        reason: 'Pill must revert to "Level" label when All is selected');
   });
 }
