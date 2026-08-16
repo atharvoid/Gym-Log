@@ -1,29 +1,30 @@
 // [explore_screen.dart]
-// Routine-first Explore.
+// 10/10 Routine-first & Program Explore experience.
 //
-// The screen this replaces presented 16 PROGRAMS as the browsable unit. A
-// program is a multi-week commitment, so every card asked the user for a
-// decision they could not evaluate, showed one muscle map for six different
-// training days (which highlighted the whole body), and offered exactly one
-// action: import all of it.
-//
-// Here the browsable unit is a ROUTINE -- one training day, with its own
-// muscles, its own duration and its own Add button. Programs remain, on their
-// own tab, presented as what they are: a week-shaped commitment you open
-// before you accept.
+// Unifies the deep inspection, anatomical SVG MuscleMap, atmospheric OLED glow,
+// and smooth paywall gating of the original screen with the modern routine-first
+// catalog, granular 1-day imports, canonical naming, and fast in-memory resolution.
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import 'package:gymlog/core/premium/library_quota.dart';
 import 'package:gymlog/core/providers/premium_provider.dart';
 import 'package:gymlog/core/theme/app_colors.dart';
+import 'package:gymlog/core/theme/app_text.dart';
+import 'package:gymlog/features/auth/presentation/providers/tour_provider.dart';
 import 'package:gymlog/features/routines/presentation/data/explore_catalog.dart';
 import 'package:gymlog/features/routines/presentation/data/routine_index.dart';
 import 'package:gymlog/features/routines/presentation/providers/explore_providers.dart';
 import 'package:gymlog/features/routines/presentation/widgets/explore_cards.dart';
+import 'package:gymlog/features/routines/presentation/widgets/explore_preview_sheet.dart';
+import 'package:gymlog/shared/widgets/premium_paywall.dart';
+import 'package:gymlog/shared/widgets/tour/spotlight_tour_overlay.dart';
 
 const double _kGutter = 16;
+const Color _kHeroGlowColor = Color(0x12FFFFFF);
 
 class ExploreScreen extends ConsumerStatefulWidget {
   const ExploreScreen({super.key, this.initialTab});
@@ -37,6 +38,7 @@ class ExploreScreen extends ConsumerStatefulWidget {
 
 class _ExploreScreenState extends ConsumerState<ExploreScreen> {
   final TextEditingController _search = TextEditingController();
+  final GlobalKey _firstImportButtonKey = GlobalKey();
 
   @override
   void initState() {
@@ -60,29 +62,84 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     final surface = context.surface;
     final tab = ref.watch(exploreTabProvider);
     final filters = ref.watch(exploreFiltersProvider);
+    final tourStep = ref.watch(firstRunTourProvider);
 
     return Scaffold(
       backgroundColor: surface.bgBase,
-      appBar: AppBar(
-        backgroundColor: surface.bgBase,
-        elevation: 0,
-        title: const Text('Explore'),
-      ),
-      body: SafeArea(
-        top: false,
-        child: CustomScrollView(
-          slivers: [
-            SliverToBoxAdapter(child: _searchField(surface)),
-            SliverToBoxAdapter(child: _tabSelector(tab)),
-            SliverToBoxAdapter(child: _filterRow(filters)),
-            const SliverToBoxAdapter(child: SizedBox(height: 4)),
-            if (tab == ExploreTab.routines)
-              _routineSliver(filters)
-            else
-              _programSliver(filters),
-            const SliverToBoxAdapter(child: SizedBox(height: 32)),
-          ],
-        ),
+      body: Stack(
+        children: [
+          CustomScrollView(
+            slivers: [
+              SliverAppBar(
+                pinned: true,
+                expandedHeight: 104,
+                backgroundColor: surface.bgBase,
+                surfaceTintColor: Colors.transparent,
+                scrolledUnderElevation: 0,
+                leading: IconButton(
+                  tooltip: 'Back',
+                  icon: Icon(
+                    Icons.arrow_back_rounded,
+                    size: 24,
+                    color: surface.textPrimary,
+                  ),
+                  constraints:
+                      const BoxConstraints(minWidth: 48, minHeight: 48),
+                  onPressed: () {
+                    if (context.canPop()) context.pop();
+                  },
+                ),
+                flexibleSpace: const FlexibleSpaceBar(
+                  titlePadding:
+                      EdgeInsetsDirectional.only(start: 56, bottom: 10),
+                  expandedTitleScale: 1.25,
+                  title: _HeroTitle(),
+                  background: _HeroGlow(),
+                ),
+              ),
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(_kGutter, 4, _kGutter, 8),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Trainer-built routines and programs, ready to train.',
+                        style: AppText.body(color: surface.textSecondary),
+                      ),
+                      const SizedBox(height: 12),
+                      _searchField(surface),
+                    ],
+                  ),
+                ),
+              ),
+              SliverToBoxAdapter(child: _tabSelector(tab)),
+              SliverToBoxAdapter(child: _filterRow(filters)),
+              const SliverToBoxAdapter(child: SizedBox(height: 6)),
+              if (tab == ExploreTab.routines)
+                _routineSliver(filters)
+              else
+                _programSliver(filters),
+              const SliverToBoxAdapter(child: SizedBox(height: 36)),
+            ],
+          ),
+          if (tourStep == 1)
+            SpotlightTourOverlay(
+              targetKey: _firstImportButtonKey,
+              title: 'Import a routine',
+              description:
+                  'Tap the card to inspect exercises, or tap "+" to add it directly to your library.',
+              step: 1,
+            ),
+          if (tourStep == 2)
+            SpotlightTourOverlay(
+              targetKey: _firstImportButtonKey,
+              title: 'Routine added',
+              description:
+                  'Your routine is ready. You can find it in My Routines whenever you are ready to train.',
+              step: 2,
+            ),
+        ],
       ),
     );
   }
@@ -90,52 +147,48 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
   // -- Header pieces --------------------------------------------------------
 
   Widget _searchField(SurfaceTokens surface) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(_kGutter, 4, _kGutter, 12),
-      child: TextField(
-        controller: _search,
-        onChanged: (value) {
-          ref.read(exploreFiltersProvider.notifier).update(
-                (f) => f.copyWith(query: value),
-              );
-        },
-        style: TextStyle(color: surface.textPrimary, fontSize: 15),
-        decoration: InputDecoration(
-          isDense: true,
-          filled: true,
-          fillColor: surface.surface2,
-          hintText: 'Search routines or an exercise',
-          hintStyle: TextStyle(color: surface.textTertiary, fontSize: 15),
-          prefixIcon:
-              Icon(Icons.search_rounded, size: 20, color: surface.textTertiary),
-          suffixIcon: _search.text.isEmpty
-              ? null
-              : IconButton(
-                  icon: Icon(Icons.close_rounded,
-                      size: 18, color: surface.textTertiary),
-                  onPressed: () {
-                    _search.clear();
-                    ref
-                        .read(exploreFiltersProvider.notifier)
-                        .update((f) => f.copyWith(query: ''));
-                    setState(() {});
-                  },
-                ),
-          contentPadding:
-              const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(color: surface.borderSubtle),
-          ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(color: surface.borderSubtle),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(
-              color: Theme.of(context).colorScheme.primary.withAlpha(0x88),
-            ),
+    return TextField(
+      controller: _search,
+      onChanged: (value) {
+        ref.read(exploreFiltersProvider.notifier).update(
+              (f) => f.copyWith(query: value),
+            );
+      },
+      style: TextStyle(color: surface.textPrimary, fontSize: 15),
+      decoration: InputDecoration(
+        isDense: true,
+        filled: true,
+        fillColor: surface.surface2,
+        hintText: 'Search routines, programs or exercises...',
+        hintStyle: TextStyle(color: surface.textTertiary, fontSize: 14),
+        prefixIcon:
+            Icon(Icons.search_rounded, size: 20, color: surface.textTertiary),
+        suffixIcon: _search.text.isEmpty
+            ? null
+            : IconButton(
+                icon: Icon(Icons.close_rounded,
+                    size: 18, color: surface.textTertiary),
+                onPressed: () {
+                  _search.clear();
+                  ref
+                      .read(exploreFiltersProvider.notifier)
+                      .update((f) => f.copyWith(query: ''));
+                },
+              ),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: surface.borderSubtle),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: surface.borderSubtle),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(
+            color: Theme.of(context).colorScheme.primary.withAlpha(0x88),
           ),
         ),
       ),
@@ -146,30 +199,56 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     final surface = context.surface;
     final accent = Theme.of(context).colorScheme.primary;
 
-    Widget segment(ExploreTab value, String label) {
+    Widget segment(ExploreTab value, String label, int count) {
       final selected = tab == value;
       return Expanded(
         child: Semantics(
           button: true,
           selected: selected,
           child: GestureDetector(
-            onTap: () => ref.read(exploreTabProvider.notifier).state = value,
+            onTap: () {
+              HapticFeedback.selectionClick();
+              ref.read(exploreTabProvider.notifier).state = value;
+            },
             behavior: HitTestBehavior.opaque,
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 160),
-              height: 40,
+              height: 38,
               alignment: Alignment.center,
               decoration: BoxDecoration(
                 color: selected ? surface.surface3 : Colors.transparent,
                 borderRadius: BorderRadius.circular(9),
               ),
-              child: Text(
-                label,
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
-                  color: selected ? accent : surface.textTertiary,
-                ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    label,
+                    style: TextStyle(
+                      fontSize: 13.5,
+                      fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
+                      color: selected ? accent : surface.textTertiary,
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(
+                      color:
+                          selected ? accent.withAlpha(0x24) : surface.surface2,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Text(
+                      '$count',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        color: selected ? accent : surface.textTertiary,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -177,8 +256,11 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
       );
     }
 
+    final routineCount = ref.watch(filteredExploreRoutinesProvider).length;
+    final programCount = ref.watch(filteredExploreProgramsProvider).length;
+
     return Padding(
-      padding: const EdgeInsets.fromLTRB(_kGutter, 0, _kGutter, 12),
+      padding: const EdgeInsets.fromLTRB(_kGutter, 4, _kGutter, 8),
       child: Container(
         padding: const EdgeInsets.all(4),
         decoration: BoxDecoration(
@@ -188,8 +270,8 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
         ),
         child: Row(
           children: [
-            segment(ExploreTab.routines, 'Routines'),
-            segment(ExploreTab.programs, 'Programs'),
+            segment(ExploreTab.routines, 'Routines', routineCount),
+            segment(ExploreTab.programs, 'Programs', programCount),
           ],
         ),
       ),
@@ -220,7 +302,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     }
 
     return SizedBox(
-      height: 60,
+      height: 52,
       child: ListView(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: _kGutter),
@@ -256,7 +338,6 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
               onTap: () {
                 _search.clear();
                 notifier.state = const ExploreFilters();
-                setState(() {});
               },
             ),
         ],
@@ -277,14 +358,33 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
         separatorBuilder: (_, __) => const SizedBox(height: 10),
         itemBuilder: (context, index) {
           final routine = routines[index];
-          final profile = ref.watch(routineMuscleProfileProvider(routine.slug));
-          return ExploreRoutineCard(
-            routine: routine,
-            primaryGroups: profile.primary,
-            secondaryGroups: profile.secondary,
-            isOwned: _ownsRoutine(routine),
-            onAdd: () => _importRoutine(routine),
-            onOpenProgram: () => _openProgram(routine.programSlug),
+          final isFirst = index == 0;
+
+          return Consumer(
+            builder: (context, ref, _) {
+              final profile =
+                  ref.watch(routineMuscleProfileProvider(routine.slug));
+              final isOwned = _ownsRoutine(routine);
+
+              return KeyedSubtree(
+                key: isFirst ? _firstImportButtonKey : null,
+                child: ExploreRoutineCard(
+                  routine: routine,
+                  primaryGroups: profile.primary,
+                  secondaryGroups: profile.secondary,
+                  isOwned: isOwned,
+                  onAdd: () => _importRoutine(routine),
+                  onTap: () => showRoutinePreviewSheet(
+                    context: context,
+                    routine: routine,
+                    isOwned: isOwned,
+                    onAdd: () => _importRoutine(routine),
+                    onView: () => _viewRoutine(routine),
+                  ),
+                  onOpenProgram: () => _openProgram(routine.programSlug),
+                ),
+              );
+            },
           );
         },
       ),
@@ -304,11 +404,16 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
           final template = templates[index];
           final slug = programSlugFor(template);
           final routines = routinesForProgram(slug);
-          return ExploreProgramCard(
-            template: template,
-            routines: routines,
-            importedCount: _importedCountFor(slug),
-            onOpen: () => _openProgram(slug),
+
+          return Consumer(
+            builder: (context, ref, _) {
+              return ExploreProgramCard(
+                template: template,
+                routines: routines,
+                importedCount: _importedCountFor(slug),
+                onOpen: () => _openProgram(slug),
+              );
+            },
           );
         },
       ),
@@ -345,7 +450,6 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                 _search.clear();
                 ref.read(exploreFiltersProvider.notifier).state =
                     const ExploreFilters();
-                setState(() {});
               },
               child: const Text('Clear filters'),
             ),
@@ -355,7 +459,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     );
   }
 
-  // -- Ownership ------------------------------------------------------------
+  // -- Ownership & Navigation ------------------------------------------------
 
   bool _ownsRoutine(ExploreRoutine routine) {
     final grouping = ref.watch(libraryGroupingProvider).valueOrNull;
@@ -364,6 +468,11 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     for (final group in grouping.programs) {
       if (group.programSlug == routine.programSlug) {
         return group.ownedRoutineSlugs.contains(daySlug);
+      }
+    }
+    for (final loose in grouping.standalone) {
+      if (loose.name.toLowerCase() == routine.name.toLowerCase()) {
+        return true;
       }
     }
     return false;
@@ -378,7 +487,34 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     return 0;
   }
 
-  // -- Actions --------------------------------------------------------------
+  String? _routineIdFor(ExploreRoutine routine) {
+    final grouping = ref.read(libraryGroupingProvider).valueOrNull;
+    if (grouping == null) return null;
+    final daySlug = routine.slug.split('/').last;
+
+    for (final group in grouping.programs) {
+      if (group.programSlug == routine.programSlug) {
+        for (final r in group.routines) {
+          if (r.membership?.routineSlug == daySlug) return r.id;
+        }
+      }
+    }
+    for (final loose in grouping.standalone) {
+      if (loose.name.toLowerCase() == routine.name.toLowerCase()) {
+        return loose.id;
+      }
+    }
+    return null;
+  }
+
+  void _viewRoutine(ExploreRoutine routine) {
+    final id = _routineIdFor(routine);
+    if (id != null) {
+      context.push('/routines/$id');
+    } else {
+      context.push('/routines');
+    }
+  }
 
   void _openProgram(String programSlug) {
     Navigator.of(context).push(
@@ -397,12 +533,44 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
 }
 
 // ---------------------------------------------------------------------------
-// Program detail
+// Header visual decorations
 // ---------------------------------------------------------------------------
 
-/// A program, full screen. The sheet this replaces was 60% of the viewport,
-/// so a six-day program was never visible at once, and it offered a single
-/// all-or-nothing import.
+class _HeroTitle extends StatelessWidget {
+  const _HeroTitle();
+
+  @override
+  Widget build(BuildContext context) => Text(
+        'Explore',
+        style: AppText.sectionHeading(
+          color: context.surface.textPrimary,
+          shadows: AppText.depthFor(context),
+        ),
+      );
+}
+
+class _HeroGlow extends StatelessWidget {
+  const _HeroGlow();
+
+  @override
+  Widget build(BuildContext context) {
+    return const DecoratedBox(
+      decoration: BoxDecoration(
+        gradient: RadialGradient(
+          center: Alignment(-0.35, -0.85),
+          radius: 1.15,
+          colors: [_kHeroGlowColor, Color(0x00FFFFFF)],
+          stops: [0.0, 0.72],
+        ),
+      ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Program detail screen
+// ---------------------------------------------------------------------------
+
 class ProgramDetailScreen extends ConsumerWidget {
   const ProgramDetailScreen({super.key, required this.programSlug});
 
@@ -479,18 +647,26 @@ class ProgramDetailScreen extends ConsumerWidget {
           ),
           const SizedBox(height: 10),
           for (final routine in routines) ...[
-            Builder(
-              builder: (context) {
+            Consumer(
+              builder: (context, ref, _) {
                 final profile =
                     ref.watch(routineMuscleProfileProvider(routine.slug));
+                final isOwned =
+                    ownedDays.contains(routine.slug.split('/').last);
+
                 return ExploreRoutineCard(
                   routine: routine,
                   primaryGroups: profile.primary,
                   secondaryGroups: profile.secondary,
-                  isOwned: ownedDays.contains(routine.slug.split('/').last),
+                  isOwned: isOwned,
                   showProgramLine: false,
                   onAdd: () => _importOne(context, ref, routine),
-                  onOpenProgram: () {},
+                  onTap: () => showRoutinePreviewSheet(
+                    context: context,
+                    routine: routine,
+                    isOwned: isOwned,
+                    onAdd: () => _importOne(context, ref, routine),
+                  ),
                 );
               },
             ),
@@ -575,8 +751,6 @@ class _ProgramFacts extends StatelessWidget {
   }
 }
 
-/// States the cost of importing before the user commits, and offers the
-/// subset path next to the all-in path.
 class _ImportBar extends ConsumerWidget {
   const _ImportBar({
     required this.programSlug,
@@ -701,8 +875,6 @@ class _ImportBar extends ConsumerWidget {
   }
 }
 
-/// Pick a subset of a program's routines. The capability the old all-or-
-/// nothing import never had.
 class _ChooseRoutinesSheet extends StatefulWidget {
   const _ChooseRoutinesSheet({required this.routines});
 
@@ -821,28 +993,33 @@ class _ChooseRoutinesSheetState extends State<_ChooseRoutinesSheet> {
 }
 
 // ---------------------------------------------------------------------------
-// Shared feedback
+// Shared feedback & Paywall Trigger
 // ---------------------------------------------------------------------------
 
-/// One place that reports what an import did. A blocked import explains the
-/// rule rather than firing an unexplained paywall, and unresolved catalog
-/// slots are admitted instead of silently dropped.
-void showImportOutcome(
+Future<void> showImportOutcome(
   BuildContext context,
   ImportResult result, {
   required String fallbackLabel,
-}) {
-  final messenger = ScaffoldMessenger.of(context);
-  messenger.hideCurrentSnackBar();
-
+}) async {
   final blocked = result.blockedBy;
   if (blocked != null) {
+    if (blocked == ImportVerdict.needsPremiumProgramSlot ||
+        blocked == ImportVerdict.needsPremiumRoutineSlots) {
+      await showPremiumPaywall(context, source: PaywallSource.routineLimit);
+      return;
+    }
+
+    final messenger = ScaffoldMessenger.of(context);
+    messenger.hideCurrentSnackBar();
     messenger.showSnackBar(SnackBar(
       content: Text(importBlockedCopy(blocked) ?? 'Import unavailable'),
       duration: const Duration(seconds: 4),
     ));
     return;
   }
+
+  final messenger = ScaffoldMessenger.of(context);
+  messenger.hideCurrentSnackBar();
 
   if (!result.didImport) {
     messenger.showSnackBar(const SnackBar(

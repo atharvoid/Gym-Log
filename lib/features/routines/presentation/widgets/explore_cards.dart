@@ -1,16 +1,11 @@
 // [explore_cards.dart]
 // Cards for the routine-first Explore screen.
 //
-// DESIGN RULE, applied to both cards: at most THREE facts.
-//
-// The card being replaced showed a title, a focus line, five fact chips, a
-// divider, three exercise names, a "+4" overflow count and an import pill --
-// in a list the user is meant to skim. Everything was the same size, so
-// nothing was findable. Here the routine NAME is the only large text, the
-// glyph carries the muscle answer visually, and three facts in one line carry
-// the rest.
+// DESIGN RULE: at most THREE facts on list cards, crisp visual hierarchy,
+// dedicated 44pt tap targets, and OLED-first surface tokens.
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import 'package:gymlog/core/theme/app_colors.dart';
 import 'package:gymlog/features/routines/presentation/data/explore_catalog.dart';
@@ -21,12 +16,14 @@ const double _kCardRadius = 16;
 const double _kMinTapTarget = 44;
 
 /// One training day. The unit a user can actually do tomorrow.
+/// Tapping the card opens deep routine preview; tapping the plus icon adds it.
 class ExploreRoutineCard extends StatelessWidget {
   const ExploreRoutineCard({
     super.key,
     required this.routine,
     required this.onAdd,
-    required this.onOpenProgram,
+    this.onTap,
+    this.onOpenProgram,
     this.primaryGroups = const <String>{},
     this.secondaryGroups = const <String>{},
     this.isOwned = false,
@@ -35,7 +32,8 @@ class ExploreRoutineCard extends StatelessWidget {
 
   final ExploreRoutine routine;
   final VoidCallback onAdd;
-  final VoidCallback onOpenProgram;
+  final VoidCallback? onTap;
+  final VoidCallback? onOpenProgram;
   final Set<String> primaryGroups;
   final Set<String> secondaryGroups;
   final bool isOwned;
@@ -57,7 +55,7 @@ class ExploreRoutineCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(_kCardRadius),
         child: InkWell(
           borderRadius: BorderRadius.circular(_kCardRadius),
-          onTap: onOpenProgram,
+          onTap: onTap ?? onOpenProgram,
           child: Container(
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
@@ -106,6 +104,7 @@ class ExploreRoutineCard extends StatelessWidget {
                           '${routine.estMinutes} min',
                           '${routine.exerciseCount} exercises',
                           routine.levelLabel,
+                          routine.equipmentLabel,
                         ],
                       ),
                     ],
@@ -209,6 +208,7 @@ class ExploreProgramCard extends StatelessWidget {
                   '${template.daysPerWeek} days/week',
                   _durationLabel,
                   template.levelLabel,
+                  template.equipmentLabel,
                 ],
               ),
             ],
@@ -349,7 +349,10 @@ class _AddControl extends StatelessWidget {
         shape: const CircleBorder(),
         child: InkWell(
           customBorder: const CircleBorder(),
-          onTap: onAdd,
+          onTap: () {
+            HapticFeedback.selectionClick();
+            onAdd();
+          },
           child: SizedBox(
             width: _kMinTapTarget,
             height: _kMinTapTarget,
@@ -361,8 +364,7 @@ class _AddControl extends StatelessWidget {
   }
 }
 
-/// Shared filter chip with a real 44pt target. The chips being replaced were
-/// 36pt, below the minimum touch size on every platform guideline.
+/// Shared filter chip with a real 44pt target.
 class ExploreFilterChip extends StatelessWidget {
   const ExploreFilterChip({
     super.key,
