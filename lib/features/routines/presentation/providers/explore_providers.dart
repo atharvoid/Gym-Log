@@ -222,6 +222,20 @@ final routineMuscleProfileProvider =
   return resolver.muscleProfileFor(routine.exerciseNames);
 });
 
+/// Muscle groups for a whole program (union of all routines in the program).
+final programMuscleProfileProvider =
+    Provider.family<MuscleProfile, String>((ref, programSlug) {
+  final resolver = ref.watch(exerciseResolverProvider).valueOrNull;
+  final routines = routinesForProgram(programSlug);
+  if (resolver == null || routines.isEmpty) {
+    return (primary: <String>{}, secondary: <String>{});
+  }
+  final allExercises = [
+    for (final r in routines) ...r.exerciseNames,
+  ];
+  return resolver.muscleProfileFor(allExercises);
+});
+
 // ---------------------------------------------------------------------------
 // Library state
 // ---------------------------------------------------------------------------

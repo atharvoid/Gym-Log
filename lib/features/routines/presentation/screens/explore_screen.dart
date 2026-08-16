@@ -2,8 +2,9 @@
 // 10/10 Routine-first & Program Explore experience.
 //
 // Unifies the deep inspection, anatomical SVG MuscleMap, atmospheric OLED glow,
-// and smooth paywall gating of the original screen with the modern routine-first
-// catalog, granular 1-day imports, canonical naming, and fast in-memory resolution.
+// adaptive tablet layout, and smooth paywall gating of the original screen with
+// the modern routine-first catalog, granular 1-day imports, canonical naming,
+// and fast in-memory resolution.
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -15,11 +16,14 @@ import 'package:gymlog/core/providers/premium_provider.dart';
 import 'package:gymlog/core/theme/app_colors.dart';
 import 'package:gymlog/core/theme/app_text.dart';
 import 'package:gymlog/features/auth/presentation/providers/tour_provider.dart';
+import 'package:gymlog/features/profile/presentation/providers/profile_provider.dart';
 import 'package:gymlog/features/routines/presentation/data/explore_catalog.dart';
 import 'package:gymlog/features/routines/presentation/data/routine_index.dart';
 import 'package:gymlog/features/routines/presentation/providers/explore_providers.dart';
 import 'package:gymlog/features/routines/presentation/widgets/explore_cards.dart';
 import 'package:gymlog/features/routines/presentation/widgets/explore_preview_sheet.dart';
+import 'package:gymlog/shared/layout/adaptive.dart';
+import 'package:gymlog/shared/widgets/body/muscle_map.dart';
 import 'package:gymlog/shared/widgets/premium_paywall.dart';
 import 'package:gymlog/shared/widgets/tour/spotlight_tour_overlay.dart';
 
@@ -63,65 +67,69 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     final tab = ref.watch(exploreTabProvider);
     final filters = ref.watch(exploreFiltersProvider);
     final tourStep = ref.watch(firstRunTourProvider);
+    final canPop = context.canPop();
 
     return Scaffold(
       backgroundColor: surface.bgBase,
       body: Stack(
         children: [
-          CustomScrollView(
-            slivers: [
-              SliverAppBar(
-                pinned: true,
-                expandedHeight: 104,
-                backgroundColor: surface.bgBase,
-                surfaceTintColor: Colors.transparent,
-                scrolledUnderElevation: 0,
-                leading: IconButton(
-                  tooltip: 'Back',
-                  icon: Icon(
-                    Icons.arrow_back_rounded,
-                    size: 24,
-                    color: surface.textPrimary,
-                  ),
-                  constraints:
-                      const BoxConstraints(minWidth: 48, minHeight: 48),
-                  onPressed: () {
-                    if (context.canPop()) context.pop();
-                  },
-                ),
-                flexibleSpace: const FlexibleSpaceBar(
-                  titlePadding:
-                      EdgeInsetsDirectional.only(start: 56, bottom: 10),
-                  expandedTitleScale: 1.25,
-                  title: _HeroTitle(),
-                  background: _HeroGlow(),
-                ),
-              ),
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(_kGutter, 4, _kGutter, 8),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Trainer-built routines and programs, ready to train.',
-                        style: AppText.body(color: surface.textSecondary),
-                      ),
-                      const SizedBox(height: 12),
-                      _searchField(surface),
-                    ],
+          AdaptiveContent(
+            child: CustomScrollView(
+              slivers: [
+                SliverAppBar(
+                  pinned: true,
+                  expandedHeight: 104,
+                  backgroundColor: surface.bgBase,
+                  surfaceTintColor: Colors.transparent,
+                  scrolledUnderElevation: 0,
+                  leading: canPop
+                      ? IconButton(
+                          tooltip: 'Back',
+                          icon: Icon(
+                            Icons.arrow_back_rounded,
+                            size: 24,
+                            color: surface.textPrimary,
+                          ),
+                          constraints:
+                              const BoxConstraints(minWidth: 48, minHeight: 48),
+                          onPressed: () => context.pop(),
+                        )
+                      : null,
+                  flexibleSpace: const FlexibleSpaceBar(
+                    titlePadding:
+                        EdgeInsetsDirectional.only(start: 56, bottom: 10),
+                    expandedTitleScale: 1.25,
+                    title: _HeroTitle(),
+                    background: _HeroGlow(),
                   ),
                 ),
-              ),
-              SliverToBoxAdapter(child: _tabSelector(tab)),
-              SliverToBoxAdapter(child: _filterRow(filters)),
-              const SliverToBoxAdapter(child: SizedBox(height: 6)),
-              if (tab == ExploreTab.routines)
-                _routineSliver(filters)
-              else
-                _programSliver(filters),
-              const SliverToBoxAdapter(child: SizedBox(height: 36)),
-            ],
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding:
+                        const EdgeInsets.fromLTRB(_kGutter, 4, _kGutter, 8),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Trainer-built routines and programs, ready to train.',
+                          style: AppText.body(color: surface.textSecondary),
+                        ),
+                        const SizedBox(height: 12),
+                        _searchField(surface),
+                      ],
+                    ),
+                  ),
+                ),
+                SliverToBoxAdapter(child: _tabSelector(tab)),
+                SliverToBoxAdapter(child: _filterRow(filters)),
+                const SliverToBoxAdapter(child: SizedBox(height: 6)),
+                if (tab == ExploreTab.routines)
+                  _routineSliver(filters)
+                else
+                  _programSliver(filters),
+                const SliverToBoxAdapter(child: SizedBox(height: 36)),
+              ],
+            ),
           ),
           if (tourStep == 1)
             SpotlightTourOverlay(
@@ -605,6 +613,10 @@ class ProgramDetailScreen extends ConsumerWidget {
         if (!ownedDays.contains(r.slug.split('/').last)) r,
     ];
 
+    final programProfile = ref.watch(programMuscleProfileProvider(programSlug));
+    final userProfile = ref.watch(currentUserProfileProvider).valueOrNull;
+    final gender = userProfile?.gender ?? 'male';
+
     return Scaffold(
       backgroundColor: surface.bgBase,
       appBar: AppBar(
@@ -612,67 +624,93 @@ class ProgramDetailScreen extends ConsumerWidget {
         elevation: 0,
         title: Text(template.displayName, overflow: TextOverflow.ellipsis),
       ),
-      body: ListView(
-        padding: const EdgeInsets.fromLTRB(_kGutter, 0, _kGutter, 24),
-        children: [
-          Text(
-            template.description,
-            style: TextStyle(
-              fontSize: 14,
-              height: 1.45,
-              color: surface.textSecondary,
+      body: AdaptiveContent(
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(_kGutter, 0, _kGutter, 24),
+          children: [
+            Text(
+              template.description,
+              style: TextStyle(
+                fontSize: 14,
+                height: 1.45,
+                color: surface.textSecondary,
+              ),
             ),
-          ),
-          const SizedBox(height: 16),
-          _ProgramFacts(template: template, routines: routines),
-          const SizedBox(height: 20),
-          Row(
-            children: [
-              Text(
-                'Routines in this program',
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  color: surface.textTertiary,
-                  letterSpacing: 0.3,
+            const SizedBox(height: 16),
+            _ProgramFacts(template: template, routines: routines),
+            const SizedBox(height: 20),
+
+            // Program Muscle Focus Section
+            Semantics(
+              header: true,
+              child: Text(
+                'Program Muscle Focus',
+                style: AppText.cardTitle(color: surface.textPrimary),
+              ),
+            ),
+            const SizedBox(height: AppSpacing.x2),
+            Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 240),
+                child: MuscleMap(
+                  primaryGroups: programProfile.primary,
+                  secondaryGroups: programProfile.secondary,
+                  gender: gender,
+                  showBack: true,
+                  showLegend: true,
                 ),
               ),
-              const Spacer(),
-              if (ownedDays.isNotEmpty)
-                Text(
-                  '${ownedDays.length} of ${routines.length} added',
-                  style: TextStyle(fontSize: 12, color: surface.textTertiary),
-                ),
-            ],
-          ),
-          const SizedBox(height: 10),
-          for (final routine in routines) ...[
-            Consumer(
-              builder: (context, ref, _) {
-                final profile =
-                    ref.watch(routineMuscleProfileProvider(routine.slug));
-                final isOwned =
-                    ownedDays.contains(routine.slug.split('/').last);
+            ),
+            const SizedBox(height: 24),
 
-                return ExploreRoutineCard(
-                  routine: routine,
-                  primaryGroups: profile.primary,
-                  secondaryGroups: profile.secondary,
-                  isOwned: isOwned,
-                  showProgramLine: false,
-                  onAdd: () => _importOne(context, ref, routine),
-                  onTap: () => showRoutinePreviewSheet(
-                    context: context,
-                    routine: routine,
-                    isOwned: isOwned,
-                    onAdd: () => _importOne(context, ref, routine),
+            Row(
+              children: [
+                Text(
+                  'Routines in this program',
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: surface.textTertiary,
+                    letterSpacing: 0.3,
                   ),
-                );
-              },
+                ),
+                const Spacer(),
+                if (ownedDays.isNotEmpty)
+                  Text(
+                    '${ownedDays.length} of ${routines.length} added',
+                    style: TextStyle(fontSize: 12, color: surface.textTertiary),
+                  ),
+              ],
             ),
             const SizedBox(height: 10),
+            for (final routine in routines) ...[
+              Consumer(
+                builder: (context, ref, _) {
+                  final profile =
+                      ref.watch(routineMuscleProfileProvider(routine.slug));
+                  final isOwned =
+                      ownedDays.contains(routine.slug.split('/').last);
+
+                  return ExploreRoutineCard(
+                    routine: routine,
+                    primaryGroups: profile.primary,
+                    secondaryGroups: profile.secondary,
+                    isOwned: isOwned,
+                    showProgramLine: false,
+                    onAdd: () => _importOne(context, ref, routine),
+                    onTap: () => showRoutinePreviewSheet(
+                      context: context,
+                      routine: routine,
+                      isOwned: isOwned,
+                      onAdd: () => _importOne(context, ref, routine),
+                    ),
+                  );
+                },
+              ),
+              const SizedBox(height: 10),
+            ],
           ],
-        ],
+        ),
       ),
       bottomNavigationBar: missing.isEmpty
           ? null
