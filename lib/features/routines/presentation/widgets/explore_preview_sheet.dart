@@ -1,8 +1,14 @@
+// [explore_preview_sheet.dart]
+// Interactive routine inspection modal with anatomical SVG MuscleMap,
+// primary vs secondary muscle separation, exercise breakdown, and sticky CTA.
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import 'package:gymlog/core/theme/app_colors.dart';
 import 'package:gymlog/core/theme/app_text.dart';
+import 'package:gymlog/core/theme/dynamic_accent_theme.dart';
 import 'package:gymlog/features/profile/presentation/providers/profile_provider.dart';
 import 'package:gymlog/features/routines/presentation/data/explore_catalog.dart';
 import 'package:gymlog/features/routines/presentation/data/routine_index.dart';
@@ -54,22 +60,19 @@ class RoutinePreviewSheet extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final surface = context.surface;
+    final accent = context.accent;
     final profile = ref.watch(routineMuscleProfileProvider(routine.slug));
     final userProfile = ref.watch(currentUserProfileProvider).valueOrNull;
     final gender = userProfile?.gender ?? 'male';
 
     return DraggableScrollableSheet(
-      initialChildSize: 0.78,
+      initialChildSize: 0.82,
       minChildSize: 0.45,
       maxChildSize: 0.94,
       expand: false,
       builder: (context, scrollController) => DecoratedBox(
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [surface.surface2, surface.bgBase],
-          ),
+          color: surface.bgSurface,
           borderRadius: AppRadius.sheetTop,
           border: Border(top: BorderSide(color: surface.borderSubtle)),
         ),
@@ -118,7 +121,7 @@ class RoutinePreviewSheet extends ConsumerWidget {
                   Semantics(
                     header: true,
                     child: Text(
-                      'Muscles Worked',
+                      'Target Muscles',
                       style: AppText.cardTitle(color: surface.textPrimary),
                     ),
                   ),
@@ -135,6 +138,73 @@ class RoutinePreviewSheet extends ConsumerWidget {
                       ),
                     ),
                   ),
+
+                  // Primary vs Stabilizer Muscle Tags
+                  if (profile.primary.isNotEmpty ||
+                      profile.secondary.isNotEmpty) ...[
+                    const SizedBox(height: AppSpacing.x3),
+                    Wrap(
+                      spacing: 6,
+                      runSpacing: 6,
+                      alignment: WrapAlignment.center,
+                      children: [
+                        for (final group in profile.primary)
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 3,
+                            ),
+                            decoration: BoxDecoration(
+                              color: accent.muted,
+                              borderRadius: AppRadius.badgeAll,
+                              border: Border.all(color: accent.selectionBorder),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Container(
+                                  width: 6,
+                                  height: 6,
+                                  decoration: BoxDecoration(
+                                    color: accent.base,
+                                    shape: BoxShape.circle,
+                                  ),
+                                ),
+                                const SizedBox(width: 5),
+                                Text(
+                                  group,
+                                  style: TextStyle(
+                                    fontSize: 11.5,
+                                    fontWeight: FontWeight.w600,
+                                    color: accent.base,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        for (final group in profile.secondary)
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 3,
+                            ),
+                            decoration: BoxDecoration(
+                              color: surface.surface3,
+                              borderRadius: AppRadius.badgeAll,
+                              border: Border.all(color: surface.borderSubtle),
+                            ),
+                            child: Text(
+                              '$group (secondary)',
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: surface.textTertiary,
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ],
+
                   const SizedBox(height: AppSpacing.x5),
 
                   // Exercises list header
@@ -177,7 +247,7 @@ class RoutinePreviewSheet extends ConsumerWidget {
                 ),
                 child: PrimaryButton(
                   label: isOwned ? 'View in My Routines' : 'Add to My Routines',
-                  icon: isOwned ? Icons.check_rounded : Icons.download_rounded,
+                  icon: isOwned ? Icons.check_rounded : Icons.add_rounded,
                   onPressed: () {
                     if (isOwned) {
                       Navigator.of(context).pop();

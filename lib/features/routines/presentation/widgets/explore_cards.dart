@@ -1,16 +1,21 @@
 // [explore_cards.dart]
-// Cards for the routine-first Explore screen.
+// 10/10 Routine and Program cards for GymLog Explore.
 //
-// DESIGN RULE: at most THREE facts on list cards, crisp visual hierarchy,
-// dedicated 44pt tap targets, and OLED-first surface tokens.
+// DESIGN PRINCIPLES:
+// - AMOLED-first surface depth (surface2 base, surface3 raised accents).
+// - Clear typography hierarchy: focus kicker -> card title -> program subtitle -> facts.
+// - Clean muscle group tag chips instead of crude block glyphs.
+// - Dedicated 44pt tap targets with haptics and instant checkmark states.
+// - Non-squeezed, horizontal-scrolling schedule day tags for multi-day programs.
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'package:gymlog/core/theme/app_colors.dart';
+import 'package:gymlog/core/theme/app_text.dart';
+import 'package:gymlog/core/theme/dynamic_accent_theme.dart';
 import 'package:gymlog/features/routines/presentation/data/explore_catalog.dart';
 import 'package:gymlog/features/routines/presentation/data/routine_index.dart';
-import 'package:gymlog/shared/widgets/body/routine_muscle_glyph.dart';
 
 const double _kCardRadius = 16;
 const double _kMinTapTarget = 44;
@@ -44,7 +49,10 @@ class ExploreRoutineCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final surface = context.surface;
-    final accent = Theme.of(context).colorScheme.primary;
+
+    final targetMuscles = primaryGroups.isNotEmpty
+        ? primaryGroups.toList()
+        : routine.focus.split(' · ').where((s) => s.isNotEmpty).toList();
 
     return Semantics(
       button: true,
@@ -57,61 +65,109 @@ class ExploreRoutineCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(_kCardRadius),
           onTap: onTap ?? onOpenProgram,
           child: Container(
-            padding: const EdgeInsets.all(14),
+            padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(_kCardRadius),
               border: Border.all(color: surface.borderSubtle),
             ),
-            child: Row(
+            child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                RoutineMuscleGlyph(
-                  primaryGroups: primaryGroups,
-                  secondaryGroups: secondaryGroups,
-                  highlight: accent,
-                ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        routine.name,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: surface.textPrimary,
-                          height: 1.2,
-                        ),
-                      ),
-                      if (showProgramLine) ...[
-                        const SizedBox(height: 3),
-                        Text(
-                          'Day ${routine.dayNumber} of ${routine.programLabel}',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: surface.textTertiary,
+                // Top Row: Focus Kicker / Program Subtitle + Quick-Add Button
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          if (routine.focus.isNotEmpty) ...[
+                            Text(
+                              routine.focus.toUpperCase(),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
+                                letterSpacing: 0.8,
+                                color: surface.textTertiary,
+                              ),
+                            ),
+                            const SizedBox(height: 3),
+                          ],
+                          Text(
+                            routine.name,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 17,
+                              fontWeight: FontWeight.w600,
+                              color: surface.textPrimary,
+                              height: 1.2,
+                            ),
                           ),
-                        ),
-                      ],
-                      const SizedBox(height: 8),
-                      _FactLine(
-                        facts: [
-                          '${routine.estMinutes} min',
-                          '${routine.exerciseCount} exercises',
-                          routine.levelLabel,
-                          routine.equipmentLabel,
+                          if (showProgramLine) ...[
+                            const SizedBox(height: 3),
+                            Text(
+                              'Day ${routine.dayNumber} of ${routine.programLabel}',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: surface.textSecondary,
+                              ),
+                            ),
+                          ],
                         ],
                       ),
+                    ),
+                    const SizedBox(width: 12),
+                    _AddControl(isOwned: isOwned, onAdd: onAdd),
+                  ],
+                ),
+
+                // Muscle Group Tag Chips
+                if (targetMuscles.isNotEmpty) ...[
+                  const SizedBox(height: 10),
+                  Wrap(
+                    spacing: 6,
+                    runSpacing: 6,
+                    children: [
+                      for (final muscle in targetMuscles.take(4))
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 3,
+                          ),
+                          decoration: BoxDecoration(
+                            color: surface.surface3,
+                            borderRadius: AppRadius.badgeAll,
+                            border: Border.all(color: surface.borderSubtle),
+                          ),
+                          child: Text(
+                            muscle,
+                            style: TextStyle(
+                              fontSize: 11.5,
+                              fontWeight: FontWeight.w500,
+                              color: surface.textSecondary,
+                            ),
+                          ),
+                        ),
                     ],
                   ),
+                ],
+
+                const SizedBox(height: 12),
+
+                // Key Facts Line
+                _FactLine(
+                  facts: [
+                    '~${routine.estMinutes} min',
+                    '${routine.exerciseCount} exercises',
+                    routine.levelLabel,
+                    routine.equipmentLabel,
+                  ],
                 ),
-                const SizedBox(width: 10),
-                _AddControl(isOwned: isOwned, onAdd: onAdd),
               ],
             ),
           ),
@@ -175,6 +231,7 @@ class ExploreProgramCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Header Row: Title & Imported Count
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -200,9 +257,26 @@ class ExploreProgramCard extends StatelessWidget {
                     ),
                 ],
               ),
-              const SizedBox(height: 10),
-              _WeekStrip(routines: routines, accent: accent),
+              const SizedBox(height: 6),
+
+              // Punchy description
+              Text(
+                template.description,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 13,
+                  height: 1.35,
+                  color: surface.textSecondary,
+                ),
+              ),
               const SizedBox(height: 12),
+
+              // Clean Schedule Day Tags
+              _ScheduleDayStrip(routines: routines),
+              const SizedBox(height: 12),
+
+              // Metrics Line
               _FactLine(
                 facts: [
                   '${template.daysPerWeek} days/week',
@@ -219,51 +293,61 @@ class ExploreProgramCard extends StatelessWidget {
   }
 }
 
-/// The week at a glance: one tick per training day, labelled by focus.
-class _WeekStrip extends StatelessWidget {
-  const _WeekStrip({required this.routines, required this.accent});
+/// Horizontal scrolling schedule day tags. Never squishes text.
+class _ScheduleDayStrip extends StatelessWidget {
+  const _ScheduleDayStrip({required this.routines});
 
   final List<ExploreRoutine> routines;
-  final Color accent;
 
   @override
   Widget build(BuildContext context) {
     final surface = context.surface;
+
     return SizedBox(
-      height: 26,
-      child: Row(
-        children: [
-          for (var i = 0; i < routines.length; i++) ...[
-            if (i > 0) const SizedBox(width: 6),
-            Flexible(
-              child: Container(
-                height: 26,
-                alignment: Alignment.center,
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                decoration: BoxDecoration(
-                  color: accent.withAlpha(0x1F),
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: Text(
-                  routines[i].name,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+      height: 28,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        itemCount: routines.length,
+        separatorBuilder: (_, __) => const SizedBox(width: 6),
+        itemBuilder: (context, index) {
+          final routine = routines[index];
+          return Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: surface.surface3,
+              borderRadius: BorderRadius.circular(6),
+              border: Border.all(color: surface.borderSubtle),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'D${index + 1}',
                   style: TextStyle(
                     fontSize: 11,
-                    fontWeight: FontWeight.w500,
+                    fontWeight: FontWeight.w600,
+                    color: surface.textPrimary,
+                  ),
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  routine.name,
+                  style: TextStyle(
+                    fontSize: 11,
                     color: surface.textSecondary,
                   ),
                 ),
-              ),
+              ],
             ),
-          ],
-        ],
+          );
+        },
       ),
     );
   }
 }
 
-/// Up to three facts on one line, separated by middots.
+/// Up to four facts on one line, separated by middots.
 class _FactLine extends StatelessWidget {
   const _FactLine({required this.facts});
 
@@ -275,7 +359,7 @@ class _FactLine extends StatelessWidget {
     final visible = [
       for (final f in facts)
         if (f.trim().isNotEmpty) f,
-    ].take(3).toList();
+    ].take(4).toList();
 
     return Text(
       visible.join('  \u00b7  '),
@@ -304,6 +388,7 @@ class _StatusPill extends StatelessWidget {
       decoration: BoxDecoration(
         color: color.withAlpha(0x24),
         borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: color.withAlpha(0x44)),
       ),
       child: Text(
         label,
@@ -317,7 +402,7 @@ class _StatusPill extends StatelessWidget {
   }
 }
 
-/// One-tap add, or a settled "Added" state. Never both, never ambiguous.
+/// One-tap add, or a settled "Added" checkmark state.
 class _AddControl extends StatelessWidget {
   const _AddControl({required this.isOwned, required this.onAdd});
 
@@ -327,16 +412,21 @@ class _AddControl extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final accent = Theme.of(context).colorScheme.primary;
+    final surface = context.surface;
 
     if (isOwned) {
-      return SizedBox(
+      return Container(
         width: _kMinTapTarget,
         height: _kMinTapTarget,
-        child: Center(
-          child: Semantics(
-            label: 'Already in your routines',
-            child: Icon(Icons.check_rounded, size: 20, color: accent),
-          ),
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: accent.withAlpha(0x18),
+          borderRadius: AppRadius.badgeAll,
+          border: Border.all(color: accent.withAlpha(0x33)),
+        ),
+        child: Semantics(
+          label: 'Already in your routines',
+          child: Icon(Icons.check_rounded, size: 20, color: accent),
         ),
       );
     }
@@ -345,18 +435,26 @@ class _AddControl extends StatelessWidget {
       button: true,
       label: 'Add to my routines',
       child: Material(
-        color: accent.withAlpha(0x1F),
-        shape: const CircleBorder(),
+        color: surface.surface3,
+        borderRadius: AppRadius.badgeAll,
         child: InkWell(
-          customBorder: const CircleBorder(),
+          borderRadius: AppRadius.badgeAll,
           onTap: () {
-            HapticFeedback.selectionClick();
+            HapticFeedback.mediumImpact();
             onAdd();
           },
-          child: SizedBox(
+          child: Container(
             width: _kMinTapTarget,
             height: _kMinTapTarget,
-            child: Icon(Icons.add_rounded, size: 22, color: accent),
+            decoration: BoxDecoration(
+              borderRadius: AppRadius.badgeAll,
+              border: Border.all(color: surface.borderDefault),
+            ),
+            child: Icon(
+              Icons.add_rounded,
+              size: 22,
+              color: surface.textPrimary,
+            ),
           ),
         ),
       ),
@@ -380,33 +478,34 @@ class ExploreFilterChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final surface = context.surface;
-    final accent = Theme.of(context).colorScheme.primary;
+    final accent = context.accent;
 
     return Semantics(
       button: true,
       selected: selected,
       child: Material(
-        color: selected ? accent.withAlpha(0x24) : surface.surface2,
+        color: selected ? accent.muted : surface.surface2,
         borderRadius: BorderRadius.circular(10),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
+          side: BorderSide(
+            color: selected ? accent.selectionBorder : surface.borderSubtle,
+          ),
+        ),
         child: InkWell(
           borderRadius: BorderRadius.circular(10),
           onTap: onTap,
           child: Container(
-            height: _kMinTapTarget,
+            height: 38,
+            constraints: const BoxConstraints(minHeight: 36),
             alignment: Alignment.center,
             padding: const EdgeInsets.symmetric(horizontal: 14),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(
-                color: selected ? accent.withAlpha(0x66) : surface.borderSubtle,
-              ),
-            ),
             child: Text(
               label,
               style: TextStyle(
                 fontSize: 13,
                 fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
-                color: selected ? accent : surface.textSecondary,
+                color: selected ? accent.base : surface.textSecondary,
               ),
             ),
           ),

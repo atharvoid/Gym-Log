@@ -59,8 +59,7 @@ void main() {
 
       // Title and subtitle
       expect(find.text('Push A'), findsOneWidget);
-      expect(
-          find.text('Day 1 of PPL 6d · Chest · Shoulders · Triceps'),
+      expect(find.text('Day 1 of PPL 6d · Chest · Shoulders · Triceps'),
           findsOneWidget);
 
       // Facts

@@ -1,10 +1,10 @@
 // [explore_screen.dart]
 // 10/10 Routine-first & Program Explore experience.
 //
-// Unifies the deep inspection, anatomical SVG MuscleMap, atmospheric OLED glow,
-// adaptive tablet layout, and smooth paywall gating of the original screen with
-// the modern routine-first catalog, granular 1-day imports, canonical naming,
-// and fast in-memory resolution.
+// Unifies deep exercise inspection, anatomical SVG MuscleMap, atmospheric OLED
+// glow, adaptive tablet layout, categorized filter sheets, and smooth paywall
+// gating with the modern routine-first catalog, granular 1-day imports, canonical
+// naming, and fast in-memory resolution.
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -121,7 +121,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                   ),
                 ),
                 SliverToBoxAdapter(child: _tabSelector(tab)),
-                SliverToBoxAdapter(child: _filterRow(filters)),
+                SliverToBoxAdapter(child: _filterBar(filters)),
                 const SliverToBoxAdapter(child: SizedBox(height: 6)),
                 if (tab == ExploreTab.routines)
                   _routineSliver(filters)
@@ -286,60 +286,53 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     );
   }
 
-  Widget _filterRow(ExploreFilters filters) {
+  Widget _filterBar(ExploreFilters filters) {
     final notifier = ref.read(exploreFiltersProvider.notifier);
 
-    void toggleLevel(TemplateLevel level) {
-      final next = {...filters.levels};
-      next.contains(level) ? next.remove(level) : next.add(level);
-      notifier.update((f) => f.copyWith(levels: next));
-    }
+    // Level label
+    final levelLabel = filters.levels.isEmpty
+        ? 'Level'
+        : filters.levels.length == 1
+            ? templateLevelLabel(filters.levels.first)
+            : '${filters.levels.length} levels';
 
-    void toggleDuration(RoutineDuration duration) {
-      final next = {...filters.durations};
-      next.contains(duration) ? next.remove(duration) : next.add(duration);
-      notifier.update((f) => f.copyWith(durations: next));
-    }
+    // Equipment label
+    final equipmentLabel = filters.equipment == null
+        ? 'Equipment'
+        : equipmentLabelFor(filters.equipment!);
 
-    void setEquipment(ProgramEquipment equipment) {
-      if (filters.equipment == equipment) {
-        notifier.update((f) => f.copyWith(clearEquipment: true));
-      } else {
-        notifier.update((f) => f.copyWith(equipment: equipment));
-      }
-    }
+    // Duration label
+    final durationLabel = filters.durations.isEmpty
+        ? 'Duration'
+        : filters.durations.length == 1
+            ? filters.durations.first.chipLabel
+            : '${filters.durations.length} durations';
 
     return SizedBox(
-      height: 52,
+      height: 48,
       child: ListView(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: _kGutter),
         children: [
-          for (final level in TemplateLevel.values) ...[
-            ExploreFilterChip(
-              label: templateLevelLabel(level),
-              selected: filters.levels.contains(level),
-              onTap: () => toggleLevel(level),
-            ),
+          ExploreFilterChip(
+            label: levelLabel,
+            selected: filters.levels.isNotEmpty,
+            onTap: () => _openLevelSheet(filters),
+          ),
+          const SizedBox(width: 8),
+          ExploreFilterChip(
+            label: equipmentLabel,
+            selected: filters.equipment != null,
+            onTap: () => _openEquipmentSheet(filters),
+          ),
+          const SizedBox(width: 8),
+          ExploreFilterChip(
+            label: durationLabel,
+            selected: filters.durations.isNotEmpty,
+            onTap: () => _openDurationSheet(filters),
+          ),
+          if (!filters.isEmpty) ...[
             const SizedBox(width: 8),
-          ],
-          for (final duration in RoutineDuration.values) ...[
-            ExploreFilterChip(
-              label: duration.chipLabel,
-              selected: filters.durations.contains(duration),
-              onTap: () => toggleDuration(duration),
-            ),
-            const SizedBox(width: 8),
-          ],
-          for (final equipment in ProgramEquipment.values) ...[
-            ExploreFilterChip(
-              label: equipmentLabelFor(equipment),
-              selected: filters.equipment == equipment,
-              onTap: () => setEquipment(equipment),
-            ),
-            const SizedBox(width: 8),
-          ],
-          if (!filters.isEmpty)
             ExploreFilterChip(
               label: 'Clear',
               selected: false,
@@ -348,8 +341,225 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                 notifier.state = const ExploreFilters();
               },
             ),
+          ],
         ],
       ),
+    );
+  }
+
+  void _openLevelSheet(ExploreFilters current) {
+    HapticFeedback.selectionClick();
+    final notifier = ref.read(exploreFiltersProvider.notifier);
+
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (sheetContext) {
+        final surface = sheetContext.surface;
+        return Container(
+          decoration: BoxDecoration(
+            color: surface.bgSurface,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+          ),
+          padding: EdgeInsets.fromLTRB(
+            _kGutter,
+            16,
+            _kGutter,
+            16 + MediaQuery.paddingOf(sheetContext).bottom,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 36,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: surface.borderDefault,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Select Experience Level',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: surface.textPrimary,
+                ),
+              ),
+              const SizedBox(height: 12),
+              ListTile(
+                title: const Text('All'),
+                trailing: current.levels.isEmpty
+                    ? const Icon(Icons.check_rounded)
+                    : null,
+                onTap: () {
+                  notifier.update((f) => f.copyWith(levels: const {}));
+                  Navigator.of(sheetContext).pop();
+                },
+              ),
+              for (final level in TemplateLevel.values)
+                ListTile(
+                  title: Text(templateLevelLabel(level)),
+                  trailing: current.levels.contains(level)
+                      ? const Icon(Icons.check_rounded)
+                      : null,
+                  onTap: () {
+                    notifier.update((f) => f.copyWith(levels: {level}));
+                    Navigator.of(sheetContext).pop();
+                  },
+                ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _openEquipmentSheet(ExploreFilters current) {
+    HapticFeedback.selectionClick();
+    final notifier = ref.read(exploreFiltersProvider.notifier);
+
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (sheetContext) {
+        final surface = sheetContext.surface;
+        return Container(
+          decoration: BoxDecoration(
+            color: surface.bgSurface,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+          ),
+          padding: EdgeInsets.fromLTRB(
+            _kGutter,
+            16,
+            _kGutter,
+            16 + MediaQuery.paddingOf(sheetContext).bottom,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 36,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: surface.borderDefault,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Select Available Equipment',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: surface.textPrimary,
+                ),
+              ),
+              const SizedBox(height: 12),
+              ListTile(
+                title: const Text('Any equipment'),
+                trailing: current.equipment == null
+                    ? const Icon(Icons.check_rounded)
+                    : null,
+                onTap: () {
+                  notifier.update((f) => f.copyWith(clearEquipment: true));
+                  Navigator.of(sheetContext).pop();
+                },
+              ),
+              for (final eq in ProgramEquipment.values)
+                ListTile(
+                  title: Text(equipmentLabelFor(eq)),
+                  trailing: current.equipment == eq
+                      ? const Icon(Icons.check_rounded)
+                      : null,
+                  onTap: () {
+                    notifier.update((f) => f.copyWith(equipment: eq));
+                    Navigator.of(sheetContext).pop();
+                  },
+                ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _openDurationSheet(ExploreFilters current) {
+    HapticFeedback.selectionClick();
+    final notifier = ref.read(exploreFiltersProvider.notifier);
+
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (sheetContext) {
+        final surface = sheetContext.surface;
+        return Container(
+          decoration: BoxDecoration(
+            color: surface.bgSurface,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+          ),
+          padding: EdgeInsets.fromLTRB(
+            _kGutter,
+            16,
+            _kGutter,
+            16 + MediaQuery.paddingOf(sheetContext).bottom,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 36,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: surface.borderDefault,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Select Session Duration',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: surface.textPrimary,
+                ),
+              ),
+              const SizedBox(height: 12),
+              ListTile(
+                title: const Text('Any duration'),
+                trailing: current.durations.isEmpty
+                    ? const Icon(Icons.check_rounded)
+                    : null,
+                onTap: () {
+                  notifier.update((f) => f.copyWith(durations: const {}));
+                  Navigator.of(sheetContext).pop();
+                },
+              ),
+              for (final d in RoutineDuration.values)
+                ListTile(
+                  title: Text(d.chipLabel),
+                  trailing: current.durations.contains(d)
+                      ? const Icon(Icons.check_rounded)
+                      : null,
+                  onTap: () {
+                    notifier.update((f) => f.copyWith(durations: {d}));
+                    Navigator.of(sheetContext).pop();
+                  },
+                ),
+            ],
+          ),
+        );
+      },
     );
   }
 
@@ -856,6 +1066,11 @@ class _ImportBar extends ConsumerWidget {
                   child: SizedBox(
                     height: 48,
                     child: OutlinedButton(
+                      style: OutlinedButton.styleFrom(
+                        shape: const RoundedRectangleBorder(
+                          borderRadius: AppRadius.buttonPrimaryAll,
+                        ),
+                      ),
                       onPressed: () => _chooseRoutines(context, ref),
                       child: const Text('Choose routines'),
                     ),
@@ -867,6 +1082,11 @@ class _ImportBar extends ConsumerWidget {
                 child: SizedBox(
                   height: 48,
                   child: FilledButton(
+                    style: FilledButton.styleFrom(
+                      shape: const RoundedRectangleBorder(
+                        borderRadius: AppRadius.buttonPrimaryAll,
+                      ),
+                    ),
                     onPressed: () => _importAll(context, ref),
                     child: Text(
                       missing.length == 1
@@ -1009,6 +1229,11 @@ class _ChooseRoutinesSheetState extends State<_ChooseRoutinesSheet> {
               width: double.infinity,
               height: 48,
               child: FilledButton(
+                style: FilledButton.styleFrom(
+                  shape: const RoundedRectangleBorder(
+                    borderRadius: AppRadius.buttonPrimaryAll,
+                  ),
+                ),
                 onPressed: _selected.isEmpty
                     ? null
                     : () => Navigator.of(context).pop([
