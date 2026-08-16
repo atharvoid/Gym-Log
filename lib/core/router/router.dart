@@ -23,7 +23,8 @@ import '../../features/profile/presentation/screens/personal_details_screen.dart
 import '../../features/profile/presentation/screens/appearance_screen.dart';
 import '../../features/profile/presentation/screens/delete_account_screen.dart';
 import '../../features/import/presentation/screens/import_screen.dart';
-import '../../features/routines/presentation/screens/explore_routines_screen.dart';
+import '../../features/routines/presentation/providers/explore_providers.dart';
+import '../../features/routines/presentation/screens/explore_screen.dart';
 import '../../features/routines/presentation/screens/routine_editor_screen.dart';
 import '../../features/routines/presentation/screens/routine_detail_screen.dart';
 import '../../features/workout/presentation/screens/workout_detail_screen.dart';
@@ -205,9 +206,17 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (c, s) =>
             RoutineEditorScreen(routineId: s.uri.queryParameters['id']),
       ),
+      // Explore is routine-first: the default shelf is individual training
+      // days, and Programs is a second tab. `?tab=programs` still opens the
+      // programs shelf, so links written against the old program-only screen
+      // keep landing where their author intended.
       GoRoute(
         path: '/routines/explore',
-        builder: (c, s) => const ExploreRoutinesScreen(),
+        builder: (c, s) => ExploreScreen(
+          initialTab: s.uri.queryParameters['tab'] == 'programs'
+              ? ExploreTab.programs
+              : null,
+        ),
       ),
       GoRoute(
         path: '/settings',
