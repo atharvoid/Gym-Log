@@ -205,7 +205,8 @@ final Map<String, RoutineTemplate> exploreProgramBySlug = {
 final Map<String, List<ExploreRoutine>> exploreRoutinesByProgramSlug = () {
   final grouped = <String, List<ExploreRoutine>>{};
   for (final routine in exploreRoutines) {
-    grouped.putIfAbsent(routine.programSlug, () => <ExploreRoutine>[])
+    grouped
+        .putIfAbsent(routine.programSlug, () => <ExploreRoutine>[])
         .add(routine);
   }
   return grouped;
@@ -250,12 +251,11 @@ List<ExploreRoutine> filterExploreRoutines({
 /// Programs whose declared cadence disagrees with how many routines they
 /// actually contain. Surfaced rather than silently corrected, because the
 /// fix belongs in the source dataset, not at read time.
-List<RoutineTemplate> programsWithCadenceMismatch() => exploreTemplates
-    .where((template) {
+List<RoutineTemplate> programsWithCadenceMismatch() =>
+    exploreTemplates.where((template) {
       final cadence = programCadence(template.name);
       return cadence != null && cadence != template.days.length;
-    })
-    .toList(growable: false);
+    }).toList(growable: false);
 
 List<ExploreRoutine> _buildExploreRoutines() {
   final labels = exploreProgramLabels;
@@ -272,7 +272,8 @@ List<ExploreRoutine> _buildExploreRoutines() {
 
     for (var index = 0; index < template.days.length; index++) {
       final day = template.days[index];
-      final base = routineSlug(programSlug: programSlug, dayLabel: names[index]);
+      final base =
+          routineSlug(programSlug: programSlug, dayLabel: names[index]);
 
       var slug = base;
       var attempt = 2;

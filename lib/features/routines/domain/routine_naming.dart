@@ -46,7 +46,7 @@ const Map<String, String> kProgramShortNames = {
   'Classic Push & Pull Split': 'Push/Pull',
   'Body-Part Split': 'Body-Part',
   'Starter Full Body': 'Full Body',
-  'Power + Size': 'Power+Size',
+  'Power + Size': 'Power+Sz',
   'Power & Hypertrophy': 'Power/Hyp',
   'Linear Strength Builder': 'Linear',
   'Fat-Loss Circuit': 'Fat-Loss',
@@ -163,9 +163,8 @@ Map<String, String> uniqueProgramShortNames(List<String> programNames) {
     final isAmbiguous = entry.value.length > 1;
     for (final name in entry.value) {
       final cadence = isAmbiguous ? programCadence(name) : null;
-      proposed[name] = cadence == null
-          ? entry.key
-          : _withCadenceSuffix(entry.key, cadence);
+      proposed[name] =
+          cadence == null ? entry.key : _withCadenceSuffix(entry.key, cadence);
     }
   }
 

@@ -19,8 +19,8 @@ void main() {
 
   group('normalisation', () {
     test('lowercases and strips punctuation', () {
-      expect(normalizeExerciseName('Barbell Bench-Press!'),
-          'barbell bench press');
+      expect(
+          normalizeExerciseName('Barbell Bench-Press!'), 'barbell bench press');
     });
 
     test('base form drops the equipment parenthetical', () {
@@ -38,8 +38,8 @@ void main() {
 
     test('matches regardless of case and punctuation', () {
       final r = ExerciseResolver([ex('Barbell Bench Press')]);
-      expect(r.resolve('  barbell   bench-press ')!.name,
-          'Barbell Bench Press');
+      expect(
+          r.resolve('  barbell   bench-press ')!.name, 'Barbell Bench Press');
     });
 
     test('matches across an equipment parenthetical', () {

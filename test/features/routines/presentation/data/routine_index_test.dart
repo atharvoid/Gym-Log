@@ -71,8 +71,10 @@ void main() {
     test('program labels are unique across the whole catalog', () {
       final labels = exploreProgramLabels.values.toList();
       expect(labels.toSet().length, labels.length);
-      expect(exploreProgramLabels['Push / Pull / Legs - 6 Days/Week'], 'PPL 6d');
-      expect(exploreProgramLabels['Push / Pull / Legs - 3 Days/Week'], 'PPL 3d');
+      expect(
+          exploreProgramLabels['Push / Pull / Legs - 6 Days/Week'], 'PPL 6d');
+      expect(
+          exploreProgramLabels['Push / Pull / Legs - 3 Days/Week'], 'PPL 3d');
       expect(
         exploreProgramLabels[
             'Push / Pull / Legs - 6 Days/Week \u00b7 Dumbbell'],
@@ -130,7 +132,8 @@ void main() {
       expect(circuit.slots.length, 7);
       expect(circuit.exerciseCount, 6);
       expect(circuit.conditioningNotes, ['Incline Treadmill / Bike Intervals']);
-      expect(circuit.exerciseNames, isNot(contains('Incline Treadmill / Bike Intervals')));
+      expect(circuit.exerciseNames,
+          isNot(contains('Incline Treadmill / Bike Intervals')));
     });
 
     test('every routine has at least one importable exercise', () {
@@ -216,7 +219,8 @@ void main() {
         ['Linear Strength Builder - 3 Days/Week'],
       );
       expect(mismatches.single.days.length, 4);
-      expect(routinesForProgram('linear-strength-builder-3-days-week').length, 4);
+      expect(
+          routinesForProgram('linear-strength-builder-3-days-week').length, 4);
     });
   });
 }

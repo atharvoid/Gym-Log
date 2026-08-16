@@ -106,8 +106,8 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
           fillColor: surface.surface2,
           hintText: 'Search routines or an exercise',
           hintStyle: TextStyle(color: surface.textTertiary, fontSize: 15),
-          prefixIcon: Icon(Icons.search_rounded,
-              size: 20, color: surface.textTertiary),
+          prefixIcon:
+              Icon(Icons.search_rounded, size: 20, color: surface.textTertiary),
           suffixIcon: _search.text.isEmpty
               ? null
               : IconButton(
@@ -322,7 +322,8 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
         padding: const EdgeInsets.fromLTRB(_kGutter, 48, _kGutter, 48),
         child: Column(
           children: [
-            Icon(Icons.search_off_rounded, size: 36, color: surface.textTertiary),
+            Icon(Icons.search_off_rounded,
+                size: 36, color: surface.textTertiary),
             const SizedBox(height: 12),
             Text(
               'Nothing matches those filters',
@@ -472,8 +473,7 @@ class ProgramDetailScreen extends ConsumerWidget {
               if (ownedDays.isNotEmpty)
                 Text(
                   '${ownedDays.length} of ${routines.length} added',
-                  style:
-                      TextStyle(fontSize: 12, color: surface.textTertiary),
+                  style: TextStyle(fontSize: 12, color: surface.textTertiary),
                 ),
             ],
           ),
@@ -672,10 +672,11 @@ class _ImportBar extends ConsumerWidget {
   }
 
   Future<void> _importAll(BuildContext context, WidgetRef ref) async {
-    final result = await ref.read(exploreImportControllerProvider).importProgram(
-          programSlug: programSlug,
-          routines: missing,
-        );
+    final result =
+        await ref.read(exploreImportControllerProvider).importProgram(
+              programSlug: programSlug,
+              routines: missing,
+            );
     if (!context.mounted) return;
     showImportOutcome(context, result, fallbackLabel: 'Program');
   }
@@ -690,10 +691,11 @@ class _ImportBar extends ConsumerWidget {
     if (selected == null || selected.isEmpty) return;
     if (!context.mounted) return;
 
-    final result = await ref.read(exploreImportControllerProvider).importProgram(
-          programSlug: programSlug,
-          routines: selected,
-        );
+    final result =
+        await ref.read(exploreImportControllerProvider).importProgram(
+              programSlug: programSlug,
+              routines: selected,
+            );
     if (!context.mounted) return;
     showImportOutcome(context, result, fallbackLabel: 'Routines');
   }

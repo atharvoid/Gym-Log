@@ -148,7 +148,8 @@ void main() {
 
       expect(labels['Push / Pull / Legs - 6 Days/Week'], 'PPL 6d');
       expect(labels['Push / Pull / Legs - 3 Days/Week'], 'PPL 3d');
-      expect(labels['Push / Pull / Legs - 6 Days/Week \u00b7 Dumbbell'], 'PPL DB');
+      expect(
+          labels['Push / Pull / Legs - 6 Days/Week \u00b7 Dumbbell'], 'PPL DB');
       expect(labels['Upper & Lower Body - 4 Days/Week'], 'Upper/Low');
     });
 
@@ -178,7 +179,7 @@ void main() {
     });
 
     test('preserves input order', () {
-      final names = const [
+      const names = [
         'Upper & Lower Body - 4 Days/Week',
         'Push / Pull / Legs - 6 Days/Week',
       ];

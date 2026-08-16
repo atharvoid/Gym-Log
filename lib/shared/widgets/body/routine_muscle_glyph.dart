@@ -14,6 +14,7 @@
 // core/exercises/body_map.dart -- 'Chest', 'Quadriceps', 'Full Body', and so
 // on -- so the output of `workedGroupsFor()` can be passed straight in.
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import 'package:gymlog/core/theme/app_colors.dart';

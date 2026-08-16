@@ -326,7 +326,6 @@ class _AddControl extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final surface = context.surface;
     final accent = Theme.of(context).colorScheme.primary;
 
     if (isOwned) {

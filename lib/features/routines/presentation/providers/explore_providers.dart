@@ -130,8 +130,7 @@ bool _matchesFilters(
 ) {
   if (query.isNotEmpty && !r.matches(query)) return false;
 
-  if (filters.levels.isNotEmpty &&
-      !r.levels.any(filters.levels.contains)) {
+  if (filters.levels.isNotEmpty && !r.levels.any(filters.levels.contains)) {
     return false;
   }
 
@@ -140,8 +139,7 @@ bool _matchesFilters(
     return false;
   }
 
-  if (filters.durations.isNotEmpty &&
-      !filters.durations.contains(r.duration)) {
+  if (filters.durations.isNotEmpty && !filters.durations.contains(r.duration)) {
     return false;
   }
 
@@ -415,7 +413,8 @@ class ExploreImportController {
       );
     }
 
-    final ownsProgram = _ref.read(ownedProgramSlugsProvider).contains(programSlug);
+    final ownsProgram =
+        _ref.read(ownedProgramSlugsProvider).contains(programSlug);
     final kind =
         ownsProgram ? ImportKind.routineIntoOwnedProgram : ImportKind.program;
 

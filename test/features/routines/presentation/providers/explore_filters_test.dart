@@ -44,7 +44,8 @@ void main() {
 
   group('applyExploreFilters', () {
     test('no filters returns everything', () {
-      expect(applyExploreFilters(exploreRoutines, const ExploreFilters()).length,
+      expect(
+          applyExploreFilters(exploreRoutines, const ExploreFilters()).length,
           exploreRoutines.length);
     });
 

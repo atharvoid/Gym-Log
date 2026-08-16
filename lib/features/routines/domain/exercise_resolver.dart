@@ -95,7 +95,8 @@ class ExerciseResolver {
     for (final e in exercises) {
       _byExactName.putIfAbsent(normalizeExerciseName(e.name), () => e);
       _byBaseName.putIfAbsent(normalizeExerciseNameBase(e.name), () => e);
-      _tokenized.add((tokens: _tokens(normalizeExerciseName(e.name)), exercise: e));
+      _tokenized
+          .add((tokens: _tokens(normalizeExerciseName(e.name)), exercise: e));
     }
     for (final (a, b) in aliases) {
       final left = normalizeExerciseName(a);
@@ -109,7 +110,8 @@ class ExerciseResolver {
 
   final Map<String, ResolvedExercise> _byExactName = {};
   final Map<String, ResolvedExercise> _byBaseName = {};
-  final List<({List<String> tokens, ResolvedExercise exercise})> _tokenized = [];
+  final List<({List<String> tokens, ResolvedExercise exercise})> _tokenized =
+      [];
   final Map<String, ResolvedExercise?> _cache = {};
 
   int get indexedCount => _byExactName.length;

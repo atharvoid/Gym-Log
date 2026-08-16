@@ -25,7 +25,8 @@ void main() {
         routineSlug: 'upper-a',
         importedAs: 'Upper & Lower Body · Upper A',
       );
-      final decoded = decodeProgramMembership(encodeProgramMembership(migrated));
+      final decoded =
+          decodeProgramMembership(encodeProgramMembership(migrated));
       expect(decoded, migrated);
       expect(decoded!.wasMigrated, isTrue);
       expect(decoded.importedAs, 'Upper & Lower Body · Upper A');

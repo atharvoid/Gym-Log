@@ -215,7 +215,8 @@ List<T> sortByProgramOrder<T>(
   final keyed = <({int order, int index, T item})>[];
   for (var i = 0; i < items.length; i++) {
     final m = membershipOf(items[i]);
-    keyed.add((order: m?.orderIndex ?? _kUnorderedSortKey, index: i, item: items[i]));
+    keyed.add(
+        (order: m?.orderIndex ?? _kUnorderedSortKey, index: i, item: items[i]));
   }
   keyed.sort((a, b) {
     final byOrder = a.order.compareTo(b.order);

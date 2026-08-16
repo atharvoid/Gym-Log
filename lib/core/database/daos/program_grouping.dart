@@ -105,9 +105,8 @@ class ProgramGroup {
       };
 
   /// Newest member, used to sort groups in the library.
-  DateTime get latestCreatedAt => routines
-      .map((r) => r.createdAt)
-      .reduce((a, b) => a.isAfter(b) ? a : b);
+  DateTime get latestCreatedAt =>
+      routines.map((r) => r.createdAt).reduce((a, b) => a.isAfter(b) ? a : b);
 }
 
 /// The library split into programs and loose routines.
