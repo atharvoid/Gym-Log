@@ -116,6 +116,18 @@ typedef LibraryGrouping = ({
   List<ProgramRoutineRef> standalone,
 });
 
+/// Finds a group by its key.
+///
+/// Deliberately a plain loop: `Iterable.firstOrNull` lives in
+/// package:collection, and this file is intentionally dependency-free beyond
+/// drift and its own siblings.
+ProgramGroup? _groupByKey(LibraryGrouping grouping, String key) {
+  for (final g in grouping.programs) {
+    if (g.key == key) return g;
+  }
+  return null;
+}
+
 /// Groups a user's routines into programs plus standalone routines.
 ///
 /// Three tiers, in order of trust:
@@ -369,7 +381,7 @@ extension ProgramGroupingDao on RoutinesDao {
     required String newName,
   }) async {
     final grouping = await getLibraryGrouping(userId);
-    final group = grouping.programs.where((g) => g.key == groupKey).firstOrNull;
+    final group = _groupByKey(grouping, groupKey);
     if (group == null) return;
 
     for (final r in group.routines) {
@@ -391,7 +403,7 @@ extension ProgramGroupingDao on RoutinesDao {
     required String groupKey,
   }) async {
     final grouping = await getLibraryGrouping(userId);
-    final group = grouping.programs.where((g) => g.key == groupKey).firstOrNull;
+    final group = _groupByKey(grouping, groupKey);
     if (group == null) return 0;
     for (final r in group.routines) {
       await deleteRoutine(r.id);
