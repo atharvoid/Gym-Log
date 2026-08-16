@@ -14,6 +14,17 @@
 //      "Starter Full Body \u00b7 Dumbbell" and "Starter Full Body \u00b7 No Equipment"
 //      both shortened to "Starter Full Body" and became indistinguishable.
 //
+// Two more surfaced only once this ran against all 16 real catalog programs:
+//
+//   4. A curated short name long enough to push its equipment suffix past
+//      [kMaxProgramShortNameLength] lost the suffix to truncation -- exactly
+//      the failure in (3), reintroduced by the cap. Curated names must leave
+//      room for " DB" / " BW".
+//   5. Two programs can share a base name and differ only by cadence
+//      ("Push / Pull / Legs" at 6 and at 3 days a week). A pure per-name
+//      function cannot detect that; [uniqueProgramShortNames] resolves it
+//      against the whole catalog.
+//
 // Everything here is pure, synchronous and deterministic so it can be unit
 // tested without a database, a widget tree or a golden file.
 
@@ -25,9 +36,13 @@ const int kMaxProgramShortNameLength = 12;
 
 /// Curated short names for the shipped catalog programs. Anything not listed
 /// falls back to [_initialsFor].
+///
+/// INVARIANT: every value here must be at most
+/// `kMaxProgramShortNameLength - 3` characters, so a " DB" or " BW" equipment
+/// suffix still fits without truncation. `routine_naming_test` asserts it.
 const Map<String, String> kProgramShortNames = {
   'Push / Pull / Legs': 'PPL',
-  'Upper & Lower Body': 'Upper/Lower',
+  'Upper & Lower Body': 'Upper/Low',
   'Classic Push & Pull Split': 'Push/Pull',
   'Body-Part Split': 'Body-Part',
   'Starter Full Body': 'Full Body',
@@ -35,6 +50,7 @@ const Map<String, String> kProgramShortNames = {
   'Power & Hypertrophy': 'Power/Hyp',
   'Linear Strength Builder': 'Linear',
   'Fat-Loss Circuit': 'Fat-Loss',
+  'HIIT Fat-Loss': 'HIIT',
 };
 
 /// Equipment variant suffixes, abbreviated so they survive the 12-char cap.
@@ -54,6 +70,8 @@ final RegExp _whitespace = RegExp(r'\s+');
 final RegExp _nonSlug = RegExp(r'[^a-z0-9]+');
 final RegExp _slugEdges = RegExp(r'^-+|-+$');
 final RegExp _nonAlphanumeric = RegExp(r'[^A-Za-z0-9]');
+final RegExp _cadence =
+    RegExp(r'-\s*(\d+)\s*Days?\s*/\s*Week', caseSensitive: false);
 
 /// Strips generated scaffolding from a catalog day label.
 ///
@@ -96,8 +114,21 @@ String cleanRoutineLabel(String rawLabel) {
   return (base: name, variant: variant);
 }
 
+/// Sessions per week declared by a catalog program name, or null when the
+/// name carries no cadence.
+///
+/// "Push / Pull / Legs - 6 Days/Week" -> 6
+int? programCadence(String programName) {
+  final match = _cadence.firstMatch(programName);
+  if (match == null) return null;
+  return int.tryParse(match.group(1) ?? '');
+}
+
 /// A short, unique, human label for a program, safe to use as a name prefix
 /// or a chip. Never longer than [kMaxProgramShortNameLength].
+///
+/// This is intentionally pure and per-name. When two programs in the same
+/// catalog collapse to the same label, use [uniqueProgramShortNames] instead.
 String programShortName(String programName) {
   final parts = splitProgramName(programName);
   var short = kProgramShortNames[parts.base] ?? _initialsFor(parts.base);
@@ -109,6 +140,49 @@ String programShortName(String programName) {
   }
 
   return _truncate(short, kMaxProgramShortNameLength);
+}
+
+/// Resolves short names across a whole catalog so no two programs share one.
+///
+/// Cadence is appended ONLY where [programShortName] is ambiguous, so the
+/// common case stays clean:
+///
+///   Push / Pull / Legs - 6 Days/Week            -> "PPL 6d"
+///   Push / Pull / Legs - 3 Days/Week            -> "PPL 3d"
+///   Push / Pull / Legs - 6 Days/Week \u00b7 Dumbbell  -> "PPL DB"   (already unique)
+///
+/// Returns a map keyed by the ORIGINAL program name, in input order.
+Map<String, String> uniqueProgramShortNames(List<String> programNames) {
+  final grouped = <String, List<String>>{};
+  for (final name in programNames) {
+    grouped.putIfAbsent(programShortName(name), () => <String>[]).add(name);
+  }
+
+  final proposed = <String, String>{};
+  for (final entry in grouped.entries) {
+    final isAmbiguous = entry.value.length > 1;
+    for (final name in entry.value) {
+      final cadence = isAmbiguous ? programCadence(name) : null;
+      proposed[name] = cadence == null
+          ? entry.key
+          : _withCadenceSuffix(entry.key, cadence);
+    }
+  }
+
+  final taken = <String>{};
+  final resolved = <String, String>{};
+  for (final name in programNames) {
+    final base = proposed[name] ?? programShortName(name);
+    var label = base;
+    var attempt = 2;
+    while (!taken.add(label) && attempt < 100) {
+      label = _truncate('$base $attempt', kMaxProgramShortNameLength);
+      attempt++;
+    }
+    resolved[name] = label;
+  }
+
+  return resolved;
 }
 
 /// The name written to `routines.name` when a day is imported.
@@ -165,6 +239,13 @@ List<String> dedupeRoutineNames(List<String> names) {
   return result;
 }
 
+String _withCadenceSuffix(String short, int cadence) {
+  final suffix = '${cadence}d';
+  final room = kMaxProgramShortNameLength - suffix.length - 1;
+  final base = short.length <= room ? short : _truncate(short, room);
+  return '$base $suffix';
+}
+
 String _initialsFor(String base) {
   if (base.length <= kMaxProgramShortNameLength) return base;
 
@@ -175,7 +256,9 @@ String _initialsFor(String base) {
       .map((word) => word[0].toUpperCase())
       .join();
 
-  return initials.isEmpty ? _truncate(base, kMaxProgramShortNameLength) : initials;
+  return initials.isEmpty
+      ? _truncate(base, kMaxProgramShortNameLength)
+      : initials;
 }
 
 String _truncate(String value, int max) {
