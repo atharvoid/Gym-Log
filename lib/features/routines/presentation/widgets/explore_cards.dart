@@ -6,7 +6,7 @@
 // - Clear typography hierarchy: focus kicker -> card title -> program subtitle -> facts.
 // - Clean muscle group tag chips instead of crude block glyphs.
 // - Dedicated 44pt tap targets with haptics and instant checkmark states.
-// - Non-squeezed, horizontal-scrolling schedule day tags for multi-day programs.
+// - De-loaded program cards with weekly cadence pips and clean metrics (no wall of text).
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -177,8 +177,7 @@ class ExploreRoutineCard extends StatelessWidget {
   }
 }
 
-/// A multi-week commitment. Deliberately shaped differently from a routine
-/// card so the two are never mistaken for the same kind of thing.
+/// A multi-week commitment. Clean, de-loaded catalog card with 7-day cadence pips.
 class ExploreProgramCard extends StatelessWidget {
   const ExploreProgramCard({
     super.key,
@@ -214,7 +213,10 @@ class ExploreProgramCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final surface = context.surface;
-    final accent = Theme.of(context).colorScheme.primary;
+    final accent = context.accent;
+
+    final kicker =
+        '${template.daysPerWeek}-DAY SPLIT \u00b7 ${template.category.toUpperCase()}';
 
     return Material(
       color: surface.surface2,
@@ -231,20 +233,19 @@ class ExploreProgramCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Header Row: Title & Imported Count
+              // Header Row: Kicker & Status Pill
               Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Expanded(
                     child: Text(
-                      template.displayName,
-                      maxLines: 2,
+                      kicker,
+                      maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
-                        fontSize: 17,
+                        fontSize: 11,
                         fontWeight: FontWeight.w600,
-                        color: surface.textPrimary,
-                        height: 1.2,
+                        letterSpacing: 0.8,
+                        color: surface.textTertiary,
                       ),
                     ),
                   ),
@@ -252,37 +253,42 @@ class ExploreProgramCard extends StatelessWidget {
                     _StatusPill(
                       label: _isFullyImported
                           ? 'Imported'
-                          : '$importedCount of ${routines.length}',
-                      color: accent,
+                          : '$importedCount of ${routines.length} Added',
+                      color: accent.base,
                     ),
                 ],
               ),
               const SizedBox(height: 6),
 
-              // Punchy description
+              // Program Title
               Text(
-                template.description,
+                template.displayName,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
-                  fontSize: 13,
-                  height: 1.35,
-                  color: surface.textSecondary,
+                  fontSize: 17,
+                  fontWeight: FontWeight.w600,
+                  color: surface.textPrimary,
+                  height: 1.2,
                 ),
               ),
               const SizedBox(height: 12),
 
-              // Clean Schedule Day Tags
-              _ScheduleDayStrip(routines: routines),
-              const SizedBox(height: 12),
-
-              // Metrics Line
-              _FactLine(
-                facts: [
-                  '${template.daysPerWeek} days/week',
-                  _durationLabel,
-                  template.levelLabel,
-                  template.equipmentLabel,
+              // Bottom Cadence & Metrics Row
+              Row(
+                children: [
+                  _WeeklyCadencePips(daysPerWeek: template.daysPerWeek),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: _FactLine(
+                      facts: [
+                        '${template.daysPerWeek} days/week',
+                        _durationLabel,
+                        template.levelLabel,
+                        template.equipmentLabel,
+                      ],
+                    ),
+                  ),
                 ],
               ),
             ],
@@ -293,56 +299,32 @@ class ExploreProgramCard extends StatelessWidget {
   }
 }
 
-/// Horizontal scrolling schedule day tags. Never squishes text.
-class _ScheduleDayStrip extends StatelessWidget {
-  const _ScheduleDayStrip({required this.routines});
+/// Minimalist 7-dot weekly cadence indicator
+class _WeeklyCadencePips extends StatelessWidget {
+  const _WeeklyCadencePips({required this.daysPerWeek});
 
-  final List<ExploreRoutine> routines;
+  final int daysPerWeek;
 
   @override
   Widget build(BuildContext context) {
     final surface = context.surface;
+    final accent = context.accent;
 
-    return SizedBox(
-      height: 28,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        itemCount: routines.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 6),
-        itemBuilder: (context, index) {
-          final routine = routines[index];
-          return Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8),
-            alignment: Alignment.center,
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        for (var i = 0; i < 7; i++) ...[
+          if (i > 0) const SizedBox(width: 3.5),
+          Container(
+            width: 5.5,
+            height: 5.5,
             decoration: BoxDecoration(
-              color: surface.surface3,
-              borderRadius: BorderRadius.circular(6),
-              border: Border.all(color: surface.borderSubtle),
+              color: i < daysPerWeek ? accent.base : surface.surface4,
+              shape: BoxShape.circle,
             ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  'D${index + 1}',
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600,
-                    color: surface.textPrimary,
-                  ),
-                ),
-                const SizedBox(width: 4),
-                Text(
-                  routine.name,
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: surface.textSecondary,
-                  ),
-                ),
-              ],
-            ),
-          );
-        },
-      ),
+          ),
+        ],
+      ],
     );
   }
 }
@@ -462,18 +444,20 @@ class _AddControl extends StatelessWidget {
   }
 }
 
-/// Shared filter chip with a real 44pt target.
+/// Shared filter chip with a real 44pt target and dropdown chevron.
 class ExploreFilterChip extends StatelessWidget {
   const ExploreFilterChip({
     super.key,
     required this.label,
     required this.selected,
     required this.onTap,
+    this.showChevron = true,
   });
 
   final String label;
   final bool selected;
   final VoidCallback onTap;
+  final bool showChevron;
 
   @override
   Widget build(BuildContext context) {
@@ -499,14 +483,43 @@ class ExploreFilterChip extends StatelessWidget {
             height: 38,
             constraints: const BoxConstraints(minHeight: 36),
             alignment: Alignment.center,
-            padding: const EdgeInsets.symmetric(horizontal: 14),
-            child: Text(
-              label,
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
-                color: selected ? accent.base : surface.textSecondary,
-              ),
+            padding: const EdgeInsets.symmetric(horizontal: 10),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                if (selected) ...[
+                  Container(
+                    width: 5,
+                    height: 5,
+                    decoration: BoxDecoration(
+                      color: accent.base,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                  const SizedBox(width: 5),
+                ],
+                Flexible(
+                  child: Text(
+                    label,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
+                      color: selected ? accent.base : surface.textSecondary,
+                    ),
+                  ),
+                ),
+                if (showChevron) ...[
+                  const SizedBox(width: 3),
+                  Icon(
+                    Icons.keyboard_arrow_down_rounded,
+                    size: 16,
+                    color: selected ? accent.base : surface.textTertiary,
+                  ),
+                ],
+              ],
             ),
           ),
         ),

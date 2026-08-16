@@ -308,38 +308,65 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
             ? filters.durations.first.chipLabel
             : '${filters.durations.length} durations';
 
-    return SizedBox(
-      height: 48,
-      child: ListView(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: _kGutter),
+    final surface = context.surface;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: _kGutter),
+      child: Row(
         children: [
-          ExploreFilterChip(
-            label: levelLabel,
-            selected: filters.levels.isNotEmpty,
-            onTap: () => _openLevelSheet(filters),
+          Expanded(
+            child: ExploreFilterChip(
+              label: levelLabel,
+              selected: filters.levels.isNotEmpty,
+              onTap: () => _openLevelSheet(filters),
+            ),
           ),
           const SizedBox(width: 8),
-          ExploreFilterChip(
-            label: equipmentLabel,
-            selected: filters.equipment != null,
-            onTap: () => _openEquipmentSheet(filters),
+          Expanded(
+            child: ExploreFilterChip(
+              label: equipmentLabel,
+              selected: filters.equipment != null,
+              onTap: () => _openEquipmentSheet(filters),
+            ),
           ),
           const SizedBox(width: 8),
-          ExploreFilterChip(
-            label: durationLabel,
-            selected: filters.durations.isNotEmpty,
-            onTap: () => _openDurationSheet(filters),
+          Expanded(
+            child: ExploreFilterChip(
+              label: durationLabel,
+              selected: filters.durations.isNotEmpty,
+              onTap: () => _openDurationSheet(filters),
+            ),
           ),
           if (!filters.isEmpty) ...[
             const SizedBox(width: 8),
-            ExploreFilterChip(
-              label: 'Clear',
-              selected: false,
-              onTap: () {
-                _search.clear();
-                notifier.state = const ExploreFilters();
-              },
+            Material(
+              color: surface.surface2,
+              borderRadius: BorderRadius.circular(10),
+              child: InkWell(
+                borderRadius: BorderRadius.circular(10),
+                onTap: () {
+                  HapticFeedback.selectionClick();
+                  _search.clear();
+                  notifier.state = const ExploreFilters();
+                },
+                child: Container(
+                  width: 38,
+                  height: 38,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: surface.borderSubtle),
+                  ),
+                  child: Tooltip(
+                    message: 'Clear all filters',
+                    child: Icon(
+                      Icons.close_rounded,
+                      size: 18,
+                      color: surface.textSecondary,
+                    ),
+                  ),
+                ),
+              ),
             ),
           ],
         ],
