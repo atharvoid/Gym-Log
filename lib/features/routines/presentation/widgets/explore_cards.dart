@@ -7,6 +7,8 @@
 // - Clean muscle group tag chips instead of crude block glyphs.
 // - Dedicated 44pt tap targets with haptics and instant checkmark states.
 // - De-loaded program cards with weekly cadence pips and clean metrics (no wall of text).
+// - A card never silently drops information: facts reflow, never ellipsize,
+//   and a trimmed list says how much it trimmed.
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -19,6 +21,11 @@ import 'package:gymlog/features/routines/presentation/data/routine_index.dart';
 
 const double _kCardRadius = 16;
 const double _kMinTapTarget = 44;
+
+/// How many muscle chips render before the rest collapse into a "+N" chip.
+/// Four chips filled the row edge to edge on a 360dp phone, which is how the
+/// old `.take(4)` managed to hide the overflow it was creating.
+const int _kMaxMuscleChips = 3;
 
 /// One training day. The unit a user can actually do tomorrow.
 /// Tapping the card opens deep routine preview; tapping the plus icon adds it.
@@ -57,7 +64,8 @@ class ExploreRoutineCard extends StatelessWidget {
     return Semantics(
       button: true,
       label: '${routine.name}, ${routine.estMinutes} minutes, '
-          '${routine.exerciseCount} exercises',
+          '${routine.exerciseCount} exercises'
+          '${isOwned ? ", already in your routines" : ""}',
       child: Material(
         color: surface.surface2,
         borderRadius: BorderRadius.circular(_kCardRadius),
@@ -97,7 +105,10 @@ class ExploreRoutineCard extends StatelessWidget {
                           ],
                           Text(
                             routine.name,
-                            maxLines: 1,
+                            // Was maxLines: 1 here and 2 on the program card,
+                            // so the same length of name clipped on one shelf
+                            // and not the other.
+                            maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
                               fontSize: 17,
@@ -129,38 +140,13 @@ class ExploreRoutineCard extends StatelessWidget {
                 // Muscle Group Tag Chips
                 if (targetMuscles.isNotEmpty) ...[
                   const SizedBox(height: 10),
-                  Wrap(
-                    spacing: 6,
-                    runSpacing: 6,
-                    children: [
-                      for (final muscle in targetMuscles.take(4))
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 3,
-                          ),
-                          decoration: BoxDecoration(
-                            color: surface.surface3,
-                            borderRadius: AppRadius.badgeAll,
-                            border: Border.all(color: surface.borderSubtle),
-                          ),
-                          child: Text(
-                            muscle,
-                            style: TextStyle(
-                              fontSize: 11.5,
-                              fontWeight: FontWeight.w500,
-                              color: surface.textSecondary,
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
+                  _MuscleChips(muscles: targetMuscles),
                 ],
 
                 const SizedBox(height: 12),
 
-                // Key Facts Line
-                _FactLine(
+                // Key Facts
+                _FactStrip(
                   facts: [
                     '~${routine.estMinutes} min',
                     '${routine.exerciseCount} exercises',
@@ -218,80 +204,98 @@ class ExploreProgramCard extends StatelessWidget {
     final kicker =
         '${template.daysPerWeek}-DAY SPLIT \u00b7 ${template.category.toUpperCase()}';
 
-    return Material(
-      color: surface.surface2,
-      borderRadius: BorderRadius.circular(_kCardRadius),
-      child: InkWell(
+    // The card had no Semantics node of its own: a screen reader received a
+    // loose pile of texts plus seven unlabelled dots, and nothing said the
+    // card was a button.
+    return Semantics(
+      button: true,
+      label: '${template.displayName}, '
+          '${template.daysPerWeek} days a week, '
+          '${routines.length} training days'
+          '${importedCount > 0 ? ", $importedCount already added" : ""}',
+      child: Material(
+        color: surface.surface2,
         borderRadius: BorderRadius.circular(_kCardRadius),
-        onTap: onOpen,
-        child: Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(_kCardRadius),
-            border: Border.all(color: surface.borderSubtle),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Header Row: Kicker & Status Pill
-              Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      kicker,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600,
-                        letterSpacing: 0.8,
-                        color: surface.textTertiary,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(_kCardRadius),
+          onTap: onOpen,
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(_kCardRadius),
+              border: Border.all(color: surface.borderSubtle),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Header Row: Kicker & Status Pill
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        kicker,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: 0.8,
+                          color: surface.textTertiary,
+                        ),
                       ),
                     ),
-                  ),
-                  if (importedCount > 0)
-                    _StatusPill(
-                      label: _isFullyImported
-                          ? 'Imported'
-                          : '$importedCount of ${routines.length} Added',
-                      color: accent.base,
-                    ),
-                ],
-              ),
-              const SizedBox(height: 6),
-
-              // Program Title
-              Text(
-                template.displayName,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: 17,
-                  fontWeight: FontWeight.w600,
-                  color: surface.textPrimary,
-                  height: 1.2,
+                    if (importedCount > 0)
+                      _StatusPill(
+                        label: _isFullyImported
+                            ? 'Imported'
+                            : '$importedCount of ${routines.length} Added',
+                        color: accent.base,
+                      ),
+                  ],
                 ),
-              ),
-              const SizedBox(height: 12),
+                const SizedBox(height: 6),
 
-              // Bottom Cadence & Metrics Row
-              Row(
-                children: [
-                  _WeeklyCadencePips(daysPerWeek: template.daysPerWeek),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: _FactLine(
-                      facts: [
-                        '${template.daysPerWeek} days/week',
-                        _durationLabel,
-                        template.levelLabel,
-                        template.equipmentLabel,
-                      ],
-                    ),
+                // Program Title
+                Text(
+                  template.displayName,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w600,
+                    color: surface.textPrimary,
+                    height: 1.2,
                   ),
-                ],
-              ),
-            ],
+                ),
+                const SizedBox(height: 12),
+
+                // Cadence + "opens" affordance. The pips used to sit in the
+                // same row as the facts and eat ~51dp of it, which guaranteed
+                // the duration range and level were ellipsized away.
+                Row(
+                  children: [
+                    _WeeklyCadencePips(daysPerWeek: template.daysPerWeek),
+                    const Spacer(),
+                    Icon(
+                      Icons.chevron_right_rounded,
+                      size: 18,
+                      color: surface.textTertiary,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+
+                // Metrics, now with the full width of the card
+                _FactStrip(
+                  facts: [
+                    '${template.daysPerWeek} days/week',
+                    _durationLabel,
+                    template.levelLabel,
+                    template.equipmentLabel,
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -299,7 +303,10 @@ class ExploreProgramCard extends StatelessWidget {
   }
 }
 
-/// Minimalist 7-dot weekly cadence indicator
+/// Minimalist 7-dot weekly cadence indicator.
+///
+/// Announced as a sentence: seven unlabelled dots are meaningless to a screen
+/// reader, and "4 of 7 dots filled" would be barely better.
 class _WeeklyCadencePips extends StatelessWidget {
   const _WeeklyCadencePips({required this.daysPerWeek});
 
@@ -310,28 +317,43 @@ class _WeeklyCadencePips extends StatelessWidget {
     final surface = context.surface;
     final accent = context.accent;
 
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        for (var i = 0; i < 7; i++) ...[
-          if (i > 0) const SizedBox(width: 3.5),
-          Container(
-            width: 5.5,
-            height: 5.5,
-            decoration: BoxDecoration(
-              color: i < daysPerWeek ? accent.base : surface.surface4,
-              shape: BoxShape.circle,
+    return Semantics(
+      label: 'Trains $daysPerWeek day${daysPerWeek == 1 ? '' : 's'} a week',
+      excludeSemantics: true,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          for (var i = 0; i < 7; i++) ...[
+            if (i > 0) const SizedBox(width: 3.5),
+            Container(
+              width: 5.5,
+              height: 5.5,
+              decoration: BoxDecoration(
+                color: i < daysPerWeek ? accent.base : surface.surface4,
+                shape: BoxShape.circle,
+              ),
             ),
-          ),
+          ],
         ],
-      ],
+      ),
     );
   }
 }
 
-/// Up to four facts on one line, separated by middots.
-class _FactLine extends StatelessWidget {
-  const _FactLine({required this.facts});
+/// The facts a user filters on, none of which may be silently dropped.
+///
+/// Was a single `maxLines: 1` Text of up to four middot-joined facts at
+/// 12.5px. Four facts need roughly 330dp; a routine card gives the strip about
+/// 300dp on a 360dp phone and a program card gave it ~250dp because the
+/// cadence pips shared the row. So `levelLabel` and `equipmentLabel` -- the
+/// exact two fields the filter bar exists to filter on -- were ellipsized off
+/// almost every card, and at larger text scales even the duration went.
+///
+/// A reflowing strip fixes the whole class of bug: separators are painted
+/// between items instead of being characters inside one ellipsized string, so
+/// the strip drops to a second line rather than eating information.
+class _FactStrip extends StatelessWidget {
+  const _FactStrip({required this.facts});
 
   final List<String> facts;
 
@@ -340,17 +362,92 @@ class _FactLine extends StatelessWidget {
     final surface = context.surface;
     final visible = [
       for (final f in facts)
-        if (f.trim().isNotEmpty) f,
+        if (f.trim().isNotEmpty) f.trim(),
     ].take(4).toList();
 
-    return Text(
-      visible.join('  \u00b7  '),
-      maxLines: 1,
-      overflow: TextOverflow.ellipsis,
-      style: TextStyle(
-        fontSize: 12.5,
-        color: surface.textSecondary,
-        height: 1.1,
+    if (visible.isEmpty) return const SizedBox.shrink();
+
+    final style = TextStyle(
+      fontSize: 12.5,
+      color: surface.textSecondary,
+      height: 1.1,
+    );
+
+    return Wrap(
+      spacing: 8,
+      runSpacing: 6,
+      crossAxisAlignment: WrapCrossAlignment.center,
+      children: [
+        for (var i = 0; i < visible.length; i++) ...[
+          if (i > 0)
+            Container(
+              width: 3,
+              height: 3,
+              decoration: BoxDecoration(
+                color: surface.textTertiary,
+                shape: BoxShape.circle,
+              ),
+            ),
+          Text(visible[i], style: style),
+        ],
+      ],
+    );
+  }
+}
+
+/// Muscle tags, with an honest overflow count.
+class _MuscleChips extends StatelessWidget {
+  const _MuscleChips({required this.muscles});
+
+  final List<String> muscles;
+
+  @override
+  Widget build(BuildContext context) {
+    final shown = muscles.take(_kMaxMuscleChips).toList();
+    final hidden = muscles.length - shown.length;
+
+    return Wrap(
+      spacing: 6,
+      runSpacing: 6,
+      children: [
+        for (final muscle in shown) _MuscleChip(label: muscle),
+        // `.take(4)` used to discard the remainder in silence, so a pull day
+        // hitting six groups advertised four and misrepresented itself.
+        if (hidden > 0)
+          _MuscleChip(
+            label: '+$hidden',
+            semanticsLabel: 'and $hidden more muscle groups',
+          ),
+      ],
+    );
+  }
+}
+
+class _MuscleChip extends StatelessWidget {
+  const _MuscleChip({required this.label, this.semanticsLabel});
+
+  final String label;
+  final String? semanticsLabel;
+
+  @override
+  Widget build(BuildContext context) {
+    final surface = context.surface;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: surface.surface3,
+        borderRadius: AppRadius.badgeAll,
+        border: Border.all(color: surface.borderSubtle),
+      ),
+      child: Text(
+        label,
+        semanticsLabel: semanticsLabel,
+        style: TextStyle(
+          fontSize: 11.5,
+          fontWeight: FontWeight.w500,
+          color: surface.textSecondary,
+        ),
       ),
     );
   }
@@ -374,6 +471,8 @@ class _StatusPill extends StatelessWidget {
       ),
       child: Text(
         label,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
         style: TextStyle(
           fontSize: 11,
           fontWeight: FontWeight.w600,
@@ -393,7 +492,10 @@ class _AddControl extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final accent = Theme.of(context).colorScheme.primary;
+    // Was Theme.of(context).colorScheme.primary while every other widget in
+    // this file reads the accent tokens, so this control drifted away from the
+    // user's chosen accent.
+    final accent = context.accent.base;
     final surface = context.surface;
 
     if (isOwned) {
@@ -468,6 +570,9 @@ class ExploreFilterChip extends StatelessWidget {
       button: true,
       selected: selected,
       child: Material(
+        // Exactly one of shape/borderRadius, forever: shape carries the radius
+        // AND the side, so adding borderRadius here would trip the
+        // '!(shape != null && borderRadius != null)' assertion in Material.
         color: selected ? accent.muted : surface.surface2,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(10),
@@ -479,10 +584,11 @@ class ExploreFilterChip extends StatelessWidget {
           borderRadius: BorderRadius.circular(10),
           onTap: onTap,
           child: Container(
-            height: 38,
-            constraints: const BoxConstraints(minHeight: 36),
+            // The doc comment promised "a real 44pt target" and then set 38.
+            height: _kMinTapTarget,
+            constraints: const BoxConstraints(minHeight: _kMinTapTarget),
             alignment: Alignment.center,
-            padding: const EdgeInsets.symmetric(horizontal: 10),
+            padding: const EdgeInsets.symmetric(horizontal: 12),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               mainAxisAlignment: MainAxisAlignment.center,
@@ -502,6 +608,7 @@ class ExploreFilterChip extends StatelessWidget {
                   child: Text(
                     label,
                     maxLines: 1,
+                    softWrap: false,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                       fontSize: 13,
