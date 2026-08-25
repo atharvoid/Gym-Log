@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -38,6 +40,7 @@ class _SpotlightTourOverlayState extends ConsumerState<SpotlightTourOverlay>
   Rect? _targetRect;
   late final AnimationController _fadeCtrl;
   late final Animation<double> _fadeAnim;
+  Timer? _pollTimer;
 
   int _resolveAttempts = 0;
   int _loadingAttempts = 0;
@@ -98,8 +101,17 @@ class _SpotlightTourOverlayState extends ConsumerState<SpotlightTourOverlay>
 
   @override
   void dispose() {
+    _pollTimer?.cancel();
+    _pollTimer = null;
     _fadeCtrl.dispose();
     super.dispose();
+  }
+
+  void _scheduleNextLoop(Duration delay) {
+    _pollTimer?.cancel();
+    _pollTimer = Timer(delay, () {
+      if (mounted) _loop();
+    });
   }
 
   void _startLoopIfNeeded() {
@@ -136,7 +148,7 @@ class _SpotlightTourOverlayState extends ConsumerState<SpotlightTourOverlay>
           _isLooping = false;
           return; // Stop looping after 500ms of actual -1 (completed/skipped)
         }
-        Future.delayed(const Duration(milliseconds: 100), _loop);
+        _scheduleNextLoop(const Duration(milliseconds: 100));
         return;
       }
       _isLooping = false;
@@ -151,7 +163,7 @@ class _SpotlightTourOverlayState extends ConsumerState<SpotlightTourOverlay>
     // host fights the route the user is actually looking at — and it is what
     // let two hosts drive the same step at once.
     if (!_hostRouteIsCurrent) {
-      Future.delayed(_slowPollInterval, _loop);
+      _scheduleNextLoop(_slowPollInterval);
       return;
     }
 
@@ -197,7 +209,7 @@ class _SpotlightTourOverlayState extends ConsumerState<SpotlightTourOverlay>
       } else {
         // Layout has settled — poll infrequently instead of re-measuring on
         // every single frame for as long as this step stays on screen.
-        Future.delayed(_slowPollInterval, _loop);
+        _scheduleNextLoop(_slowPollInterval);
       }
     } else {
       _resolveAttempts++;
@@ -210,10 +222,10 @@ class _SpotlightTourOverlayState extends ConsumerState<SpotlightTourOverlay>
           });
           _fadeIn();
         }
-        Future.delayed(_slowPollInterval, _loop);
+        _scheduleNextLoop(_slowPollInterval);
         return;
       }
-      Future.delayed(const Duration(milliseconds: 100), _loop);
+      _scheduleNextLoop(const Duration(milliseconds: 100));
     }
   }
 
