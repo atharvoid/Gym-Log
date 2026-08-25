@@ -13,6 +13,7 @@ import 'package:gymlog/shared/layout/adaptive.dart';
 import 'package:gymlog/shared/widgets/premium_paywall.dart';
 import 'package:gymlog/features/auth/presentation/providers/auth_provider.dart';
 import 'package:gymlog/shared/widgets/exercise_gif_widget.dart';
+import 'package:gymlog/shared/widgets/ui/app_button_shell.dart';
 import 'package:gymlog/shared/widgets/ui/app_dialog.dart';
 import 'package:uuid/uuid.dart';
 
@@ -262,36 +263,45 @@ class _RoutineEditorScreenState extends ConsumerState<RoutineEditorScreen> {
 
   /// Builds the non-reorderable "Add Exercise" button that appears as the
   /// last item in the exercise list (S12.2).
+  ///
+  /// TEXT SCALING (ship-readiness #3 / D2): this was Container(height: 50)
+  /// wrapping a hand-rolled Row + raw Text. A fixed height is a CEILING —
+  /// once the label's line box passes 50dp at a raised OS font size the
+  /// glyphs are painted and then cut off at the bottom, silently (there is no
+  /// overflow exception for this, and goldens run at scale 1.0).
+  /// [AppButtonShell] makes the 50dp a FLOOR that can grow and puts the label
+  /// in Flexible + ellipsis. Invariant: a button declares a minimum height,
+  /// never an exact one.
   Widget _buildAddExerciseButton() {
     return Padding(
       key: const ValueKey('add_exercise_button'),
       padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
       child: Material(
         color: Colors.transparent,
+        // borderRadius only, never alongside `shape` — Material asserts on
+        // having both.
         borderRadius: BorderRadius.circular(AppRadius.buttonSecondary),
         child: InkWell(
           borderRadius: BorderRadius.circular(AppRadius.buttonSecondary),
           onTap: _addExercises,
           child: Container(
-            height: 50,
-            alignment: Alignment.center,
             decoration: BoxDecoration(
               border: Border.all(color: context.surface.borderSubtle),
               borderRadius: BorderRadius.circular(AppRadius.buttonSecondary),
             ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.add_rounded,
-                    color: context.surface.textPrimary.withValues(alpha: 0.9),
-                    size: 16),
-                const SizedBox(width: 9),
-                Text('Add Exercise',
-                    style: AppText.button(
-                            color: context.surface.textPrimary
-                                .withValues(alpha: 0.90))
-                        .copyWith(fontSize: 15)),
-              ],
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: AppButtonShell(
+              label: 'Add Exercise',
+              style: AppText.button(
+                      color:
+                          context.surface.textPrimary.withValues(alpha: 0.90))
+                  .copyWith(fontSize: 15),
+              icon: Icons.add_rounded,
+              // Pinned: AppButtonShell defaults to 20, this drew 16.
+              iconSize: 16,
+              iconColor: context.surface.textPrimary.withValues(alpha: 0.9),
+              minHeight: 50,
+              expand: true,
             ),
           ),
         ),
@@ -360,7 +370,7 @@ class _RoutineEditorScreenState extends ConsumerState<RoutineEditorScreen> {
                 )
               : Column(
                   children: [
-                    // ── Routine name ───────────────────
+                    // ── Routine name ──────────────────
                     Padding(
                       padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
                       child: Semantics(
@@ -544,24 +554,29 @@ class _EmptyEditorState extends StatelessWidget {
             const SizedBox(height: 20),
             Material(
               color: accent.base,
+              // borderRadius only, never alongside `shape` — Material asserts
+              // on having both.
               borderRadius: BorderRadius.circular(AppRadius.buttonPrimary),
               child: InkWell(
                 borderRadius: BorderRadius.circular(AppRadius.buttonPrimary),
                 onTap: onAdd,
-                child: Container(
-                  height: 48,
+                // TEXT SCALING (ship-readiness #3 / D2): was
+                // Container(height: 48) + hand-rolled Row + raw Text, which
+                // clipped the label from the bottom at raised OS font sizes.
+                // AppButtonShell makes 48dp a floor that can grow and keeps
+                // the label in Flexible + ellipsis. expand: false so the
+                // button still hugs its content in this centred column.
+                child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 22),
-                  alignment: Alignment.center,
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.add_rounded, size: 18, color: accent.onAccent),
-                      const SizedBox(width: 6),
-                      Text(
-                        'Add Exercise',
-                        style: AppText.rowLabel(color: accent.onAccent),
-                      ),
-                    ],
+                  child: AppButtonShell(
+                    label: 'Add Exercise',
+                    style: AppText.rowLabel(color: accent.onAccent),
+                    icon: Icons.add_rounded,
+                    // Pinned: AppButtonShell defaults to 20, this drew 18.
+                    iconSize: 18,
+                    iconColor: accent.onAccent,
+                    minHeight: 48,
+                    expand: false,
                   ),
                 ),
               ),
