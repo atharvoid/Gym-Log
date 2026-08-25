@@ -5,6 +5,17 @@
 // glow, adaptive tablet layout, categorized filter sheets, and smooth paywall
 // gating with the modern routine-first catalog, granular 1-day imports, canonical
 // naming, and fast in-memory resolution.
+//
+// LAYOUT INVARIANTS:
+// - Filter chips are content-sized and scroll horizontally. They are never put
+//   in Expanded: a third of a 360dp screen cannot hold "Intermediate".
+// - Filter sheets toggle and stay open. The chip labels promise multi-select
+//   ("2 levels"), so the sheets must actually deliver it.
+// - Search is debounced. The catalog is filtered in-memory, but not per
+//   keystroke.
+// - The empty state names what emptied it and offers to undo exactly that.
+
+import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -15,6 +26,7 @@ import 'package:gymlog/core/premium/library_quota.dart';
 import 'package:gymlog/core/providers/premium_provider.dart';
 import 'package:gymlog/core/theme/app_colors.dart';
 import 'package:gymlog/core/theme/app_text.dart';
+import 'package:gymlog/core/theme/dynamic_accent_theme.dart';
 import 'package:gymlog/features/auth/presentation/providers/tour_provider.dart';
 import 'package:gymlog/features/profile/presentation/providers/profile_provider.dart';
 import 'package:gymlog/features/routines/presentation/data/explore_catalog.dart';
@@ -28,7 +40,12 @@ import 'package:gymlog/shared/widgets/premium_paywall.dart';
 import 'package:gymlog/shared/widgets/tour/spotlight_tour_overlay.dart';
 
 const double _kGutter = 16;
+const double _kMinTapTarget = 44;
 const Color _kHeroGlowColor = Color(0x12FFFFFF);
+
+/// Long enough to swallow a burst of typing, short enough that the result
+/// still feels like it is keeping up with you.
+const Duration _kSearchDebounce = Duration(milliseconds: 220);
 
 class ExploreScreen extends ConsumerStatefulWidget {
   const ExploreScreen({super.key, this.initialTab});
@@ -42,7 +59,14 @@ class ExploreScreen extends ConsumerStatefulWidget {
 
 class _ExploreScreenState extends ConsumerState<ExploreScreen> {
   final TextEditingController _search = TextEditingController();
+  final ScrollController _scroll = ScrollController();
   final GlobalKey _firstImportButtonKey = GlobalKey();
+
+  Timer? _searchDebounce;
+
+  /// Mirrors whether the field has text. Kept locally because the provider is
+  /// now debounced, and the clear button must not lag behind the keyboard.
+  bool _hasQuery = false;
 
   @override
   void initState() {
@@ -57,8 +81,41 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
 
   @override
   void dispose() {
+    _searchDebounce?.cancel();
+    _scroll.dispose();
     _search.dispose();
     super.dispose();
+  }
+
+  // -- Search ---------------------------------------------------------------
+
+  void _onQueryChanged(String value) {
+    final hasQuery = value.trim().isNotEmpty;
+    if (hasQuery != _hasQuery) setState(() => _hasQuery = hasQuery);
+
+    _searchDebounce?.cancel();
+    _searchDebounce = Timer(_kSearchDebounce, () => _applyQuery(value));
+  }
+
+  void _applyQuery(String value) {
+    if (!mounted) return;
+    ref
+        .read(exploreFiltersProvider.notifier)
+        .update((f) => f.copyWith(query: value));
+  }
+
+  void _clearQuery() {
+    _searchDebounce?.cancel();
+    _search.clear();
+    if (_hasQuery) setState(() => _hasQuery = false);
+    _applyQuery('');
+  }
+
+  void _clearEverything() {
+    _searchDebounce?.cancel();
+    _search.clear();
+    if (_hasQuery) setState(() => _hasQuery = false);
+    ref.read(exploreFiltersProvider.notifier).state = const ExploreFilters();
   }
 
   @override
@@ -69,12 +126,23 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     final tourStep = ref.watch(firstRunTourProvider);
     final canPop = context.canPop();
 
+    // Switching shelves used to inherit the other shelf's scroll offset, so
+    // tapping "Programs" after scrolling routines dropped you into the middle
+    // of a list you had never seen.
+    ref.listen<ExploreTab>(exploreTabProvider, (previous, next) {
+      if (previous == next) return;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (_scroll.hasClients && _scroll.offset > 0) _scroll.jumpTo(0);
+      });
+    });
+
     return Scaffold(
       backgroundColor: surface.bgBase,
       body: Stack(
         children: [
           AdaptiveContent(
             child: CustomScrollView(
+              controller: _scroll,
               slivers: [
                 SliverAppBar(
                   pinned: true,
@@ -95,12 +163,17 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                           onPressed: () => context.pop(),
                         )
                       : null,
-                  flexibleSpace: const FlexibleSpaceBar(
-                    titlePadding:
-                        EdgeInsetsDirectional.only(start: 56, bottom: 10),
+                  flexibleSpace: FlexibleSpaceBar(
+                    // Reserved 56dp for a back button even when there was no
+                    // back button, leaving the title floating mid-air on the
+                    // tab-root entry.
+                    titlePadding: EdgeInsetsDirectional.only(
+                      start: canPop ? 56 : _kGutter,
+                      bottom: 10,
+                    ),
                     expandedTitleScale: 1.25,
-                    title: _HeroTitle(),
-                    background: _HeroGlow(),
+                    title: const _HeroTitle(),
+                    background: const _HeroGlow(),
                   ),
                 ),
                 SliverToBoxAdapter(
@@ -131,20 +204,32 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
               ],
             ),
           ),
+          // Step 1 and 2 copy is shelf-aware: program cards have no "+", so
+          // promising one was instructing the user to tap something absent.
           if (tourStep == 1)
             SpotlightTourOverlay(
               targetKey: _firstImportButtonKey,
-              title: 'Import a routine',
-              description:
-                  'Tap the card to inspect exercises, or tap "+" to add it directly to your library.',
+              title: tab == ExploreTab.routines
+                  ? 'Import a routine'
+                  : 'Open a program',
+              description: tab == ExploreTab.routines
+                  ? 'Tap the card to inspect exercises, or tap "+" to add it '
+                      'directly to your library.'
+                  : 'Tap a program to see its training days, then add the days '
+                      'you want to your library.',
               step: 1,
             ),
           if (tourStep == 2)
             SpotlightTourOverlay(
               targetKey: _firstImportButtonKey,
-              title: 'Routine added',
-              description:
-                  'Your routine is ready. You can find it in My Routines whenever you are ready to train.',
+              title: tab == ExploreTab.routines
+                  ? 'Routine added'
+                  : 'Programs are made of routines',
+              description: tab == ExploreTab.routines
+                  ? 'Your routine is ready. You can find it in My Routines '
+                      'whenever you are ready to train.'
+                  : 'Add a whole program or just the days that fit your week. '
+                      'Everything lands in My Routines.',
               step: 2,
             ),
         ],
@@ -155,33 +240,40 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
   // -- Header pieces --------------------------------------------------------
 
   Widget _searchField(SurfaceTokens surface) {
+    final accent = context.accent;
+
     return TextField(
       controller: _search,
-      onChanged: (value) {
-        ref.read(exploreFiltersProvider.notifier).update(
-              (f) => f.copyWith(query: value),
-            );
+      onChanged: _onQueryChanged,
+      // The field had no keyboard action and no submit path, so there was no
+      // way to say "I am done typing, search now".
+      textInputAction: TextInputAction.search,
+      onSubmitted: (value) {
+        _searchDebounce?.cancel();
+        _applyQuery(value);
       },
+      autocorrect: false,
+      textCapitalization: TextCapitalization.none,
       style: TextStyle(color: surface.textPrimary, fontSize: 15),
       decoration: InputDecoration(
         isDense: true,
         filled: true,
         fillColor: surface.surface2,
-        hintText: 'Search routines, programs or exercises...',
+        hintText: 'Search routines, programs or exercises\u2026',
         hintStyle: TextStyle(color: surface.textTertiary, fontSize: 14),
         prefixIcon:
             Icon(Icons.search_rounded, size: 20, color: surface.textTertiary),
-        suffixIcon: _search.text.isEmpty
+        suffixIcon: !_hasQuery
             ? null
             : IconButton(
+                tooltip: 'Clear search',
+                constraints: const BoxConstraints(
+                  minWidth: _kMinTapTarget,
+                  minHeight: _kMinTapTarget,
+                ),
                 icon: Icon(Icons.close_rounded,
                     size: 18, color: surface.textTertiary),
-                onPressed: () {
-                  _search.clear();
-                  ref
-                      .read(exploreFiltersProvider.notifier)
-                      .update((f) => f.copyWith(query: ''));
-                },
+                onPressed: _clearQuery,
               ),
         contentPadding:
             const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
@@ -195,9 +287,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(
-            color: Theme.of(context).colorScheme.primary.withAlpha(0x88),
-          ),
+          borderSide: BorderSide(color: accent.base.withAlpha(0x88)),
         ),
       ),
     );
@@ -205,7 +295,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
 
   Widget _tabSelector(ExploreTab tab) {
     final surface = context.surface;
-    final accent = Theme.of(context).colorScheme.primary;
+    final accent = context.accent.base;
 
     Widget segment(ExploreTab value, String label, int count) {
       final selected = tab == value;
@@ -213,6 +303,8 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
         child: Semantics(
           button: true,
           selected: selected,
+          label: '$label, $count available',
+          excludeSemantics: true,
           child: GestureDetector(
             onTap: () {
               HapticFeedback.selectionClick();
@@ -221,7 +313,9 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
             behavior: HitTestBehavior.opaque,
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 160),
-              height: 38,
+              // 38dp was below the minimum tap target, and this is the most
+              // tapped control on the screen.
+              height: _kMinTapTarget,
               alignment: Alignment.center,
               decoration: BoxDecoration(
                 color: selected ? surface.surface3 : Colors.transparent,
@@ -230,12 +324,17 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text(
-                    label,
-                    style: TextStyle(
-                      fontSize: 13.5,
-                      fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
-                      color: selected ? accent : surface.textTertiary,
+                  Flexible(
+                    child: Text(
+                      label,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 13.5,
+                        fontWeight:
+                            selected ? FontWeight.w600 : FontWeight.w500,
+                        color: selected ? accent : surface.textTertiary,
+                      ),
                     ),
                   ),
                   const SizedBox(width: 6),
@@ -286,58 +385,58 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     );
   }
 
+  // -- Filters --------------------------------------------------------------
+
+  String _levelLabel(ExploreFilters filters) => filters.levels.isEmpty
+      ? 'Level'
+      : filters.levels.length == 1
+          ? templateLevelLabel(filters.levels.first)
+          : '${filters.levels.length} levels';
+
+  String _equipmentLabel(ExploreFilters filters) => filters.equipment == null
+      ? 'Equipment'
+      : equipmentLabelFor(filters.equipment!);
+
+  String _durationLabel(ExploreFilters filters) => filters.durations.isEmpty
+      ? 'Duration'
+      : filters.durations.length == 1
+          ? filters.durations.first.chipLabel
+          : '${filters.durations.length} durations';
+
+  /// Horizontally scrollable and content-sized.
+  ///
+  /// This used to be a Row of three `Expanded` chips, which handed each chip a
+  /// third of the screen minus gutters -- about 100dp on a 360dp phone. Every
+  /// label longer than "Level" was ellipsized, and the moment a filter became
+  /// active the clear button claimed a fourth slice and made it worse.
   Widget _filterBar(ExploreFilters filters) {
-    final notifier = ref.read(exploreFiltersProvider.notifier);
-
-    // Level label
-    final levelLabel = filters.levels.isEmpty
-        ? 'Level'
-        : filters.levels.length == 1
-            ? templateLevelLabel(filters.levels.first)
-            : '${filters.levels.length} levels';
-
-    // Equipment label
-    final equipmentLabel = filters.equipment == null
-        ? 'Equipment'
-        : equipmentLabelFor(filters.equipment!);
-
-    // Duration label
-    final durationLabel = filters.durations.isEmpty
-        ? 'Duration'
-        : filters.durations.length == 1
-            ? filters.durations.first.chipLabel
-            : '${filters.durations.length} durations';
-
     final surface = context.surface;
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: _kGutter),
-      child: Row(
+    return SizedBox(
+      height: 56,
+      child: ListView(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: _kGutter, vertical: 6),
+        physics: const ClampingScrollPhysics(),
         children: [
-          Expanded(
-            child: ExploreFilterChip(
-              label: levelLabel,
-              selected: filters.levels.isNotEmpty,
-              onTap: () => _openLevelSheet(filters),
-            ),
+          ExploreFilterChip(
+            label: _levelLabel(filters),
+            selected: filters.levels.isNotEmpty,
+            onTap: _openLevelSheet,
           ),
           const SizedBox(width: 8),
-          Expanded(
-            child: ExploreFilterChip(
-              label: equipmentLabel,
-              selected: filters.equipment != null,
-              onTap: () => _openEquipmentSheet(filters),
-            ),
+          ExploreFilterChip(
+            label: _equipmentLabel(filters),
+            selected: filters.equipment != null,
+            onTap: _openEquipmentSheet,
           ),
           const SizedBox(width: 8),
-          Expanded(
-            child: ExploreFilterChip(
-              label: durationLabel,
-              selected: filters.durations.isNotEmpty,
-              onTap: () => _openDurationSheet(filters),
-            ),
+          ExploreFilterChip(
+            label: _durationLabel(filters),
+            selected: filters.durations.isNotEmpty,
+            onTap: _openDurationSheet,
           ),
-          if (!filters.isEmpty) ...[
+          if (!filters.isEmpty || _hasQuery) ...[
             const SizedBox(width: 8),
             Material(
               color: surface.surface2,
@@ -346,21 +445,20 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
                 borderRadius: BorderRadius.circular(10),
                 onTap: () {
                   HapticFeedback.selectionClick();
-                  _search.clear();
-                  notifier.state = const ExploreFilters();
+                  _clearEverything();
                 },
                 child: Container(
-                  width: 38,
-                  height: 38,
+                  width: _kMinTapTarget,
+                  height: _kMinTapTarget,
                   alignment: Alignment.center,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(10),
                     border: Border.all(color: surface.borderSubtle),
                   ),
                   child: Tooltip(
-                    message: 'Clear all filters',
+                    message: 'Clear search and filters',
                     child: Icon(
-                      Icons.close_rounded,
+                      Icons.filter_alt_off_rounded,
                       size: 18,
                       color: surface.textSecondary,
                     ),
@@ -374,221 +472,195 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     );
   }
 
-  void _openLevelSheet(ExploreFilters current) {
+  /// One sheet implementation for all three filters.
+  ///
+  /// Previously three ~90-line copies of the same layout, each with its own
+  /// grabber, padding and title block, which is how they ended up with
+  /// inconsistent reset copy ("All" vs "Any equipment" vs "Any duration").
+  ///
+  /// It stays open while you toggle, and rebuilds from the provider through a
+  /// Consumer, so selections and the counts on the tabs behind it update live.
+  Future<void> _showFilterSheet({
+    required String title,
+    required List<Widget> Function(ExploreFilters filters) options,
+  }) async {
     HapticFeedback.selectionClick();
-    final notifier = ref.read(exploreFiltersProvider.notifier);
 
-    showModalBottomSheet<void>(
+    await showModalBottomSheet<void>(
       context: context,
       backgroundColor: Colors.transparent,
+      isScrollControlled: true,
       builder: (sheetContext) {
         final surface = sheetContext.surface;
-        return Container(
-          decoration: BoxDecoration(
-            color: surface.bgSurface,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-          ),
-          padding: EdgeInsets.fromLTRB(
-            _kGutter,
-            16,
-            _kGutter,
-            16 + MediaQuery.paddingOf(sheetContext).bottom,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Center(
-                child: Container(
-                  width: 36,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: surface.borderDefault,
-                    borderRadius: BorderRadius.circular(2),
+        return Consumer(
+          builder: (context, sheetRef, _) {
+            final filters = sheetRef.watch(exploreFiltersProvider);
+
+            return Container(
+              constraints: BoxConstraints(
+                maxHeight: MediaQuery.sizeOf(sheetContext).height * 0.8,
+              ),
+              decoration: BoxDecoration(
+                color: surface.bgSurface,
+                borderRadius:
+                    const BorderRadius.vertical(top: Radius.circular(20)),
+              ),
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.paddingOf(sheetContext).bottom,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 36,
+                      height: 4,
+                      margin: const EdgeInsets.symmetric(vertical: 12),
+                      decoration: BoxDecoration(
+                        color: surface.borderDefault,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
                   ),
-                ),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(_kGutter, 0, 8, 4),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Semantics(
+                            header: true,
+                            child: Text(
+                              title,
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                                color: surface.textPrimary,
+                              ),
+                            ),
+                          ),
+                        ),
+                        TextButton(
+                          onPressed: () => Navigator.of(sheetContext).pop(),
+                          child: const Text('Done'),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Flexible(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: options(filters),
+                      ),
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 16),
-              Text(
-                'Select Experience Level',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: surface.textPrimary,
-                ),
-              ),
-              const SizedBox(height: 12),
-              ListTile(
-                title: const Text('All'),
-                trailing: current.levels.isEmpty
-                    ? const Icon(Icons.check_rounded)
-                    : null,
-                onTap: () {
-                  notifier.update((f) => f.copyWith(levels: const {}));
-                  Navigator.of(sheetContext).pop();
-                },
-              ),
-              for (final level in TemplateLevel.values)
-                ListTile(
-                  title: Text(templateLevelLabel(level)),
-                  trailing: current.levels.contains(level)
-                      ? const Icon(Icons.check_rounded)
-                      : null,
-                  onTap: () {
-                    notifier.update((f) => f.copyWith(levels: {level}));
-                    Navigator.of(sheetContext).pop();
-                  },
-                ),
-            ],
-          ),
+            );
+          },
         );
       },
     );
   }
 
-  void _openEquipmentSheet(ExploreFilters current) {
-    HapticFeedback.selectionClick();
-    final notifier = ref.read(exploreFiltersProvider.notifier);
-
-    showModalBottomSheet<void>(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (sheetContext) {
-        final surface = sheetContext.surface;
-        return Container(
-          decoration: BoxDecoration(
-            color: surface.bgSurface,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-          ),
-          padding: EdgeInsets.fromLTRB(
-            _kGutter,
-            16,
-            _kGutter,
-            16 + MediaQuery.paddingOf(sheetContext).bottom,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Center(
-                child: Container(
-                  width: 36,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: surface.borderDefault,
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'Select Available Equipment',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: surface.textPrimary,
-                ),
-              ),
-              const SizedBox(height: 12),
-              ListTile(
-                title: const Text('Any equipment'),
-                trailing: current.equipment == null
-                    ? const Icon(Icons.check_rounded)
-                    : null,
-                onTap: () {
-                  notifier.update((f) => f.copyWith(clearEquipment: true));
-                  Navigator.of(sheetContext).pop();
-                },
-              ),
-              for (final eq in ProgramEquipment.values)
-                ListTile(
-                  title: Text(equipmentLabelFor(eq)),
-                  trailing: current.equipment == eq
-                      ? const Icon(Icons.check_rounded)
-                      : null,
-                  onTap: () {
-                    notifier.update((f) => f.copyWith(equipment: eq));
-                    Navigator.of(sheetContext).pop();
-                  },
-                ),
-            ],
-          ),
-        );
-      },
-    );
+  void _toggleLevel(TemplateLevel level) {
+    ref.read(exploreFiltersProvider.notifier).update((f) {
+      final next = {...f.levels};
+      if (next.contains(level)) {
+        next.remove(level);
+      } else {
+        next.add(level);
+      }
+      return f.copyWith(levels: next);
+    });
   }
 
-  void _openDurationSheet(ExploreFilters current) {
-    HapticFeedback.selectionClick();
-    final notifier = ref.read(exploreFiltersProvider.notifier);
-
-    showModalBottomSheet<void>(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (sheetContext) {
-        final surface = sheetContext.surface;
-        return Container(
-          decoration: BoxDecoration(
-            color: surface.bgSurface,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-          ),
-          padding: EdgeInsets.fromLTRB(
-            _kGutter,
-            16,
-            _kGutter,
-            16 + MediaQuery.paddingOf(sheetContext).bottom,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Center(
-                child: Container(
-                  width: 36,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: surface.borderDefault,
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'Select Session Duration',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: surface.textPrimary,
-                ),
-              ),
-              const SizedBox(height: 12),
-              ListTile(
-                title: const Text('Any duration'),
-                trailing: current.durations.isEmpty
-                    ? const Icon(Icons.check_rounded)
-                    : null,
-                onTap: () {
-                  notifier.update((f) => f.copyWith(durations: const {}));
-                  Navigator.of(sheetContext).pop();
-                },
-              ),
-              for (final d in RoutineDuration.values)
-                ListTile(
-                  title: Text(d.chipLabel),
-                  trailing: current.durations.contains(d)
-                      ? const Icon(Icons.check_rounded)
-                      : null,
-                  onTap: () {
-                    notifier.update((f) => f.copyWith(durations: {d}));
-                    Navigator.of(sheetContext).pop();
-                  },
-                ),
-            ],
-          ),
-        );
-      },
-    );
+  void _toggleDuration(RoutineDuration duration) {
+    ref.read(exploreFiltersProvider.notifier).update((f) {
+      final next = {...f.durations};
+      if (next.contains(duration)) {
+        next.remove(duration);
+      } else {
+        next.add(duration);
+      }
+      return f.copyWith(durations: next);
+    });
   }
+
+  void _setEquipment(ProgramEquipment? equipment) {
+    final notifier = ref.read(exploreFiltersProvider.notifier);
+    if (equipment == null) {
+      notifier.update((f) => f.copyWith(clearEquipment: true));
+    } else {
+      notifier.update((f) => f.copyWith(equipment: equipment));
+    }
+  }
+
+  Future<void> _openLevelSheet() => _showFilterSheet(
+        title: 'Experience level',
+        options: (filters) => [
+          _FilterOptionTile(
+            label: 'All levels',
+            selected: filters.levels.isEmpty,
+            isMulti: false,
+            onTap: () => ref
+                .read(exploreFiltersProvider.notifier)
+                .update((f) => f.copyWith(levels: const {})),
+          ),
+          for (final level in TemplateLevel.values)
+            _FilterOptionTile(
+              label: templateLevelLabel(level),
+              selected: filters.levels.contains(level),
+              isMulti: true,
+              onTap: () => _toggleLevel(level),
+            ),
+        ],
+      );
+
+  Future<void> _openEquipmentSheet() => _showFilterSheet(
+        // Single-select, honestly: `equipment` is a nullable scalar on the
+        // model, not a Set. Making it multi is a provider change, not a UI one.
+        title: 'Available equipment',
+        options: (filters) => [
+          _FilterOptionTile(
+            label: 'Any equipment',
+            selected: filters.equipment == null,
+            isMulti: false,
+            onTap: () => _setEquipment(null),
+          ),
+          for (final eq in ProgramEquipment.values)
+            _FilterOptionTile(
+              label: equipmentLabelFor(eq),
+              selected: filters.equipment == eq,
+              isMulti: false,
+              onTap: () => _setEquipment(filters.equipment == eq ? null : eq),
+            ),
+        ],
+      );
+
+  Future<void> _openDurationSheet() => _showFilterSheet(
+        title: 'Session duration',
+        options: (filters) => [
+          _FilterOptionTile(
+            label: 'Any duration',
+            selected: filters.durations.isEmpty,
+            isMulti: false,
+            onTap: () => ref
+                .read(exploreFiltersProvider.notifier)
+                .update((f) => f.copyWith(durations: const {})),
+          ),
+          for (final d in RoutineDuration.values)
+            _FilterOptionTile(
+              label: d.chipLabel,
+              selected: filters.durations.contains(d),
+              isMulti: true,
+              onTap: () => _toggleDuration(d),
+            ),
+        ],
+      );
 
   // -- Content --------------------------------------------------------------
 
@@ -649,14 +721,20 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
           final template = templates[index];
           final slug = programSlugFor(template);
           final routines = routinesForProgram(slug);
+          final isFirst = index == 0;
 
           return Consumer(
             builder: (context, ref, _) {
-              return ExploreProgramCard(
-                template: template,
-                routines: routines,
-                importedCount: _importedCountFor(slug),
-                onOpen: () => _openProgram(slug),
+              // The tour's only anchor lived in the routines list, so on this
+              // shelf step 1 had nothing to point at.
+              return KeyedSubtree(
+                key: isFirst ? _firstImportButtonKey : null,
+                child: ExploreProgramCard(
+                  template: template,
+                  routines: routines,
+                  importedCount: _importedCountFor(slug),
+                  onOpen: () => _openProgram(slug),
+                ),
               );
             },
           );
@@ -665,43 +743,87 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     );
   }
 
+  /// Names what emptied the list and lets you undo exactly that.
+  ///
+  /// The old version said "Nothing matches those filters" and "2 filters
+  /// active" even when the culprit was the search text, and its only escape was
+  /// a single button that also wiped the query you had just typed.
   Widget _emptySliver(ExploreFilters filters) {
     final surface = context.surface;
+    final query = filters.query.trim();
+    final chips = _activeFilterChips(filters);
+
+    final headline = query.isNotEmpty && chips.isEmpty
+        ? 'No matches for "$query"'
+        : query.isNotEmpty
+            ? 'No matches for "$query" with these filters'
+            : 'Nothing matches these filters';
+
     return SliverToBoxAdapter(
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(_kGutter, 48, _kGutter, 48),
+        padding: const EdgeInsets.fromLTRB(_kGutter, 40, _kGutter, 48),
         child: Column(
           children: [
             Icon(Icons.search_off_rounded,
                 size: 36, color: surface.textTertiary),
             const SizedBox(height: 12),
             Text(
-              'Nothing matches those filters',
+              headline,
+              textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 15,
                 fontWeight: FontWeight.w600,
                 color: surface.textSecondary,
               ),
             ),
-            const SizedBox(height: 6),
-            Text(
-              '${filters.activeCount} filter'
-              '${filters.activeCount == 1 ? '' : 's'} active',
-              style: TextStyle(fontSize: 13, color: surface.textTertiary),
-            ),
+            if (chips.isNotEmpty) ...[
+              const SizedBox(height: 6),
+              Text(
+                'Tap a filter to remove it',
+                style: TextStyle(fontSize: 13, color: surface.textTertiary),
+              ),
+              const SizedBox(height: 14),
+              Wrap(
+                alignment: WrapAlignment.center,
+                spacing: 8,
+                runSpacing: 8,
+                children: chips,
+              ),
+            ],
             const SizedBox(height: 16),
+            if (query.isNotEmpty && chips.isNotEmpty)
+              TextButton(
+                onPressed: _clearQuery,
+                child: const Text('Keep filters, clear search'),
+              ),
             TextButton(
-              onPressed: () {
-                _search.clear();
-                ref.read(exploreFiltersProvider.notifier).state =
-                    const ExploreFilters();
-              },
-              child: const Text('Clear filters'),
+              onPressed: _clearEverything,
+              child: const Text('Reset everything'),
             ),
           ],
         ),
       ),
     );
+  }
+
+  List<Widget> _activeFilterChips(ExploreFilters filters) {
+    return [
+      for (final level in filters.levels)
+        _RemovableFilterChip(
+          label: templateLevelLabel(level),
+          onRemove: () => _toggleLevel(level),
+        ),
+      if (filters.equipment != null)
+        _RemovableFilterChip(
+          label: equipmentLabelFor(filters.equipment!),
+          onRemove: () => _setEquipment(null),
+        ),
+      for (final duration in filters.durations)
+        _RemovableFilterChip(
+          label: duration.chipLabel,
+          onRemove: () => _toggleDuration(duration),
+        ),
+    ];
   }
 
   // -- Ownership & Navigation ------------------------------------------------
@@ -756,9 +878,17 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
     final id = _routineIdFor(routine);
     if (id != null) {
       context.push('/routines/$id');
-    } else {
-      context.push('/routines');
+      return;
     }
+
+    // The fallback used to push '/routines', which is not a route in
+    // router.dart -- go_router threw, or landed on an error page, instead of
+    // explaining that the routine is not in the library yet.
+    final messenger = ScaffoldMessenger.of(context);
+    messenger.hideCurrentSnackBar();
+    messenger.showSnackBar(SnackBar(
+      content: Text('${routine.name} is not in your library yet'),
+    ));
   }
 
   void _openProgram(String programSlug) {
@@ -774,6 +904,131 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
         await ref.read(exploreImportControllerProvider).importRoutine(routine);
     if (!mounted) return;
     showImportOutcome(context, result, fallbackLabel: routine.name);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Filter sheet pieces
+// ---------------------------------------------------------------------------
+
+/// A single row in a filter sheet.
+///
+/// `isMulti` drives the affordance: a checkbox reads as "combine these", a
+/// checkmark reads as "pick one". The old sheets used a checkmark for both
+/// while behaving like single-select, which is what hid the fact that
+/// multi-select was unreachable.
+class _FilterOptionTile extends StatelessWidget {
+  const _FilterOptionTile({
+    required this.label,
+    required this.selected,
+    required this.isMulti,
+    required this.onTap,
+  });
+
+  final String label;
+  final bool selected;
+  final bool isMulti;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final surface = context.surface;
+    final accent = context.accent.base;
+
+    return Semantics(
+      inMutuallyExclusiveGroup: !isMulti,
+      checked: selected,
+      label: label,
+      excludeSemantics: true,
+      child: InkWell(
+        onTap: () {
+          HapticFeedback.selectionClick();
+          onTap();
+        },
+        child: Container(
+          constraints: const BoxConstraints(minHeight: 52),
+          padding: const EdgeInsets.symmetric(horizontal: _kGutter),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
+                    color: selected ? surface.textPrimary : surface.textSecondary,
+                  ),
+                ),
+              ),
+              if (isMulti)
+                Icon(
+                  selected
+                      ? Icons.check_box_rounded
+                      : Icons.check_box_outline_blank_rounded,
+                  size: 22,
+                  color: selected ? accent : surface.textTertiary,
+                )
+              else if (selected)
+                Icon(Icons.check_rounded, size: 20, color: accent),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// An active filter, in the empty state, that removes itself when tapped.
+class _RemovableFilterChip extends StatelessWidget {
+  const _RemovableFilterChip({required this.label, required this.onRemove});
+
+  final String label;
+  final VoidCallback onRemove;
+
+  @override
+  Widget build(BuildContext context) {
+    final surface = context.surface;
+
+    return Semantics(
+      button: true,
+      label: 'Remove $label filter',
+      excludeSemantics: true,
+      child: Material(
+        color: surface.surface2,
+        borderRadius: BorderRadius.circular(10),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(10),
+          onTap: () {
+            HapticFeedback.selectionClick();
+            onRemove();
+          },
+          child: Container(
+            constraints: const BoxConstraints(minHeight: _kMinTapTarget),
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: surface.borderSubtle),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                    color: surface.textSecondary,
+                  ),
+                ),
+                const SizedBox(width: 6),
+                Icon(Icons.close_rounded,
+                    size: 15, color: surface.textTertiary),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }
 
@@ -799,13 +1054,21 @@ class _HeroGlow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const DecoratedBox(
+    final surface = context.surface;
+
+    // A white radial glow is invisible on a light background, so the light
+    // theme lost the header treatment entirely. Tint it with the accent there.
+    final glow = surface.isLight
+        ? context.accent.base.withAlpha(0x14)
+        : _kHeroGlowColor;
+
+    return DecoratedBox(
       decoration: BoxDecoration(
         gradient: RadialGradient(
-          center: Alignment(-0.35, -0.85),
+          center: const Alignment(-0.35, -0.85),
           radius: 1.15,
-          colors: [_kHeroGlowColor, Color(0x00FFFFFF)],
-          stops: [0.0, 0.72],
+          colors: [glow, glow.withAlpha(0)],
+          stops: const [0.0, 0.72],
         ),
       ),
     );
@@ -1061,7 +1324,7 @@ class _ImportBar extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final surface = context.surface;
-    final accent = Theme.of(context).colorScheme.primary;
+    final accent = context.accent.base;
     final isPremium = ref.watch(isPremiumProvider);
     final grouping = ref.watch(libraryGroupingProvider).valueOrNull;
     final ownedPrograms = grouping?.programs.length ?? 0;
@@ -1081,7 +1344,7 @@ class _ImportBar extends ConsumerWidget {
         (isPremium
             ? 'Adds ${missing.length} routines to your library'
             : isPartial
-                ? 'Free -- completing a program you already have'
+                ? 'Free \u2014 completing a program you already have'
                 : 'Uses your free program slot');
 
     return Container(
@@ -1269,9 +1532,11 @@ class _ChooseRoutinesSheetState extends State<_ChooseRoutinesSheet> {
                 return CheckboxListTile(
                   value: checked,
                   onChanged: (_) => setState(() {
-                    checked
-                        ? _selected.remove(routine.slug)
-                        : _selected.add(routine.slug);
+                    if (checked) {
+                      _selected.remove(routine.slug);
+                    } else {
+                      _selected.add(routine.slug);
+                    }
                   }),
                   title: Text(routine.name),
                   subtitle: Text(
