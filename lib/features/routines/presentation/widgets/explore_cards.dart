@@ -469,7 +469,6 @@ class ExploreFilterChip extends StatelessWidget {
       selected: selected,
       child: Material(
         color: selected ? accent.muted : surface.surface2,
-        borderRadius: BorderRadius.circular(10),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(10),
           side: BorderSide(
