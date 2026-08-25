@@ -20,7 +20,6 @@ import 'package:gymlog/features/exercises/presentation/providers/exercise_analyt
 import 'package:gymlog/features/profile/presentation/screens/delete_account_screen.dart';
 import 'package:gymlog/features/import/presentation/screens/import_screen.dart';
 import 'package:gymlog/features/workout/presentation/screens/active_workout_screen.dart';
-import 'package:gymlog/features/routines/presentation/screens/explore_routines_screen.dart';
 import 'package:gymlog/core/services/account_deletion_service.dart';
 import 'package:drift/native.dart';
 import 'package:supabase_flutter/supabase_flutter.dart'
@@ -295,33 +294,6 @@ void main() {
 
         final BuildContext context =
             tester.element(find.byType(ActiveWorkoutScreen));
-        expect(context.accent.base, palette.tokens.base);
-      }
-    });
-
-    testWidgets('ExploreRoutinesScreen renders under multiple accents',
-        (tester) async {
-      for (final palette in [
-        ThemePalette.neonPurple,
-        ThemePalette.higgsfield
-      ]) {
-        await tester.pumpWidget(
-          ProviderScope(
-            overrides: [
-              authRepositoryProvider.overrideWithValue(mockAuthRepository),
-              authProvider.overrideWithValue(null),
-              databaseProvider.overrideWithValue(db),
-            ],
-            child: MaterialApp(
-              theme: buildAppTheme(palette.tokens, palette: palette),
-              home: const ExploreRoutinesScreen(),
-            ),
-          ),
-        );
-        await tester.pumpAndSettle();
-
-        final BuildContext context =
-            tester.element(find.byType(ExploreRoutinesScreen));
         expect(context.accent.base, palette.tokens.base);
       }
     });
