@@ -989,19 +989,28 @@ class _ProgramFacts extends StatelessWidget {
 
     Widget fact(String label, String value) => Expanded(
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Text(
-                value,
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: surface.textPrimary,
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  value,
+                  maxLines: 1,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 15.5,
+                    fontWeight: FontWeight.w600,
+                    color: surface.textPrimary,
+                  ),
                 ),
               ),
-              const SizedBox(height: 2),
+              const SizedBox(height: 3),
               Text(
                 label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
                 style: TextStyle(fontSize: 11, color: surface.textTertiary),
               ),
             ],
@@ -1009,18 +1018,30 @@ class _ProgramFacts extends StatelessWidget {
         );
 
     return Container(
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 14),
       decoration: BoxDecoration(
         color: surface.surface2,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: surface.borderSubtle),
       ),
-      child: Row(
-        children: [
-          fact('per week', '${template.daysPerWeek} days'),
-          fact('per session', min == max ? '$min min' : '$min-$max min'),
-          fact('level', template.levelLabel),
-        ],
+      child: IntrinsicHeight(
+        child: Row(
+          children: [
+            fact('per week', '${template.daysPerWeek} days'),
+            VerticalDivider(
+              width: 16,
+              thickness: 1,
+              color: surface.borderSubtle,
+            ),
+            fact('per session', min == max ? '$min min' : '$min-$max min'),
+            VerticalDivider(
+              width: 16,
+              thickness: 1,
+              color: surface.borderSubtle,
+            ),
+            fact('level', template.levelLabel),
+          ],
+        ),
       ),
     );
   }
@@ -1094,12 +1115,19 @@ class _ImportBar extends ConsumerWidget {
                     height: 48,
                     child: OutlinedButton(
                       style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
                         shape: const RoundedRectangleBorder(
                           borderRadius: AppRadius.buttonPrimaryAll,
                         ),
                       ),
                       onPressed: () => _chooseRoutines(context, ref),
-                      child: const Text('Choose routines'),
+                      child: const FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          'Choose routines',
+                          maxLines: 1,
+                        ),
+                      ),
                     ),
                   ),
                 ),
@@ -1110,15 +1138,20 @@ class _ImportBar extends ConsumerWidget {
                   height: 48,
                   child: FilledButton(
                     style: FilledButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
                       shape: const RoundedRectangleBorder(
                         borderRadius: AppRadius.buttonPrimaryAll,
                       ),
                     ),
                     onPressed: () => _importAll(context, ref),
-                    child: Text(
-                      missing.length == 1
-                          ? 'Add routine'
-                          : 'Add all ${missing.length}',
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(
+                        missing.length == 1
+                            ? 'Add routine'
+                            : 'Add all ${missing.length}',
+                        maxLines: 1,
+                      ),
                     ),
                   ),
                 ),
