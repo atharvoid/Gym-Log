@@ -956,7 +956,8 @@ class _FilterOptionTile extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 15,
                     fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
-                    color: selected ? surface.textPrimary : surface.textSecondary,
+                    color:
+                        selected ? surface.textPrimary : surface.textSecondary,
                   ),
                 ),
               ),
@@ -1058,9 +1059,8 @@ class _HeroGlow extends StatelessWidget {
 
     // A white radial glow is invisible on a light background, so the light
     // theme lost the header treatment entirely. Tint it with the accent there.
-    final glow = surface.isLight
-        ? context.accent.base.withAlpha(0x14)
-        : _kHeroGlowColor;
+    final glow =
+        surface.isLight ? context.accent.base.withAlpha(0x14) : _kHeroGlowColor;
 
     return DecoratedBox(
       decoration: BoxDecoration(

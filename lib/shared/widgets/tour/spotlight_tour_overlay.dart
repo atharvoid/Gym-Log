@@ -446,16 +446,15 @@ class _SpotlightTourOverlayState extends ConsumerState<SpotlightTourOverlay>
                 children: [
                   // Step indicator pill
                   Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 10, vertical: 4),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(
                       color: accent.base.withValues(alpha: 0.14),
                       borderRadius: BorderRadius.circular(99),
                     ),
                     child: Text(
                       'STEP ${widget.step + 1} OF ${FirstRunTourNotifier.totalSteps}',
-                      style:
-                          AppText.caption(color: accent.light).copyWith(
+                      style: AppText.caption(color: accent.light).copyWith(
                         fontWeight: FontWeight.w800,
                         letterSpacing: 0.8,
                         fontSize: 10,
