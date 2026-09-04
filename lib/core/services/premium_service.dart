@@ -32,8 +32,14 @@ class PremiumService with WidgetsBindingObserver {
   static const entitlementId = 'premium';
 
   static bool hasPremium(CustomerInfo info) {
-    return info.entitlements.active.containsKey(entitlementId) ||
-        info.entitlements.active.containsKey('pro');
+    final active = info.entitlements.active;
+    return active.containsKey(entitlementId) ||
+        active.containsKey('pro') ||
+        active.keys.any((k) =>
+            k.toLowerCase() == 'premium' ||
+            k.toLowerCase() == 'pro' ||
+            k.toLowerCase().contains('pro') ||
+            k.toLowerCase().contains('premium'));
   }
 
   final AppDatabase _db;
@@ -233,6 +239,11 @@ class PremiumService with WidgetsBindingObserver {
   }
 
   void _onCustomerInfo(CustomerInfo info) {
+    if (kDebugMode) {
+      debugPrint('[PremiumService] CustomerInfo update for: ${info.originalAppUserId}');
+      debugPrint('[PremiumService] Active entitlements: ${info.entitlements.active.keys.toList()}');
+      debugPrint('[PremiumService] hasPremium verdict: ${hasPremium(info)}');
+    }
     if (!_customerInfoController.isClosed) _customerInfoController.add(info);
     unawaited(_syncToLocalCache(info));
   }
@@ -245,7 +256,8 @@ class PremiumService with WidgetsBindingObserver {
     try {
       final isPremium = hasPremium(info);
       final entitlement = info.entitlements.active[entitlementId] ??
-          info.entitlements.active['pro'];
+          info.entitlements.active['pro'] ??
+          info.entitlements.active.values.firstOrNull;
       final expiry = entitlement?.expirationDate != null
           ? DateTime.tryParse(entitlement!.expirationDate!)
           : null;

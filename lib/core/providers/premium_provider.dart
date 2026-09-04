@@ -21,8 +21,14 @@ final customerInfoProvider = StreamProvider<CustomerInfo>((ref) {
 /// Canonical verification function for CustomerInfo entitlements.
 /// Forbidden elsewhere: info.entitlements.active.isNotEmpty
 bool hasPremium(CustomerInfo info) {
-  return info.entitlements.active.containsKey(PremiumService.entitlementId) ||
-      info.entitlements.active.containsKey('pro');
+  final active = info.entitlements.active;
+  return active.containsKey(PremiumService.entitlementId) ||
+      active.containsKey('pro') ||
+      active.keys.any((k) =>
+          k.toLowerCase() == 'premium' ||
+          k.toLowerCase() == 'pro' ||
+          k.toLowerCase().contains('pro') ||
+          k.toLowerCase().contains('premium'));
 }
 
 /// Optional QA / Developer override for internal testing of Pro features.
