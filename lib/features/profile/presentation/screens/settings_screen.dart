@@ -778,8 +778,21 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
                                     _devTapCount++;
                                     if (_devTapCount >= 5) {
                                       _devTapCount = 0;
-                                      throw StateError(
-                                          'Sentry Diagnostic Controlled Test Error');
+                                      final current =
+                                          ref.read(isPremiumProvider);
+                                      final next = !current;
+                                      ref
+                                          .read(
+                                              developerPremiumOverrideProvider
+                                                  .notifier)
+                                          .state = next;
+                                      showAppSnackBar(
+                                        context,
+                                        message: next
+                                            ? 'QA Mode: Pro UNLOCKED for testing'
+                                            : 'QA Mode: Reverted to standard plan',
+                                        variant: AppSnackBarVariant.success,
+                                      );
                                     }
                                   });
                                 }

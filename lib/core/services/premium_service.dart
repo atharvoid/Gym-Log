@@ -58,9 +58,14 @@ class PremiumService with WidgetsBindingObserver {
       (defaultTargetPlatform == TargetPlatform.android ||
           defaultTargetPlatform == TargetPlatform.iOS);
 
-  String? get _apiKey => defaultTargetPlatform == TargetPlatform.android
-      ? Env.revenueCatAndroidKey
-      : Env.revenueCatIosKey;
+  String? get _apiKey {
+    if (defaultTargetPlatform == TargetPlatform.android) {
+      if (Env.revenueCatAndroidKey.isNotEmpty) return Env.revenueCatAndroidKey;
+      if (Env.revenueCatTestKey.isNotEmpty) return Env.revenueCatTestKey;
+      return null;
+    }
+    return Env.revenueCatIosKey;
+  }
 
   /// Configures the SDK. Safe to call on any platform. degrades to a no-op
   /// when unsupported or when API keys are absent.
