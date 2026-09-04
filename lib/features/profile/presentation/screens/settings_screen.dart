@@ -785,34 +785,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
                                 }
                               : null,
                         ),
-                        if (kDebugMode) ...[
-                          const AppActionDivider(),
-                          AppActionRow(
-                            icon: Icons.developer_mode_rounded,
-                            title: 'QA: Pro Status',
-                            subtitle: ref.watch(isPremiumProvider)
-                                ? 'Pro is ACTIVE (Tap to toggle)'
-                                : 'Free tier (Tap to unlock Pro)',
-                            showChevron: false,
-                            onTap: () {
-                              if (!tapGuard()) return;
-                              HapticFeedback.lightImpact();
-                              final current = ref.read(isPremiumProvider);
-                              final next = !current;
-                              ref
-                                  .read(
-                                      developerPremiumOverrideProvider.notifier)
-                                  .state = next;
-                              showAppSnackBar(
-                                context,
-                                message: next
-                                    ? 'QA Mode: Pro UNLOCKED for testing'
-                                    : 'QA Mode: Reverted to standard plan',
-                                variant: AppSnackBarVariant.success,
-                              );
-                            },
-                          ),
-                        ],
                       ],
                     ),
                   ),

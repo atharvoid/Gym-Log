@@ -24,23 +24,15 @@ bool hasPremium(CustomerInfo info) {
   return PremiumService.hasPremium(info);
 }
 
-/// Optional QA / Developer override for internal testing of Pro features.
-/// When non-null, overrides the computed premium status.
-final developerPremiumOverrideProvider = StateProvider<bool?>((ref) => null);
-
 /// Single source of truth for premium entitlement.
 ///
 /// Priority:
-///   1. QA override (if set via developer QA controls)
-///   2. RevenueCat `entitlements.active['premium']` (authoritative when live)
-///   3. Local `user_profiles.isPremium` + `premiumExpiry` (offline cache,
+///   1. RevenueCat `entitlements.active['premium']` (authoritative when live)
+///   2. Local `user_profiles.isPremium` + `premiumExpiry` (offline cache,
 ///      kept in sync by [PremiumService])
 ///
 /// Workout logging is NEVER gated -- only deep analytics history.
 final isPremiumProvider = Provider<bool>((ref) {
-  final override = ref.watch(developerPremiumOverrideProvider);
-  if (override != null) return override;
-
   final info = ref.watch(customerInfoProvider).valueOrNull;
   if (info != null) {
     return hasPremium(info);
