@@ -96,8 +96,12 @@ class PremiumService with WidgetsBindingObserver {
     }
   }
 
-  /// Keeps the RC identity in sync with Supabase auth.
-  Future<void> setUser(String? userId) async {
+  /// Keeps the RC identity and customer attributes in sync with Supabase auth.
+  Future<void> setUser(
+    String? userId, {
+    String? email,
+    String? displayName,
+  }) async {
     final previous = _userId;
     _userId = userId;
 
@@ -110,9 +114,17 @@ class PremiumService with WidgetsBindingObserver {
     try {
       if (userId == null) {
         await Purchases.logOut();
-      } else if (userId != previous) {
-        final result = await Purchases.logIn(userId);
-        _onCustomerInfo(result.customerInfo);
+      } else {
+        if (userId != previous) {
+          final result = await Purchases.logIn(userId);
+          _onCustomerInfo(result.customerInfo);
+        }
+        if (email != null && email.isNotEmpty) {
+          await Purchases.setEmail(email);
+        }
+        if (displayName != null && displayName.isNotEmpty) {
+          await Purchases.setDisplayName(displayName);
+        }
       }
     } catch (e) {
       if (kDebugMode) debugPrint('[PremiumService] setUser failed: $e');
