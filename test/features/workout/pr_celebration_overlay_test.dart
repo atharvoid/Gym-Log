@@ -110,5 +110,14 @@ void main() {
       expect(find.text('Keep Going'), findsNothing);
       expect(find.text('New Personal Record!'), findsNothing);
     });
+
+    testWidgets('Keep Going button expands height with large text scale',
+        (tester) async {
+      await pumpOverlay(tester, prs: buildPrs(1), textScale: 1.5);
+      final btnSize =
+          tester.getSize(find.widgetWithText(ElevatedButton, 'Keep Going'));
+      expect(btnSize.height, greaterThanOrEqualTo(52.0));
+      expect(tester.takeException(), isNull);
+    });
   });
 }

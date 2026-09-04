@@ -369,8 +369,8 @@ class ExerciseBlock extends ConsumerWidget {
 
               Padding(
                 padding: const EdgeInsets.only(top: 8),
-                child: SizedBox(
-                  height: 50,
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(minHeight: 50),
                   child: SecondaryButton(
                     label: '+ Add Set',
                     accent: true,

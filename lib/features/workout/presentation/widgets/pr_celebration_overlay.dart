@@ -305,22 +305,28 @@ class PrCelebrationCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
 
-                SizedBox(
-                  width: double.infinity,
-                  height: 50,
-                  child: ElevatedButton(
-                    onPressed: onKeepGoing,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: accent.base,
-                      foregroundColor: accent.onAccent,
-                      elevation: 0,
-                      shape: const RoundedRectangleBorder(
-                        borderRadius: AppRadius.buttonPrimaryAll,
+                ConstrainedBox(
+                  constraints: const BoxConstraints(minHeight: 52),
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: onKeepGoing,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: accent.base,
+                        foregroundColor: accent.onAccent,
+                        elevation: 0,
+                        minimumSize: const Size(double.infinity, 52),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 24, vertical: 12),
+                        shape: const RoundedRectangleBorder(
+                          borderRadius: AppRadius.buttonPrimaryAll,
+                        ),
                       ),
-                    ),
-                    child: Text(
-                      'Keep Going',
-                      style: AppText.button(color: accent.onAccent),
+                      child: Text(
+                        'Keep Going',
+                        style: AppText.button(color: accent.onAccent)
+                            .copyWith(fontWeight: FontWeight.w700),
+                      ),
                     ),
                   ),
                 ),
