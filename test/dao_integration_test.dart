@@ -469,4 +469,39 @@ void main() {
     expect(hydrated.exercises.first.sets.length, 1);
     expect(hydrated.exercises.first.sets.first.id, 's-test-1-we-0-s-0');
   });
+
+  test(
+      'watchDailyVolumeForRoutine tracks each completed session individually on the same day',
+      () async {
+    final bench =
+        await insertExercise('Bench Press', 'chest', 'barbell', 'Chest');
+    const rId = 'routine-same-day';
+    final now = DateTime(2026, 9, 4, 10, 0);
+
+    await db.routinesDao.insertRoutine(RoutinesCompanion(
+      id: const Value(rId),
+      userId: const Value(userId),
+      name: const Value('Same Day Routine'),
+      createdAt: Value(now),
+      updatedAt: Value(now),
+    ));
+
+    // Insert 3 sessions in a row on the exact same date (minutes apart)
+    await insertSession('s-1', DateTime(2026, 9, 4, 10, 0),
+        routineId: rId, sets: [(bench, 50, 10)]); // 500
+    await insertSession('s-2', DateTime(2026, 9, 4, 10, 5),
+        routineId: rId, sets: [(bench, 60, 10)]); // 600
+    await insertSession('s-3', DateTime(2026, 9, 4, 10, 10),
+        routineId: rId, sets: [(bench, 70, 10)]); // 700
+
+    final volume = await db.workoutsDao.watchDailyVolumeForRoutine(rId).first;
+    expect(volume.length, 3);
+    expect(volume[0].volume, 500);
+    expect(volume[1].volume, 600);
+    expect(volume[2].volume, 700);
+
+    final stats = await db.workoutsDao.watchRoutineSessionStats(rId).first;
+    expect(stats.count, 3);
+    expect(stats.totalVolumeKg, 1800);
+  });
 }

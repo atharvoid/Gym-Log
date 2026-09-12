@@ -266,11 +266,14 @@ class _RestTimeSheetState extends State<RestTimeSheet> {
                   Row(
                     children: [
                       Expanded(
-                        child: SizedBox(
-                          height: 50,
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(minHeight: 50),
                           child: TextButton(
                             style: TextButton.styleFrom(
                               foregroundColor: surface.textSecondary,
+                              minimumSize: const Size(double.infinity, 50),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 16, vertical: 12),
                               shape: const RoundedRectangleBorder(
                                 borderRadius: AppRadius.buttonPrimaryAll,
                               ),
@@ -286,13 +289,16 @@ class _RestTimeSheetState extends State<RestTimeSheet> {
                       ),
                       const SizedBox(width: 12),
                       Expanded(
-                        child: SizedBox(
-                          height: 50,
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(minHeight: 50),
                           child: ElevatedButton(
                             style: ElevatedButton.styleFrom(
                               backgroundColor: accent.base,
                               foregroundColor: accent.onAccent,
                               elevation: 0,
+                              minimumSize: const Size(double.infinity, 50),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 16, vertical: 12),
                               shape: const RoundedRectangleBorder(
                                 borderRadius: AppRadius.buttonPrimaryAll,
                               ),

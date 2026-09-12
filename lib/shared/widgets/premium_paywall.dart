@@ -202,20 +202,35 @@ class _PaywallSheetState extends ConsumerState<_PaywallSheet> {
     setState(() {
       _offerings = offerings;
       _loading = false;
-      _selected = _annual ?? _monthly;
+      _selected = _annual ??
+          _monthly ??
+          _offerings?.current?.availablePackages.firstOrNull;
     });
     await _refreshTrialEligibility();
   }
 
   Package? get _monthly => _offerings?.current?.availablePackages
-      .where((p) => p.packageType == PackageType.monthly)
+      .where((p) =>
+          p.packageType == PackageType.monthly ||
+          p.identifier.toLowerCase().contains('month'))
       .firstOrNull;
 
   Package? get _annual => _offerings?.current?.availablePackages
-      .where((p) => p.packageType == PackageType.annual)
+      .where((p) =>
+          p.packageType == PackageType.annual ||
+          p.identifier.toLowerCase().contains('annual') ||
+          p.identifier.toLowerCase().contains('year'))
       .firstOrNull;
 
-  bool get _storeReady => _monthly != null || _annual != null;
+  List<Package> get _otherPackages {
+    final packages = _offerings?.current?.availablePackages ?? <Package>[];
+    return packages.where((p) => p != _monthly && p != _annual).toList();
+  }
+
+  bool get _storeReady =>
+      _monthly != null ||
+      _annual != null ||
+      (_offerings?.current?.availablePackages.isNotEmpty ?? false);
 
   void _selectPackage(Package pkg) {
     HapticFeedback.selectionClick();
@@ -522,6 +537,22 @@ class _PaywallSheetState extends ConsumerState<_PaywallSheet> {
                           selected: _selected == _monthly,
                           onTap: () => _selectPackage(_monthly!),
                         ),
+                      if (_otherPackages.isNotEmpty) ...[
+                        if (_annual != null || _monthly != null)
+                          const SizedBox(height: 10),
+                        for (final p in _otherPackages) ...[
+                          _PackageRow(
+                            title: p.storeProduct.title.isNotEmpty
+                                ? p.storeProduct.title
+                                : p.identifier,
+                            price: p.storeProduct.priceString,
+                            caption: p.storeProduct.description,
+                            selected: _selected == p,
+                            onTap: () => _selectPackage(p),
+                          ),
+                          const SizedBox(height: 10),
+                        ],
+                      ],
                       const SizedBox(height: 18),
                       Material(
                         color: _purchasing

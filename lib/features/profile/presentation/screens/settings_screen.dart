@@ -20,9 +20,9 @@ import 'package:gymlog/core/theme/app_text.dart';
 import 'package:gymlog/core/theme/dynamic_accent_theme.dart';
 import 'package:gymlog/core/utils/tap_guard.dart';
 import 'package:gymlog/features/auth/presentation/providers/auth_provider.dart';
-import 'package:gymlog/features/auth/presentation/providers/tour_provider.dart';
 import 'package:gymlog/features/profile/presentation/providers/profile_provider.dart';
 import 'package:gymlog/features/profile/presentation/providers/profile_stats_provider.dart';
+import 'package:gymlog/features/auth/presentation/providers/tour_provider.dart';
 import 'package:gymlog/features/workout/presentation/providers/rest_timer_provider.dart';
 import 'package:gymlog/shared/widgets/premium_paywall.dart';
 import 'package:gymlog/shared/widgets/ui/app_action_row.dart';
@@ -44,62 +44,157 @@ import 'package:gymlog/shared/layout/adaptive.dart';
 Future<void> showWeeklyGoalSheet(BuildContext context, WidgetRef ref) async {
   final current = ref.read(weeklyGoalProvider);
   HapticFeedback.lightImpact();
-  final accent = context.accent;
-  final surface = context.surface;
 
   await showBrandedBottomSheet<void>(
     context: context,
     title: 'Weekly goal',
     subtitle: 'How many days a week do you want to train?',
-    // C32: was a 7-way Expanded Row. Splitting a sheet only ~24dp-inset on
-    // each side into 7 equal flex slots, each further shrunk by 4dp/side of
-    // its own padding, left the actual tap target under 44dp on effectively
-    // every phone width up to ~410dp (as low as ~31dp at 320dp) — a real
-    // touch-target miss on the single most common device band (booked from
-    // B20). Fixed-size buttons in a centered Wrap guarantee 46x48 everywhere
-    // and simply drop to a second row on screens too narrow for all seven.
-    child: Wrap(
-      alignment: WrapAlignment.center,
-      spacing: 10,
-      runSpacing: 10,
-      children: [
-        for (var days = 1; days <= 7; days++)
-          Semantics(
-            button: true,
-            selected: days == current,
-            excludeSemantics: true,
-            label: '$days day${days == 1 ? '' : 's'} per week',
-            child: GestureDetector(
-              onTap: () {
-                HapticFeedback.selectionClick();
-                ref.read(weeklyGoalProvider.notifier).setGoal(days);
-                Navigator.of(context, rootNavigator: true).pop();
-              },
-              child: AnimatedContainer(
-                duration: MediaQuery.disableAnimationsOf(context)
-                    ? Duration.zero
-                    : const Duration(milliseconds: 150),
-                width: 46,
-                height: 48,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  color: days == current ? accent.base : surface.surface2,
-                  borderRadius:
-                      BorderRadius.circular(AppRadius.buttonSecondary),
+    child: _WeeklyGoalRow(
+      current: current,
+      onSelect: (days) {
+        HapticFeedback.selectionClick();
+        ref.read(weeklyGoalProvider.notifier).setGoal(days);
+        Navigator.of(context, rootNavigator: true).pop();
+      },
+    ),
+  );
+}
+
+/// Seven days, one line.
+///
+/// C32 replaced a 7-way `Expanded` row with fixed 46x48 tiles in a `Wrap` to
+/// guarantee the touch target. That bought the target and lost the layout:
+/// 7*46 + 6*10 = 382dp of tiles inside a sheet that is only ~312dp wide on a
+/// 360dp phone, so the seventh tile wrapped onto its own line and "7" sat
+/// below 1-6 on every common handset. A picker whose last option looks like a
+/// different control is not a picker.
+///
+/// So measure the row instead of assuming it. Tiles flex to the width that is
+/// actually there with a 6dp gutter, and the whole 56dp-tall cell is an opaque
+/// hit target -- ~39x56 = 2184dp^2 on a 360dp phone, past the 44x44 =
+/// 1936dp^2 floor, with the row keeping its full 44dp vertical reach. The
+/// wrapped grid survives only as the honest fallback for widths that cannot
+/// hold seven legible tiles (<=320dp, large text scale, split screen), because
+/// two tidy rows beat seven digits crushed into 20dp columns.
+class _WeeklyGoalRow extends StatelessWidget {
+  const _WeeklyGoalRow({required this.current, required this.onSelect});
+
+  final int current;
+  final ValueChanged<int> onSelect;
+
+  /// Gutter between tiles in single-row mode.
+  static const double _gap = 6;
+
+  /// Below this tile width the row stops being legible, not just tight.
+  /// 36dp x 56dp still clears the 1936dp^2 target area on its own.
+  static const double _minTile = 36;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final available = constraints.maxWidth;
+        final tile = (available - _gap * 6) / 7;
+        final fitsOneRow = available.isFinite && tile >= _minTile;
+
+        if (!fitsOneRow) {
+          return Wrap(
+            alignment: WrapAlignment.center,
+            spacing: 10,
+            runSpacing: 10,
+            children: [
+              for (var days = 1; days <= 7; days++)
+                _WeeklyGoalTile(
+                  days: days,
+                  selected: days == current,
+                  width: 46,
+                  onTap: () => onSelect(days),
                 ),
-                child: Text(
-                  '$days',
-                  style: AppText.button(
-                    color:
-                        days == current ? accent.onAccent : surface.textPrimary,
-                  ),
+            ],
+          );
+        }
+
+        return Row(
+          children: [
+            for (var days = 1; days <= 7; days++) ...[
+              if (days > 1) const SizedBox(width: _gap),
+              Expanded(
+                child: _WeeklyGoalTile(
+                  days: days,
+                  selected: days == current,
+                  onTap: () => onSelect(days),
                 ),
+              ),
+            ],
+          ],
+        );
+      },
+    );
+  }
+}
+
+class _WeeklyGoalTile extends StatelessWidget {
+  const _WeeklyGoalTile({
+    required this.days,
+    required this.selected,
+    required this.onTap,
+    this.width,
+  });
+
+  final int days;
+  final bool selected;
+  final VoidCallback onTap;
+
+  /// Null in single-row mode, where an [Expanded] parent owns the width.
+  final double? width;
+
+  @override
+  Widget build(BuildContext context) {
+    final accent = context.accent;
+    final surface = context.surface;
+
+    return Semantics(
+      button: true,
+      selected: selected,
+      inMutuallyExclusiveGroup: true,
+      excludeSemantics: true,
+      label: '$days day${days == 1 ? '' : 's'} per week',
+      child: GestureDetector(
+        // The gap between digits is dead space otherwise: the whole cell
+        // takes the tap, not just the painted glyph.
+        behavior: HitTestBehavior.opaque,
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: MediaQuery.disableAnimationsOf(context)
+              ? Duration.zero
+              : const Duration(milliseconds: 150),
+          curve: Curves.easeOutCubic,
+          width: width,
+          height: 56,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: selected ? accent.base : surface.surface2,
+            borderRadius: BorderRadius.circular(AppRadius.buttonSecondary),
+            // Unselected tiles were a flat fill on a near-flat sheet, which
+            // read as a label rather than a control.
+            border: Border.all(
+              color: selected ? accent.selectionBorder : surface.borderSubtle,
+            ),
+          ),
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              '$days',
+              maxLines: 1,
+              style: AppText.button(
+                color: selected ? accent.onAccent : surface.textPrimary,
               ),
             ),
           ),
-      ],
-    ),
-  );
+        ),
+      ),
+    );
+  }
 }
 
 /// Settings — grouped rows, clear information architecture, zero social clutter.

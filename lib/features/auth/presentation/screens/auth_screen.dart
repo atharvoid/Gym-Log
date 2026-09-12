@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -293,41 +294,9 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
       ),
     );
 
-    final legalBlock = Semantics(
-      child: Wrap(
-        alignment: WrapAlignment.center,
-        crossAxisAlignment: WrapCrossAlignment.center,
-        spacing: 4,
-        runSpacing: 2,
-        children: [
-          Text(
-            'By continuing, you agree to our',
-            style: AppText.caption(color: secondaryColor).copyWith(
-              fontSize: 13,
-            ),
-          ),
-          _LegalLink(
-            label: 'Terms of Service',
-            onPressed: () => _openUrl(kTermsOfServiceUrl),
-          ),
-          Text(
-            'and',
-            style: AppText.caption(color: secondaryColor).copyWith(
-              fontSize: 13,
-            ),
-          ),
-          _LegalLink(
-            label: 'Privacy Policy',
-            onPressed: () => _openUrl(kPrivacyPolicyUrl),
-          ),
-          Text(
-            '.',
-            style: AppText.caption(color: secondaryColor).copyWith(
-              fontSize: 13,
-            ),
-          ),
-        ],
-      ),
+    final legalBlock = _LegalParagraph(
+      color: secondaryColor,
+      onOpenUrl: _openUrl,
     );
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
@@ -571,45 +540,79 @@ class _AtmospherePainter extends CustomPainter {
       oldDelegate.mutedColor != mutedColor;
 }
 
-class _LegalLink extends StatelessWidget {
-  const _LegalLink({
-    required this.label,
-    required this.onPressed,
-  });
+/// The legal sentence, rendered as ONE inline-flowing paragraph.
+///
+/// Layout regression this exists to prevent: the links used to be individual
+/// 48dp-tall boxes inside a centered Wrap, which inflated every line to 48px
+/// — the link baselines sat ~9px above the sentence ("popped above") and the
+/// wrapped second line fell ~35px below the first. Inline links are links, not
+/// buttons: the correct shape is a single RichText whose link spans carry
+/// tap recognizers. RenderParagraph publishes an isLink semantics node with a
+/// tap action per span, so screen-reader users keep both.
+class _LegalParagraph extends StatefulWidget {
+  final Color color;
+  final ValueChanged<String> onOpenUrl;
 
-  final String label;
-  final VoidCallback onPressed;
+  const _LegalParagraph({required this.color, required this.onOpenUrl});
+
+  @override
+  State<_LegalParagraph> createState() => _LegalParagraphState();
+}
+
+class _LegalParagraphState extends State<_LegalParagraph> {
+  late final TapGestureRecognizer _termsRecognizer;
+  late final TapGestureRecognizer _privacyRecognizer;
+
+  @override
+  void initState() {
+    super.initState();
+    _termsRecognizer = TapGestureRecognizer()
+      ..onTap = () => widget.onOpenUrl(kTermsOfServiceUrl);
+    _privacyRecognizer = TapGestureRecognizer()
+      ..onTap = () => widget.onOpenUrl(kPrivacyPolicyUrl);
+  }
+
+  @override
+  void dispose() {
+    _termsRecognizer.dispose();
+    _privacyRecognizer.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    final surface = context.surface;
+    final baseStyle = AppText.caption(color: widget.color).copyWith(
+      fontSize: 13,
+      height: 1.4,
+    );
+    final linkStyle = baseStyle.copyWith(
+      fontWeight: FontWeight.w600,
+      decoration: TextDecoration.underline,
+      decorationColor: widget.color,
+    );
 
-    return Semantics(
-      link: true,
-      label: label,
-      child: FocusableActionDetector(
-        mouseCursor: SystemMouseCursors.click,
-        child: GestureDetector(
-          onTap: onPressed,
-          behavior: HitTestBehavior.opaque,
-          child: Container(
-            constraints: const BoxConstraints(minHeight: 48),
-            padding: const EdgeInsets.symmetric(
-              horizontal: 2,
-              vertical: 8,
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      child: Text.rich(
+        TextSpan(
+          style: baseStyle,
+          children: [
+            const TextSpan(text: 'By continuing, you agree to our '),
+            TextSpan(
+              text: 'Terms of Service',
+              style: linkStyle,
+              recognizer: _termsRecognizer,
             ),
-            child: Text(
-              label,
-              style: AppText.caption().copyWith(
-                fontSize: 13,
-                color: surface.textSecondary,
-                fontWeight: FontWeight.w600,
-                decoration: TextDecoration.underline,
-                decorationColor: surface.textSecondary,
-              ),
+            const TextSpan(text: ' and '),
+            TextSpan(
+              text: 'Privacy Policy',
+              style: linkStyle,
+              recognizer: _privacyRecognizer,
             ),
-          ),
+            const TextSpan(text: '.'),
+          ],
         ),
+        textAlign: TextAlign.center,
       ),
     );
   }

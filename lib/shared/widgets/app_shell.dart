@@ -131,40 +131,50 @@ class _AppShellState extends ConsumerState<AppShell> {
                 ),
                 const SizedBox(height: 28),
                 // Resume (primary)
-                SizedBox(
-                  width: double.infinity,
-                  height: 50,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: accent.base,
-                      foregroundColor: accent.onAccent,
-                      elevation: 0,
-                      shape: const RoundedRectangleBorder(
-                          borderRadius: AppRadius.buttonPrimaryAll),
+                ConstrainedBox(
+                  constraints: const BoxConstraints(minHeight: 50),
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: accent.base,
+                        foregroundColor: accent.onAccent,
+                        elevation: 0,
+                        minimumSize: const Size(double.infinity, 50),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 24, vertical: 12),
+                        shape: const RoundedRectangleBorder(
+                            borderRadius: AppRadius.buttonPrimaryAll),
+                      ),
+                      onPressed: () => Navigator.of(sheetCtx).pop(true),
+                      child: Text('Resume Workout',
+                          style: AppText.button(color: accent.onAccent)),
                     ),
-                    onPressed: () => Navigator.of(sheetCtx).pop(true),
-                    child: Text('Resume Workout',
-                        style: AppText.button(color: accent.onAccent)),
                   ),
                 ),
                 const SizedBox(height: 8),
                 // Discard (destructive — this permanently drops a logged
                 // session, so it is red-on-outline, not a quiet grey label
                 // sitting next to a bright accent-filled Resume).
-                SizedBox(
-                  width: double.infinity,
-                  height: 50,
-                  child: OutlinedButton(
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: AppColors.error,
-                      side: const BorderSide(
-                          color: AppColors.errorBorder, width: 1),
-                      shape: const RoundedRectangleBorder(
-                          borderRadius: AppRadius.buttonSecondaryAll),
+                ConstrainedBox(
+                  constraints: const BoxConstraints(minHeight: 50),
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton(
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: AppColors.error,
+                        minimumSize: const Size(double.infinity, 50),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 24, vertical: 12),
+                        side: const BorderSide(
+                            color: AppColors.errorBorder, width: 1),
+                        shape: const RoundedRectangleBorder(
+                            borderRadius: AppRadius.buttonSecondaryAll),
+                      ),
+                      onPressed: () => Navigator.of(sheetCtx).pop(false),
+                      child: Text('Discard Workout',
+                          style: AppText.button(color: AppColors.error)),
                     ),
-                    onPressed: () => Navigator.of(sheetCtx).pop(false),
-                    child: Text('Discard Workout',
-                        style: AppText.button(color: AppColors.error)),
                   ),
                 ),
               ],

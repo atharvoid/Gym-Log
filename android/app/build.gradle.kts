@@ -56,6 +56,13 @@ android {
     }
 
     buildTypes {
+        debug {
+            signingConfig = if (hasReleaseKeystore) {
+                signingConfigs.getByName("release")
+            } else {
+                signingConfigs.getByName("debug")
+            }
+        }
         release {
             // R8 code shrinking + resource shrinking for release builds.
             // isMinifyEnabled runs R8 which dead-code-eliminates unused classes
