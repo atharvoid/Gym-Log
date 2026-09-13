@@ -143,7 +143,7 @@ abstract final class WorkoutCsvParser {
     for (final col in requiredCols) {
       if (!idx.containsKey(col)) {
         throw ImportException(
-            'Invalid GymLog CSV format: missing required column $col.');
+            'Invalid Delt CSV format: missing required column $col.');
       }
     }
 

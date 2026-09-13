@@ -13,6 +13,7 @@ import '../../../../core/theme/dynamic_accent_theme.dart';
 import '../../../../shared/layout/adaptive.dart';
 import '../../../../shared/widgets/motion/pressable_scale.dart';
 import '../../../../shared/widgets/ui/app_snack_bar.dart';
+import '../../../../shared/widgets/ui/delt_logo.dart';
 import '../../data/auth_repository.dart';
 import '../providers/auth_provider.dart';
 
@@ -168,11 +169,10 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                 ),
               ],
             ),
-            child: Center(
-              child: Icon(
-                Icons.fitness_center_rounded,
-                color: accent.base,
-                size: 30,
+            child: const Center(
+              child: DeltLogo(
+                size: 38,
+                useAccentColor: true,
               ),
             ),
           ),
@@ -181,7 +181,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
         Semantics(
           header: true,
           child: Text(
-            'GymLog',
+            'Delt',
             textAlign: TextAlign.center,
             style: AppText.screenTitle(color: surface.textPrimary).copyWith(
               fontSize: 34,

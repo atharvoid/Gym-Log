@@ -67,7 +67,7 @@ class _DeleteAccountScreenState extends ConsumerState<DeleteAccountScreen> {
         message: fullyDeleted
             ? 'Your account and data have been permanently deleted.'
             : 'Your data on this device was deleted, but some cloud data '
-                'could not be removed. Reach out in the GymLog Telegram '
+                'could not be removed. Reach out in the Delt Telegram '
                 'channel (t.me/gym_log) to finish the purge.',
         variant: fullyDeleted
             ? AppSnackBarVariant.success
@@ -173,7 +173,7 @@ class _DeleteAccountScreenState extends ConsumerState<DeleteAccountScreen> {
                       tone: AppColors.warning,
                       icon: Icons.info_outline_rounded,
                       lines: [
-                        'Deleting your GymLog account does NOT cancel your subscription.',
+                        'Deleting your Delt account does NOT cancel your subscription.',
                         'You must cancel active billing in your App Store / Google Play account settings to prevent future renewals.',
                         'Any refund requests must be initiated directly through the store processor.',
                       ],
@@ -345,8 +345,8 @@ class _ExportBackupButton extends ConsumerWidget {
       final who = displayName.trim().isEmpty ? '' : ' (${displayName.trim()})';
       await SharePlus.instance.share(ShareParams(
         files: [XFile(file.path, mimeType: 'text/csv')],
-        subject: 'GymLog workout export$who',
-        text: 'GymLog training history$who',
+        subject: 'Delt workout export$who',
+        text: 'Delt training history$who',
       ));
     } catch (_) {
       if (!context.mounted) return;

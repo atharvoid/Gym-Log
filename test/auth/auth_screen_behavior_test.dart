@@ -303,11 +303,11 @@ void main() {
           isTrue);
     });
 
-    testWidgets('AUTH-13: GymLog exposes heading semantics', (tester) async {
+    testWidgets('AUTH-13: Delt exposes heading semantics', (tester) async {
       await tester.pumpWidget(buildAuthScreen());
       await settle(tester);
 
-      final titleSemantics = tester.getSemantics(find.text('GymLog'));
+      final titleSemantics = tester.getSemantics(find.text('Delt'));
       expect(
           titleSemantics.getSemanticsData().flagsCollection.isHeader, isTrue);
     });

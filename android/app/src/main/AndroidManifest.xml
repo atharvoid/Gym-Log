@@ -11,7 +11,7 @@
          since no reviewed extraction-rules allowlist exists yet. Disabling backup
          here until a scoped dataExtractionRules policy is authored and reviewed. -->
     <application
-        android:label="GymLog"
+        android:label="Delt"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
         android:roundIcon="@mipmap/ic_launcher_round"

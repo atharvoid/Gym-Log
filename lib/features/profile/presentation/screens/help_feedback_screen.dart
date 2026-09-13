@@ -40,7 +40,7 @@ Future<void> showReportProblemSheet(BuildContext context, WidgetRef ref) async {
     context: context,
     title: 'Report a problem',
     subtitle:
-        'Sent to the GymLog Telegram channel. Non-sensitive details only.',
+        'Sent to the Delt Telegram channel. Non-sensitive details only.',
     scrollable: true,
     child: ReportProblemForm(
       appVersion: version,
@@ -154,7 +154,7 @@ class _ReportProblemFormState extends State<ReportProblemForm> {
 
   String _buildDiagnosticReport() {
     final sb = StringBuffer();
-    sb.writeln('--- GymLog Diagnostic Report ---');
+    sb.writeln('--- Delt Diagnostic Report ---');
     sb.writeln('Category: $_category');
     sb.writeln('Summary: ${_shortDescriptionController.text.trim()}');
     sb.writeln('Reproduction Steps: ${_reproStepsController.text.trim()}');
@@ -217,7 +217,7 @@ class _ReportProblemFormState extends State<ReportProblemForm> {
     if (delivered) {
       showAppSnackBar(
         context,
-        message: 'Report sent to the GymLog channel (ref ${widget.opRef}).',
+        message: 'Report sent to the Delt channel (ref ${widget.opRef}).',
         variant: AppSnackBarVariant.success,
       );
       Navigator.of(context, rootNavigator: true).pop();
@@ -228,7 +228,7 @@ class _ReportProblemFormState extends State<ReportProblemForm> {
     // the user can paste it straight in.
     showAppSnackBar(
       context,
-      message: 'Report copied. Paste it in the GymLog channel.',
+      message: 'Report copied. Paste it in the Delt channel.',
     );
     Navigator.of(context, rootNavigator: true).pop();
 
@@ -390,7 +390,7 @@ class HelpFeedbackScreen extends ConsumerWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('GymLog Support',
+                        Text('Delt Support',
                             style:
                                 AppText.cardTitle(color: surface.textPrimary)),
                         const SizedBox(height: 2),
@@ -415,7 +415,7 @@ class HelpFeedbackScreen extends ConsumerWidget {
                   AppActionRow(
                     icon: Icons.bug_report_outlined,
                     title: 'Report a problem',
-                    subtitle: 'Sent to the GymLog Telegram channel',
+                    subtitle: 'Sent to the Delt Telegram channel',
                     onTap: () => showReportProblemSheet(context, ref),
                   ),
                 ],
@@ -424,7 +424,7 @@ class HelpFeedbackScreen extends ConsumerWidget {
             const SizedBox(height: 22),
             Center(
               child: Text(
-                'GymLog $version • DB v$kDatabaseSchemaVersion • Catalog v$kExerciseCatalogVersion',
+                'Delt $version • DB v$kDatabaseSchemaVersion • Catalog v$kExerciseCatalogVersion',
                 style: AppText.caption(color: surface.textSecondary),
               ),
             ),

@@ -47,7 +47,7 @@ class _StepNameState extends ConsumerState<StepName> {
           children: [
             const SizedBox(height: 48),
             Text(
-              'Welcome to GymLog',
+              'Welcome to Delt',
               style: AppText.caption(color: surface.textSecondary).copyWith(
                 fontSize: 14,
                 fontWeight: FontWeight.w700,
@@ -66,7 +66,7 @@ class _StepNameState extends ConsumerState<StepName> {
             ),
             const SizedBox(height: 8),
             Text(
-              "This is how you'll show up across GymLog, and it follows you to every device.",
+              "This is how you'll show up across Delt, and it follows you to every device.",
               style: AppText.body(color: surface.textSecondary).copyWith(
                 fontSize: 15,
                 height: 1.4,

@@ -313,7 +313,7 @@ class _PaywallSheetState extends ConsumerState<_PaywallSheet> {
       if (hasPremium(info)) {
         HapticFeedback.heavyImpact();
         Navigator.of(context).pop();
-        _snack('Welcome to GymLog Pro. everything is unlocked.');
+        _snack('Welcome to Delt Pro. Everything is unlocked.');
       } else {
         HapticFeedback.heavyImpact();
         debugPrint(

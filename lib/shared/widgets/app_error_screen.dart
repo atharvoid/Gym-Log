@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../core/router/router.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text.dart';
+import 'ui/delt_logo.dart';
 
 /// Branded replacement for Flutter's red/grey error screen in release mode.
 /// Wired up via `ErrorWidget.builder` in main.dart.
@@ -54,10 +55,9 @@ class AppErrorScreen extends StatelessWidget {
                     color: AppColors.surface3,
                     borderRadius: AppRadius.badgeAll,
                   ),
-                  child: const Icon(
-                    Icons.fitness_center_rounded,
+                  child: const DeltLogo(
+                    size: 32,
                     color: AppColors.textSecondary,
-                    size: 26,
                   ),
                 ),
                 const SizedBox(height: 20),
@@ -75,7 +75,7 @@ class AppErrorScreen extends StatelessWidget {
                 const SizedBox(height: 8),
                 Text(
                   'Your workout data is safe on this device.\n'
-                  'Restart GymLog or head back home.',
+                  'Restart Delt or head back home.',
                   textAlign: TextAlign.center,
                   style: AppText.body(
                     color: AppColors.textSecondary,
@@ -88,7 +88,7 @@ class AppErrorScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 24),
                 _ErrorAction(
-                  label: 'Restart GymLog',
+                  label: 'Restart Delt',
                   primary: true,
                   onTap: () => _navigateOrFallback('/splash'),
                 ),

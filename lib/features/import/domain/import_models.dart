@@ -12,7 +12,7 @@ import '../../../core/models/measurement_type.dart';
 enum ImportSource {
   hevy('Hevy'),
   strong('Strong'),
-  gymlog('GymLog');
+  gymlog('Delt');
 
   const ImportSource(this.label);
 

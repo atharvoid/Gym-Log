@@ -394,7 +394,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
                           hint: "Navigates to paywall",
                           child: AppActionRow(
                             icon: Icons.workspace_premium_rounded,
-                            title: isPremium ? 'GymLog Pro' : 'Upgrade to Pro',
+                            title: isPremium ? 'Delt Pro' : 'Upgrade to Pro',
                             subtitle: isPremium
                                 ? 'Active (full history unlocked)'
                                 : 'Full analytics history & more',
@@ -768,7 +768,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
                         AppActionRow(
                           icon: Icons.info_rounded,
                           title: 'Version',
-                          subtitle: 'GymLog $version',
+                          subtitle: 'Delt $version',
                           showChevron: false,
                           onTap: kDebugMode
                               ? () {
@@ -817,7 +817,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
                   targetKey: _restTimerRowKey,
                   title: 'Automatic rest timer',
                   description:
-                      'GymLog starts a countdown after every completed set. '
+                      'Delt starts a countdown after every completed set. '
                       'Drag to set your preferred rest here. 1:30 is great '
                       'for compound lifts, 1:00 for isolation work.',
                   step: 3,
@@ -871,7 +871,7 @@ Future<SignOutStrategy?> _showUnsyncedWorkSheet(BuildContext context) {
     context: context,
     title: 'Back up before signing out?',
     subtitle: 'Some workouts on this device have not reached the cloud yet. '
-        'GymLog will upload them first. Anything that cannot upload '
+        'Delt will upload them first. Anything that cannot upload '
         'stays on this device.',
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -918,7 +918,7 @@ class _SignOutButton extends ConsumerWidget {
           context,
           message: 'Signed out on this device, but some cloud sessions '
               'could not be closed. For your security, sign out of '
-              'GymLog on any other device you used.',
+              'Delt on any other device you used.',
           variant: AppSnackBarVariant.error,
         );
       }
@@ -940,7 +940,7 @@ class _SignOutButton extends ConsumerWidget {
             context,
             message: 'Signed out on this device, but some cloud '
                 'sessions could not be closed. For your security, sign '
-                'out of GymLog on any other device you used.',
+                'out of Delt on any other device you used.',
             variant: AppSnackBarVariant.error,
           );
         }
@@ -1066,7 +1066,7 @@ void _openPremium(BuildContext context, {required bool isPremium}) {
     HapticFeedback.lightImpact();
     showAppSnackBar(
       context,
-      message: 'You are on GymLog Pro. Thanks for the support!',
+      message: 'You are on Delt Pro. Thanks for the support!',
       variant: AppSnackBarVariant.success,
     );
   } else {
@@ -1083,8 +1083,8 @@ Future<void> _exportWorkouts(BuildContext context, WidgetRef ref, String userId,
     final who = displayName.trim().isEmpty ? '' : ' (${displayName.trim()})';
     await SharePlus.instance.share(ShareParams(
       files: [XFile(file.path, mimeType: 'text/csv')],
-      subject: 'GymLog workout export$who',
-      text: 'GymLog training history$who',
+      subject: 'Delt workout export$who',
+      text: 'Delt training history$who',
     ));
   } catch (_) {
     if (!context.mounted) return;
@@ -1103,12 +1103,12 @@ void _showDataInfo(BuildContext context, bool isPremium) {
     title: isPremium ? 'Local-first, cloud-backed' : 'Local-first privacy',
     message: isPremium
         ? 'Every workout is saved instantly to a private database '
-            'on this device. GymLog works fully offline. Workouts are '
+            'on this device. Delt works fully offline. Workouts are '
             'automatically backed up to your account so your history survives '
             'a reinstall or a new phone. Only you can read it.'
         : 'Every workout is saved instantly to a private database '
-            'on this device. GymLog works fully offline. Upgrade to '
-            'GymLog Pro to automatically back up your history to the cloud '
+            'on this device. Delt works fully offline. Upgrade to '
+            'Delt Pro to automatically back up your history to the cloud '
             'and sync across devices.',
     confirmLabel: 'Got it',
     cancelLabel: 'Close',
