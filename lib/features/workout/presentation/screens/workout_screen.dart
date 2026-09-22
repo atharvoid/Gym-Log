@@ -11,6 +11,7 @@ import '../../../../core/utils/tap_guard.dart';
 import '../../../../core/utils/relative_time.dart';
 import '../../../../shared/providers/bottom_chrome_provider.dart';
 import '../../../../shared/widgets/async_error_state.dart';
+import '../../../../shared/widgets/ui/action_bottom_sheet.dart';
 import '../../../../shared/widgets/ui/app_card.dart';
 import '../../../../shared/widgets/ui/secondary_button.dart';
 import '../../../../shared/widgets/ui/skeleton.dart';
@@ -62,6 +63,38 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
     if (!tapGuard()) return;
     HapticFeedback.lightImpact();
     context.push(path);
+  }
+
+  void _openCreateRoutineSheet() {
+    final accent = context.accent;
+    showActionBottomSheet(
+      context: context,
+      title: 'New Routine',
+      items: [
+        ActionSheetItem(
+          icon: Icons.edit_note_rounded,
+          iconColor: accent.base,
+          iconBackground: accent.base.withValues(alpha: 0.15),
+          title: 'Create from Scratch',
+          subtitle: 'Build a custom routine exercise by exercise',
+          onTap: (ctx) {
+            Navigator.pop(ctx);
+            _push('/routines/edit');
+          },
+        ),
+        ActionSheetItem(
+          icon: Icons.auto_awesome_rounded,
+          iconColor: accent.base,
+          iconBackground: accent.base.withValues(alpha: 0.15),
+          title: 'AI Import from Image or Text',
+          subtitle: 'Scan a gym notebook, whiteboard, or paste notes',
+          onTap: (ctx) {
+            Navigator.pop(ctx);
+            _push('/routines/ai-import');
+          },
+        ),
+      ],
+    );
   }
 
   List<HydratedRoutine>? _prevRoutines;
@@ -142,8 +175,8 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
                           label: 'New Routine',
                           icon: Icons.add_rounded,
                           solid:
-                              true, // solid accent fill + onAccent label — the one focal CTA
-                          onPressed: () => _push('/routines/edit'),
+                              true, // solid accent fill + onAccent label - the one focal CTA
+                          onPressed: _openCreateRoutineSheet,
                         ),
                       ),
                       const SizedBox(width: 12),
@@ -188,8 +221,7 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
                       SliverPadding(
                         padding: const EdgeInsets.fromLTRB(16, 14, 16, 0),
                         sliver: SliverToBoxAdapter(
-                          child: _EmptyRoutines(
-                              onNew: () => _push('/routines/edit')),
+                          child: _EmptyRoutines(onNew: _openCreateRoutineSheet),
                         ),
                       ),
                     ];

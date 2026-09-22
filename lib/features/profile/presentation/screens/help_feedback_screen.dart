@@ -39,8 +39,7 @@ Future<void> showReportProblemSheet(BuildContext context, WidgetRef ref) async {
   await showBrandedBottomSheet<void>(
     context: context,
     title: 'Report a problem',
-    subtitle:
-        'Sent to the Delt Telegram channel. Non-sensitive details only.',
+    subtitle: 'Sent to the Delt Telegram channel. Non-sensitive details only.',
     scrollable: true,
     child: ReportProblemForm(
       appVersion: version,

@@ -31,6 +31,7 @@ class ResolvedExercise {
     this.secondaryMuscles = const <String>[],
     this.equipment = '',
     this.bodyPart = '',
+    this.gifUrl,
   });
 
   final int id;
@@ -44,6 +45,7 @@ class ResolvedExercise {
 
   final String equipment;
   final String bodyPart;
+  final String? gifUrl;
 }
 
 /// Primary and secondary muscle groups trained by a set of exercises.
@@ -67,14 +69,36 @@ const Set<String> _kNoiseTokens = {
   'of',
   'to',
   'variation',
+  'style',
+  'only',
+  'cues',
+  'tempo',
+  'paused',
+  'pause',
+  'sec',
+  'seconds',
+  'hold',
 };
 
 final RegExp _parenthetical = RegExp(r'\([^)]*\)');
 final RegExp _nonAlphanumeric = RegExp(r'[^a-z0-9]+');
 
-/// Lowercases, strips punctuation and collapses whitespace.
-String normalizeExerciseName(String raw) =>
-    raw.toLowerCase().replaceAll(_nonAlphanumeric, ' ').trim();
+/// Lowercases, de-hyphenates common compounds, strips punctuation and collapses whitespace.
+String normalizeExerciseName(String raw) {
+  var cleaned = raw
+      .toLowerCase()
+      .replaceAll('cross-body', 'crossbody')
+      .replaceAll('cross body', 'crossbody')
+      .replaceAll('pressdown', 'pushdown')
+      .replaceAll('pressdowns', 'pushdown')
+      .replaceAll('push-up', 'push up')
+      .replaceAll('pull-up', 'pull up')
+      .replaceAll('chin-up', 'chin up')
+      .replaceAll('t-bar', 't bar')
+      .replaceAll('y-raise', 'y raise');
+
+  return cleaned.replaceAll(_nonAlphanumeric, ' ').trim();
+}
 
 /// Normalised form with any equipment parenthetical removed, so
 /// `Floor Press (Barbell)` and `Floor Press` share a key.
@@ -136,9 +160,7 @@ class ExerciseResolver {
     final byBase = _byBaseName[base] ?? _byExactName[base];
     if (byBase != null) return byBase;
 
-    // Scored token overlap. Requires every scoring token to be a real word in
-    // the candidate, and prefers the shortest candidate that qualifies so
-    // "Bench Press" does not resolve to "Close Grip Bench Press".
+    // Scored token overlap with asymmetric recall and Sørensen-Dice similarity.
     final wanted = _tokens(key);
     if (wanted.isEmpty) return null;
 
@@ -153,8 +175,12 @@ class ExerciseResolver {
         if (candidate.tokens.contains(token)) hits++;
       }
       if (hits == 0) continue;
-      final score = hits / wanted.length;
-      if (score < _kFuzzyMatchFloor) continue;
+
+      final tokenRecall = hits / wanted.length;
+      final dice = (2.0 * hits) / (wanted.length + candidate.tokens.length);
+      final score = (tokenRecall * 0.6) + (dice * 0.4);
+
+      if (tokenRecall < _kFuzzyMatchFloor && dice < _kFuzzyMatchFloor) continue;
       final length = candidate.tokens.length;
       if (score > bestScore || (score == bestScore && length < bestLength)) {
         best = candidate.exercise;
@@ -163,6 +189,52 @@ class ExerciseResolver {
       }
     }
     return best;
+  }
+
+  /// Resolves an exercise with ranked candidate suggestions when a verified match is absent.
+  ({
+    ResolvedExercise? match,
+    List<({ResolvedExercise exercise, double score})> suggestions
+  }) resolveWithSuggestions(String slotName, {int maxSuggestions = 3}) {
+    final key = normalizeExerciseName(slotName);
+    if (key.isEmpty) return (match: null, suggestions: const []);
+
+    final resolvedMatch = resolve(slotName);
+    if (resolvedMatch != null) {
+      return (match: resolvedMatch, suggestions: const []);
+    }
+
+    final wanted = _tokens(key);
+    if (wanted.isEmpty) return (match: null, suggestions: const []);
+
+    final scored = <({ResolvedExercise exercise, double score})>[];
+    for (final candidate in _tokenized) {
+      if (candidate.tokens.isEmpty) continue;
+      var hits = 0;
+      for (final token in wanted) {
+        if (candidate.tokens.contains(token)) hits++;
+      }
+      if (hits == 0) continue;
+      final tokenRecall = hits / wanted.length;
+      final dice = (2.0 * hits) / (wanted.length + candidate.tokens.length);
+      final score = (tokenRecall * 0.5) + (dice * 0.5);
+      if (score >= 0.25) {
+        scored.add((exercise: candidate.exercise, score: score));
+      }
+    }
+
+    scored.sort((a, b) => b.score.compareTo(a.score));
+
+    final seen = <int>{};
+    final unique = <({ResolvedExercise exercise, double score})>[];
+    for (final s in scored) {
+      if (seen.add(s.exercise.id)) {
+        unique.add(s);
+        if (unique.length >= maxSuggestions) break;
+      }
+    }
+
+    return (match: null, suggestions: unique);
   }
 
   /// Slot names that resolve to nothing. These are catalog gaps: the routine

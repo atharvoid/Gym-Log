@@ -336,6 +336,16 @@ class _RoutineEditorScreenState extends ConsumerState<RoutineEditorScreen> {
             style: AppText.sheetTitle(color: surface.textPrimary),
           ),
           actions: [
+            if (!_isEditMode)
+              IconButton(
+                tooltip: 'AI Import',
+                icon: Icon(Icons.auto_awesome_rounded,
+                    color: accent.base, size: 20),
+                onPressed: () {
+                  HapticFeedback.lightImpact();
+                  context.push('/routines/ai-import');
+                },
+              ),
             Padding(
               padding: const EdgeInsets.only(right: 8),
               child: TextButton(
@@ -579,6 +589,20 @@ class _EmptyEditorState extends StatelessWidget {
                     expand: false,
                   ),
                 ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            TextButton.icon(
+              onPressed: () {
+                HapticFeedback.lightImpact();
+                context.push('/routines/ai-import');
+              },
+              icon: Icon(Icons.auto_awesome_rounded,
+                  size: 16, color: accent.base),
+              label: Text(
+                'Import from image or text',
+                style:
+                    AppText.button(color: accent.base).copyWith(fontSize: 14),
               ),
             ),
           ],

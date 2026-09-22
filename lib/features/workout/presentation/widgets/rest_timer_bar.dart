@@ -119,12 +119,12 @@ class _RestTimerBarState extends ConsumerState<RestTimerBar> {
                     ),
                   ),
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 14),
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
                     child: Row(
                       children: [
                         SizedBox(
-                          width: 44,
-                          height: 44,
+                          width: 36,
+                          height: 36,
                           child: CustomPaint(
                             painter: _RestRingPainter(
                               progress: widget.state.progress,
@@ -133,35 +133,43 @@ class _RestTimerBarState extends ConsumerState<RestTimerBar> {
                             ),
                             child: Center(
                               child: Icon(Icons.timer_outlined,
-                                  size: 18, color: rest),
+                                  size: 16, color: rest),
                             ),
                           ),
                         ),
-                        const SizedBox(width: 12),
-                        Column(
-                          mainAxisSize: MainAxisSize.min,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text('REST',
-                                style: AppText.columnHeader(
-                                    color: surface.textSecondary)),
-                            // S3: text-depth shadow on timer display
-                            Text(
-                              _label,
-                              style: AppText.timer(
-                                      color: surface.textPrimary,
-                                      shadows: AppText.depthFor(context))
-                                  .copyWith(
-                                fontSize: 34,
-                                fontWeight: FontWeight.w800,
-                                height: 1.0,
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text('REST',
+                                  style: AppText.columnHeader(
+                                      color: surface.textSecondary)),
+                              FittedBox(
+                                fit: BoxFit.scaleDown,
+                                alignment: Alignment.centerLeft,
+                                child: Text(
+                                  _label,
+                                  maxLines: 1,
+                                  softWrap: false,
+                                  style: AppText.timer(
+                                          color: surface.textPrimary,
+                                          shadows: AppText.depthFor(context))
+                                      .copyWith(
+                                    fontSize: 32,
+                                    fontWeight: FontWeight.w800,
+                                    fontFeatures: const [
+                                      FontFeature.tabularFigures()
+                                    ],
+                                    height: 1.0,
+                                  ),
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
-                        const Spacer(),
-                        // -15s was missing entirely at HEAD: an over-long rest
-                        // could only be escaped by skipping it.
+                        const SizedBox(width: 8),
                         _RestAction(
                           label: '\u221215',
                           accent: rest,
@@ -226,15 +234,15 @@ class _RestAction extends StatelessWidget {
         borderRadius: BorderRadius.circular(AppRadius.buttonSecondary),
         onTap: onTap,
         child: Container(
-          height: 44,
-          // Three controls now share the tile, so horizontal padding drops
-          // from 16 to 11 — the 44dp height keeps the touch target legal.
-          padding: const EdgeInsets.symmetric(horizontal: 11),
+          height: 36,
+          padding: const EdgeInsets.symmetric(horizontal: 10),
           alignment: Alignment.center,
           child: Text(
             label,
             style: AppText.statLabel(
               color: emphasized ? accent : context.surface.textPrimary,
+            ).copyWith(
+              fontWeight: FontWeight.w700,
             ),
           ),
         ),

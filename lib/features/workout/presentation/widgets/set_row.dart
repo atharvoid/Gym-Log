@@ -9,6 +9,7 @@ import 'package:gymlog/core/theme/dynamic_accent_theme.dart';
 import 'package:gymlog/core/theme/set_type.dart';
 import 'package:gymlog/core/utils/units.dart';
 import 'package:gymlog/features/workout/domain/active_workout_state.dart';
+import 'package:gymlog/shared/widgets/ui/app_action_chip.dart';
 import 'package:gymlog/shared/widgets/ui/time_range_filter.dart';
 
 import 'package:gymlog/core/models/measurement_type.dart';
@@ -85,6 +86,21 @@ class SetRow extends StatefulWidget {
   final ValueChanged<WorkoutSetState> onChanged;
   final VoidCallback onToggleComplete;
 
+  /// Optional hold timer trigger when [measurementType] is [MeasurementType.duration].
+  final VoidCallback? onStartHoldTimer;
+
+  /// Optional callback to finish and log the active hold timer for this set.
+  final VoidCallback? onFinishHoldTimer;
+
+  /// True when the hold timer is currently active for THIS set.
+  final bool isHoldTimerRunning;
+
+  /// Active hold timer seconds to display live on the row when running.
+  final int? holdTimerDisplaySeconds;
+
+  /// Explicit weight column visibility override (e.g. for weighted duration exercises).
+  final bool? showsWeightColumn;
+
   const SetRow({
     super.key,
     required this.setIndex,
@@ -95,6 +111,11 @@ class SetRow extends StatefulWidget {
     this.unit = 'kg',
     required this.onChanged,
     required this.onToggleComplete,
+    this.onStartHoldTimer,
+    this.onFinishHoldTimer,
+    this.isHoldTimerRunning = false,
+    this.holdTimerDisplaySeconds,
+    this.showsWeightColumn,
   });
 
   @override
@@ -102,6 +123,9 @@ class SetRow extends StatefulWidget {
 }
 
 class _SetRowState extends State<SetRow> {
+  bool get _showsWeightColumn =>
+      widget.showsWeightColumn ?? widget.measurementType.showsWeightColumn;
+  bool _isEditingCompletedDuration = false;
   late TextEditingController _weightController;
   late TextEditingController _repsController;
   final _weightFocus = FocusNode();
@@ -312,7 +336,8 @@ class _SetRowState extends State<SetRow> {
   // ── Where the tick sends you when required input is missing ───────────
 
   bool get _weightNeedsInput =>
-      widget.measurementType.showsWeightColumn &&
+      _showsWeightColumn &&
+      widget.measurementType != MeasurementType.duration &&
       (_effectiveSetData.weightKg == null ||
           _effectiveSetData.weightKg! <= 0) &&
       widget.previousWeight == null;
@@ -369,17 +394,38 @@ class _SetRowState extends State<SetRow> {
 
   /// SET column content: the type letter REPLACES the number (Hevy pattern).
   /// Normal → set number; W/D/F → coloured letter (colors from [SetType]).
+  /// Wrapped in [AppActionChip.compactSquare] to provide a crisp 28×28 visual
+  /// squircle with interactive border affordance and 44×44 hit slop.
   Widget _setTypeIndicator() {
     final surface = context.surface;
     final type = SetType.of(widget.setData.setType);
     final isNormal = type == SetType.normal;
     final label = isNormal ? '${widget.setIndex + 1}' : type.short;
-    final color = isNormal
-        ? (widget.setData.isCompleted
-            ? surface.textPrimary
-            : surface.textSecondary)
-        : type.color;
-    return Text(label, style: AppText.value(color: color));
+    final isCompleted = widget.setData.isCompleted;
+
+    final Color textColor = isNormal
+        ? (isCompleted ? surface.textDisabled : surface.textPrimary)
+        : (isCompleted ? type.color.withValues(alpha: 0.40) : type.color);
+
+    final Color? borderColor = isNormal
+        ? null
+        : type.color.withValues(alpha: isCompleted ? 0.20 : 0.45);
+
+    final Color? bgColor = isNormal
+        ? null
+        : type.color.withValues(alpha: isCompleted ? 0.05 : 0.12);
+
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: AppActionChip.compactSquare(
+        label: label,
+        semanticLabel: 'Set type, ${type.label}',
+        textColor: textColor,
+        borderColor: borderColor,
+        backgroundColor: bgColor,
+        onTap: isCompleted ? null : _pickSetType,
+      ),
+    );
   }
 
   /// A bare value field — no box, border, fill, or radius. The number sits
@@ -585,6 +631,292 @@ class _SetRowState extends State<SetRow> {
     return actions;
   }
 
+  /// Single unified duration slot rendered in the TIME column when
+  /// [measurementType] is [MeasurementType.duration].
+  Widget _durationRepsSlot() {
+    final surface = context.surface;
+    final accent = context.accent;
+
+    // 1. Running state: live pulsing tabular timer badge with 1-tap finish
+    if (widget.isHoldTimerRunning) {
+      final secs = widget.holdTimerDisplaySeconds ?? 0;
+      final m = secs ~/ 60;
+      final s = secs % 60;
+      final label = '$m:${s.toString().padLeft(2, '0')}';
+
+      return Center(
+        child: FittedBox(
+          fit: BoxFit.scaleDown,
+          alignment: Alignment.center,
+          child: Semantics(
+            button: true,
+            label: 'Hold timer running, $label. Tap to finish set.',
+            child: GestureDetector(
+              onTap: () {
+                HapticFeedback.heavyImpact();
+                widget.onFinishHoldTimer?.call();
+              },
+              behavior: HitTestBehavior.opaque,
+              child: Container(
+                height: 34,
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                decoration: BoxDecoration(
+                  color: accent.base.withValues(alpha: 0.22),
+                  borderRadius:
+                      BorderRadius.circular(AppRadius.buttonSecondary),
+                  border: Border.all(
+                    color: accent.base.withValues(alpha: 0.70),
+                    width: 1.2,
+                  ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Icon(Icons.timer_outlined, size: 14, color: accent.base),
+                    const SizedBox(width: 4),
+                    Text(
+                      label,
+                      style: AppText.value(color: accent.base).copyWith(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w800,
+                        fontFeatures: const [FontFeature.tabularFigures()],
+                        height: 1.0,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    // 2. Completed state: read-only formatted duration with replay trigger
+    if (widget.setData.isCompleted) {
+      if (_isEditingCompletedDuration) {
+        return Center(
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.center,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                SizedBox(
+                  width: 48,
+                  child: _numberField(
+                    controller: _repsController,
+                    focusNode: _repsFocus,
+                    isDecimal: false,
+                    action: TextInputAction.done,
+                    semanticLabel:
+                        widget.measurementType.repsFieldSemanticLabel,
+                    hintText: '0',
+                    onChanged: (val) {
+                      final parsed = int.tryParse(val);
+                      if (parsed != null) {
+                        _queueCommit(_effectiveSetData.copyWith(
+                            reps: parsed.clamp(0, 99999)));
+                      }
+                    },
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.check_rounded, size: 16),
+                  padding: EdgeInsets.zero,
+                  constraints:
+                      const BoxConstraints(minWidth: 24, minHeight: 24),
+                  onPressed: () {
+                    _flushCommit();
+                    setState(() => _isEditingCompletedDuration = false);
+                  },
+                ),
+              ],
+            ),
+          ),
+        );
+      }
+
+      final secs = widget.setData.reps;
+      final formattedText = '${secs}s';
+
+      return Center(
+        child: FittedBox(
+          fit: BoxFit.scaleDown,
+          alignment: Alignment.center,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Semantics(
+                button: true,
+                label: 'Completed duration $formattedText. Tap to edit.',
+                child: GestureDetector(
+                  onTap: () {
+                    HapticFeedback.selectionClick();
+                    setState(() => _isEditingCompletedDuration = true);
+                    _repsFocus.requestFocus();
+                  },
+                  behavior: HitTestBehavior.opaque,
+                  child: Container(
+                    constraints: const BoxConstraints(minHeight: 36),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
+                    alignment: Alignment.center,
+                    child: Text(
+                      formattedText,
+                      style: AppText.value(color: surface.textPrimary).copyWith(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                        fontFeatures: const [FontFeature.tabularFigures()],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              if (widget.onStartHoldTimer != null) ...[
+                const SizedBox(width: 4),
+                Semantics(
+                  button: true,
+                  label: 'Restart timer for set ${widget.setIndex + 1}',
+                  child: GestureDetector(
+                    onTap: () {
+                      HapticFeedback.selectionClick();
+                      widget.onStartHoldTimer!();
+                    },
+                    behavior: HitTestBehavior.opaque,
+                    child: Container(
+                      width: 26,
+                      height: 26,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: surface.textPrimary.withValues(alpha: 0.08),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Icons.replay_rounded,
+                        size: 14,
+                        color: surface.textSecondary,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+      );
+    }
+
+    // 3. Idle state: Clean compact pill with circular play trigger + duration entry
+    final previousTarget =
+        widget.previousReps != null && widget.previousReps! > 0
+            ? '${widget.previousReps!}s'
+            : '0s';
+
+    return Center(
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        alignment: Alignment.center,
+        child: Container(
+          height: 36,
+          decoration: BoxDecoration(
+            color: surface.textPrimary.withValues(alpha: 0.06),
+            borderRadius: BorderRadius.circular(AppRadius.buttonSecondary),
+            border: Border.all(
+              color: surface.textPrimary.withValues(alpha: 0.12),
+              width: 1.0,
+            ),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 4),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              if (widget.onStartHoldTimer != null) ...[
+                Semantics(
+                  button: true,
+                  label: 'Start hold timer for set ${widget.setIndex + 1}',
+                  child: GestureDetector(
+                    onTap: () {
+                      HapticFeedback.selectionClick();
+                      widget.onStartHoldTimer!();
+                    },
+                    behavior: HitTestBehavior.opaque,
+                    child: Container(
+                      width: 28,
+                      height: 28,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: accent.base.withValues(alpha: 0.18),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Icons.play_arrow_rounded,
+                        size: 16,
+                        color: accent.base,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 4),
+              ],
+              SizedBox(
+                width: 42,
+                child: TextField(
+                  controller: _repsController,
+                  focusNode: _repsFocus,
+                  textAlign: TextAlign.center,
+                  keyboardType: TextInputType.number,
+                  cursorColor: accent.base,
+                  inputFormatters: [
+                    FilteringTextInputFormatter.digitsOnly,
+                    LengthLimitingTextInputFormatter(4),
+                  ],
+                  style: AppText.value(color: surface.textPrimary).copyWith(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  decoration: InputDecoration(
+                    hintText: previousTarget,
+                    hintStyle:
+                        AppText.value(color: surface.textTertiary).copyWith(
+                      fontSize: 14,
+                    ),
+                    border: InputBorder.none,
+                    focusedBorder: InputBorder.none,
+                    enabledBorder: InputBorder.none,
+                    filled: false,
+                    isDense: true,
+                    contentPadding: const EdgeInsets.symmetric(vertical: 8),
+                  ),
+                  onChanged: (val) {
+                    if (val.trim().isEmpty) {
+                      _queueCommit(_effectiveSetData.copyWith(reps: 0));
+                      return;
+                    }
+                    final parsed = int.tryParse(val);
+                    if (parsed != null) {
+                      _queueCommit(_effectiveSetData.copyWith(
+                          reps: parsed.clamp(0, 99999)));
+                    }
+                  },
+                  onSubmitted: (_) => FocusScope.of(context).unfocus(),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   /// The static check box. Used both as the steady state and as the child the
   /// pop scales, so the completed/incomplete pixels are identical either way.
   /// Reads the surface tokens itself so call sites stay fully typed.
@@ -620,6 +952,7 @@ class _SetRowState extends State<SetRow> {
   Widget build(BuildContext context) {
     final isCompleted = widget.setData.isCompleted;
     final surface = context.surface;
+    final accent = context.accent;
     final prev = _previousLabel;
     final reduceMotion = MediaQuery.disableAnimationsOf(context);
     final canComplete = _canComplete;
@@ -641,34 +974,27 @@ class _SetRowState extends State<SetRow> {
         // shifts with the accent palette. See [_kCompletionRowTint] for why this
         // does not use the shared success token.
         decoration: BoxDecoration(
-          color: isCompleted ? _kCompletionRowTint : Colors.transparent,
+          color: isCompleted
+              ? _kCompletionRowTint
+              : widget.isHoldTimerRunning
+                  ? accent.base.withValues(alpha: 0.12)
+                  : Colors.transparent,
           border: isCompleted
               ? const Border(
                   left: BorderSide(color: AppColors.success, width: 3))
-              : null,
+              : widget.isHoldTimerRunning
+                  ? Border(
+                      left: BorderSide(color: accent.base, width: 3),
+                    )
+                  : null,
         ),
         // Horizontal inset is owned by [SetTableRow] — see
         // set_table_layout.dart. Vertical rhythm stays here.
         padding: const EdgeInsets.symmetric(vertical: 2),
         child: SetTableRow(
           // ── SET — type letter replaces number, opens the type picker ──
-          setSlot: Semantics(
-            button: !isCompleted,
-            label: 'Set type, ${SetType.of(widget.setData.setType).label}',
-            child: GestureDetector(
-              onTap: isCompleted
-                  ? null
-                  : () {
-                      HapticFeedback.selectionClick();
-                      _pickSetType();
-                    },
-              behavior: HitTestBehavior.opaque,
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: _setTypeIndicator(),
-              ),
-            ),
-          ),
+          // AppActionChip handles Semantics, touch slop, and disabled states.
+          setSlot: _setTypeIndicator(),
 
           // ── PREVIOUS — read-only reference from the last session ────
           // C31: was FittedBox(scaleDown) — arbitrary shrink-to-fit text is
@@ -687,9 +1013,9 @@ class _SetRowState extends State<SetRow> {
             ),
           ),
 
-          // ── WEIGHT / DISTANCE — hidden for repsOnly and duration ──────
-          weightSlot: !widget.measurementType.showsWeightColumn
-              ? const SizedBox.shrink()
+          // ── WEIGHT / DISTANCE / LOAD ──────
+          weightSlot: !_showsWeightColumn
+              ? null
               : _numberField(
                   controller: _weightController,
                   focusNode: _weightFocus,
@@ -720,32 +1046,32 @@ class _SetRowState extends State<SetRow> {
                   },
                 ),
 
-          // ── REPS / SECS — hidden for distance ───────────────────────
-          // Keyboard flow (P1.3): reps keeps the DEFAULT `next` action, so
-          // submit chains weight → reps → next row's weight with zero
-          // keyboard dismissals across a whole exercise.
+          // ── REPS / TIME — duration uses unified _durationRepsSlot ───
           repsSlot: !widget.measurementType.showsRepsColumn
               ? const SizedBox.shrink()
-              : _numberField(
-                  controller: _repsController,
-                  focusNode: _repsFocus,
-                  isDecimal: false,
-                  semanticLabel: widget.measurementType.repsFieldSemanticLabel,
-                  hintText: widget.previousReps != null
-                      ? '${widget.previousReps!}'
-                      : '0',
-                  onChanged: (val) {
-                    if (val.trim().isEmpty) {
-                      _queueCommit(_effectiveSetData.copyWith(reps: 0));
-                      return;
-                    }
-                    final parsed = int.tryParse(val);
-                    if (parsed != null) {
-                      _queueCommit(_effectiveSetData.copyWith(
-                          reps: parsed.clamp(0, 99999)));
-                    }
-                  },
-                ),
+              : widget.measurementType == MeasurementType.duration
+                  ? _durationRepsSlot()
+                  : _numberField(
+                      controller: _repsController,
+                      focusNode: _repsFocus,
+                      isDecimal: false,
+                      semanticLabel:
+                          widget.measurementType.repsFieldSemanticLabel,
+                      hintText: widget.previousReps != null
+                          ? '${widget.previousReps!}'
+                          : '0',
+                      onChanged: (val) {
+                        if (val.trim().isEmpty) {
+                          _queueCommit(_effectiveSetData.copyWith(reps: 0));
+                          return;
+                        }
+                        final parsed = int.tryParse(val);
+                        if (parsed != null) {
+                          _queueCommit(_effectiveSetData.copyWith(
+                              reps: parsed.clamp(0, 99999)));
+                        }
+                      },
+                    ),
 
           // ── Completion — always tappable; guidance fires on miss ───
           checkSlot: Semantics(
@@ -755,6 +1081,11 @@ class _SetRowState extends State<SetRow> {
               onTap: () {
                 if (isCompleted) {
                   _onToggleComplete();
+                  return;
+                }
+                if (widget.isHoldTimerRunning) {
+                  HapticFeedback.heavyImpact();
+                  widget.onFinishHoldTimer?.call();
                   return;
                 }
                 if (!_canComplete) {

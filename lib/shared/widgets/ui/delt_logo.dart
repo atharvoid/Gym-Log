@@ -39,7 +39,8 @@ class DeltLogo extends StatelessWidget {
       endColor = '#AEE800';
     }
 
-    final svgString = '''<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+    final svgString =
+        '''<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
   <defs>
     <linearGradient id="vGradB" x1="50" y1="18" x2="50" y2="82" gradientUnits="userSpaceOnUse">
       <stop offset="0%" stop-color="$startColor"/>

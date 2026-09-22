@@ -14,6 +14,7 @@ import '../../../../shared/widgets/ui/app_dialog.dart';
 import '../../../../shared/widgets/feedback/undoable_delete.dart';
 import '../../../../shared/widgets/motion/pressable_scale.dart';
 import '../../../../shared/widgets/ui/app_snack_bar.dart';
+import '../../../../shared/widgets/ui/app_status_tag.dart';
 
 /// Premium routine card for the Routines list.
 /// - Tapping the body opens the routine detail (`/routines/:id`).
@@ -44,15 +45,10 @@ class RoutineCard extends ConsumerWidget {
     Color? backgroundColor,
     Color? textColor,
   }) {
-    final surface = context.surface;
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3),
-      decoration: BoxDecoration(
-        color: backgroundColor ?? surface.surface3,
-        borderRadius: AppRadius.badgeAll,
-      ),
-      child: Text(label,
-          style: AppText.badge(color: textColor ?? surface.textSecondary)),
+    return AppStatusTag(
+      label: label,
+      backgroundColor: backgroundColor,
+      textColor: textColor,
     );
   }
 

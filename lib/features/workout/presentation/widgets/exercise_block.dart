@@ -18,6 +18,7 @@ import 'package:gymlog/features/exercises/presentation/providers/exercises_provi
 import 'compact_rest_chip.dart';
 import 'set_row.dart';
 import 'set_table_layout.dart';
+import '../providers/hold_timer_provider.dart';
 
 /// One exercise inside the active workout. Shared card surface (gradient +
 /// hairline via AppCard), white heading (accent is for actions, not titles),
@@ -212,7 +213,7 @@ class ExerciseBlock extends ConsumerWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 8),
 
               // ── Column labels — the header is a SetTableRow, so its centre
               // lines are the data rows' centre lines BY CONSTRUCTION (they
@@ -225,18 +226,29 @@ class ExerciseBlock extends ConsumerWidget {
                 minHeight: 22,
                 setSlot: Text('SET',
                     style: AppText.columnHeader(color: surface.textSecondary)),
-                previousSlot: Text('PREVIOUS',
-                    style: AppText.columnHeader(color: surface.textSecondary)),
-                weightSlot: !mType.showsWeightColumn
-                    ? const SizedBox.shrink()
+                previousSlot: Text(
+                  'PREVIOUS',
+                  maxLines: 1,
+                  softWrap: false,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppText.columnHeader(color: surface.textSecondary),
+                ),
+                weightSlot: !mType.showsWeightColumnFor(exerciseName)
+                    ? null
                     : Center(
                         child: Semantics(
-                          button: onUnitTap != null && mType.requiresWeight,
-                          label: mType.requiresWeight
+                          button: onUnitTap != null &&
+                              (mType.requiresWeight ||
+                                  mType.showsWeightColumnFor(exerciseName)),
+                          label: mType.requiresWeight ||
+                                  mType.showsWeightColumnFor(exerciseName)
                               ? 'Weight unit ${unit.toUpperCase()}, tap to change'
                               : 'Distance column',
                           child: GestureDetector(
-                            onTap: (mType.requiresWeight && onUnitTap != null)
+                            onTap: ((mType.requiresWeight ||
+                                        mType.showsWeightColumnFor(
+                                            exerciseName)) &&
+                                    onUnitTap != null)
                                 ? () {
                                     HapticFeedback.selectionClick();
                                     onUnitTap!();
@@ -262,8 +274,11 @@ class ExerciseBlock extends ConsumerWidget {
                                   const SizedBox(width: 3),
                                   Flexible(
                                     child: Text(
-                                      mType.fixedWeightColumnLabel ??
+                                      mType.fixedWeightColumnLabelFor(
+                                              exerciseName, unit) ??
                                           unit.toUpperCase(),
+                                      maxLines: 1,
+                                      softWrap: false,
                                       overflow: TextOverflow.ellipsis,
                                       style: AppText.columnHeader(
                                           color: surface.textSecondary),
@@ -311,16 +326,50 @@ class ExerciseBlock extends ConsumerWidget {
                         ? previousSets[setIndex]
                         : null;
 
+                    final holdTimer = ref.watch(holdTimerProvider);
+                    final isHoldRunning = holdTimer != null &&
+                        holdTimer.exerciseIndex == exerciseIndex &&
+                        holdTimer.setIndex == setIndex;
+                    final holdSecs =
+                        isHoldRunning ? holdTimer.displaySeconds : null;
+
                     final row = SetRow(
                       key: ValueKey(setData.id),
                       setIndex: setIndex,
                       setData: setData,
                       measurementType: mType,
+                      showsWeightColumn:
+                          mType.showsWeightColumnFor(exerciseName),
                       previousWeight: prevSet?.weightKg,
                       previousReps: prevSet?.reps,
                       unit: unit,
                       onChanged: onSetChanged,
                       onToggleComplete: () => onToggleSetCompletion(setIndex),
+                      isHoldTimerRunning: isHoldRunning,
+                      holdTimerDisplaySeconds: holdSecs,
+                      onStartHoldTimer: mType.isDuration
+                          ? () {
+                              final target = (setData.reps > 0)
+                                  ? setData.reps
+                                  : (prevSet?.reps != null && prevSet!.reps > 0
+                                      ? prevSet.reps
+                                      : null);
+                              final workout = ref.read(activeWorkoutProvider);
+                              ref.read(holdTimerProvider.notifier).start(
+                                    workoutId: workout?.id ?? '',
+                                    exerciseIndex: exerciseIndex,
+                                    setIndex: setIndex,
+                                    setId: setData.id,
+                                    exerciseName: exerciseName,
+                                    targetSeconds: target,
+                                  );
+                            }
+                          : null,
+                      onFinishHoldTimer: mType.isDuration
+                          ? () => ref
+                              .read(holdTimerProvider.notifier)
+                              .finishAndLog()
+                          : null,
                     );
 
                     return Dismissible(

@@ -74,7 +74,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Help & Feedback'), findsOneWidget);
-      expect(find.text('GymLog Support'), findsOneWidget);
+      expect(find.text('Delt Support'), findsOneWidget);
       expect(find.textContaining('t.me/gym_log'), findsWidgets);
       expect(find.text('Report a problem'), findsOneWidget);
       // E1: legal rows live once, in Settings — never duplicated here.
@@ -102,7 +102,7 @@ void main() {
 
       expect(
           find.text(
-              'Sent to the GymLog Telegram channel. Non-sensitive details only.'),
+              'Sent to the Delt Telegram channel. Non-sensitive details only.'),
           findsOneWidget);
       expect(find.text('CATEGORY'), findsOneWidget);
       expect(find.text('SHORT DESCRIPTION'), findsOneWidget);

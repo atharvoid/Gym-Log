@@ -27,6 +27,8 @@ import '../../features/routines/presentation/providers/explore_providers.dart';
 import '../../features/routines/presentation/screens/explore_screen.dart';
 import '../../features/routines/presentation/screens/routine_editor_screen.dart';
 import '../../features/routines/presentation/screens/routine_detail_screen.dart';
+import '../../features/routines/presentation/screens/ai_routine_import_screen.dart';
+import '../../features/routines/presentation/screens/ai_routine_review_screen.dart';
 import '../../features/workout/presentation/screens/workout_detail_screen.dart';
 import '../../core/database/database.dart';
 
@@ -200,6 +202,14 @@ final routerProvider = Provider<GoRouter>((ref) {
           if (id == null) return const ExerciseSelectionScreen(browse: true);
           return ExerciseDetailScreen(exerciseId: id, exercise: exercise);
         },
+      ),
+      GoRoute(
+        path: '/routines/ai-import',
+        builder: (c, s) => const AiRoutineImportScreen(),
+      ),
+      GoRoute(
+        path: '/routines/ai-import/review',
+        builder: (c, s) => const AiRoutineReviewScreen(),
       ),
       GoRoute(
         path: '/routines/edit',

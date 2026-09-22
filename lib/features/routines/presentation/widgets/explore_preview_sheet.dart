@@ -8,12 +8,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:gymlog/core/theme/app_colors.dart';
 import 'package:gymlog/core/theme/app_text.dart';
-import 'package:gymlog/core/theme/dynamic_accent_theme.dart';
 import 'package:gymlog/features/profile/presentation/providers/profile_provider.dart';
 import 'package:gymlog/features/routines/presentation/data/explore_catalog.dart';
 import 'package:gymlog/features/routines/presentation/data/routine_index.dart';
 import 'package:gymlog/features/routines/presentation/providers/explore_providers.dart';
 import 'package:gymlog/shared/widgets/body/muscle_map.dart';
+import 'package:gymlog/shared/widgets/ui/app_status_tag.dart';
 import 'package:gymlog/shared/widgets/ui/primary_button.dart';
 
 /// Opens the interactive routine preview bottom sheet.
@@ -60,7 +60,6 @@ class RoutinePreviewSheet extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final surface = context.surface;
-    final accent = context.accent;
     final profile = ref.watch(routineMuscleProfileProvider(routine.slug));
     final userProfile = ref.watch(currentUserProfileProvider).valueOrNull;
     final gender = userProfile?.gender ?? 'male';
@@ -149,57 +148,14 @@ class RoutinePreviewSheet extends ConsumerWidget {
                       alignment: WrapAlignment.center,
                       children: [
                         for (final group in profile.primary)
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 3,
-                            ),
-                            decoration: BoxDecoration(
-                              color: accent.muted,
-                              borderRadius: AppRadius.badgeAll,
-                              border: Border.all(color: accent.selectionBorder),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Container(
-                                  width: 6,
-                                  height: 6,
-                                  decoration: BoxDecoration(
-                                    color: accent.base,
-                                    shape: BoxShape.circle,
-                                  ),
-                                ),
-                                const SizedBox(width: 5),
-                                Text(
-                                  group,
-                                  style: TextStyle(
-                                    fontSize: 11.5,
-                                    fontWeight: FontWeight.w600,
-                                    color: accent.base,
-                                  ),
-                                ),
-                              ],
-                            ),
+                          AppStatusTag(
+                            label: group,
+                            isAccented: true,
                           ),
                         for (final group in profile.secondary)
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 3,
-                            ),
-                            decoration: BoxDecoration(
-                              color: surface.surface3,
-                              borderRadius: AppRadius.badgeAll,
-                              border: Border.all(color: surface.borderSubtle),
-                            ),
-                            child: Text(
-                              '$group (secondary)',
-                              style: TextStyle(
-                                fontSize: 11,
-                                color: surface.textTertiary,
-                              ),
-                            ),
+                          AppStatusTag(
+                            label: '$group (secondary)',
+                            isAccented: false,
                           ),
                       ],
                     ),
