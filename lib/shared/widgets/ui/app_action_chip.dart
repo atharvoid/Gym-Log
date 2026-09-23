@@ -114,7 +114,8 @@ class AppActionChip extends StatelessWidget {
         leadingIcon = null,
         signifier = ActionSignifier.none,
         isSelected = false,
-        borderRadius = borderRadius ?? const BorderRadius.all(Radius.circular(6)),
+        borderRadius =
+            borderRadius ?? const BorderRadius.all(Radius.circular(6)),
         _isSquare = true;
 
   IconData? _signifierIcon(ActionSignifier s) {

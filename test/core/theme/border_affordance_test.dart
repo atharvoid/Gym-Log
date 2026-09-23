@@ -6,7 +6,8 @@ import 'package:gymlog/shared/widgets/ui/app_action_chip.dart';
 import 'package:gymlog/shared/widgets/ui/app_info_text.dart';
 import 'package:gymlog/shared/widgets/ui/app_status_tag.dart';
 
-Widget _wrapWithTheme(Widget child, {ThemePalette palette = ThemePalette.neonPurple}) {
+Widget _wrapWithTheme(Widget child,
+    {ThemePalette palette = ThemePalette.neonPurple}) {
   return MaterialApp(
     theme: buildAppTheme(palette.tokens, palette: palette),
     home: Scaffold(
@@ -17,7 +18,9 @@ Widget _wrapWithTheme(Widget child, {ThemePalette palette = ThemePalette.neonPur
 
 void main() {
   group('Three-Tier Visual Grammar Affordance Tests', () {
-    testWidgets('AppStatusTag strictly renders NO border under any configuration', (tester) async {
+    testWidgets(
+        'AppStatusTag strictly renders NO border under any configuration',
+        (tester) async {
       await tester.pumpWidget(
         _wrapWithTheme(
           const AppStatusTag(
@@ -38,12 +41,16 @@ void main() {
       final decoration = container.decoration as BoxDecoration;
 
       // STRICT INVARIANT: AppStatusTag MUST NEVER HAVE A BORDER
-      expect(decoration.border, isNull, reason: 'Status tags must never have a border (Border = Clickable invariant)');
+      expect(decoration.border, isNull,
+          reason:
+              'Status tags must never have a border (Border = Clickable invariant)');
       expect(find.text('Verified Match'), findsOneWidget);
       expect(find.byIcon(Icons.check_circle_rounded), findsOneWidget);
     });
 
-    testWidgets('AppActionChip always renders a border and fires onTap with haptics', (tester) async {
+    testWidgets(
+        'AppActionChip always renders a border and fires onTap with haptics',
+        (tester) async {
       var tapped = false;
       var hapticCalled = false;
 
@@ -84,7 +91,9 @@ void main() {
       expect(hapticCalled, isTrue);
     });
 
-    testWidgets('AppActionChip disabled state renders muted styling and disables interaction', (tester) async {
+    testWidgets(
+        'AppActionChip disabled state renders muted styling and disables interaction',
+        (tester) async {
       await tester.pumpWidget(
         _wrapWithTheme(
           const AppActionChip(
@@ -115,7 +124,9 @@ void main() {
       expect(animatedOpacity.opacity, equals(0.40));
     });
 
-    testWidgets('AppActionChip.compactSquare maintains 28x28 visual size and touch target', (tester) async {
+    testWidgets(
+        'AppActionChip.compactSquare maintains 28x28 visual size and touch target',
+        (tester) async {
       var tapped = false;
 
       await tester.pumpWidget(
@@ -130,14 +141,18 @@ void main() {
       // Visual container size is 28x28
       final sizedBoxFinder = find.descendant(
         of: find.byType(AppActionChip),
-        matching: find.byWidgetPredicate((w) => w is SizedBox && w.width == 28 && w.height == 28),
+        matching: find.byWidgetPredicate(
+            (w) => w is SizedBox && w.width == 28 && w.height == 28),
       );
       expect(sizedBoxFinder, findsOneWidget);
 
       // Touch target constraint is at least 44x44
       final constrainedBoxFinder = find.descendant(
         of: find.byType(AppActionChip),
-        matching: find.byWidgetPredicate((w) => w is ConstrainedBox && w.constraints.minWidth >= 44 && w.constraints.minHeight >= 44),
+        matching: find.byWidgetPredicate((w) =>
+            w is ConstrainedBox &&
+            w.constraints.minWidth >= 44 &&
+            w.constraints.minHeight >= 44),
       );
       expect(constrainedBoxFinder, findsOneWidget);
 
@@ -148,7 +163,8 @@ void main() {
       expect(tapped, isTrue);
     });
 
-    testWidgets('AppInfoText formats multiple items with typographic separator', (tester) async {
+    testWidgets('AppInfoText formats multiple items with typographic separator',
+        (tester) async {
       await tester.pumpWidget(
         _wrapWithTheme(
           const AppInfoText(
@@ -160,7 +176,8 @@ void main() {
       expect(find.text('4 exercises · 45 mins · Leg Day'), findsOneWidget);
     });
 
-    testWidgets('AppInfoText filters empty or whitespace strings', (tester) async {
+    testWidgets('AppInfoText filters empty or whitespace strings',
+        (tester) async {
       await tester.pumpWidget(
         _wrapWithTheme(
           const AppInfoText(

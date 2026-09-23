@@ -814,11 +814,6 @@ class _SetRowState extends State<SetRow> {
     }
 
     // 3. Idle state: Clean compact pill with circular play trigger + duration entry
-    final previousTarget =
-        widget.previousReps != null && widget.previousReps! > 0
-            ? '${widget.previousReps!}s'
-            : '0s';
-
     return Center(
       child: FittedBox(
         fit: BoxFit.scaleDown,
@@ -872,6 +867,7 @@ class _SetRowState extends State<SetRow> {
                 child: TextField(
                   controller: _repsController,
                   focusNode: _repsFocus,
+                  textInputAction: TextInputAction.next,
                   textAlign: TextAlign.center,
                   keyboardType: TextInputType.number,
                   cursorColor: accent.base,
@@ -884,7 +880,7 @@ class _SetRowState extends State<SetRow> {
                     fontWeight: FontWeight.w600,
                   ),
                   decoration: InputDecoration(
-                    hintText: previousTarget,
+                    hintText: '0s',
                     hintStyle:
                         AppText.value(color: surface.textTertiary).copyWith(
                       fontSize: 14,

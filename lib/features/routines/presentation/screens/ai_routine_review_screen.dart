@@ -786,8 +786,8 @@ class _AiRoutineReviewScreenState extends ConsumerState<AiRoutineReviewScreen> {
                                     isSelected: true,
                                     visualHeight: 28,
                                     minTouchTarget: 44,
-                                    borderRadius:
-                                        const BorderRadius.all(Radius.circular(16)),
+                                    borderRadius: const BorderRadius.all(
+                                        Radius.circular(16)),
                                     onTap: () {
                                       ref
                                           .read(

@@ -234,8 +234,8 @@ class _RestAction extends StatelessWidget {
         borderRadius: BorderRadius.circular(AppRadius.buttonSecondary),
         onTap: onTap,
         child: Container(
-          height: 36,
-          padding: const EdgeInsets.symmetric(horizontal: 10),
+          height: 44,
+          padding: const EdgeInsets.symmetric(horizontal: 11),
           alignment: Alignment.center,
           child: Text(
             label,
