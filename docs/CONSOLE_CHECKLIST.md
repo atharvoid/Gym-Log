@@ -1,4 +1,4 @@
-# GymLog Console Release Readiness Checklist
+# Delt Console Release Readiness Checklist
 
 > **Status:** Active / Production Authoritative
 > **Owner:** Core Engineering
@@ -21,7 +21,7 @@
 ## Google Play Console Checklist
 
 - [ ] App Bundle (`.aab`) uploaded to Release track with obfuscation symbol map (`build/app/outputs/symbols`).
-- [ ] Store Listing metadata configured with `support@gymlog.app` and privacy links.
+- [ ] Store Listing metadata configured with Telegram support channel (`https://t.me/gym_log`) / discussion group (`https://t.me/+E66f3thMUOE2NTc1`) and privacy links.
 - [ ] Data Safety Questionnaire completed matching [PRIVACY_POLICY.md](legal/PRIVACY_POLICY.md):
   - User Account / Identifiers (Google Sign-In)
   - Health / Fitness data (Local/Synced workout logs)
@@ -35,4 +35,4 @@
 - [ ] iOS release build completed (`flutter build ios --release`).
 - [ ] App Privacy details submitted matching [PRIVACY_POLICY.md](legal/PRIVACY_POLICY.md).
 - [ ] In-App Purchases & Subscriptions configured for `premium` entitlement package.
-- [ ] Account Deletion link and Support email set to `support@gymlog.app`.
+- [ ] Account Deletion link and Support contact set to `https://t.me/+E66f3thMUOE2NTc1` and `https://t.me/gym_log`.

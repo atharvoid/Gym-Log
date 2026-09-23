@@ -68,7 +68,7 @@ class _DeleteAccountScreenState extends ConsumerState<DeleteAccountScreen> {
             ? 'Your account and data have been permanently deleted.'
             : 'Your data on this device was deleted, but some cloud data '
                 'could not be removed. Reach out in the Delt Telegram '
-                'channel (t.me/+E66f3thMUOE2NTc1) to finish the purge.',
+                'discussion group (t.me/+E66f3thMUOE2NTc1) to finish the purge.',
         variant: fullyDeleted
             ? AppSnackBarVariant.success
             : AppSnackBarVariant.error,

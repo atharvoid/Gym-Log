@@ -201,7 +201,7 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
     HapticFeedback.selectionClick();
     try {
       final dir = await getTemporaryDirectory();
-      final file = File('${dir.path}/gymlog_import_template.csv');
+      final file = File('${dir.path}/delt_import_template.csv');
       await file.writeAsString(WorkoutExportService.buildTemplateCsv());
       await SharePlus.instance.share(ShareParams(
         files: [XFile(file.path, mimeType: 'text/csv')],

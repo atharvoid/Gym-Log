@@ -174,7 +174,7 @@ class _ReportProblemFormState extends State<ReportProblemForm> {
   /// 1. The report goes on the clipboard FIRST. Every failure path below can
   ///    honestly tell the user to paste it, and no report is ever lost.
   /// 2. Post to the `report-problem` Supabase Edge Function, which holds the
-  ///    Telegram bot token server-side and delivers to the GymLog channel.
+  ///    Telegram bot token server-side and delivers to the Delt channel.
   ///    A token bundled in the APK would be extractable with `strings`, so
   ///    there is intentionally no direct Bot API call here.
   /// 3. Relay unreachable → open the channel; the report is already copied.
@@ -394,7 +394,7 @@ class HelpFeedbackScreen extends ConsumerWidget {
                                 AppText.cardTitle(color: surface.textPrimary)),
                         const SizedBox(height: 2),
                         Text(
-                          'Reports land in the Telegram channel · t.me/+E66f3thMUOE2NTc1',
+                          'Reports land in the Telegram channel · t.me/gym_log',
                           style: AppText.meta(color: surface.textSecondary),
                         ),
                       ],
@@ -416,6 +416,19 @@ class HelpFeedbackScreen extends ConsumerWidget {
                     title: 'Report a problem',
                     subtitle: 'Sent to the Delt Telegram channel',
                     onTap: () => showReportProblemSheet(context, ref),
+                  ),
+                  Divider(height: 1, color: surface.borderSubtle),
+                  AppActionRow(
+                    icon: Icons.chat_bubble_outline_rounded,
+                    title: 'Community & Discussion',
+                    subtitle: 'Feature requests & discussion on Telegram',
+                    onTap: () async {
+                      final uri = Uri.parse(kTelegramDiscussionUrl);
+                      if (await canLaunchUrl(uri)) {
+                        await launchUrl(uri,
+                            mode: LaunchMode.externalApplication);
+                      }
+                    },
                   ),
                 ],
               ),

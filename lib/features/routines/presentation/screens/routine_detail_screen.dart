@@ -213,7 +213,7 @@ class _RoutineDetailScreenState extends ConsumerState<RoutineDetailScreen> {
     }
     b
       ..writeln()
-      ..write('Shared from GymLog');
+      ..write('Shared from Delt');
     await SharePlus.instance.share(
       ShareParams(text: b.toString(), subject: routine.routine.name),
     );

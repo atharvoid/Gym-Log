@@ -9,7 +9,8 @@ import 'package:gymlog/features/profile/presentation/screens/help_feedback_scree
 void main() {
   group('ATOMIC-13 Documentation & Support Metadata Qualification', () {
     test('canonical support identity and legal URLs are defined and valid', () {
-      expect(kTelegramChannelUrl, equals('https://t.me/+E66f3thMUOE2NTc1'));
+      expect(kTelegramChannelUrl, equals('https://t.me/gym_log'));
+      expect(kTelegramDiscussionUrl, equals('https://t.me/+E66f3thMUOE2NTc1'));
       expect(kPrivacyPolicyUrl, contains('privacy-policy.html'));
       expect(kTermsOfServiceUrl, contains('terms-of-service.html'));
       expect(kAccountDeletionUrl, contains('delete-account.html'));
@@ -75,8 +76,9 @@ void main() {
 
       expect(find.text('Help & Feedback'), findsOneWidget);
       expect(find.text('Delt Support'), findsOneWidget);
-      expect(find.textContaining('t.me/+E66f3thMUOE2NTc1'), findsWidgets);
+      expect(find.textContaining('t.me/gym_log'), findsWidgets);
       expect(find.text('Report a problem'), findsOneWidget);
+      expect(find.text('Community & Discussion'), findsOneWidget);
       // E1: legal rows live once, in Settings — never duplicated here.
       expect(find.text('Privacy Policy'), findsNothing);
       expect(find.text('Terms of Service'), findsNothing);

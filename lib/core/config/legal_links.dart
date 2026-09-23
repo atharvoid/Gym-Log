@@ -8,13 +8,16 @@ const kTermsOfServiceUrl =
 const kAccountDeletionUrl =
     'https://atharvoid.github.io/Gym-Log/legal/delete-account.html';
 
-/// Where problem reports and support live: the GymLog Telegram channel.
+/// Where problem reports and support live: the Delt Telegram channel.
 ///
 /// A t.me link CANNOT carry a prefilled message body, so "Report a problem"
 /// posts its diagnostic template through the `report-problem` Supabase Edge
 /// Function — which holds the Telegram bot token server-side — and falls
 /// back to clipboard + this link when the relay is unreachable. There is
 /// deliberately no support email in the app anymore (ship-readiness #5).
-const kTelegramChannelUrl = 'https://t.me/+E66f3thMUOE2NTc1';
+const kTelegramChannelUrl = 'https://t.me/gym_log';
+
+/// Where community discussion, feature requests, and account deletion support live.
+const kTelegramDiscussionUrl = 'https://t.me/+E66f3thMUOE2NTc1';
 
 const kExerciseCatalogVersion = 2;

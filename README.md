@@ -94,7 +94,7 @@ GymLog operates in a **local-first** paradigm:
 
 | Service | Monitored Route / Authority | Policy |
 |---|---|---|
-| Support Route | `support@gymlog.app` | Canonical support identity for user inquiries and manual account deletion |
+| Support Route | `https://t.me/+E66f3thMUOE2NTc1` / `https://t.me/gym_log` | Canonical support & discussion routes for user inquiries and feedback |
 | Privacy Policy | `https://atharvoid.github.io/Gym-Log/legal/privacy-policy.html` | Zero ads, local-first data retention |
 | Terms of Service | `https://atharvoid.github.io/Gym-Log/legal/terms-of-service.html` | Short, readable terms & subscription terms |
 | Account Deletion | `https://atharvoid.github.io/Gym-Log/legal/delete-account.html` | Self-service web deletion portal & in-app Settings deletion |
