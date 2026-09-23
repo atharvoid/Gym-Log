@@ -15,6 +15,6 @@ const kAccountDeletionUrl =
 /// Function — which holds the Telegram bot token server-side — and falls
 /// back to clipboard + this link when the relay is unreachable. There is
 /// deliberately no support email in the app anymore (ship-readiness #5).
-const kTelegramChannelUrl = 'https://t.me/gym_log';
+const kTelegramChannelUrl = 'https://t.me/+E66f3thMUOE2NTc1';
 
 const kExerciseCatalogVersion = 2;

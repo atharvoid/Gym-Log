@@ -394,7 +394,7 @@ class HelpFeedbackScreen extends ConsumerWidget {
                                 AppText.cardTitle(color: surface.textPrimary)),
                         const SizedBox(height: 2),
                         Text(
-                          'Reports land in the Telegram channel · t.me/gym_log',
+                          'Reports land in the Telegram channel · t.me/+E66f3thMUOE2NTc1',
                           style: AppText.meta(color: surface.textSecondary),
                         ),
                       ],
