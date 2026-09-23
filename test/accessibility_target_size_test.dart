@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/semantics.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gymlog/core/database/database.dart';
@@ -100,8 +101,8 @@ void main() {
     expect(equipmentSize.height, greaterThanOrEqualTo(48));
   });
 
-  testWidgets('_LegalLink buttons in AuthScreen are at least 48dp tall',
-      (tester) async {
+  testWidgets('Legal links in AuthScreen flow inline and expose link semantics',
+      semanticsEnabled: true, (tester) async {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
@@ -116,23 +117,34 @@ void main() {
     );
 
     await tester.pump();
+    // The legal block fades in via _EntranceFade; an Opacity of 0 prunes the
+    // subtree's semantics, so let the entrance complete before walking nodes.
+    await tester.pump(const Duration(milliseconds: 700));
 
-    final termsTapTarget = find.ancestor(
-      of: find.text('Terms of Service'),
-      matching: find.byType(GestureDetector),
+    // Regression: the legal sentence must be ONE inline paragraph — the old
+    // Wrap of minHeight-48 link boxes raised the links above the sentence
+    // baseline ("popped above") and gapped the wrapped lines.
+    final paragraph = find.byWidgetPredicate(
+      (w) =>
+          w is Text &&
+          w.textSpan != null &&
+          w.textSpan!.toPlainText().contains('Terms of Service'),
     );
-    final privacyTapTarget = find.ancestor(
-      of: find.text('Privacy Policy'),
-      matching: find.byType(GestureDetector),
-    );
+    expect(paragraph, findsOneWidget);
 
-    expect(termsTapTarget, findsOneWidget);
-    expect(privacyTapTarget, findsOneWidget);
+    // Inline caption links follow platform guidance (glyph-sized targets);
+    // what must not regress is their accessibility: per-span isLink nodes
+    // with tap actions for screen readers.
+    final links = tester.semantics
+        .simulatedAccessibilityTraversal()
+        .where((n) => n.getSemanticsData().flagsCollection.isLink)
+        .toList();
 
-    final termsSize = tester.getSize(termsTapTarget);
-    final privacySize = tester.getSize(privacyTapTarget);
-
-    expect(termsSize.height, greaterThanOrEqualTo(48));
-    expect(privacySize.height, greaterThanOrEqualTo(48));
+    expect(links.any((n) => n.label == 'Terms of Service'), isTrue);
+    expect(links.any((n) => n.label == 'Privacy Policy'), isTrue);
+    expect(
+        links.every((n) =>
+            n.getSemanticsData().actions & SemanticsAction.tap.index != 0),
+        isTrue);
   });
 }

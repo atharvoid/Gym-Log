@@ -19,7 +19,7 @@
 | DAOs | `*_dao.dart` | `workouts_dao.dart`, `exercises_dao.dart` |
 | Tables | `*_table.dart` | `workouts_table.dart`, `exercises_table.dart` |
 | Feature widgets | descriptive | `exercise_block.dart`, `set_row.dart`, `routine_card.dart` |
-| Shared widgets | descriptive | `tracker_card.dart`, `primary_button.dart`, `toggle_pill.dart` |
+| Shared widgets | descriptive | `tracker_card.dart`, `primary_button.dart`, `app_action_chip.dart` |
 
 ---
 

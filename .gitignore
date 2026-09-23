@@ -10,4 +10,22 @@ custom_lint.log
 node_modules/
 android_backup/
 test/golden/failures/
+upload_certificate.pem
+*.pem
+verify_*.txt
+*.pdf
+*.pptx
+*.py
+editorial_screenshots/
+ppt_screenshots/
+gymlog-assets-temp/
+supabase/.temp/
+build_fixes.md
+company_profile_data.md
+profile_editorial.html
+device_screen_*.png
+current_screen.png
+pratik_*.png
+site_photo_*.jpg
+test_tight_emblem_dark.png
 

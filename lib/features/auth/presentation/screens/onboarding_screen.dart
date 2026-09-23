@@ -118,9 +118,19 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     final progress = (_currentPageIndex + 1) / totalSteps;
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: surface.isLight
-          ? SystemUiOverlayStyle.dark
-          : SystemUiOverlayStyle.light,
+      value: (surface.isLight
+              ? SystemUiOverlayStyle.dark
+              : SystemUiOverlayStyle.light)
+          .copyWith(
+        statusBarColor: Colors.transparent,
+        // Edge-to-edge (Android 15+ enforces it at targetSdk 36): the nav bar
+        // is transparent and content draws behind it, so the CTA steps below
+        // must pad the bottom inset themselves; this color only matters on
+        // legacy devices where the nav bar is still opaque.
+        systemNavigationBarColor: surface.bgBase,
+        systemNavigationBarIconBrightness:
+            surface.isLight ? Brightness.dark : Brightness.light,
+      ),
       child: PopScope(
         canPop: false,
         onPopInvokedWithResult: (didPop, _) {
@@ -209,28 +219,34 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               ),
             ),
           ),
-          body: PageView(
-            controller: _pageController,
-            physics:
-                const NeverScrollableScrollPhysics(), // Control via CTAs only
-            onPageChanged: (index) {
-              FocusManager.instance.primaryFocus?.unfocus();
-              setState(() {
-                _currentPageIndex = index;
-              });
-            },
-            children: [
-              StepName(onNext: () => _goToPage(1)),
-              StepAge(onNext: () => _goToPage(2)),
-              StepGender(onNext: () => _goToPage(3)),
-              StepUnits(onNext: () => _goToPage(4)),
-              StepExperience(onNext: () => _goToPage(5)),
-              StepWeeklyGoal(onNext: () => _goToPage(6)),
-              StepCompletion(
-                onStartTour: _handleStartTour,
-                onSkipTour: _handleSkipTour,
-              ),
-            ],
+          body: SafeArea(
+            top: false,
+            left: false,
+            right: false,
+            bottom: true,
+            child: PageView(
+              controller: _pageController,
+              physics:
+                  const NeverScrollableScrollPhysics(), // Control via CTAs only
+              onPageChanged: (index) {
+                FocusManager.instance.primaryFocus?.unfocus();
+                setState(() {
+                  _currentPageIndex = index;
+                });
+              },
+              children: [
+                StepName(onNext: () => _goToPage(1)),
+                StepAge(onNext: () => _goToPage(2)),
+                StepGender(onNext: () => _goToPage(3)),
+                StepUnits(onNext: () => _goToPage(4)),
+                StepExperience(onNext: () => _goToPage(5)),
+                StepWeeklyGoal(onNext: () => _goToPage(6)),
+                StepCompletion(
+                  onStartTour: _handleStartTour,
+                  onSkipTour: _handleSkipTour,
+                ),
+              ],
+            ),
           ),
         ),
       ),

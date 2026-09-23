@@ -1283,35 +1283,30 @@ class WorkoutsDao extends DatabaseAccessor<AppDatabase>
 
   // ── Routine Volume History ───────────────────────────────────────────────
 
+  /// Returns the volume history for a routine, tracking each completed session
+  /// individually so multiple workouts (even on the same day) plot their progression.
   Stream<List<DailyVolumeSample>> watchDailyVolumeForRoutine(
     String routineId, {
     DateTime? since,
   }) {
-    final dayExpr = workoutSessions.startedAt.date;
-    final volSum = workoutSessions.totalVolumeKg.sum();
-
-    final query = selectOnly(workoutSessions)
-      ..addColumns([dayExpr, volSum])
-      ..where(workoutSessions.routineId.equals(routineId))
-      ..where(workoutSessions.endedAt.isNotNull())
-      ..groupBy([dayExpr])
-      ..orderBy([OrderingTerm.asc(dayExpr)]);
+    final query = select(workoutSessions)
+      ..where((t) => t.routineId.equals(routineId))
+      ..where((t) => t.endedAt.isNotNull())
+      ..orderBy([(t) => OrderingTerm.asc(t.startedAt)]);
     if (since != null) {
-      query.where(workoutSessions.startedAt.isBiggerOrEqualValue(since));
+      query.where((t) => t.startedAt.isBiggerOrEqualValue(since));
     }
 
-    return query.watch().map((rows) => rows
-        .map((r) => DailyVolumeSample(
-              day: DateTime.parse(r.read(dayExpr)!),
-              volume: (r.read(volSum) ?? 0).toDouble(),
+    return query.watch().map((sessions) => sessions
+        .map((s) => DailyVolumeSample(
+              day: s.endedAt ?? s.startedAt,
+              volume: s.totalVolumeKg,
             ))
         .toList());
   }
 
   /// TRUE per-session stats for a routine (count / total / best session
-  /// volume). Deliberately NOT day-grouped — [watchDailyVolumeForRoutine] groups
-  /// by day for the chart trend, but the header's "Sessions" count must reflect
-  /// every completed session, so two on the same day are counted as two.
+  /// volume). Reflects every completed session, so two on the same day are counted as two.
   Stream<RoutineSessionStats> watchRoutineSessionStats(String routineId) {
     final countExpr = workoutSessions.id.count();
     final sumExpr = workoutSessions.totalVolumeKg.sum();

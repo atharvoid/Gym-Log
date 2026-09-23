@@ -63,6 +63,8 @@ abstract final class Env {
   /// RevenueCat public SDK keys. Absent → PremiumService runs in free mode.
   static const revenueCatAndroidKey =
       String.fromEnvironment('REVENUECAT_ANDROID_KEY');
+  static const revenueCatTestKey =
+      String.fromEnvironment('REVENUECAT_TEST_KEY');
   static const revenueCatIosKey = String.fromEnvironment('REVENUECAT_IOS_KEY');
 
   /// Sentry DSN for crash/error reporting. Absent → Sentry is initialized but

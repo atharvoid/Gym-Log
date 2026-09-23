@@ -82,8 +82,9 @@ void main() {
     });
   });
 
-  group('SpotlightTourOverlay auto-advance', () {
-    testWidgets('advances past a target that never mounts', (tester) async {
+  group('SpotlightTourOverlay unresolved target', () {
+    testWidgets('does not auto-advance when target never mounts',
+        (tester) async {
       SharedPreferences.setMockInitialValues({'first_run_tour_step': 2});
 
       final targetKey = GlobalKey();
@@ -100,16 +101,16 @@ void main() {
         ),
       );
 
-      // Overlay should start retrying but never paint a mask.
       expect(find.byType(SpotlightTourOverlay), findsOneWidget);
 
-      // Wait long enough for the retry cap to expire.
+      // Wait long enough for the resolve attempts to settle.
       await tester.pump(const Duration(seconds: 3));
 
       final container =
           ProviderScope.containerOf(tester.element(find.byType(MaterialApp)));
-      expect(container.read(firstRunTourProvider), equals(3),
-          reason: 'Tour should auto-advance from step 2 when target is absent');
+      expect(container.read(firstRunTourProvider), equals(2),
+          reason:
+              'Tour should NOT auto-advance and dump user into Settings when target is unresolved');
     });
   });
 

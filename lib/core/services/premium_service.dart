@@ -32,7 +32,11 @@ class PremiumService with WidgetsBindingObserver {
   static const entitlementId = 'premium';
 
   static bool hasPremium(CustomerInfo info) {
-    return info.entitlements.active.containsKey(entitlementId);
+    final active = info.entitlements.active;
+    return active.containsKey(entitlementId) ||
+        active.containsKey('pro') ||
+        active.keys.any(
+            (k) => k.toLowerCase() == 'premium' || k.toLowerCase() == 'pro');
   }
 
   final AppDatabase _db;
@@ -58,9 +62,14 @@ class PremiumService with WidgetsBindingObserver {
       (defaultTargetPlatform == TargetPlatform.android ||
           defaultTargetPlatform == TargetPlatform.iOS);
 
-  String? get _apiKey => defaultTargetPlatform == TargetPlatform.android
-      ? Env.revenueCatAndroidKey
-      : Env.revenueCatIosKey;
+  String? get _apiKey {
+    if (defaultTargetPlatform == TargetPlatform.android) {
+      if (Env.revenueCatAndroidKey.isNotEmpty) return Env.revenueCatAndroidKey;
+      if (Env.revenueCatTestKey.isNotEmpty) return Env.revenueCatTestKey;
+      return null;
+    }
+    return Env.revenueCatIosKey;
+  }
 
   /// Configures the SDK. Safe to call on any platform. degrades to a no-op
   /// when unsupported or when API keys are absent.
@@ -91,8 +100,12 @@ class PremiumService with WidgetsBindingObserver {
     }
   }
 
-  /// Keeps the RC identity in sync with Supabase auth.
-  Future<void> setUser(String? userId) async {
+  /// Keeps the RC identity and customer attributes in sync with Supabase auth.
+  Future<void> setUser(
+    String? userId, {
+    String? email,
+    String? displayName,
+  }) async {
     final previous = _userId;
     _userId = userId;
 
@@ -105,9 +118,17 @@ class PremiumService with WidgetsBindingObserver {
     try {
       if (userId == null) {
         await Purchases.logOut();
-      } else if (userId != previous) {
-        final result = await Purchases.logIn(userId);
-        _onCustomerInfo(result.customerInfo);
+      } else {
+        if (userId != previous) {
+          final result = await Purchases.logIn(userId);
+          _onCustomerInfo(result.customerInfo);
+        }
+        if (email != null && email.isNotEmpty) {
+          await Purchases.setEmail(email);
+        }
+        if (displayName != null && displayName.isNotEmpty) {
+          await Purchases.setDisplayName(displayName);
+        }
       }
     } catch (e) {
       if (kDebugMode) debugPrint('[PremiumService] setUser failed: $e');
@@ -215,6 +236,13 @@ class PremiumService with WidgetsBindingObserver {
   }
 
   void _onCustomerInfo(CustomerInfo info) {
+    if (kDebugMode) {
+      debugPrint(
+          '[PremiumService] CustomerInfo update for: ${info.originalAppUserId}');
+      debugPrint(
+          '[PremiumService] Active entitlements: ${info.entitlements.active.keys.toList()}');
+      debugPrint('[PremiumService] hasPremium verdict: ${hasPremium(info)}');
+    }
     if (!_customerInfoController.isClosed) _customerInfoController.add(info);
     unawaited(_syncToLocalCache(info));
   }
@@ -226,7 +254,14 @@ class PremiumService with WidgetsBindingObserver {
 
     try {
       final isPremium = hasPremium(info);
-      final entitlement = info.entitlements.active[entitlementId];
+      final entitlement = info.entitlements.active[entitlementId] ??
+          info.entitlements.active['pro'] ??
+          info.entitlements.active.entries
+              .where((e) =>
+                  e.key.toLowerCase() == 'premium' ||
+                  e.key.toLowerCase() == 'pro')
+              .firstOrNull
+              ?.value;
       final expiry = entitlement?.expirationDate != null
           ? DateTime.tryParse(entitlement!.expirationDate!)
           : null;

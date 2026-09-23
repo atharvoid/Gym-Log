@@ -25,6 +25,8 @@ import '../widgets/active_workout_header.dart';
 import '../widgets/exercise_block.dart';
 import '../widgets/pr_celebration_overlay.dart';
 import '../widgets/rest_timer_bar.dart';
+import '../widgets/hold_timer_bar.dart';
+import '../providers/hold_timer_provider.dart';
 import '../widgets/finish_summary_sheet.dart';
 import 'package:gymlog/shared/widgets/motion/entrance_fade.dart';
 import 'package:gymlog/shared/layout/adaptive.dart';
@@ -153,6 +155,7 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
       isDestructive: true,
     );
     if (confirmed && mounted) {
+      ref.read(holdTimerProvider.notifier).cancel();
       ref.read(restTimerProvider.notifier).skip();
       ref.read(activeWorkoutProvider.notifier).discardWorkout();
       Navigator.pop(context);
@@ -209,6 +212,7 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
       _isSaving = true;
     });
 
+    ref.read(holdTimerProvider.notifier).cancel();
     ref.read(restTimerProvider.notifier).skip();
     final rootNavigator = Navigator.of(context, rootNavigator: true);
 
@@ -423,6 +427,7 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
         ref.watch(activeWorkoutProvider.select((state) => state != null));
     final notifier = ref.read(activeWorkoutProvider.notifier);
     final restTimer = ref.watch(restTimerProvider);
+    final holdTimer = ref.watch(holdTimerProvider);
     final globalUnit = ref.watch(weightUnitProvider);
     final isEditing = ref.watch(activeWorkoutProvider
         .select((state) => state?.originalSessionId != null));
@@ -632,7 +637,8 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
             ),
           ],
         )),
-        bottomNavigationBar: !workoutExists || restTimer == null
+        bottomNavigationBar: !workoutExists ||
+                (restTimer == null && holdTimer == null)
             ? null
             : Container(
                 decoration: BoxDecoration(
@@ -660,8 +666,15 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
                       ).animate(animation),
                       child: child,
                     ),
-                    child: RestTimerBar(
-                        key: const ValueKey('rest'), state: restTimer),
+                    child: holdTimer != null
+                        ? HoldTimerBar(
+                            key: const ValueKey('hold'),
+                            state: holdTimer,
+                          )
+                        : RestTimerBar(
+                            key: const ValueKey('rest'),
+                            state: restTimer!,
+                          ),
                   ),
                 ),
               ),

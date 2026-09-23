@@ -1,4 +1,4 @@
-# GymLog Terms of Service
+# Delt Terms of Service
 
 > **Status:** Active / Production Authoritative
 > **Owner:** Legal & Product Compliance
@@ -10,8 +10,8 @@
 
 ## The deal
 
-GymLog is a workout-logging app. The free tier logs unlimited workouts,
-forever. The optional **GymLog Pro** subscription unlocks extended analytics
+Delt is a workout-logging app. The free tier logs unlimited workouts,
+forever. The optional **Delt Pro** subscription unlocks extended analytics
 (full chart history and the 1Y / All-Time ranges).
 
 ## Your data storage & sync
@@ -37,7 +37,7 @@ Don't attempt to abuse, reverse-bill, or disrupt the service or other users.
 
 ## Health disclaimer
 
-GymLog records numbers; it does not give medical or training advice.
+Delt records numbers; it does not give medical or training advice.
 Consult a professional before starting an exercise program. You train at
 your own risk.
 
@@ -54,4 +54,4 @@ new effective date. Continued use after changes means acceptance.
 
 ## Contact
 
-If you have questions, need support, or request account deletion, email **support@gymlog.app**, or open an issue on the GymLog repository.
+If you have questions, need support, or request account deletion, reach out in the Delt discussion group at **https://t.me/+E66f3thMUOE2NTc1** or the Delt channel at **https://t.me/gym_log**.
