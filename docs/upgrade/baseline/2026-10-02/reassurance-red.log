@@ -1,0 +1,247 @@
+00:00 +0: loading C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/error_reassurance_test.dart
+00:00 +0: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/error_reassurance_test.dart: async-error does not guarantee storage integrity on an error
+══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
+The following TestFailure was thrown running a test:
+Expected: no matching candidates
+  Actual: _TextContainingWidgetFinder:<Found 1 widget with text containing RegExp: pattern=data is
+safe flags=i: [
+            Text("Something went wrong. Your data is safe.", inherit: true, color: Color(alpha:
+1.0000, red: 1.0000, green: 1.0000, blue: 1.0000, colorSpace: ColorSpace.sRGB), family: Inter_600,
+familyFallback: [Inter], size: 14.0, weight: 600, height: 1.4x, textAlign: center, dependencies:
+[DefaultSelectionStyle, DefaultTextStyle, MediaQuery]),
+          ]>
+   Which: means one was found but none were expected
+
+When the exception was thrown, this was the stack:
+#4      main.<anonymous closure> (file:///C:/Users/Atharva%20Patil/Documents/projects/gymlog/test/upgrade/error_reassurance_test.dart:13:7)
+<asynchronous suspension>
+#5      testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#6      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1952:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided one frame from package:stack_trace)
+
+This was caught by the test expectation on the following line:
+  file:///C:/Users/Atharva%20Patil/Documents/projects/gymlog/test/upgrade/error_reassurance_test.dart line 13
+The test description was:
+  async-error does not guarantee storage integrity on an error
+════════════════════════════════════════════════════════════════════════════════════════════════════
+00:00 +0 -1: C:/Users/Atharva Patil/Documents/projects/gymlog/test/routine_volume_error_state_test.dart: failed volume stream renders error+retry, never a zeroed volume graph
+00:00 +0 -1: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/error_reassurance_test.dart: async-error does not guarantee storage integrity on an error [E]
+  Test failed. See exception logs above.
+  The test description was: async-error does not guarantee storage integrity on an error
+  
+00:00 +0 -1: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/error_reassurance_test.dart: app-error does not guarantee storage integrity on an error
+══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
+The following TestFailure was thrown running a test:
+Expected: no matching candidates
+  Actual: _TextContainingWidgetFinder:<Found 1 widget with text containing RegExp: pattern=data is
+safe flags=i: [
+            Text("Your workout data is safe on this device.\nRestart Delt or head back home.",
+inherit: true, color: Color(alpha: 0.6000, red: 1.0000, green: 1.0000, blue: 1.0000, colorSpace:
+ColorSpace.sRGB), family: Inter_regular, familyFallback: [Inter], size: 13.5, weight: 400, height:
+1.5x, decoration: TextDecoration.none, textAlign: center, dependencies: [DefaultSelectionStyle,
+DefaultTextStyle, MediaQuery]),
+          ]>
+   Which: means one was found but none were expected
+
+When the exception was thrown, this was the stack:
+#4      main.<anonymous closure> (file:///C:/Users/Atharva%20Patil/Documents/projects/gymlog/test/upgrade/error_reassurance_test.dart:13:7)
+<asynchronous suspension>
+#5      testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#6      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1952:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided one frame from package:stack_trace)
+
+This was caught by the test expectation on the following line:
+  file:///C:/Users/Atharva%20Patil/Documents/projects/gymlog/test/upgrade/error_reassurance_test.dart line 13
+The test description was:
+  app-error does not guarantee storage integrity on an error
+════════════════════════════════════════════════════════════════════════════════════════════════════
+00:00 +0 -2: C:/Users/Atharva Patil/Documents/projects/gymlog/test/routine_volume_error_state_test.dart: failed volume stream renders error+retry, never a zeroed volume graph
+00:00 +0 -2: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/error_reassurance_test.dart: app-error does not guarantee storage integrity on an error [E]
+  Test failed. See exception logs above.
+  The test description was: app-error does not guarantee storage integrity on an error
+  
+00:01 +0 -2: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/error_reassurance_test.dart: detail-error does not guarantee storage integrity on an error
+══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
+The following TestFailure was thrown running a test:
+Expected: no matching candidates
+  Actual: _TextContainingWidgetFinder:<Found 1 widget with text containing RegExp: pattern=data is
+safe flags=i: [
+            Text("Couldn't load this workout. Your data is safe on this device.", inherit: true,
+color: Color(alpha: 1.0000, red: 1.0000, green: 1.0000, blue: 1.0000, colorSpace: ColorSpace.sRGB),
+family: Inter_600, familyFallback: [Inter], size: 14.0, weight: 600, height: 1.4x, textAlign:
+center, dependencies: [DefaultSelectionStyle, DefaultTextStyle, MediaQuery]),
+          ]>
+   Which: means one was found but none were expected
+
+When the exception was thrown, this was the stack:
+#4      main.<anonymous closure> (file:///C:/Users/Atharva%20Patil/Documents/projects/gymlog/test/upgrade/error_reassurance_test.dart:13:7)
+<asynchronous suspension>
+#5      testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#6      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1952:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided one frame from package:stack_trace)
+
+This was caught by the test expectation on the following line:
+  file:///C:/Users/Atharva%20Patil/Documents/projects/gymlog/test/upgrade/error_reassurance_test.dart line 13
+The test description was:
+  detail-error does not guarantee storage integrity on an error
+════════════════════════════════════════════════════════════════════════════════════════════════════
+00:01 +0 -3: C:/Users/Atharva Patil/Documents/projects/gymlog/test/routine_volume_error_state_test.dart: failed volume stream renders error+retry, never a zeroed volume graph
+00:01 +0 -3: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/error_reassurance_test.dart: detail-error does not guarantee storage integrity on an error [E]
+  Test failed. See exception logs above.
+  The test description was: detail-error does not guarantee storage integrity on an error
+  
+00:01 +0 -3: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/error_reassurance_test.dart: offline sync status does not claim a completed save or guaranteed backup
+══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
+The following TestFailure was thrown running a test:
+Expected: no matching candidates
+  Actual: _TextContainingWidgetFinder:<Found 1 widget with text containing Your workouts are saved:
+[
+            Text("Offline. Your workouts are saved and will sync when you're back online", inherit:
+true, color: Color(alpha: 0.6000, red: 1.0000, green: 1.0000, blue: 1.0000, colorSpace:
+ColorSpace.sRGB), family: Inter_regular, familyFallback: [Inter], size: 13.0, weight: 400,
+dependencies: [DefaultSelectionStyle, DefaultTextStyle, MediaQuery]),
+          ]>
+   Which: means one was found but none were expected
+
+When the exception was thrown, this was the stack:
+#4      main.<anonymous closure> (file:///C:/Users/Atharva%20Patil/Documents/projects/gymlog/test/upgrade/error_reassurance_test.dart:26:5)
+<asynchronous suspension>
+#5      testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#6      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1952:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided one frame from package:stack_trace)
+
+This was caught by the test expectation on the following line:
+  file:///C:/Users/Atharva%20Patil/Documents/projects/gymlog/test/upgrade/error_reassurance_test.dart line 26
+The test description was:
+  offline sync status does not claim a completed save or guaranteed backup
+════════════════════════════════════════════════════════════════════════════════════════════════════
+00:01 +0 -4: C:/Users/Atharva Patil/Documents/projects/gymlog/test/routine_volume_error_state_test.dart: failed volume stream renders error+retry, never a zeroed volume graph
+00:01 +0 -4: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/error_reassurance_test.dart: offline sync status does not claim a completed save or guaranteed backup [E]
+  Test failed. See exception logs above.
+  The test description was: offline sync status does not claim a completed save or guaranteed backup
+  
+00:01 +0 -4: C:/Users/Atharva Patil/Documents/projects/gymlog/test/routine_volume_error_state_test.dart: failed volume stream renders error+retry, never a zeroed volume graph
+══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
+The following TestFailure was thrown running a test:
+Expected: no matching candidates
+  Actual: _TextContainingWidgetFinder:<Found 1 widget with text containing Your data is safe: [
+            Text("Couldn't load your volume history. Your data is safe.", inherit: true, color:
+Color(alpha: 1.0000, red: 1.0000, green: 1.0000, blue: 1.0000, colorSpace: ColorSpace.sRGB), family:
+Inter_600, familyFallback: [Inter], size: 14.0, weight: 600, height: 1.4x, textAlign: center,
+dependencies: [DefaultSelectionStyle, DefaultTextStyle, MediaQuery]),
+          ]>
+   Which: means one was found but none were expected
+
+When the exception was thrown, this was the stack:
+#4      main.<anonymous closure> (file:///C:/Users/Atharva%20Patil/Documents/projects/gymlog/test/routine_volume_error_state_test.dart:99:5)
+<asynchronous suspension>
+#5      testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#6      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1952:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided one frame from package:stack_trace)
+
+This was caught by the test expectation on the following line:
+  file:///C:/Users/Atharva%20Patil/Documents/projects/gymlog/test/routine_volume_error_state_test.dart line 99
+The test description was:
+  failed volume stream renders error+retry, never a zeroed volume graph
+════════════════════════════════════════════════════════════════════════════════════════════════════
+00:01 +0 -5: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/error_reassurance_test.dart: storage-free describes successful saves without instant/guaranteed backup claims
+00:01 +0 -5: C:/Users/Atharva Patil/Documents/projects/gymlog/test/routine_volume_error_state_test.dart: failed volume stream renders error+retry, never a zeroed volume graph [E]
+  Test failed. See exception logs above.
+  The test description was: failed volume stream renders error+retry, never a zeroed volume graph
+  
+Warning: At least one test in this suite creates an HttpClient. When running a test suite that uses
+TestWidgetsFlutterBinding, all HTTP requests will return status code 400, and no network request
+will actually be made. Any test expecting a real network connection and status code will fail.
+To test code that needs an HttpClient, provide your own HttpClient implementation to the code under
+test, so that your test can consistently provide a testable response to the code under test.
+00:02 +0 -5: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/error_reassurance_test.dart: storage-free describes successful saves without instant/guaranteed backup claims
+══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
+The following TestFailure was thrown running a test:
+Expected: no matching candidates
+  Actual: _TextContainingWidgetFinder:<Found 1 widget with text containing Every workout is saved
+instantly: [
+            Text("Every workout is saved instantly to a private database on this device. Delt works
+fully offline. Upgrade to Delt Pro to automatically back up your history to the cloud and sync
+across devices.", inherit: true, color: Color(alpha: 0.6000, red: 1.0000, green: 1.0000, blue:
+1.0000, colorSpace: ColorSpace.sRGB), family: Inter_regular, familyFallback: [Inter], size: 15.0,
+weight: 400, textAlign: center, dependencies: [DefaultSelectionStyle, DefaultTextStyle,
+MediaQuery]),
+          ]>
+   Which: means one was found but none were expected
+
+When the exception was thrown, this was the stack:
+#4      main.<anonymous closure> (file:///C:/Users/Atharva%20Patil/Documents/projects/gymlog/test/upgrade/error_reassurance_test.dart:35:7)
+<asynchronous suspension>
+#5      testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#6      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1952:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided one frame from package:stack_trace)
+
+This was caught by the test expectation on the following line:
+  file:///C:/Users/Atharva%20Patil/Documents/projects/gymlog/test/upgrade/error_reassurance_test.dart line 35
+The test description was:
+  storage-free describes successful saves without instant/guaranteed backup claims
+════════════════════════════════════════════════════════════════════════════════════════════════════
+00:02 +0 -6: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/error_reassurance_test.dart: storage-free describes successful saves without instant/guaranteed backup claims [E]
+  Test failed. See exception logs above.
+  The test description was: storage-free describes successful saves without instant/guaranteed backup claims
+  
+00:02 +0 -6: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/error_reassurance_test.dart: storage-pro describes successful saves without instant/guaranteed backup claims
+══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
+The following TestFailure was thrown running a test:
+Expected: no matching candidates
+  Actual: _TextContainingWidgetFinder:<Found 1 widget with text containing Every workout is saved
+instantly: [
+            Text("Every workout is saved instantly to a private database on this device. Delt works
+fully offline. Workouts are automatically backed up to your account so your history survives a
+reinstall or a new phone. Only you can read it.", inherit: true, color: Color(alpha: 0.6000, red:
+1.0000, green: 1.0000, blue: 1.0000, colorSpace: ColorSpace.sRGB), family: Inter_regular,
+familyFallback: [Inter], size: 15.0, weight: 400, textAlign: center, dependencies:
+[DefaultSelectionStyle, DefaultTextStyle, MediaQuery]),
+          ]>
+   Which: means one was found but none were expected
+
+When the exception was thrown, this was the stack:
+#4      main.<anonymous closure> (file:///C:/Users/Atharva%20Patil/Documents/projects/gymlog/test/upgrade/error_reassurance_test.dart:35:7)
+<asynchronous suspension>
+#5      testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#6      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1952:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided one frame from package:stack_trace)
+
+This was caught by the test expectation on the following line:
+  file:///C:/Users/Atharva%20Patil/Documents/projects/gymlog/test/upgrade/error_reassurance_test.dart line 35
+The test description was:
+  storage-pro describes successful saves without instant/guaranteed backup claims
+════════════════════════════════════════════════════════════════════════════════════════════════════
+00:02 +0 -7: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/error_reassurance_test.dart: storage-pro describes successful saves without instant/guaranteed backup claims [E]
+  Test failed. See exception logs above.
+  The test description was: storage-pro describes successful saves without instant/guaranteed backup claims
+  
+00:02 +0 -7: Some tests failed.
+
+Failing tests:
+  C:/Users/Atharva Patil/Documents/projects/gymlog/test/routine_volume_error_state_test.dart: failed volume stream renders error+retry, never a zeroed volume graph
+  C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/error_reassurance_test.dart: app-error does not guarantee storage integrity on an error
+  C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/error_reassurance_test.dart: async-error does not guarantee storage integrity on an error
+  C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/error_reassurance_test.dart: detail-error does not guarantee storage integrity on an error
+  ... and 3 more

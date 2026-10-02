@@ -1,0 +1,11 @@
+Date: 2 October 2026 (Asia/Calcutta)
+Baseline: existing working tree, including pre-existing tracked and untracked changes
+HEAD: ce3d5980e8eba0dd2497310cc1a4d576a2d83dc4
+Branch: feat/explore-routine-first
+Host: Windows
+Flutter: 3.44.0 stable (framework revision 559ffa3f75)
+Dart: 3.12.0
+Verification command: .\scripts\verify.ps1
+Android command: flutter build apk --release --obfuscate --split-debug-info=build/baseline-debug-symbols --no-pub
+No .env or compile-time secrets are required for this compile-only baseline.
+iOS and pushed CI: unverified in this session.

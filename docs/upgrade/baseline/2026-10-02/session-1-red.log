@@ -1,0 +1,393 @@
+00:00 +0: loading C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_correctness_test.dart
+00:00 +0: higgsfield: composed tertiary text and chart ticks meet 4.5:1
+00:00 +0 -1: higgsfield: composed tertiary text and chart ticks meet 4.5:1 [E]
+  Expected: a value greater than or equal to <4.5>
+    Actual: <2.9979745649422775>
+     Which: is not a value greater than or equal to <4.5>
+  Composed foreground Color(alpha: 0.3490, red: 1.0000, green: 1.0000, blue: 1.0000, colorSpace: ColorSpace.sRGB) on Color(alpha: 1.0000, red: 0.0000, green: 0.0000, blue: 0.0000, colorSpace: ColorSpace.sRGB)
+  
+  package:matcher                                     expect
+  package:flutter_test/src/widget_tester.dart 473:18  expect
+  test\upgrade\session_1_correctness_test.dart 34:11  main.<fn>
+  
+00:00 +0 -1: higgsfield: solid accent label meets 4.5:1
+00:00 +1 -1: neonPurple: composed tertiary text and chart ticks meet 4.5:1
+00:00 +1 -2: neonPurple: composed tertiary text and chart ticks meet 4.5:1 [E]
+  Expected: a value greater than or equal to <4.5>
+    Actual: <2.9979745649422775>
+     Which: is not a value greater than or equal to <4.5>
+  Composed foreground Color(alpha: 0.3490, red: 1.0000, green: 1.0000, blue: 1.0000, colorSpace: ColorSpace.sRGB) on Color(alpha: 1.0000, red: 0.0000, green: 0.0000, blue: 0.0000, colorSpace: ColorSpace.sRGB)
+  
+  package:matcher                                     expect
+  package:flutter_test/src/widget_tester.dart 473:18  expect
+  test\upgrade\session_1_correctness_test.dart 34:11  main.<fn>
+  
+00:00 +1 -2: neonPurple: solid accent label meets 4.5:1
+00:00 +1 -3: neonPurple: solid accent label meets 4.5:1 [E]
+  Expected: a value greater than or equal to <4.5>
+    Actual: <4.392617584220508>
+     Which: is not a value greater than or equal to <4.5>
+  
+  package:matcher                                     expect
+  package:flutter_test/src/widget_tester.dart 473:18  expect
+  test\upgrade\session_1_correctness_test.dart 38:67  main.<fn>
+  
+00:00 +1 -3: white: composed tertiary text and chart ticks meet 4.5:1
+00:00 +1 -4: white: composed tertiary text and chart ticks meet 4.5:1 [E]
+  Expected: a value greater than or equal to <4.5>
+    Actual: <2.9979745649422775>
+     Which: is not a value greater than or equal to <4.5>
+  Composed foreground Color(alpha: 0.3490, red: 1.0000, green: 1.0000, blue: 1.0000, colorSpace: ColorSpace.sRGB) on Color(alpha: 1.0000, red: 0.0000, green: 0.0000, blue: 0.0000, colorSpace: ColorSpace.sRGB)
+  
+  package:matcher                                     expect
+  package:flutter_test/src/widget_tester.dart 473:18  expect
+  test\upgrade\session_1_correctness_test.dart 34:11  main.<fn>
+  
+00:00 +1 -4: white: solid accent label meets 4.5:1
+00:00 +2 -4: neonCyan: composed tertiary text and chart ticks meet 4.5:1
+00:00 +2 -5: neonCyan: composed tertiary text and chart ticks meet 4.5:1 [E]
+  Expected: a value greater than or equal to <4.5>
+    Actual: <2.9979745649422775>
+     Which: is not a value greater than or equal to <4.5>
+  Composed foreground Color(alpha: 0.3490, red: 1.0000, green: 1.0000, blue: 1.0000, colorSpace: ColorSpace.sRGB) on Color(alpha: 1.0000, red: 0.0000, green: 0.0000, blue: 0.0000, colorSpace: ColorSpace.sRGB)
+  
+  package:matcher                                     expect
+  package:flutter_test/src/widget_tester.dart 473:18  expect
+  test\upgrade\session_1_correctness_test.dart 34:11  main.<fn>
+  
+00:00 +2 -5: neonCyan: solid accent label meets 4.5:1
+00:00 +3 -5: neonMagenta: composed tertiary text and chart ticks meet 4.5:1
+00:00 +3 -6: neonMagenta: composed tertiary text and chart ticks meet 4.5:1 [E]
+  Expected: a value greater than or equal to <4.5>
+    Actual: <2.9979745649422775>
+     Which: is not a value greater than or equal to <4.5>
+  Composed foreground Color(alpha: 0.3490, red: 1.0000, green: 1.0000, blue: 1.0000, colorSpace: ColorSpace.sRGB) on Color(alpha: 1.0000, red: 0.0000, green: 0.0000, blue: 0.0000, colorSpace: ColorSpace.sRGB)
+  
+  package:matcher                                     expect
+  package:flutter_test/src/widget_tester.dart 473:18  expect
+  test\upgrade\session_1_correctness_test.dart 34:11  main.<fn>
+  
+00:00 +3 -6: neonMagenta: solid accent label meets 4.5:1
+00:00 +4 -6: blazeOrange: composed tertiary text and chart ticks meet 4.5:1
+00:00 +4 -7: blazeOrange: composed tertiary text and chart ticks meet 4.5:1 [E]
+  Expected: a value greater than or equal to <4.5>
+    Actual: <2.9979745649422775>
+     Which: is not a value greater than or equal to <4.5>
+  Composed foreground Color(alpha: 0.3490, red: 1.0000, green: 1.0000, blue: 1.0000, colorSpace: ColorSpace.sRGB) on Color(alpha: 1.0000, red: 0.0000, green: 0.0000, blue: 0.0000, colorSpace: ColorSpace.sRGB)
+  
+  package:matcher                                     expect
+  package:flutter_test/src/widget_tester.dart 473:18  expect
+  test\upgrade\session_1_correctness_test.dart 34:11  main.<fn>
+  
+00:00 +4 -7: blazeOrange: solid accent label meets 4.5:1
+00:00 +5 -7: summary uses the existing display conversion for pounds
+00:00 +5 -8: summary uses the existing display conversion for pounds [E]
+  Expected: '1,049 lbs'
+    Actual: '476 lbs'
+     Which: is different.
+            Expected: 1,049 lbs
+              Actual: 476 lbs
+                      ^
+             Differ at offset 0
+  
+  package:matcher                                     expect
+  package:flutter_test/src/widget_tester.dart 473:18  expect
+  test\upgrade\session_1_correctness_test.dart 41:73  main.<fn>
+  
+00:00 +5 -8: summary preserves logged hold seconds
+00:00 +5 -9: summary preserves logged hold seconds [E]
+  Expected: '1m 15s'
+    Actual: '1m'
+     Which: is different. Both strings start the same, but the actual value is missing the following trailing characters:  15s
+  
+  package:matcher                                     expect
+  package:flutter_test/src/widget_tester.dart 473:18  expect
+  test\upgrade\session_1_correctness_test.dart 43:55  main.<fn>
+  
+00:00 +5 -9: short distance summary preserves metres
+00:00 +5 -10: short distance summary preserves metres [E]
+  Expected: '400 m'
+    Actual: '0.4 km'
+     Which: is different.
+            Expected: 400 m
+              Actual: 0.4 km
+                      ^
+             Differ at offset 0
+  
+  package:matcher                                     expect
+  package:flutter_test/src/widget_tester.dart 473:18  expect
+  test\upgrade\session_1_correctness_test.dart 45:57  main.<fn>
+  
+00:00 +5 -10: an estimated record value is not its logged weight
+00:00 +5 -11: an estimated record value is not its logged weight [E]
+  Expected: <0>
+    Actual: <100.0>
+  
+  package:matcher                                     expect
+  package:flutter_test/src/widget_tester.dart 473:18  expect
+  test\upgrade\session_1_correctness_test.dart 47:68  main.<fn>
+  
+00:00 +5 -11: estimated share hero never implies the estimate was lifted for seven reps
+00:00 +5 -12: estimated share hero never implies the estimate was lifted for seven reps [E]
+  Expected: '100 KG'
+    Actual: '100 KG × 7'
+     Which: is different. Both strings start the same, but the actual value also has the following trailing characters:  × 7
+  
+  package:matcher                                     expect
+  package:flutter_test/src/widget_tester.dart 473:18  expect
+  test\upgrade\session_1_correctness_test.dart 51:5   main.<fn>
+  
+00:00 +5 -12: distance metres times seconds never become weighted session volume
+00:00 +5 -13: distance metres times seconds never become weighted session volume [E]
+  Expected: (double, int):<(0.0, 1)>
+    Actual: (double, int):<(30000.0, 1)>
+  
+  package:matcher                                     expect
+  package:flutter_test/src/widget_tester.dart 473:18  expect
+  test\upgrade\session_1_correctness_test.dart 61:5   main.<fn>
+  
+00:00 +5 -13: workout detail volume converts once to pounds
+══╡ EXCEPTION CAUGHT BY WIDGETS LIBRARY ╞═══════════════════════════════════════════════════════════
+The following assertion was thrown while finalizing the widget tree:
+Looking up a deactivated widget's ancestor is unsafe.
+At this point the state of the widget's element tree is no longer stable.
+To safely refer to a widget's ancestor in its dispose() method, save a reference to the ancestor by
+calling dependOnInheritedWidgetOfExactType() in the widget's didChangeDependencies() method.
+
+When the exception was thrown, this was the stack:
+#0      Element._debugCheckStateIsActiveForAncestorLookup.<anonymous closure> (package:flutter/src/widgets/framework.dart:5049:9)
+#1      Element._debugCheckStateIsActiveForAncestorLookup (package:flutter/src/widgets/framework.dart:5063:6)
+#2      Element.getElementForInheritedWidgetOfExactType (package:flutter/src/widgets/framework.dart:5098:12)
+#3      Element.getInheritedWidgetOfExactType (package:flutter/src/widgets/framework.dart:5093:12)
+#4      TickerMode.getValuesNotifier (package:flutter/src/widgets/ticker_provider.dart:177:10)
+#5      SingleTickerProviderStateMixin._updateTickerModeNotifier (package:flutter/src/widgets/ticker_provider.dart:395:68)
+#6      SingleTickerProviderStateMixin.createTicker (package:flutter/src/widgets/ticker_provider.dart:345:5)
+#7      new AnimationController (package:flutter/src/animation/animation_controller.dart:257:21)
+#8      _SkeletonPulseState._controller (package:gymlog/shared/widgets/ui/skeleton.dart:34:48)
+#9      _SkeletonPulseState._controller (package:gymlog/shared/widgets/ui/skeleton.dart)
+#10     _SkeletonPulseState.dispose (package:gymlog/shared/widgets/ui/skeleton.dart:41:5)
+#11     StatefulElement.unmount (package:flutter/src/widgets/framework.dart:6030:11)
+#12     _InactiveElements._unmount (package:flutter/src/widgets/framework.dart:2117:13)
+#13     _InactiveElements._unmount.<anonymous closure> (package:flutter/src/widgets/framework.dart:2115:7)
+#14     SingleChildRenderObjectElement.visitChildren (package:flutter/src/widgets/framework.dart:7101:14)
+#15     _InactiveElements._unmount (package:flutter/src/widgets/framework.dart:2113:13)
+#16     _InactiveElements._unmount.<anonymous closure> (package:flutter/src/widgets/framework.dart:2115:7)
+#17     SingleChildRenderObjectElement.visitChildren (package:flutter/src/widgets/framework.dart:7101:14)
+#18     _InactiveElements._unmount (package:flutter/src/widgets/framework.dart:2113:13)
+#19     _InactiveElements._unmount.<anonymous closure> (package:flutter/src/widgets/framework.dart:2115:7)
+#20     ComponentElement.visitChildren (package:flutter/src/widgets/framework.dart:5871:14)
+#21     _InactiveElements._unmount (package:flutter/src/widgets/framework.dart:2113:13)
+#22     _InactiveElements._unmount.<anonymous closure> (package:flutter/src/widgets/framework.dart:2115:7)
+#23     ComponentElement.visitChildren (package:flutter/src/widgets/framework.dart:5871:14)
+#24     _InactiveElements._unmount (package:flutter/src/widgets/framework.dart:2113:13)
+#25     _InactiveElements._unmount.<anonymous closure> (package:flutter/src/widgets/framework.dart:2115:7)
+#26     ComponentElement.visitChildren (package:flutter/src/widgets/framework.dart:5871:14)
+#27     _InactiveElements._unmount (package:flutter/src/widgets/framework.dart:2113:13)
+#28     _InactiveElements._unmount.<anonymous closure> (package:flutter/src/widgets/framework.dart:2115:7)
+#29     ComponentElement.visitChildren (package:flutter/src/widgets/framework.dart:5871:14)
+#30     _InactiveElements._unmount (package:flutter/src/widgets/framework.dart:2113:13)
+#31     _InactiveElements._unmount.<anonymous closure> (package:flutter/src/widgets/framework.dart:2115:7)
+#32     ComponentElement.visitChildren (package:flutter/src/widgets/framework.dart:5871:14)
+#33     _InactiveElements._unmount (package:flutter/src/widgets/framework.dart:2113:13)
+#34     _InactiveElements._unmount.<anonymous closure> (package:flutter/src/widgets/framework.dart:2115:7)
+#35     MultiChildRenderObjectElement.visitChildren (package:flutter/src/widgets/framework.dart:7223:16)
+#36     _InactiveElements._unmount (package:flutter/src/widgets/framework.dart:2113:13)
+#37     _InactiveElements._unmount.<anonymous closure> (package:flutter/src/widgets/framework.dart:2115:7)
+#38     ComponentElement.visitChildren (package:flutter/src/widgets/framework.dart:5871:14)
+#39     _InactiveElements._unmount (package:flutter/src/widgets/framework.dart:2113:13)
+#40     _InactiveElements._unmount.<anonymous closure> (package:flutter/src/widgets/framework.dart:2115:7)
+#41     ComponentElement.visitChildren (package:flutter/src/widgets/framework.dart:5871:14)
+#42     _InactiveElements._unmount (package:flutter/src/widgets/framework.dart:2113:13)
+#43     _InactiveElements._unmount.<anonymous closure> (package:flutter/src/widgets/framework.dart:2115:7)
+#44     ComponentElement.visitChildren (package:flutter/src/widgets/framework.dart:5871:14)
+#45     _InactiveElements._unmount (package:flutter/src/widgets/framework.dart:2113:13)
+#46     _InactiveElements._unmount.<anonymous closure> (package:flutter/src/widgets/framework.dart:2115:7)
+#47     ComponentElement.visitChildren (package:flutter/src/widgets/framework.dart:5871:14)
+#48     _InactiveElements._unmount (package:flutter/src/widgets/framework.dart:2113:13)
+#49     _InactiveElements._unmount.<anonymous closure> (package:flutter/src/widgets/framework.dart:2115:7)
+#50     ComponentElement.visitChildren (package:flutter/src/widgets/framework.dart:5871:14)
+#51     _InactiveElements._unmount (package:flutter/src/widgets/framework.dart:2113:13)
+#52     _InactiveElements._unmount.<anonymous closure> (package:flutter/src/widgets/framework.dart:2115:7)
+#53     SingleChildRenderObjectElement.visitChildren (package:flutter/src/widgets/framework.dart:7101:14)
+#54     _InactiveElements._unmount (package:flutter/src/widgets/framework.dart:2113:13)
+#55     _InactiveElements._unmount.<anonymous closure> (package:flutter/src/widgets/framework.dart:2115:7)
+#56     ComponentElement.visitChildren (package:flutter/src/widgets/framework.dart:5871:14)
+#57     _InactiveElements._unmount (package:flutter/src/widgets/framework.dart:2113:13)
+#58     _InactiveElements._unmount.<anonymous closure> (package:flutter/src/widgets/framework.dart:2115:7)
+#59     SingleChildRenderObjectElement.visitChildren (package:flutter/src/widgets/framework.dart:7101:14)
+#60     _InactiveElements._unmount (package:flutter/src/widgets/framework.dart:2113:13)
+#61     _InactiveElements._unmount.<anonymous closure> (package:flutter/src/widgets/framework.dart:2115:7)
+#62     ComponentElement.visitChildren (package:flutter/src/widgets/framework.dart:5871:14)
+#63     _InactiveElements._unmount (package:flutter/src/widgets/framework.dart:2113:13)
+#64     _InactiveElements._unmount.<anonymous closure> (package:flutter/src/widgets/framework.dart:2115:7)
+#65     ComponentElement.visitChildren (package:flutter/src/widgets/framework.dart:5871:14)
+#66     _InactiveElements._unmount (package:flutter/src/widgets/framework.dart:2113:13)
+#67     _InactiveElements._unmount.<anonymous closure> (package:flutter/src/widgets/framework.dart:2115:7)
+#68     ComponentElement.visitChildren (package:flutter/src/widgets/framework.dart:5871:14)
+#69     _InactiveElements._unmount (package:flutter/src/widgets/framework.dart:2113:13)
+#70     _InactiveElements._unmount.<anonymous closure> (package:flutter/src/widgets/framework.dart:2115:7)
+#71     ComponentElement.visitChildren (package:flutter/src/widgets/framework.dart:5871:14)
+#72     _InactiveElements._unmount (package:flutter/src/widgets/framework.dart:2113:13)
+#73     _InactiveElements._unmount.<anonymous closure> (package:flutter/src/widgets/framework.dart:2115:7)
+#74     ComponentElement.visitChildren (package:flutter/src/widgets/framework.dart:5871:14)
+#75     _InactiveElements._unmount (package:flutter/src/widgets/framework.dart:2113:13)
+#76     _InactiveElements._unmount.<anonymous closure> (package:flutter/src/widgets/framework.dart:2115:7)
+#77     ComponentElement.visitChildren (package:flutter/src/widgets/framework.dart:5871:14)
+#78     _InactiveElements._unmount (package:flutter/src/widgets/framework.dart:2113:13)
+#79     _InactiveElements._unmount.<anonymous closure> (package:flutter/src/widgets/framework.dart:2115:7)
+#80     ComponentElement.visitChildren (package:flutter/src/widgets/framework.dart:5871:14)
+#81     _InactiveElements._unmount (package:flutter/src/widgets/framework.dart:2113:13)
+#82     _InactiveElements._unmount.<anonymous closure> (package:flutter/src/widgets/framework.dart:2115:7)
+#83     ComponentElement.visitChildren (package:flutter/src/widgets/framework.dart:5871:14)
+#84     _InactiveElements._unmount (package:flutter/src/widgets/framework.dart:2113:13)
+#85     ListIterable.forEach (dart:_internal/iterable.dart:49:13)
+#86     _InactiveElements._unmountAll (package:flutter/src/widgets/framework.dart:2126:25)
+#87     BuildOwner.lockState (package:flutter/src/widgets/framework.dart:3020:15)
+#88     BuildOwner.finalizeTree (package:flutter/src/widgets/framework.dart:3344:7)
+#89     AutomatedTestWidgetsFlutterBinding.drawFrame (package:flutter_test/src/binding.dart:2453:19)
+#90     RendererBinding._handlePersistentFrameCallback (package:flutter/src/rendering/binding.dart:509:5)
+#91     SchedulerBinding._invokeFrameCallback (package:flutter/src/scheduler/binding.dart:1430:15)
+#92     SchedulerBinding.handleDrawFrame (package:flutter/src/scheduler/binding.dart:1345:9)
+#93     AutomatedTestWidgetsFlutterBinding.pump.<anonymous closure> (package:flutter_test/src/binding.dart:2260:9)
+#96     TestAsyncUtils.guard (package:flutter_test/src/test_async_utils.dart:74:41)
+#97     AutomatedTestWidgetsFlutterBinding.pump (package:flutter_test/src/binding.dart:2249:27)
+#98     WidgetTester.pumpAndSettle.<anonymous closure> (package:flutter_test/src/widget_tester.dart:719:23)
+#101    TestAsyncUtils.guard (package:flutter_test/src/test_async_utils.dart:74:41)
+#102    WidgetTester.pumpAndSettle (package:flutter_test/src/widget_tester.dart:712:27)
+#103    main.<anonymous closure> (file:///C:/Users/Atharva%20Patil/Documents/projects/gymlog/test/upgrade/session_1_correctness_test.dart:68:18)
+<asynchronous suspension>
+#104    testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#105    TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1952:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided 5 frames from dart:async and package:stack_trace)
+════════════════════════════════════════════════════════════════════════════════════════════════════
+══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
+The following TestFailure was thrown running a test:
+Expected: exactly one matching candidate
+  Actual: _TextWidgetFinder:<Found 0 widgets with text "1,049 lbs": []>
+   Which: means none were found but one was expected
+
+When the exception was thrown, this was the stack:
+#4      main.<anonymous closure> (file:///C:/Users/Atharva%20Patil/Documents/projects/gymlog/test/upgrade/session_1_correctness_test.dart:69:5)
+<asynchronous suspension>
+#5      testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#6      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1952:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided one frame from package:stack_trace)
+
+This was caught by the test expectation on the following line:
+  file:///C:/Users/Atharva%20Patil/Documents/projects/gymlog/test/upgrade/session_1_correctness_test.dart line 69
+The test description was:
+  workout detail volume converts once to pounds
+════════════════════════════════════════════════════════════════════════════════════════════════════
+══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
+The following message was thrown:
+Multiple exceptions (2) were detected during the running of the current test, and at least one was
+unexpected.
+════════════════════════════════════════════════════════════════════════════════════════════════════
+00:01 +5 -14: workout detail volume converts once to pounds [E]
+  Test failed. See exception logs above.
+  The test description was: workout detail volume converts once to pounds
+  
+00:01 +5 -14: PR visibly labels the estimate and does not invent zero-rep logged set
+══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
+The following TestFailure was thrown running a test:
+Expected: at least one matching candidate
+  Actual: _TextContainingWidgetFinder:<Found 0 widgets with text containing Estimated 1RM: []>
+   Which: means none were found but some were expected
+
+When the exception was thrown, this was the stack:
+#4      main.<anonymous closure> (file:///C:/Users/Atharva%20Patil/Documents/projects/gymlog/test/upgrade/session_1_correctness_test.dart:75:5)
+<asynchronous suspension>
+#5      testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#6      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1952:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided one frame from package:stack_trace)
+
+This was caught by the test expectation on the following line:
+  file:///C:/Users/Atharva%20Patil/Documents/projects/gymlog/test/upgrade/session_1_correctness_test.dart line 75
+The test description was:
+  PR visibly labels the estimate and does not invent zero-rep logged set
+════════════════════════════════════════════════════════════════════════════════════════════════════
+00:01 +5 -15: PR visibly labels the estimate and does not invent zero-rep logged set [E]
+  Test failed. See exception logs above.
+  The test description was: PR visibly labels the estimate and does not invent zero-rep logged set
+  
+00:01 +5 -15: volume and duration changes use neutral color with their direction intact
+══╡ EXCEPTION CAUGHT BY RENDERING LIBRARY ╞═════════════════════════════════════════════════════════
+The following assertion was thrown during layout:
+A RenderFlex overflowed by 10 pixels on the bottom.
+
+The relevant error-causing widget was:
+  Column
+  Column:file:///C:/Users/Atharva%20Patil/Documents/projects/gymlog/test/upgrade/session_1_fixtures.dart:59:77
+
+The overflowing RenderFlex has an orientation of Axis.vertical.
+The edge of the RenderFlex that is overflowing has been marked in the rendering with a yellow and
+black striped pattern. This is usually caused by the contents being too big for the RenderFlex.
+Consider applying a flex factor (e.g. using an Expanded widget) to force the children of the
+RenderFlex to fit within the available space instead of being sized to their natural size.
+This is considered an error condition because it indicates that there is content that cannot be
+seen. If the content is legitimately bigger than the available space, consider clipping it with a
+ClipRect widget before putting it in the flex, or using a scrollable container rather than a Flex,
+like a ListView.
+The specific RenderFlex in question is: RenderFlex#015cf relayoutBoundary=up2 OVERFLOWING:
+  creator: Column ← Padding ← KeyedSubtree-[GlobalKey#27267] ← _BodyBuilder ← MediaQuery ←
+    LayoutId-[<_ScaffoldSlot.body>] ← CustomMultiChildLayout ← _ActionsScope ← Actions ← Builder ←
+    DefaultTextStyle ← AnimatedDefaultTextStyle ← ⋯
+  parentData: offset=Offset(16.0, 16.0) (can use size)
+  constraints: BoxConstraints(0.0<=w<=768.0, 0.0<=h<=568.0)
+  size: Size(768.0, 568.0)
+  direction: vertical
+  mainAxisAlignment: start
+  mainAxisSize: max
+  crossAxisAlignment: center
+  verticalDirection: down
+  spacing: 0.0
+◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤
+════════════════════════════════════════════════════════════════════════════════════════════════════
+══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
+The following TestFailure was thrown running a test:
+Expected: Color:<Color(alpha: 0.6000, red: 1.0000, green: 1.0000, blue: 1.0000, colorSpace:
+ColorSpace.sRGB)>
+  Actual: Color:<Color(alpha: 1.0000, red: 1.0000, green: 0.2314, blue: 0.1882, colorSpace:
+ColorSpace.sRGB)>
+
+When the exception was thrown, this was the stack:
+#4      main.<anonymous closure> (file:///C:/Users/Atharva%20Patil/Documents/projects/gymlog/test/upgrade/session_1_correctness_test.dart:84:7)
+<asynchronous suspension>
+#5      testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#6      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1952:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided one frame from package:stack_trace)
+
+This was caught by the test expectation on the following line:
+  file:///C:/Users/Atharva%20Patil/Documents/projects/gymlog/test/upgrade/session_1_correctness_test.dart line 84
+The test description was:
+  volume and duration changes use neutral color with their direction intact
+════════════════════════════════════════════════════════════════════════════════════════════════════
+══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
+The following message was thrown:
+Multiple exceptions (2) were detected during the running of the current test, and at least one was
+unexpected.
+════════════════════════════════════════════════════════════════════════════════════════════════════
+00:01 +5 -16: volume and duration changes use neutral color with their direction intact [E]
+  Test failed. See exception logs above.
+  The test description was: volume and duration changes use neutral color with their direction intact
+  
+00:01 +5 -16: Some tests failed.
+
+Failing tests:
+  C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_correctness_test.dart: PR visibly labels the estimate and does not invent zero-rep logged set
+  C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_correctness_test.dart: an estimated record value is not its logged weight
+  C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_correctness_test.dart: blazeOrange: composed tertiary text and chart ticks meet 4.5:1
+  C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_correctness_test.dart: distance metres times seconds never become weighted session volume
+  ... and 12 more

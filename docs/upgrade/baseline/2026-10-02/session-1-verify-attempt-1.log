@@ -1,0 +1,24 @@
+
+▸ check inline GoogleFonts
+
+▸ check non-semantic AppColors in migrated screens
+▸ format
+Formatted 362 files (0 changed) in 5.16 seconds.
+
+▸ analyze
+Analyzing gymlog...                                             
+
+   info - Statements in an if should be enclosed in a block. Try wrapping the statement in a block - lib\features\workout\presentation\widgets\pr_celebration_overlay.dart:174:7 - curly_braces_in_flow_control_structures
+warning - Unused import: 'package:gymlog/core/models/workout_metric_summary.dart'. Try removing the import directive - test\upgrade\session_1_correctness_test.dart:5:8 - unused_import
+   info - Statements in an if should be enclosed in a block. Try wrapping the statement in a block - test\upgrade\session_1_fixtures.dart:105:5 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block. Try wrapping the statement in a block - test\upgrade\session_1_fixtures.dart:110:5 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block. Try wrapping the statement in a block - test\upgrade\session_1_fixtures.dart:117:5 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block. Try wrapping the statement in a block - test\upgrade\session_1_fixtures.dart:119:5 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block. Try wrapping the statement in a block - test\upgrade\session_1_fixtures.dart:147:5 - curly_braces_in_flow_control_structures
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - test\upgrade\session_1_fixtures.dart:169:23 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - test\upgrade\session_1_fixtures.dart:171:31 - prefer_const_constructors
+   info - The import of 'dart:typed_data' is unnecessary because all of the used elements are also provided by the import of 'package:flutter/services.dart'. Try removing the import directive - test\upgrade\session_1_render_test.dart:3:8 - unnecessary_import
+   info - Statements in an if should be enclosed in a block. Try wrapping the statement in a block - test\upgrade\session_1_render_test.dart:105:13 - curly_braces_in_flow_control_structures
+
+11 issues found. (ran in 115.0s)
+✗ analyze failed

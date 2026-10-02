@@ -74,7 +74,6 @@ class AppErrorScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Your workout data is safe on this device.\n'
                   'Restart Delt or head back home.',
                   textAlign: TextAlign.center,
                   style: AppText.body(

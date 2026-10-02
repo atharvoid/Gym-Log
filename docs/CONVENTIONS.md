@@ -1,6 +1,6 @@
 # GymLog Code & Architectural Conventions
 
-> **Status:** Active / Production Authoritative
+> **Status:** Architecture and naming authority; UI rules defer to [DESIGN.md](../DESIGN.md)
 > **Owner:** Core Engineering
 > **Last verified SHA:** `aef17b09305ebf0455244c3c04159577f37e0a84`
 > **Last reviewed date:** 2026-07-22
@@ -97,9 +97,9 @@ class XyzScreen extends ConsumerWidget {       // or ConsumerStatefulWidget
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
-      backgroundColor: AppColors.bgBase,
+      backgroundColor: context.surface.bgBase,
       appBar: AppBar(                          // always present unless fullscreen modal
-        title: Text('Title', style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 28)),
+        title: Text('Title', style: AppText.titleLarge(color: context.surface.textPrimary)),
       ),
       body: SingleChildScrollView(            // or ListView.builder for long lists
         padding: const EdgeInsets.fromLTRB(16, 16, 16, 120),  // 120px bottom = nav bar clearance
@@ -123,12 +123,12 @@ All provider-driven data uses `.when()`:
 ```dart
 ref.watch(someProvider).when(
   data: (value) => Widget(...),
-  loading: () => const Center(child: CircularProgressIndicator(color: AppColors.accentPrimary)),
-  error: (e, _) => TrackerCard(child: Text('Error message', style: GoogleFonts.inter(color: AppColors.error))),
+  loading: () => const Center(child: CircularProgressIndicator(color: context.accent.base)),
+  error: (e, _) => TrackerCard(child: Text('Error message', style: AppText.body(color: AppColors.error))),
 );
 ```
 
-- Loading state: `CircularProgressIndicator(color: AppColors.accentPrimary)` centered
+- Loading state: `CircularProgressIndicator(color: context.accent.base)` centered
 - Error state: `TrackerCard` with red `AppColors.error` text
 - Never use `AsyncValue.valueOrNull` for primary content rendering (only for AppBar titles)
 
@@ -155,7 +155,7 @@ showModalBottomSheet(
       Container(width: 36, height: 4,
         decoration: BoxDecoration(color: AppColors.borderSubtle, borderRadius: BorderRadius.circular(2))),
       const SizedBox(height: 16),
-      // Items: ListTile with leading Icon and GoogleFonts.inter title
+      // Items: ListTile with leading Icon and AppText title
       // Destructive items: color: AppColors.error on both icon and text
       const SizedBox(height: 16),
     ]),
@@ -165,26 +165,9 @@ showModalBottomSheet(
 
 ---
 
-## Color Usage Rules
+## Visual rules
 
-- All colors from `AppColors` static constants — never `Colors.xxx` (except `Colors.transparent`)
-- Background layers: `bgBase` (screen scaffold), `bgSurface` (cards, sheets, inputs)
-- Text: `textPrimary` (white) for content, `textSecondary` (grey #8E8E93) for labels/metadata
-- Accent: `accentPrimary` (purple) for primary actions, active states, and exercise names
-- Status: `error` (red) for destructive actions and error states, `success` (green) for completed sets, `warning` (yellow) for warmup sets
-- Semi-transparent: use `.withValues(alpha: x)` not `.withOpacity(x)` (project uses the newer API)
-
----
-
-## Typography Rules
-
-- All text uses `GoogleFonts.inter(...)` explicitly — never rely on `Theme.of(context).textTheme`
-- Font weights used: `w400` (body), `w500` (labels), `w600` (secondary buttons), `w700` (headings, primary buttons), `w800` (hero text)
-- AppBar title: `fontSize: 28, fontWeight: w700, letterSpacing: -0.5`
-- Screen section headers: `fontSize: 20, fontWeight: w700`
-- Card titles: `fontSize: 18, fontWeight: w700`
-- Body / list items: `fontSize: 16, fontWeight: w600`
-- Metadata / timestamps: `fontSize: 12–13, fontWeight: w400, color: textSecondary`
+Use [DESIGN.md](../DESIGN.md) for color, bundled Inter through AppText, supported weights, spacing, radii, interaction and information truth. Live surfaces use context.surface and context.accent; semantic status colors remain fixed. Use .withValues(alpha: x) rather than .withOpacity(x).
 
 ---
 
@@ -192,7 +175,7 @@ showModalBottomSheet(
 
 | Component | Use case |
 |---|---|
-| `PrimaryButton` | Primary CTA (Start Workout, Finish, Get Started, Save) — 48px, purple |
+| `PrimaryButton` | Primary CTA (Start Workout, Finish, Get Started, Save) — uses selected accent and onAccent label |
 | `SecondaryButton` | Secondary action (New Routine, + Add Exercise, + Add Set) — 48px, bgSurface |
 | `TrackerCard` | Any card container. Pass `onTap` to make it tappable via InkWell |
 | `TogglePill` | Horizontal scrollable metric selector (Duration / Volume / Reps) |
@@ -230,7 +213,7 @@ and loader spinners (indeterminate by design) are out of scope.
 
 ## Spacing Constants
 
-No named spacing constants — all inline:
+Use AppSpacing from DESIGN.md for new work. These existing examples describe common clearances, not a competing token system:
 
 | Usage | Value |
 |---|---|

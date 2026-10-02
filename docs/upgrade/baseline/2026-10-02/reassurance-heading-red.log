@@ -1,0 +1,36 @@
+00:00 +0: loading C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/error_reassurance_test.dart
+00:00 +0: Pro storage heading does not assert an existing cloud backup
+══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
+The following TestFailure was thrown running a test:
+Expected: no matching candidates
+  Actual: _TextWidgetFinder:<Found 1 widget with text "Local-first, cloud-backed": [
+            Text("Local-first, cloud-backed", inherit: true, color: Color(alpha: 1.0000, red:
+0.7843, green: 1.0000, blue: 0.0000, colorSpace: ColorSpace.sRGB), family: Inter_700,
+familyFallback: [Inter], size: 18.0, weight: 700, textAlign: center, dependencies:
+[DefaultSelectionStyle, DefaultTextStyle, MediaQuery]),
+          ]>
+   Which: means one was found but none were expected
+
+When the exception was thrown, this was the stack:
+#4      main.<anonymous closure> (file:///C:/Users/Atharva%20Patil/Documents/projects/gymlog/test/upgrade/error_reassurance_test.dart:67:5)
+<asynchronous suspension>
+#5      testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#6      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1952:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided one frame from package:stack_trace)
+
+This was caught by the test expectation on the following line:
+  file:///C:/Users/Atharva%20Patil/Documents/projects/gymlog/test/upgrade/error_reassurance_test.dart line 67
+The test description was:
+  Pro storage heading does not assert an existing cloud backup
+════════════════════════════════════════════════════════════════════════════════════════════════════
+00:01 +0 -1: Pro storage heading does not assert an existing cloud backup [E]
+  Test failed. See exception logs above.
+  The test description was: Pro storage heading does not assert an existing cloud backup
+  
+00:01 +0 -1: Some tests failed.
+
+Failing tests:
+  C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/error_reassurance_test.dart: Pro storage heading does not assert an existing cloud backup

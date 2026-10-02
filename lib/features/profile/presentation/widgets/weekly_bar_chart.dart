@@ -350,7 +350,7 @@ class _WeeklyBarChartState extends State<WeeklyBarChart> {
     }
     final isUp = fraction >= 0;
     final pct = (fraction * 100).round().abs();
-    final color = isUp ? AppColors.success : AppColors.error;
+    final color = context.surface.textSecondary;
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [

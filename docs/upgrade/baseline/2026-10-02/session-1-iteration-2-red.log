@@ -1,0 +1,35 @@
+00:00 +0: loading C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_correctness_test.dart
+00:00 +0: missing 1RM estimate never borrows the logged weight
+══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
+The following TestFailure was thrown running a test:
+Expected: 'No estimate available'
+  Actual: 'No data yet'
+   Which: is different.
+          Expected: No estimate a ...
+            Actual: No data yet
+                       ^
+           Differ at offset 3
+
+When the exception was thrown, this was the stack:
+#4      main.<anonymous closure> (file:///C:/Users/Atharva%20Patil/Documents/projects/gymlog/test/upgrade/session_1_correctness_test.dart:130:5)
+<asynchronous suspension>
+#5      testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#6      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1952:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided one frame from package:stack_trace)
+
+This was caught by the test expectation on the following line:
+  file:///C:/Users/Atharva%20Patil/Documents/projects/gymlog/test/upgrade/session_1_correctness_test.dart line 130
+The test description was:
+  missing 1RM estimate never borrows the logged weight
+════════════════════════════════════════════════════════════════════════════════════════════════════
+00:00 +0 -1: missing 1RM estimate never borrows the logged weight [E]
+  Test failed. See exception logs above.
+  The test description was: missing 1RM estimate never borrows the logged weight
+  
+00:00 +0 -1: Some tests failed.
+
+Failing tests:
+  C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_correctness_test.dart: missing 1RM estimate never borrows the logged weight

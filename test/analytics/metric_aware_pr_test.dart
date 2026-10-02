@@ -31,7 +31,8 @@ void main() {
 
       expect(pr.estimated1rm, equals(100.0));
       expect(pr.previousBest1rm, equals(90.0));
-      expect(pr.weightKg, equals(100.0));
+      // The estimate is not evidence of the weight used in its logged set.
+      expect(pr.weightKg, equals(0.0));
     });
 
     test(

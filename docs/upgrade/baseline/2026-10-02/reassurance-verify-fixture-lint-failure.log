@@ -1,0 +1,18 @@
+
+▸ check inline GoogleFonts
+
+▸ check non-semantic AppColors in migrated screens
+▸ format
+Formatted 365 files (0 changed) in 2.08 seconds.
+
+▸ analyze
+Analyzing gymlog...                                             
+No issues found! (ran in 39.9s)
+
+▸ custom_lint
+Analyzing...
+
+  test\upgrade\error_reassurance_fixtures.dart:47:7 • Providers which are overridden in a non-root ProviderContainer/ProviderScope should specify dependencies. • scoped_providers_should_specify_dependencies • INFO
+
+1 issue found.
+✗ custom_lint failed

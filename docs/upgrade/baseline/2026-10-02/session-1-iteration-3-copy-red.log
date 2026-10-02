@@ -1,0 +1,36 @@
+00:00 +0: loading C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_correctness_test.dart
+00:00 +0: PR exports describe recorded results without certification claims
+══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
+The following TestFailure was thrown running a test:
+Expected: no matching candidates
+  Actual: _TextWidgetFinder:<Found 1 widget with text "OFFICIAL RECORD": [
+            Text("OFFICIAL RECORD", inherit: true, color: Color(alpha: 1.0000, red: 0.9176, green:
+1.0000, blue: 0.4000, colorSpace: ColorSpace.sRGB), family: Inter_700, familyFallback: [Inter],
+size: 11.0, weight: 700, overflow: ellipsis, maxLines: 1, dependencies: [DefaultSelectionStyle,
+DefaultTextStyle, MediaQuery]),
+          ]>
+   Which: means one was found but none were expected
+
+When the exception was thrown, this was the stack:
+#4      main.<anonymous closure> (file:///C:/Users/Atharva%20Patil/Documents/projects/gymlog/test/upgrade/session_1_correctness_test.dart:174:7)
+<asynchronous suspension>
+#5      testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#6      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1952:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided one frame from package:stack_trace)
+
+This was caught by the test expectation on the following line:
+  file:///C:/Users/Atharva%20Patil/Documents/projects/gymlog/test/upgrade/session_1_correctness_test.dart line 174
+The test description was:
+  PR exports describe recorded results without certification claims
+════════════════════════════════════════════════════════════════════════════════════════════════════
+00:00 +0 -1: PR exports describe recorded results without certification claims [E]
+  Test failed. See exception logs above.
+  The test description was: PR exports describe recorded results without certification claims
+  
+00:00 +0 -1: Some tests failed.
+
+Failing tests:
+  C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_correctness_test.dart: PR exports describe recorded results without certification claims

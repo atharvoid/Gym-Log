@@ -1,0 +1,365 @@
+00:00 +0: loading C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/active_workout_header_golden_test.dart
+Warning: A tag was used that wasn't specified in dart_test.yaml.
+  golden was used in the suite itself
+
+00:00 +0: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/active_workout_header_golden_test.dart: ActiveWorkoutHeader renders correctly per theme (normal layout) (variant: Windows)
+00:02 +1: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/auth_screen_golden_test.dart: AuthScreen Golden Tests 1. Dark Purple Palette 390x844
+00:02 +1: loading C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/muscle_load_bar_golden_test.dart
+Warning: A tag was used that wasn't specified in dart_test.yaml.
+  golden was used in the suite itself
+
+00:02 +2: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/auth_screen_golden_test.dart: AuthScreen Golden Tests 1. Dark Purple Palette 390x844
+00:02 +2: loading C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/muscle_map_golden_test.dart
+Warning: A tag was used that wasn't specified in dart_test.yaml.
+  golden was used in the suite itself
+
+00:03 +3: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/muscle_load_bar_golden_test.dart: MuscleLoadBar renders in all six accent palettes (variant: Windows)
+00:04 +4: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/muscle_load_bar_golden_test.dart: MuscleLoadBar renders in all six accent palettes (variant: Windows)
+00:04 +5: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/muscle_load_bar_golden_test.dart: MuscleLoadBar renders in all six accent palettes (variant: Windows)
+00:04 +6: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/muscle_load_bar_golden_test.dart: MuscleLoadBar renders in all six accent palettes (variant: Windows)
+00:04 +7: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/muscle_load_bar_golden_test.dart: MuscleLoadBar renders in all six accent palettes (variant: Windows)
+00:04 +8: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/muscle_load_bar_golden_test.dart: MuscleLoadBar renders in all six accent palettes (variant: Windows)
+00:04 +9: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/muscle_map_golden_test.dart: MuscleMap front-only male highlights Chest and Triceps (variant: Windows)
+00:04 +10: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/muscle_map_golden_test.dart: MuscleMap front-only male highlights Chest and Triceps (variant: Windows)
+00:05 +11: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/muscle_map_golden_test.dart: MuscleMap front-only male highlights Chest and Triceps (variant: Windows)
+00:05 +12: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/muscle_map_golden_test.dart: MuscleMap front-only male highlights Chest and Triceps (variant: Windows)
+00:05 +13: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/muscle_map_golden_test.dart: MuscleMap front-only male highlights Chest and Triceps (variant: Windows)
+00:05 +14: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/muscle_map_golden_test.dart: MuscleMap front-only male highlights Chest and Triceps (variant: Windows)
+00:05 +15: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/muscle_map_golden_test.dart: MuscleMap front-only male highlights Chest and Triceps (variant: Windows)
+00:06 +16: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/muscle_map_golden_test.dart: MuscleMap front-only male highlights Chest and Triceps (variant: Windows)
+unhandled element <style/>; Picture key: Svg loader
+00:06 +17: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/muscle_map_golden_test.dart: MuscleMap front-only male highlights Chest and Triceps (variant: Windows)
+00:06 +18: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/muscle_map_golden_test.dart: MuscleMap front-only male highlights Chest and Triceps (variant: Windows)
+00:06 +19: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/auth_screen_golden_test.dart: AuthScreen Golden Tests 11. Loading State
+00:07 +20: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/muscle_map_golden_test.dart: MuscleMap front-only male highlights Chest and Triceps (variant: CI)
+00:08 +21: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/auth_screen_golden_test.dart: AuthScreen Golden Tests 12. Reduced Motion Final Frame
+00:08 +22: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/muscle_map_golden_test.dart: MuscleMap front+back female highlights Back and Biceps (variant: Windows)
+00:08 +22: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/auth_screen_golden_test.dart: AuthScreen Golden Tests 13. Offline Snackbar
+[Auth] failure=network
+00:08 +22: loading C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/nav_bar_golden_test.dart
+Warning: A tag was used that wasn't specified in dart_test.yaml.
+  golden was used in the suite itself
+
+00:08 +23: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/muscle_map_golden_test.dart: MuscleMap front+back female highlights Back and Biceps (variant: Windows)
+00:09 +23: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/auth_screen_golden_test.dart: AuthScreen Golden Tests 14. Configuration-error Snackbar
+[Auth] failure=configuration code=google_android_configuration
+00:09 +24: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/muscle_map_golden_test.dart: MuscleMap front+back female highlights Back and Biceps (variant: Windows)
+00:09 +25: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/nav_bar_golden_test.dart: BottomNavBar — all palettes, tab 0 selected, standard sizes (variant: Windows)
+00:10 +26: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/nav_bar_golden_test.dart: BottomNavBar — all palettes, tab 0 selected, standard sizes (variant: Windows)
+00:11 +27: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/nav_bar_golden_test.dart: BottomNavBar — all palettes, tab 0 selected, standard sizes (variant: Windows)
+00:11 +27: loading C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/onboarding_steps_golden_test.dart
+Warning: A tag was used that wasn't specified in dart_test.yaml.
+  golden was used in the suite itself
+
+00:11 +28: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/muscle_map_golden_test.dart: MuscleMap recolors with the active accent (Volt vs Purple) (variant: CI)
+00:12 +29: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/onboarding_steps_golden_test.dart: StepAge renders per theme (variant: Windows)
+00:12 +29: loading C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/pr_celebration_golden_test.dart
+Warning: A tag was used that wasn't specified in dart_test.yaml.
+  golden was used in the suite itself
+
+00:13 +30: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/onboarding_steps_golden_test.dart: StepAge renders per theme (variant: Windows)
+00:14 +31: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/onboarding_steps_golden_test.dart: StepAge renders per theme (variant: Windows)
+00:14 +31: loading C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/segmented_control_golden_test.dart
+Warning: A tag was used that wasn't specified in dart_test.yaml.
+  golden was used in the suite itself
+
+00:14 +32: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/onboarding_steps_golden_test.dart: StepAge renders per theme (variant: Windows)
+00:15 +33: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/pr_celebration_golden_test.dart: PrCelebrationCard renders per theme (variant: Windows)
+00:15 +34: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/pr_celebration_golden_test.dart: PrCelebrationCard renders per theme (variant: Windows)
+00:16 +35: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/segmented_control_golden_test.dart: SegmentedControl renders correctly per theme (variant: Windows)
+00:16 +36: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/segmented_control_golden_test.dart: SegmentedControl renders correctly per theme (variant: Windows)
+00:17 +37: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/segmented_control_golden_test.dart: SegmentedControl renders correctly per theme (variant: Windows)
+00:17 +38: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/pr_celebration_golden_test.dart: PrCelebrationCard renders per theme (variant: CI)
+00:18 +39: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/pr_celebration_golden_test.dart: PrCelebrationCard renders per theme (variant: CI)
+00:18 +40: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/onboarding_steps_golden_test.dart: StepAge at 100 renders per theme (regression: 3 digits must not wrap) (variant: Windows)
+00:19 +41: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/segmented_control_golden_test.dart: SegmentedControl renders correctly per theme (variant: CI)
+00:19 +42: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/segmented_control_golden_test.dart: SegmentedControl renders correctly per theme (variant: CI)
+00:19 +43: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/pr_celebration_golden_test.dart: PrCelebrationCard fits a short viewport with a bottom inset (3-button nav edge-to-edge) — Keep Going must stay on-screen (variant: Windows)
+00:21 +44: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/onboarding_steps_golden_test.dart: StepAge at 100 renders per theme (regression: 3 digits must not wrap) (variant: CI)
+00:22 +45: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/onboarding_steps_golden_test.dart: StepAge at 100 renders per theme (regression: 3 digits must not wrap) (variant: CI)
+00:23 +46: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/onboarding_steps_golden_test.dart: StepAge at 100 renders per theme (regression: 3 digits must not wrap) (variant: CI)
+00:23 +47: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/nav_bar_golden_test.dart: BottomNavBar — tablet 600x1024 (variant: CI)
+00:24 +48: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/onboarding_steps_golden_test.dart: StepWeeklyGoal renders per theme (variant: Windows)
+00:25 +48: loading C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/share_cards_golden_test.dart
+Warning: A tag was used that wasn't specified in dart_test.yaml.
+  golden was used in the suite itself
+
+00:25 +49: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/onboarding_steps_golden_test.dart: StepWeeklyGoal renders per theme (variant: Windows)
+00:25 +50: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/share_cards_golden_test.dart: DELT Share Card - Monument Variant across all themes (variant: Windows)
+00:26 +51: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/share_cards_golden_test.dart: DELT Share Card - Monument Variant across all themes (variant: Windows)
+00:26 +52: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/share_cards_golden_test.dart: DELT Share Card - Monument Variant across all themes (variant: Windows)
+00:26 +53: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/share_cards_golden_test.dart: DELT Share Card - Monument Variant across all themes (variant: Windows)
+00:27 +54: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/share_cards_golden_test.dart: DELT Share Card - Monument Variant across all themes (variant: Windows)
+00:27 +55: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/share_cards_golden_test.dart: DELT Share Card - Monument Variant across all themes (variant: Windows)
+00:28 +56: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/share_cards_golden_test.dart: DELT Share Card - Monument Variant across all themes (variant: Windows)
+00:29 +57: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/share_cards_golden_test.dart: DELT Share Card - Monument Variant across all themes (variant: CI)
+00:30 +58: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/share_cards_golden_test.dart: DELT Share Card - Technical Variant (variant: Windows)
+00:30 +59: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: header-weighted-higgsfield-1.0x-synthetic
+00:31 +60: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: header-weighted-higgsfield-1.0x-synthetic
+00:31 +61: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: header-weighted-higgsfield-1.0x-synthetic
+00:31 +62: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: header-weighted-higgsfield-1.0x-synthetic
+00:32 +63: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: header-reps-higgsfield-1.0x-synthetic
+00:33 +64: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: header-timed-higgsfield-1.0x-synthetic
+00:33 +65: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: header-distance-higgsfield-1.0x-synthetic
+00:33 +66: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: header-empty-higgsfield-1.0x-synthetic
+00:33 +67: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: finish-weighted-higgsfield-1.0x-synthetic
+00:34 +68: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: finish-reps-higgsfield-1.0x-synthetic
+00:34 +69: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: finish-timed-higgsfield-1.0x-synthetic
+00:35 +70: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: finish-distance-higgsfield-1.0x-synthetic
+00:35 +71: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: pr-higgsfield-1.0x-synthetic
+00:35 +72: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: share-monument-higgsfield-1.0x-synthetic
+00:35 +73: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: share-technical-higgsfield-1.0x-synthetic
+00:36 +74: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: share-sticker-higgsfield-1.0x-synthetic
+00:36 +75: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: detail-higgsfield-1.0x-synthetic
+00:36 +76: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: detail-error-higgsfield-1.0x-synthetic
+00:36 +77: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: detail-empty-higgsfield-1.0x-synthetic
+00:37 +78: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: exercise-higgsfield-1.0x-synthetic
+00:37 +79: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: exercise-no-estimate-higgsfield-1.0x-synthetic
+00:37 +80: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: progress-higgsfield-1.0x-synthetic
+00:37 +81: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: progress-low-higgsfield-1.0x-synthetic
+00:37 +82: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: progress-empty-higgsfield-1.0x-synthetic
+00:38 +83: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: roles-higgsfield-1.0x-synthetic
+00:38 +84: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: header-weighted-higgsfield-1.6x-synthetic
+00:38 +85: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: header-reps-higgsfield-1.6x-synthetic
+00:38 +86: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: header-timed-higgsfield-1.6x-synthetic
+00:38 +87: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: header-distance-higgsfield-1.6x-synthetic
+00:38 +88: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: header-empty-higgsfield-1.6x-synthetic
+00:38 +89: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: finish-weighted-higgsfield-1.6x-synthetic
+00:39 +90: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: finish-reps-higgsfield-1.6x-synthetic
+00:39 +91: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: finish-timed-higgsfield-1.6x-synthetic
+00:39 +92: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: finish-distance-higgsfield-1.6x-synthetic
+00:39 +93: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: pr-higgsfield-1.6x-synthetic
+00:39 +94: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: share-monument-higgsfield-1.6x-synthetic
+00:39 +95: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: share-technical-higgsfield-1.6x-synthetic
+00:39 +96: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: share-sticker-higgsfield-1.6x-synthetic
+00:40 +97: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: detail-higgsfield-1.6x-synthetic
+00:40 +98: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: detail-error-higgsfield-1.6x-synthetic
+00:40 +99: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: detail-empty-higgsfield-1.6x-synthetic
+00:40 +100: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: exercise-higgsfield-1.6x-synthetic
+00:40 +101: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: exercise-no-estimate-higgsfield-1.6x-synthetic
+00:40 +102: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: progress-higgsfield-1.6x-synthetic
+00:40 +103: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: progress-low-higgsfield-1.6x-synthetic
+00:40 +104: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: progress-empty-higgsfield-1.6x-synthetic
+00:40 +105: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: roles-higgsfield-1.6x-synthetic
+00:40 +106: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: header-weighted-neonPurple-1.0x-synthetic
+00:40 +107: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: header-reps-neonPurple-1.0x-synthetic
+00:41 +108: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: header-timed-neonPurple-1.0x-synthetic
+00:41 +109: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: header-distance-neonPurple-1.0x-synthetic
+00:41 +110: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: header-empty-neonPurple-1.0x-synthetic
+00:41 +111: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: finish-weighted-neonPurple-1.0x-synthetic
+00:41 +112: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: finish-reps-neonPurple-1.0x-synthetic
+00:41 +113: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: finish-timed-neonPurple-1.0x-synthetic
+00:41 +114: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: finish-distance-neonPurple-1.0x-synthetic
+00:41 +115: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: pr-neonPurple-1.0x-synthetic
+00:41 +116: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: share-monument-neonPurple-1.0x-synthetic
+00:41 +117: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: share-technical-neonPurple-1.0x-synthetic
+00:41 +118: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: share-sticker-neonPurple-1.0x-synthetic
+00:42 +119: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: detail-neonPurple-1.0x-synthetic
+00:42 +120: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: detail-error-neonPurple-1.0x-synthetic
+00:42 +121: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: detail-empty-neonPurple-1.0x-synthetic
+00:42 +122: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: exercise-neonPurple-1.0x-synthetic
+00:42 +123: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: exercise-no-estimate-neonPurple-1.0x-synthetic
+00:42 +124: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: progress-neonPurple-1.0x-synthetic
+00:42 +125: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: progress-low-neonPurple-1.0x-synthetic
+00:42 +126: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: progress-empty-neonPurple-1.0x-synthetic
+00:42 +127: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: roles-neonPurple-1.0x-synthetic
+00:42 +128: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: header-weighted-neonPurple-1.6x-synthetic
+00:42 +129: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: header-reps-neonPurple-1.6x-synthetic
+00:43 +130: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: header-timed-neonPurple-1.6x-synthetic
+00:43 +131: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: header-distance-neonPurple-1.6x-synthetic
+00:43 +132: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: header-empty-neonPurple-1.6x-synthetic
+00:43 +133: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: finish-weighted-neonPurple-1.6x-synthetic
+00:43 +134: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: finish-reps-neonPurple-1.6x-synthetic
+00:43 +135: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: finish-timed-neonPurple-1.6x-synthetic
+00:43 +136: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: finish-distance-neonPurple-1.6x-synthetic
+00:43 +137: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: pr-neonPurple-1.6x-synthetic
+00:43 +138: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: share-monument-neonPurple-1.6x-synthetic
+00:43 +139: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: share-technical-neonPurple-1.6x-synthetic
+00:43 +140: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: share-sticker-neonPurple-1.6x-synthetic
+00:43 +141: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: detail-neonPurple-1.6x-synthetic
+00:44 +142: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: detail-error-neonPurple-1.6x-synthetic
+00:44 +143: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: detail-empty-neonPurple-1.6x-synthetic
+00:44 +144: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: exercise-neonPurple-1.6x-synthetic
+00:44 +145: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: exercise-no-estimate-neonPurple-1.6x-synthetic
+00:44 +146: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: progress-neonPurple-1.6x-synthetic
+00:44 +147: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: progress-low-neonPurple-1.6x-synthetic
+00:44 +148: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: progress-empty-neonPurple-1.6x-synthetic
+00:44 +149: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: roles-neonPurple-1.6x-synthetic
+00:44 +150: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: header-weighted-white-1.0x-synthetic
+00:44 +151: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: header-reps-white-1.0x-synthetic
+00:44 +152: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: header-timed-white-1.0x-synthetic
+00:44 +153: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: header-distance-white-1.0x-synthetic
+00:44 +154: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: header-empty-white-1.0x-synthetic
+00:45 +155: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: finish-weighted-white-1.0x-synthetic
+00:45 +156: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: finish-reps-white-1.0x-synthetic
+00:45 +157: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: finish-timed-white-1.0x-synthetic
+00:45 +158: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: finish-distance-white-1.0x-synthetic
+00:45 +159: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: pr-white-1.0x-synthetic
+00:45 +160: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: share-monument-white-1.0x-synthetic
+00:45 +161: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: share-technical-white-1.0x-synthetic
+00:45 +162: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: share-sticker-white-1.0x-synthetic
+00:45 +163: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: detail-white-1.0x-synthetic
+00:45 +164: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: detail-error-white-1.0x-synthetic
+00:45 +165: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: detail-empty-white-1.0x-synthetic
+00:45 +166: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: exercise-white-1.0x-synthetic
+00:46 +167: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: exercise-no-estimate-white-1.0x-synthetic
+00:46 +168: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: progress-white-1.0x-synthetic
+00:46 +169: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: progress-low-white-1.0x-synthetic
+00:46 +170: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: progress-empty-white-1.0x-synthetic
+00:46 +171: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: roles-white-1.0x-synthetic
+00:46 +172: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: header-weighted-white-1.6x-synthetic
+00:46 +173: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: header-reps-white-1.6x-synthetic
+00:46 +174: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: header-timed-white-1.6x-synthetic
+00:46 +175: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: header-distance-white-1.6x-synthetic
+00:46 +176: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: header-empty-white-1.6x-synthetic
+00:46 +177: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: finish-weighted-white-1.6x-synthetic
+00:46 +178: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: finish-reps-white-1.6x-synthetic
+00:46 +179: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: finish-timed-white-1.6x-synthetic
+00:47 +180: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: finish-distance-white-1.6x-synthetic
+00:47 +181: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: pr-white-1.6x-synthetic
+00:47 +182: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: share-monument-white-1.6x-synthetic
+00:47 +183: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: share-technical-white-1.6x-synthetic
+00:47 +184: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: share-sticker-white-1.6x-synthetic
+00:47 +185: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: detail-white-1.6x-synthetic
+00:47 +186: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: detail-error-white-1.6x-synthetic
+00:47 +187: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: detail-empty-white-1.6x-synthetic
+00:47 +188: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: exercise-white-1.6x-synthetic
+00:47 +189: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: exercise-no-estimate-white-1.6x-synthetic
+00:47 +190: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: progress-white-1.6x-synthetic
+00:48 +191: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: progress-low-white-1.6x-synthetic
+00:48 +192: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: progress-empty-white-1.6x-synthetic
+00:48 +193: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: roles-white-1.6x-synthetic
+00:48 +194: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: header-weighted-neonCyan-1.0x-synthetic
+00:48 +195: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: header-reps-neonCyan-1.0x-synthetic
+00:48 +196: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: header-timed-neonCyan-1.0x-synthetic
+00:48 +197: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: header-distance-neonCyan-1.0x-synthetic
+00:48 +198: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: header-empty-neonCyan-1.0x-synthetic
+00:48 +199: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: finish-weighted-neonCyan-1.0x-synthetic
+00:48 +200: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: finish-reps-neonCyan-1.0x-synthetic
+00:48 +201: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: finish-timed-neonCyan-1.0x-synthetic
+00:48 +202: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: finish-distance-neonCyan-1.0x-synthetic
+00:48 +203: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: pr-neonCyan-1.0x-synthetic
+00:49 +204: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: share-monument-neonCyan-1.0x-synthetic
+00:49 +205: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: share-technical-neonCyan-1.0x-synthetic
+00:49 +206: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: share-sticker-neonCyan-1.0x-synthetic
+00:49 +207: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: detail-neonCyan-1.0x-synthetic
+00:49 +208: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: detail-error-neonCyan-1.0x-synthetic
+00:49 +209: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: detail-empty-neonCyan-1.0x-synthetic
+00:49 +210: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: exercise-neonCyan-1.0x-synthetic
+00:49 +211: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: exercise-no-estimate-neonCyan-1.0x-synthetic
+00:49 +212: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: progress-neonCyan-1.0x-synthetic
+00:49 +213: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: progress-low-neonCyan-1.0x-synthetic
+00:49 +214: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: progress-empty-neonCyan-1.0x-synthetic
+00:49 +215: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: roles-neonCyan-1.0x-synthetic
+00:50 +216: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: header-weighted-neonCyan-1.6x-synthetic
+00:50 +217: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: header-reps-neonCyan-1.6x-synthetic
+00:50 +218: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: header-timed-neonCyan-1.6x-synthetic
+00:50 +219: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: header-distance-neonCyan-1.6x-synthetic
+00:50 +220: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: header-empty-neonCyan-1.6x-synthetic
+00:50 +221: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: finish-weighted-neonCyan-1.6x-synthetic
+00:50 +222: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: finish-reps-neonCyan-1.6x-synthetic
+00:50 +223: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: finish-timed-neonCyan-1.6x-synthetic
+00:50 +224: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: finish-distance-neonCyan-1.6x-synthetic
+00:50 +225: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: pr-neonCyan-1.6x-synthetic
+00:50 +226: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: share-monument-neonCyan-1.6x-synthetic
+00:50 +227: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: share-technical-neonCyan-1.6x-synthetic
+00:50 +228: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: share-sticker-neonCyan-1.6x-synthetic
+00:51 +229: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: detail-neonCyan-1.6x-synthetic
+00:51 +230: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: detail-error-neonCyan-1.6x-synthetic
+00:51 +231: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: detail-empty-neonCyan-1.6x-synthetic
+00:51 +232: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: exercise-neonCyan-1.6x-synthetic
+00:51 +233: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: exercise-no-estimate-neonCyan-1.6x-synthetic
+00:51 +234: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: progress-neonCyan-1.6x-synthetic
+00:51 +235: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: progress-low-neonCyan-1.6x-synthetic
+00:51 +236: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: progress-empty-neonCyan-1.6x-synthetic
+00:51 +237: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: roles-neonCyan-1.6x-synthetic
+00:51 +238: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: header-weighted-neonMagenta-1.0x-synthetic
+00:51 +239: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: header-reps-neonMagenta-1.0x-synthetic
+00:51 +240: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: header-timed-neonMagenta-1.0x-synthetic
+00:52 +241: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: header-distance-neonMagenta-1.0x-synthetic
+00:52 +242: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: header-empty-neonMagenta-1.0x-synthetic
+00:52 +243: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: finish-weighted-neonMagenta-1.0x-synthetic
+00:52 +244: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: finish-reps-neonMagenta-1.0x-synthetic
+00:52 +245: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: finish-timed-neonMagenta-1.0x-synthetic
+00:52 +246: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: finish-distance-neonMagenta-1.0x-synthetic
+00:52 +247: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: pr-neonMagenta-1.0x-synthetic
+00:52 +248: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: share-monument-neonMagenta-1.0x-synthetic
+00:52 +249: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: share-technical-neonMagenta-1.0x-synthetic
+00:52 +250: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: share-sticker-neonMagenta-1.0x-synthetic
+00:52 +251: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: detail-neonMagenta-1.0x-synthetic
+00:53 +252: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: detail-error-neonMagenta-1.0x-synthetic
+00:53 +253: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: detail-empty-neonMagenta-1.0x-synthetic
+00:53 +254: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: exercise-neonMagenta-1.0x-synthetic
+00:53 +255: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: exercise-no-estimate-neonMagenta-1.0x-synthetic
+00:53 +256: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: progress-neonMagenta-1.0x-synthetic
+00:53 +257: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: progress-low-neonMagenta-1.0x-synthetic
+00:53 +258: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: progress-empty-neonMagenta-1.0x-synthetic
+00:53 +259: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: roles-neonMagenta-1.0x-synthetic
+00:53 +260: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: header-weighted-neonMagenta-1.6x-synthetic
+00:53 +261: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: header-reps-neonMagenta-1.6x-synthetic
+00:53 +262: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: header-timed-neonMagenta-1.6x-synthetic
+00:53 +263: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: header-distance-neonMagenta-1.6x-synthetic
+00:54 +264: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: header-empty-neonMagenta-1.6x-synthetic
+00:54 +265: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: finish-weighted-neonMagenta-1.6x-synthetic
+00:54 +266: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: finish-reps-neonMagenta-1.6x-synthetic
+00:54 +267: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: finish-timed-neonMagenta-1.6x-synthetic
+00:54 +268: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: finish-distance-neonMagenta-1.6x-synthetic
+00:54 +269: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: pr-neonMagenta-1.6x-synthetic
+00:54 +270: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: share-monument-neonMagenta-1.6x-synthetic
+00:54 +271: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: share-technical-neonMagenta-1.6x-synthetic
+00:54 +272: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: share-sticker-neonMagenta-1.6x-synthetic
+00:54 +273: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: detail-neonMagenta-1.6x-synthetic
+00:54 +274: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: detail-error-neonMagenta-1.6x-synthetic
+00:54 +275: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: detail-empty-neonMagenta-1.6x-synthetic
+00:55 +276: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: exercise-neonMagenta-1.6x-synthetic
+00:55 +277: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: exercise-no-estimate-neonMagenta-1.6x-synthetic
+00:55 +278: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: progress-neonMagenta-1.6x-synthetic
+00:55 +279: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: progress-low-neonMagenta-1.6x-synthetic
+00:55 +280: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: progress-empty-neonMagenta-1.6x-synthetic
+00:55 +281: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: roles-neonMagenta-1.6x-synthetic
+00:55 +282: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: header-weighted-blazeOrange-1.0x-synthetic
+00:55 +283: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: header-reps-blazeOrange-1.0x-synthetic
+00:55 +284: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: header-timed-blazeOrange-1.0x-synthetic
+00:55 +285: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: header-distance-blazeOrange-1.0x-synthetic
+00:55 +286: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: header-empty-blazeOrange-1.0x-synthetic
+00:55 +287: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: finish-weighted-blazeOrange-1.0x-synthetic
+00:55 +288: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: finish-reps-blazeOrange-1.0x-synthetic
+00:55 +289: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: finish-timed-blazeOrange-1.0x-synthetic
+00:56 +290: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: finish-distance-blazeOrange-1.0x-synthetic
+00:56 +291: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: pr-blazeOrange-1.0x-synthetic
+00:56 +292: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: share-monument-blazeOrange-1.0x-synthetic
+00:56 +293: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: share-technical-blazeOrange-1.0x-synthetic
+00:56 +294: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: share-sticker-blazeOrange-1.0x-synthetic
+00:56 +295: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: detail-blazeOrange-1.0x-synthetic
+00:56 +296: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: detail-error-blazeOrange-1.0x-synthetic
+00:56 +297: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: detail-empty-blazeOrange-1.0x-synthetic
+00:56 +298: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: exercise-blazeOrange-1.0x-synthetic
+00:56 +299: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: exercise-no-estimate-blazeOrange-1.0x-synthetic
+00:56 +300: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: progress-blazeOrange-1.0x-synthetic
+00:56 +301: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: progress-low-blazeOrange-1.0x-synthetic
+00:56 +302: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: progress-empty-blazeOrange-1.0x-synthetic
+00:57 +303: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: roles-blazeOrange-1.0x-synthetic
+00:57 +304: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: header-weighted-blazeOrange-1.6x-synthetic
+00:57 +305: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: header-reps-blazeOrange-1.6x-synthetic
+00:57 +306: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: header-timed-blazeOrange-1.6x-synthetic
+00:57 +307: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: header-distance-blazeOrange-1.6x-synthetic
+00:57 +308: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: header-empty-blazeOrange-1.6x-synthetic
+00:57 +309: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: finish-weighted-blazeOrange-1.6x-synthetic
+00:57 +310: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: finish-reps-blazeOrange-1.6x-synthetic
+00:57 +311: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: finish-timed-blazeOrange-1.6x-synthetic
+00:57 +312: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: finish-distance-blazeOrange-1.6x-synthetic
+00:57 +313: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: pr-blazeOrange-1.6x-synthetic
+00:57 +314: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: share-monument-blazeOrange-1.6x-synthetic
+00:57 +315: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: share-technical-blazeOrange-1.6x-synthetic
+00:57 +316: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: share-sticker-blazeOrange-1.6x-synthetic
+00:58 +317: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: detail-blazeOrange-1.6x-synthetic
+00:58 +318: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: detail-error-blazeOrange-1.6x-synthetic
+00:58 +319: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: detail-empty-blazeOrange-1.6x-synthetic
+00:58 +320: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: exercise-blazeOrange-1.6x-synthetic
+00:58 +321: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: exercise-no-estimate-blazeOrange-1.6x-synthetic
+00:58 +322: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: progress-blazeOrange-1.6x-synthetic
+00:58 +323: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: progress-low-blazeOrange-1.6x-synthetic
+00:58 +324: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: progress-empty-blazeOrange-1.6x-synthetic
+00:58 +325: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: roles-blazeOrange-1.6x-synthetic
+00:58 +326: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart: (tearDownAll)
+00:58 +326: All tests passed!

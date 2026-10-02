@@ -15,7 +15,7 @@ void main() {
 
       expect(summary.hasWeightedVolume, isTrue);
       expect(summary.primaryMetricLabel(), equals('VOLUME'));
-      expect(summary.primaryMetricValue(unit: 'kg'), equals('1250 kg'));
+      expect(summary.primaryMetricValue(unit: 'kg'), equals('1,250 kg'));
     });
 
     test(

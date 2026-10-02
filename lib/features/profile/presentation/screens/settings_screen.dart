@@ -338,10 +338,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
     } else if (syncPhase == SyncPhase.syncing) {
       syncSubtitle = 'Syncing…';
     } else if (syncPhase == SyncPhase.offline) {
-      syncSubtitle =
-          "Offline. Your workouts are saved and will sync when you're back online";
+      syncSubtitle = 'Offline. Cloud sync is paused.';
     } else if (syncPhase == SyncPhase.error) {
-      syncSubtitle = "Couldn't sync. Will retry automatically";
+      syncSubtitle = "Couldn't sync. Check your connection.";
     } else {
       syncSubtitle = 'Backup across devices and protect against data loss';
     }
@@ -729,7 +728,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
                           icon: Icons.shield_rounded,
                           title: 'Your data',
                           subtitle: isPremium
-                              ? 'Stored on-device, backed up to your account'
+                              ? 'Local storage and optional cloud sync'
                               : 'Stored locally on this device',
                           onTap: () => _showDataInfo(context, isPremium),
                         ),
@@ -1100,16 +1099,14 @@ void _showDataInfo(BuildContext context, bool isPremium) {
   HapticFeedback.lightImpact();
   showAppConfirmDialog(
     context: context,
-    title: isPremium ? 'Local-first, cloud-backed' : 'Local-first privacy',
+    title: isPremium ? 'Local storage and cloud sync' : 'Local-first privacy',
     message: isPremium
-        ? 'Every workout is saved instantly to a private database '
-            'on this device. Delt works fully offline. Workouts are '
-            'automatically backed up to your account so your history survives '
-            'a reinstall or a new phone. Only you can read it.'
-        : 'Every workout is saved instantly to a private database '
-            'on this device. Delt works fully offline. Upgrade to '
-            'Delt Pro to automatically back up your history to the cloud '
-            'and sync across devices.',
+        ? 'Completed workouts are stored in a private database on this device '
+            'after a successful save. Pro cloud sync can back up saved workouts '
+            'when enabled and connected. Check sync status before relying on a backup.'
+        : 'Completed workouts are stored in a private database on this device '
+            'after a successful save. Pro offers optional cloud backup and '
+            'sync across devices.',
     confirmLabel: 'Got it',
     cancelLabel: 'Close',
   );

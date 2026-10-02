@@ -15,6 +15,8 @@ class PersonalRecord {
   final String unit;
   final String setId;
   final double? previousValue;
+  final double? loggedWeightKg;
+  final int? loggedReps;
 
   const PersonalRecord({
     required this.type,
@@ -24,18 +26,16 @@ class PersonalRecord {
     required this.unit,
     required this.setId,
     this.previousValue,
+    this.loggedWeightKg,
+    this.loggedReps,
   });
 
   /// Backwards compatibility getters for PrRecord callers.
-  double get weightKg => (type == PersonalRecordType.estimatedOneRepMax ||
-          type == PersonalRecordType.maxWeight)
-      ? value
-      : 0.0;
+  double get weightKg =>
+      loggedWeightKg ?? (type == PersonalRecordType.maxWeight ? value : 0.0);
 
-  int get reps => (type == PersonalRecordType.maxReps ||
-          type == PersonalRecordType.maxDuration)
-      ? value.toInt()
-      : 0;
+  int get reps =>
+      loggedReps ?? (type == PersonalRecordType.maxReps ? value.toInt() : 0);
 
   double get estimated1rm =>
       type == PersonalRecordType.estimatedOneRepMax ? value : 0.0;

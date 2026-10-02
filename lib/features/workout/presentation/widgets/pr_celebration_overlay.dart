@@ -6,6 +6,8 @@ import 'package:gymlog/core/models/personal_record.dart';
 import 'package:gymlog/core/theme/app_colors.dart';
 import 'package:gymlog/core/theme/app_text.dart';
 import 'package:gymlog/core/theme/dynamic_accent_theme.dart';
+import 'package:gymlog/core/utils/units.dart';
+import 'package:gymlog/core/utils/formatters.dart';
 
 /// Full-screen celebration shown when a finished workout contains PRs.
 /// Turns a silent `is_pr = 1` database write into the app's best moment:
@@ -20,8 +22,9 @@ import 'package:gymlog/core/theme/dynamic_accent_theme.dart';
 /// Dependency-free — confetti is a lightweight CustomPainter, not a package.
 Future<void> showPrCelebration(
   BuildContext context,
-  List<PrRecord> prs,
-) {
+  List<PrRecord> prs, {
+  String weightUnit = 'kg',
+}) {
   if (prs.isEmpty) return Future.value();
   HapticFeedback.heavyImpact();
 
@@ -45,15 +48,17 @@ Future<void> showPrCelebration(
               child: ScaleTransition(scale: curved, child: child),
             );
           },
-    pageBuilder: (dialogCtx, _, __) =>
-        _PrCelebration(prs: prs, reduceMotion: reduceMotion),
+    pageBuilder: (dialogCtx, _, __) => _PrCelebration(
+        prs: prs, reduceMotion: reduceMotion, weightUnit: weightUnit),
   );
 }
 
 class _PrCelebration extends StatefulWidget {
   final List<PrRecord> prs;
   final bool reduceMotion;
-  const _PrCelebration({required this.prs, this.reduceMotion = false});
+  final String weightUnit;
+  const _PrCelebration(
+      {required this.prs, this.reduceMotion = false, required this.weightUnit});
 
   @override
   State<_PrCelebration> createState() => _PrCelebrationState();
@@ -105,6 +110,7 @@ class _PrCelebrationState extends State<_PrCelebration>
         Center(
           child: PrCelebrationCard(
             prs: widget.prs,
+            weightUnit: widget.weightUnit,
             onKeepGoing: () {
               HapticFeedback.mediumImpact();
               Navigator.of(context).pop();
@@ -127,16 +133,54 @@ class _PrCelebrationState extends State<_PrCelebration>
 class PrCelebrationCard extends StatelessWidget {
   final List<PrRecord> prs;
   final VoidCallback onKeepGoing;
+  final String weightUnit;
 
   const PrCelebrationCard({
     super.key,
     required this.prs,
     required this.onKeepGoing,
+    this.weightUnit = 'kg',
   });
 
-  String _fmtKg(double kg) => kg == kg.truncateToDouble()
-      ? kg.toInt().toString()
-      : kg.toStringAsFixed(1);
+  String _weightUnit({bool spoken = false}) => spoken
+      ? (weightUnit == 'lbs' ? 'pounds' : 'kilograms')
+      : unitLabel(weightUnit);
+
+  String _recordLabel(PrRecord pr) => switch (pr.type) {
+        PersonalRecordType.estimatedOneRepMax => 'Estimated 1RM',
+        PersonalRecordType.maxWeight => 'Max weight',
+        PersonalRecordType.maxReps => 'Max reps',
+        PersonalRecordType.maxDuration => 'Max hold',
+        PersonalRecordType.maxDistance => 'Max distance',
+        PersonalRecordType.bestPace => 'Best pace',
+      };
+
+  String _recordValue(PrRecord pr, double value, {bool spoken = false}) {
+    if (pr.type == PersonalRecordType.bestPace) {
+      return MeasurementFormatter.formatPaceFromSecondsPerMeter(value,
+          spoken: spoken);
+    }
+    if (pr.type == PersonalRecordType.estimatedOneRepMax ||
+        pr.type == PersonalRecordType.maxWeight) {
+      return '${formatWeight(value, weightUnit)} ${_weightUnit(spoken: spoken)}';
+    }
+    return '${value == value.truncateToDouble() ? value.toInt() : value.toStringAsFixed(1)} ${pr.unit}';
+  }
+
+  String _loggedSet(PrRecord pr, {bool spoken = false}) {
+    final reps = pr.loggedReps;
+    final load = pr.loggedWeightKg;
+    if (reps == null) return 'Logged set unavailable';
+    if (pr.type == PersonalRecordType.maxDistance ||
+        pr.type == PersonalRecordType.bestPace) {
+      return 'Logged: ${load ?? 0} m · $reps s';
+    }
+    if (pr.type == PersonalRecordType.maxDuration) {
+      return 'Logged: $reps s hold';
+    }
+    if (load == null) return 'Logged: $reps reps';
+    return 'Logged: ${formatWeight(load, weightUnit)} ${_weightUnit(spoken: spoken)} ${spoken ? 'for' : '×'} $reps reps';
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -216,7 +260,7 @@ class PrCelebrationCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'Stronger than every session before it.',
+                  'A new record in your logged history.',
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: AppText.meta(color: surface.textSecondary),
@@ -236,10 +280,10 @@ class PrCelebrationCard extends StatelessWidget {
                         children: [
                           for (final pr in prs)
                             Semantics(
-                              label: '${pr.exerciseName}: '
-                                  '${_fmtKg(pr.weightKg)} kilograms for ${pr.reps} reps, '
-                                  'estimated one-rep max ${_fmtKg(pr.estimated1rm)} kilograms'
-                                  '${pr.previousBest1rm > 0 ? ', up from ${_fmtKg(pr.previousBest1rm)} kilograms' : ', first record'}',
+                              label:
+                                  '${pr.exerciseName}: ${_recordLabel(pr)}, ${_recordValue(pr, pr.value, spoken: true)}. '
+                                  '${_loggedSet(pr, spoken: true)}. '
+                                  '${pr.previousValue != null ? 'Previous: ${_recordValue(pr, pr.previousValue!, spoken: true)}' : 'First recorded result'}',
                               excludeSemantics: true,
                               child: Padding(
                                 padding: const EdgeInsets.only(bottom: 10),
@@ -259,14 +303,14 @@ class PrCelebrationCard extends StatelessWidget {
                                           children: [
                                             Text(
                                               pr.exerciseName,
-                                              maxLines: 1,
+                                              maxLines: 2,
                                               overflow: TextOverflow.ellipsis,
                                               style: AppText.rowLabel(
                                                   color: surface.textPrimary),
                                             ),
                                             const SizedBox(height: 2),
                                             Text(
-                                              '${_fmtKg(pr.weightKg)} kg × ${pr.reps} reps',
+                                              _loggedSet(pr),
                                               style: AppText.caption(
                                                   color: surface.textSecondary),
                                             ),
@@ -277,17 +321,21 @@ class PrCelebrationCard extends StatelessWidget {
                                         crossAxisAlignment:
                                             CrossAxisAlignment.end,
                                         children: [
+                                          Text(_recordLabel(pr),
+                                              style: AppText.caption(
+                                                  color:
+                                                      surface.textSecondary)),
                                           // The beaten 1RM — the headline
                                           // number — in active accent.
                                           Text(
-                                            '${_fmtKg(pr.estimated1rm)} kg',
+                                            _recordValue(pr, pr.value),
                                             style: AppText.value(
                                                 color: accent.base),
                                           ),
                                           Text(
-                                            pr.previousBest1rm > 0
-                                                ? 'prev ${_fmtKg(pr.previousBest1rm)} kg'
-                                                : 'first 1RM',
+                                            pr.previousValue != null
+                                                ? 'prev ${_recordValue(pr, pr.previousValue!)}'
+                                                : 'first record',
                                             style: AppText.caption(
                                                 color: surface.textSecondary),
                                           ),

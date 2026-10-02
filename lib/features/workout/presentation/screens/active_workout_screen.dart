@@ -197,6 +197,7 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
       context: context,
       duration: DateTime.now().difference(workout.startTime),
       volumeKg: volumeKg,
+      metricSummary: ref.read(workoutMetricSummaryProvider),
       sets: sets,
       unit: ref.read(weightUnitProvider),
       initialName: preFill,
@@ -226,11 +227,13 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
     });
 
     if (result is WorkoutSaveSuccess) {
+      final weightUnit = ref.read(weightUnitProvider);
       HapticFeedback.heavyImpact();
       context.go('/');
       if (result.prs.isNotEmpty) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
-          showPrCelebration(rootNavigator.context, result.prs);
+          showPrCelebration(rootNavigator.context, result.prs,
+              weightUnit: weightUnit);
         });
       }
     } else if (result is WorkoutSaveFailure) {
@@ -475,6 +478,7 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
                   workoutName: workoutName,
                   elapsedTime: timer,
                   volumeKg: volumeKg,
+                  metricSummary: ref.watch(workoutMetricSummaryProvider),
                   completedSets: completedSets,
                   weightUnit: globalUnit,
                   finishEnabled: completedSets > 0 && !_isSaving,

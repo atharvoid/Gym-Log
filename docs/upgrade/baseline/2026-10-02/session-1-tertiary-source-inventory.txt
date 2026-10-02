@@ -1,0 +1,602 @@
+lib\shared\widgets\body\muscle_summary.dart-140-      children: [
+lib\shared\widgets\body\muscle_summary.dart-141-        Text(title,
+lib\shared\widgets\body\muscle_summary.dart:142:            style: AppText.columnHeader(color: context.surface.textTertiary)),
+lib\shared\widgets\body\muscle_summary.dart-143-        const SizedBox(height: 6),
+lib\shared\widgets\body\muscle_summary.dart-144-        Text(
+--
+lib\shared\widgets\body\muscle_load_bar.dart-110-                  if (overflow > 0)
+lib\shared\widgets\body\muscle_load_bar.dart-111-                    Text('+$overflow',
+lib\shared\widgets\body\muscle_load_bar.dart:112:                        style: AppText.statLabel(color: surface.textTertiary)),
+lib\shared\widgets\body\muscle_load_bar.dart-113-                ],
+lib\shared\widgets\body\muscle_load_bar.dart-114-              ),
+--
+lib\shared\widgets\premium_paywall.dart-661-                        'Manage or cancel in your store account settings.',
+lib\shared\widgets\premium_paywall.dart-662-                        textAlign: TextAlign.center,
+lib\shared\widgets\premium_paywall.dart:663:                        style: AppText.caption(color: surface.textTertiary),
+lib\shared\widgets\premium_paywall.dart-664-                      ),
+lib\shared\widgets\premium_paywall.dart-665-                    ),
+--
+lib\shared\widgets\premium_paywall.dart-684-                          height: 3,
+lib\shared\widgets\premium_paywall.dart-685-                          decoration: BoxDecoration(
+lib\shared\widgets\premium_paywall.dart:686:                            color: surface.textTertiary,
+lib\shared\widgets\premium_paywall.dart-687-                            shape: BoxShape.circle,
+lib\shared\widgets\premium_paywall.dart-688-                          ),
+--
+lib\shared\widgets\tour\spotlight_tour_overlay.dart-475-                    child: Text(
+lib\shared\widgets\tour\spotlight_tour_overlay.dart-476-                      'Skip tour',
+lib\shared\widgets\tour\spotlight_tour_overlay.dart:477:                      style: AppText.caption(color: surface.textTertiary),
+lib\shared\widgets\tour\spotlight_tour_overlay.dart-478-                    ),
+lib\shared\widgets\tour\spotlight_tour_overlay.dart-479-                  ),
+--
+lib\shared\widgets\ui\app_dialog.dart-313-                decoration: InputDecoration(
+lib\shared\widgets\ui\app_dialog.dart-314-                  hintText: widget.hint,
+lib\shared\widgets\ui\app_dialog.dart:315:                  hintStyle: AppText.body(color: surface.textTertiary),
+lib\shared\widgets\ui\app_dialog.dart:316:                  counterStyle: AppText.caption(color: surface.textTertiary),
+lib\shared\widgets\ui\app_dialog.dart-317-                  filled: true,
+lib\shared\widgets\ui\app_dialog.dart-318-                  fillColor: surface.surface3,
+--
+lib\shared\widgets\ui\app_action_chip.dart-216-                size: 15,
+lib\shared\widgets\ui\app_action_chip.dart-217-                color: isEnabled
+lib\shared\widgets\ui\app_action_chip.dart:218:                    ? (isSelected ? accent.light : surface.textTertiary)
+lib\shared\widgets\ui\app_action_chip.dart-219-                    : surface.textDisabled,
+lib\shared\widgets\ui\app_action_chip.dart-220-              ),
+--
+lib\shared\widgets\ui\app_action_row.dart-51-    final trailing = onTap != null && showChevron
+lib\shared\widgets\ui\app_action_row.dart-52-        ? Icon(Icons.chevron_right_rounded,
+lib\shared\widgets\ui\app_action_row.dart:53:            size: 20, color: surface.textTertiary)
+lib\shared\widgets\ui\app_action_row.dart-54-        : null;
+lib\shared\widgets\ui\app_action_row.dart-55-
+--
+lib\shared\widgets\ui\duration_slider.dart-183-            if (widget.valueSeconds > 0)
+lib\shared\widgets\ui\duration_slider.dart-184-              Text('min:sec',
+lib\shared\widgets\ui\duration_slider.dart:185:                  style: AppText.caption(color: surface.textTertiary)),
+lib\shared\widgets\ui\duration_slider.dart-186-          ],
+lib\shared\widgets\ui\duration_slider.dart-187-        ),
+--
+lib\shared\widgets\ui\duration_slider.dart-238-                        accent: accent.base,
+lib\shared\widgets\ui\duration_slider.dart-239-                        trackColor: surface.borderDefault,
+lib\shared\widgets\ui\duration_slider.dart:240:                        tickColor: surface.textTertiary,
+lib\shared\widgets\ui\duration_slider.dart-241-                        thumbBorder: surface.bgBase,
+lib\shared\widgets\ui\duration_slider.dart-242-                        trackHeight: _trackHeight,
+--
+lib\shared\widgets\ui\duration_slider.dart-266-                    ? widget.zeroLabel
+lib\shared\widgets\ui\duration_slider.dart-267-                    : formatDurationLabel(widget.minSeconds),
+lib\shared\widgets\ui\duration_slider.dart:268:                style: AppText.caption(color: surface.textTertiary),
+lib\shared\widgets\ui\duration_slider.dart-269-              ),
+lib\shared\widgets\ui\duration_slider.dart-270-              Text(
+lib\shared\widgets\ui\duration_slider.dart-271-                formatDurationLabel(widget.maxSeconds),
+lib\shared\widgets\ui\duration_slider.dart:272:                style: AppText.caption(color: surface.textTertiary),
+lib\shared\widgets\ui\duration_slider.dart-273-              ),
+lib\shared\widgets\ui\duration_slider.dart-274-            ],
+--
+lib\shared\widgets\ui\time_range_filter.dart-59-                Icons.keyboard_arrow_down_rounded,
+lib\shared\widgets\ui\time_range_filter.dart-60-                size: 16,
+lib\shared\widgets\ui\time_range_filter.dart:61:                color: context.surface.textTertiary,
+lib\shared\widgets\ui\time_range_filter.dart-62-              ),
+lib\shared\widgets\ui\time_range_filter.dart-63-            ],
+--
+lib\shared\widgets\ui\start_button.dart-47-    // bar, rest timer), NOT entry buttons.
+lib\shared\widgets\ui\start_button.dart-48-    final bg = on ? surface.surface3 : surface.surface2;
+lib\shared\widgets\ui\start_button.dart:49:    final labelColor = on ? surface.textPrimary : surface.textTertiary;
+lib\shared\widgets\ui\start_button.dart:50:    final glyphColor = on ? accent.base : surface.textTertiary;
+lib\shared\widgets\ui\start_button.dart-51-
+lib\shared\widgets\ui\start_button.dart-52-    // TEXT SCALING: no fixed `height:` anywhere in this subtree. The shell
+--
+lib\core\theme\app_text.dart-244-  /// all-caps text in the app — uppercase the string at the call site.
+lib\core\theme\app_text.dart-245-  static TextStyle columnHeader({
+lib\core\theme\app_text.dart:246:    Color color = AppColors.textTertiary,
+lib\core\theme\app_text.dart-247-    List<Shadow>? shadows,
+lib\core\theme\app_text.dart-248-  }) =>
+--
+lib\core\theme\app_colors.dart-80-  static const textSecondaryLight =
+lib\core\theme\app_colors.dart-81-      Color(0x66000000); // black 40% — dates, subtitles
+lib\core\theme\app_colors.dart:82:  static const textTertiaryLight =
+lib\core\theme\app_colors.dart-83-      Color(0x40000000); // black 25% — placeholders, column headers
+lib\core\theme\app_colors.dart-84-  static const textDisabledLight =
+--
+lib\core\theme\app_colors.dart-191-  static const textSecondary =
+lib\core\theme\app_colors.dart-192-      Color(0x99FFFFFF); // white 60% — dates, subtitles, secondary
+lib\core\theme\app_colors.dart:193:  static const textTertiary =
+lib\core\theme\app_colors.dart-194-      Color(0x99FFFFFF); // white 60% — meaningful hints and reference text
+lib\core\theme\app_colors.dart-195-  static const textDisabled = Color(0x33FFFFFF); // white 20% — inactive states
+lib\core\theme\app_colors.dart-196-
+lib\core\theme\app_colors.dart-197-  // ── Charts ─────────────────────────────────────────────
+lib\core\theme\app_colors.dart:198:  static const chartAxisLabel = textTertiary;
+lib\core\theme\app_colors.dart-199-
+lib\core\theme\app_colors.dart-200-  // Profile analytics bar chart.
+--
+lib\core\theme\app_colors.dart-212-  static const profileGraphGridLine =
+lib\core\theme\app_colors.dart-213-      Color(0x14FFFFFF); // white 8% — barely-there guides
+lib\core\theme\app_colors.dart:214:  static const profileGraphAxisLabel = textTertiary;
+lib\core\theme\app_colors.dart-215-  static const profileGraphTooltipBg = Color(0xFF242424); // == surface4
+lib\core\theme\app_colors.dart-216-  static const profileGraphTooltipShadow = Color(0x33000000); // 20% black
+--
+lib\core\theme\app_colors.dart-254-  final Color textPrimary;
+lib\core\theme\app_colors.dart-255-  final Color textSecondary;
+lib\core\theme\app_colors.dart:256:  final Color textTertiary;
+lib\core\theme\app_colors.dart-257-  final Color textDisabled;
+lib\core\theme\app_colors.dart-258-  final bool isLight;
+--
+lib\core\theme\app_colors.dart-269-    required this.textPrimary,
+lib\core\theme\app_colors.dart-270-    required this.textSecondary,
+lib\core\theme\app_colors.dart:271:    required this.textTertiary,
+lib\core\theme\app_colors.dart-272-    required this.textDisabled,
+lib\core\theme\app_colors.dart-273-    required this.isLight,
+--
+lib\core\theme\app_colors.dart-286-    textPrimary: AppColors.textPrimary,
+lib\core\theme\app_colors.dart-287-    textSecondary: AppColors.textSecondary,
+lib\core\theme\app_colors.dart:288:    textTertiary: AppColors.textTertiary,
+lib\core\theme\app_colors.dart-289-    textDisabled: AppColors.textDisabled,
+lib\core\theme\app_colors.dart-290-    isLight: false,
+--
+lib\core\theme\app_colors.dart-303-    textPrimary: AppColors.textPrimaryLight,
+lib\core\theme\app_colors.dart-304-    textSecondary: AppColors.textSecondaryLight,
+lib\core\theme\app_colors.dart:305:    textTertiary: AppColors.textTertiaryLight,
+lib\core\theme\app_colors.dart-306-    textDisabled: AppColors.textDisabledLight,
+lib\core\theme\app_colors.dart-307-    isLight: true,
+--
+lib\core\theme\app_theme.dart-142-        fontSize: 16,
+lib\core\theme\app_theme.dart-143-        fontWeight: FontWeight.w400,
+lib\core\theme\app_theme.dart:144:        color: s.textTertiary,
+lib\core\theme\app_theme.dart-145-      ),
+lib\core\theme\app_theme.dart-146-    ),
+--
+lib\core\theme\app_theme.dart-220-          fontSize: 12, fontWeight: FontWeight.w600, color: s.textSecondary),
+lib\core\theme\app_theme.dart-221-      labelSmall:
+lib\core\theme\app_theme.dart:222:          _ct(fontSize: 11, fontWeight: FontWeight.w600, color: s.textTertiary),
+lib\core\theme\app_theme.dart-223-    ),
+lib\core\theme\app_theme.dart-224-  );
+--
+lib\features\workout\presentation\widgets\workout_detail\hero_sliver.dart-185-      padding: const EdgeInsets.symmetric(horizontal: 14),
+lib\features\workout\presentation\widgets\workout_detail\hero_sliver.dart-186-      child: Text('·',
+lib\features\workout\presentation\widgets\workout_detail\hero_sliver.dart:187:          style: TextStyle(color: surface.textTertiary, fontSize: 22)),
+lib\features\workout\presentation\widgets\workout_detail\hero_sliver.dart-188-    );
+lib\features\workout\presentation\widgets\workout_detail\hero_sliver.dart-189-  }
+--
+lib\features\workout\presentation\widgets\active_workout_header.dart-270-                fontSize: 15,
+lib\features\workout\presentation\widgets\active_workout_header.dart-271-                fontWeight: FontWeight.w700,
+lib\features\workout\presentation\widgets\active_workout_header.dart:272:                color: finishEnabled ? accent.onAccent : surface.textTertiary,
+lib\features\workout\presentation\widgets\active_workout_header.dart-273-              ),
+lib\features\workout\presentation\widgets\active_workout_header.dart-274-            ),
+--
+lib\features\workout\presentation\widgets\finish_summary_sheet.dart-195-                    labelText: 'Workout name',
+lib\features\workout\presentation\widgets\finish_summary_sheet.dart-196-                    labelStyle: AppText.caption(),
+lib\features\workout\presentation\widgets\finish_summary_sheet.dart:197:                    counterStyle: AppText.caption(color: surface.textTertiary),
+lib\features\workout\presentation\widgets\finish_summary_sheet.dart-198-                    filled: true,
+lib\features\workout\presentation\widgets\finish_summary_sheet.dart-199-                    fillColor: surface.surface3,
+--
+lib\features\workout\presentation\widgets\share_card\share_card_watermark.dart-50-          subtitle,
+lib\features\workout\presentation\widgets\share_card\share_card_watermark.dart-51-          style: AppText.caption(
+lib\features\workout\presentation\widgets\share_card\share_card_watermark.dart:52:            color: AppColors.textTertiary,
+lib\features\workout\presentation\widgets\share_card\share_card_watermark.dart-53-          ).copyWith(
+lib\features\workout\presentation\widgets\share_card\share_card_watermark.dart-54-            fontSize: 8.5,
+--
+lib\features\workout\presentation\widgets\share_card\share_card_technical.dart-104-                        data.formattedDate,
+lib\features\workout\presentation\widgets\share_card\share_card_technical.dart-105-                        style: AppText.caption(
+lib\features\workout\presentation\widgets\share_card\share_card_technical.dart:106:                          color: AppColors.textTertiary,
+lib\features\workout\presentation\widgets\share_card\share_card_technical.dart-107-                        ).copyWith(
+lib\features\workout\presentation\widgets\share_card\share_card_technical.dart-108-                          fontSize: 10,
+--
+lib\features\workout\presentation\widgets\share_card\share_card_technical.dart-224-                              'MILESTONE',
+lib\features\workout\presentation\widgets\share_card\share_card_technical.dart-225-                              style: AppText.columnHeader(
+lib\features\workout\presentation\widgets\share_card\share_card_technical.dart:226:                                color: AppColors.textTertiary,
+lib\features\workout\presentation\widgets\share_card\share_card_technical.dart-227-                              ).copyWith(fontSize: 8.5),
+lib\features\workout\presentation\widgets\share_card\share_card_technical.dart-228-                            ),
+--
+lib\features\workout\presentation\widgets\share_card\share_card_technical.dart-260-                                      : 'CONTEXT',
+lib\features\workout\presentation\widgets\share_card\share_card_technical.dart-261-                              style: AppText.columnHeader(
+lib\features\workout\presentation\widgets\share_card\share_card_technical.dart:262:                                color: AppColors.textTertiary,
+lib\features\workout\presentation\widgets\share_card\share_card_technical.dart-263-                              ).copyWith(fontSize: 8.5),
+lib\features\workout\presentation\widgets\share_card\share_card_technical.dart-264-                            ),
+--
+lib\core\services\share_card_service.dart-334-          title,
+lib\core\services\share_card_service.dart-335-          style: AppText.caption(
+lib\core\services\share_card_service.dart:336:            color: isSelected ? AppColors.textPrimary : AppColors.textTertiary,
+lib\core\services\share_card_service.dart-337-          ).copyWith(
+lib\core\services\share_card_service.dart-338-              fontWeight: isSelected ? FontWeight.w700 : FontWeight.normal),
+--
+lib\features\workout\presentation\widgets\share_card\share_card_monument.dart-201-                            data.formattedDate,
+lib\features\workout\presentation\widgets\share_card\share_card_monument.dart-202-                            style: AppText.caption(
+lib\features\workout\presentation\widgets\share_card\share_card_monument.dart:203:                              color: AppColors.textTertiary,
+lib\features\workout\presentation\widgets\share_card\share_card_monument.dart-204-                            ).copyWith(
+lib\features\workout\presentation\widgets\share_card\share_card_monument.dart-205-                              fontSize: 10.5,
+--
+lib\features\workout\presentation\widgets\share_card\share_card_monument.dart-217-                          const Text(
+lib\features\workout\presentation\widgets\share_card\share_card_monument.dart-218-                            '·',
+lib\features\workout\presentation\widgets\share_card\share_card_monument.dart:219:                            style: TextStyle(color: AppColors.textTertiary),
+lib\features\workout\presentation\widgets\share_card\share_card_monument.dart-220-                          ),
+lib\features\workout\presentation\widgets\share_card\share_card_monument.dart-221-                        if (data.privacy.showBodyweight &&
+--
+lib\features\workout\presentation\widgets\share_card\share_card_monument.dart-224-                            'BW ${data.bodyweightKg!.toStringAsFixed(1)} KG',
+lib\features\workout\presentation\widgets\share_card\share_card_monument.dart-225-                            style: AppText.caption(
+lib\features\workout\presentation\widgets\share_card\share_card_monument.dart:226:                              color: AppColors.textTertiary,
+lib\features\workout\presentation\widgets\share_card\share_card_monument.dart-227-                            ).copyWith(
+lib\features\workout\presentation\widgets\share_card\share_card_monument.dart-228-                              fontSize: 10.5,
+--
+lib\features\workout\presentation\widgets\share_card\share_card_monument.dart-237-                          const Text(
+lib\features\workout\presentation\widgets\share_card\share_card_monument.dart-238-                            '·',
+lib\features\workout\presentation\widgets\share_card\share_card_monument.dart:239:                            style: TextStyle(color: AppColors.textTertiary),
+lib\features\workout\presentation\widgets\share_card\share_card_monument.dart-240-                          ),
+lib\features\workout\presentation\widgets\share_card\share_card_monument.dart-241-                          ConstrainedBox(
+--
+lib\features\workout\presentation\widgets\share_card\share_card_monument.dart-244-                              data.lifterName!.toUpperCase(),
+lib\features\workout\presentation\widgets\share_card\share_card_monument.dart-245-                              style: AppText.caption(
+lib\features\workout\presentation\widgets\share_card\share_card_monument.dart:246:                                color: AppColors.textTertiary,
+lib\features\workout\presentation\widgets\share_card\share_card_monument.dart-247-                              ).copyWith(
+lib\features\workout\presentation\widgets\share_card\share_card_monument.dart-248-                                fontSize: 10.5,
+--
+lib\features\workout\presentation\widgets\set_row.dart-479-        placeholderIsHint ? (hintText ?? '0') : controller.text;
+lib\features\workout\presentation\widgets\set_row.dart-480-    final placeholderColor =
+lib\features\workout\presentation\widgets\set_row.dart:481:        placeholderIsHint ? surface.textTertiary : surface.textPrimary;
+lib\features\workout\presentation\widgets\set_row.dart-482-
+lib\features\workout\presentation\widgets\set_row.dart-483-    return ConstrainedBox(
+--
+lib\features\workout\presentation\widgets\set_row.dart-539-                  decoration: InputDecoration(
+lib\features\workout\presentation\widgets\set_row.dart-540-                    hintText: hintText ?? '0',
+lib\features\workout\presentation\widgets\set_row.dart:541:                    hintStyle: AppText.value(color: surface.textTertiary),
+lib\features\workout\presentation\widgets\set_row.dart-542-                    border: InputBorder.none,
+lib\features\workout\presentation\widgets\set_row.dart-543-                    focusedBorder: InputBorder.none,
+--
+lib\features\workout\presentation\widgets\set_row.dart-883-                    hintText: '0s',
+lib\features\workout\presentation\widgets\set_row.dart-884-                    hintStyle:
+lib\features\workout\presentation\widgets\set_row.dart:885:                        AppText.value(color: surface.textTertiary).copyWith(
+lib\features\workout\presentation\widgets\set_row.dart-886-                      fontSize: 14,
+lib\features\workout\presentation\widgets\set_row.dart-887-                    ),
+--
+lib\features\workout\presentation\widgets\set_row.dart-1005-              style: AppText.statLabel(
+lib\features\workout\presentation\widgets\set_row.dart-1006-                color:
+lib\features\workout\presentation\widgets\set_row.dart:1007:                    prev != null ? surface.textSecondary : surface.textTertiary,
+lib\features\workout\presentation\widgets\set_row.dart-1008-              ),
+lib\features\workout\presentation\widgets\set_row.dart-1009-            ),
+--
+lib\features\workout\presentation\screens\active_workout_screen.dart-506-                                    Icons.fitness_center_rounded,
+lib\features\workout\presentation\screens\active_workout_screen.dart-507-                                    size: 48,
+lib\features\workout\presentation\screens\active_workout_screen.dart:508:                                    color: surface.textTertiary,
+lib\features\workout\presentation\screens\active_workout_screen.dart-509-                                  ),
+lib\features\workout\presentation\screens\active_workout_screen.dart-510-                                  const SizedBox(height: 16),
+--
+lib\features\exercises\presentation\widgets\create_exercise_dialog.dart-182-              decoration: InputDecoration(
+lib\features\exercises\presentation\widgets\create_exercise_dialog.dart-183-                hintText: 'Exercise name',
+lib\features\exercises\presentation\widgets\create_exercise_dialog.dart:184:                hintStyle: AppText.body(color: surface.textTertiary),
+lib\features\exercises\presentation\widgets\create_exercise_dialog.dart:185:                counterStyle: AppText.caption(color: surface.textTertiary),
+lib\features\exercises\presentation\widgets\create_exercise_dialog.dart-186-                filled: true,
+lib\features\exercises\presentation\widgets\create_exercise_dialog.dart-187-                fillColor: surface.surface3,
+--
+lib\features\exercises\presentation\widgets\create_exercise_dialog.dart-223-              'An animated demo isn’t added for custom exercises yet. The rest '
+lib\features\exercises\presentation\widgets\create_exercise_dialog.dart-224-              'tracks exactly like any other lift.',
+lib\features\exercises\presentation\widgets\create_exercise_dialog.dart:225:              style: AppText.caption(color: surface.textTertiary)
+lib\features\exercises\presentation\widgets\create_exercise_dialog.dart-226-                  .copyWith(height: 1.4),
+lib\features\exercises\presentation\widgets\create_exercise_dialog.dart-227-            ),
+--
+lib\features\exercises\presentation\screens\exercise_selection_screen.dart-308-                  decoration: InputDecoration(
+lib\features\exercises\presentation\screens\exercise_selection_screen.dart-309-                    hintText: 'Search exercises…',
+lib\features\exercises\presentation\screens\exercise_selection_screen.dart:310:                    hintStyle: AppText.body(color: surface.textTertiary),
+lib\features\exercises\presentation\screens\exercise_selection_screen.dart-311-                    prefixIcon:
+lib\features\exercises\presentation\screens\exercise_selection_screen.dart-312-                        Icon(Icons.search, color: surface.textSecondary),
+--
+lib\features\exercises\presentation\screens\exercise_selection_screen.dart-559-                  const SizedBox(width: 8),
+lib\features\exercises\presentation\screens\exercise_selection_screen.dart-560-                  Icon(Icons.chevron_right_rounded,
+lib\features\exercises\presentation\screens\exercise_selection_screen.dart:561:                      size: 20, color: surface.textTertiary),
+lib\features\exercises\presentation\screens\exercise_selection_screen.dart-562-                ],
+lib\features\exercises\presentation\screens\exercise_selection_screen.dart-563-              ],
+--
+lib\features\import\presentation\screens\import_screen.dart-326-          'Your data never leaves your device during import.',
+lib\features\import\presentation\screens\import_screen.dart-327-          textAlign: TextAlign.center,
+lib\features\import\presentation\screens\import_screen.dart:328:          style: AppText.caption(color: surface.textTertiary),
+lib\features\import\presentation\screens\import_screen.dart-329-        ),
+lib\features\import\presentation\screens\import_screen.dart-330-      ],
+--
+lib\features\import\presentation\screens\import_screen.dart-359-                  maxLines: 1,
+lib\features\import\presentation\screens\import_screen.dart-360-                  overflow: TextOverflow.ellipsis,
+lib\features\import\presentation\screens\import_screen.dart:361:                  style: AppText.caption(color: surface.textTertiary)),
+lib\features\import\presentation\screens\import_screen.dart-362-            ),
+lib\features\import\presentation\screens\import_screen.dart-363-        ]),
+--
+lib\features\import\presentation\screens\import_screen.dart-790-          ),
+lib\features\import\presentation\screens\import_screen.dart-791-        Text('auto-detected',
+lib\features\import\presentation\screens\import_screen.dart:792:            style: AppText.caption(color: surface.textTertiary)),
+lib\features\import\presentation\screens\import_screen.dart-793-      ],
+lib\features\import\presentation\screens\import_screen.dart-794-    );
+--
+lib\features\routines\presentation\widgets\explore_cards.dart-99-                                fontWeight: FontWeight.w600,
+lib\features\routines\presentation\widgets\explore_cards.dart-100-                                letterSpacing: 0.8,
+lib\features\routines\presentation\widgets\explore_cards.dart:101:                                color: surface.textTertiary,
+lib\features\routines\presentation\widgets\explore_cards.dart-102-                              ),
+lib\features\routines\presentation\widgets\explore_cards.dart-103-                            ),
+--
+lib\features\routines\presentation\widgets\explore_cards.dart-241-                          fontWeight: FontWeight.w600,
+lib\features\routines\presentation\widgets\explore_cards.dart-242-                          letterSpacing: 0.8,
+lib\features\routines\presentation\widgets\explore_cards.dart:243:                          color: surface.textTertiary,
+lib\features\routines\presentation\widgets\explore_cards.dart-244-                        ),
+lib\features\routines\presentation\widgets\explore_cards.dart-245-                      ),
+--
+lib\features\routines\presentation\widgets\explore_cards.dart-280-                      Icons.chevron_right_rounded,
+lib\features\routines\presentation\widgets\explore_cards.dart-281-                      size: 18,
+lib\features\routines\presentation\widgets\explore_cards.dart:282:                      color: surface.textTertiary,
+lib\features\routines\presentation\widgets\explore_cards.dart-283-                    ),
+lib\features\routines\presentation\widgets\explore_cards.dart-284-                  ],
+--
+lib\features\routines\presentation\widgets\explore_cards.dart-385-              height: 3,
+lib\features\routines\presentation\widgets\explore_cards.dart-386-              decoration: BoxDecoration(
+lib\features\routines\presentation\widgets\explore_cards.dart:387:                color: surface.textTertiary,
+lib\features\routines\presentation\widgets\explore_cards.dart-388-                shape: BoxShape.circle,
+lib\features\routines\presentation\widgets\explore_cards.dart-389-              ),
+--
+lib\features\routines\presentation\widgets\explore_cards.dart-612-                    Icons.keyboard_arrow_down_rounded,
+lib\features\routines\presentation\widgets\explore_cards.dart-613-                    size: 16,
+lib\features\routines\presentation\widgets\explore_cards.dart:614:                    color: selected ? accent.base : surface.textTertiary,
+lib\features\routines\presentation\widgets\explore_cards.dart-615-                  ),
+lib\features\routines\presentation\widgets\explore_cards.dart-616-                ],
+--
+lib\features\profile\presentation\widgets\graph_kpi_header.dart-51-              Text(
+lib\features\profile\presentation\widgets\graph_kpi_header.dart-52-                'This week',
+lib\features\profile\presentation\widgets\graph_kpi_header.dart:53:                style: AppText.caption(color: surface.textTertiary),
+lib\features\profile\presentation\widgets\graph_kpi_header.dart-54-              ),
+lib\features\profile\presentation\widgets\graph_kpi_header.dart-55-            ],
+--
+lib\features\routines\presentation\widgets\routine_exercise_block.dart-130-                child: Text(
+lib\features\routines\presentation\widgets\routine_exercise_block.dart-131-                  'No history yet. Your last session will show here',
+lib\features\routines\presentation\widgets\routine_exercise_block.dart:132:                  style: AppText.caption(color: AppColors.textTertiary),
+lib\features\routines\presentation\widgets\routine_exercise_block.dart-133-                ),
+lib\features\routines\presentation\widgets\routine_exercise_block.dart-134-              ),
+--
+lib\features\routines\presentation\widgets\routine_exercise_block.dart-158-          padding: const EdgeInsets.only(bottom: 8),
+lib\features\routines\presentation\widgets\routine_exercise_block.dart-159-          child: Text('LAST SESSION',
+lib\features\routines\presentation\widgets\routine_exercise_block.dart:160:              style: AppText.columnHeader(color: AppColors.textTertiary)),
+lib\features\routines\presentation\widgets\routine_exercise_block.dart-161-        ),
+lib\features\routines\presentation\widgets\routine_exercise_block.dart-162-        Row(
+--
+lib\features\routines\presentation\widgets\routine_detail_styles.dart-65-  );
+lib\features\routines\presentation\widgets\routine_detail_styles.dart-66-  static TextStyle axis = AppText.statCellLabel(
+lib\features\routines\presentation\widgets\routine_detail_styles.dart:67:    color: AppColors.chartAxisLabel,
+lib\features\routines\presentation\widgets\routine_detail_styles.dart-68-  ).copyWith(
+lib\features\routines\presentation\widgets\routine_detail_styles.dart-69-    letterSpacing: 0.0,
+--
+lib\features\routines\presentation\widgets\routine_detail_styles.dart-88-  static TextStyle exLast = AppText.meta(color: AppColors.textSecondary);
+lib\features\routines\presentation\widgets\routine_detail_styles.dart-89-  static TextStyle tableHeader = AppText.columnHeader(
+lib\features\routines\presentation\widgets\routine_detail_styles.dart:90:    color: AppColors.chartAxisLabel,
+lib\features\routines\presentation\widgets\routine_detail_styles.dart-91-  ).copyWith(
+lib\features\routines\presentation\widgets\routine_detail_styles.dart-92-    letterSpacing: 0.6,
+--
+lib\features\routines\presentation\widgets\routine_detail_styles.dart-111-    fontWeight: FontWeight.w600,
+lib\features\routines\presentation\widgets\routine_detail_styles.dart-112-  );
+lib\features\routines\presentation\widgets\routine_detail_styles.dart:113:  static TextStyle emptySub = AppText.caption(color: AppColors.chartAxisLabel);
+lib\features\routines\presentation\widgets\routine_detail_styles.dart-114-
+lib\features\routines\presentation\widgets\routine_detail_styles.dart-115-  // ── Surfaces (tokenized: alias AppColors so no feature owns a private surface) ──
+--
+lib\features\profile\presentation\screens\appearance_screen.dart-65-              'Sets the accent used across buttons, the active tab, charts, and '
+lib\features\profile\presentation\screens\appearance_screen.dart-66-              'highlights. Tap a color. it applies instantly.',
+lib\features\profile\presentation\screens\appearance_screen.dart:67:              style: AppText.caption(color: surface.textTertiary)
+lib\features\profile\presentation\screens\appearance_screen.dart-68-                  .copyWith(height: 1.45),
+lib\features\profile\presentation\screens\appearance_screen.dart-69-            ),
+--
+lib\features\profile\presentation\screens\help_feedback_screen.dart-272-                  ),
+lib\features\profile\presentation\screens\help_feedback_screen.dart-273-                  Icon(Icons.keyboard_arrow_down_rounded,
+lib\features\profile\presentation\screens\help_feedback_screen.dart:274:                      size: 18, color: surface.textTertiary),
+lib\features\profile\presentation\screens\help_feedback_screen.dart-275-                ],
+lib\features\profile\presentation\screens\help_feedback_screen.dart-276-              ),
+--
+lib\features\routines\presentation\widgets\explore_preview_sheet.dart-176-                        Text(
+lib\features\routines\presentation\widgets\explore_preview_sheet.dart-177-                          '${routine.slots.length} total',
+lib\features\routines\presentation\widgets\explore_preview_sheet.dart:178:                          style: AppText.caption(color: surface.textTertiary),
+lib\features\routines\presentation\widgets\explore_preview_sheet.dart-179-                        ),
+lib\features\routines\presentation\widgets\explore_preview_sheet.dart-180-                      ],
+--
+lib\features\routines\presentation\widgets\explore_preview_sheet.dart-322-              style: AppText.statLabel(
+lib\features\routines\presentation\widgets\explore_preview_sheet.dart-323-                color: slot.isConditioningNote
+lib\features\routines\presentation\widgets\explore_preview_sheet.dart:324:                    ? surface.textTertiary
+lib\features\routines\presentation\widgets\explore_preview_sheet.dart-325-                    : surface.textSecondary,
+lib\features\routines\presentation\widgets\explore_preview_sheet.dart-326-              ),
+--
+lib\features\routines\presentation\widgets\explore_preview_sheet.dart-352-                child: Text(
+lib\features\routines\presentation\widgets\explore_preview_sheet.dart-353-                  'LOG MANUALLY',
+lib\features\routines\presentation\widgets\explore_preview_sheet.dart:354:                  style: AppText.badge(color: surface.textTertiary),
+lib\features\routines\presentation\widgets\explore_preview_sheet.dart-355-                ),
+lib\features\routines\presentation\widgets\explore_preview_sheet.dart-356-              ),
+--
+lib\features\routines\presentation\screens\ai_routine_import_screen.dart-163-                  Text(
+lib\features\routines\presentation\screens\ai_routine_import_screen.dart-164-                    'You will review and verify all exercises before saving.',
+lib\features\routines\presentation\screens\ai_routine_import_screen.dart:165:                    style: AppText.caption(color: surface.textTertiary),
+lib\features\routines\presentation\screens\ai_routine_import_screen.dart-166-                    textAlign: TextAlign.center,
+lib\features\routines\presentation\screens\ai_routine_import_screen.dart-167-                  ),
+--
+lib\features\routines\presentation\screens\ai_routine_import_screen.dart-337-              hintText:
+lib\features\routines\presentation\screens\ai_routine_import_screen.dart-338-                  'e.g.\nPush Day A:\nIncline Dumbbell Bench 3x8-10 @ 28kg\nFlat Barbell Bench Press 4x6\nCable Lateral Raises 3x15\nTriceps Pushdowns 3x12',
+lib\features\routines\presentation\screens\ai_routine_import_screen.dart:339:              hintStyle: AppText.body(color: surface.textTertiary),
+lib\features\routines\presentation\screens\ai_routine_import_screen.dart-340-              border: InputBorder.none,
+lib\features\routines\presentation\screens\ai_routine_import_screen.dart-341-              contentPadding: const EdgeInsets.all(16),
+--
+lib\features\profile\presentation\screens\profile_screen.dart-285-                ),
+lib\features\profile\presentation\screens\profile_screen.dart-286-                Icon(Icons.chevron_right_rounded,
+lib\features\profile\presentation\screens\profile_screen.dart:287:                    size: 18, color: surface.textTertiary),
+lib\features\profile\presentation\screens\profile_screen.dart-288-              ],
+lib\features\profile\presentation\screens\profile_screen.dart-289-            ),
+--
+lib\features\profile\presentation\screens\profile_screen.dart-383-                            Icons.edit_rounded,
+lib\features\profile\presentation\screens\profile_screen.dart-384-                            size: 13,
+lib\features\profile\presentation\screens\profile_screen.dart:385:                            color: surface.textTertiary,
+lib\features\profile\presentation\screens\profile_screen.dart-386-                          ),
+lib\features\profile\presentation\screens\profile_screen.dart-387-                        ],
+--
+lib\features\profile\presentation\screens\profile_screen.dart-405-                            Icons.cloud_off_rounded,
+lib\features\profile\presentation\screens\profile_screen.dart-406-                            size: 11,
+lib\features\profile\presentation\screens\profile_screen.dart:407:                            color: surface.textTertiary,
+lib\features\profile\presentation\screens\profile_screen.dart-408-                          ),
+lib\features\profile\presentation\screens\profile_screen.dart-409-                          const SizedBox(width: 4),
+lib\features\profile\presentation\screens\profile_screen.dart-410-                          Text(
+lib\features\profile\presentation\screens\profile_screen.dart-411-                            'Sync paused',
+lib\features\profile\presentation\screens\profile_screen.dart:412:                            style: AppText.badge(color: surface.textTertiary),
+lib\features\profile\presentation\screens\profile_screen.dart-413-                          ),
+lib\features\profile\presentation\screens\profile_screen.dart-414-                        ],
+--
+lib\features\profile\presentation\screens\profile_screen.dart-477-                        color: streak.currentStreak > 0
+lib\features\profile\presentation\screens\profile_screen.dart-478-                            ? AppColors.warning
+lib\features\profile\presentation\screens\profile_screen.dart:479:                            : context.surface.textTertiary,
+lib\features\profile\presentation\screens\profile_screen.dart-480-                      ),
+lib\features\profile\presentation\screens\profile_screen.dart-481-                    ),
+--
+lib\features\profile\presentation\screens\profile_screen.dart-601-        child: Column(
+lib\features\profile\presentation\screens\profile_screen.dart-602-          children: [
+lib\features\profile\presentation\screens\profile_screen.dart:603:            Icon(Icons.refresh_rounded, size: 18, color: surface.textTertiary),
+lib\features\profile\presentation\screens\profile_screen.dart-604-            const SizedBox(height: 5),
+lib\features\profile\presentation\screens\profile_screen.dart-605-            Text('RETRY',
+lib\features\profile\presentation\screens\profile_screen.dart:606:                style: AppText.statCellLabel(color: surface.textTertiary)),
+lib\features\profile\presentation\screens\profile_screen.dart-607-          ],
+lib\features\profile\presentation\screens\profile_screen.dart-608-        ),
+--
+lib\features\profile\presentation\screens\profile_screen.dart-811-      children: [
+lib\features\profile\presentation\screens\profile_screen.dart-812-        Icon(Icons.error_outline_rounded,
+lib\features\profile\presentation\screens\profile_screen.dart:813:            size: 40, color: surface.textTertiary),
+lib\features\profile\presentation\screens\profile_screen.dart-814-        const SizedBox(height: 12),
+lib\features\profile\presentation\screens\profile_screen.dart-815-        Text(
+--
+lib\features\routines\presentation\screens\explore_screen.dart-261-        fillColor: surface.surface2,
+lib\features\routines\presentation\screens\explore_screen.dart-262-        hintText: 'Search routines, programs or exercises\u2026',
+lib\features\routines\presentation\screens\explore_screen.dart:263:        hintStyle: TextStyle(color: surface.textTertiary, fontSize: 14),
+lib\features\routines\presentation\screens\explore_screen.dart-264-        prefixIcon:
+lib\features\routines\presentation\screens\explore_screen.dart:265:            Icon(Icons.search_rounded, size: 20, color: surface.textTertiary),
+lib\features\routines\presentation\screens\explore_screen.dart-266-        suffixIcon: !_hasQuery
+lib\features\routines\presentation\screens\explore_screen.dart-267-            ? null
+--
+lib\features\routines\presentation\screens\explore_screen.dart-273-                ),
+lib\features\routines\presentation\screens\explore_screen.dart-274-                icon: Icon(Icons.close_rounded,
+lib\features\routines\presentation\screens\explore_screen.dart:275:                    size: 18, color: surface.textTertiary),
+lib\features\routines\presentation\screens\explore_screen.dart-276-                onPressed: _clearQuery,
+lib\features\routines\presentation\screens\explore_screen.dart-277-              ),
+--
+lib\features\routines\presentation\screens\explore_screen.dart-334-                        fontWeight:
+lib\features\routines\presentation\screens\explore_screen.dart-335-                            selected ? FontWeight.w600 : FontWeight.w500,
+lib\features\routines\presentation\screens\explore_screen.dart:336:                        color: selected ? accent : surface.textTertiary,
+lib\features\routines\presentation\screens\explore_screen.dart-337-                      ),
+lib\features\routines\presentation\screens\explore_screen.dart-338-                    ),
+--
+lib\features\routines\presentation\screens\explore_screen.dart-352-                        fontSize: 11,
+lib\features\routines\presentation\screens\explore_screen.dart-353-                        fontWeight: FontWeight.w600,
+lib\features\routines\presentation\screens\explore_screen.dart:354:                        color: selected ? accent : surface.textTertiary,
+lib\features\routines\presentation\screens\explore_screen.dart-355-                      ),
+lib\features\routines\presentation\screens\explore_screen.dart-356-                    ),
+--
+lib\features\routines\presentation\screens\explore_screen.dart-766-          children: [
+lib\features\routines\presentation\screens\explore_screen.dart-767-            Icon(Icons.search_off_rounded,
+lib\features\routines\presentation\screens\explore_screen.dart:768:                size: 36, color: surface.textTertiary),
+lib\features\routines\presentation\screens\explore_screen.dart-769-            const SizedBox(height: 12),
+lib\features\routines\presentation\screens\explore_screen.dart-770-            Text(
+--
+lib\features\routines\presentation\screens\explore_screen.dart-781-              Text(
+lib\features\routines\presentation\screens\explore_screen.dart-782-                'Tap a filter to remove it',
+lib\features\routines\presentation\screens\explore_screen.dart:783:                style: TextStyle(fontSize: 13, color: surface.textTertiary),
+lib\features\routines\presentation\screens\explore_screen.dart-784-              ),
+lib\features\routines\presentation\screens\explore_screen.dart-785-              const SizedBox(height: 14),
+--
+lib\features\routines\presentation\screens\explore_screen.dart-968-                      : Icons.check_box_outline_blank_rounded,
+lib\features\routines\presentation\screens\explore_screen.dart-969-                  size: 22,
+lib\features\routines\presentation\screens\explore_screen.dart:970:                  color: selected ? accent : surface.textTertiary,
+lib\features\routines\presentation\screens\explore_screen.dart-971-                )
+lib\features\routines\presentation\screens\explore_screen.dart-972-              else if (selected)
+--
+lib\features\routines\presentation\screens\explore_screen.dart-1024-                const SizedBox(width: 6),
+lib\features\routines\presentation\screens\explore_screen.dart-1025-                Icon(Icons.close_rounded,
+lib\features\routines\presentation\screens\explore_screen.dart:1026:                    size: 15, color: surface.textTertiary),
+lib\features\routines\presentation\screens\explore_screen.dart-1027-              ],
+lib\features\routines\presentation\screens\explore_screen.dart-1028-            ),
+--
+lib\features\routines\presentation\screens\explore_screen.dart-1171-                    fontSize: 13,
+lib\features\routines\presentation\screens\explore_screen.dart-1172-                    fontWeight: FontWeight.w600,
+lib\features\routines\presentation\screens\explore_screen.dart:1173:                    color: surface.textTertiary,
+lib\features\routines\presentation\screens\explore_screen.dart-1174-                    letterSpacing: 0.3,
+lib\features\routines\presentation\screens\explore_screen.dart-1175-                  ),
+--
+lib\features\routines\presentation\screens\explore_screen.dart-1179-                  Text(
+lib\features\routines\presentation\screens\explore_screen.dart-1180-                    '${ownedDays.length} of ${routines.length} added',
+lib\features\routines\presentation\screens\explore_screen.dart:1181:                    style: TextStyle(fontSize: 12, color: surface.textTertiary),
+lib\features\routines\presentation\screens\explore_screen.dart-1182-                  ),
+lib\features\routines\presentation\screens\explore_screen.dart-1183-              ],
+--
+lib\features\routines\presentation\screens\explore_screen.dart-1275-                overflow: TextOverflow.ellipsis,
+lib\features\routines\presentation\screens\explore_screen.dart-1276-                textAlign: TextAlign.center,
+lib\features\routines\presentation\screens\explore_screen.dart:1277:                style: TextStyle(fontSize: 11, color: surface.textTertiary),
+lib\features\routines\presentation\screens\explore_screen.dart-1278-              ),
+lib\features\routines\presentation\screens\explore_screen.dart-1279-            ],
+--
+lib\features\routines\presentation\screens\explore_screen.dart-1367-            style: TextStyle(
+lib\features\routines\presentation\screens\explore_screen.dart-1368-              fontSize: 12,
+lib\features\routines\presentation\screens\explore_screen.dart:1369:              color: blocked == null ? surface.textTertiary : accent,
+lib\features\routines\presentation\screens\explore_screen.dart-1370-            ),
+lib\features\routines\presentation\screens\explore_screen.dart-1371-          ),
+--
+lib\features\routines\presentation\screens\explore_screen.dart-1543-                    '${routine.estMinutes} min  \u00b7  '
+lib\features\routines\presentation\screens\explore_screen.dart-1544-                    '${routine.exerciseCount} exercises',
+lib\features\routines\presentation\screens\explore_screen.dart:1545:                    style: TextStyle(fontSize: 12, color: surface.textTertiary),
+lib\features\routines\presentation\screens\explore_screen.dart-1546-                  ),
+lib\features\routines\presentation\screens\explore_screen.dart-1547-                );
+--
+lib\features\routines\presentation\screens\ai_routine_review_screen.dart-550-                                    Icons.fitness_center_rounded,
+lib\features\routines\presentation\screens\ai_routine_review_screen.dart-551-                                    size: 20,
+lib\features\routines\presentation\screens\ai_routine_review_screen.dart:552:                                    color: surface.textTertiary,
+lib\features\routines\presentation\screens\ai_routine_review_screen.dart-553-                                  ),
+lib\features\routines\presentation\screens\ai_routine_review_screen.dart-554-                                ),
+--
+lib\features\routines\presentation\screens\ai_routine_review_screen.dart-634-                                    'sets defaulted',
+lib\features\routines\presentation\screens\ai_routine_review_screen.dart-635-                                    style: AppText.caption(
+lib\features\routines\presentation\screens\ai_routine_review_screen.dart:636:                                            color: surface.textTertiary)
+lib\features\routines\presentation\screens\ai_routine_review_screen.dart-637-                                        .copyWith(fontSize: 10),
+lib\features\routines\presentation\screens\ai_routine_review_screen.dart-638-                                  ),
+--
+lib\features\routines\presentation\screens\ai_routine_review_screen.dart-772-                                'Suggested catalog matches:',
+lib\features\routines\presentation\screens\ai_routine_review_screen.dart-773-                                style:
+lib\features\routines\presentation\screens\ai_routine_review_screen.dart:774:                                    AppText.caption(color: surface.textTertiary)
+lib\features\routines\presentation\screens\ai_routine_review_screen.dart-775-                                        .copyWith(fontSize: 11),
+lib\features\routines\presentation\screens\ai_routine_review_screen.dart-776-                              ),
+--
+lib\features\profile\presentation\widgets\profile_graph_empty_state.dart-25-          Icons.bar_chart_outlined,
+lib\features\profile\presentation\widgets\profile_graph_empty_state.dart-26-          size: 48,
+lib\features\profile\presentation\widgets\profile_graph_empty_state.dart:27:          color: surface.textTertiary,
+lib\features\profile\presentation\widgets\profile_graph_empty_state.dart-28-        ),
+lib\features\profile\presentation\widgets\profile_graph_empty_state.dart-29-        const SizedBox(height: 16),
+--
+lib\features\profile\presentation\widgets\weekly_bar_chart.dart-346-    if (fraction == null) {
+lib\features\profile\presentation\widgets\weekly_bar_chart.dart-347-      return Icon(Icons.arrow_forward_rounded,
+lib\features\profile\presentation\widgets\weekly_bar_chart.dart:348:          size: 18, color: context.surface.textTertiary);
+lib\features\profile\presentation\widgets\weekly_bar_chart.dart-349-    }
+lib\features\profile\presentation\widgets\weekly_bar_chart.dart-350-    final isUp = fraction >= 0;
+--
+lib\features\profile\presentation\widgets\weekly_bar_chart.dart-440-                            color: index == _gatedAggregates.length - 1
+lib\features\profile\presentation\widgets\weekly_bar_chart.dart-441-                                ? accent.light
+lib\features\profile\presentation\widgets\weekly_bar_chart.dart:442:                                : surface.textTertiary,
+lib\features\profile\presentation\widgets\weekly_bar_chart.dart-443-                          ).copyWith(
+lib\features\profile\presentation\widgets\weekly_bar_chart.dart-444-                            fontSize: 9,
+--
+lib\features\profile\presentation\widgets\weekly_bar_chart.dart-464-                        _yAxisLabel(value),
+lib\features\profile\presentation\widgets\weekly_bar_chart.dart-465-                        style: AppText.caption(
+lib\features\profile\presentation\widgets\weekly_bar_chart.dart:466:                                color: AppColors.profileGraphAxisLabel)
+lib\features\profile\presentation\widgets\weekly_bar_chart.dart-467-                            .copyWith(
+lib\features\profile\presentation\widgets\weekly_bar_chart.dart-468-                          fontSize: 10,
+--
+lib\features\profile\presentation\widgets\weekly_bar_chart.dart-494-                                label,
+lib\features\profile\presentation\widgets\weekly_bar_chart.dart-495-                                style: AppText.caption(
+lib\features\profile\presentation\widgets\weekly_bar_chart.dart:496:                                        color: AppColors.profileGraphAxisLabel)
+lib\features\profile\presentation\widgets\weekly_bar_chart.dart-497-                                    .copyWith(
+lib\features\profile\presentation\widgets\weekly_bar_chart.dart-498-                                  fontSize: 11,
+--
+lib\features\profile\presentation\widgets\weekly_bar_chart.dart-509-                                  style: AppText.caption(
+lib\features\profile\presentation\widgets\weekly_bar_chart.dart-510-                                          color:
+lib\features\profile\presentation\widgets\weekly_bar_chart.dart:511:                                              AppColors.profileGraphAxisLabel)
+lib\features\profile\presentation\widgets\weekly_bar_chart.dart-512-                                      .copyWith(
+lib\features\profile\presentation\widgets\weekly_bar_chart.dart-513-                                    fontSize: 11,
+--
+lib\features\profile\presentation\widgets\weekly_bar_chart.dart-641-          label,
+lib\features\profile\presentation\widgets\weekly_bar_chart.dart-642-          style: AppText.caption(
+lib\features\profile\presentation\widgets\weekly_bar_chart.dart:643:            color: dim ? surface.textTertiary : surface.textSecondary,
+lib\features\profile\presentation\widgets\weekly_bar_chart.dart-644-          ),
+lib\features\profile\presentation\widgets\weekly_bar_chart.dart-645-        ),
+--
+lib\features\profile\presentation\widgets\weekly_bar_chart.dart-690-          children: [
+lib\features\profile\presentation\widgets\weekly_bar_chart.dart-691-            Icon(Icons.lock_outline_rounded,
+lib\features\profile\presentation\widgets\weekly_bar_chart.dart:692:                size: 13, color: surface.textTertiary),
+lib\features\profile\presentation\widgets\weekly_bar_chart.dart-693-            const SizedBox(width: 5),
+lib\features\profile\presentation\widgets\weekly_bar_chart.dart-694-            Expanded(
+lib\features\profile\presentation\widgets\weekly_bar_chart.dart-695-              child: Text(
+lib\features\profile\presentation\widgets\weekly_bar_chart.dart-696-                bannerText,
+lib\features\profile\presentation\widgets\weekly_bar_chart.dart:697:                style: AppText.caption(color: surface.textTertiary),
+lib\features\profile\presentation\widgets\weekly_bar_chart.dart-698-              ),
+lib\features\profile\presentation\widgets\weekly_bar_chart.dart-699-            ),

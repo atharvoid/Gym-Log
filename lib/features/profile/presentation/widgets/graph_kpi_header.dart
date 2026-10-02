@@ -106,7 +106,7 @@ class _DeltaPill extends StatelessWidget {
     final delta = (latest - previous) / previous;
     final isPositive = delta >= 0;
     final pct = (delta * 100).round().abs();
-    final color = isPositive ? AppColors.success : AppColors.error;
+    final color = surface.textSecondary;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),

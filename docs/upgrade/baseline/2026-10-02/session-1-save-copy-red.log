@@ -1,0 +1,54 @@
+00:00 +0: loading C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_correctness_test.dart
+00:00 +0: higgsfield: composed tertiary text and chart ticks meet 4.5:1
+00:00 +1: higgsfield: solid accent label meets 4.5:1
+00:00 +2: neonPurple: composed tertiary text and chart ticks meet 4.5:1
+00:00 +3: neonPurple: solid accent label meets 4.5:1
+00:00 +4: white: composed tertiary text and chart ticks meet 4.5:1
+00:00 +5: white: solid accent label meets 4.5:1
+00:00 +6: neonCyan: composed tertiary text and chart ticks meet 4.5:1
+00:00 +7: neonCyan: solid accent label meets 4.5:1
+00:00 +8: neonMagenta: composed tertiary text and chart ticks meet 4.5:1
+00:00 +9: neonMagenta: solid accent label meets 4.5:1
+00:00 +10: blazeOrange: composed tertiary text and chart ticks meet 4.5:1
+00:00 +11: blazeOrange: solid accent label meets 4.5:1
+00:00 +12: summary uses the existing display conversion for pounds
+00:00 +13: summary preserves logged hold seconds
+00:00 +14: short distance summary preserves metres
+00:00 +15: an estimated record value is not its logged weight
+00:00 +16: estimated share hero never implies the estimate was lifted for seven reps
+00:00 +17: distance metres times seconds never become weighted session volume
+00:00 +18: workout detail volume converts once to pounds
+00:01 +19: missing 1RM estimate never borrows the logged weight
+00:01 +20: editing distance workout does not persist metres times seconds as kg volume
+00:01 +21: PR visibly labels the estimate and does not invent zero-rep logged set
+00:01 +22: finish review does not announce completion before save
+══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
+The following TestFailure was thrown running a test:
+Expected: exactly one matching candidate
+  Actual: _TextWidgetFinder:<Found 0 widgets with text "Finish workout": []>
+   Which: means none were found but one was expected
+
+When the exception was thrown, this was the stack:
+#4      main.<anonymous closure> (file:///C:/Users/Atharva%20Patil/Documents/projects/gymlog/test/upgrade/session_1_correctness_test.dart:193:5)
+<asynchronous suspension>
+#5      testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#6      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1952:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided one frame from package:stack_trace)
+
+This was caught by the test expectation on the following line:
+  file:///C:/Users/Atharva%20Patil/Documents/projects/gymlog/test/upgrade/session_1_correctness_test.dart line 193
+The test description was:
+  finish review does not announce completion before save
+════════════════════════════════════════════════════════════════════════════════════════════════════
+00:02 +22 -1: finish review does not announce completion before save [E]
+  Test failed. See exception logs above.
+  The test description was: finish review does not announce completion before save
+  
+00:02 +22 -1: volume and duration changes use neutral color with their direction intact
+00:02 +23 -1: Some tests failed.
+
+Failing tests:
+  C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_correctness_test.dart: finish review does not announce completion before save

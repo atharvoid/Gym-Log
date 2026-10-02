@@ -1,0 +1,59 @@
+00:00 +0: loading C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_correctness_test.dart
+00:00 +0: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_correctness_test.dart: higgsfield: composed tertiary text and chart ticks meet 4.5:1
+00:00 +1: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_correctness_test.dart: higgsfield: solid accent label meets 4.5:1
+00:00 +2: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_correctness_test.dart: neonPurple: composed tertiary text and chart ticks meet 4.5:1
+00:00 +3: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_correctness_test.dart: neonPurple: solid accent label meets 4.5:1
+00:00 +4: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_correctness_test.dart: white: composed tertiary text and chart ticks meet 4.5:1
+00:00 +5: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_correctness_test.dart: white: solid accent label meets 4.5:1
+00:00 +6: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_correctness_test.dart: neonCyan: composed tertiary text and chart ticks meet 4.5:1
+00:00 +7: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_correctness_test.dart: neonCyan: solid accent label meets 4.5:1
+00:00 +8: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_correctness_test.dart: neonMagenta: composed tertiary text and chart ticks meet 4.5:1
+00:00 +9: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_correctness_test.dart: neonMagenta: solid accent label meets 4.5:1
+00:00 +10: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_correctness_test.dart: blazeOrange: composed tertiary text and chart ticks meet 4.5:1
+00:00 +11: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_correctness_test.dart: blazeOrange: solid accent label meets 4.5:1
+00:00 +12: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_correctness_test.dart: summary uses the existing display conversion for pounds
+00:00 +13: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_correctness_test.dart: summary preserves logged hold seconds
+00:00 +14: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_correctness_test.dart: short distance summary preserves metres
+00:00 +15: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_correctness_test.dart: an estimated record value is not its logged weight
+00:00 +16: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_correctness_test.dart: estimated share hero never implies the estimate was lifted for seven reps
+00:00 +17: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_correctness_test.dart: distance metres times seconds never become weighted session volume
+00:00 +18: C:/Users/Atharva Patil/Documents/projects/gymlog/test/active_workout_header_test.dart: ActiveWorkoutHeader normal layout renders elapsed time once at 1.0x
+00:02 +19: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_correctness_test.dart: workout detail volume converts once to pounds
+00:02 +20: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_correctness_test.dart: workout detail volume converts once to pounds
+00:02 +21: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_correctness_test.dart: workout detail volume converts once to pounds
+00:02 +22: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_correctness_test.dart: workout detail volume converts once to pounds
+00:02 +23: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_correctness_test.dart: workout detail volume converts once to pounds
+00:02 +24: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_correctness_test.dart: workout detail volume converts once to pounds
+00:02 +25: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_correctness_test.dart: workout detail volume converts once to pounds
+00:02 +26: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_correctness_test.dart: workout detail volume converts once to pounds
+00:02 +27: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_correctness_test.dart: workout detail volume converts once to pounds
+00:02 +28: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_correctness_test.dart: workout detail volume converts once to pounds
+00:02 +29: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_correctness_test.dart: workout detail volume converts once to pounds
+00:02 +30: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_correctness_test.dart: workout detail volume converts once to pounds
+00:02 +31: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_correctness_test.dart: workout detail volume converts once to pounds
+00:02 +32: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_correctness_test.dart: workout detail volume converts once to pounds
+00:03 +33: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_correctness_test.dart: workout detail volume converts once to pounds
+00:03 +34: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_correctness_test.dart: workout detail volume converts once to pounds
+00:03 +35: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_correctness_test.dart: workout detail volume converts once to pounds
+00:03 +36: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_correctness_test.dart: workout detail volume converts once to pounds
+00:03 +37: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_correctness_test.dart: workout detail volume converts once to pounds
+00:03 +38: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_correctness_test.dart: workout detail volume converts once to pounds
+00:03 +39: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_correctness_test.dart: workout detail volume converts once to pounds
+00:03 +40: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_correctness_test.dart: workout detail volume converts once to pounds
+00:03 +41: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_correctness_test.dart: workout detail volume converts once to pounds
+00:03 +42: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_correctness_test.dart: workout detail volume converts once to pounds
+00:03 +43: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/workout/active_workout_header_inset_test.dart: grab handle strip meets minimum 48dp touch target
+00:03 +44: C:/Users/Atharva Patil/Documents/projects/gymlog/test/active_workout_header_test.dart: ActiveWorkoutHeader behavior finish callback fires on tap
+00:03 +45: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_correctness_test.dart: missing 1RM estimate never borrows the logged weight
+00:03 +46: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_correctness_test.dart: missing 1RM estimate never borrows the logged weight
+00:03 +47: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_correctness_test.dart: editing distance workout does not persist metres times seconds as kg volume
+00:03 +48: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_correctness_test.dart: PR visibly labels the estimate and does not invent zero-rep logged set
+00:04 +49: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_correctness_test.dart: finish review does not announce completion before save
+00:04 +50: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_correctness_test.dart: volume and duration changes use neutral color with their direction intact
+00:05 +51: C:/Users/Atharva Patil/Documents/projects/gymlog/test/documentation_atomic_13_test.dart: ATOMIC-13 Documentation & Support Metadata Qualification canonical support identity and legal URLs are defined and valid
+00:05 +52: C:/Users/Atharva Patil/Documents/projects/gymlog/test/documentation_atomic_13_test.dart: ATOMIC-13 Documentation & Support Metadata Qualification database schema version matches code specification
+00:05 +53: C:/Users/Atharva Patil/Documents/projects/gymlog/test/documentation_atomic_13_test.dart: ATOMIC-13 Documentation & Support Metadata Qualification documentation files exist and contain document authority headers
+00:06 +54: C:/Users/Atharva Patil/Documents/projects/gymlog/test/documentation_atomic_13_test.dart: ATOMIC-13 Documentation & Support Metadata Qualification DATA_MODEL.md contains correct schema version 6
+00:06 +55: C:/Users/Atharva Patil/Documents/projects/gymlog/test/documentation_atomic_13_test.dart: ATOMIC-13 Documentation & Support Metadata Qualification HelpFeedbackScreen renders support identity and action rows
+00:07 +56: C:/Users/Atharva Patil/Documents/projects/gymlog/test/documentation_atomic_13_test.dart: ATOMIC-13 Documentation & Support Metadata Qualification Tapping Report a problem opens problem report sheet with system metadata
+00:08 +57: All tests passed!

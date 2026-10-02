@@ -1,0 +1,83 @@
+[INFO] Generating build script...
+[INFO] Generating build script completed, took 694ms
+
+[INFO] Initializing inputs
+[INFO] Reading cached asset graph...
+[WARNING] Throwing away cached asset graph because the build phases have changed. This most commonly would happen as a result of adding a new dependency or updating your dependencies.
+[WARNING] Throwing away cached asset graph because the language version of some package(s) changed. This would most commonly happen when updating dependencies or changing your min sdk constraint.
+[INFO] Cleaning up outputs from previous builds....
+[INFO] Cleaning up outputs from previous builds. completed, took 290ms
+
+[INFO] Generating build script...
+[INFO] Generating build script completed, took 277ms
+
+[WARNING] Invalidated precompiled build script due to missing asset graph.
+[INFO] Precompiling build script......
+[INFO] Precompiling build script... completed, took 5.4s
+
+[INFO] Initializing inputs
+[INFO] Building new asset graph...
+[INFO] Building new asset graph completed, took 7.4s
+
+[INFO] Checking for unexpected pre-existing outputs....
+[INFO] Checking for unexpected pre-existing outputs. completed, took 1ms
+
+[INFO] Running build...
+[WARNING] riverpod_generator on lib/core/bootstrap/bootstrap.dart:
+Your current `analyzer` version may not fully support your current SDK version.
+
+Analyzer language version: 3.4.0
+SDK language version: 3.12.0
+
+Please update to the latest `analyzer` version (14.4.0) by running
+`flutter packages upgrade`.
+
+If you are not getting the latest version by running the above command, you
+can try adding a constraint like the following to your pubspec to start
+diagnosing why you can't get the latest version:
+
+dev_dependencies:
+  analyzer: ^14.4.0
+
+[INFO] 1.7s elapsed, 20/49 actions completed.
+[INFO] 3.6s elapsed, 41/71 actions completed.
+[INFO] 4.6s elapsed, 54/92 actions completed.
+[INFO] 5.7s elapsed, 55/92 actions completed.
+[INFO] 6.7s elapsed, 88/116 actions completed.
+[INFO] 9.7s elapsed, 131/158 actions completed.
+[INFO] 10.8s elapsed, 173/202 actions completed.
+[INFO] 11.9s elapsed, 226/260 actions completed.
+[INFO] 13.0s elapsed, 343/372 actions completed.
+[INFO] 14.0s elapsed, 377/405 actions completed.
+[INFO] 21.7s elapsed, 387/417 actions completed.
+[INFO] 22.8s elapsed, 478/502 actions completed.
+[INFO] 26.1s elapsed, 483/505 actions completed.
+[INFO] 27.1s elapsed, 495/508 actions completed.
+[INFO] 28.1s elapsed, 514/525 actions completed.
+[INFO] 29.7s elapsed, 516/525 actions completed.
+[INFO] 35.0s elapsed, 520/525 actions completed.
+[INFO] 36.0s elapsed, 532/544 actions completed.
+[INFO] 37.2s elapsed, 735/738 actions completed.
+[INFO] 38.2s elapsed, 925/943 actions completed.
+[INFO] 39.2s elapsed, 945/963 actions completed.
+[INFO] 40.2s elapsed, 982/1001 actions completed.
+[INFO] 41.2s elapsed, 1049/1068 actions completed.
+[INFO] 42.4s elapsed, 1089/1107 actions completed.
+[INFO] 43.4s elapsed, 1185/1203 actions completed.
+[INFO] 45.4s elapsed, 1221/1237 actions completed.
+[INFO] 46.5s elapsed, 1413/1417 actions completed.
+[INFO] 47.6s elapsed, 1607/1623 actions completed.
+[INFO] 48.7s elapsed, 1649/1662 actions completed.
+[INFO] 49.8s elapsed, 1922/1938 actions completed.
+[INFO] 50.9s elapsed, 2333/2339 actions completed.
+[INFO] 51.9s elapsed, 2413/2419 actions completed.
+[INFO] 53.0s elapsed, 2472/2479 actions completed.
+[INFO] 54.0s elapsed, 2538/2546 actions completed.
+[INFO] 55.1s elapsed, 2621/2629 actions completed.
+[INFO] Running build completed, took 55.7s
+
+[INFO] Caching finalized dependency graph...
+[INFO] Caching finalized dependency graph completed, took 262ms
+
+[INFO] Succeeded after 56.0s with 581 outputs (2883 actions)
+

@@ -26,7 +26,7 @@ class AsyncErrorState extends StatelessWidget {
 
   const AsyncErrorState({
     super.key,
-    this.message = "Something went wrong. Your data is safe.",
+    this.message = "Something went wrong.",
     this.onRetry,
     this.icon = Icons.error_outline_rounded,
   });

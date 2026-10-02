@@ -1,0 +1,3090 @@
+Candidate: session-1 / iteration-4. Synthetic fixtures at 390x844, scales 1.0 and 1.6. Shared-token after coverage: all six palettes; matched before: Volt and Purple. Share exports retain fixed 360x640/no text scaling. Before supplements rendered from preserved pre-change source snapshot and reproduced all 72 original PNGs byte-for-byte. No physical-device/native-media evidence. Cumulative source diff is against the pre-session working tree, not HEAD. Real-font PNG evidence supplied in before/ and after/; existing legacy golden updates are supplemental.
+
+diff --git a/DESIGN.md b/DESIGN.md
+index 7d28962..014f7f1 100644
+--- a/DESIGN.md
++++ b/DESIGN.md	
+@@ -1,15 +1,24 @@
+ # DELT Design System & Token Specification (DESIGN.md)
+ 
+ > **Status:** Production Authoritative  
+ > **Brand Name:** DELT  
+ > **Package Name:** `gymlog`  
+ > **Canvas Philosophy:** OLED-first true black (`#000000`) with surgical tonal surface hierarchy and one reactive neon accent. "Quiet instrument, loud result."
+ 
++This is the single authoritative visual, interaction and information-truth rule
++set. `docs/CONVENTIONS.md` owns architecture and naming; its UI examples defer
++here. `docs/DESIGN_NORTH_STAR.md` points here instead of duplicating rules.
++The upgrade audit describes problems; `docs/upgrade/PROTOCOL.md` governs the
++process. Historical screenshots and scores are evidence, not token definitions.
++Source tokens in `app_colors.dart`, `theme_palette.dart`, `app_text.dart` and
++`app_theme.dart` implement these rules; report discrepancies rather than
++silently treating stale documentation as an exception.
++
+ ---
+ 
+ ## 1. Brand Identity & Naming Rules
+ 
+ 1. **Brand Name:** The consumer-facing brand name is **DELT** (displayed as `DELT` or `Delt`).
+ 2. **Watermark Standard:** All social share cards, exports, and viral distribution assets must feature the DELT wordmark:
+    - **Styling:** `DELT` wordmark with micro-caps tracked subtitle (e.g. `DELT · IRON RECORD`).
+    - **Opacity:** ~60% white (`AppColors.textSecondary` / `0x99FFFFFF`) — never invisible (~35%) and never shouting (100%).
+@@ -44,17 +53,17 @@ static const cardGradient = LinearGradient(
+ ```
+ 
+ ### 2.3 The 6 Reactive Accent Palettes
+ The user selects one accent palette in Settings (`context.accent`). The active accent governs focal CTAs, active highlights, and progress series.
+ 
+ 1. **Volt / Higgsfield (Default):**
+    - `base`: `#C8FF00` (Electric chartreuse) | `light`: `#EAFF66` | `dark`: `#9FCC00` | `muted`: `0x24C8FF00` (14%) | `glow`: `0x1FC8FF00` (12%)
+ 2. **Neon Purple:**
+-   - `base`: `#BF00FF` | `light`: `#D966FF` | `dark`: `#9900CC` | `muted`: `0x24BF00FF` | `glow`: `0x1FBF00FF`
++   - `base`: `#C400FF` | `light`: `#D966FF` | `dark`: `#9900CC` | `muted`: `0x24C400FF` | `glow`: `0x1FC400FF`
+ 3. **Ice White:**
+    - `base`: `#EAF2FF` (Ice-chrome cool tint) | `light`: `#FFFFFF` | `dark`: `#B9C9E0` | `muted`: `0x24EAF2FF` | `glow`: `0x1FEAF2FF`
+ 4. **Neon Cyan:**
+    - `base`: `#00F0FF` | `light`: `#7FF7FF` | `dark`: `#00C0CC` | `muted`: `0x2400F0FF` | `glow`: `0x1F00F0FF`
+ 5. **Neon Magenta:**
+    - `base`: `#FF006E` | `light`: `#FF66AA` | `dark`: `#CC0058` | `muted`: `0x24FF006E` | `glow`: `0x1FFF006E`
+ 6. **Blaze Orange:**
+    - `base`: `#FF6600` | `light`: `#FFA366` | `dark`: `#CC5200` | `muted`: `0x24FF6600` | `glow`: `0x1FFF6600`
+@@ -71,24 +80,24 @@ The user selects one accent palette in Settings (`context.accent`). The active a
+ - `accentSuccess` (`#34C759`): Completed sets / positive confirmations.
+ - `accentWarning` (`#FF9F0A`): Warm-up sets / warnings.
+ - `accentReward` (`#E6C84A`): PR celebration gold.
+ - `error` (`#FF3B30`): Destructive actions.
+ 
+ ### 2.7 Text Opacity Ladder
+ - `textPrimary`: `#FFFFFF` (100% white) — Headings, hero numbers, exercise names.
+ - `textSecondary`: `0x99FFFFFF` (60% white) — Subtitles, dates, DELT watermark.
+-- `textTertiary`: `0x59FFFFFF` (35% white) — Column headers, placeholders, secondary metadata.
++- `textTertiary`: `0x99FFFFFF` (60% white) — Column headers, chart ticks, placeholders, reassurance and secondary metadata. Same luminance floor as secondary; distinguish roles by size, weight and placement rather than faint ink.
+ - `textDisabled`: `0x33FFFFFF` (20% white) — Inactive elements.
+ 
+ ---
+ 
+ ## 3. Typography & Figure Styling
+ 
+-- **Font Family:** `GoogleFonts.inter()`.
++- **Font Family:** Bundled Inter through `AppText` and `buildAppTheme`. Keep `GoogleFonts.inter()` centralized in those theme helpers.
+ - **Bundled Font Files:** `Inter-Regular.ttf` (w400), `Inter-SemiBold.ttf` (w600), `Inter-Bold.ttf` (w700). Only weights 400, 600, 700 are supported.
+ - **Tabular Figures (`kTabular`):**
+   - **Mandatory** on all numbers (weights, reps, times, volumes, deltas):
+     ```dart
+     fontFeatures: const [FontFeature.tabularFigures()]
+     ```
+ - **Number Hierarchy:**
+   - Hero figure is massive (e.g. 56–72pt in 360×640 logical, or 168–216px in 1080×1920 render).
+@@ -134,8 +143,54 @@ For 9:16 social sharing (Instagram Stories, TikTok, Reels, Snap):
+ 3. **No Cheesy Graphics:** No cartoon flames, no party-popper emojis, no rainbow gradients.
+ 4. **Privacy Defaults:** Lifter name and bodyweight default to **OFF** (`showName: false`, `showBodyweight: false`). Date defaults to **ON** (`showDate: true`).
+ 
+ ---
+ 
+ ## 7. Inviolable Engineering Rule
+ 
+ > **All share-card code must use tokens from `DESIGN.md`, with no hardcoded colors, magic numbers, or arbitrary fonts.**
++
++## 8. Information Truth and Contrast
++
++- Store weights and weighted volume in kilograms; use `core/utils/units.dart`
++  exactly once for display. Visible and spoken values share the selected unit.
++  Metres, seconds and rep counts never enter weight conversion.
++- Completed weighted sets contribute weight × reps; rep-only sets contribute
++  reps; timed sets contribute logged seconds; distance sets contribute metres
++  and logged seconds. Elapsed time is separate from logged hold time. Mixed
++  summary precedence remains volume, reps, distance, logged time.
++- Label Epley results **Estimated 1RM**. Show the actual logged set separately
++  when evidence exists; say unavailable otherwise. Never display an estimate
++  as the weight lifted for multiple reps. Missing estimates remain absent.
++- Volume and duration deltas are neutral descriptions with direction and
++  comparison context. Reserve success/error colors for actual completion,
++  confirmation or failure; more/less training is not better/worse by default.
++- Separate logged facts, estimates and suggestions. Do not invent recovery,
++  training benefit, personalization or saved-state claims.
++- Measure alpha-composed text against its actual backing, including accent
++  and status tints, across all palettes. Meaningful normal text requires 4.5:1;
++  large text and meaningful non-text controls require 3:1. Chart-axis aliases
++  follow `textTertiary`. Disabled appearance also exposes disabled semantics.
++- All six selectable accents retain the dark OLED surface ladder. Ice White
++  is an accent; draft light surface tokens are not a qualified product mode.
++
++## 9. Interaction and Qualification
++
++- Keep one focal filled CTA per view. Repeating controls use raised neutral
++  surfaces and accent glyphs. Explore program-card CTAs may use filled accent
++  per self-contained card; if three compete above the fold, use `surface4`
++  with accent on the icon. Filter chips stay neutral.
++- Use shared motion primitives and `AppMotion.effective`; preserve reduced
++  motion. Entry animation is for bounded content, not virtualized list items.
++  Keep feedback proportionate to events; no decorative pulsing chrome.
++- Preserve visible alternatives to gestures and meaningful semantics. Android
++  touch targets are at least 48dp (44pt on iOS). Qualify 390×844 and 1.6× text,
++  empty, low-data and error states with real-font goldens in affected palettes.
++  Device screen readers and haptics remain unverified until tested.
++- Existing haptic intent: medium for primary actions and valid set completion,
++  selection click for selections, heavy for destructive confirmations and
++  successful finish. PR recognition retains its heavy/medium sequence and
++  rest-end its double cue. The legacy TogglePill light-impact exception is
++  recorded, not permission to spread it.
++- `scripts/verify.ps1` is mandatory. Screenshots do not certify native billing,
++  durable save, performance, devices or pushed CI. Record gaps in the ledger;
++  do not commit before local verification passes.
+diff --git a/docs/CONVENTIONS.md b/docs/CONVENTIONS.md
+index 64d3b08..304c6fc 100644
+--- a/docs/CONVENTIONS.md
++++ b/docs/CONVENTIONS.md	
+@@ -1,11 +1,11 @@
+ # GymLog Code & Architectural Conventions
+ 
+-> **Status:** Active / Production Authoritative
++> **Status:** Architecture and naming authority; UI rules defer to [DESIGN.md](../DESIGN.md)
+ > **Owner:** Core Engineering
+ > **Last verified SHA:** `aef17b09305ebf0455244c3c04159577f37e0a84`
+ > **Last reviewed date:** 2026-07-22
+ > **Next review date:** 2026-10-22
+ 
+ ## File Naming
+ 
+ | Pattern | Convention | Examples |
+@@ -92,19 +92,19 @@ All screen widgets follow this structure:
+ 
+ ```dart
+ class XyzScreen extends ConsumerWidget {       // or ConsumerStatefulWidget
+   const XyzScreen({super.key});
+ 
+   @override
+   Widget build(BuildContext context, WidgetRef ref) {
+     return Scaffold(
+-      backgroundColor: AppColors.bgBase,
++      backgroundColor: context.surface.bgBase,
+       appBar: AppBar(                          // always present unless fullscreen modal
+-        title: Text('Title', style: GoogleFonts.inter(fontWeight: FontWeight.w700, fontSize: 28)),
++        title: Text('Title', style: AppText.titleLarge(color: context.surface.textPrimary)),
+       ),
+       body: SingleChildScrollView(            // or ListView.builder for long lists
+         padding: const EdgeInsets.fromLTRB(16, 16, 16, 120),  // 120px bottom = nav bar clearance
+         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [...]),
+       ),
+     );
+   }
+ }
+@@ -118,22 +118,22 @@ class XyzScreen extends ConsumerWidget {       // or ConsumerStatefulWidget
+ 
+ ## Async State Pattern
+ 
+ All provider-driven data uses `.when()`:
+ 
+ ```dart
+ ref.watch(someProvider).when(
+   data: (value) => Widget(...),
+-  loading: () => const Center(child: CircularProgressIndicator(color: AppColors.accentPrimary)),
+-  error: (e, _) => TrackerCard(child: Text('Error message', style: GoogleFonts.inter(color: AppColors.error))),
++  loading: () => const Center(child: CircularProgressIndicator(color: context.accent.base)),
++  error: (e, _) => TrackerCard(child: Text('Error message', style: AppText.body(color: AppColors.error))),
+ );
+ ```
+ 
+-- Loading state: `CircularProgressIndicator(color: AppColors.accentPrimary)` centered
++- Loading state: `CircularProgressIndicator(color: context.accent.base)` centered
+ - Error state: `TrackerCard` with red `AppColors.error` text
+ - Never use `AsyncValue.valueOrNull` for primary content rendering (only for AppBar titles)
+ 
+ ---
+ 
+ ## Bottom Sheet Menu Pattern
+ 
+ All 3-dot / contextual menus use `showModalBottomSheet` — never `PopupMenuButton`. Consistent structure:
+@@ -150,54 +150,37 @@ showModalBottomSheet(
+       borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+     ),
+     child: Column(mainAxisSize: MainAxisSize.min, children: [
+       const SizedBox(height: 12),
+       // Drag handle:
+       Container(width: 36, height: 4,
+         decoration: BoxDecoration(color: AppColors.borderSubtle, borderRadius: BorderRadius.circular(2))),
+       const SizedBox(height: 16),
+-      // Items: ListTile with leading Icon and GoogleFonts.inter title
++      // Items: ListTile with leading Icon and AppText title
+       // Destructive items: color: AppColors.error on both icon and text
+       const SizedBox(height: 16),
+     ]),
+   ),
+ );
+ ```
+ 
+ ---
+ 
+-## Color Usage Rules
++## Visual rules
+ 
+-- All colors from `AppColors` static constants — never `Colors.xxx` (except `Colors.transparent`)
+-- Background layers: `bgBase` (screen scaffold), `bgSurface` (cards, sheets, inputs)
+-- Text: `textPrimary` (white) for content, `textSecondary` (grey #8E8E93) for labels/metadata
+-- Accent: `accentPrimary` (purple) for primary actions, active states, and exercise names
+-- Status: `error` (red) for destructive actions and error states, `success` (green) for completed sets, `warning` (yellow) for warmup sets
+-- Semi-transparent: use `.withValues(alpha: x)` not `.withOpacity(x)` (project uses the newer API)
+-
+----
+-
+-## Typography Rules
+-
+-- All text uses `GoogleFonts.inter(...)` explicitly — never rely on `Theme.of(context).textTheme`
+-- Font weights used: `w400` (body), `w500` (labels), `w600` (secondary buttons), `w700` (headings, primary buttons), `w800` (hero text)
+-- AppBar title: `fontSize: 28, fontWeight: w700, letterSpacing: -0.5`
+-- Screen section headers: `fontSize: 20, fontWeight: w700`
+-- Card titles: `fontSize: 18, fontWeight: w700`
+-- Body / list items: `fontSize: 16, fontWeight: w600`
+-- Metadata / timestamps: `fontSize: 12–13, fontWeight: w400, color: textSecondary`
++Use [DESIGN.md](../DESIGN.md) for color, bundled Inter through AppText, supported weights, spacing, radii, interaction and information truth. Live surfaces use context.surface and context.accent; semantic status colors remain fixed. Use .withValues(alpha: x) rather than .withOpacity(x).
+ 
+ ---
+ 
+ ## Shared UI Component Usage
+ 
+ | Component | Use case |
+ |---|---|
+-| `PrimaryButton` | Primary CTA (Start Workout, Finish, Get Started, Save) — 48px, purple |
++| `PrimaryButton` | Primary CTA (Start Workout, Finish, Get Started, Save) — uses selected accent and onAccent label |
+ | `SecondaryButton` | Secondary action (New Routine, + Add Exercise, + Add Set) — 48px, bgSurface |
+ | `TrackerCard` | Any card container. Pass `onTap` to make it tappable via InkWell |
+ | `TogglePill` | Horizontal scrollable metric selector (Duration / Volume / Reps) |
+ | `ExerciseGifWidget` | Any place an exercise GIF is needed — handles null URL, loading, error |
+ | `ActiveWorkoutBar` | Rendered by `AppShell` automatically when `activeWorkoutProvider != null` |
+ | `EntranceFade` | One-shot entry (fade + 0.05 slide, easeOutCubic, 320ms) for bounded lists/sections |
+ | `PressableScale` | Press feedback wrapper (scale down while pressed) |
+ | `AppMotion.effective()` | Resolve any explicit animation duration; returns `Duration.zero` under OS reduced motion |
+@@ -225,17 +208,17 @@ instead of ad-hoc `AnimationController`s:
+ 
+ Exceptions: route transitions (owned by `go_router` in `core/router/router.dart`)
+ and loader spinners (indeterminate by design) are out of scope.
+ 
+ ---
+ 
+ ## Spacing Constants
+ 
+-No named spacing constants — all inline:
++Use AppSpacing from DESIGN.md for new work. These existing examples describe common clearances, not a competing token system:
+ 
+ | Usage | Value |
+ |---|---|
+ | Screen horizontal padding | `16.0` |
+ | Screen bottom padding | `120.0` (clears nav bar + active workout bar) |
+ | Card padding | `16.0` (TrackerCard default) |
+ | Between sections | `16.0` or `24.0` |
+ | Between items in lists | `8.0` or `12.0` |
+diff --git a/docs/DESIGN_NORTH_STAR.md b/docs/DESIGN_NORTH_STAR.md
+index e1a6c84..8378dc2 100644
+--- a/docs/DESIGN_NORTH_STAR.md
++++ b/docs/DESIGN_NORTH_STAR.md	
+@@ -1,158 +1,20 @@
+-# GymLog — Design North Star
++# DELT design north star
+ 
+-> **Status:** Active / Production Authoritative
++> **Status:** Pointer to DESIGN.md; no independent design authority
+ > **Owner:** Core Engineering
+-> **Last verified SHA:** `aef17b09305ebf0455244c3c04159577f37e0a84`
+-> **Last reviewed date:** 2026-07-22
+-> **Next review date:** 2026-10-22
+-
+-> The visual identity of GymLog. Read this before any visual work. It replaces
+-> the deleted `STITCH_DESIGN_SYSTEM.md` (which described a different app).
+-
+----
+-
+-## Identity in One Sentence
+-
+-GymLog is an **OLED-black** canvas with **one electric accent** at a time — calm,
+-precise, premium. Content floats on pure black; depth comes from tonal surface
+-layers, never decorative borders.
+-
+----
+-
+-## Principles
+-
+-### 1. OLED-True Black Canvas
+-
+-- Base background is `#000000` — pure void
+-- Surface hierarchy builds upward: `surface1 (#0D0D0D)` → `surface2 (#141414)` → `surface3 (#1C1C1C)` → `surface4 (#242424)`
+-- Card depth via near-black gradient fills, not borders or shadows
+-- This is non-negotiable — it's the foundation of the premium feel
+-
+-### 2. One Accent, Applied Everywhere via `context.accent`
+-
+-- The user picks one of 6 palettes (Purple, Cyan, Magenta, Electric Indigo, White, Higgsfield)
+-- Every accent-colored surface reads from `context.accent.base` / `.light` / `.dark` / `.muted` / `.glow` / `.onAccent`
+-- **Never** hardcode `AppColors.accentPrimary` / `indigoTint` / any hex color on a live surface
+-- `onAccent` is near-black (`#0A0A0A`) on **every** palette — dark label on saturated fill (Apple's tinted-button treatment)
+-- Semantic colors (success green, warning amber, reward gold, error red) are **fixed** — they never follow the accent
+-
+-### 3. Calm, Not Flashy
+-
+-- Matte fills over "shiny" gradients
+-- No pulsing glow as chrome — glow is reserved for atmospheric effects only
+-- Solid accent fill appears on **one** focal CTA per view, not on repeating controls
+-- Repeating controls (list items, filter chips) use **neutral-raised** treatment: `surface3`/`surface4` fill + bold neutral label + accent only on the leading glyph
+-
+-> **Catalog-card carve-out (W3, 12 Aug 2026):** the Explore Programs screen's
+-> card CTAs are an exception to "one focal CTA per view" — each card is a
+-> self-contained conversion unit, so every card's primary action ("Add" /
+-> "View") carries the FULL `accent.base` fill with `accent.onAccent` label, per
+-> the "solid accent → black label" rule (Accent Palette Tokens section below). Selection is the ONLY
+-> accepted dilution of this exception: if CardCTA density on a 400×800 viewport
+-> reads as a "coupon flyer" (three or more filled CTAs visibly competing above
+-> the fold), the documented fallback is `surface4` fill + `textPrimary` label
+-> with the accent reserved for the icon. The feature card rating is locked by
+-> `test/golden/explore_screen_golden_test.dart`.
+-> 
+-> Filter chips (level + equipment rows) are NOT affected — they stay
+-> neutral-raised (`surface4` + accent `selectionBorder` on selected), never
+-> `accent.muted` (that token is reserved for content tinting, e.g. muscle
+-> tags). Locked by `test/explore_filters_layout_test.dart`.
+-
+-### 4. Typographic Hierarchy + Tabular Figures
+-
+-- Google Fonts Inter for all text
+-- Tabular figures (`fontFeatures: [FontFeature.tabularFigures()]`) for all live numbers (timer, weights, reps, stats) — digits must never jitter
+-- Clear hierarchy: primary (white), secondary (60% white), tertiary (35% white), disabled (20% white)
+-
+-### 5. Direct Manipulation + Gesture-First
+-
+-- Swipe-down to minimize, tick to commit, drag to reorder
+-- Every gesture has a visible affordance — no hidden-only interactions
+-- Touch targets ≥ 44pt
+-
+-### 6. Haptics as Feedback Texture
+-
+-- `HapticFeedback.mediumImpact()` on primary CTA taps, including workout start (`PrimaryButton`, `StartButton`) — corrected 1 Aug 2026; this section used to say `heavyImpact()` on workout start, which no call site in the app actually implements
+-- `HapticFeedback.selectionClick()` on segment/tab changes and most other selection changes
+-- `HapticFeedback.mediumImpact()` on a valid set completion (not `lightImpact()` as previously documented here); `HapticFeedback.heavyImpact()` on a rejected completion tap (missing weight/reps)
+-- `HapticFeedback.heavyImpact()` is otherwise reserved for destructive confirmations (delete, database reset), a successful (non-PR) workout finish (`ActiveWorkoutScreen._retryFinish`) — corrected 1 Aug 2026; a duplicate, premature firing of this same cue at sheet-open time (before Cancel or a save failure could still happen) was removed from `finish_summary_sheet.dart` the same day — and the rest timer's end-of-rest double-buzz
+-- Personal records get their own escalated sequence, undocumented until now: `HapticFeedback.heavyImpact()` when the celebration appears, then `HapticFeedback.mediumImpact()` roughly 240ms later as the card settles (`pr_celebration_overlay.dart`)
+-
+-**Known exception:** `TogglePill` fires `lightImpact()` for its own selection changes instead of `selectionClick()`, unlike every other segmented/tab-style control in the app. Not yet reconciled — flagged in `toggle_pill.dart`.
+-
+----
+-
+-## Quality Gates
+-
+-These are the **sensors** that enforce "premium." They run in CI and locally.
+-
+-| Dimension | Verifiable Gate |
+-|---|---|
+-| **Theme correctness** | Golden tests per accent for every key surface. Zero diff to approved baseline. |
+-| **No hardcoded accent** | `custom_lint` rule / grep: fail if `AppColors.accent*` is used outside static-fallback files. |
+-| **Motion** | Standard durations/curves only (200–300ms, `Curves.easeOutCubic`). No jank frames in profile. |
+-| **Touch targets & a11y** | Widget tests assert ≥44pt targets. Text scales to 1.3× without clipping. |
+-| **Empty/loading/error states** | Every screen has all three, each golden-tested. |
+-
+----
+-
+-## Surface Tokens
+-
+-The app uses `context.surface` for brightness-mode-aware surface colors:
+-
+-| Token | Dark (AMOLED) | Purpose |
+-|---|---|---|
+-| `bgBase` | `#000000` | Screen background |
+-| `bgSurface` | `#0D0D0D` | Default card |
+-| `surface2` | `#141414` | Elevated cards, charts, modals |
+-| `surface3` | `#1C1C1C` | Inputs, secondary buttons |
+-| `surface4` | `#242424` | Menus, action sheets, tooltips |
+-| `borderSubtle` | `white 6%` | Default card border |
+-| `borderDefault` | `white 10%` | Interactive element border |
+-| `borderEmphasis` | `white 18%` | Focused/selected |
+-
+----
+-
+-## Accent Palette Tokens
+-
+-Each of the 6 user-selectable palettes exposes:
+-
+-| Token | Job |
+-|---|---|
+-| `base` | Primary action color (CTA fill, active states, selected borders) |
+-| `light` | Accent text, hairlines, chart date header (WCAG-safer on black) |
+-| `dark` | Pressed / depressed states |
+-| `muted` | Tinted card / chart-fill background (~14% alpha) |
+-| `glow` | Atmospheric effects (~12% alpha) |
+-| `onAccent` | Text/icon ON the full-saturation base (near-black on ALL palettes) |
+-
+----
+-
+-## The One Rule for Accent-Filled Controls
+-
+-> **Solid accent fill → black label.** Any control whose background is `context.accent.base`
+-> MUST render its label and icon in `context.accent.onAccent` (near-black) — never
+-> `AppColors.textPrimary` (white). White-on-accent is invisible on light palettes
+-> (White, Cyan, Higgsfield) and looks wrong everywhere else.
+-
+----
+-
+-## Identity Assets — Source of Truth (E51, 1 Aug 2026)
+-
+-- `gymlog_app_icon.png` (repo root) is the master app icon artwork. The
+-  platform-embedded icons (`ios/Runner/Assets.xcassets/AppIcon.appiconset/*`,
+-  `android/app/src/main/res/mipmap-*/ic_launcher.png`) were generated from it
+-  by hand — there is no `flutter_launcher_icons` (or equivalent) dependency
+-  in `pubspec.yaml` wiring them together. Any future update to the root PNG
+-  must be manually re-exported to every platform size, or the shipped icon
+-  will silently drift from the master artwork.
+-- `android_backup/` at the repo root is a stale, fully duplicated Android
+-  Gradle project (its own `build.gradle`, `settings.gradle`, gradle
+-  wrapper, `.iml`) sitting beside the real `android/`. It is not referenced
+-  by any build script or CI config found in this audit. Do not edit it —
+-  it is a kill-list candidate, not a second build target.
+-- `play_store_screenshots/` and `screenshots/` were last captured
+-  2026-07-08, before most of this audit's motion, haptic, and token fixes
+-  landed. Treat them as stale reference material, not proof of current
+-  UI, until they are recaptured against a current build.
++> **Last verified SHA:** `ce3d5980e8eba0dd2497310cc1a4d576a2d83dc4` plus Session 1 working changes
++> **Last reviewed date:** 2026-10-02
++> **Next review date:** 2027-01-02
++
++[DESIGN.md](../DESIGN.md) is the single authoritative rule set for visual identity,
++typography, color, interaction and information truth. Read it before visual work.
++This document contains no duplicate tokens or competing UI rules.
++
++[CONVENTIONS.md](CONVENTIONS.md) owns architecture and naming.
++[upgrade/PROTOCOL.md](upgrade/PROTOCOL.md) owns the section upgrade process;
++[upgrade/LEDGER.md](upgrade/LEDGER.md) records decisions and qualification gaps.
++
++Historical references: gymlog_app_icon.png is the master icon artwork, with
++platform exports maintained separately. android_backup/ is an unused stale
++project, not a build target. Screenshots from July 2026 do not prove the current
++UI. The deleted STITCH specification described another app and is not an authority.
+diff --git a/docs/LOOP_LOG.md b/docs/LOOP_LOG.md
+index 7d0de1d..5be8027 100644
+--- a/docs/LOOP_LOG.md
++++ b/docs/LOOP_LOG.md	
+@@ -31,8 +31,9 @@
+ | 2026-07-22 | Phase 1–14 already committed on `fix-sha1-auth-issue`, not pending | GSD init assumed phases were future work; branch actually had all 14 atomic fix commits | H15: audit current HEAD against phase plan before assigning work — check `git log --oneline` |
+ | 2026-07-22 | Shell/nav used hardcoded `AppColors` instead of dynamic `context.surface` tokens | Static color references in `app_shell.dart`, `bottom_nav_bar.dart`, `active_workout_bar.dart` | H16: created `ChromeTokens`/`ChromeContextX` for chrome-specific dynamic color bundle; verify.ps1 enforces no `AppColors` in migrated screens |
+ | 2026-08-09 | Muscle load bar still hardcoded purple | Missed migration to context.accent in f01ed45 | H17: muscle_load_bar.dart added to $migratedFiles; accent + golden tests added |
+ | 2026-08-30 | Age "100" rendered as "10"+"0" (wrapped) | 72px w800 value locked in a 100px-wide slot — three tabular digits need ~130px | `onboarding_age_step_test.dart`: single-line assertion for 14–100 at every viewport/scale; FittedBox slot fix |
+ | 2026-08-30 | Weekly goal preview showed "2 of 1 workouts completed" | Hardcoded completed=2 clamped only the ring, never the caption | `onboarding_weekly_goal_step_test.dart`: caption/ring derive from `min(2, goal)` with singular/plural |
+ | 2026-08-30 | Legal links "popped above" the sentence with a ~35px gap between wrapped lines | Each `_LegalLink` box was minHeight-48 inside a centered Wrap → every run 48px tall | Inline `Text.rich` paragraph with recognizer spans; AUTH-12/15 + a11y test now assert per-span isLink+tap semantics |
+ | 2026-08-30 | PR celebration "Keep Going" cut off after finishing a workout | Dialog card had no max-height/scroll/SafeArea; title could blow past the viewport | `pr_celebration_overlay_test.dart` + goldens: SafeArea + max-height + Flexible scroll list + pinned CTA; title/meta capped |
+ | 2026-08-30 | 3-button nav: CTAs rode against/behind the system bar on Android 15+ | targetSdk 36 → enforced edge-to-edge; onboarding body had no bottom SafeArea and no nav-bar color | Onboarding body wrapped in `SafeArea(bottom)`, nav-bar color in AnnotatedRegion; all 7 steps scroll via `StepScrollView` |
++| 2026-10-02 | Session 1: mismatched display/spoken units, non-weighted totals, unlabeled estimates and value-judgment deltas | Raw stored fields were formatted as weights and estimates doubled as logged evidence; tertiary alpha failed composed contrast | Failing-first Session 1 correctness tests, unit/measurement projection, explicit estimate evidence, neutral deltas, six-palette contrast checks and real-font goldens |
+diff --git a/lib/core/utils/formatters.dart b/lib/core/utils/formatters.dart
+index e0d5bcf..40e58ea 100644
+--- a/lib/core/utils/formatters.dart
++++ b/lib/core/utils/formatters.dart	
+@@ -84,9 +84,20 @@ class MeasurementFormatter {
+   /// Formats pace in MM:SS /km from distance in meters and duration in seconds.
+   static String formatPace(double distanceMeters, int durationSeconds) {
+     if (distanceMeters <= 0 || durationSeconds <= 0) return '-';
+     final paceSecsPerKm = (durationSeconds / (distanceMeters / 1000.0)).round();
+     final mins = paceSecsPerKm ~/ 60;
+     final secs = paceSecsPerKm % 60;
+     return '$mins:${secs.toString().padLeft(2, '0')} /km';
+   }
++
++  /// Displays the DAO's canonical s/m pace with the same nearest-second
++  /// precision as logged distance history, including explicit spoken units.
++  static String formatPaceFromSecondsPerMeter(double secondsPerMeter,
++      {bool spoken = false}) {
++    final secondsPerKm = (secondsPerMeter * 1000).round();
++    if (spoken && secondsPerKm > 0) {
++      return '${secondsPerKm ~/ 60} minutes ${secondsPerKm % 60} seconds per kilometre';
++    }
++    return formatPace(1000, secondsPerKm);
++  }
+ }
+diff --git a/lib/core/database/daos/workouts_dao.dart b/lib/core/database/daos/workouts_dao.dart
+index e23de8a..b0e6d72 100644
+--- a/lib/core/database/daos/workouts_dao.dart
++++ b/lib/core/database/daos/workouts_dao.dart	
+@@ -1,13 +1,14 @@
+ import 'package:drift/drift.dart';
+ import 'package:flutter/foundation.dart';
+ import 'package:uuid/uuid.dart';
+ import '../../models/measurement_type.dart';
+ import '../../models/personal_record.dart';
++import '../../models/workout_metric_summary.dart';
+ import '../database.dart';
+ import '../tables/workouts_table.dart';
+ import '../../../features/workout/domain/active_workout_state.dart';
+ 
+ part 'workouts_dao.g.dart';
+ 
+ class ExerciseHistoryData {
+   final DateTime date;
+@@ -1064,16 +1065,18 @@ class WorkoutsDao extends DatabaseAccessor<AppDatabase>
+                 reps > maxRepsAtLoad) {
+               prs.add(PersonalRecord(
+                 type: PersonalRecordType.maxReps,
+                 exerciseId: exerciseId,
+                 exerciseName: exerciseName,
+                 value: reps.toDouble(),
+                 unit: 'reps',
+                 setId: set.id,
++                loggedWeightKg: set.weightKg,
++                loggedReps: set.reps,
+                 previousValue: maxRepsAtLoad,
+               ));
+             }
+           }
+         } else {
+           final weight = set.weightKg ?? 0.0;
+           final reps = set.reps;
+           if (weight > 0 && reps > 0) {
+@@ -1105,49 +1108,57 @@ class WorkoutsDao extends DatabaseAccessor<AppDatabase>
+             if (isE1rmEligible && priorSets.isNotEmpty && e1rm > priorMaxE1rm) {
+               prs.add(PersonalRecord(
+                 type: PersonalRecordType.estimatedOneRepMax,
+                 exerciseId: exerciseId,
+                 exerciseName: exerciseName,
+                 value: e1rm,
+                 unit: 'kg',
+                 setId: set.id,
++                loggedWeightKg: set.weightKg,
++                loggedReps: set.reps,
+                 previousValue: priorMaxE1rm > 0 ? priorMaxE1rm : null,
+               ));
+             } else if (priorSets.isNotEmpty && weight > priorMaxWeight) {
+               prs.add(PersonalRecord(
+                 type: PersonalRecordType.maxWeight,
+                 exerciseId: exerciseId,
+                 exerciseName: exerciseName,
+                 value: weight,
+                 unit: 'kg',
+                 setId: set.id,
++                loggedWeightKg: set.weightKg,
++                loggedReps: set.reps,
+                 previousValue: priorMaxWeight > 0 ? priorMaxWeight : null,
+               ));
+             } else if (priorSets.isNotEmpty &&
+                 weight == priorMaxWeight &&
+                 reps > priorMaxRepsAtWeight &&
+                 priorMaxRepsAtWeight > 0) {
+               prs.add(PersonalRecord(
+                 type: PersonalRecordType.maxReps,
+                 exerciseId: exerciseId,
+                 exerciseName: exerciseName,
+                 value: reps.toDouble(),
+                 unit: 'reps',
+                 setId: set.id,
++                loggedWeightKg: set.weightKg,
++                loggedReps: set.reps,
+                 previousValue: priorMaxRepsAtWeight,
+               ));
+             } else if (priorSets.isEmpty && isE1rmEligible) {
+               prs.add(PersonalRecord(
+                 type: PersonalRecordType.estimatedOneRepMax,
+                 exerciseId: exerciseId,
+                 exerciseName: exerciseName,
+                 value: e1rm,
+                 unit: 'kg',
+                 setId: set.id,
++                loggedWeightKg: set.weightKg,
++                loggedReps: set.reps,
+                 previousValue: null,
+               ));
+             }
+           }
+         }
+         break;
+ 
+       case MeasurementType.repsOnly:
+@@ -1160,16 +1171,18 @@ class WorkoutsDao extends DatabaseAccessor<AppDatabase>
+           if (priorSets.isEmpty || reps > priorMaxReps) {
+             prs.add(PersonalRecord(
+               type: PersonalRecordType.maxReps,
+               exerciseId: exerciseId,
+               exerciseName: exerciseName,
+               value: reps.toDouble(),
+               unit: 'reps',
+               setId: set.id,
++              loggedWeightKg: set.weightKg,
++              loggedReps: set.reps,
+               previousValue: priorMaxReps > 0 ? priorMaxReps : null,
+             ));
+           }
+         }
+         break;
+ 
+       case MeasurementType.duration:
+         final duration = set.reps; // seconds
+@@ -1181,16 +1194,18 @@ class WorkoutsDao extends DatabaseAccessor<AppDatabase>
+           if (priorSets.isEmpty || duration > priorMaxDuration) {
+             prs.add(PersonalRecord(
+               type: PersonalRecordType.maxDuration,
+               exerciseId: exerciseId,
+               exerciseName: exerciseName,
+               value: duration.toDouble(),
+               unit: 's',
+               setId: set.id,
++              loggedWeightKg: set.weightKg,
++              loggedReps: set.reps,
+               previousValue: priorMaxDuration > 0 ? priorMaxDuration : null,
+             ));
+           }
+         }
+         break;
+ 
+       case MeasurementType.distance:
+         final dist = set.weightKg ?? 0.0;
+@@ -1211,30 +1226,34 @@ class WorkoutsDao extends DatabaseAccessor<AppDatabase>
+           if (priorSets.isEmpty || dist > priorMaxDist) {
+             prs.add(PersonalRecord(
+               type: PersonalRecordType.maxDistance,
+               exerciseId: exerciseId,
+               exerciseName: exerciseName,
+               value: dist,
+               unit: 'm',
+               setId: set.id,
++              loggedWeightKg: set.weightKg,
++              loggedReps: set.reps,
+               previousValue: priorMaxDist > 0 ? priorMaxDist : null,
+             ));
+           }
+ 
+           if (duration > 0) {
+             final pace = duration / dist;
+             if (priorBestPace != double.infinity && pace < priorBestPace) {
+               prs.add(PersonalRecord(
+                 type: PersonalRecordType.bestPace,
+                 exerciseId: exerciseId,
+                 exerciseName: exerciseName,
+                 value: pace,
+                 unit: 's/m',
+                 setId: set.id,
++                loggedWeightKg: set.weightKg,
++                loggedReps: set.reps,
+                 previousValue: priorBestPace,
+               ));
+             }
+           }
+         }
+         break;
+       case MeasurementType.unknown:
+         break;
+@@ -1388,24 +1407,18 @@ class WorkoutsDao extends DatabaseAccessor<AppDatabase>
+   Future<void> updateHistoricalWorkout(ActiveWorkoutState state) async {
+     final sessionId = state.originalSessionId!;
+ 
+     return transaction(() async {
+       // 1. Fetch existing session to preserve startedAt / endedAt
+       final existing = await getSession(sessionId);
+ 
+       // 2. Calculate total volume from completed sets
+-      double totalVolume = 0;
+-      for (final ex in state.exercises) {
+-        for (final set in ex.sets) {
+-          if (set.isCompleted) {
+-            totalVolume += (set.weightKg ?? 0.0) * set.reps;
+-          }
+-        }
+-      }
++      final totalVolume =
++          WorkoutMetricSummary.fromWorkout(state).weightedVolumeKg;
+ 
+       // 3. Update session — only mutable fields
+       await (update(workoutSessions)..where((t) => t.id.equals(sessionId)))
+           .write(WorkoutSessionsCompanion(
+         name: Value(state.name),
+         totalVolumeKg: Value(totalVolume),
+         synced: const Value(false),
+       ));
+diff --git a/lib/core/models/personal_record.dart b/lib/core/models/personal_record.dart
+index 07170d2..188d5f3 100644
+--- a/lib/core/models/personal_record.dart
++++ b/lib/core/models/personal_record.dart	
+@@ -10,37 +10,37 @@ enum PersonalRecordType {
+ class PersonalRecord {
+   final PersonalRecordType type;
+   final int exerciseId;
+   final String exerciseName;
+   final double value;
+   final String unit;
+   final String setId;
+   final double? previousValue;
++  final double? loggedWeightKg;
++  final int? loggedReps;
+ 
+   const PersonalRecord({
+     required this.type,
+     required this.exerciseId,
+     required this.exerciseName,
+     required this.value,
+     required this.unit,
+     required this.setId,
+     this.previousValue,
++    this.loggedWeightKg,
++    this.loggedReps,
+   });
+ 
+   /// Backwards compatibility getters for PrRecord callers.
+-  double get weightKg => (type == PersonalRecordType.estimatedOneRepMax ||
+-          type == PersonalRecordType.maxWeight)
+-      ? value
+-      : 0.0;
++  double get weightKg =>
++      loggedWeightKg ?? (type == PersonalRecordType.maxWeight ? value : 0.0);
+ 
+-  int get reps => (type == PersonalRecordType.maxReps ||
+-          type == PersonalRecordType.maxDuration)
+-      ? value.toInt()
+-      : 0;
++  int get reps =>
++      loggedReps ?? (type == PersonalRecordType.maxReps ? value.toInt() : 0);
+ 
+   double get estimated1rm =>
+       type == PersonalRecordType.estimatedOneRepMax ? value : 0.0;
+ 
+   double get previousBest1rm => previousValue ?? 0.0;
+ }
+ 
+ typedef PrRecord = PersonalRecord;
+diff --git a/lib/core/models/pr_card_data.dart b/lib/core/models/pr_card_data.dart
+index efedff2..8dcaf46 100644
+--- a/lib/core/models/pr_card_data.dart
++++ b/lib/core/models/pr_card_data.dart	
+@@ -1,29 +1,35 @@
+ import 'package:flutter/foundation.dart';
+ import 'package:intl/intl.dart';
+ import 'personal_record.dart';
++import '../utils/units.dart';
++import '../utils/formatters.dart';
+ 
+ /// The category/type of milestone displayed on the PR share card.
+ enum PrCardType {
+   estimated1rm,
+   weight,
+   reps,
+   volume,
+   streak,
+   duration,
++  distance,
++  pace,
+   firstEver;
+ 
+   String get label => switch (this) {
+         PrCardType.estimated1rm => 'ESTIMATED 1RM',
+         PrCardType.weight => 'MAX WEIGHT PR',
+         PrCardType.reps => 'REP PR',
+         PrCardType.volume => 'VOLUME RECORD',
+         PrCardType.streak => 'CONSISTENCY RECORD',
+         PrCardType.duration => 'HOLD DURATION PR',
++        PrCardType.distance => 'MAX DISTANCE',
++        PrCardType.pace => 'BEST PACE',
+         PrCardType.firstEver => 'FIRST RECORDED LIFT',
+       };
+ }
+ 
+ /// Privacy preferences for public story sharing.
+ /// Lifter name and bodyweight default to OFF per DELT privacy doctrine.
+ @immutable
+ class PrCardPrivacy {
+@@ -63,16 +69,18 @@ class PrCardData {
+   /// Main hero number, e.g. "102.5", "140", "22", "90"
+   final String heroValue;
+ 
+   /// Primary unit, e.g. "KG", "LBS", "REPS", "SEC"
+   final String unit;
+ 
+   /// Rep count if applicable to hero display (e.g. 5 for "102.5 kg × 5")
+   final int? reps;
++  final bool estimated;
++  final String? loggedSetText;
+ 
+   /// One-line kicker / milestone tag, e.g. "2-PLATE CLUB", "ALL-TIME BEST", "100-DAY STREAK"
+   final String? milestoneTag;
+ 
+   /// Delta vs previous performance, e.g. "+5 kg vs prior", "+0 kg / +3 reps", "First Recorded Lift"
+   final String deltaText;
+ 
+   /// Timestamp of the accomplishment
+@@ -97,61 +105,77 @@ class PrCardData {
+   final PrCardPrivacy privacy;
+ 
+   const PrCardData({
+     required this.exerciseName,
+     required this.prType,
+     required this.heroValue,
+     required this.unit,
+     this.reps,
++    this.estimated = false,
++    this.loggedSetText,
+     this.milestoneTag,
+     required this.deltaText,
+     required this.date,
+     this.bodyweightKg,
+     this.lifterName,
+     this.streakDays,
+     this.totalVolumeKg,
+     this.plateBreakdown,
+     this.privacy = const PrCardPrivacy(),
+   });
+ 
+   /// Formatted date string conforming to DESIGN.md editorial style (e.g. "1 OCT 2026")
+   String get formattedDate =>
+       DateFormat('d MMM yyyy').format(date).toUpperCase();
+ 
++  bool get isEstimate => estimated || prType == PrCardType.estimated1rm;
++  String get metricLabel => isEstimate ? 'Estimated 1RM' : prType.label;
++  String get heroUnit => !isEstimate &&
++          (prType == PrCardType.weight || prType == PrCardType.firstEver) &&
++          (unit.toUpperCase() == 'KG' || unit.toUpperCase() == 'LBS') &&
++          reps != null &&
++          reps! > 0
++      ? '$unit × $reps'
++      : unit;
++  String get contextText => isEstimate
++      ? '$deltaText\n${loggedSetText ?? 'Logged set unavailable'}'
++      : deltaText;
++
+   /// Formatted hero line: e.g. "102.5 KG × 5" or "140 KG" or "22 REPS"
+   String get heroDisplay {
+-    if (reps != null && reps! > 0 && unit.toUpperCase() != 'REPS') {
+-      return '$heroValue $unit × $reps';
+-    }
+-    return '$heroValue $unit';
++    return '$heroValue $heroUnit';
+   }
+ 
+   PrCardData copyWith({
+     String? exerciseName,
+     PrCardType? prType,
+     String? heroValue,
+     String? unit,
+     int? reps,
++    bool? estimated,
++    String? loggedSetText,
+     String? milestoneTag,
+     String? deltaText,
+     DateTime? date,
+     double? bodyweightKg,
+     String? lifterName,
+     int? streakDays,
+     double? totalVolumeKg,
+     String? plateBreakdown,
+     PrCardPrivacy? privacy,
+   }) {
+     return PrCardData(
+       exerciseName: exerciseName ?? this.exerciseName,
+       prType: prType ?? this.prType,
+       heroValue: heroValue ?? this.heroValue,
+       unit: unit ?? this.unit,
+       reps: reps ?? this.reps,
++      estimated: estimated ?? this.estimated,
++      loggedSetText: loggedSetText ?? this.loggedSetText,
+       milestoneTag: milestoneTag ?? this.milestoneTag,
+       deltaText: deltaText ?? this.deltaText,
+       date: date ?? this.date,
+       bodyweightKg: bodyweightKg ?? this.bodyweightKg,
+       lifterName: lifterName ?? this.lifterName,
+       streakDays: streakDays ?? this.streakDays,
+       totalVolumeKg: totalVolumeKg ?? this.totalVolumeKg,
+       plateBreakdown: plateBreakdown ?? this.plateBreakdown,
+@@ -165,20 +189,20 @@ class PrCardData {
+     required DateTime sessionDate,
+     int? reps,
+     double? bodyweightKg,
+     String? lifterName,
+     int? streakDays,
+     bool isImperial = false,
+   }) {
+     final unit = isImperial ? 'LBS' : 'KG';
+-    final weightScale = isImperial ? 2.20462 : 1.0;
++    final displayUnit = isImperial ? 'lbs' : 'kg';
+ 
+     String formatVal(double v) {
+-      final scaled = v * weightScale;
++      final scaled = kgToDisplay(v, displayUnit);
+       return scaled == scaled.truncateToDouble()
+           ? scaled.toInt().toString()
+           : scaled.toStringAsFixed(1);
+     }
+ 
+     PrCardType cardType;
+     String heroVal;
+     String delta;
+@@ -186,33 +210,33 @@ class PrCardData {
+ 
+     switch (pr.type) {
+       case PersonalRecordType.estimatedOneRepMax:
+         cardType = pr.previousValue == null
+             ? PrCardType.firstEver
+             : PrCardType.estimated1rm;
+         heroVal = formatVal(pr.value);
+         if (pr.previousValue != null && pr.previousValue! > 0) {
+-          final diff = (pr.value - pr.previousValue!) * weightScale;
++          final diff = kgToDisplay(pr.value - pr.previousValue!, displayUnit);
+           final diffStr = diff == diff.truncateToDouble()
+               ? diff.toInt().toString()
+               : diff.toStringAsFixed(1);
+           delta = '+$diffStr $unit vs previous best';
+         } else {
+           delta = 'First Recorded Lift';
+         }
+         tag = 'ALL-TIME BEST';
+         break;
+ 
+       case PersonalRecordType.maxWeight:
+         cardType =
+             pr.previousValue == null ? PrCardType.firstEver : PrCardType.weight;
+         heroVal = formatVal(pr.value);
+         if (pr.previousValue != null && pr.previousValue! > 0) {
+-          final diff = (pr.value - pr.previousValue!) * weightScale;
++          final diff = kgToDisplay(pr.value - pr.previousValue!, displayUnit);
+           final diffStr = diff == diff.truncateToDouble()
+               ? diff.toInt().toString()
+               : diff.toStringAsFixed(1);
+           delta = '+$diffStr $unit vs previous best';
+         } else {
+           delta = 'First Recorded Lift';
+         }
+         tag = 'HEAVIEST LOAD';
+@@ -235,34 +259,51 @@ class PrCardData {
+         heroVal = '${pr.value.toInt()}';
+         delta = pr.previousValue != null
+             ? '+${(pr.value - pr.previousValue!).toInt()}s vs prior'
+             : 'First Record';
+         tag = 'MAX HOLD';
+         break;
+ 
+       case PersonalRecordType.maxDistance:
+-      case PersonalRecordType.bestPace:
+-        cardType = PrCardType.firstEver;
++        cardType = PrCardType.distance;
+         heroVal = pr.value.toStringAsFixed(1);
+         delta = 'New Milestone';
+         tag = 'RECORD';
+         break;
++      case PersonalRecordType.bestPace:
++        cardType = PrCardType.pace;
++        heroVal = MeasurementFormatter.formatPaceFromSecondsPerMeter(pr.value)
++            .split(' ')
++            .first;
++        delta = 'New Milestone';
++        tag = 'RECORD';
++        break;
+     }
+ 
+     return PrCardData(
+       exerciseName: pr.exerciseName,
+       prType: cardType,
+       heroValue: heroVal,
+-      unit: pr.type == PersonalRecordType.maxReps
+-          ? 'REPS'
+-          : pr.type == PersonalRecordType.maxDuration
+-              ? 'SEC'
+-              : unit,
+-      reps: reps,
++      unit: switch (pr.type) {
++        PersonalRecordType.maxReps => 'REPS',
++        PersonalRecordType.maxDuration => 'SEC',
++        PersonalRecordType.maxDistance => pr.unit.toUpperCase(),
++        PersonalRecordType.bestPace => '/KM',
++        PersonalRecordType.estimatedOneRepMax ||
++        PersonalRecordType.maxWeight =>
++          unit,
++      },
++      reps: reps ?? pr.loggedReps,
++      estimated: pr.type == PersonalRecordType.estimatedOneRepMax,
++      loggedSetText: pr.type == PersonalRecordType.estimatedOneRepMax &&
++              pr.loggedWeightKg != null &&
++              pr.loggedReps != null
++          ? 'Logged: ${formatWeight(pr.loggedWeightKg!, displayUnit)} $unit × ${pr.loggedReps} reps'
++          : null,
+       milestoneTag: tag,
+       deltaText: delta,
+       date: sessionDate,
+       bodyweightKg: bodyweightKg,
+       lifterName: lifterName,
+       streakDays: streakDays,
+     );
+   }
+diff --git a/lib/core/models/workout_metric_summary.dart b/lib/core/models/workout_metric_summary.dart
+index 60c30b4..438ed87 100644
+--- a/lib/core/models/workout_metric_summary.dart
++++ b/lib/core/models/workout_metric_summary.dart	
+@@ -1,21 +1,57 @@
++import 'package:gymlog/core/models/measurement_type.dart';
++import 'package:gymlog/core/utils/units.dart';
++import 'package:gymlog/features/workout/domain/active_workout_state.dart';
++
+ class WorkoutMetricSummary {
+   final double weightedVolumeKg;
+   final int totalReps;
+   final int totalDurationSeconds;
+   final double totalDistanceMeters;
++  final int completedSets;
+ 
+   const WorkoutMetricSummary({
+     required this.weightedVolumeKg,
+     required this.totalReps,
+     required this.totalDurationSeconds,
+     required this.totalDistanceMeters,
++    this.completedSets = 0,
+   });
+ 
++  factory WorkoutMetricSummary.fromWorkout(ActiveWorkoutState? workout) {
++    double volume = 0, distance = 0;
++    int reps = 0, seconds = 0, completed = 0;
++    for (final exercise in workout?.exercises ?? <WorkoutExerciseState>[]) {
++      for (final set in exercise.sets.where((s) => s.isCompleted)) {
++        completed++;
++        switch (exercise.resolvedMeasurementType) {
++          case MeasurementType.weightAndReps:
++            volume += (set.weightKg ?? 0) * set.reps;
++            reps += set.reps;
++          case MeasurementType.repsOnly:
++            reps += set.reps;
++          case MeasurementType.duration:
++            seconds += set.reps;
++          case MeasurementType.distance:
++            distance += set.weightKg ?? 0;
++            seconds += set.reps;
++          case MeasurementType.unknown:
++            break;
++        }
++      }
++    }
++    return WorkoutMetricSummary(
++        weightedVolumeKg: volume,
++        totalReps: reps,
++        totalDurationSeconds: seconds,
++        totalDistanceMeters: distance,
++        completedSets: completed);
++  }
++
+   static const empty = WorkoutMetricSummary(
+     weightedVolumeKg: 0.0,
+     totalReps: 0,
+     totalDurationSeconds: 0,
+     totalDistanceMeters: 0.0,
+   );
+ 
+   /// Returns true if this summary contains weighted volume.
+@@ -34,22 +70,28 @@ class WorkoutMetricSummary {
+     } else {
+       return 'DURATION';
+     }
+   }
+ 
+   /// Returns the formatted primary metric value.
+   String primaryMetricValue({String unit = 'kg'}) {
+     if (hasWeightedVolume) {
+-      final formatted = weightedVolumeKg.toStringAsFixed(
+-          weightedVolumeKg.truncateToDouble() == weightedVolumeKg ? 0 : 1);
+-      return '$formatted $unit';
++      return formatVolume(weightedVolumeKg, unit);
+     } else if (totalReps > 0) {
+       return '$totalReps reps';
+     } else if (totalDistanceMeters > 0) {
+-      final km = totalDistanceMeters / 1000;
+-      return '${km.toStringAsFixed(1)} km';
++      if (totalDistanceMeters < 1000) {
++        final metres = totalDistanceMeters;
++        return '${metres == metres.truncateToDouble() ? metres.toInt() : metres.toStringAsFixed(1)} m';
++      }
++      return '${(totalDistanceMeters / 1000).toStringAsFixed(1)} km';
+     } else {
+       final m = totalDurationSeconds ~/ 60;
+-      return '${m}m';
++      final s = totalDurationSeconds % 60;
++      return s == 0 && m > 0
++          ? '${m}m'
++          : m > 0
++              ? '${m}m ${s}s'
++              : '${s}s';
+     }
+   }
+ }
+diff --git a/lib/core/theme/app_colors.dart b/lib/core/theme/app_colors.dart
+index 7bd6565..4055b27 100644
+--- a/lib/core/theme/app_colors.dart
++++ b/lib/core/theme/app_colors.dart	
+@@ -186,37 +186,37 @@ abstract class AppColors {
+   static const prBadgeBorder = Color(0x4DE6C84A); // gold 30%
+ 
+   // ── Text — white at controlled opacity (NOT hardcoded grey) ───────────
+   static const textPrimary =
+       Color(0xFFFFFFFF); // headings, key numbers, exercise names
+   static const textSecondary =
+       Color(0x99FFFFFF); // white 60% — dates, subtitles, secondary
+   static const textTertiary =
+-      Color(0x59FFFFFF); // white 35% — placeholders, column headers
++      Color(0x99FFFFFF); // white 60% — meaningful hints and reference text
+   static const textDisabled = Color(0x33FFFFFF); // white 20% — inactive states
+ 
+   // ── Charts ─────────────────────────────────────────────
+-  static const chartAxisLabel = Color(0x59FFFFFF); // == textTertiary
++  static const chartAxisLabel = textTertiary;
+ 
+   // Profile analytics bar chart.
+   // Semantic rule: current week = brand accent (reactive at call site), historical = neutral gray.
+   static const profileGraphCurrentBar =
+       Color(0xFFBF5AF2); // == accentPrimary default — current/latest week
+   static const profileGraphCurrentBarBright =
+       Color(0xFFD9A6FF); // == accentText default — touch highlight
+   static const profileGraphHistoricalBar =
+       Color(0xFF2C2C3A); // neutral cool-gray — previous weeks
+   static const profileGraphInactiveBar =
+       Color(0xFF2A2A3A); // in-progress week (mid-week, muted)
+   static const profileGraphGhostBar =
+       Color(0xFF1A1A26); // zero-value slot — barely visible
+   static const profileGraphGridLine =
+       Color(0x14FFFFFF); // white 8% — barely-there guides
+-  static const profileGraphAxisLabel = Color(0x59FFFFFF); // == textTertiary
++  static const profileGraphAxisLabel = textTertiary;
+   static const profileGraphTooltipBg = Color(0xFF242424); // == surface4
+   static const profileGraphTooltipShadow = Color(0x33000000); // 20% black
+ 
+   // Keep old names as aliases so any future references don't break.
+   static const profileGraphActiveBar = profileGraphCurrentBar;
+   static const profileGraphActiveBarBright = profileGraphCurrentBarBright;
+   static const profileGraphPreviousBar = profileGraphHistoricalBar;
+ 
+diff --git a/lib/core/theme/theme_palette.dart b/lib/core/theme/theme_palette.dart
+index 757f084..cdf8a5b 100644
+--- a/lib/core/theme/theme_palette.dart
++++ b/lib/core/theme/theme_palette.dart	
+@@ -119,25 +119,25 @@ enum ThemePalette {
+               Color(0xFFDAFF52),
+               Color(0xFFE2FF7A),
+               Color(0xFFEBFFA3),
+               Color(0xFFF4FFCC),
+             ],
+           ),
+         // 2 — Neon Purple: the app's on-brand purple identity.
+         ThemePalette.neonPurple => const ThemePaletteTokens(
+-            base: Color(0xFFBF00FF),
++            base: Color(0xFFC400FF),
+             light: Color(0xFFD966FF),
+             dark: Color(0xFF9900CC),
+-            muted: Color(0x24BF00FF),
+-            glow: Color(0x1FBF00FF),
++            muted: Color(0x24C400FF),
++            glow: Color(0x1FC400FF),
+             onAccent:
+                 Color(0xFF0A0A0A), // near-black on every palette — uniform rule
+             muscleSplitRamp: [
+-              Color(0xFFBF00FF),
++              Color(0xFFC400FF),
+               Color(0xFFCC29FF),
+               Color(0xFFD952FF),
+               Color(0xFFE67AFF),
+               Color(0xFFF2A3FF),
+               Color(0xFFFECCFF),
+             ],
+           ),
+         // 3 — White: a cool "ice-chrome" accent, not a flat neutral gray. A
+diff --git a/lib/features/exercises/presentation/screens/exercise_detail_screen.dart b/lib/features/exercises/presentation/screens/exercise_detail_screen.dart
+index f0375eb..478bb11 100644
+--- a/lib/features/exercises/presentation/screens/exercise_detail_screen.dart
++++ b/lib/features/exercises/presentation/screens/exercise_detail_screen.dart	
+@@ -45,17 +45,17 @@ final _exerciseFallbackProvider =
+ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
+   int _activeToggleIndex = 0;
+   String _selectedTimeRange = '6M';
+ 
+   List<String> _getToggleLabels(MeasurementType mType) {
+     switch (mType) {
+       case MeasurementType.weightAndReps:
+         return [
+-          'One Rep Max',
++          'Estimated 1RM',
+           'Heaviest Weight',
+           'Session Volume',
+           'Total Reps'
+         ];
+       case MeasurementType.repsOnly:
+         return ['Max Reps', 'Total Reps'];
+       case MeasurementType.duration:
+         return ['Max Duration', 'Total Duration'];
+@@ -80,25 +80,25 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
+     ExerciseHistoryData e,
+     int index,
+     MeasurementType mType,
+   ) {
+     switch (mType) {
+       case MeasurementType.weightAndReps:
+         switch (index) {
+           case 0:
+-            return e.estimated1RM ?? e.weight;
++            return e.estimated1RM;
+           case 1:
+             return e.weight;
+           case 2:
+             return e.volume;
+           case 3:
+             return e.reps.toDouble();
+           default:
+-            return e.estimated1RM ?? e.weight;
++            return e.estimated1RM;
+         }
+       case MeasurementType.repsOnly:
+         return e.reps.toDouble();
+       case MeasurementType.duration:
+         return e.reps.toDouble();
+       case MeasurementType.distance:
+         switch (index) {
+           case 0:
+@@ -430,16 +430,20 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
+     // the empty list on the very next line. a RangeError on every build, so
+     // any exercise with an unrecognised measurementType string crashed the
+     // detail screen outright. The chart itself degrades gracefully (all its
+     // values come back null and it renders the empty state), so a header
+     // fallback is all that is needed to keep the screen up.
+     final activeIndex =
+         _activeToggleIndex < toggles.length ? _activeToggleIndex : 0;
+     final activeLabel = toggles.isEmpty ? 'Progress' : toggles[activeIndex];
++    final missingEstimate = mType == MeasurementType.weightAndReps &&
++        activeIndex == 0 &&
++        history.isNotEmpty &&
++        history.every((entry) => entry.estimated1RM == null);
+ 
+     return Column(
+       crossAxisAlignment: CrossAxisAlignment.start,
+       children: [
+         Row(
+           children: [
+             Expanded(
+               child: Text(
+@@ -476,18 +480,21 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
+             valueFormatter: (v) =>
+                 _formatChartValue(v, activeIndex, mType, unit),
+             // This screen replots the SAME component for up to four different
+             // metrics, so the spoken name has to follow the active toggle. a
+             // fixed string would be wrong three times out of four. Derived
+             // from the toggle label so the repsOnly / duration / distance sets
+             // are covered without a second mapping to keep in sync.
+             metricLabel: '$activeLabel chart',
+-            emptyTitle: 'No data yet',
+-            emptySubtitle: 'Log this exercise to see your progress',
++            emptyTitle:
++                missingEstimate ? 'No estimate available' : 'No data yet',
++            emptySubtitle: missingEstimate
++                ? 'View logged history in Heaviest Weight or Total Reps'
++                : 'Log this exercise to see your progress',
+           ),
+         ),
+       ],
+     );
+   }
+ 
+   /// Takes an ALREADY-CONVERTED value and only labels it. Never convert here —
+   /// [_displayMetric] has already done it.
+@@ -600,17 +607,17 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
+     final surface = context.surface;
+     final rows = <Widget>[];
+ 
+     switch (mType) {
+       case MeasurementType.weightAndReps:
+         rows.addAll([
+           _prRow('Heaviest Weight', _weightPr(prs.maxWeight, unit), surface),
+           _prDivider(surface),
+-          _prRow('Best 1RM', _weightPr(prs.max1RM, unit), surface),
++          _prRow('Estimated 1RM', _weightPr(prs.max1RM, unit), surface),
+           _prDivider(surface),
+           _prRow('Max Session Volume', _weightPr(prs.maxVolume, unit), surface),
+           _prDivider(surface),
+           // A rep count, not a weight. left unconverted on purpose.
+           _prRow('Max Reps', '${prs.maxReps} reps', surface),
+         ]);
+         break;
+       case MeasurementType.repsOnly:
+diff --git a/lib/features/profile/presentation/widgets/graph_kpi_header.dart b/lib/features/profile/presentation/widgets/graph_kpi_header.dart
+index 2b5b50d..ca8b607 100644
+--- a/lib/features/profile/presentation/widgets/graph_kpi_header.dart
++++ b/lib/features/profile/presentation/widgets/graph_kpi_header.dart	
+@@ -101,17 +101,17 @@ class _DeltaPill extends StatelessWidget {
+       );
+     }
+ 
+     // Ratio of two same-unit values — unit-invariant, so this pill needs no
+     // conversion and deliberately takes the raw kilogram figures.
+     final delta = (latest - previous) / previous;
+     final isPositive = delta >= 0;
+     final pct = (delta * 100).round().abs();
+-    final color = isPositive ? AppColors.success : AppColors.error;
++    final color = surface.textSecondary;
+ 
+     return Container(
+       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+       decoration: BoxDecoration(
+         color: color.withValues(alpha: 0.12),
+         borderRadius: BorderRadius.circular(AppRadius.badge),
+       ),
+       child: Row(
+diff --git a/lib/features/profile/presentation/widgets/weekly_bar_chart.dart b/lib/features/profile/presentation/widgets/weekly_bar_chart.dart
+index 26f99b3..29a5815 100644
+--- a/lib/features/profile/presentation/widgets/weekly_bar_chart.dart
++++ b/lib/features/profile/presentation/widgets/weekly_bar_chart.dart	
+@@ -344,17 +344,17 @@ class _WeeklyBarChartState extends State<WeeklyBarChart> {
+ 
+   Widget _buildDeltaIndicator(double? fraction) {
+     if (fraction == null) {
+       return Icon(Icons.arrow_forward_rounded,
+           size: 18, color: context.surface.textTertiary);
+     }
+     final isUp = fraction >= 0;
+     final pct = (fraction * 100).round().abs();
+-    final color = isUp ? AppColors.success : AppColors.error;
++    final color = context.surface.textSecondary;
+     return Column(
+       mainAxisSize: MainAxisSize.min,
+       children: [
+         Icon(
+           isUp ? Icons.arrow_upward_rounded : Icons.arrow_downward_rounded,
+           size: 16,
+           color: color,
+         ),
+diff --git a/lib/features/workout/presentation/providers/active_workout_provider.dart b/lib/features/workout/presentation/providers/active_workout_provider.dart
+index 034ef01..0a78409 100644
+--- a/lib/features/workout/presentation/providers/active_workout_provider.dart
++++ b/lib/features/workout/presentation/providers/active_workout_provider.dart	
+@@ -7,16 +7,17 @@ import 'package:drift/drift.dart';
+ import '../../../../core/database/database.dart';
+ import '../../../../core/database/daos/workouts_dao.dart';
+ import '../../../../core/providers/database_provider.dart';
+ import '../../../../core/providers/settings_provider.dart';
+ import '../../../../core/services/sync_engine.dart';
+ import '../../../../core/services/workout_draft_store.dart';
+ import '../../../../core/models/measurement_type.dart';
+ import '../../../../core/models/personal_record.dart';
++import '../../../../core/models/workout_metric_summary.dart';
+ import '../../../../core/models/rest_preference.dart';
+ import '../../../auth/presentation/providers/auth_provider.dart';
+ import 'package:sentry_flutter/sentry_flutter.dart';
+ import '../../domain/active_workout_state.dart';
+ import '../../domain/workout_save_result.dart';
+ import 'rest_timer_provider.dart';
+ import 'workout_event_provider.dart';
+ import 'previous_session_provider.dart';
+@@ -244,24 +245,18 @@ class ActiveWorkoutNotifier extends StateNotifier<ActiveWorkoutState?> {
+       state = null;
+       return WorkoutSaveResult.success(const []);
+     }
+ 
+     final db = _ref.read(databaseProvider);
+     final user = _ref.read(authProvider);
+     final userId = user?.id ?? '';
+ 
+-    double totalVolume = 0;
+-    for (final ex in state!.exercises) {
+-      for (final set in ex.sets) {
+-        if (set.isCompleted) {
+-          totalVolume += (set.weightKg ?? 0.0) * set.reps;
+-        }
+-      }
+-    }
++    final totalVolume =
++        WorkoutMetricSummary.fromWorkout(state).weightedVolumeKg;
+ 
+     final sessionId = const Uuid().v4();
+     final workoutName =
+         (name != null && name.trim().isNotEmpty) ? name.trim() : state!.name;
+ 
+     try {
+       final prs = await db.transaction<List<PersonalRecord>>(() async {
+         await db.workoutsDao.insertSession(
+@@ -795,50 +790,49 @@ class ActiveWorkoutNotifier extends StateNotifier<ActiveWorkoutState?> {
+     saveDraftNow();
+   }
+ 
+   void setRestSecondsOverride(int exerciseIndex, int? seconds) {
+     setRestPreference(exerciseIndex, restPreferenceFromStorage(seconds));
+   }
+ 
+   (double, int) get sessionTotals {
+-    final current = state;
+-    if (current == null) return (0, 0);
+-    double volume = 0;
+-    var sets = 0;
+-    for (final ex in current.exercises) {
+-      for (final set in ex.sets) {
+-        if (set.isCompleted) {
+-          volume += (set.weightKg ?? 0.0) * set.reps;
+-          sets++;
+-        }
+-      }
+-    }
+-    return (volume, sets);
++    final summary = WorkoutMetricSummary.fromWorkout(state);
++    return (summary.weightedVolumeKg, summary.completedSets);
+   }
+ }
+ 
+ final activeWorkoutProvider =
+     StateNotifierProvider<ActiveWorkoutNotifier, ActiveWorkoutState?>(
+   (ref) => ActiveWorkoutNotifier(ref),
+ );
+ 
+ /// Derived provider: total volume (kg) and completed set count.
+ ///
+ /// Uses `.select` so it only notifies listeners when the computed
+ /// (volume, sets) tuple changes — not on every keystroke inside a
+ /// weight/reps field.
+ final sessionTotalsProvider = Provider<(double, int)>((ref) {
+   return ref.watch(activeWorkoutProvider.select((state) {
+-    if (state == null) return (0.0, 0);
+-    double volume = 0;
+-    int completed = 0;
+-    for (final ex in state.exercises) {
+-      for (final set in ex.sets) {
+-        if (set.isCompleted) {
+-          volume += (set.weightKg ?? 0.0) * set.reps;
+-          completed++;
+-        }
+-      }
+-    }
+-    return (volume, completed);
++    final summary = WorkoutMetricSummary.fromWorkout(state);
++    return (summary.weightedVolumeKg, summary.completedSets);
++  }));
++});
++
++/// Logged measures only; measurement types determine the meaning of each field.
++final workoutMetricSummaryProvider = Provider<WorkoutMetricSummary>((ref) {
++  final totals = ref.watch(activeWorkoutProvider.select((state) {
++    final s = WorkoutMetricSummary.fromWorkout(state);
++    return (
++      s.weightedVolumeKg,
++      s.totalReps,
++      s.totalDurationSeconds,
++      s.totalDistanceMeters,
++      s.completedSets
++    );
+   }));
++  return WorkoutMetricSummary(
++      weightedVolumeKg: totals.$1,
++      totalReps: totals.$2,
++      totalDurationSeconds: totals.$3,
++      totalDistanceMeters: totals.$4,
++      completedSets: totals.$5);
+ });
+diff --git a/lib/features/workout/presentation/screens/active_workout_screen.dart b/lib/features/workout/presentation/screens/active_workout_screen.dart
+index 7964dac..c1caf10 100644
+--- a/lib/features/workout/presentation/screens/active_workout_screen.dart
++++ b/lib/features/workout/presentation/screens/active_workout_screen.dart	
+@@ -192,16 +192,17 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
+         : getWorkoutNameFallback(workout.startTime, null);
+     final (volumeKg, sets) =
+         ref.read(activeWorkoutProvider.notifier).sessionTotals;
+ 
+     final name = await showFinishSummarySheet(
+       context: context,
+       duration: DateTime.now().difference(workout.startTime),
+       volumeKg: volumeKg,
++      metricSummary: ref.read(workoutMetricSummaryProvider),
+       sets: sets,
+       unit: ref.read(weightUnitProvider),
+       initialName: preFill,
+     );
+     if (name == null || !mounted) return;
+ 
+     await _retryFinish(name);
+   }
+@@ -221,21 +222,23 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
+         .finishWorkout(name: name);
+ 
+     if (!mounted) return;
+     setState(() {
+       _isSaving = false;
+     });
+ 
+     if (result is WorkoutSaveSuccess) {
++      final weightUnit = ref.read(weightUnitProvider);
+       HapticFeedback.heavyImpact();
+       context.go('/');
+       if (result.prs.isNotEmpty) {
+         WidgetsBinding.instance.addPostFrameCallback((_) {
+-          showPrCelebration(rootNavigator.context, result.prs);
++          showPrCelebration(rootNavigator.context, result.prs,
++              weightUnit: weightUnit);
+         });
+       }
+     } else if (result is WorkoutSaveFailure) {
+       _showSaveErrorSnackBar(
+         context,
+         isEditing: false,
+         name: name,
+         reason: result.reason,
+@@ -470,16 +473,17 @@ class _ActiveWorkoutScreenState extends ConsumerState<ActiveWorkoutScreen> {
+                         : getWorkoutNameFallback(state.startTime, state.name),
+                   ),
+                 );
+                 return ActiveWorkoutHeader(
+                   isEditing: isEditing,
+                   workoutName: workoutName,
+                   elapsedTime: timer,
+                   volumeKg: volumeKg,
++                  metricSummary: ref.watch(workoutMetricSummaryProvider),
+                   completedSets: completedSets,
+                   weightUnit: globalUnit,
+                   finishEnabled: completedSets > 0 && !_isSaving,
+                   onMinimize: () => context.pop(),
+                   onClose: isEditing ? () => context.pop() : _confirmDiscard,
+                   onFinish:
+                       _isSaving ? null : (isEditing ? _saveChanges : _finish),
+                 );
+diff --git a/lib/features/workout/presentation/screens/workout_detail_screen.dart b/lib/features/workout/presentation/screens/workout_detail_screen.dart
+index 3039670..2319355 100644
+--- a/lib/features/workout/presentation/screens/workout_detail_screen.dart
++++ b/lib/features/workout/presentation/screens/workout_detail_screen.dart	
+@@ -1,16 +1,18 @@
+ import 'package:flutter/material.dart';
+ import 'package:flutter/services.dart';
+ import 'package:flutter_riverpod/flutter_riverpod.dart';
+ import 'package:go_router/go_router.dart';
+ import 'package:intl/intl.dart';
+ import 'package:gymlog/core/theme/app_colors.dart';
+ import 'package:gymlog/core/theme/app_text.dart';
+ import 'package:gymlog/core/utils/formatters.dart';
++import 'package:gymlog/core/utils/units.dart';
++import 'package:gymlog/core/providers/settings_provider.dart';
+ import 'package:gymlog/core/database/daos/workouts_dao.dart';
+ import 'package:gymlog/core/providers/database_provider.dart';
+ import 'package:gymlog/shared/layout/adaptive.dart';
+ import 'package:gymlog/shared/widgets/async_error_state.dart';
+ import 'package:gymlog/shared/widgets/ui/app_card.dart';
+ import 'package:gymlog/shared/widgets/ui/skeleton.dart';
+ import 'package:gymlog/shared/widgets/ui/action_bottom_sheet.dart';
+ import 'package:gymlog/shared/widgets/ui/app_dialog.dart';
+@@ -118,17 +120,18 @@ class WorkoutDetailScreen extends ConsumerWidget {
+     HydratedWorkout workout,
+   ) {
+     final session = workout.session;
+     final name = getWorkoutNameFallback(session.startedAt, session.name);
+     final durationStr =
+         formatWorkoutDuration(session.startedAt, session.endedAt);
+     final totalSets =
+         workout.exercises.fold<int>(0, (s, e) => s + e.sets.length);
+-    final volumeStr = _formatVolume(session.totalVolumeKg);
++    final volumeStr =
++        formatVolume(session.totalVolumeKg, ref.watch(weightUnitProvider));
+     final dateStr = _kDateFormat.format(session.startedAt);
+ 
+     // Muscle split — sets-per-target share.
+     final muscleSetCounts = <String, int>{};
+     for (final ex in workout.exercises) {
+       final target = ex.exerciseMetadata.target;
+       muscleSetCounts[target] = (muscleSetCounts[target] ?? 0) + ex.sets.length;
+     }
+@@ -178,22 +181,16 @@ class WorkoutDetailScreen extends ConsumerWidget {
+           ),
+         ],
+       ),
+     );
+   }
+ 
+   // ── Helpers ──────────────────────────────────────────────────────────────────
+ 
+-  static final _volumeFormat = NumberFormat('#,##0.##');
+-
+-  static String _formatVolume(double kg) {
+-    return '${_volumeFormat.format(kg)} kg';
+-  }
+-
+   void _saveAsRoutine(
+     BuildContext context,
+     WidgetRef ref,
+     HydratedWorkout workout,
+   ) async {
+     final defaultName = '${workout.session.name ?? 'Custom'} Routine';
+     await ref
+         .read(workoutActionsProvider.notifier)
+diff --git a/lib/features/workout/presentation/widgets/active_workout_header.dart b/lib/features/workout/presentation/widgets/active_workout_header.dart
+index d0b6815..d7a0bf3 100644
+--- a/lib/features/workout/presentation/widgets/active_workout_header.dart
++++ b/lib/features/workout/presentation/widgets/active_workout_header.dart	
+@@ -1,47 +1,62 @@
+ import 'dart:math' as math;
+ 
+ import 'package:flutter/material.dart';
+ import 'package:gymlog/core/theme/app_colors.dart';
+ import 'package:gymlog/core/theme/dynamic_accent_theme.dart';
+-import 'package:gymlog/core/utils/units.dart';
++import 'package:gymlog/core/models/workout_metric_summary.dart';
+ import 'package:gymlog/shared/layout/adaptive.dart';
+ 
+ const double _minSwipeVelocity = 120.0;
+ 
+ class ActiveWorkoutHeader extends StatelessWidget {
+   final bool isEditing;
+   final String workoutName;
+   final String elapsedTime;
+   final double volumeKg;
++  final WorkoutMetricSummary? metricSummary;
+   final int completedSets;
+   final String weightUnit;
+   final bool finishEnabled;
+   final VoidCallback onMinimize;
+   final VoidCallback onClose;
+   final VoidCallback? onFinish;
+ 
+   const ActiveWorkoutHeader({
+     super.key,
+     required this.isEditing,
+     required this.workoutName,
+     required this.elapsedTime,
+     required this.volumeKg,
++    this.metricSummary,
+     required this.completedSets,
+     required this.weightUnit,
+     required this.finishEnabled,
+     required this.onMinimize,
+     required this.onClose,
+     this.onFinish,
+   }) : assert(
+           !finishEnabled || onFinish != null,
+           'onFinish must be non-null when finishEnabled is true',
+         );
+ 
++  String get _summaryText {
++    final summary = metricSummary ??
++        WorkoutMetricSummary(
++            weightedVolumeKg: volumeKg,
++            totalReps: 0,
++            totalDurationSeconds: 0,
++            totalDistanceMeters: 0);
++    final value = summary.primaryMetricValue(unit: weightUnit);
++    final label = summary.primaryMetricLabel();
++    final metric = label == 'DURATION' ? '$value logged time' : value;
++    return '$metric · $completedSets set${completedSets != 1 ? 's' : ''}';
++  }
++
+   @override
+   Widget build(BuildContext context) {
+     final surface = context.surface;
+     final accent = context.accent;
+     final isCompactOrLargeText =
+         context.adaptive.isCompact || context.adaptive.textScaleFactor >= 1.6;
+ 
+     // Fold the status-bar inset into the grab-handle strip (edge-to-edge
+@@ -142,17 +157,17 @@ class ActiveWorkoutHeader extends StatelessWidget {
+                     ),
+                   ),
+                   const SizedBox(height: 2),
+                   Text(
+                     isEditing
+                         ? elapsedTime
+                         : (completedSets == 0
+                             ? 'Log your first set'
+-                            : '${groupThousands(kgToDisplay(volumeKg, weightUnit))} $weightUnit · $completedSets set${completedSets != 1 ? 's' : ''}'),
++                            : _summaryText),
+                     textAlign: TextAlign.center,
+                     style: TextStyle(
+                       fontFamily: 'Inter',
+                       fontSize: 13,
+                       fontWeight: FontWeight.w400,
+                       color: surface.textSecondary,
+                     ),
+                   ),
+@@ -202,19 +217,17 @@ class ActiveWorkoutHeader extends StatelessWidget {
+                   fontFamily: 'Inter',
+                   fontSize: 28,
+                   fontWeight: FontWeight.w700,
+                   color: surface.textPrimary,
+                 ),
+               ),
+               const SizedBox(height: 2),
+               Text(
+-                completedSets == 0
+-                    ? 'Log your first set'
+-                    : '${groupThousands(kgToDisplay(volumeKg, weightUnit))} $weightUnit · $completedSets set${completedSets != 1 ? 's' : ''}',
++                completedSets == 0 ? 'Log your first set' : _summaryText,
+                 textAlign: TextAlign.center,
+                 softWrap: true,
+                 style: TextStyle(
+                   fontFamily: 'Inter',
+                   fontSize: 13,
+                   fontWeight: FontWeight.w400,
+                   color: surface.textSecondary,
+                 ),
+diff --git a/lib/features/workout/presentation/widgets/finish_summary_sheet.dart b/lib/features/workout/presentation/widgets/finish_summary_sheet.dart
+index b85df9c..ca6a433 100644
+--- a/lib/features/workout/presentation/widgets/finish_summary_sheet.dart
++++ b/lib/features/workout/presentation/widgets/finish_summary_sheet.dart	
+@@ -1,38 +1,40 @@
+ import 'package:flutter/material.dart';
+ import 'package:gymlog/core/theme/app_colors.dart';
+ import 'package:gymlog/core/theme/app_text.dart';
+ import 'package:gymlog/core/theme/dynamic_accent_theme.dart';
+-import 'package:gymlog/core/utils/units.dart';
++import 'package:gymlog/core/models/workout_metric_summary.dart';
+ import 'package:gymlog/shared/widgets/ui/primary_button.dart';
+ import 'package:gymlog/shared/widgets/ui/secondary_button.dart';
+ 
+ /// The "finish" moment — a premium session recap + name field in one cohesive
+ /// sheet, replacing the bare name dialog. Shows what the user just earned
+ /// (duration / volume / sets), lets them name it, then save. PRs get their own
+ /// celebration over Home immediately after (they're computed at save time).
+ ///
+ /// Returns the trimmed workout name on Finish, or null if cancelled.
+ Future<String?> showFinishSummarySheet({
+   required BuildContext context,
+   required Duration duration,
+   required double volumeKg,
++  WorkoutMetricSummary? metricSummary,
+   required int sets,
+   required String unit,
+   required String initialName,
+ }) {
+   return showModalBottomSheet<String>(
+     context: context,
+     useRootNavigator: true,
+     isScrollControlled: true,
+     backgroundColor: Colors.transparent,
+     builder: (_) => _FinishSummarySheet(
+       duration: duration,
+       volumeKg: volumeKg,
++      metricSummary: metricSummary,
+       sets: sets,
+       unit: unit,
+       initialName: initialName,
+     ),
+   );
+ }
+ 
+ String _fmtDuration(Duration d) {
+@@ -42,23 +44,25 @@ String _fmtDuration(Duration d) {
+   if (h > 0) return '${h}h ${m}m';
+   if (m > 0) return '${m}m ${s}s';
+   return '${s}s';
+ }
+ 
+ class _FinishSummarySheet extends StatefulWidget {
+   final Duration duration;
+   final double volumeKg;
++  final WorkoutMetricSummary? metricSummary;
+   final int sets;
+   final String unit;
+   final String initialName;
+ 
+   const _FinishSummarySheet({
+     required this.duration,
+     required this.volumeKg,
++    this.metricSummary,
+     required this.sets,
+     required this.unit,
+     required this.initialName,
+   });
+ 
+   @override
+   State<_FinishSummarySheet> createState() => _FinishSummarySheetState();
+ }
+@@ -90,16 +94,23 @@ class _FinishSummarySheetState extends State<_FinishSummarySheet> {
+     if (v.isEmpty) return;
+     Navigator.of(context).pop(v);
+   }
+ 
+   @override
+   Widget build(BuildContext context) {
+     final accent = context.accent;
+     final surface = context.surface;
++    final summary = widget.metricSummary ??
++        WorkoutMetricSummary(
++            weightedVolumeKg: widget.volumeKg,
++            totalReps: 0,
++            totalDurationSeconds: 0,
++            totalDistanceMeters: 0);
++    final metricLabel = summary.primaryMetricLabel();
+     return Padding(
+       // Lift above the keyboard when the name field is focused.
+       padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom),
+       child: DecoratedBox(
+         decoration: BoxDecoration(
+           gradient: LinearGradient(
+             begin: Alignment.topCenter,
+             end: Alignment.bottomCenter,
+@@ -140,37 +151,42 @@ class _FinishSummarySheetState extends State<_FinishSummarySheet> {
+                       child: Icon(Icons.check_rounded,
+                           color: accent.base, size: 24),
+                     ),
+                     const SizedBox(width: 12),
+                     Expanded(
+                       child: Column(
+                         crossAxisAlignment: CrossAxisAlignment.start,
+                         children: [
+-                          Text('Workout complete',
++                          Text('Finish workout',
+                               style: AppText.sectionHeading()),
+                           Text('Name it and save to your history',
+                               style: AppText.caption()),
+                         ],
+                       ),
+                     ),
+                   ],
+                 ),
+                 const SizedBox(height: 22),
+                 Row(
++                  crossAxisAlignment: CrossAxisAlignment.start,
+                   children: [
+                     Expanded(
+                         child: _Stat(
+                             value: _fmtDuration(widget.duration),
+-                            label: 'DURATION')),
++                            label: 'ELAPSED')),
++                    const SizedBox(width: 12),
+                     Expanded(
+                         child: _Stat(
+                             value:
+-                                '${groupThousands(kgToDisplay(widget.volumeKg, widget.unit))} ${widget.unit}',
+-                            label: 'VOLUME')),
++                                summary.primaryMetricValue(unit: widget.unit),
++                            label: metricLabel == 'DURATION'
++                                ? 'LOGGED TIME'
++                                : metricLabel)),
++                    const SizedBox(width: 12),
+                     Expanded(
+                         child: _Stat(value: '${widget.sets}', label: 'SETS')),
+                   ],
+                 ),
+                 const SizedBox(height: 22),
+                 TextField(
+                   controller: _name,
+                   maxLength: 50,
+diff --git a/lib/features/workout/presentation/widgets/pr_celebration_overlay.dart b/lib/features/workout/presentation/widgets/pr_celebration_overlay.dart
+index d3c7e46..efc9aac 100644
+--- a/lib/features/workout/presentation/widgets/pr_celebration_overlay.dart
++++ b/lib/features/workout/presentation/widgets/pr_celebration_overlay.dart	
+@@ -1,32 +1,35 @@
+ import 'dart:math' as math;
+ 
+ import 'package:flutter/material.dart';
+ import 'package:flutter/services.dart';
+ import 'package:gymlog/core/models/personal_record.dart';
+ import 'package:gymlog/core/theme/app_colors.dart';
+ import 'package:gymlog/core/theme/app_text.dart';
+ import 'package:gymlog/core/theme/dynamic_accent_theme.dart';
++import 'package:gymlog/core/utils/units.dart';
++import 'package:gymlog/core/utils/formatters.dart';
+ 
+ /// Full-screen celebration shown when a finished workout contains PRs.
+ /// Turns a silent `is_pr = 1` database write into the app's best moment:
+ /// strong haptic, festive confetti, and the actual numbers that were beaten.
+ ///
+ /// COLOR: a PR is a FIXED celebration identity — it does NOT follow the brand
+ /// accent. The badge ring, ambient halo, CTA and confetti use the immutable
+ /// reward gold (#E6C84A), while the trophy and the beaten 1RM numbers use the
+ /// same gold. A personal record always reads as a clean, triumphant gold
+ /// moment, in every palette.
+ ///
+ /// Dependency-free — confetti is a lightweight CustomPainter, not a package.
+ Future<void> showPrCelebration(
+   BuildContext context,
+-  List<PrRecord> prs,
+-) {
++  List<PrRecord> prs, {
++  String weightUnit = 'kg',
++}) {
+   if (prs.isEmpty) return Future.value();
+   HapticFeedback.heavyImpact();
+ 
+   // Honor OS reduce-motion: no scale/fade entrance, no confetti.
+   final reduceMotion = MediaQuery.disableAnimationsOf(context);
+ 
+   return showGeneralDialog<void>(
+     context: context,
+@@ -40,25 +43,27 @@ Future<void> showPrCelebration(
+         : (_, animation, __, child) {
+             final curved =
+                 CurvedAnimation(parent: animation, curve: Curves.easeOutBack);
+             return FadeTransition(
+               opacity: animation,
+               child: ScaleTransition(scale: curved, child: child),
+             );
+           },
+-    pageBuilder: (dialogCtx, _, __) =>
+-        _PrCelebration(prs: prs, reduceMotion: reduceMotion),
++    pageBuilder: (dialogCtx, _, __) => _PrCelebration(
++        prs: prs, reduceMotion: reduceMotion, weightUnit: weightUnit),
+   );
+ }
+ 
+ class _PrCelebration extends StatefulWidget {
+   final List<PrRecord> prs;
+   final bool reduceMotion;
+-  const _PrCelebration({required this.prs, this.reduceMotion = false});
++  final String weightUnit;
++  const _PrCelebration(
++      {required this.prs, this.reduceMotion = false, required this.weightUnit});
+ 
+   @override
+   State<_PrCelebration> createState() => _PrCelebrationState();
+ }
+ 
+ class _PrCelebrationState extends State<_PrCelebration>
+     with SingleTickerProviderStateMixin {
+   late final AnimationController _confetti = AnimationController(
+@@ -100,16 +105,17 @@ class _PrCelebrationState extends State<_PrCelebration>
+               ),
+             ),
+           ),
+ 
+         // ── Card ───────────────────────────────────────────────
+         Center(
+           child: PrCelebrationCard(
+             prs: widget.prs,
++            weightUnit: widget.weightUnit,
+             onKeepGoing: () {
+               HapticFeedback.mediumImpact();
+               Navigator.of(context).pop();
+             },
+           ),
+         ),
+       ],
+     );
+@@ -122,26 +128,64 @@ class _PrCelebrationState extends State<_PrCelebration>
+ /// - Fits ANY viewport: `SafeArea` + a max-height constraint keep the card
+ ///   inside the screen (insets included), so short phones, landscape, large
+ ///   text scales and edge-to-edge 3-button nav bars can never clip it.
+ /// - The PR list scrolls inside a `Flexible` region; the "Keep Going" CTA is
+ ///   pinned below it and always visible.
+ class PrCelebrationCard extends StatelessWidget {
+   final List<PrRecord> prs;
+   final VoidCallback onKeepGoing;
++  final String weightUnit;
+ 
+   const PrCelebrationCard({
+     super.key,
+     required this.prs,
+     required this.onKeepGoing,
++    this.weightUnit = 'kg',
+   });
+ 
+-  String _fmtKg(double kg) => kg == kg.truncateToDouble()
+-      ? kg.toInt().toString()
+-      : kg.toStringAsFixed(1);
++  String _weightUnit({bool spoken = false}) => spoken
++      ? (weightUnit == 'lbs' ? 'pounds' : 'kilograms')
++      : unitLabel(weightUnit);
++
++  String _recordLabel(PrRecord pr) => switch (pr.type) {
++        PersonalRecordType.estimatedOneRepMax => 'Estimated 1RM',
++        PersonalRecordType.maxWeight => 'Max weight',
++        PersonalRecordType.maxReps => 'Max reps',
++        PersonalRecordType.maxDuration => 'Max hold',
++        PersonalRecordType.maxDistance => 'Max distance',
++        PersonalRecordType.bestPace => 'Best pace',
++      };
++
++  String _recordValue(PrRecord pr, double value, {bool spoken = false}) {
++    if (pr.type == PersonalRecordType.bestPace) {
++      return MeasurementFormatter.formatPaceFromSecondsPerMeter(value,
++          spoken: spoken);
++    }
++    if (pr.type == PersonalRecordType.estimatedOneRepMax ||
++        pr.type == PersonalRecordType.maxWeight) {
++      return '${formatWeight(value, weightUnit)} ${_weightUnit(spoken: spoken)}';
++    }
++    return '${value == value.truncateToDouble() ? value.toInt() : value.toStringAsFixed(1)} ${pr.unit}';
++  }
++
++  String _loggedSet(PrRecord pr, {bool spoken = false}) {
++    final reps = pr.loggedReps;
++    final load = pr.loggedWeightKg;
++    if (reps == null) return 'Logged set unavailable';
++    if (pr.type == PersonalRecordType.maxDistance ||
++        pr.type == PersonalRecordType.bestPace) {
++      return 'Logged: ${load ?? 0} m · $reps s';
++    }
++    if (pr.type == PersonalRecordType.maxDuration) {
++      return 'Logged: $reps s hold';
++    }
++    if (load == null) return 'Logged: $reps reps';
++    return 'Logged: ${formatWeight(load, weightUnit)} ${_weightUnit(spoken: spoken)} ${spoken ? 'for' : '×'} $reps reps';
++  }
+ 
+   @override
+   Widget build(BuildContext context) {
+     final title = prs.length == 1
+         ? 'New Personal Record!'
+         : '${prs.length} New Personal Records!';
+     final accent = context.accent;
+     final surface = context.surface;
+@@ -211,17 +255,17 @@ class PrCelebrationCard extends StatelessWidget {
+                   // scales on narrow phones the card must still fit its
+                   // viewport, so wrap to at most 3 lines.
+                   maxLines: 3,
+                   overflow: TextOverflow.ellipsis,
+                   style: AppText.sectionHeading(color: surface.textPrimary),
+                 ),
+                 const SizedBox(height: 4),
+                 Text(
+-                  'Stronger than every session before it.',
++                  'A new record in your logged history.',
+                   maxLines: 2,
+                   overflow: TextOverflow.ellipsis,
+                   style: AppText.meta(color: surface.textSecondary),
+                 ),
+                 const SizedBox(height: 20),
+ 
+                 // ── PR rows: the list area is flexible — when the viewport is
+                 //    short it shrinks and the list scrolls; when there's room
+@@ -231,20 +275,20 @@ class PrCelebrationCard extends StatelessWidget {
+                 Flexible(
+                   child: ConstrainedBox(
+                     constraints: const BoxConstraints(maxHeight: 240),
+                     child: SingleChildScrollView(
+                       child: Column(
+                         children: [
+                           for (final pr in prs)
+                             Semantics(
+-                              label: '${pr.exerciseName}: '
+-                                  '${_fmtKg(pr.weightKg)} kilograms for ${pr.reps} reps, '
+-                                  'estimated one-rep max ${_fmtKg(pr.estimated1rm)} kilograms'
+-                                  '${pr.previousBest1rm > 0 ? ', up from ${_fmtKg(pr.previousBest1rm)} kilograms' : ', first record'}',
++                              label:
++                                  '${pr.exerciseName}: ${_recordLabel(pr)}, ${_recordValue(pr, pr.value, spoken: true)}. '
++                                  '${_loggedSet(pr, spoken: true)}. '
++                                  '${pr.previousValue != null ? 'Previous: ${_recordValue(pr, pr.previousValue!, spoken: true)}' : 'First recorded result'}',
+                               excludeSemantics: true,
+                               child: Padding(
+                                 padding: const EdgeInsets.only(bottom: 10),
+                                 child: Container(
+                                   padding: const EdgeInsets.symmetric(
+                                       horizontal: 14, vertical: 12),
+                                   decoration: BoxDecoration(
+                                     color: surface.surface3,
+@@ -254,45 +298,49 @@ class PrCelebrationCard extends StatelessWidget {
+                                     children: [
+                                       Expanded(
+                                         child: Column(
+                                           crossAxisAlignment:
+                                               CrossAxisAlignment.start,
+                                           children: [
+                                             Text(
+                                               pr.exerciseName,
+-                                              maxLines: 1,
++                                              maxLines: 2,
+                                               overflow: TextOverflow.ellipsis,
+                                               style: AppText.rowLabel(
+                                                   color: surface.textPrimary),
+                                             ),
+                                             const SizedBox(height: 2),
+                                             Text(
+-                                              '${_fmtKg(pr.weightKg)} kg × ${pr.reps} reps',
++                                              _loggedSet(pr),
+                                               style: AppText.caption(
+                                                   color: surface.textSecondary),
+                                             ),
+                                           ],
+                                         ),
+                                       ),
+                                       Column(
+                                         crossAxisAlignment:
+                                             CrossAxisAlignment.end,
+                                         children: [
++                                          Text(_recordLabel(pr),
++                                              style: AppText.caption(
++                                                  color:
++                                                      surface.textSecondary)),
+                                           // The beaten 1RM — the headline
+                                           // number — in active accent.
+                                           Text(
+-                                            '${_fmtKg(pr.estimated1rm)} kg',
++                                            _recordValue(pr, pr.value),
+                                             style: AppText.value(
+                                                 color: accent.base),
+                                           ),
+                                           Text(
+-                                            pr.previousBest1rm > 0
+-                                                ? 'prev ${_fmtKg(pr.previousBest1rm)} kg'
+-                                                : 'first 1RM',
++                                            pr.previousValue != null
++                                                ? 'prev ${_recordValue(pr, pr.previousValue!)}'
++                                                : 'first record',
+                                             style: AppText.caption(
+                                                 color: surface.textSecondary),
+                                           ),
+                                         ],
+                                       ),
+                                     ],
+                                   ),
+                                 ),
+diff --git a/lib/features/workout/presentation/widgets/share_card/share_card_monument.dart b/lib/features/workout/presentation/widgets/share_card/share_card_monument.dart
+index 981ffb6..f2d07c6 100644
+--- a/lib/features/workout/presentation/widgets/share_card/share_card_monument.dart
++++ b/lib/features/workout/presentation/widgets/share_card/share_card_monument.dart	
+@@ -74,17 +74,17 @@ class ShareCardMonument extends StatelessWidget {
+                         mainAxisSize: MainAxisSize.min,
+                         children: [
+                           const CustomPaint(
+                             size: Size(13, 13),
+                             painter: _TrophyGlyphPainter(color: kRewardGold),
+                           ),
+                           const SizedBox(width: 6),
+                           Text(
+-                            data.prType.label,
++                            data.metricLabel.toUpperCase(),
+                             style: AppText.badge(
+                               color: kRewardGold,
+                             ).copyWith(
+                               fontSize: 10,
+                               fontWeight: FontWeight.w700,
+                               letterSpacing: 1.0,
+                             ),
+                           ),
+@@ -144,21 +144,17 @@ class ShareCardMonument extends StatelessWidget {
+                               fontWeight: FontWeight.w700,
+                               color: AppColors.textPrimary,
+                               fontFeatures: [FontFeature.tabularFigures()],
+                               letterSpacing: -1.5,
+                             ),
+                           ),
+                           const SizedBox(width: 8),
+                           Text(
+-                            data.reps != null &&
+-                                    data.reps! > 0 &&
+-                                    data.unit != 'REPS'
+-                                ? '${data.unit} × ${data.reps}'
+-                                : data.unit,
++                            data.heroUnit,
+                             style: const TextStyle(
+                               fontFamily: 'Inter',
+                               fontSize: 24,
+                               fontWeight: FontWeight.w600,
+                               color: AppColors.textSecondary,
+                               fontFeatures: [FontFeature.tabularFigures()],
+                               letterSpacing: 0.5,
+                             ),
+@@ -172,17 +168,17 @@ class ShareCardMonument extends StatelessWidget {
+                     Container(
+                       padding: const EdgeInsets.symmetric(
+                           horizontal: 10, vertical: 3),
+                       decoration: BoxDecoration(
+                         color: AppColors.surface3,
+                         borderRadius: BorderRadius.circular(6),
+                       ),
+                       child: Text(
+-                        data.deltaText,
++                        data.contextText,
+                         style: AppText.caption(
+                           color: accent.light,
+                         ).copyWith(
+                           fontSize: 11.5,
+                           fontWeight: FontWeight.w600,
+                           fontFeatures: const [FontFeature.tabularFigures()],
+                         ),
+                       ),
+diff --git a/lib/features/workout/presentation/widgets/share_card/share_card_sticker.dart b/lib/features/workout/presentation/widgets/share_card/share_card_sticker.dart
+index 1fcec2a..a541d04 100644
+--- a/lib/features/workout/presentation/widgets/share_card/share_card_sticker.dart
++++ b/lib/features/workout/presentation/widgets/share_card/share_card_sticker.dart	
+@@ -77,17 +77,17 @@ class ShareCardSticker extends StatelessWidget {
+                         mainAxisSize: MainAxisSize.min,
+                         children: [
+                           const CustomPaint(
+                             size: Size(13, 13),
+                             painter: _TrophyGlyphPainter(color: kRewardGold),
+                           ),
+                           const SizedBox(width: 5),
+                           Text(
+-                            data.prType.label,
++                            data.metricLabel.toUpperCase(),
+                             style: AppText.badge(
+                               color: kRewardGold,
+                             ).copyWith(
+                               fontSize: 9.5,
+                               fontWeight: FontWeight.w700,
+                               letterSpacing: 0.8,
+                             ),
+                           ),
+@@ -142,21 +142,17 @@ class ShareCardSticker extends StatelessWidget {
+                           fontWeight: FontWeight.w700,
+                           color: AppColors.textPrimary,
+                           fontFeatures: [FontFeature.tabularFigures()],
+                           letterSpacing: -1.2,
+                         ),
+                       ),
+                       const SizedBox(width: 8),
+                       Text(
+-                        data.reps != null &&
+-                                data.reps! > 0 &&
+-                                data.unit != 'REPS'
+-                            ? '${data.unit} × ${data.reps}'
+-                            : data.unit,
++                        data.heroUnit,
+                         style: TextStyle(
+                           fontFamily: 'Inter',
+                           fontSize: 22,
+                           fontWeight: FontWeight.w600,
+                           color: accent.light,
+                           fontFeatures: const [FontFeature.tabularFigures()],
+                         ),
+                       ),
+@@ -173,17 +169,17 @@ class ShareCardSticker extends StatelessWidget {
+                     color: AppColors.surface3,
+                     borderRadius: BorderRadius.circular(6),
+                     border: Border.all(
+                       color: AppColors.borderSubtle,
+                       width: 1,
+                     ),
+                   ),
+                   child: Text(
+-                    data.deltaText,
++                    data.contextText,
+                     style: AppText.caption(
+                       color: AppColors.textPrimary,
+                     ).copyWith(
+                       fontSize: 11,
+                       fontWeight: FontWeight.w600,
+                       fontFeatures: const [FontFeature.tabularFigures()],
+                     ),
+                   ),
+@@ -193,17 +189,17 @@ class ShareCardSticker extends StatelessWidget {
+                 // ── Integrated Micro-Watermark ─────────────────────────────
+                 const Divider(
+                   color: AppColors.borderSubtle,
+                   height: 1,
+                   thickness: 1,
+                 ),
+                 const SizedBox(height: 10),
+                 const ShareCardWatermark(
+-                  subtitle: 'VERIFIED ON-DEVICE',
++                  subtitle: 'LOGGED RESULT',
+                 ),
+               ],
+             ),
+           ),
+         ],
+       ),
+     );
+   }
+diff --git a/lib/features/workout/presentation/widgets/share_card/share_card_technical.dart b/lib/features/workout/presentation/widgets/share_card/share_card_technical.dart
+index b722b6e..377f9b6 100644
+--- a/lib/features/workout/presentation/widgets/share_card/share_card_technical.dart
++++ b/lib/features/workout/presentation/widgets/share_card/share_card_technical.dart	
+@@ -80,17 +80,17 @@ class ShareCardTechnical extends StatelessWidget {
+                         children: [
+                           const Icon(
+                             Icons.military_tech_rounded,
+                             size: 13,
+                             color: kRewardGold,
+                           ),
+                           const SizedBox(width: 4),
+                           Text(
+-                            data.prType.label,
++                            data.metricLabel.toUpperCase(),
+                             style: AppText.badge(
+                               color: kRewardGold,
+                             ).copyWith(
+                               fontSize: 9.5,
+                               letterSpacing: 0.8,
+                               fontWeight: FontWeight.w700,
+                             ),
+                           ),
+@@ -164,37 +164,33 @@ class ShareCardTechnical extends StatelessWidget {
+                                     fontFeatures: [
+                                       FontFeature.tabularFigures()
+                                     ],
+                                     letterSpacing: -1.0,
+                                   ),
+                                 ),
+                                 const SizedBox(width: 6),
+                                 Text(
+-                                  data.reps != null &&
+-                                          data.reps! > 0 &&
+-                                          data.unit != 'REPS'
+-                                      ? '${data.unit} × ${data.reps}'
+-                                      : data.unit,
++                                  data.heroUnit,
+                                   style: TextStyle(
+                                     fontFamily: 'Inter',
+                                     fontSize: 20,
+                                     fontWeight: FontWeight.w600,
+                                     color: accent.light,
+                                     fontFeatures: const [
+                                       FontFeature.tabularFigures()
+                                     ],
+                                   ),
+                                 ),
+                               ],
+                             ),
+                           ),
+                           const SizedBox(height: 6),
+                           Text(
+-                            data.deltaText,
++                            data.contextText,
+                             style: AppText.caption(
+                               color: AppColors.textSecondary,
+                             ).copyWith(
+                               fontSize: 11,
+                               fontWeight: FontWeight.w500,
+                               fontFeatures: const [
+                                 FontFeature.tabularFigures()
+                               ],
+@@ -270,17 +266,17 @@ class ShareCardTechnical extends StatelessWidget {
+                             Text(
+                               data.streakDays != null
+                                   ? '${data.streakDays} DAYS'
+                                   : data.totalVolumeKg != null
+                                       ? '${data.totalVolumeKg!.toInt()} KG'
+                                       : (data.privacy.showBodyweight &&
+                                               data.bodyweightKg != null)
+                                           ? 'BW ${data.bodyweightKg!.toStringAsFixed(1)} KG'
+-                                          : 'OFFICIAL RECORD',
++                                          : 'LOGGED RECORD',
+                               style: AppText.statValue(
+                                 color: accent.light,
+                               ).copyWith(
+                                 fontSize: 11,
+                                 fontWeight: FontWeight.w700,
+                                 fontFeatures: const [
+                                   FontFeature.tabularFigures()
+                                 ],
+diff --git a/test/analytics/metric_aware_pr_test.dart b/test/analytics/metric_aware_pr_test.dart
+index 8f410d5..5b86937 100644
+--- a/test/analytics/metric_aware_pr_test.dart
++++ b/test/analytics/metric_aware_pr_test.dart	
+@@ -26,17 +26,18 @@ void main() {
+         value: 100.0,
+         unit: 'kg',
+         setId: 'set-1',
+         previousValue: 90.0,
+       );
+ 
+       expect(pr.estimated1rm, equals(100.0));
+       expect(pr.previousBest1rm, equals(90.0));
+-      expect(pr.weightKg, equals(100.0));
++      // The estimate is not evidence of the weight used in its logged set.
++      expect(pr.weightKg, equals(0.0));
+     });
+ 
+     test(
+         'MeasurementFormatter formats all canonical MeasurementTypes correctly',
+         () {
+       expect(
+         MeasurementFormatter.formatSet(
+           measurementType: MeasurementType.weightAndReps,
+diff --git a/test/workout_metric_summary_test.dart b/test/workout_metric_summary_test.dart
+index c722fa6..e26512a 100644
+--- a/test/workout_metric_summary_test.dart
++++ b/test/workout_metric_summary_test.dart	
+@@ -10,17 +10,17 @@ void main() {
+         weightedVolumeKg: 1250.0,
+         totalReps: 50,
+         totalDurationSeconds: 1800,
+         totalDistanceMeters: 0.0,
+       );
+ 
+       expect(summary.hasWeightedVolume, isTrue);
+       expect(summary.primaryMetricLabel(), equals('VOLUME'));
+-      expect(summary.primaryMetricValue(unit: 'kg'), equals('1250 kg'));
++      expect(summary.primaryMetricValue(unit: 'kg'), equals('1,250 kg'));
+     });
+ 
+     test(
+         'reps-only / bodyweight workout projects REPS instead of volume default',
+         () {
+       const summary = WorkoutMetricSummary(
+         weightedVolumeKg: 0.0,
+         totalReps: 75,
+diff --git a/test/upgrade/session_1_correctness_test.dart b/test/upgrade/session_1_correctness_test.dart
+new file mode 100644
+index 0000000..5ef38e8
+--- /dev/null
++++ b/test/upgrade/session_1_correctness_test.dart	
+@@ -0,0 +1,298 @@
++import 'package:flutter/material.dart';
++import 'package:flutter_test/flutter_test.dart';
++import 'package:drift/drift.dart' show Value;
++import 'package:gymlog/shared/widgets/branded_line_chart.dart';
++import 'package:gymlog/core/theme/app_colors.dart';
++import 'package:gymlog/core/theme/theme_palette.dart';
++import 'package:gymlog/core/utils/units.dart';
++import 'package:shared_preferences/shared_preferences.dart';
++import 'package:drift/native.dart';
++import 'package:flutter_riverpod/flutter_riverpod.dart';
++import 'package:flutter_secure_storage/flutter_secure_storage.dart';
++import 'package:gymlog/core/database/database.dart';
++import 'package:gymlog/core/providers/database_provider.dart';
++import 'package:gymlog/core/models/pr_card_data.dart';
++import 'package:gymlog/core/models/personal_record.dart';
++import 'package:gymlog/features/auth/presentation/providers/auth_provider.dart';
++import 'package:gymlog/features/workout/domain/active_workout_state.dart';
++import 'package:gymlog/features/workout/presentation/providers/active_workout_provider.dart';
++import 'session_1_fixtures.dart';
++
++double contrast(Color foreground, Color background) {
++  final ink = Color.alphaBlend(foreground, background).computeLuminance();
++  final backing = background.computeLuminance();
++  return ((ink > backing ? ink : backing) + .05) /
++      ((ink > backing ? backing : ink) + .05);
++}
++
++void main() {
++  setUp(() => SharedPreferences.setMockInitialValues({}));
++  for (final palette in ThemePalette.values) {
++    test('${palette.name}: composed tertiary text and chart ticks meet 4.5:1',
++        () {
++      const s = SurfaceTokens.dark;
++      for (final background in [
++        s.bgBase,
++        s.bgSurface,
++        s.surface2,
++        s.surface3,
++        s.surface4,
++        Color.alphaBlend(palette.tokens.muted, s.surface3),
++        Color.alphaBlend(palette.tokens.glow, s.surface2),
++        Color.alphaBlend(AppColors.successTint, s.surface3),
++        Color.alphaBlend(AppColors.warningTint, s.surface3)
++      ]) {
++        for (final ink in [
++          s.textTertiary,
++          AppColors.chartAxisLabel,
++          AppColors.profileGraphAxisLabel
++        ]) {
++          expect(contrast(ink, background), greaterThanOrEqualTo(4.5),
++              reason: 'Composed foreground $ink on $background');
++        }
++      }
++    });
++    test(
++        '${palette.name}: solid accent label meets 4.5:1',
++        () => expect(contrast(palette.tokens.onAccent, palette.tokens.base),
++            greaterThanOrEqualTo(4.5)));
++  }
++  test(
++      'summary uses the existing display conversion for pounds',
++      () => expect(fixtureSummary('weighted').primaryMetricValue(unit: 'lbs'),
++          formatVolume(476, 'lbs')));
++  test('summary preserves logged hold seconds',
++      () => expect(fixtureSummary('timed').primaryMetricValue(), '1m 15s'));
++  test('short distance summary preserves metres',
++      () => expect(fixtureSummary('distance').primaryMetricValue(), '400 m'));
++  test('an estimated record value is not its logged weight', () {
++    const record = PersonalRecord(
++        type: PersonalRecordType.estimatedOneRepMax,
++        exerciseId: 42,
++        exerciseName: 'Bench',
++        value: 100,
++        unit: 'kg',
++        setId: 'old-without-evidence');
++    expect(record.weightKg, 0);
++    expect(fixturePr.weightKg, 75);
++  });
++  test(
++      'estimated share hero never implies the estimate was lifted for seven reps',
++      () {
++    final card = PrCardData(
++        exerciseName: 'Bench',
++        prType: PrCardType.estimated1rm,
++        heroValue: '100',
++        unit: 'KG',
++        reps: 7,
++        deltaText: '+5 kg',
++        date: fixtureDate);
++    expect(card.heroDisplay, '100 KG');
++  });
++  test('a timed PR shares seconds once, without a rep multiplier', () {
++    const record = PersonalRecord(
++        type: PersonalRecordType.maxDuration,
++        exerciseId: 42,
++        exerciseName: 'Plank',
++        value: 75,
++        unit: 's',
++        setId: 'hold',
++        loggedReps: 75);
++    final card = PrCardData.fromPersonalRecord(
++        pr: record, sessionDate: fixtureDate, isImperial: true);
++    expect(card.heroDisplay, '75 SEC');
++  });
++  test('distance and pace PR shares preserve their recorded dimensions', () {
++    for (final record in [
++      const PersonalRecord(
++          type: PersonalRecordType.maxDistance,
++          exerciseId: 42,
++          exerciseName: 'Run',
++          value: 400,
++          unit: 'm',
++          setId: 'run',
++          loggedWeightKg: 400,
++          loggedReps: 75),
++      const PersonalRecord(
++          type: PersonalRecordType.bestPace,
++          exerciseId: 42,
++          exerciseName: 'Run',
++          value: 0.1875,
++          unit: 's/m',
++          setId: 'run',
++          loggedWeightKg: 400,
++          loggedReps: 75)
++    ]) {
++      final card = PrCardData.fromPersonalRecord(
++          pr: record, sessionDate: fixtureDate, isImperial: true);
++      expect(
++          card.unit, record.type == PersonalRecordType.bestPace ? '/KM' : 'M');
++      expect(card.heroDisplay, isNot(contains('×')));
++      expect(
++          card.metricLabel,
++          record.type == PersonalRecordType.maxDistance
++              ? 'MAX DISTANCE'
++              : 'BEST PACE');
++    }
++  });
++  test('pace exports preserve actual DAO seconds-per-metre precision', () {
++    final card = PrCardData.fromPersonalRecord(
++        pr: fixturePacePr, sessionDate: fixtureDate, isImperial: true);
++    expect(card.heroDisplay, '3:08 /KM');
++    final faster = PrCardData.fromPersonalRecord(
++        pr: const PersonalRecord(
++            type: PersonalRecordType.bestPace,
++            exerciseId: 44,
++            exerciseName: 'Run',
++            value: 0.1775,
++            unit: 's/m',
++            setId: 'faster'),
++        sessionDate: fixtureDate);
++    expect(faster.heroDisplay, '2:58 /KM');
++    expect(faster.heroDisplay, isNot(card.heroDisplay));
++  });
++  testWidgets('pace celebration converts current and previous spoken pace',
++      (tester) async {
++    final semantics = tester.ensureSemantics();
++    await tester.pumpWidget(fixtureApp('pr-pace', ThemePalette.higgsfield, 1));
++    await tester.pumpAndSettle();
++    expect(find.text('3:08 /km'), findsOneWidget);
++    expect(find.text('prev 3:20 /km'), findsOneWidget);
++    expect(
++        find.bySemanticsLabel(RegExp(
++            'Best pace, 3 minutes 8 seconds per kilometre.*Previous: 3 minutes 20 seconds per kilometre')),
++        findsOneWidget);
++    semantics.dispose();
++  });
++  test('distance metres times seconds never become weighted session volume',
++      () async {
++    FlutterSecureStorage.setMockInitialValues({});
++    final db = AppDatabase.forTesting(NativeDatabase.memory());
++    final container = ProviderContainer(overrides: [
++      databaseProvider.overrideWithValue(db),
++      authProvider.overrideWithValue(null)
++    ]);
++    final notifier = container.read(activeWorkoutProvider.notifier);
++    await notifier.startWorkout(name: 'Distance', initialExercises: [
++      const WorkoutExerciseState(
++          id: 'run',
++          exerciseId: 42,
++          name: 'Run',
++          measurementType: 'distance',
++          sets: [
++            WorkoutSetState(id: 's', weightKg: 400, reps: 75, isCompleted: true)
++          ])
++    ]);
++    expect(notifier.sessionTotals, (0.0, 1));
++    expect(container.read(sessionTotalsProvider), (0.0, 1));
++    container.dispose();
++    await db.close();
++  });
++  testWidgets('workout detail volume converts once to pounds', (tester) async {
++    await tester.pumpWidget(fixtureApp('detail', ThemePalette.higgsfield, 1));
++    await tester.pumpAndSettle();
++    expect(find.text(formatVolume(476, 'lbs')), findsOneWidget);
++    expect(find.text('476 kg'), findsNothing);
++  });
++  testWidgets(
++      'PR exports describe recorded results without certification claims',
++      (tester) async {
++    for (final variant in ['technical', 'sticker']) {
++      await tester
++          .pumpWidget(fixtureApp('share-$variant', ThemePalette.higgsfield, 1));
++      await tester.pumpAndSettle();
++      expect(find.text('OFFICIAL RECORD'), findsNothing);
++      expect(find.text('VERIFIED ON-DEVICE'), findsNothing);
++    }
++  });
++  testWidgets('missing 1RM estimate never borrows the logged weight',
++      (tester) async {
++    await tester.pumpWidget(
++        fixtureApp('exercise-no-estimate', ThemePalette.higgsfield, 1));
++    await tester.pumpAndSettle();
++    final chart =
++        tester.widget<BrandedLineChart>(find.byType(BrandedLineChart));
++    expect(chart.data, isEmpty);
++    expect(chart.emptyTitle, 'No estimate available');
++    expect(chart.emptySubtitle, contains('Heaviest Weight'));
++    expect(chart.emptySubtitle, contains('Total Reps'));
++  });
++  test(
++      'editing distance workout does not persist metres times seconds as kg volume',
++      () async {
++    final db = AppDatabase.forTesting(NativeDatabase.memory());
++    try {
++      await db.into(db.exercises).insert(ExercisesCompanion.insert(
++          id: const Value(42),
++          name: 'Run',
++          bodyPart: 'Legs',
++          equipment: 'Bodyweight',
++          target: 'Legs',
++          measurementType: const Value('distance')));
++      await db.workoutsDao.insertSession(WorkoutSessionsCompanion.insert(
++          id: const Value('edit'),
++          userId: 'fixture',
++          name: const Value('Run'),
++          startedAt: fixtureDate));
++      await db.workoutsDao.updateHistoricalWorkout(ActiveWorkoutState(
++          id: 'edit',
++          name: 'Run',
++          startTime: fixtureDate,
++          originalSessionId: 'edit',
++          exercises: const [
++            WorkoutExerciseState(
++                id: 'run',
++                exerciseId: 42,
++                name: 'Run',
++                measurementType: 'distance',
++                sets: [
++                  WorkoutSetState(
++                      id: 's', weightKg: 400, reps: 75, isCompleted: true)
++                ])
++          ]));
++      expect((await db.workoutsDao.getSession('edit')).totalVolumeKg, 0);
++    } finally {
++      await db.close();
++    }
++  });
++  testWidgets(
++      'PR visibly labels the estimate and does not invent zero-rep logged set',
++      (tester) async {
++    await tester.pumpWidget(fixtureApp('pr', ThemePalette.higgsfield, 1));
++    await tester.pumpAndSettle();
++    expect(find.textContaining('Estimated 1RM'), findsWidgets);
++    expect(find.textContaining('× 0 reps'), findsNothing);
++    final spoken = tester
++        .widgetList<Semantics>(find.byType(Semantics))
++        .map((s) => s.properties.label ?? '')
++        .join(' ');
++    expect(spoken, contains('220.5 pounds'));
++    expect(spoken, contains('165.3 pounds for 10 reps'));
++    expect(spoken, isNot(contains('100 kilograms')));
++  });
++  testWidgets('finish review does not announce completion before save',
++      (tester) async {
++    await tester
++        .pumpWidget(fixtureApp('finish-timed', ThemePalette.higgsfield, 1));
++    await tester.pumpAndSettle();
++    tester
++        .widget<TextButton>(find.widgetWithText(TextButton, 'Open summary'))
++        .onPressed!();
++    await tester.pumpAndSettle();
++    expect(find.text('Finish workout'), findsOneWidget);
++    expect(find.text('Workout complete'), findsNothing);
++  });
++  testWidgets(
++      'volume and duration changes use neutral color with their direction intact',
++      (tester) async {
++    await tester.pumpWidget(fixtureApp('progress', ThemePalette.higgsfield, 1));
++    await tester.pumpAndSettle();
++    final labels = tester
++        .widgetList<Text>(find.byType(Text))
++        .where((t) => t.data?.contains('%') ?? false);
++    expect(labels, isNotEmpty);
++    for (final label in labels) {
++      expect(label.style?.color, SurfaceTokens.dark.textSecondary);
++    }
++  });
++}
+diff --git a/test/upgrade/session_1_fixtures.dart b/test/upgrade/session_1_fixtures.dart
+new file mode 100644
+index 0000000..0afcd0f
+--- /dev/null
++++ b/test/upgrade/session_1_fixtures.dart	
+@@ -0,0 +1,270 @@
++import 'package:flutter/material.dart';
++import 'package:flutter_riverpod/flutter_riverpod.dart';
++import 'package:gymlog/core/database/database.dart';
++import 'package:gymlog/core/database/daos/workouts_dao.dart';
++import 'package:gymlog/core/models/personal_record.dart';
++import 'package:gymlog/core/models/pr_card_data.dart';
++import 'package:gymlog/core/models/workout_metric_summary.dart';
++import 'package:gymlog/core/providers/settings_provider.dart';
++import 'package:gymlog/core/providers/premium_provider.dart';
++import 'package:gymlog/core/theme/app_colors.dart';
++import 'package:gymlog/core/theme/app_text.dart';
++import 'package:gymlog/core/theme/app_theme.dart';
++import 'package:gymlog/core/theme/theme_palette.dart';
++import 'package:gymlog/features/auth/presentation/providers/auth_provider.dart';
++import 'package:gymlog/features/exercises/presentation/providers/exercise_analytics_provider.dart';
++import 'package:gymlog/features/exercises/presentation/screens/exercise_detail_screen.dart';
++import 'package:gymlog/features/profile/presentation/providers/profile_stats_provider.dart';
++import 'package:gymlog/features/profile/presentation/widgets/graph_kpi_header.dart';
++import 'package:gymlog/features/profile/presentation/widgets/weekly_bar_chart.dart';
++import 'package:gymlog/features/workout/presentation/providers/workout_detail_provider.dart';
++import 'package:gymlog/features/workout/presentation/screens/workout_detail_screen.dart';
++import 'package:gymlog/features/workout/presentation/widgets/active_workout_header.dart';
++import 'package:gymlog/features/workout/presentation/widgets/finish_summary_sheet.dart';
++import 'package:gymlog/features/workout/presentation/widgets/pr_celebration_overlay.dart';
++import 'package:gymlog/features/workout/presentation/widgets/share_card/delt_share_card.dart';
++import 'package:gymlog/shared/widgets/async_error_state.dart';
++
++final fixtureDate = DateTime(2026, 9, 28, 18);
++const fixtureExercise = Exercise(
++    id: 42,
++    name: 'Bench Press',
++    bodyPart: 'Chest',
++    equipment: 'Barbell',
++    target: 'Chest',
++    measurementType: 'weight_and_reps',
++    isCustom: false);
++final fixtureWorkout = HydratedWorkout(
++    session: WorkoutSession(
++        id: 'fixture',
++        userId: 'fixture',
++        name: 'Push A',
++        startedAt: fixtureDate,
++        endedAt: fixtureDate.add(const Duration(minutes: 24)),
++        notes: '',
++        totalVolumeKg: 476,
++        synced: false),
++    exercises: const []);
++const fixturePr = PersonalRecord(
++    type: PersonalRecordType.estimatedOneRepMax,
++    exerciseId: 42,
++    exerciseName: 'Bench Press',
++    value: 100,
++    unit: 'kg',
++    setId: 'fixture-set',
++    previousValue: 95,
++    loggedWeightKg: 75,
++    loggedReps: 10);
++const fixtureHoldPr = PersonalRecord(
++    type: PersonalRecordType.maxDuration,
++    exerciseId: 43,
++    exerciseName: 'Plank',
++    value: 75,
++    unit: 's',
++    setId: 'hold',
++    loggedReps: 75);
++const fixtureDistancePr = PersonalRecord(
++    type: PersonalRecordType.maxDistance,
++    exerciseId: 44,
++    exerciseName: 'Run',
++    value: 400,
++    unit: 'm',
++    setId: 'run',
++    loggedWeightKg: 400,
++    loggedReps: 75);
++const fixturePacePr = PersonalRecord(
++    type: PersonalRecordType.bestPace,
++    exerciseId: 44,
++    exerciseName: 'Run',
++    value: 0.1875,
++    unit: 's/m',
++    setId: 'run',
++    previousValue: 0.2,
++    loggedWeightKg: 400,
++    loggedReps: 75);
++
++WorkoutMetricSummary fixtureSummary(String kind) => WorkoutMetricSummary(
++    weightedVolumeKg: kind == 'weighted' ? 476 : 0,
++    totalReps: kind == 'reps'
++        ? 15
++        : kind == 'weighted'
++            ? 7
++            : 0,
++    totalDurationSeconds: kind == 'timed' ? 75 : 0,
++    totalDistanceMeters: kind == 'distance' ? 400 : 0);
++
++List<WeeklyAggregate> fixtureWeeks({int count = 4, bool down = false}) =>
++    List.generate(
++        count,
++        (i) => WeeklyAggregate(
++            weekStart:
++                fixtureDate.subtract(Duration(days: (count - i - 1) * 7)),
++            volumeKg: down ? 1000.0 - i * 100 : 500.0 + i * 100,
++            totalReps: 30 + i * 5,
++            duration: Duration(minutes: down ? 60 - i * 5 : 30 + i * 5),
++            workoutCount: 2));
++
++Widget fixtureHeader(String kind) => ActiveWorkoutHeader(
++    isEditing: false,
++    workoutName: 'Push A',
++    elapsedTime: '00:24:00',
++    volumeKg: fixtureSummary(kind).weightedVolumeKg,
++    metricSummary: fixtureSummary(kind),
++    completedSets: kind == 'empty' ? 0 : 1,
++    weightUnit: 'lbs',
++    finishEnabled: kind != 'empty',
++    onMinimize: () {},
++    onClose: () {},
++    onFinish: () {});
++
++Widget fixtureBody(String name) {
++  if (name.startsWith('share-')) {
++    final variant = ShareCardVariant.values
++        .firstWhere((v) => v.name == name.split('-').last);
++    final record = name.startsWith('share-duration-')
++        ? fixtureHoldPr
++        : name.startsWith('share-distance-')
++            ? fixtureDistancePr
++            : name.startsWith('share-pace-')
++                ? fixturePacePr
++                : fixturePr;
++    return Scaffold(
++        body: Center(
++            child: DeltShareCard(
++                data: PrCardData.fromPersonalRecord(
++                    pr: record, sessionDate: fixtureDate, isImperial: true),
++                variant: variant)));
++  }
++  if (name.startsWith('header-')) {
++    return Builder(
++        builder: (context) => Scaffold(
++            backgroundColor: context.surface.bgBase,
++            body: fixtureHeader(name.substring(7))));
++  }
++  if (name == 'pr' || name == 'pr-pace') {
++    return Scaffold(
++        body: Center(
++            child: PrCelebrationCard(
++                prs: [name == 'pr-pace' ? fixturePacePr : fixturePr],
++                weightUnit: 'lbs',
++                onKeepGoing: () {})));
++  }
++  if (name == 'detail' || name == 'detail-error' || name == 'detail-empty') {
++    return const WorkoutDetailScreen(sessionId: 'fixture');
++  }
++  if (name == 'exercise' || name == 'exercise-no-estimate') {
++    return const ExerciseDetailScreen(
++        exerciseId: 42, exercise: fixtureExercise);
++  }
++  if (name.startsWith('progress')) {
++    final weeks = fixtureWeeks(
++        count: name == 'progress-low'
++            ? 2
++            : name == 'progress-empty'
++                ? 0
++                : 4,
++        down: true);
++    return Scaffold(
++        body: SingleChildScrollView(
++            child: Padding(
++                padding: const EdgeInsets.all(16),
++                child: Column(children: [
++                  GraphKpiHeader(
++                      aggregates: weeks,
++                      metric: ProfileGraphMetric.duration,
++                      unit: 'lbs'),
++                  const SizedBox(height: 20),
++                  WeeklyBarChart(
++                      aggregates: weeks,
++                      metric: ProfileGraphMetric.duration,
++                      isPremium: true,
++                      unit: 'lbs')
++                ]))));
++  }
++  if (name == 'roles') {
++    return Builder(
++        builder: (context) => Scaffold(
++            body: Padding(
++                padding: const EdgeInsets.all(16),
++                child: Column(
++                    crossAxisAlignment: CrossAxisAlignment.start,
++                    children: [
++                      Text('Reference labels', style: AppText.sectionHeading()),
++                      for (final color in [
++                        context.surface.bgBase,
++                        context.surface.bgSurface,
++                        context.surface.surface2,
++                        context.surface.surface3,
++                        context.surface.surface4
++                      ])
++                        Container(
++                            color: color,
++                            width: double.infinity,
++                            padding: const EdgeInsets.all(12),
++                            child: Text('PREVIOUS · 24 SEP · Local processing',
++                                style: AppText.caption(
++                                    color: context.surface.textTertiary))),
++                      const TextField(
++                          decoration:
++                              InputDecoration(hintText: 'Workout name')),
++                      const SizedBox(height: 12),
++                      const AsyncErrorState(
++                          message:
++                              'Could not load history. Your data is safe on this device.')
++                    ]))));
++  }
++  return Builder(
++      builder: (context) => Scaffold(
++          body: Center(
++              child: TextButton(
++                  onPressed: () {
++                    showFinishSummarySheet(
++                        context: context,
++                        duration: const Duration(minutes: 24),
++                        volumeKg:
++                            fixtureSummary(name.substring(7)).weightedVolumeKg,
++                        metricSummary: fixtureSummary(name.substring(7)),
++                        sets: 1,
++                        unit: 'lbs',
++                        initialName: 'Push A');
++                  },
++                  child: const Text('Open summary')))));
++}
++
++Widget fixtureApp(String name, ThemePalette palette, double scale,
++        {Key? captureKey}) =>
++    ProviderScope(
++        overrides: [
++          authProvider.overrideWithValue(null),
++          weightUnitProvider.overrideWithValue('lbs'),
++          isPremiumProvider.overrideWithValue(true),
++          workoutDetailProvider('fixture').overrideWith((ref) => name ==
++                  'detail-error'
++              ? Stream.error(StateError('synthetic read error'))
++              : Stream.value(name == 'detail-empty' ? null : fixtureWorkout)),
++          exerciseAnalyticsProvider((42, '6M'))
++              .overrideWith((ref) => Stream.value([
++                    ExerciseHistoryData(
++                        date: fixtureDate,
++                        weight: 80,
++                        bestSetWeight: 80,
++                        reps: 7,
++                        estimated1RM:
++                            name == 'exercise-no-estimate' ? null : 100,
++                        volume: 560)
++                  ]))
++        ],
++        child: RepaintBoundary(
++            key: captureKey,
++            child: MaterialApp(
++                debugShowCheckedModeBanner: false,
++                theme: buildAppTheme(palette.tokens, palette: palette),
++                builder: (context, child) => MediaQuery(
++                    // Existing SkeletonPulse creates a lazy ticker during disposal when
++                    // reduced motion skips initialization. Detail fixtures use normal motion;
++                    // that separate baseline defect is recorded rather than suppressed.
++                    data: MediaQuery.of(context).copyWith(
++                        textScaler: TextScaler.linear(scale),
++                        disableAnimations: !name.startsWith('detail')),
++                    child: child!),
++                home: fixtureBody(name))));
+diff --git a/test/upgrade/session_1_render_test.dart b/test/upgrade/session_1_render_test.dart
+new file mode 100644
+index 0000000..e771ce5
+--- /dev/null
++++ b/test/upgrade/session_1_render_test.dart	
+@@ -0,0 +1,123 @@
++import 'dart:convert';
++import 'dart:io';
++import 'dart:ui' as ui;
++import 'package:flutter/material.dart';
++import 'package:flutter/rendering.dart';
++import 'package:flutter/services.dart';
++import 'package:flutter_test/flutter_test.dart';
++import 'package:gymlog/core/theme/theme_palette.dart';
++import 'package:shared_preferences/shared_preferences.dart';
++import 'session_1_fixtures.dart';
++
++Future<void> loadSessionFonts() async {
++  final inter = FontLoader('Inter');
++  for (final name in ['Regular', 'SemiBold', 'Bold']) {
++    inter.addFont(Future.value(ByteData.sublistView(
++        await File('assets/google_fonts/Inter-$name.ttf').readAsBytes())));
++  }
++  await inter.load();
++  final config = File('.dart_tool/package_config.json');
++  final packages = (jsonDecode(await config.readAsString())
++      as Map<String, dynamic>)['packages'] as List;
++  final rootValue = (packages.firstWhere((p) => p['name'] == 'flutter')
++      as Map)['rootUri'] as String;
++  final root = config.absolute.uri
++      .resolve(rootValue.endsWith('/') ? rootValue : '$rootValue/');
++  final icons = FontLoader('MaterialIcons')
++    ..addFont(Future.value(ByteData.sublistView(await File.fromUri(root.resolve(
++            '../../bin/cache/artifacts/material_fonts/MaterialIcons-Regular.otf'))
++        .readAsBytes())));
++  await icons.load();
++}
++
++void main() {
++  setUpAll(loadSessionFonts);
++  setUp(() => SharedPreferences.setMockInitialValues({}));
++  final phase = Platform.environment['UPGRADE_RENDER_PHASE'] ?? 'after';
++  final palettes = phase == 'before'
++      ? [ThemePalette.higgsfield, ThemePalette.neonPurple]
++      : ThemePalette.values;
++  for (final palette in palettes) {
++    for (final scale in [1.0, 1.6]) {
++      for (final name in [
++        'header-weighted',
++        'header-reps',
++        'header-timed',
++        'header-distance',
++        'header-empty',
++        'finish-weighted',
++        'finish-reps',
++        'finish-timed',
++        'finish-distance',
++        'pr',
++        'pr-pace',
++        'share-monument',
++        'share-technical',
++        'share-sticker',
++        'share-duration-monument',
++        'share-duration-technical',
++        'share-duration-sticker',
++        'share-distance-monument',
++        'share-distance-technical',
++        'share-distance-sticker',
++        'share-pace-monument',
++        'share-pace-technical',
++        'share-pace-sticker',
++        'detail',
++        'detail-error',
++        'detail-empty',
++        'exercise',
++        'exercise-no-estimate',
++        'progress',
++        'progress-low',
++        'progress-empty',
++        'roles'
++      ]) {
++        final id = '$name-${palette.name}-${scale}x-synthetic';
++        testWidgets(id, (tester) async {
++          tester.view.physicalSize = const ui.Size(390, 844);
++          tester.view.devicePixelRatio = 1;
++          addTearDown(() {
++            tester.view.resetPhysicalSize();
++            tester.view.resetDevicePixelRatio();
++          });
++          const key = ValueKey('capture');
++          await tester
++              .pumpWidget(fixtureApp(name, palette, scale, captureKey: key));
++          await tester.pumpAndSettle();
++          if (name.startsWith('finish-')) {
++            // Capture the sheet without synthesizing pointer events during
++            // route teardown (Flutter 3.44 RawTooltip lazy-ticker limitation).
++            tester
++                .widget<TextButton>(
++                    find.widgetWithText(TextButton, 'Open summary'))
++                .onPressed!();
++            await tester.pumpAndSettle();
++          }
++          expect(tester.takeException(), isNull);
++          if (phase == 'before' ||
++              Platform.environment['UPGRADE_SAVE_RENDERS'] == '1') {
++            await tester.runAsync(() async {
++              final boundary =
++                  tester.renderObject<RenderRepaintBoundary>(find.byKey(key));
++              final image = await boundary.toImage();
++              final bytes =
++                  await image.toByteData(format: ui.ImageByteFormat.png);
++              final file =
++                  File('docs/upgrade/renders/session-1/$phase/$id.png');
++              await file.parent.create(recursive: true);
++              await file.writeAsBytes(bytes!.buffer.asUint8List());
++              image.dispose();
++            });
++          }
++          if (phase == 'after') {
++            await expectLater(find.byKey(key),
++                matchesGoldenFile('../golden/goldens/session-1/$id.png'));
++          }
++          await tester.pumpWidget(const SizedBox.shrink());
++          await tester.pumpAndSettle();
++        });
++      }
++    }
++  }
++}

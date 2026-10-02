@@ -779,7 +779,7 @@ class _RoutineVolumeSectionState extends ConsumerState<_RoutineVolumeSection> {
             // identical to "you did nothing this period" and lies about the
             // user's data. Show an error state with a real retry instead.
             error: (_, __) => AsyncErrorState(
-              message: "Couldn't load your volume history. Your data is safe.",
+              message: "Couldn't load your volume history.",
               onRetry: () => ref.invalidate(routineDailyVolumeProvider(
                   (widget.routineId, _selectedTimeRange))),
             ),

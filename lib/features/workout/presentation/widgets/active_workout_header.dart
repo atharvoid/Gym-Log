@@ -3,7 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:gymlog/core/theme/app_colors.dart';
 import 'package:gymlog/core/theme/dynamic_accent_theme.dart';
-import 'package:gymlog/core/utils/units.dart';
+import 'package:gymlog/core/models/workout_metric_summary.dart';
 import 'package:gymlog/shared/layout/adaptive.dart';
 
 const double _minSwipeVelocity = 120.0;
@@ -13,6 +13,7 @@ class ActiveWorkoutHeader extends StatelessWidget {
   final String workoutName;
   final String elapsedTime;
   final double volumeKg;
+  final WorkoutMetricSummary? metricSummary;
   final int completedSets;
   final String weightUnit;
   final bool finishEnabled;
@@ -26,6 +27,7 @@ class ActiveWorkoutHeader extends StatelessWidget {
     required this.workoutName,
     required this.elapsedTime,
     required this.volumeKg,
+    this.metricSummary,
     required this.completedSets,
     required this.weightUnit,
     required this.finishEnabled,
@@ -36,6 +38,19 @@ class ActiveWorkoutHeader extends StatelessWidget {
           !finishEnabled || onFinish != null,
           'onFinish must be non-null when finishEnabled is true',
         );
+
+  String get _summaryText {
+    final summary = metricSummary ??
+        WorkoutMetricSummary(
+            weightedVolumeKg: volumeKg,
+            totalReps: 0,
+            totalDurationSeconds: 0,
+            totalDistanceMeters: 0);
+    final value = summary.primaryMetricValue(unit: weightUnit);
+    final label = summary.primaryMetricLabel();
+    final metric = label == 'DURATION' ? '$value logged time' : value;
+    return '$metric · $completedSets set${completedSets != 1 ? 's' : ''}';
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -147,7 +162,7 @@ class ActiveWorkoutHeader extends StatelessWidget {
                         ? elapsedTime
                         : (completedSets == 0
                             ? 'Log your first set'
-                            : '${groupThousands(kgToDisplay(volumeKg, weightUnit))} $weightUnit · $completedSets set${completedSets != 1 ? 's' : ''}'),
+                            : _summaryText),
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontFamily: 'Inter',
@@ -207,9 +222,7 @@ class ActiveWorkoutHeader extends StatelessWidget {
               ),
               const SizedBox(height: 2),
               Text(
-                completedSets == 0
-                    ? 'Log your first set'
-                    : '${groupThousands(kgToDisplay(volumeKg, weightUnit))} $weightUnit · $completedSets set${completedSets != 1 ? 's' : ''}',
+                completedSets == 0 ? 'Log your first set' : _summaryText,
                 textAlign: TextAlign.center,
                 softWrap: true,
                 style: TextStyle(

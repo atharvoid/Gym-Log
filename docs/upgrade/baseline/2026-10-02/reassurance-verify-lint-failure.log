@@ -1,0 +1,19 @@
+
+▸ check inline GoogleFonts
+
+▸ check non-semantic AppColors in migrated screens
+▸ format
+Formatted 365 files (0 changed) in 2.32 seconds.
+
+▸ analyze
+Analyzing gymlog...                                             
+No issues found! (ran in 19.4s)
+
+▸ custom_lint
+Analyzing...
+
+  test\upgrade\error_reassurance_fixtures.dart:25:3 • Notifiers should not have public properties/getters. Instead, all their public API should be exposed through the `state` property. • avoid_public_notifier_properties • INFO
+  test\upgrade\error_reassurance_fixtures.dart:45:7 • Providers which are overridden in a non-root ProviderContainer/ProviderScope should specify dependencies. • scoped_providers_should_specify_dependencies • INFO
+
+2 issues found.
+✗ custom_lint failed

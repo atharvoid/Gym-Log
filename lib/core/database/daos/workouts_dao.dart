@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:uuid/uuid.dart';
 import '../../models/measurement_type.dart';
 import '../../models/personal_record.dart';
+import '../../models/workout_metric_summary.dart';
 import '../database.dart';
 import '../tables/workouts_table.dart';
 import '../../../features/workout/domain/active_workout_state.dart';
@@ -1053,6 +1054,8 @@ class WorkoutsDao extends DatabaseAccessor<AppDatabase>
                 value: reps.toDouble(),
                 unit: 'reps',
                 setId: set.id,
+                loggedWeightKg: set.weightKg,
+                loggedReps: set.reps,
                 previousValue: maxRepsAtLoad,
               ));
             }
@@ -1088,6 +1091,8 @@ class WorkoutsDao extends DatabaseAccessor<AppDatabase>
                 value: e1rm,
                 unit: 'kg',
                 setId: set.id,
+                loggedWeightKg: set.weightKg,
+                loggedReps: set.reps,
                 previousValue: priorMaxE1rm > 0 ? priorMaxE1rm : null,
               ));
             } else if (priorSets.isNotEmpty && weight > priorMaxWeight) {
@@ -1098,6 +1103,8 @@ class WorkoutsDao extends DatabaseAccessor<AppDatabase>
                 value: weight,
                 unit: 'kg',
                 setId: set.id,
+                loggedWeightKg: set.weightKg,
+                loggedReps: set.reps,
                 previousValue: priorMaxWeight > 0 ? priorMaxWeight : null,
               ));
             } else if (priorSets.isNotEmpty &&
@@ -1111,6 +1118,8 @@ class WorkoutsDao extends DatabaseAccessor<AppDatabase>
                 value: reps.toDouble(),
                 unit: 'reps',
                 setId: set.id,
+                loggedWeightKg: set.weightKg,
+                loggedReps: set.reps,
                 previousValue: priorMaxRepsAtWeight,
               ));
             } else if (priorSets.isEmpty) {
@@ -1121,6 +1130,8 @@ class WorkoutsDao extends DatabaseAccessor<AppDatabase>
                 value: e1rm,
                 unit: 'kg',
                 setId: set.id,
+                loggedWeightKg: set.weightKg,
+                loggedReps: set.reps,
                 previousValue: null,
               ));
             }
@@ -1143,6 +1154,8 @@ class WorkoutsDao extends DatabaseAccessor<AppDatabase>
               value: reps.toDouble(),
               unit: 'reps',
               setId: set.id,
+              loggedWeightKg: set.weightKg,
+              loggedReps: set.reps,
               previousValue: priorMaxReps > 0 ? priorMaxReps : null,
             ));
           }
@@ -1164,6 +1177,8 @@ class WorkoutsDao extends DatabaseAccessor<AppDatabase>
               value: duration.toDouble(),
               unit: 's',
               setId: set.id,
+              loggedWeightKg: set.weightKg,
+              loggedReps: set.reps,
               previousValue: priorMaxDuration > 0 ? priorMaxDuration : null,
             ));
           }
@@ -1194,6 +1209,8 @@ class WorkoutsDao extends DatabaseAccessor<AppDatabase>
               value: dist,
               unit: 'm',
               setId: set.id,
+              loggedWeightKg: set.weightKg,
+              loggedReps: set.reps,
               previousValue: priorMaxDist > 0 ? priorMaxDist : null,
             ));
           }
@@ -1208,6 +1225,8 @@ class WorkoutsDao extends DatabaseAccessor<AppDatabase>
                 value: pace,
                 unit: 's/m',
                 setId: set.id,
+                loggedWeightKg: set.weightKg,
+                loggedReps: set.reps,
                 previousValue: priorBestPace,
               ));
             }
@@ -1371,14 +1390,8 @@ class WorkoutsDao extends DatabaseAccessor<AppDatabase>
       final existing = await getSession(sessionId);
 
       // 2. Calculate total volume from completed sets
-      double totalVolume = 0;
-      for (final ex in state.exercises) {
-        for (final set in ex.sets) {
-          if (set.isCompleted) {
-            totalVolume += (set.weightKg ?? 0.0) * set.reps;
-          }
-        }
-      }
+      final totalVolume =
+          WorkoutMetricSummary.fromWorkout(state).weightedVolumeKg;
 
       // 3. Update session — only mutable fields
       await (update(workoutSessions)..where((t) => t.id.equals(sessionId)))

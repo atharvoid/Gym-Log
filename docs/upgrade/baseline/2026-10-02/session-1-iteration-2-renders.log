@@ -1,0 +1,16 @@
+00:00 +0: loading C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_render_test.dart
+00:00 +0: (setUpAll)
+00:00 +0: exercise-no-estimate-higgsfield-1.0x-synthetic
+00:00 +1: exercise-no-estimate-higgsfield-1.6x-synthetic
+00:00 +2: exercise-no-estimate-neonPurple-1.0x-synthetic
+00:00 +3: exercise-no-estimate-neonPurple-1.6x-synthetic
+00:01 +4: exercise-no-estimate-white-1.0x-synthetic
+00:01 +5: exercise-no-estimate-white-1.6x-synthetic
+00:01 +6: exercise-no-estimate-neonCyan-1.0x-synthetic
+00:01 +7: exercise-no-estimate-neonCyan-1.6x-synthetic
+00:01 +8: exercise-no-estimate-neonMagenta-1.0x-synthetic
+00:01 +9: exercise-no-estimate-neonMagenta-1.6x-synthetic
+00:01 +10: exercise-no-estimate-blazeOrange-1.0x-synthetic
+00:01 +11: exercise-no-estimate-blazeOrange-1.6x-synthetic
+00:01 +12: (tearDownAll)
+00:01 +12: All tests passed!

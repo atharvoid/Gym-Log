@@ -1,0 +1,32 @@
+Session 1 source integrity — final candidate 4.
+No new dependencies; unrelated pre-existing working-tree changes preserved.
+Audit SHA256: 36249023879DD1BE06D58A6A94B0087C119DA15064DB20EAB5213D1AE29A3970
+Protocol SHA256: F2F95E11FA17DC0FB1DB308EF36D8D2F5C34DCBE486A002D98E1FC51588D97B6
+Pubspec snapshot/current match: True
+Pubspec lock snapshot/current match: True
+Unexpected changes to original lib/test Dart sources: 0
+Before render count: 128
+After real-font render/golden count: 384
+Original snapshot tests/upgrade capture harness was later adapted solely to render the preserved original lib source; new session tests are additions, not comparisons against that harness.
+Documented source/test changes:
+lib/core/database/daos/workouts_dao.dart
+lib/core/models/personal_record.dart
+lib/core/models/pr_card_data.dart
+lib/core/models/workout_metric_summary.dart
+lib/core/theme/app_colors.dart
+lib/core/theme/theme_palette.dart
+lib/core/utils/formatters.dart
+lib/features/exercises/presentation/screens/exercise_detail_screen.dart
+lib/features/profile/presentation/widgets/graph_kpi_header.dart
+lib/features/profile/presentation/widgets/weekly_bar_chart.dart
+lib/features/workout/presentation/providers/active_workout_provider.dart
+lib/features/workout/presentation/screens/active_workout_screen.dart
+lib/features/workout/presentation/screens/workout_detail_screen.dart
+lib/features/workout/presentation/widgets/active_workout_header.dart
+lib/features/workout/presentation/widgets/finish_summary_sheet.dart
+lib/features/workout/presentation/widgets/pr_celebration_overlay.dart
+lib/features/workout/presentation/widgets/share_card/share_card_monument.dart
+lib/features/workout/presentation/widgets/share_card/share_card_sticker.dart
+lib/features/workout/presentation/widgets/share_card/share_card_technical.dart
+test/analytics/metric_aware_pr_test.dart
+test/workout_metric_summary_test.dart

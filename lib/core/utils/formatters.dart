@@ -89,4 +89,15 @@ class MeasurementFormatter {
     final secs = paceSecsPerKm % 60;
     return '$mins:${secs.toString().padLeft(2, '0')} /km';
   }
+
+  /// Displays the DAO's canonical s/m pace with the same nearest-second
+  /// precision as logged distance history, including explicit spoken units.
+  static String formatPaceFromSecondsPerMeter(double secondsPerMeter,
+      {bool spoken = false}) {
+    final secondsPerKm = (secondsPerMeter * 1000).round();
+    if (spoken && secondsPerKm > 0) {
+      return '${secondsPerKm ~/ 60} minutes ${secondsPerKm % 60} seconds per kilometre';
+    }
+    return formatPace(1000, secondsPerKm);
+  }
 }

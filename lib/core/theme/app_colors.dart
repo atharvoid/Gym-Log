@@ -191,11 +191,11 @@ abstract class AppColors {
   static const textSecondary =
       Color(0x99FFFFFF); // white 60% — dates, subtitles, secondary
   static const textTertiary =
-      Color(0x59FFFFFF); // white 35% — placeholders, column headers
+      Color(0x99FFFFFF); // white 60% — meaningful hints and reference text
   static const textDisabled = Color(0x33FFFFFF); // white 20% — inactive states
 
   // ── Charts ─────────────────────────────────────────────
-  static const chartAxisLabel = Color(0x59FFFFFF); // == textTertiary
+  static const chartAxisLabel = textTertiary;
 
   // Profile analytics bar chart.
   // Semantic rule: current week = brand accent (reactive at call site), historical = neutral gray.
@@ -211,7 +211,7 @@ abstract class AppColors {
       Color(0xFF1A1A26); // zero-value slot — barely visible
   static const profileGraphGridLine =
       Color(0x14FFFFFF); // white 8% — barely-there guides
-  static const profileGraphAxisLabel = Color(0x59FFFFFF); // == textTertiary
+  static const profileGraphAxisLabel = textTertiary;
   static const profileGraphTooltipBg = Color(0xFF242424); // == surface4
   static const profileGraphTooltipShadow = Color(0x33000000); // 20% black
 
