@@ -1,0 +1,8 @@
+00:00 +0: loading C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_training_logic_test.dart
+00:00 +0: no routine becomes chosen until an explicit successful write
+00:00 +1: a wrong-type stored choice is an error, not an empty account
+00:00 +2: 14-day return uses the most recent completed session, not chosen plan age
+00:00 +3: relative training date does not claim a future date is today
+00:00 +4: next-program suggestion uses explicit linked saved order and wraps
+00:00 +5: legacy names, partial imports and empty days cannot imply next order
+00:00 +6: All tests passed!

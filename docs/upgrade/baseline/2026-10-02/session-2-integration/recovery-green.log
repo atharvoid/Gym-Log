@@ -1,0 +1,125 @@
+00:00 +0: loading C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart
+00:00 +0: (setUpAll)
+00:00 +0: Home chooser explains its setting and scopes the suggestion to one row
+00:13 +1: Library has no second routine chooser in ready or recovery states
+00:23 +2: Home selection updates the same read-only Library marker without remounting state
+00:27 +3: home first-session logging has an explicit start label
+00:27 +4: home prioritizes the actual active workout in fallback states
+00:28 +5: home labels a one-set plan in the singular
+00:29 +6: home guards an emptied chosen plan
+00:29 +7: home choice read failure is distinct from no choice
+00:29 +8: home repairs a damaged saved choice through explicit selection
+00:30 +9: home keeps Resume primary when choice is missing or damaged
+00:32 +10: home uses explicit choice and one-tap Change
+00:32 +11: home never chooses the first routine by inference
+00:33 +12: home shows a deleted choice without replacing it
+00:34 +13: home new user has a designed first-session entry
+00:35 +14: library first-session logging has an explicit start label
+00:35 +15: library prioritizes the actual active workout in fallback states
+00:37 +16: library labels a one-set plan in the singular
+00:38 +17: library guards an emptied chosen plan
+00:39 +18: library choice read failure is distinct from no choice
+══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
+The following TestFailure was thrown running a test:
+Expected: exactly one matching candidate
+  Actual: _TextWidgetFinder:<Found 0 widgets with text "Couldn't load your training choice": []>
+   Which: means none were found but one was expected
+
+When the exception was thrown, this was the stack:
+#4      main.<anonymous closure> (file:///C:/Users/Atharva%20Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart:183:7)
+<asynchronous suspension>
+#5      testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#6      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1952:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided one frame from package:stack_trace)
+
+This was caught by the test expectation on the following line:
+  file:///C:/Users/Atharva%20Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart line 183
+The test description was:
+  library choice read failure is distinct from no choice
+════════════════════════════════════════════════════════════════════════════════════════════════════
+00:45 +18 -1: library choice read failure is distinct from no choice [E]
+  Test failed. See exception logs above.
+  The test description was: library choice read failure is distinct from no choice
+  
+00:45 +18 -1: library repairs a damaged saved choice through explicit selection
+══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
+The following TestFailure was thrown running a test:
+Expected: exactly one matching candidate
+  Actual: _TextWidgetFinder:<Found 0 widgets with text "Choose your Home routine on Home.": []>
+   Which: means none were found but one was expected
+
+When the exception was thrown, this was the stack:
+#4      main.<anonymous closure> (file:///C:/Users/Atharva%20Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart:191:9)
+<asynchronous suspension>
+#5      testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#6      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1952:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided one frame from package:stack_trace)
+
+This was caught by the test expectation on the following line:
+  file:///C:/Users/Atharva%20Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart line 191
+The test description was:
+  library repairs a damaged saved choice through explicit selection
+════════════════════════════════════════════════════════════════════════════════════════════════════
+00:47 +18 -2: library repairs a damaged saved choice through explicit selection [E]
+  Test failed. See exception logs above.
+  The test description was: library repairs a damaged saved choice through explicit selection
+  
+00:47 +18 -2: library keeps Resume primary when choice is missing or damaged
+══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
+The following TestFailure was thrown running a test:
+Expected: exactly one matching candidate
+  Actual: _TextWidgetFinder:<Found 0 widgets with text "Choose your Home routine on Home.": []>
+   Which: means none were found but one was expected
+
+When the exception was thrown, this was the stack:
+#4      main.<anonymous closure> (file:///C:/Users/Atharva%20Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart:212:9)
+<asynchronous suspension>
+#5      testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#6      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1952:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided one frame from package:stack_trace)
+
+This was caught by the test expectation on the following line:
+  file:///C:/Users/Atharva%20Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart line 212
+The test description was:
+  library keeps Resume primary when choice is missing or damaged
+════════════════════════════════════════════════════════════════════════════════════════════════════
+00:49 +18 -3: library keeps Resume primary when choice is missing or damaged [E]
+  Test failed. See exception logs above.
+  The test description was: library keeps Resume primary when choice is missing or damaged
+  
+00:49 +18 -3: library uses explicit choice and one-tap Change
+00:49 +19 -3: library never chooses the first routine by inference
+00:51 +20 -3: library shows a deleted choice without replacing it
+00:52 +21 -3: library new user has a designed first-session entry
+00:52 +22 -3: Library keeps a routine Start reachable below a compact choice at 1.6x
+00:52 +23 -3: Library recovery null keeps saved Start visible at 1.6x
+00:53 +24 -3: Library recovery deleted keeps saved Start visible at 1.6x
+00:54 +25 -3: Library recovery 7 keeps saved Start visible at 1.6x
+00:54 +26 -3: Deleted Library choice exposes the logging action it describes
+00:56 +27 -3: Library announces arriving read errors
+00:57 +28 -3: Home explains the weekly counted unit visually and in speech
+00:57 +29 -3: Empty Library prioritizes browsing and avoids duplicate errors
+00:58 +30 -3: Change exposes the selected choice to assistive technology
+00:58 +31 -3: Home preserves freestyle during library read failure and deleted-only state
+00:59 +32 -3: Change uses bounded searchable choices and preserves choice on read failure
+00:59 +33 -3: Previous-set read failure does not invent no history or block Start
+01:00 +34 -3: Home keeps freestyle and History secondary and accessible
+01:00 +35 -3: Home has no guilt language on an inactive return
+01:00 +36 -3: Change selection updates both launch surfaces and persists
+01:01 +37 -3: Library groups the program and quiets creation
+01:01 +38 -3: (tearDownAll)
+01:01 +38 -3: Some tests failed.
+
+Failing tests:
+  C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart: library choice read failure is distinct from no choice
+  C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart: library keeps Resume primary when choice is missing or damaged
+  C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart: library repairs a damaged saved choice through explicit selection

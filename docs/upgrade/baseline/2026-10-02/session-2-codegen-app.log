@@ -1,0 +1,57 @@
+[INFO] Generating build script...
+[INFO] Generating build script completed, took 1.4s
+
+[INFO] Initializing inputs
+[INFO] Reading cached asset graph...
+[INFO] Reading cached asset graph completed, took 1.4s
+
+[INFO] Checking for updates since last build...
+[INFO] Checking for updates since last build completed, took 12.5s
+
+[INFO] Running build...
+[WARNING] riverpod_generator on lib/features/routines/presentation/widgets/training_launchpad.dart:
+Your current `analyzer` version may not fully support your current SDK version.
+
+Analyzer language version: 3.4.0
+SDK language version: 3.12.0
+
+Please update to the latest `analyzer` version (14.4.0) by running
+`flutter packages upgrade`.
+
+If you are not getting the latest version by running the above command, you
+can try adding a constraint like the following to your pubspec to start
+diagnosing why you can't get the latest version:
+
+dev_dependencies:
+  analyzer: ^14.4.0
+
+[INFO] 2.1s elapsed, 2/3 actions completed.
+[INFO] 3.5s elapsed, 2/3 actions completed.
+[INFO] 4.6s elapsed, 2/3 actions completed.
+[INFO] 5.6s elapsed, 2/3 actions completed.
+[INFO] 6.8s elapsed, 2/3 actions completed.
+[INFO] 7.8s elapsed, 2/3 actions completed.
+[INFO] 9.0s elapsed, 2/3 actions completed.
+[INFO] 10.0s elapsed, 3/38 actions completed.
+[INFO] 11.0s elapsed, 53/83 actions completed.
+[INFO] 12.1s elapsed, 54/91 actions completed.
+[INFO] 13.8s elapsed, 143/169 actions completed.
+[INFO] 15.4s elapsed, 196/197 actions completed.
+[INFO] 46.5s elapsed, 196/197 actions completed.
+[WARNING] No actions completed for 31.6s, waiting on:
+  - riverpod_generator on lib/features/home/presentation/screens/home_screen.dart
+
+[INFO] 47.5s elapsed, 229/279 actions completed.
+[INFO] 51.1s elapsed, 294/321 actions completed.
+[INFO] 52.3s elapsed, 357/377 actions completed.
+[INFO] 53.3s elapsed, 425/435 actions completed.
+[INFO] 54.4s elapsed, 445/455 actions completed.
+[INFO] Running build completed, took 54.9s
+
+[INFO] Caching finalized dependency graph...
+[INFO] Caching finalized dependency graph completed, took 345ms
+
+[SEVERE] riverpod_generator on test/golden/share_cards_golden_test.dart (cached):
+
+Could not resolve annotation for `library asset:gymlog/test/golden/share_cards_golden_test.dart`.
+[SEVERE] Failed after 55.3s

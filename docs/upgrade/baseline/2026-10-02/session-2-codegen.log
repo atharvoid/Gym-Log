@@ -1,0 +1,73 @@
+[INFO] Generating build script...
+[INFO] Generating build script completed, took 425ms
+
+[INFO] Initializing inputs
+[INFO] Reading cached asset graph...
+[INFO] Reading cached asset graph completed, took 272ms
+
+[INFO] Checking for updates since last build...
+[INFO] Checking for updates since last build completed, took 6.3s
+
+[INFO] Running build...
+[WARNING] riverpod_generator on lib/core/models/pr_card_data.dart:
+Your current `analyzer` version may not fully support your current SDK version.
+
+Analyzer language version: 3.4.0
+SDK language version: 3.12.0
+
+Please update to the latest `analyzer` version (14.4.0) by running
+`flutter packages upgrade`.
+
+If you are not getting the latest version by running the above command, you
+can try adding a constraint like the following to your pubspec to start
+diagnosing why you can't get the latest version:
+
+dev_dependencies:
+  analyzer: ^14.4.0
+
+[INFO] 1.7s elapsed, 14/73 actions completed.
+[INFO] 2.7s elapsed, 31/152 actions completed.
+[INFO] 3.8s elapsed, 57/248 actions completed.
+[INFO] 13.3s elapsed, 305/469 actions completed.
+[WARNING] riverpod_generator on test/golden/share_cards_golden_test.dart:
+An unexpected error was thrown trying to get location information on `library asset:gymlog/test/golden/share_cards_golden_test.dart` (LibraryElementImpl).
+
+Please file an issue at https://github.com/dart-lang/source_gen/issues/new
+Include the contents of this warning and the stack trace along with
+the version of `package:source_gen`, `package:analyzer` from `pubspec.lock`.
+
+InconsistentAnalysisException: Requested result might be inconsistent with previously returned results
+
+[SEVERE] riverpod_generator on test/golden/share_cards_golden_test.dart:
+
+Could not resolve annotation for `library asset:gymlog/test/golden/share_cards_golden_test.dart`.
+[INFO] 15.0s elapsed, 535/650 actions completed.
+[INFO] 16.5s elapsed, 601/671 actions completed.
+[INFO] 17.5s elapsed, 677/711 actions completed.
+[INFO] 18.7s elapsed, 721/747 actions completed.
+[INFO] 19.8s elapsed, 772/790 actions completed.
+[INFO] 20.8s elapsed, 820/833 actions completed.
+[INFO] 21.8s elapsed, 852/865 actions completed.
+[INFO] 22.8s elapsed, 894/906 actions completed.
+[INFO] 23.9s elapsed, 974/989 actions completed.
+[INFO] 25.0s elapsed, 1033/1044 actions completed.
+[INFO] 26.2s elapsed, 1090/1102 actions completed.
+[INFO] 27.2s elapsed, 1146/1157 actions completed.
+[INFO] 28.3s elapsed, 1180/1194 actions completed.
+[INFO] 29.3s elapsed, 1244/1255 actions completed.
+[INFO] 34.9s elapsed, 1262/1269 actions completed.
+[INFO] 38.7s elapsed, 1268/1269 actions completed.
+[INFO] 39.8s elapsed, 1340/1392 actions completed.
+[INFO] 40.8s elapsed, 1502/1527 actions completed.
+[INFO] 44.1s elapsed, 1623/1641 actions completed.
+[INFO] 45.1s elapsed, 1660/1677 actions completed.
+[INFO] 46.1s elapsed, 1704/1704 actions completed.
+[INFO] 47.1s elapsed, 1852/1862 actions completed.
+[INFO] 48.2s elapsed, 1877/1877 actions completed.
+[INFO] Running build completed, took 48.4s
+
+[INFO] Caching finalized dependency graph...
+[INFO] Caching finalized dependency graph completed, took 310ms
+
+[SEVERE] Failed after 48.7s
+Failed to update packages.

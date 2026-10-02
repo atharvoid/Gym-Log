@@ -22,6 +22,7 @@ import 'package:gymlog/features/import/presentation/screens/import_screen.dart';
 import 'package:gymlog/features/workout/presentation/screens/active_workout_screen.dart';
 import 'package:gymlog/core/services/account_deletion_service.dart';
 import 'package:drift/native.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart'
     show SupabaseClient, User, Session, AuthState;
 
@@ -63,6 +64,7 @@ void main() {
   late MockAuthRepository mockAuthRepository;
 
   setUp(() {
+    SharedPreferences.setMockInitialValues({'first_run_tour_step': -1});
     db = AppDatabase.forTesting(NativeDatabase.memory());
     supabaseClient = SupabaseClient('https://example.com', 'key');
     mockAuthRepository = MockAuthRepository(supabaseClient);

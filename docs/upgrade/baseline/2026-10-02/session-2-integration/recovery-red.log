@@ -1,0 +1,122 @@
+00:00 +0: loading C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart
+00:00 +0: (setUpAll)
+00:00 +0: Home selection updates the same read-only Library marker without remounting state
+══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
+The following TestFailure was thrown running a test:
+Expected: exactly one matching candidate
+  Actual: _TextWidgetFinder:<Found 0 widgets with text "Chosen on Home": []>
+   Which: means none were found but one was expected
+
+When the exception was thrown, this was the stack:
+#4      main.<anonymous closure> (file:///C:/Users/Atharva%20Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart:109:5)
+<asynchronous suspension>
+#5      testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#6      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1952:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided one frame from package:stack_trace)
+
+This was caught by the test expectation on the following line:
+  file:///C:/Users/Atharva%20Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart line 109
+The test description was:
+  Home selection updates the same read-only Library marker without remounting state
+════════════════════════════════════════════════════════════════════════════════════════════════════
+00:12 +0 -1: Home selection updates the same read-only Library marker without remounting state [E]
+  Test failed. See exception logs above.
+  The test description was: Home selection updates the same read-only Library marker without remounting state
+  
+00:12 +0 -1: Library recovery null keeps saved Start visible at 1.6x
+══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
+The following TestFailure was thrown running a test:
+Expected: a value less than or equal to <772>
+  Actual: <940.0>
+   Which: is not a value less than or equal to <772>
+
+When the exception was thrown, this was the stack:
+#4      main.<anonymous closure> (file:///C:/Users/Atharva%20Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart:286:7)
+<asynchronous suspension>
+#5      testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#6      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1952:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided one frame from package:stack_trace)
+
+This was caught by the test expectation on the following line:
+  file:///C:/Users/Atharva%20Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart line 286
+The test description was:
+  Library recovery null keeps saved Start visible at 1.6x
+════════════════════════════════════════════════════════════════════════════════════════════════════
+00:15 +0 -2: Library recovery null keeps saved Start visible at 1.6x [E]
+  Test failed. See exception logs above.
+  The test description was: Library recovery null keeps saved Start visible at 1.6x
+  
+00:15 +0 -2: Library recovery deleted keeps saved Start visible at 1.6x
+══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
+The following TestFailure was thrown running a test:
+Expected: a value less than or equal to <772>
+  Actual: <940.0>
+   Which: is not a value less than or equal to <772>
+
+When the exception was thrown, this was the stack:
+#4      main.<anonymous closure> (file:///C:/Users/Atharva%20Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart:286:7)
+<asynchronous suspension>
+#5      testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#6      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1952:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided one frame from package:stack_trace)
+
+This was caught by the test expectation on the following line:
+  file:///C:/Users/Atharva%20Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart line 286
+The test description was:
+  Library recovery deleted keeps saved Start visible at 1.6x
+════════════════════════════════════════════════════════════════════════════════════════════════════
+00:16 +0 -3: Library recovery deleted keeps saved Start visible at 1.6x [E]
+  Test failed. See exception logs above.
+  The test description was: Library recovery deleted keeps saved Start visible at 1.6x
+  
+00:16 +0 -3: Library recovery 7 keeps saved Start visible at 1.6x
+══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
+The following StateError was thrown running a test:
+Bad state: No element
+
+When the exception was thrown, this was the stack:
+#0      Iterable.first (dart:core/iterable.dart:663:7)
+#1      _FirstFinderMixin.filter (package:flutter_test/src/finders.dart:1383:28)
+#3      ExpandIterator.moveNext (dart:_internal/iterable.dart:506:21)
+#4      SetBase.addAll (dart:collection/set.dart:58:23)
+#5      _Set.addAll (dart:_compact_hash:1197:11)
+#6      new LinkedHashSet.of (dart:collection/linked_hash_set.dart:193:27)
+#7      Iterable.toSet (dart:core/iterable.dart:532:21)
+#8      _DescendantFinderMixin.allCandidates (package:flutter_test/src/finders.dart:1782:10)
+#9      FinderBase.evaluate (package:flutter_test/src/finders.dart:1030:76)
+#10     WidgetController._getElementPoint (package:flutter_test/src/controller.dart:2093:47)
+#11     WidgetController.getTopLeft (package:flutter_test/src/controller.dart:1963:12)
+#12     WidgetController.getRect (package:flutter_test/src/controller.dart:2347:23)
+#13     main.<anonymous closure> (file:///C:/Users/Atharva%20Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart:286:21)
+<asynchronous suspension>
+#14     testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#15     TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1952:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided 2 frames from dart:async-patch and package:stack_trace)
+
+The test description was:
+  Library recovery 7 keeps saved Start visible at 1.6x
+════════════════════════════════════════════════════════════════════════════════════════════════════
+00:17 +0 -4: Library recovery 7 keeps saved Start visible at 1.6x [E]
+  Test failed. See exception logs above.
+  The test description was: Library recovery 7 keeps saved Start visible at 1.6x
+  
+00:17 +0 -4: (tearDownAll)
+00:17 +0 -4: Some tests failed.
+
+Failing tests:
+  C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart: Home selection updates the same read-only Library marker without remounting state
+  C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart: Library recovery 7 keeps saved Start visible at 1.6x
+  C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart: Library recovery deleted keeps saved Start visible at 1.6x
+  C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart: Library recovery null keeps saved Start visible at 1.6x

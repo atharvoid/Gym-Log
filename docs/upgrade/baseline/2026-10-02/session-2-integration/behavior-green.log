@@ -1,0 +1,7 @@
+00:00 +0: loading C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart
+00:00 +0: (setUpAll)
+00:00 +0: Home chooser explains its setting and scopes the suggestion to one row
+00:03 +1: Library has no second routine chooser in ready or recovery states
+00:06 +2: Home selection updates the same read-only Library marker without remounting state
+00:08 +3: (tearDownAll)
+00:08 +3: All tests passed!

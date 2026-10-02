@@ -1,0 +1,548 @@
+00:00 +0: loading C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_render_test.dart
+test/upgrade/session_2_options.dart:36:32: Error: The getter 'surface' isn't defined for the type 'BuildContext'.
+ - 'BuildContext' is from 'package:flutter/src/widgets/framework.dart' ('/C:/flutter/packages/flutter/lib/src/widgets/framework.dart').
+Try correcting the name to the name of an existing getter, or defining a getter or field named 'surface'.
+      backgroundColor: context.surface.bgBase,
+                               ^^^^^^^
+test/upgrade/session_2_options.dart:58:30: Error: The getter 'surface' isn't defined for the type 'BuildContext'.
+ - 'BuildContext' is from 'package:flutter/src/widgets/framework.dart' ('/C:/flutter/packages/flutter/lib/src/widgets/framework.dart').
+Try correcting the name to the name of an existing getter, or defining a getter or field named 'surface'.
+              color: context.surface.surface1,
+                             ^^^^^^^
+test/upgrade/session_2_options.dart:75:55: Error: The getter 'surface' isn't defined for the type 'BuildContext'.
+ - 'BuildContext' is from 'package:flutter/src/widgets/framework.dart' ('/C:/flutter/packages/flutter/lib/src/widgets/framework.dart').
+Try correcting the name to the name of an existing getter, or defining a getter or field named 'surface'.
+            style: AppText.screenTitle(color: context.surface.textPrimary)),
+                                                      ^^^^^^^
+test/upgrade/session_2_options.dart:82:50: Error: The getter 'surface' isn't defined for the type 'BuildContext'.
+ - 'BuildContext' is from 'package:flutter/src/widgets/framework.dart' ('/C:/flutter/packages/flutter/lib/src/widgets/framework.dart').
+Try correcting the name to the name of an existing getter, or defining a getter or field named 'surface'.
+              style: AppText.body(color: context.surface.textSecondary)),
+                                                 ^^^^^^^
+test/upgrade/session_2_options.dart:90:50: Error: The getter 'surface' isn't defined for the type 'BuildContext'.
+ - 'BuildContext' is from 'package:flutter/src/widgets/framework.dart' ('/C:/flutter/packages/flutter/lib/src/widgets/framework.dart').
+Try correcting the name to the name of an existing getter, or defining a getter or field named 'surface'.
+              style: AppText.body(color: context.surface.textSecondary)),
+                                                 ^^^^^^^
+test/upgrade/session_2_options.dart:107:56: Error: The getter 'surface' isn't defined for the type 'BuildContext'.
+ - 'BuildContext' is from 'package:flutter/src/widgets/framework.dart' ('/C:/flutter/packages/flutter/lib/src/widgets/framework.dart').
+Try correcting the name to the name of an existing getter, or defining a getter or field named 'surface'.
+              style: AppText.titleLarge(color: context.surface.textPrimary)),
+                                                       ^^^^^^^
+test/upgrade/session_2_options.dart:114:50: Error: The getter 'surface' isn't defined for the type 'BuildContext'.
+ - 'BuildContext' is from 'package:flutter/src/widgets/framework.dart' ('/C:/flutter/packages/flutter/lib/src/widgets/framework.dart').
+Try correcting the name to the name of an existing getter, or defining a getter or field named 'surface'.
+              style: AppText.body(color: context.surface.textSecondary)),
+                                                 ^^^^^^^
+test/upgrade/session_2_options.dart:122:56: Error: The getter 'surface' isn't defined for the type 'BuildContext'.
+ - 'BuildContext' is from 'package:flutter/src/widgets/framework.dart' ('/C:/flutter/packages/flutter/lib/src/widgets/framework.dart').
+Try correcting the name to the name of an existing getter, or defining a getter or field named 'surface'.
+              style: AppText.titleLarge(color: context.surface.textPrimary)),
+                                                       ^^^^^^^
+test/upgrade/session_2_options.dart:125:50: Error: The getter 'surface' isn't defined for the type 'BuildContext'.
+ - 'BuildContext' is from 'package:flutter/src/widgets/framework.dart' ('/C:/flutter/packages/flutter/lib/src/widgets/framework.dart').
+Try correcting the name to the name of an existing getter, or defining a getter or field named 'surface'.
+              style: AppText.body(color: context.surface.textSecondary)),
+                                                 ^^^^^^^
+test/upgrade/session_2_options.dart:186:56: Error: The getter 'surface' isn't defined for the type 'BuildContext'.
+ - 'BuildContext' is from 'package:flutter/src/widgets/framework.dart' ('/C:/flutter/packages/flutter/lib/src/widgets/framework.dart').
+Try correcting the name to the name of an existing getter, or defining a getter or field named 'surface'.
+                    style: AppText.body(color: context.surface.textSecondary)),
+                                                       ^^^^^^^
+test/upgrade/session_2_options.dart:207:55: Error: The getter 'surface' isn't defined for the type 'BuildContext'.
+ - 'BuildContext' is from 'package:flutter/src/widgets/framework.dart' ('/C:/flutter/packages/flutter/lib/src/widgets/framework.dart').
+Try correcting the name to the name of an existing getter, or defining a getter or field named 'surface'.
+            style: AppText.screenTitle(color: context.surface.textPrimary)),
+                                                      ^^^^^^^
+test/upgrade/session_2_options.dart:211:50: Error: The getter 'surface' isn't defined for the type 'BuildContext'.
+ - 'BuildContext' is from 'package:flutter/src/widgets/framework.dart' ('/C:/flutter/packages/flutter/lib/src/widgets/framework.dart').
+Try correcting the name to the name of an existing getter, or defining a getter or field named 'surface'.
+              style: AppText.body(color: context.surface.textSecondary)),
+                                                 ^^^^^^^
+test/upgrade/session_2_options.dart:214:48: Error: The getter 'surface' isn't defined for the type 'BuildContext'.
+ - 'BuildContext' is from 'package:flutter/src/widgets/framework.dart' ('/C:/flutter/packages/flutter/lib/src/widgets/framework.dart').
+Try correcting the name to the name of an existing getter, or defining a getter or field named 'surface'.
+            style: AppText.body(color: context.surface.textSecondary)),
+                                               ^^^^^^^
+test/upgrade/session_2_options.dart:218:50: Error: The getter 'surface' isn't defined for the type 'BuildContext'.
+ - 'BuildContext' is from 'package:flutter/src/widgets/framework.dart' ('/C:/flutter/packages/flutter/lib/src/widgets/framework.dart').
+Try correcting the name to the name of an existing getter, or defining a getter or field named 'surface'.
+              style: AppText.body(color: context.surface.textPrimary)),
+                                                 ^^^^^^^
+test/upgrade/session_2_options.dart:254:54: Error: The getter 'surface' isn't defined for the type 'BuildContext'.
+ - 'BuildContext' is from 'package:flutter/src/widgets/framework.dart' ('/C:/flutter/packages/flutter/lib/src/widgets/framework.dart').
+Try correcting the name to the name of an existing getter, or defining a getter or field named 'surface'.
+                  style: AppText.meta(color: context.surface.textSecondary)),
+                                                     ^^^^^^^
+test/upgrade/session_2_options.dart:260:54: Error: The getter 'surface' isn't defined for the type 'BuildContext'.
+ - 'BuildContext' is from 'package:flutter/src/widgets/framework.dart' ('/C:/flutter/packages/flutter/lib/src/widgets/framework.dart').
+Try correcting the name to the name of an existing getter, or defining a getter or field named 'surface'.
+                  style: AppText.body(color: context.surface.textPrimary)),
+                                                     ^^^^^^^
+test/upgrade/session_2_options.dart:265:59: Error: The getter 'surface' isn't defined for the type 'BuildContext'.
+ - 'BuildContext' is from 'package:flutter/src/widgets/framework.dart' ('/C:/flutter/packages/flutter/lib/src/widgets/framework.dart').
+Try correcting the name to the name of an existing getter, or defining a getter or field named 'surface'.
+                        AppText.sheetTitle(color: context.surface.textPrimary)
+                                                          ^^^^^^^
+test/upgrade/session_2_options.dart:280:42: Error: The getter 'surface' isn't defined for the type 'BuildContext'.
+ - 'BuildContext' is from 'package:flutter/src/widgets/framework.dart' ('/C:/flutter/packages/flutter/lib/src/widgets/framework.dart').
+Try correcting the name to the name of an existing getter, or defining a getter or field named 'surface'.
+                          color: context.surface.textPrimary))),
+                                         ^^^^^^^
+test/upgrade/session_2_options.dart:288:52: Error: The getter 'surface' isn't defined for the type 'BuildContext'.
+ - 'BuildContext' is from 'package:flutter/src/widgets/framework.dart' ('/C:/flutter/packages/flutter/lib/src/widgets/framework.dart').
+Try correcting the name to the name of an existing getter, or defining a getter or field named 'surface'.
+                style: AppText.meta(color: context.surface.textSecondary)),
+                                                   ^^^^^^^
+test/upgrade/session_2_options.dart:291:54: Error: The getter 'surface' isn't defined for the type 'BuildContext'.
+ - 'BuildContext' is from 'package:flutter/src/widgets/framework.dart' ('/C:/flutter/packages/flutter/lib/src/widgets/framework.dart').
+Try correcting the name to the name of an existing getter, or defining a getter or field named 'surface'.
+                  style: AppText.meta(color: context.surface.textSecondary)),
+                                                     ^^^^^^^
+test/upgrade/session_2_options.dart:297:36: Error: The getter 'surface' isn't defined for the type 'BuildContext'.
+ - 'BuildContext' is from 'package:flutter/src/widgets/framework.dart' ('/C:/flutter/packages/flutter/lib/src/widgets/framework.dart').
+Try correcting the name to the name of an existing getter, or defining a getter or field named 'surface'.
+            Divider(color: context.surface.borderSubtle, height: AppSpacing.x1),
+                                   ^^^^^^^
+test/upgrade/session_2_options.dart:305:25: Error: The getter 'surface' isn't defined for the type 'BuildContext'.
+ - 'BuildContext' is from 'package:flutter/src/widgets/framework.dart' ('/C:/flutter/packages/flutter/lib/src/widgets/framework.dart').
+Try correcting the name to the name of an existing getter, or defining a getter or field named 'surface'.
+              ? context.surface.surface2
+                        ^^^^^^^
+test/upgrade/session_2_options.dart:306:25: Error: The getter 'surface' isn't defined for the type 'BuildContext'.
+ - 'BuildContext' is from 'package:flutter/src/widgets/framework.dart' ('/C:/flutter/packages/flutter/lib/src/widgets/framework.dart').
+Try correcting the name to the name of an existing getter, or defining a getter or field named 'surface'.
+              : context.surface.surface1,
+                        ^^^^^^^
+test/upgrade/session_2_options.dart:311:29: Error: The getter 'surface' isn't defined for the type 'BuildContext'.
+ - 'BuildContext' is from 'package:flutter/src/widgets/framework.dart' ('/C:/flutter/packages/flutter/lib/src/widgets/framework.dart').
+Try correcting the name to the name of an existing getter, or defining a getter or field named 'surface'.
+                  : context.surface.borderDefault)),
+                            ^^^^^^^
+test/upgrade/session_2_options.dart:321:31: Error: The getter 'surface' isn't defined for the type 'BuildContext'.
+ - 'BuildContext' is from 'package:flutter/src/widgets/framework.dart' ('/C:/flutter/packages/flutter/lib/src/widgets/framework.dart').
+Try correcting the name to the name of an existing getter, or defining a getter or field named 'surface'.
+                    : context.surface.textSecondary,
+                              ^^^^^^^
+test/upgrade/session_2_options.dart:328:56: Error: The getter 'surface' isn't defined for the type 'BuildContext'.
+ - 'BuildContext' is from 'package:flutter/src/widgets/framework.dart' ('/C:/flutter/packages/flutter/lib/src/widgets/framework.dart').
+Try correcting the name to the name of an existing getter, or defining a getter or field named 'surface'.
+              style: AppText.sheetTitle(color: context.surface.textPrimary)),
+                                                       ^^^^^^^
+test/upgrade/session_2_options.dart:331:50: Error: The getter 'surface' isn't defined for the type 'BuildContext'.
+ - 'BuildContext' is from 'package:flutter/src/widgets/framework.dart' ('/C:/flutter/packages/flutter/lib/src/widgets/framework.dart').
+Try correcting the name to the name of an existing getter, or defining a getter or field named 'surface'.
+              style: AppText.meta(color: context.surface.textSecondary)),
+                                                 ^^^^^^^
+test/upgrade/session_2_options.dart:334:52: Error: The getter 'surface' isn't defined for the type 'BuildContext'.
+ - 'BuildContext' is from 'package:flutter/src/widgets/framework.dart' ('/C:/flutter/packages/flutter/lib/src/widgets/framework.dart').
+Try correcting the name to the name of an existing getter, or defining a getter or field named 'surface'.
+                style: AppText.meta(color: context.surface.textSecondary)),
+                                                   ^^^^^^^
+test/upgrade/session_2_options.dart:340:30: Error: The getter 'surface' isn't defined for the type 'BuildContext'.
+ - 'BuildContext' is from 'package:flutter/src/widgets/framework.dart' ('/C:/flutter/packages/flutter/lib/src/widgets/framework.dart').
+Try correcting the name to the name of an existing getter, or defining a getter or field named 'surface'.
+              color: context.surface.textSecondary,
+                             ^^^^^^^
+test/upgrade/session_2_options.dart:354:40: Error: The getter 'surface' isn't defined for the type 'BuildContext'.
+ - 'BuildContext' is from 'package:flutter/src/widgets/framework.dart' ('/C:/flutter/packages/flutter/lib/src/widgets/framework.dart').
+Try correcting the name to the name of an existing getter, or defining a getter or field named 'surface'.
+                        color: context.surface.textPrimary))),
+                                       ^^^^^^^
+test/upgrade/session_2_options.dart:356:32: Error: The getter 'surface' isn't defined for the type 'BuildContext'.
+ - 'BuildContext' is from 'package:flutter/src/widgets/framework.dart' ('/C:/flutter/packages/flutter/lib/src/widgets/framework.dart').
+Try correcting the name to the name of an existing getter, or defining a getter or field named 'surface'.
+                color: context.surface.textSecondary)
+                               ^^^^^^^
+test/upgrade/session_2_options.dart:361:57: Error: The getter 'surface' isn't defined for the type 'BuildContext'.
+ - 'BuildContext' is from 'package:flutter/src/widgets/framework.dart' ('/C:/flutter/packages/flutter/lib/src/widgets/framework.dart').
+Try correcting the name to the name of an existing getter, or defining a getter or field named 'surface'.
+                  AppText.sectionHeading(color: context.surface.textPrimary)),
+                                                        ^^^^^^^
+test/upgrade/session_2_options.dart:364:48: Error: The getter 'surface' isn't defined for the type 'BuildContext'.
+ - 'BuildContext' is from 'package:flutter/src/widgets/framework.dart' ('/C:/flutter/packages/flutter/lib/src/widgets/framework.dart').
+Try correcting the name to the name of an existing getter, or defining a getter or field named 'surface'.
+            style: AppText.meta(color: context.surface.textSecondary)),
+                                               ^^^^^^^
+test/upgrade/session_2_options.dart:380:40: Error: The getter 'surface' isn't defined for the type 'BuildContext'.
+ - 'BuildContext' is from 'package:flutter/src/widgets/framework.dart' ('/C:/flutter/packages/flutter/lib/src/widgets/framework.dart').
+Try correcting the name to the name of an existing getter, or defining a getter or field named 'surface'.
+                        color: context.surface.surface2,
+                                       ^^^^^^^
+test/upgrade/session_2_options.dart:385:43: Error: The getter 'surface' isn't defined for the type 'BuildContext'.
+ - 'BuildContext' is from 'package:flutter/src/widgets/framework.dart' ('/C:/flutter/packages/flutter/lib/src/widgets/framework.dart').
+Try correcting the name to the name of an existing getter, or defining a getter or field named 'surface'.
+                                : context.surface.borderEmphasis)),
+                                          ^^^^^^^
+test/upgrade/session_2_options.dart:390:43: Error: The getter 'surface' isn't defined for the type 'BuildContext'.
+ - 'BuildContext' is from 'package:flutter/src/widgets/framework.dart' ('/C:/flutter/packages/flutter/lib/src/widgets/framework.dart').
+Try correcting the name to the name of an existing getter, or defining a getter or field named 'surface'.
+                                : context.surface.textSecondary))),
+                                          ^^^^^^^
+test/upgrade/session_2_options.dart:395:39: Error: The getter 'surface' isn't defined for the type 'BuildContext'.
+ - 'BuildContext' is from 'package:flutter/src/widgets/framework.dart' ('/C:/flutter/packages/flutter/lib/src/widgets/framework.dart').
+Try correcting the name to the name of an existing getter, or defining a getter or field named 'surface'.
+                            ? context.surface.textPrimary
+                                      ^^^^^^^
+test/upgrade/session_2_options.dart:396:39: Error: The getter 'surface' isn't defined for the type 'BuildContext'.
+ - 'BuildContext' is from 'package:flutter/src/widgets/framework.dart' ('/C:/flutter/packages/flutter/lib/src/widgets/framework.dart').
+Try correcting the name to the name of an existing getter, or defining a getter or field named 'surface'.
+                            : context.surface.textSecondary)),
+                                      ^^^^^^^
+test/upgrade/session_2_options.dart:404:56: Error: The getter 'surface' isn't defined for the type 'BuildContext'.
+ - 'BuildContext' is from 'package:flutter/src/widgets/framework.dart' ('/C:/flutter/packages/flutter/lib/src/widgets/framework.dart').
+Try correcting the name to the name of an existing getter, or defining a getter or field named 'surface'.
+                        AppText.caption(color: context.surface.textSecondary)),
+                                                       ^^^^^^^
+test/upgrade/session_2_options.dart:416:54: Error: The getter 'surface' isn't defined for the type 'BuildContext'.
+ - 'BuildContext' is from 'package:flutter/src/widgets/framework.dart' ('/C:/flutter/packages/flutter/lib/src/widgets/framework.dart').
+Try correcting the name to the name of an existing getter, or defining a getter or field named 'surface'.
+            style: AppText.titleLarge(color: context.surface.textPrimary)),
+                                                     ^^^^^^^
+test/upgrade/session_2_options.dart:422:48: Error: The getter 'surface' isn't defined for the type 'BuildContext'.
+ - 'BuildContext' is from 'package:flutter/src/widgets/framework.dart' ('/C:/flutter/packages/flutter/lib/src/widgets/framework.dart').
+Try correcting the name to the name of an existing getter, or defining a getter or field named 'surface'.
+            style: AppText.body(color: context.surface.textSecondary)),
+                                               ^^^^^^^
+test/upgrade/session_2_options.dart:440:28: Error: The getter 'surface' isn't defined for the type 'BuildContext'.
+ - 'BuildContext' is from 'package:flutter/src/widgets/framework.dart' ('/C:/flutter/packages/flutter/lib/src/widgets/framework.dart').
+Try correcting the name to the name of an existing getter, or defining a getter or field named 'surface'.
+            color: context.surface.textSecondary, size: 32),
+                           ^^^^^^^
+test/upgrade/session_2_options.dart:443:54: Error: The getter 'surface' isn't defined for the type 'BuildContext'.
+ - 'BuildContext' is from 'package:flutter/src/widgets/framework.dart' ('/C:/flutter/packages/flutter/lib/src/widgets/framework.dart').
+Try correcting the name to the name of an existing getter, or defining a getter or field named 'surface'.
+            style: AppText.titleLarge(color: context.surface.textPrimary)),
+                                                     ^^^^^^^
+test/upgrade/session_2_options.dart:446:48: Error: The getter 'surface' isn't defined for the type 'BuildContext'.
+ - 'BuildContext' is from 'package:flutter/src/widgets/framework.dart' ('/C:/flutter/packages/flutter/lib/src/widgets/framework.dart').
+Try correcting the name to the name of an existing getter, or defining a getter or field named 'surface'.
+            style: AppText.body(color: context.surface.textSecondary)),
+                                               ^^^^^^^
+test/upgrade/session_2_options.dart:455:57: Error: The getter 'surface' isn't defined for the type 'BuildContext'.
+ - 'BuildContext' is from 'package:flutter/src/widgets/framework.dart' ('/C:/flutter/packages/flutter/lib/src/widgets/framework.dart').
+Try correcting the name to the name of an existing getter, or defining a getter or field named 'surface'.
+                  AppText.sectionHeading(color: context.surface.textPrimary)),
+                                                        ^^^^^^^
+test/upgrade/session_2_options.dart:466:48: Error: The getter 'surface' isn't defined for the type 'BuildContext'.
+ - 'BuildContext' is from 'package:flutter/src/widgets/framework.dart' ('/C:/flutter/packages/flutter/lib/src/widgets/framework.dart').
+Try correcting the name to the name of an existing getter, or defining a getter or field named 'surface'.
+            style: AppText.body(color: context.surface.textSecondary)),
+                                               ^^^^^^^
+test/upgrade/session_2_options.dart:475:38: Error: The getter 'surface' isn't defined for the type 'BuildContext'.
+ - 'BuildContext' is from 'package:flutter/src/widgets/framework.dart' ('/C:/flutter/packages/flutter/lib/src/widgets/framework.dart').
+Try correcting the name to the name of an existing getter, or defining a getter or field named 'surface'.
+            backgroundColor: context.surface.surface2),
+                                     ^^^^^^^
+test/upgrade/session_2_options.dart:484:38: Error: The getter 'surface' isn't defined for the type 'BuildContext'.
+ - 'BuildContext' is from 'package:flutter/src/widgets/framework.dart' ('/C:/flutter/packages/flutter/lib/src/widgets/framework.dart').
+Try correcting the name to the name of an existing getter, or defining a getter or field named 'surface'.
+                      color: context.surface.textPrimary))),
+                                     ^^^^^^^
+test/upgrade/session_2_options.dart:490:50: Error: The getter 'surface' isn't defined for the type 'BuildContext'.
+ - 'BuildContext' is from 'package:flutter/src/widgets/framework.dart' ('/C:/flutter/packages/flutter/lib/src/widgets/framework.dart').
+Try correcting the name to the name of an existing getter, or defining a getter or field named 'surface'.
+              style: AppText.body(color: context.surface.textSecondary))
+                                                 ^^^^^^^
+test/upgrade/session_2_options.dart:494:56: Error: The getter 'surface' isn't defined for the type 'BuildContext'.
+ - 'BuildContext' is from 'package:flutter/src/widgets/framework.dart' ('/C:/flutter/packages/flutter/lib/src/widgets/framework.dart').
+Try correcting the name to the name of an existing getter, or defining a getter or field named 'surface'.
+              style: AppText.sheetTitle(color: context.surface.textPrimary)),
+                                                       ^^^^^^^
+test/upgrade/session_2_options.dart:497:50: Error: The getter 'surface' isn't defined for the type 'BuildContext'.
+ - 'BuildContext' is from 'package:flutter/src/widgets/framework.dart' ('/C:/flutter/packages/flutter/lib/src/widgets/framework.dart').
+Try correcting the name to the name of an existing getter, or defining a getter or field named 'surface'.
+              style: AppText.meta(color: context.surface.textSecondary)
+                                                 ^^^^^^^
+test/upgrade/session_2_options.dart:518:26: Error: The getter 'surface' isn't defined for the type 'BuildContext'.
+ - 'BuildContext' is from 'package:flutter/src/widgets/framework.dart' ('/C:/flutter/packages/flutter/lib/src/widgets/framework.dart').
+Try correcting the name to the name of an existing getter, or defining a getter or field named 'surface'.
+          color: context.surface.surface1,
+                         ^^^^^^^
+test/upgrade/session_2_options.dart:550:40: Error: The getter 'surface' isn't defined for the type 'BuildContext'.
+ - 'BuildContext' is from 'package:flutter/src/widgets/framework.dart' ('/C:/flutter/packages/flutter/lib/src/widgets/framework.dart').
+Try correcting the name to the name of an existing getter, or defining a getter or field named 'surface'.
+              foregroundColor: context.surface.textSecondary,
+                                       ^^^^^^^
+test/upgrade/session_2_options.dart:560:56: Error: The getter 'surface' isn't defined for the type 'BuildContext'.
+ - 'BuildContext' is from 'package:flutter/src/widgets/framework.dart' ('/C:/flutter/packages/flutter/lib/src/widgets/framework.dart').
+Try correcting the name to the name of an existing getter, or defining a getter or field named 'surface'.
+                    style: AppText.body(color: context.surface.textSecondary)))
+                                                       ^^^^^^^
+00:00 +0 -1: loading C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_render_test.dart [E]
+  Failed to load "C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_render_test.dart":
+  Compilation failed for testPath=C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_render_test.dart: test/upgrade/session_2_options.dart:36:32: Error: The getter 'surface' isn't defined for the type 'BuildContext'.
+   - 'BuildContext' is from 'package:flutter/src/widgets/framework.dart' ('/C:/flutter/packages/flutter/lib/src/widgets/framework.dart').
+  Try correcting the name to the name of an existing getter, or defining a getter or field named 'surface'.
+        backgroundColor: context.surface.bgBase,
+                                 ^^^^^^^
+  test/upgrade/session_2_options.dart:58:30: Error: The getter 'surface' isn't defined for the type 'BuildContext'.
+   - 'BuildContext' is from 'package:flutter/src/widgets/framework.dart' ('/C:/flutter/packages/flutter/lib/src/widgets/framework.dart').
+  Try correcting the name to the name of an existing getter, or defining a getter or field named 'surface'.
+                color: context.surface.surface1,
+                               ^^^^^^^
+  test/upgrade/session_2_options.dart:75:55: Error: The getter 'surface' isn't defined for the type 'BuildContext'.
+   - 'BuildContext' is from 'package:flutter/src/widgets/framework.dart' ('/C:/flutter/packages/flutter/lib/src/widgets/framework.dart').
+  Try correcting the name to the name of an existing getter, or defining a getter or field named 'surface'.
+              style: AppText.screenTitle(color: context.surface.textPrimary)),
+                                                        ^^^^^^^
+  test/upgrade/session_2_options.dart:82:50: Error: The getter 'surface' isn't defined for the type 'BuildContext'.
+   - 'BuildContext' is from 'package:flutter/src/widgets/framework.dart' ('/C:/flutter/packages/flutter/lib/src/widgets/framework.dart').
+  Try correcting the name to the name of an existing getter, or defining a getter or field named 'surface'.
+                style: AppText.body(color: context.surface.textSecondary)),
+                                                   ^^^^^^^
+  test/upgrade/session_2_options.dart:90:50: Error: The getter 'surface' isn't defined for the type 'BuildContext'.
+   - 'BuildContext' is from 'package:flutter/src/widgets/framework.dart' ('/C:/flutter/packages/flutter/lib/src/widgets/framework.dart').
+  Try correcting the name to the name of an existing getter, or defining a getter or field named 'surface'.
+                style: AppText.body(color: context.surface.textSecondary)),
+                                                   ^^^^^^^
+  test/upgrade/session_2_options.dart:107:56: Error: The getter 'surface' isn't defined for the type 'BuildContext'.
+   - 'BuildContext' is from 'package:flutter/src/widgets/framework.dart' ('/C:/flutter/packages/flutter/lib/src/widgets/framework.dart').
+  Try correcting the name to the name of an existing getter, or defining a getter or field named 'surface'.
+                style: AppText.titleLarge(color: context.surface.textPrimary)),
+                                                         ^^^^^^^
+  test/upgrade/session_2_options.dart:114:50: Error: The getter 'surface' isn't defined for the type 'BuildContext'.
+   - 'BuildContext' is from 'package:flutter/src/widgets/framework.dart' ('/C:/flutter/packages/flutter/lib/src/widgets/framework.dart').
+  Try correcting the name to the name of an existing getter, or defining a getter or field named 'surface'.
+                style: AppText.body(color: context.surface.textSecondary)),
+                                                   ^^^^^^^
+  test/upgrade/session_2_options.dart:122:56: Error: The getter 'surface' isn't defined for the type 'BuildContext'.
+   - 'BuildContext' is from 'package:flutter/src/widgets/framework.dart' ('/C:/flutter/packages/flutter/lib/src/widgets/framework.dart').
+  Try correcting the name to the name of an existing getter, or defining a getter or field named 'surface'.
+                style: AppText.titleLarge(color: context.surface.textPrimary)),
+                                                         ^^^^^^^
+  test/upgrade/session_2_options.dart:125:50: Error: The getter 'surface' isn't defined for the type 'BuildContext'.
+   - 'BuildContext' is from 'package:flutter/src/widgets/framework.dart' ('/C:/flutter/packages/flutter/lib/src/widgets/framework.dart').
+  Try correcting the name to the name of an existing getter, or defining a getter or field named 'surface'.
+                style: AppText.body(color: context.surface.textSecondary)),
+                                                   ^^^^^^^
+  test/upgrade/session_2_options.dart:186:56: Error: The getter 'surface' isn't defined for the type 'BuildContext'.
+   - 'BuildContext' is from 'package:flutter/src/widgets/framework.dart' ('/C:/flutter/packages/flutter/lib/src/widgets/framework.dart').
+  Try correcting the name to the name of an existing getter, or defining a getter or field named 'surface'.
+                      style: AppText.body(color: context.surface.textSecondary)),
+                                                         ^^^^^^^
+  test/upgrade/session_2_options.dart:207:55: Error: The getter 'surface' isn't defined for the type 'BuildContext'.
+   - 'BuildContext' is from 'package:flutter/src/widgets/framework.dart' ('/C:/flutter/packages/flutter/lib/src/widgets/framework.dart').
+  Try correcting the name to the name of an existing getter, or defining a getter or field named 'surface'.
+              style: AppText.screenTitle(color: context.surface.textPrimary)),
+                                                        ^^^^^^^
+  test/upgrade/session_2_options.dart:211:50: Error: The getter 'surface' isn't defined for the type 'BuildContext'.
+   - 'BuildContext' is from 'package:flutter/src/widgets/framework.dart' ('/C:/flutter/packages/flutter/lib/src/widgets/framework.dart').
+  Try correcting the name to the name of an existing getter, or defining a getter or field named 'surface'.
+                style: AppText.body(color: context.surface.textSecondary)),
+                                                   ^^^^^^^
+  test/upgrade/session_2_options.dart:214:48: Error: The getter 'surface' isn't defined for the type 'BuildContext'.
+   - 'BuildContext' is from 'package:flutter/src/widgets/framework.dart' ('/C:/flutter/packages/flutter/lib/src/widgets/framework.dart').
+  Try correcting the name to the name of an existing getter, or defining a getter or field named 'surface'.
+              style: AppText.body(color: context.surface.textSecondary)),
+                                                 ^^^^^^^
+  test/upgrade/session_2_options.dart:218:50: Error: The getter 'surface' isn't defined for the type 'BuildContext'.
+   - 'BuildContext' is from 'package:flutter/src/widgets/framework.dart' ('/C:/flutter/packages/flutter/lib/src/widgets/framework.dart').
+  Try correcting the name to the name of an existing getter, or defining a getter or field named 'surface'.
+                style: AppText.body(color: context.surface.textPrimary)),
+                                                   ^^^^^^^
+  test/upgrade/session_2_options.dart:254:54: Error: The getter 'surface' isn't defined for the type 'BuildContext'.
+   - 'BuildContext' is from 'package:flutter/src/widgets/framework.dart' ('/C:/flutter/packages/flutter/lib/src/widgets/framework.dart').
+  Try correcting the name to the name of an existing getter, or defining a getter or field named 'surface'.
+                    style: AppText.meta(color: context.surface.textSecondary)),
+                                                       ^^^^^^^
+  test/upgrade/session_2_options.dart:260:54: Error: The getter 'surface' isn't defined for the type 'BuildContext'.
+   - 'BuildContext' is from 'package:flutter/src/widgets/framework.dart' ('/C:/flutter/packages/flutter/lib/src/widgets/framework.dart').
+  Try correcting the name to the name of an existing getter, or defining a getter or field named 'surface'.
+                    style: AppText.body(color: context.surface.textPrimary)),
+                                                       ^^^^^^^
+  test/upgrade/session_2_options.dart:265:59: Error: The getter 'surface' isn't defined for the type 'BuildContext'.
+   - 'BuildContext' is from 'package:flutter/src/widgets/framework.dart' ('/C:/flutter/packages/flutter/lib/src/widgets/framework.dart').
+  Try correcting the name to the name of an existing getter, or defining a getter or field named 'surface'.
+                          AppText.sheetTitle(color: context.surface.textPrimary)
+                                                            ^^^^^^^
+  test/upgrade/session_2_options.dart:280:42: Error: The getter 'surface' isn't defined for the type 'BuildContext'.
+   - 'BuildContext' is from 'package:flutter/src/widgets/framework.dart' ('/C:/flutter/packages/flutter/lib/src/widgets/framework.dart').
+  Try correcting the name to the name of an existing getter, or defining a getter or field named 'surface'.
+                            color: context.surface.textPrimary))),
+                                           ^^^^^^^
+  test/upgrade/session_2_options.dart:288:52: Error: The getter 'surface' isn't defined for the type 'BuildContext'.
+   - 'BuildContext' is from 'package:flutter/src/widgets/framework.dart' ('/C:/flutter/packages/flutter/lib/src/widgets/framework.dart').
+  Try correcting the name to the name of an existing getter, or defining a getter or field named 'surface'.
+                  style: AppText.meta(color: context.surface.textSecondary)),
+                                                     ^^^^^^^
+  test/upgrade/session_2_options.dart:291:54: Error: The getter 'surface' isn't defined for the type 'BuildContext'.
+   - 'BuildContext' is from 'package:flutter/src/widgets/framework.dart' ('/C:/flutter/packages/flutter/lib/src/widgets/framework.dart').
+  Try correcting the name to the name of an existing getter, or defining a getter or field named 'surface'.
+                    style: AppText.meta(color: context.surface.textSecondary)),
+                                                       ^^^^^^^
+  test/upgrade/session_2_options.dart:297:36: Error: The getter 'surface' isn't defined for the type 'BuildContext'.
+   - 'BuildContext' is from 'package:flutter/src/widgets/framework.dart' ('/C:/flutter/packages/flutter/lib/src/widgets/framework.dart').
+  Try correcting the name to the name of an existing getter, or defining a getter or field named 'surface'.
+              Divider(color: context.surface.borderSubtle, height: AppSpacing.x1),
+                                     ^^^^^^^
+  test/upgrade/session_2_options.dart:305:25: Error: The getter 'surface' isn't defined for the type 'BuildContext'.
+   - 'BuildContext' is from 'package:flutter/src/widgets/framework.dart' ('/C:/flutter/packages/flutter/lib/src/widgets/framework.dart').
+  Try correcting the name to the name of an existing getter, or defining a getter or field named 'surface'.
+                ? context.surface.surface2
+                          ^^^^^^^
+  test/upgrade/session_2_options.dart:306:25: Error: The getter 'surface' isn't defined for the type 'BuildContext'.
+   - 'BuildContext' is from 'package:flutter/src/widgets/framework.dart' ('/C:/flutter/packages/flutter/lib/src/widgets/framework.dart').
+  Try correcting the name to the name of an existing getter, or defining a getter or field named 'surface'.
+                : context.surface.surface1,
+                          ^^^^^^^
+  test/upgrade/session_2_options.dart:311:29: Error: The getter 'surface' isn't defined for the type 'BuildContext'.
+   - 'BuildContext' is from 'package:flutter/src/widgets/framework.dart' ('/C:/flutter/packages/flutter/lib/src/widgets/framework.dart').
+  Try correcting the name to the name of an existing getter, or defining a getter or field named 'surface'.
+                    : context.surface.borderDefault)),
+                              ^^^^^^^
+  test/upgrade/session_2_options.dart:321:31: Error: The getter 'surface' isn't defined for the type 'BuildContext'.
+   - 'BuildContext' is from 'package:flutter/src/widgets/framework.dart' ('/C:/flutter/packages/flutter/lib/src/widgets/framework.dart').
+  Try correcting the name to the name of an existing getter, or defining a getter or field named 'surface'.
+                      : context.surface.textSecondary,
+                                ^^^^^^^
+  test/upgrade/session_2_options.dart:328:56: Error: The getter 'surface' isn't defined for the type 'BuildContext'.
+   - 'BuildContext' is from 'package:flutter/src/widgets/framework.dart' ('/C:/flutter/packages/flutter/lib/src/widgets/framework.dart').
+  Try correcting the name to the name of an existing getter, or defining a getter or field named 'surface'.
+                style: AppText.sheetTitle(color: context.surface.textPrimary)),
+                                                         ^^^^^^^
+  test/upgrade/session_2_options.dart:331:50: Error: The getter 'surface' isn't defined for the type 'BuildContext'.
+   - 'BuildContext' is from 'package:flutter/src/widgets/framework.dart' ('/C:/flutter/packages/flutter/lib/src/widgets/framework.dart').
+  Try correcting the name to the name of an existing getter, or defining a getter or field named 'surface'.
+                style: AppText.meta(color: context.surface.textSecondary)),
+                                                   ^^^^^^^
+  test/upgrade/session_2_options.dart:334:52: Error: The getter 'surface' isn't defined for the type 'BuildContext'.
+   - 'BuildContext' is from 'package:flutter/src/widgets/framework.dart' ('/C:/flutter/packages/flutter/lib/src/widgets/framework.dart').
+  Try correcting the name to the name of an existing getter, or defining a getter or field named 'surface'.
+                  style: AppText.meta(color: context.surface.textSecondary)),
+                                                     ^^^^^^^
+  test/upgrade/session_2_options.dart:340:30: Error: The getter 'surface' isn't defined for the type 'BuildContext'.
+   - 'BuildContext' is from 'package:flutter/src/widgets/framework.dart' ('/C:/flutter/packages/flutter/lib/src/widgets/framework.dart').
+  Try correcting the name to the name of an existing getter, or defining a getter or field named 'surface'.
+                color: context.surface.textSecondary,
+                               ^^^^^^^
+  test/upgrade/session_2_options.dart:354:40: Error: The getter 'surface' isn't defined for the type 'BuildContext'.
+   - 'BuildContext' is from 'package:flutter/src/widgets/framework.dart' ('/C:/flutter/packages/flutter/lib/src/widgets/framework.dart').
+  Try correcting the name to the name of an existing getter, or defining a getter or field named 'surface'.
+                          color: context.surface.textPrimary))),
+                                         ^^^^^^^
+  test/upgrade/session_2_options.dart:356:32: Error: The getter 'surface' isn't defined for the type 'BuildContext'.
+   - 'BuildContext' is from 'package:flutter/src/widgets/framework.dart' ('/C:/flutter/packages/flutter/lib/src/widgets/framework.dart').
+  Try correcting the name to the name of an existing getter, or defining a getter or field named 'surface'.
+                  color: context.surface.textSecondary)
+                                 ^^^^^^^
+  test/upgrade/session_2_options.dart:361:57: Error: The getter 'surface' isn't defined for the type 'BuildContext'.
+   - 'BuildContext' is from 'package:flutter/src/widgets/framework.dart' ('/C:/flutter/packages/flutter/lib/src/widgets/framework.dart').
+  Try correcting the name to the name of an existing getter, or defining a getter or field named 'surface'.
+                    AppText.sectionHeading(color: context.surface.textPrimary)),
+                                                          ^^^^^^^
+  test/upgrade/session_2_options.dart:364:48: Error: The getter 'surface' isn't defined for the type 'BuildContext'.
+   - 'BuildContext' is from 'package:flutter/src/widgets/framework.dart' ('/C:/flutter/packages/flutter/lib/src/widgets/framework.dart').
+  Try correcting the name to the name of an existing getter, or defining a getter or field named 'surface'.
+              style: AppText.meta(color: context.surface.textSecondary)),
+                                                 ^^^^^^^
+  test/upgrade/session_2_options.dart:380:40: Error: The getter 'surface' isn't defined for the type 'BuildContext'.
+   - 'BuildContext' is from 'package:flutter/src/widgets/framework.dart' ('/C:/flutter/packages/flutter/lib/src/widgets/framework.dart').
+  Try correcting the name to the name of an existing getter, or defining a getter or field named 'surface'.
+                          color: context.surface.surface2,
+                                         ^^^^^^^
+  test/upgrade/session_2_options.dart:385:43: Error: The getter 'surface' isn't defined for the type 'BuildContext'.
+   - 'BuildContext' is from 'package:flutter/src/widgets/framework.dart' ('/C:/flutter/packages/flutter/lib/src/widgets/framework.dart').
+  Try correcting the name to the name of an existing getter, or defining a getter or field named 'surface'.
+                                  : context.surface.borderEmphasis)),
+                                            ^^^^^^^
+  test/upgrade/session_2_options.dart:390:43: Error: The getter 'surface' isn't defined for the type 'BuildContext'.
+   - 'BuildContext' is from 'package:flutter/src/widgets/framework.dart' ('/C:/flutter/packages/flutter/lib/src/widgets/framework.dart').
+  Try correcting the name to the name of an existing getter, or defining a getter or field named 'surface'.
+                                  : context.surface.textSecondary))),
+                                            ^^^^^^^
+  test/upgrade/session_2_options.dart:395:39: Error: The getter 'surface' isn't defined for the type 'BuildContext'.
+   - 'BuildContext' is from 'package:flutter/src/widgets/framework.dart' ('/C:/flutter/packages/flutter/lib/src/widgets/framework.dart').
+  Try correcting the name to the name of an existing getter, or defining a getter or field named 'surface'.
+                              ? context.surface.textPrimary
+                                        ^^^^^^^
+  test/upgrade/session_2_options.dart:396:39: Error: The getter 'surface' isn't defined for the type 'BuildContext'.
+   - 'BuildContext' is from 'package:flutter/src/widgets/framework.dart' ('/C:/flutter/packages/flutter/lib/src/widgets/framework.dart').
+  Try correcting the name to the name of an existing getter, or defining a getter or field named 'surface'.
+                              : context.surface.textSecondary)),
+                                        ^^^^^^^
+  test/upgrade/session_2_options.dart:404:56: Error: The getter 'surface' isn't defined for the type 'BuildContext'.
+   - 'BuildContext' is from 'package:flutter/src/widgets/framework.dart' ('/C:/flutter/packages/flutter/lib/src/widgets/framework.dart').
+  Try correcting the name to the name of an existing getter, or defining a getter or field named 'surface'.
+                          AppText.caption(color: context.surface.textSecondary)),
+                                                         ^^^^^^^
+  test/upgrade/session_2_options.dart:416:54: Error: The getter 'surface' isn't defined for the type 'BuildContext'.
+   - 'BuildContext' is from 'package:flutter/src/widgets/framework.dart' ('/C:/flutter/packages/flutter/lib/src/widgets/framework.dart').
+  Try correcting the name to the name of an existing getter, or defining a getter or field named 'surface'.
+              style: AppText.titleLarge(color: context.surface.textPrimary)),
+                                                       ^^^^^^^
+  test/upgrade/session_2_options.dart:422:48: Error: The getter 'surface' isn't defined for the type 'BuildContext'.
+   - 'BuildContext' is from 'package:flutter/src/widgets/framework.dart' ('/C:/flutter/packages/flutter/lib/src/widgets/framework.dart').
+  Try correcting the name to the name of an existing getter, or defining a getter or field named 'surface'.
+              style: AppText.body(color: context.surface.textSecondary)),
+                                                 ^^^^^^^
+  test/upgrade/session_2_options.dart:440:28: Error: The getter 'surface' isn't defined for the type 'BuildContext'.
+   - 'BuildContext' is from 'package:flutter/src/widgets/framework.dart' ('/C:/flutter/packages/flutter/lib/src/widgets/framework.dart').
+  Try correcting the name to the name of an existing getter, or defining a getter or field named 'surface'.
+              color: context.surface.textSecondary, size: 32),
+                             ^^^^^^^
+  test/upgrade/session_2_options.dart:443:54: Error: The getter 'surface' isn't defined for the type 'BuildContext'.
+   - 'BuildContext' is from 'package:flutter/src/widgets/framework.dart' ('/C:/flutter/packages/flutter/lib/src/widgets/framework.dart').
+  Try correcting the name to the name of an existing getter, or defining a getter or field named 'surface'.
+              style: AppText.titleLarge(color: context.surface.textPrimary)),
+                                                       ^^^^^^^
+  test/upgrade/session_2_options.dart:446:48: Error: The getter 'surface' isn't defined for the type 'BuildContext'.
+   - 'BuildContext' is from 'package:flutter/src/widgets/framework.dart' ('/C:/flutter/packages/flutter/lib/src/widgets/framework.dart').
+  Try correcting the name to the name of an existing getter, or defining a getter or field named 'surface'.
+              style: AppText.body(color: context.surface.textSecondary)),
+                                                 ^^^^^^^
+  test/upgrade/session_2_options.dart:455:57: Error: The getter 'surface' isn't defined for the type 'BuildContext'.
+   - 'BuildContext' is from 'package:flutter/src/widgets/framework.dart' ('/C:/flutter/packages/flutter/lib/src/widgets/framework.dart').
+  Try correcting the name to the name of an existing getter, or defining a getter or field named 'surface'.
+                    AppText.sectionHeading(color: context.surface.textPrimary)),
+                                                          ^^^^^^^
+  test/upgrade/session_2_options.dart:466:48: Error: The getter 'surface' isn't defined for the type 'BuildContext'.
+   - 'BuildContext' is from 'package:flutter/src/widgets/framework.dart' ('/C:/flutter/packages/flutter/lib/src/widgets/framework.dart').
+  Try correcting the name to the name of an existing getter, or defining a getter or field named 'surface'.
+              style: AppText.body(color: context.surface.textSecondary)),
+                                                 ^^^^^^^
+  test/upgrade/session_2_options.dart:475:38: Error: The getter 'surface' isn't defined for the type 'BuildContext'.
+   - 'BuildContext' is from 'package:flutter/src/widgets/framework.dart' ('/C:/flutter/packages/flutter/lib/src/widgets/framework.dart').
+  Try correcting the name to the name of an existing getter, or defining a getter or field named 'surface'.
+              backgroundColor: context.surface.surface2),
+                                       ^^^^^^^
+  test/upgrade/session_2_options.dart:484:38: Error: The getter 'surface' isn't defined for the type 'BuildContext'.
+   - 'BuildContext' is from 'package:flutter/src/widgets/framework.dart' ('/C:/flutter/packages/flutter/lib/src/widgets/framework.dart').
+  Try correcting the name to the name of an existing getter, or defining a getter or field named 'surface'.
+                        color: context.surface.textPrimary))),
+                                       ^^^^^^^
+  test/upgrade/session_2_options.dart:490:50: Error: The getter 'surface' isn't defined for the type 'BuildContext'.
+   - 'BuildContext' is from 'package:flutter/src/widgets/framework.dart' ('/C:/flutter/packages/flutter/lib/src/widgets/framework.dart').
+  Try correcting the name to the name of an existing getter, or defining a getter or field named 'surface'.
+                style: AppText.body(color: context.surface.textSecondary))
+                                                   ^^^^^^^
+  test/upgrade/session_2_options.dart:494:56: Error: The getter 'surface' isn't defined for the type 'BuildContext'.
+   - 'BuildContext' is from 'package:flutter/src/widgets/framework.dart' ('/C:/flutter/packages/flutter/lib/src/widgets/framework.dart').
+  Try correcting the name to the name of an existing getter, or defining a getter or field named 'surface'.
+                style: AppText.sheetTitle(color: context.surface.textPrimary)),
+                                                         ^^^^^^^
+  test/upgrade/session_2_options.dart:497:50: Error: The getter 'surface' isn't defined for the type 'BuildContext'.
+   - 'BuildContext' is from 'package:flutter/src/widgets/framework.dart' ('/C:/flutter/packages/flutter/lib/src/widgets/framework.dart').
+  Try correcting the name to the name of an existing getter, or defining a getter or field named 'surface'.
+                style: AppText.meta(color: context.surface.textSecondary)
+                                                   ^^^^^^^
+  test/upgrade/session_2_options.dart:518:26: Error: The getter 'surface' isn't defined for the type 'BuildContext'.
+   - 'BuildContext' is from 'package:flutter/src/widgets/framework.dart' ('/C:/flutter/packages/flutter/lib/src/widgets/framework.dart').
+  Try correcting the name to the name of an existing getter, or defining a getter or field named 'surface'.
+            color: context.surface.surface1,
+                           ^^^^^^^
+  test/upgrade/session_2_options.dart:550:40: Error: The getter 'surface' isn't defined for the type 'BuildContext'.
+   - 'BuildContext' is from 'package:flutter/src/widgets/framework.dart' ('/C:/flutter/packages/flutter/lib/src/widgets/framework.dart').
+  Try correcting the name to the name of an existing getter, or defining a getter or field named 'surface'.
+                foregroundColor: context.surface.textSecondary,
+                                         ^^^^^^^
+  test/upgrade/session_2_options.dart:560:56: Error: The getter 'surface' isn't defined for the type 'BuildContext'.
+   - 'BuildContext' is from 'package:flutter/src/widgets/framework.dart' ('/C:/flutter/packages/flutter/lib/src/widgets/framework.dart').
+  Try correcting the name to the name of an existing getter, or defining a getter or field named 'surface'.
+                      style: AppText.body(color: context.surface.textSecondary)))
+                                                         ^^^^^^^
+  .
+00:00 +0 -1: Some tests failed.
+
+Failing tests:
+  C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_render_test.dart: loading C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_render_test.dart

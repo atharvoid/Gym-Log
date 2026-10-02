@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -9,7 +7,6 @@ import 'package:gymlog/core/theme/app_text.dart';
 import 'package:gymlog/core/theme/dynamic_accent_theme.dart';
 import 'package:gymlog/shared/widgets/ui/app_card.dart';
 import 'package:gymlog/shared/widgets/ui/app_refresh_indicator.dart';
-import 'package:gymlog/shared/widgets/ui/start_button.dart';
 import 'package:gymlog/shared/widgets/ui/action_bottom_sheet.dart';
 import 'package:gymlog/shared/widgets/ui/app_dialog.dart';
 import 'package:gymlog/shared/widgets/ui/app_snack_bar.dart';
@@ -29,6 +26,8 @@ import 'package:gymlog/shared/providers/bottom_chrome_provider.dart';
 import 'package:gymlog/shared/widgets/feedback/undoable_delete.dart';
 import 'package:gymlog/features/auth/presentation/providers/tour_provider.dart';
 import 'package:gymlog/features/routines/presentation/providers/routines_provider.dart';
+import 'package:gymlog/features/routines/presentation/widgets/training_launchpad.dart';
+import 'package:gymlog/features/routines/presentation/providers/training_launch_provider.dart';
 import 'package:gymlog/shared/widgets/tour/spotlight_tour_overlay.dart';
 
 /// Whether the weekly-stats card should be rendered.
@@ -101,6 +100,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   /// Target for the step-0 tour spotlight when the user already has routines
   /// (deferred tour start) and the "Find a program" card is not shown.
   final GlobalKey _quickStartKey = GlobalKey();
+  final GlobalKey _historyHeaderKey = GlobalKey();
 
   /// Latch for the deferred-tour kickoff. Without it, build scheduled a fresh
   /// post-frame callback on every rebuild while the deferred condition held.
@@ -168,14 +168,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     // and threaded down; the cards themselves stay provider-free.
     final unit = ref.watch(weightUnitProvider);
 
-    // Home only ever asks "does this user have any routines at all?", so it
-    // selects that one boolean. Watching the whole hydrated list rebuilt the
-    // entire screen — every visible history card included — whenever any
-    // routine, exercise or set anywhere in the library changed.
-    final hasNoRoutines = ref.watch(
-      hydratedRoutinesProvider
-          .select((async) => (async.valueOrNull ?? const []).isEmpty),
-    );
+    final routines = ref.watch(hydratedRoutinesProvider);
+    final choice = ref.watch(chosenRoutineProvider);
+    final active = ref.watch(activeWorkoutProvider) != null;
+    final freestyleIsPrimary = routines.hasValue &&
+        !routines.hasError &&
+        routines.requireValue.isEmpty &&
+        choice.hasValue &&
+        !choice.hasError &&
+        choice.requireValue == null;
+    final hasNoRoutines = routines.hasValue && routines.requireValue.isEmpty;
     final tourStep = ref.watch(firstRunTourProvider);
     final streak = ref.watch(streakStatsProvider);
 
@@ -185,51 +187,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final hasActivity = streak.isResolved &&
         (streak.currentStreak > 0 || streak.workoutsThisWeek > 0);
     final showStats = showWeeklyStatsCard(
-      hasActivity: hasActivity,
+      hasActivity: hasActivity || historyState.items.isNotEmpty,
       tourStep: tourStep,
       statsPending: !streak.isResolved,
     );
-    final showFindProgram = hasNoRoutines ||
-        tourStep == 0 ||
-        tourStep == FirstRunTourNotifier.deferredStep;
-
     // If the tour is deferred and the user now has real content, kick it off.
     if (tourStep == FirstRunTourNotifier.deferredStep &&
-        (!hasNoRoutines || hasActivity)) {
+        (routines.hasValue && (!hasNoRoutines || hasActivity))) {
       _scheduleDeferredTourStart();
     }
 
-    // ── Initial load: skeleton feed (no spinner, no layout jump) ───────
-    if (historyState.isInitialLoad) {
-      return Scaffold(
-        backgroundColor: surface.bgBase,
-        body: SafeArea(
-          child: SkeletonPulse(
-            label: 'Loading your workouts',
-            child: ListView(
-              physics: const NeverScrollableScrollPhysics(),
-              padding: EdgeInsets.fromLTRB(16, 16, 16, bottomInset + 24),
-              children: const [
-                SkeletonBox(height: 96, radius: AppRadius.card),
-                SizedBox(height: 20),
-                SkeletonBox(height: 124, radius: AppRadius.card),
-                SizedBox(height: 16),
-                SkeletonBox(width: 150, height: 18),
-                SizedBox(height: 12),
-                WorkoutHistoryCardSkeleton(),
-                SizedBox(height: 8),
-                WorkoutHistoryCardSkeleton(),
-                SizedBox(height: 8),
-                WorkoutHistoryCardSkeleton(),
-              ],
-            ),
-          ),
-        ),
-      );
-    }
-
-    // itemCount: [HeaderBand] + [FindProgram]? + [QuickStart] + [Header] + [N cards] + [footer]
-    final int baseCount = showFindProgram ? 4 : 3;
+    const baseCount = 1;
     final itemCount = baseCount + totalItems + 1;
 
     return Scaffold(
@@ -248,18 +216,59 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 itemCount: itemCount,
                 itemBuilder: (context, index) {
                   if (index == 0) {
-                    return _HomeHeaderBand(
-                      weeklyStatsKey: _weeklyStatsKey,
-                      showWeeklyStats: showStats,
-                    );
-                  }
-                  if (showFindProgram) {
-                    if (index == 1) return _findProgramCard();
-                    if (index == 2) return _quickStart();
-                    if (index == 3) return _header();
-                  } else {
-                    if (index == 1) return _quickStart();
-                    if (index == 2) return _header();
+                    return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Train',
+                              style: AppText.screenTitle(
+                                  color: surface.textPrimary)),
+                          const SizedBox(height: AppSpacing.x4),
+                          TrainingLaunchpad(
+                              key: _quickStartKey,
+                              browseKey: _findProgramKey,
+                              onBrowsePrograms: () {
+                                if (tourStep == 0 ||
+                                    tourStep ==
+                                        FirstRunTourNotifier.deferredStep) {
+                                  ref
+                                      .read(firstRunTourProvider.notifier)
+                                      .setStep(1);
+                                }
+                                context.push('/routines/explore');
+                              }),
+                          const SizedBox(height: AppSpacing.x3),
+                          Wrap(spacing: AppSpacing.x4, children: [
+                            if (!freestyleIsPrimary && !active)
+                              TextButton(
+                                  onPressed: () =>
+                                      launchTraining(context, ref, null),
+                                  style: TextButton.styleFrom(
+                                      foregroundColor: surface.textSecondary),
+                                  child: const Text('Log a different workout')),
+                            TextButton(
+                                onPressed: () {
+                                  final target =
+                                      _historyHeaderKey.currentContext;
+                                  if (target != null) {
+                                    Scrollable.ensureVisible(target,
+                                        duration: Duration.zero);
+                                  }
+                                },
+                                style: TextButton.styleFrom(
+                                    foregroundColor: surface.textSecondary),
+                                child: const Text('History')),
+                          ]),
+                          _HomeHeaderBand(
+                              weeklyStatsKey: _weeklyStatsKey,
+                              showWeeklyStats: showStats),
+                          Semantics(
+                              key: _historyHeaderKey,
+                              header: true,
+                              child: Padding(
+                                  padding: const EdgeInsets.only(bottom: 12),
+                                  child: Text('Workout History',
+                                      style: AppText.sectionHeading()))),
+                        ]);
                   }
 
                   final historyIndex = index - baseCount;
@@ -303,8 +312,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     ? 'Find a training program'
                     : 'Ready to train?',
                 description: hasNoRoutines
-                    ? 'Choose a trainer-built routine. Tap "Browse programs" to see workouts tailored for your experience level.'
-                    : 'Tap "Start Empty Workout" to log a session, or browse your routine library for a structured program.',
+                    ? 'Tap "Browse programs" to add a saved plan, or log a different workout.'
+                    : 'Choose a routine and tap Start, or log a different workout.',
                 step: 0,
                 borderRadius: AppRadius.card,
               ),
@@ -319,7 +328,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 targetKey: _weeklyStatsKey,
                 title: 'Your weekly progress',
                 description: hasActivity
-                    ? 'This card tracks your workouts toward your weekly goal and your current streak. Keep it up to grow that streak!'
+                    ? 'This card shows logged training days against your weekly goal.'
                     : 'This is where your weekly progress lives. Log your first workout to start filling the ring toward your goal.',
                 step: 4,
                 borderRadius: AppRadius.card,
@@ -330,102 +339,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  Widget _findProgramCard() {
-    final tourStep = ref.read(firstRunTourProvider);
-
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 20),
-      child: AppCard(
-        key: _findProgramKey,
-        radius: AppRadius.card,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Import your first program', style: AppText.exerciseName()),
-            const SizedBox(height: 3),
-            Text(
-              'Browse trainer-built routines and add one to your library to get started.',
-              style: AppText.meta(),
-            ),
-            const SizedBox(height: 12),
-            TextButton(
-              onPressed: () {
-                if (tourStep == 0 ||
-                    tourStep == FirstRunTourNotifier.deferredStep) {
-                  ref.read(firstRunTourProvider.notifier).setStep(1);
-                }
-                context.push('/routines/explore');
-              },
-              style: TextButton.styleFrom(
-                padding: EdgeInsets.zero,
-                minimumSize: const Size(0, 36),
-                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              ),
-              // The arrow is decoration. Left inside the Text it was read out
-              // as "right arrow" by TalkBack.
-              child: Text(
-                'Browse programs →',
-                semanticsLabel: 'Browse programs',
-                style: AppText.label(color: context.accent.base),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  // ── Quick Start ────────────────────────────────────────────────
-  Widget _quickStart() {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 20),
-      child: AppCard(
-        key: _quickStartKey,
-        radius: AppRadius.card,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Semantics(
-              header: true,
-              child: Text('Quick Start', style: AppText.sectionHeading()),
-            ),
-            const SizedBox(height: 16),
-            StartButton(
-              label: 'Start Empty Workout',
-              icon: Icons.add_circle_outline,
-              expand: true,
-              onPressed: () {
-                // Guard against a double-tap pushing two active-workout
-                // screens (startWorkout sets state synchronously).
-                if (ref.read(activeWorkoutProvider) != null) return;
-                ref.read(activeWorkoutProvider.notifier).startWorkout();
-                context.push('/workout/active');
-              },
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  // ── Section header ─────────────────────────────────────────────
-  Widget _header() {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: Semantics(
-        header: true,
-        child: Text(
-          'Workout History',
-          style: AppText.sectionHeading(),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-        ),
-      ),
-    );
-  }
-
   // ── Footer: loading | error | empty | all-caught-up ───────────────────
   Widget _footer(WorkoutHistoryState state) {
+    if (state.isInitialLoad) {
+      return const Padding(
+          padding: EdgeInsets.all(16), child: Text('Loading workout history'));
+    }
     if (state.isLoadingMore) {
       return const Padding(
         padding: EdgeInsets.only(top: 4),
@@ -467,24 +386,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             Text(
               'Your history lives here.',
               style: AppText.meta(),
-            ),
-            const SizedBox(height: 12),
-            TextButton(
-              onPressed: () {
-                if (ref.read(activeWorkoutProvider) != null) return;
-                ref.read(activeWorkoutProvider.notifier).startWorkout();
-                context.push('/workout/active');
-              },
-              style: TextButton.styleFrom(
-                padding: EdgeInsets.zero,
-                minimumSize: const Size(0, 36),
-                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              ),
-              child: Text(
-                'Start your first workout →',
-                semanticsLabel: 'Start your first workout',
-                style: AppText.label(color: context.accent.base),
-              ),
             ),
           ],
         ),
@@ -601,58 +502,16 @@ class _HomeHeaderBand extends ConsumerStatefulWidget {
 }
 
 class _HomeHeaderBandState extends ConsumerState<_HomeHeaderBand> {
-  late String _greeting;
-  Timer? _greetingTimer;
-
-  @override
-  void initState() {
-    super.initState();
-    _greeting = greetingForHour(DateTime.now().hour);
-    _scheduleGreetingRefresh();
-  }
-
-  /// One-shot timer aimed at the next greeting boundary, rescheduled each
-  /// time it fires. Home is never disposed while the app is foregrounded
-  /// (indexed-stack shell), so without this the greeting is frozen at
-  /// whatever it was when the app launched.
-  void _scheduleGreetingRefresh() {
-    _greetingTimer?.cancel();
-    final now = DateTime.now();
-    // One second past the boundary, so the hour has definitely rolled over.
-    final delay =
-        nextGreetingBoundary(now).difference(now) + const Duration(seconds: 1);
-    _greetingTimer = Timer(delay, () {
-      if (!mounted) return;
-      setState(() => _greeting = greetingForHour(DateTime.now().hour));
-      _scheduleGreetingRefresh();
-    });
-  }
-
-  @override
-  void dispose() {
-    _greetingTimer?.cancel();
-    super.dispose();
-  }
-
   @override
   Widget build(BuildContext context) {
     final streak = ref.watch(streakStatsProvider);
     final goal = ref.watch(weeklyGoalProvider);
-    final surface = context.surface;
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Identity (always present — top is never empty)
-          Text(_greeting,
-              style: AppText.screenTitle(color: surface.textPrimary)
-                  .copyWith(letterSpacing: -0.5)),
-          const SizedBox(height: 4),
-          Text('Ready to train?',
-              style: AppText.body(color: surface.textSecondary)),
-
           // Promoted week stats. Three mutually exclusive states, matching
           // the rigour the history feed below already had.
           if (widget.showWeeklyStats) ...[
@@ -718,7 +577,7 @@ class _HomeHeaderBandState extends ConsumerState<_HomeHeaderBand> {
         // wrap tappable children; the distinction is the reason it stays.
         container: true,
         excludeSemantics: true,
-        label: 'This week: ${streak.workoutsThisWeek} of $goal workouts'
+        label: 'This week: ${streak.workoutsThisWeek} of $goal training days'
             '${goalMet ? ', goal met' : ''}'
             '${streak.currentStreak > 0 ? '. ${streak.currentStreak} day streak' : ''}',
         child: Column(
@@ -730,7 +589,7 @@ class _HomeHeaderBandState extends ConsumerState<_HomeHeaderBand> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('This week',
+                      Text('Training days this week',
                           style: AppText.meta(color: surface.textSecondary)),
                       const SizedBox(height: 2),
                       Row(

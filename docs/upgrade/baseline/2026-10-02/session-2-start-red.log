@@ -1,0 +1,45 @@
+00:00 +0: loading C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_launch_actions_test.dart
+00:00 +0: deleted or emptied routine cannot start a session
+00:00 +0 -1: deleted or emptied routine cannot start a session [E]
+  Expected: LaunchResult:<LaunchResult.unavailable>
+    Actual: LaunchResult:<LaunchResult.started>
+  
+  package:matcher                                       expect
+  package:flutter_test/src/widget_tester.dart 473:18    expect
+  test\upgrade\session_2_launch_actions_test.dart 45:5  main.<fn>
+  
+00:00 +0 -1: a read failure never creates an empty workout
+00:00 +0 -2: a read failure never creates an empty workout [E]
+  Expected: throws <Instance of 'StateError'>
+    Actual: <Instance of 'Future<LaunchResult>'>
+     Which: emitted LaunchResult:<LaunchResult.started>
+  
+  package:matcher                                        expectLater
+  package:flutter_test/src/widget_tester.dart 507:8      expectLater
+  test\upgrade\session_2_launch_actions_test.dart 58:11  main.<fn>
+  
+00:00 +0 -2: existing workout is resumed rather than overwritten
+00:00 +0 -3: existing workout is resumed rather than overwritten [E]
+  Expected: LaunchResult:<LaunchResult.resume>
+    Actual: LaunchResult:<LaunchResult.started>
+  
+  package:matcher                                       expect
+  package:flutter_test/src/widget_tester.dart 473:18    expect
+  test\upgrade\session_2_launch_actions_test.dart 66:5  main.<fn>
+  
+00:00 +0 -3: concurrent Start and an active workout appearing during lookup are guarded
+00:00 +0 -4: concurrent Start and an active workout appearing during lookup are guarded [E]
+  Expected: LaunchResult:<LaunchResult.busy>
+    Actual: LaunchResult:<LaunchResult.started>
+  
+  package:matcher                                       expect
+  package:flutter_test/src/widget_tester.dart 473:18    expect
+  test\upgrade\session_2_launch_actions_test.dart 79:5  main.<fn>
+  
+00:00 +0 -4: Some tests failed.
+
+Failing tests:
+  C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_launch_actions_test.dart: a read failure never creates an empty workout
+  C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_launch_actions_test.dart: concurrent Start and an active workout appearing during lookup are guarded
+  C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_launch_actions_test.dart: deleted or emptied routine cannot start a session
+  C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_launch_actions_test.dart: existing workout is resumed rather than overwritten

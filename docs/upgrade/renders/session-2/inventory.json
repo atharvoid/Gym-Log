@@ -1,0 +1,19 @@
+{
+  "raw_pngs": 164,
+  "before_pngs": 56,
+  "concept_pngs": 108,
+  "raw_dimensions": [
+    390,
+    844
+  ],
+  "text_scales": [
+    1.0,
+    1.6
+  ],
+  "palettes": [
+    "Volt",
+    "Purple"
+  ],
+  "synthetic": true,
+  "composite_pngs": 25
+}

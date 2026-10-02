@@ -1,0 +1,58 @@
+00:00 +0: loading C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_training_logic_test.dart
+00:00 +0: no routine becomes chosen until an explicit successful write
+00:00 +0 -1: no routine becomes chosen until an explicit successful write [E]
+  Expected: 'sample-0'
+    Actual: <null>
+     Which: not an <Instance of 'String'>
+  
+  package:matcher                                       expect
+  package:flutter_test/src/widget_tester.dart 473:18    expect
+  test\upgrade\session_2_training_logic_test.dart 16:5  main.<fn>
+  
+00:00 +0 -1: a wrong-type stored choice is an error, not an empty account
+00:00 +0 -2: a wrong-type stored choice is an error, not an empty account [E]
+  Expected: true
+    Actual: <false>
+  
+  package:matcher                                       expect
+  package:flutter_test/src/widget_tester.dart 473:18    expect
+  test\upgrade\session_2_training_logic_test.dart 32:5  main.<fn>
+  
+00:00 +0 -2: 14-day return uses the most recent completed session, not chosen plan age
+00:00 +0 -3: 14-day return uses the most recent completed session, not chosen plan age [E]
+  Expected: true
+    Actual: <false>
+  
+  package:matcher                                       expect
+  package:flutter_test/src/widget_tester.dart 473:18    expect
+  test\upgrade\session_2_training_logic_test.dart 40:5  main.<fn>
+  
+00:00 +0 -3: relative training date does not claim a future date is today
+00:00 +0 -4: relative training date does not claim a future date is today [E]
+  Expected: 'Last trained 4 days ago'
+    Actual: ''
+     Which: is different. Both strings start the same, but the actual value is missing the following trailing characters: Last train ...
+  
+  package:matcher                                       expect
+  package:flutter_test/src/widget_tester.dart 473:18    expect
+  test\upgrade\session_2_training_logic_test.dart 53:5  main.<fn>
+  
+00:00 +0 -4: next-program suggestion uses explicit linked saved order and wraps
+00:00 +0 -5: next-program suggestion uses explicit linked saved order and wraps [E]
+  Expected: 'sample-2'
+    Actual: <null>
+     Which: not an <Instance of 'String'>
+  
+  package:matcher                                       expect
+  package:flutter_test/src/widget_tester.dart 473:18    expect
+  test\upgrade\session_2_training_logic_test.dart 69:5  main.<fn>
+  
+00:00 +0 -5: legacy names, partial imports and empty days cannot imply next order
+00:00 +1 -5: Some tests failed.
+
+Failing tests:
+  C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_training_logic_test.dart: 14-day return uses the most recent completed session, not chosen plan age
+  C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_training_logic_test.dart: a wrong-type stored choice is an error, not an empty account
+  C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_training_logic_test.dart: next-program suggestion uses explicit linked saved order and wraps
+  C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_training_logic_test.dart: no routine becomes chosen until an explicit successful write
+  C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_training_logic_test.dart: relative training date does not claim a future date is today

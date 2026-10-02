@@ -13,6 +13,9 @@ import 'package:gymlog/features/auth/presentation/providers/auth_provider.dart';
 import 'package:gymlog/features/auth/data/auth_repository.dart';
 import 'package:gymlog/core/providers/database_provider.dart';
 import 'package:gymlog/shared/widgets/ui/skeleton.dart';
+import 'package:gymlog/shared/widgets/ui/app_card.dart';
+import 'package:gymlog/features/profile/presentation/providers/profile_stats_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:drift/native.dart';
 import 'package:supabase_flutter/supabase_flutter.dart'
     show SupabaseClient, User, Session, AuthState;
@@ -157,8 +160,9 @@ void main() {
     expect(material.borderRadius, AppRadius.buttonSecondaryAll);
   });
 
-  testWidgets('HomeScreen initial skeleton uses AppRadius.card',
+  testWidgets('HomeScreen weekly loading card uses AppRadius.card',
       (tester) async {
+    SharedPreferences.setMockInitialValues({'first_run_tour_step': -1});
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
@@ -167,6 +171,8 @@ void main() {
           databaseProvider.overrideWithValue(db),
           workoutHistoryProvider
               .overrideWith((ref) => MockWorkoutHistoryNotifier(ref)),
+          streakStatsProvider
+              .overrideWithValue(const StreakStats(isLoading: true)),
         ],
         child: const MaterialApp(
           home: HomeScreen(),
@@ -176,10 +182,9 @@ void main() {
 
     await tester.pump();
 
-    final skeletonBoxFinder =
-        find.byWidgetPredicate((w) => w is SkeletonBox && w.height == 124);
-    expect(skeletonBoxFinder, findsOneWidget);
-    final skeletonBox = tester.widget<SkeletonBox>(skeletonBoxFinder);
-    expect(skeletonBox.radius, AppRadius.card);
+    expect(find.byWidgetPredicate((w) => w is SkeletonBox && w.height == 28),
+        findsOneWidget);
+    expect(tester.widget<AppCard>(find.byType(AppCard).first).radius,
+        AppRadius.card);
   });
 }

@@ -1,0 +1,29 @@
+
+▸ check inline GoogleFonts
+
+▸ check non-semantic AppColors in migrated screens
+▸ format
+Formatted 374 files (0 changed) in 4.83 seconds.
+
+▸ analyze
+Analyzing gymlog...                                             
+
+   info - Statements in an if should be enclosed in a block. Try wrapping the statement in a block - lib\features\home\presentation\screens\home_screen.dart:252:37 - curly_braces_in_flow_control_structures
+warning - The value of the local variable 'surface' isn't used. Try removing the variable or using it - lib\features\home\presentation\screens\home_screen.dart:507:11 - unused_local_variable
+   info - Statements in an if should be enclosed in a block. Try wrapping the statement in a block - lib\features\routines\presentation\providers\training_launch_provider.dart:43:7 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block. Try wrapping the statement in a block - lib\features\routines\presentation\providers\training_launch_provider.dart:70:7 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block. Try wrapping the statement in a block - lib\features\routines\presentation\providers\training_launch_provider.dart:90:48 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block. Try wrapping the statement in a block - lib\features\routines\presentation\providers\training_launch_provider.dart:104:7 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block. Try wrapping the statement in a block - lib\features\routines\presentation\providers\training_launch_provider.dart:115:5 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block. Try wrapping the statement in a block - lib\features\routines\presentation\providers\training_launch_provider.dart:179:9 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block. Try wrapping the statement in a block - lib\features\routines\presentation\providers\training_launch_provider.dart:183:9 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block. Try wrapping the statement in a block - lib\features\routines\presentation\widgets\training_launchpad.dart:35:7 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block. Try wrapping the statement in a block - lib\features\routines\presentation\widgets\training_launchpad.dart:311:9 - curly_braces_in_flow_control_structures
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\workout\presentation\screens\workout_screen.dart:140:15 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\workout\presentation\screens\workout_screen.dart:141:26 - prefer_const_constructors
+   info - Use 'const' with the constructor to improve performance. Try adding the 'const' keyword to the constructor invocation - lib\features\workout\presentation\screens\workout_screen.dart:143:30 - prefer_const_constructors
+   info - Use a function declaration rather than a variable assignment to bind a function to a name. Try rewriting the closure assignment as a function declaration - test\upgrade\session_2_launch_actions_test.dart:48:59 - prefer_function_declarations_over_variables
+   info - 'hasFlag' is deprecated and shouldn't be used. Use flagsCollection instead. This feature was deprecated after v3.32.0-0.0.pre. Try replacing the use of the deprecated member with the replacement - test\upgrade\session_2_launchpad_test.dart:128:16 - deprecated_member_use
+
+16 issues found. (ran in 98.9s)
+✗ analyze failed

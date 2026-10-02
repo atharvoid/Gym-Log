@@ -1,0 +1,86 @@
+[INFO] Generating build script...
+[INFO] Generating build script completed, took 752ms
+
+[INFO] Initializing inputs
+[INFO] Reading cached asset graph...
+[INFO] Reading cached asset graph completed, took 2.0s
+
+[INFO] Checking for updates since last build...
+[INFO] Checking for updates since last build completed, took 11.9s
+
+[INFO] Running build...
+[WARNING] riverpod_generator on lib/core/config/env.dart:
+Your current `analyzer` version may not fully support your current SDK version.
+
+Analyzer language version: 3.4.0
+SDK language version: 3.12.0
+
+Please update to the latest `analyzer` version (14.4.0) by running
+`flutter packages upgrade`.
+
+If you are not getting the latest version by running the above command, you
+can try adding a constraint like the following to your pubspec to start
+diagnosing why you can't get the latest version:
+
+dev_dependencies:
+  analyzer: ^14.4.0
+
+[INFO] 2.2s elapsed, 0/16 actions completed.
+[INFO] 3.4s elapsed, 4/17 actions completed.
+[INFO] 4.5s elapsed, 4/20 actions completed.
+[INFO] 5.6s elapsed, 4/20 actions completed.
+[INFO] 6.6s elapsed, 4/20 actions completed.
+[INFO] 7.6s elapsed, 4/20 actions completed.
+[INFO] 8.8s elapsed, 4/20 actions completed.
+[INFO] 9.9s elapsed, 4/20 actions completed.
+[INFO] 11.0s elapsed, 4/20 actions completed.
+[INFO] 12.0s elapsed, 4/20 actions completed.
+[INFO] 13.1s elapsed, 4/20 actions completed.
+[INFO] 14.2s elapsed, 4/20 actions completed.
+[INFO] 15.4s elapsed, 4/20 actions completed.
+[INFO] 16.4s elapsed, 5/20 actions completed.
+[INFO] 18.7s elapsed, 5/20 actions completed.
+[INFO] 19.7s elapsed, 5/20 actions completed.
+[INFO] 20.8s elapsed, 5/21 actions completed.
+[INFO] 21.9s elapsed, 6/33 actions completed.
+[INFO] 23.0s elapsed, 7/37 actions completed.
+[INFO] 24.1s elapsed, 7/37 actions completed.
+[INFO] 25.1s elapsed, 16/42 actions completed.
+[INFO] 32.5s elapsed, 16/42 actions completed.
+[INFO] 33.6s elapsed, 57/87 actions completed.
+[INFO] 34.6s elapsed, 77/103 actions completed.
+[INFO] 54.3s elapsed, 84/103 actions completed.
+[WARNING] No actions completed for 19.6s, waiting on:
+  - build_resolvers:transitive_digests on package:pointycastle/key_derivators/ecdh_kdf.dart
+  - build_resolvers:transitive_digests on package:pointycastle/key_derivators/concat_kdf.dart
+  - build_resolvers:transitive_digests on package:pointycastle/export.dart
+  - riverpod_generator on lib/core/database/daos/exercises_dao.dart
+  - riverpod_generator on lib/core/database/daos/user_dao.dart
+  .. and 14 more
+
+[INFO] 58.1s elapsed, 92/111 actions completed.
+[INFO] 59.1s elapsed, 122/141 actions completed.
+[INFO] 1m 0s elapsed, 136/141 actions completed.
+[INFO] 1m 1s elapsed, 136/141 actions completed.
+[INFO] 1m 2s elapsed, 180/182 actions completed.
+[INFO] 1m 4s elapsed, 197/213 actions completed.
+[INFO] 1m 7s elapsed, 227/244 actions completed.
+[INFO] 1m 8s elapsed, 244/259 actions completed.
+[INFO] 1m 9s elapsed, 279/294 actions completed.
+[INFO] 1m 10s elapsed, 312/327 actions completed.
+[INFO] 1m 11s elapsed, 330/344 actions completed.
+[INFO] 1m 12s elapsed, 378/392 actions completed.
+[INFO] 1m 14s elapsed, 416/432 actions completed.
+[INFO] 1m 15s elapsed, 510/515 actions completed.
+[INFO] 1m 16s elapsed, 644/653 actions completed.
+[INFO] 1m 17s elapsed, 694/710 actions completed.
+[INFO] 1m 18s elapsed, 786/801 actions completed.
+[INFO] 1m 19s elapsed, 892/894 actions completed.
+[INFO] 1m 24s elapsed, 894/894 actions completed.
+[INFO] Running build completed, took 1m 24s
+
+[INFO] Caching finalized dependency graph...
+[INFO] Caching finalized dependency graph completed, took 434ms
+
+[INFO] Succeeded after 1m 24s with 378 outputs (1043 actions)
+

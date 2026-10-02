@@ -1,0 +1,231 @@
+--- HEAD/lib/features/home/presentation/screens/home_screen.dart
++++ baseline/lib/features/home/presentation/screens/home_screen.dart
+@@ -504,7 +504,7 @@
+     final surface = context.surface;
+     final name = getWorkoutNameFallback(session.startedAt, session.name);
+ 
+-    showActionBottomSheet(
++    showActionBottomSheet<void>(
+       context: context,
+       title: name,
+       items: [
+--- HEAD/lib/features/workout/presentation/screens/workout_screen.dart
++++ baseline/lib/features/workout/presentation/screens/workout_screen.dart
+@@ -67,7 +67,7 @@
+ 
+   void _openCreateRoutineSheet() {
+     final accent = context.accent;
+-    showActionBottomSheet(
++    showActionBottomSheet<void>(
+       context: context,
+       title: 'New Routine',
+       items: [
+--- HEAD/lib/features/routines/presentation/widgets/routine_card.dart
++++ baseline/lib/features/routines/presentation/widgets/routine_card.dart
+@@ -196,7 +196,7 @@
+   }
+ 
+   void _showOptions(BuildContext context, WidgetRef ref) {
+-    showActionBottomSheet(
++    showActionBottomSheet<void>(
+       context: context,
+       title: routineName,
+       items: [
+--- HEAD/docs/upgrade/LEDGER.md
++++ baseline/docs/upgrade/LEDGER.md
+@@ -9,9 +9,9 @@
+ | 1. Visual identity and system | 6.5 | 8 | Revision needed (scope partial) | 4 | Establish distinct focal/supporting/reference composition; preserve accent tokens and improve meaningful text contrast. Session 1: shared contrast/Purple tokens; full section acceptance pending. |
+ | 2. Sign-in / first impression | 6.5 | 8 | Not started (tokens checked) | 4 | Demonstrate a concrete product benefit while retaining a clear sign-in action. Session 1: shared contrast/Purple tokens; full section acceptance pending. |
+ | 3. Onboarding / time to value | 5 | 8 | Not started (tokens checked) | 4 | Reduce required setup and end with a useful training action. Session 1: shared contrast/Purple tokens; full section acceptance pending. |
+-| 4. Home / daily training intent | 5.5 | 8 | Not started (tokens checked) | 4 | Surface a relevant, explainable routine choice and prominent Start; qualify inactive and empty states. Session 1: shared contrast/Purple tokens; full section acceptance pending. |
++| 4. Home / daily training intent | 5.5 | 8 | Awaiting owner pick (concepts only) | 4 | Session 2: three rendered directions below; production implementation waits for owner selection. Session 1 shared-token history retained; whole-section acceptance pending. |
+ | 5. Workout history | 7 | 8 | Revision needed (scope partial) | 4 | Improve browsing density and specific result recognition without losing useful previews. Session 1: shared contrast/Purple tokens; full section acceptance pending. |
+-| 6. Routine library | 6 | 8 | Not started (tokens checked) | 4 | Promote starting a saved routine; improve differentiation and program grouping. Session 1: shared contrast/Purple tokens; full section acceptance pending. |
++| 6. Routine library | 6 | 8 | Awaiting owner pick (concepts only) | 4 | Session 2: three rendered directions below promote Start and source-program grouping; production implementation waits for owner selection. Whole-section acceptance pending. |
+ | 7. Routine detail | 6.5 | 8 | Not started (tokens checked) | 4 | Put the exercise plan before analysis; clarify volume and muscle-share labels. Session 1: shared contrast/Purple tokens; full section acceptance pending. |
+ | 8. Routine authoring | 6.5 | 8 | Not started (tokens checked) | 4 | Show whole-plan feedback; qualify populated plans, reordering, and import entry. Session 1: shared contrast/Purple tokens; full section acceptance pending. |
+ | 9. Explore / program discovery | 6.5 | 8 | Not started (tokens checked) | 4 | Reduce header density and explain program fit using stated preferences. Session 1: shared contrast/Purple tokens; full section acceptance pending. |
+@@ -404,7 +404,174 @@
+ `verify.ps1` results remain applicable. The Smartlook build question is closed;
+ the device and later layout questions below still require owner decisions.
+ 
++## Session 2 — Home and Routine Library: owner selection gate
++
++Scope: audit sections **4 and 6** only. Read AUDIT.md, this ledger, PROTOCOL.md,
++DESIGN.md, DESIGN_NORTH_STAR.md and repository conventions; re-read Home,
++WorkoutScreen (the Routine Library), RoutineCard, routine/history providers and
++program membership/grouping sources. Starting point: **6531585 plus the existing
++dirty working tree**. Existing app edits remain intact. This stage adds test-only
++concepts and evidence; it changes **no production code, packages or shared tokens**.
++
++The owner explicitly requires all three hero directions to be rendered and a
++stop before building. Status is **Awaiting owner pick**. Session 2 production/
++critic iterations: **0**; the table's four prior shared-token candidates are
++retained. No implementation or acceptance score is proposed for unbuilt concepts.
++Behavior-first work, after/ goldens and independent scoring follow the pick.
++
++### Understand: current evidence
++
++Current live widgets were rendered with synthetic provider data at 390 × 844,
++1.0× and 1.6× Inter text, Volt and Purple, including returning, inactive, empty,
++no-routine, low-data and error states. Saved in `renders/session-2/before/`.
++[Normal baseline](renders/session-2/before-1.0x.png) ·
++[Large-text baseline](renders/session-2/before-1.6x.png).
++
++Three observed problems: Home offers an empty workout even when saved plans
++exist; the Library gives New Routine the strongest emphasis and shows imported
++days as a flat list; large-text entry labels truncate. The existing data includes
++source-program names, exercise names/counts, focus tags and last-trained dates.
++Structured membership can supply saved day order. Legacy source names alone
++cannot establish day order or a training schedule. Planned-set totals exist in
++routine detail/configuration, not the list projection: a selected implementation
++must load real totals rather than infer a standard set count.
++
++### Diverge: three paired directions
++
++These images are **static synthetic concepts**, not working product screens.
++All use the same sample library/history. Selection and Start controls are inert.
++The sample contains logged sets separately from planned counts; there are no
++predicted durations, readiness claims or load prescriptions. All preserve OLED,
++existing tokens and Inter. [Fixture and coverage notes](renders/session-2/README.md).
++The UI skill's action-hierarchy search/retry produced no verified match, so no
++search result was persisted as design authority. Repository/user rules and the
++skill's general priority guidance are the fallback; Flutter constraint guidance
++only informs text wrapping and scrolling.
++
++**A — Chosen routine. Provisional recommendation; owner approval pending.**
++Home leads with the user's explicitly chosen routine, known plan identity, last
++logged set/date and one filled Start. Change routine is secondary. Freestyle and
++History remain plain, reachable actions. The Library repeats the chosen launch
++card above source-program groups and standalone routines; New/Explore are muted
++utilities. The choice persists by intention, rather than claiming an inferred
++schedule. If no valid choice exists, the eventual app must request a choice.
++Motion intent: preserve the hero's position, use existing bounded fade/selection
++primitives for a changed choice, and honor reduced motion; no pulsing Start.
++This suits a returning lifter who wants to glance at the prior set and begin.
++
++![A — chosen routine: Home and Library](renders/session-2/chosen-pair-1.0x.png)
++
++[A at 1.6×](renders/session-2/chosen-pair-1.6x.png) ·
++[A in Purple](renders/session-2/chosen-pair-purple.png) ·
++[A Home states](renders/session-2/chosen-home-states.png) ·
++[A Library states](renders/session-2/chosen-library-states.png).
++
++Remaining weaknesses: (1) a persisted choice can become stale until the user
++changes it; (2) repeating the chosen routine in its program group costs list
++space and makes alternatives require more scrolling; (3) one representative
++logged set gives limited context about the rest of the plan.
++
++**B — Explained rotation. Rejected as the default; still available for selection.**
++Home leads with source-program identity and a compact saved-order strip. It says
++why Legs A is suggested: it follows the last logged Pull A in the known saved
++order. One filled Start comes before previous-set detail to stay visible at
++1.6×. The Library groups days under their source, brings the next-order launch
++card forward, then shows the ordered list. Motion intent: a bounded transition
++of the suggestion only after confirmed history changes, keeping order labels
++stable; no automatic celebration or scheduled-day countdown. It can reduce
++choice effort for someone following a known rotation.
++
++![B — explained rotation: Home and Library](renders/session-2/sequence-pair-1.0x.png)
++
++[B at 1.6×](renders/session-2/sequence-pair-1.6x.png) ·
++[B in Purple](renders/session-2/sequence-pair-purple.png) ·
++[B Home states](renders/session-2/sequence-home-states.png) ·
++[B Library states](renders/session-2/sequence-library-states.png).
++
++Reject B as the default because saved order does not establish today's intent,
++especially after inactivity, and legacy imports may lack trustworthy ordering.
++An eventual B needs an explicitly selected source program and a chooser fallback
++when order/history is unavailable. Remaining weaknesses: (1) next in order can
++still be the wrong session after a break; (2) explanation competes with logged
++context at large text, and inactive-return Start can require scrolling;
++(3) multiple programs require an explicit active-program decision.
++
++**C — Choose each session. Deliberate control with a persistent Start.**
++Home asks what the user will train, shows routine choices, then gives selected
++routine context. The sample is shown after the user selected Push A; it is not
++an automatic first-row default. The Library uses source-program folders and
++selectable routine rows. A fixed Start dock names the current selection above
++the existing navigation. New/Explore remain utilities. Motion intent: local
++selection feedback and existing bounded group expansion, without moving the
++Start target or auto-scrolling the choice; reduced motion must stay equivalent.
++This suits lifters who decide at the gym instead of following a stored plan.
++
++![C — choose each session: Home and Library](renders/session-2/chooser-pair-1.0x.png)
++
++[C at 1.6×](renders/session-2/chooser-pair-1.6x.png) ·
++[C in Purple](renders/session-2/chooser-pair-purple.png) ·
++[C Home states](renders/session-2/chooser-home-states.png) ·
++[C Library states](renders/session-2/chooser-library-states.png).
++
++Remaining weaknesses: (1) choosing each session adds friction for a stable
++routine; (2) selection rows push last-session context and secondary actions below
++the fold at 1.6×; (3) the Start dock consumes space that could expose more plans.
++
++Recommendation **A**, pending the owner's pick: it puts a deliberate training
++choice and logged evidence together with the least repeat effort. B's program
++suggestion is less reliable as a general default; C asks for a repeated decision.
++This recommendation is about starting and checking facts at the gym, not styling.
++
++### Verification, limits and next gate
++
++The options include empty, inactive-return, no-routine, low-data and read-error
++states. No routines with retained history is distinct from a completely empty
++account. Failed reads show unavailable/Retry instead of zero or data-safety
++promises. All options converge on Start freestyle when no plan exists and
++browse/create entry points in an empty Library. The inactive fixture shows the
++last date without claiming readiness, changing load or imposing a schedule.
++
++132 render checks passed; **164 original PNGs** (56 before, 108 concept,
++including scroll views) and 25 labeled contact sheets.
++[Render log](baseline/2026-10-02/session-2-exploration-renders.log) ·
++[Inventory](renders/session-2/inventory.json) ·
++[Home comparison](renders/session-2/home-options-1.0x.png) ·
++[Library comparison](renders/session-2/library-options-1.0x.png) ·
++[Library after scrolling](renders/session-2/library-options-below-fold-1.0x.png).
++Concept checks assert no render exceptions. No before-render exceptions were
++collected. Geometry checks do not verify selection/persistence/routing/Start.
++The initial mock compile and lint failures are preserved in baseline logs;
++only test-harness corrections were made.
++
++Full [verify.ps1 run](baseline/2026-10-02/session-2-exploration-verify.log)
++passed with **exit 0 and 1,474 tests**: token guards, 368 Dart files formatted with
++zero changes, fatal analysis, custom_lint and the complete current suite.
++[Input integrity check](baseline/2026-10-02/session-2-source-integrity.json)
++compares 373 existing inputs against this stage's starting snapshot: only this
++ledger changed. No existing app/test source, package or build input changed;
++the three new Dart files are the concept fixtures/widgets/render harness.
++Production red/green behavior tests, real-font goldens in every affected palette,
++after/ evidence and a fresh-context
++critic are deferred until an option is selected. In particular, test truthful
++loading/error/empty distinctions, stale/deleted choices, real group membership,
++unit/spoken previous-set values, existing active-session protection and launch
++failures before changing app behavior. These options are not acceptance goldens.
++Long/duplicate names, multiple/legacy/partial programs, independent read failures
++and non-weighted logged history still need implementation fixtures.
++
++**Unverified:** physical Android/TalkBack, native safe areas/keyboard, one-handed
++reach, haptics, reduced-motion transitions, runtime Start/persistence and pushed
++CI. Motion above is intent only; these still images do not qualify it. No commit,
++push or production build occurred in this selection stage. **Stop here for the
++owner's A/B/C choice.**
++
+ ## Open questions for owner
++
++- **Session 2:** Which paired direction should be implemented: A (chosen routine),
++  B (explained saved-order suggestion), or C (choose each session)?
++  [Home options](renders/session-2/home-options-1.0x.png) and
++  [Library options](renders/session-2/library-options-1.0x.png).
++  Production implementation is paused at this explicit owner-selection gate.
+ 
+ - Which physical Android device and TalkBack configuration should qualify spoken
+   units, 1.6× text, reduced motion and haptic behavior? Device evidence is pending.
+@@ -416,6 +583,8 @@
+   those changes are deferred instead of guessed.
+ ## Shared token changes
+ 
++- Session 2 selection stage: **none**. All three concepts use existing tokens.
++
+ - Session 1: dark textTertiary changes from 0x59FFFFFF (~35%) to 0x99FFFFFF (60%).
+   chartAxisLabel and profileGraphAxisLabel alias this token instead of keeping
+   independent faint values. This affects metadata, ticks, hints, reassurance,

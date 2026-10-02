@@ -1,0 +1,16 @@
+00:00 +0: loading C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_acceptance_render_test.dart
+lib/core/database/daos/workouts_dao.dart:1002:56: Error: The argument type 'DateTime?' can't be assigned to the parameter type 'DateTime'.
+ - 'DateTime' is from 'dart:core'.
+                sessionId: sessionId, completedAt: set.completedAt)));
+                                                       ^
+00:00 +0 -1: loading C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_acceptance_render_test.dart [E]
+  Failed to load "C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_acceptance_render_test.dart":
+  Compilation failed for testPath=C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_acceptance_render_test.dart: lib/core/database/daos/workouts_dao.dart:1002:56: Error: The argument type 'DateTime?' can't be assigned to the parameter type 'DateTime'.
+   - 'DateTime' is from 'dart:core'.
+                  sessionId: sessionId, completedAt: set.completedAt)));
+                                                         ^
+  .
+00:00 +0 -1: Some tests failed.
+
+Failing tests:
+  C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_acceptance_render_test.dart: loading C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_acceptance_render_test.dart

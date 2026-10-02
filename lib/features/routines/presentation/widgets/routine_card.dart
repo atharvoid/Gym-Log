@@ -28,6 +28,7 @@ class RoutineCard extends ConsumerWidget {
   final List<String> muscleTags;
   final DateTime? lastTrained;
   final VoidCallback onStartTap;
+  final bool workoutInProgress;
 
   const RoutineCard({
     super.key,
@@ -37,6 +38,7 @@ class RoutineCard extends ConsumerWidget {
     required this.onStartTap,
     this.muscleTags = const [],
     this.lastTrained,
+    this.workoutInProgress = false,
   });
 
   Widget _tag(
@@ -169,19 +171,23 @@ class RoutineCard extends ConsumerWidget {
                         const SizedBox(width: 12),
                         StartButton(
                           label: 'Start',
-                          enabled: exerciseNames.isNotEmpty,
-                          onPressed: () {
-                            // 0-exercise routine: don't silently no-op — tell
-                            // the user why nothing happened.
-                            if (exerciseNames.isEmpty) {
-                              showAppSnackBar(
-                                context,
-                                message: 'Add exercises to this routine first',
-                              );
-                              return;
-                            }
-                            onStartTap();
-                          },
+                          enabled:
+                              !workoutInProgress && exerciseNames.isNotEmpty,
+                          onPressed: workoutInProgress
+                              ? null
+                              : () {
+                                  // 0-exercise routine: don't silently no-op — tell
+                                  // the user why nothing happened.
+                                  if (exerciseNames.isEmpty) {
+                                    showAppSnackBar(
+                                      context,
+                                      message:
+                                          'Add exercises to this routine first',
+                                    );
+                                    return;
+                                  }
+                                  onStartTap();
+                                },
                         ),
                       ],
                     ),

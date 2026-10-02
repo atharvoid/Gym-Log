@@ -1,0 +1,24 @@
+{
+  "workspace": "real",
+  "codegen_exit": 0,
+  "codegen_outputs": 378,
+  "codegen_actions": 1043,
+  "verify_exit": 0,
+  "verify_tests": 2008,
+  "verify_log": "verify-release-candidate.log",
+  "behavior_tests": 67,
+  "goldens": 528,
+  "palettes": 6,
+  "text_scales": [
+    1.0,
+    1.6
+  ],
+  "apk_exit": 0,
+  "apk_log": "apk-complete.log",
+  "apk_path": "build/app/outputs/flutter-apk/app-debug.apk",
+  "compile_configuration": "dart-define-from-file .env (values not recorded)",
+  "pushed": false,
+  "ci": "unverified",
+  "device": "unverified",
+  "final_render_iteration": "owner-fix-4"
+}

@@ -1,0 +1,38 @@
+{
+  "isolated_workspace": "C:\\Users\\ATHARV~1\\AppData\\Local\\Temp\\gymlog-session-2-isolated-_7ofw15r",
+  "baseline_snapshot": "C:\\Users\\ATHARV~1\\AppData\\Local\\Temp\\gymlog-session-2-build-55bbfe74f0024a4abb01f6197b154f0a",
+  "baseline_inputs_checked": 375,
+  "candidate_dart_inputs_checked": 13,
+  "goldens_and_after_pngs_identical": 528,
+  "concurrent_changes_excluded": [
+    "lib/core/config/env.dart",
+    "lib/core/database/daos/workouts_dao.dart",
+    "lib/core/models/personal_record.dart",
+    "lib/core/models/pr_card_data.dart",
+    "lib/core/services/share_card_service.dart",
+    "lib/features/workout/presentation/widgets/pr_celebration_overlay.dart",
+    "pubspec.yaml"
+  ],
+  "shared_workspace_integration": "unverified",
+  "baseline_mismatches": [],
+  "candidate_mismatches": [],
+  "render_mismatches": [],
+  "candidate_dart_sha256": {
+    "lib/features/home/presentation/screens/home_screen.dart": "29fbab9db945b000891eed0ecff23df3b5da82e7f1a2d0f76b2648e794fc67f6",
+    "lib/features/routines/presentation/providers/training_launch_provider.dart": "a0322b28f6c6eb26719c6e032735973098995d9a6b2ee99efbd601bb734aaf91",
+    "lib/features/routines/presentation/widgets/routine_card.dart": "4da93074ceb20efba1684a142f812087e448e137c36be113eb71a0fe394d354f",
+    "lib/features/routines/presentation/widgets/training_launchpad.dart": "b36e7d079a26f1aabbb2bc143b8cb35db963317379ed66dd8814f15f107a961a",
+    "lib/features/workout/presentation/screens/workout_screen.dart": "909f02fd4e8ef01827638c461cb35b71a2a82b010b6edf800b0903b96f516d78",
+    "test/radius_token_test.dart": "32270c179037f12eb132dd7f86baa3e6ccc003e745c4c88816fe89fb5e9f9c76",
+    "test/screens_theme_test.dart": "acf2a4efc423846fcd47d092158a070b046171c15521838bdd9e7243695b5952",
+    "test/upgrade/session_2_acceptance_render_test.dart": "0fffa3d614fbd4d38c275efd79fd3f2701e974f717132a4355111ffbdb67fda1",
+    "test/upgrade/session_2_fixtures.dart": "5dde4e42f888b8237b53d2c6b91cfe1e7efa73238cb9ad210734fd256b38e8b0",
+    "test/upgrade/session_2_launch_actions_test.dart": "351c93fa746bf5fe22b81fe86414d4c2bfb8ddc4cf41725c3cdb1a1058a4e019",
+    "test/upgrade/session_2_launchpad_test.dart": "de05158f2bc6b79412bcb85313da3b28d92cc9955d001e7c2170b798b0c9ffb9",
+    "test/upgrade/session_2_render_test.dart": "1a5946f9302d708b34ad0777418161edc2b2615056cc548eb2b2895ccc704697",
+    "test/upgrade/session_2_training_logic_test.dart": "c6633359e9729528f648907b91d47ac8853cbee9aad4f13eae081d7dc7e0a409"
+  },
+  "review_diff_sha256": "4910a62cec8607d3641cad5df21ee7f107405423c6383a2f1143a66663fcae83",
+  "verdict_sha256": "5e83352f50d419c97f108001978ccd349e3d89cc5c0e02703395a0258a971363",
+  "verification_log_sha256": "ddabde654ca46d40dc3240ee32c22ecc64e7e830584a93917d0275f0b8114566"
+}

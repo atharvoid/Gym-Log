@@ -1,0 +1,14 @@
+
+â–¸ check inline GoogleFonts
+
+â–¸ check non-semantic AppColors in migrated screens
+â–¸ format
+Formatted 383 files (0 changed) in 7.33 seconds.
+
+â–¸ analyze
+Analyzing gymlog...                                             
+
+   info - Statements in an if should be enclosed in a block. Try wrapping the statement in a block - test\upgrade\session_2_acceptance_render_test.dart:217:48 - curly_braces_in_flow_control_structures
+
+1 issue found. (ran in 102.8s)
+âœ— analyze failed

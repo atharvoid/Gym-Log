@@ -3,33 +3,26 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gymlog/core/database/daos/routines_dao.dart';
-import 'package:gymlog/core/providers/database_provider.dart';
+import 'package:gymlog/core/database/daos/program_grouping.dart';
+import 'package:gymlog/features/routines/presentation/widgets/training_launchpad.dart';
+import 'package:gymlog/features/workout/presentation/providers/active_workout_provider.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text.dart';
 import '../../../../core/theme/dynamic_accent_theme.dart';
 import '../../../../core/utils/tap_guard.dart';
-import '../../../../core/utils/relative_time.dart';
 import '../../../../shared/providers/bottom_chrome_provider.dart';
-import '../../../../shared/widgets/async_error_state.dart';
 import '../../../../shared/widgets/ui/action_bottom_sheet.dart';
 import '../../../../shared/widgets/ui/app_card.dart';
-import '../../../../shared/widgets/ui/secondary_button.dart';
 import '../../../../shared/widgets/ui/skeleton.dart';
 import '../../../routines/presentation/widgets/routine_card.dart';
 import '../../../routines/presentation/providers/routines_provider.dart';
-import '../../domain/active_workout_state.dart';
-import '../providers/active_workout_provider.dart';
 import 'package:gymlog/shared/layout/adaptive.dart';
 
 /// [workout_screen.dart]
 /// Routines tab — the user's saved routines (reactive via hydratedRoutinesProvider).
 ///
-/// HEADER DISCIPLINE: this screen earns its vertical space or gives it up. The
-/// previous version spent ~100dp on gaps plus a collapsible "My Routines (n)"
-/// section header before the first card. That header duplicated the screen
-/// title and the count already in the subtitle, and its collapse toggle could
-/// only ever collapse the single list on the page — i.e. blank the screen. Both
-/// are gone; the list starts immediately after the action row.
+/// The saved training choice leads the library. Creation stays available as a
+/// utility; source-program groups organize the other saved routines below it.
 class WorkoutScreen extends ConsumerStatefulWidget {
   const WorkoutScreen({super.key});
 
@@ -38,26 +31,8 @@ class WorkoutScreen extends ConsumerStatefulWidget {
 }
 
 class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
-  void _startRoutine(HydratedRoutine routine) async {
-    if (routine.exerciseIds.isEmpty) {
-      return; // guarded again in the card (with feedback)
-    }
-    if (!tapGuard()) return;
-    HapticFeedback.mediumImpact();
-
-    final detail = await ref
-        .read(databaseProvider)
-        .routinesDao
-        .getHydratedRoutineDetail(routine.routine.id);
-    if (detail == null || !mounted) return;
-
-    ref.read(activeWorkoutProvider.notifier).startWorkout(
-          routineId: routine.routine.id,
-          name: routine.routine.name,
-          initialExercises: seedExercisesFromRoutine(detail),
-        );
-    context.push('/workout/active');
-  }
+  void _startRoutine(HydratedRoutine routine) =>
+      launchTraining(context, ref, routine.routine.id);
 
   void _push(String path) {
     if (!tapGuard()) return;
@@ -97,27 +72,6 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
     );
   }
 
-  List<HydratedRoutine>? _prevRoutines;
-  String? _cachedSummary;
-
-  String _summaryLine(List<HydratedRoutine> routines) {
-    if (identical(_prevRoutines, routines) && _cachedSummary != null) {
-      return _cachedSummary!;
-    }
-    final count = routines.length;
-    final label = count == 1 ? 'routine' : 'routines';
-    DateTime? maxLast;
-    for (final r in routines) {
-      final d = r.lastTrained;
-      if (d != null && (maxLast == null || d.isAfter(maxLast))) maxLast = d;
-    }
-    _prevRoutines = routines;
-    _cachedSummary = maxLast == null
-        ? '$count $label'
-        : '$count $label  ·  Last trained ${relativeDay(maxLast)}';
-    return _cachedSummary!;
-  }
-
   @override
   Widget build(BuildContext context) {
     final routinesAsync = ref.watch(hydratedRoutinesProvider);
@@ -153,7 +107,8 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
                             ? const SizedBox.shrink()
                             : Padding(
                                 padding: const EdgeInsets.only(top: 4),
-                                child: Text(_summaryLine(routines),
+                                child: Text(
+                                    '${routines.length} saved ${routines.length == 1 ? 'routine' : 'routines'}',
                                     style: AppText.body(
                                         color: surface.textSecondary)),
                               ),
@@ -164,35 +119,29 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
                 ),
               ),
 
-              // ── Action row: New (solid accent CTA) + Explore (neutral) ──
               SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: SecondaryButton(
-                          label: 'New Routine',
-                          icon: Icons.add_rounded,
-                          solid:
-                              true, // solid accent fill + onAccent label - the one focal CTA
-                          onPressed: _openCreateRoutineSheet,
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: SecondaryButton(
-                          label: 'Explore',
-                          icon: Icons.explore_rounded,
-                          onPressed: () => _push('/routines/explore'),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
+                  child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Wrap(spacing: AppSpacing.x4, children: [
+                        TextButton(
+                            onPressed: _openCreateRoutineSheet,
+                            style: TextButton.styleFrom(
+                                foregroundColor: surface.textSecondary),
+                            child: const Text('New routine')),
+                        TextButton(
+                            onPressed: () => _push('/routines/explore'),
+                            style: TextButton.styleFrom(
+                                foregroundColor: surface.textSecondary),
+                            child: const Text('Explore')),
+                      ]))),
+              const SliverToBoxAdapter(
+                  child: Padding(
+                      padding: EdgeInsets.all(16),
+                      child: AppCard(
+                          radius: AppRadius.card,
+                          child: TrainingLaunchpad(compact: true)))),
 
-              // ── The list itself — no section header, no disclosure toggle ──
+              // Source-program groups and standalone saved plans.
               ...routinesAsync.when(
                 loading: () => [
                   const SliverPadding(
@@ -200,52 +149,57 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
                     sliver: SliverToBoxAdapter(child: _RoutinesLoading()),
                   ),
                 ],
-                error: (e, _) => [
-                  SliverPadding(
-                    padding: const EdgeInsets.fromLTRB(16, 14, 16, 0),
-                    sliver: SliverToBoxAdapter(
-                      child: Semantics(
-                        liveRegion: true,
-                        child: AsyncErrorState(
-                          message: "Couldn't load your routines.",
-                          onRetry: () =>
-                              ref.invalidate(hydratedRoutinesProvider),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
+                // The launchpad already owns this read failure and its Retry action.
+                error: (e, _) => [],
                 data: (routines) {
                   if (routines.isEmpty) {
                     return [
                       SliverPadding(
                         padding: const EdgeInsets.fromLTRB(16, 14, 16, 0),
                         sliver: SliverToBoxAdapter(
-                          child: _EmptyRoutines(onNew: _openCreateRoutineSheet),
+                          child: Text(
+                              'Browse programs or use New routine to add your own plan.',
+                              style:
+                                  AppText.body(color: surface.textSecondary)),
                         ),
                       ),
                     ];
                   }
+                  final grouping = groupProgramRoutines(routines
+                      .map((r) => ProgramRoutineRef.fromRoutine(r.routine))
+                      .toList());
+                  final byId = {for (final r in routines) r.routine.id: r};
                   return [
-                    SliverPadding(
-                      padding: const EdgeInsets.fromLTRB(16, 14, 16, 0),
-                      sliver: SliverList(
-                        delegate: SliverChildBuilderDelegate(
-                          (context, i) => Padding(
-                            padding: const EdgeInsets.only(bottom: 12),
-                            child: RoutineCard(
-                              routineId: routines[i].routine.id,
-                              routineName: routines[i].routine.name,
-                              exerciseNames: routines[i].exerciseNames,
-                              muscleTags: routines[i].muscleTags,
-                              lastTrained: routines[i].lastTrained,
-                              onStartTap: () => _startRoutine(routines[i]),
-                            ),
-                          ),
-                          childCount: routines.length,
-                        ),
-                      ),
-                    ),
+                    for (final group in grouping.programs) ...[
+                      SliverToBoxAdapter(
+                          child: Padding(
+                              key: ValueKey('program-${group.key}'),
+                              padding:
+                                  const EdgeInsets.fromLTRB(16, 16, 16, 12),
+                              child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(group.name,
+                                        style: AppText.sectionHeading(
+                                            color: surface.textPrimary)),
+                                    Text(
+                                        'Source program · ${group.routines.length} saved routines',
+                                        style: AppText.meta(
+                                            color: surface.textSecondary)),
+                                  ]))),
+                      _routineList(
+                          group.routines.map((r) => byId[r.id]!).toList()),
+                    ],
+                    if (grouping.standalone.isNotEmpty) ...[
+                      SliverToBoxAdapter(
+                          child: Padding(
+                              padding: const EdgeInsets.all(16),
+                              child: Text('Standalone routines',
+                                  style: AppText.sectionHeading(
+                                      color: surface.textPrimary)))),
+                      _routineList(
+                          grouping.standalone.map((r) => byId[r.id]!).toList()),
+                    ],
                   ];
                 },
               ),
@@ -257,6 +211,23 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
       ),
     );
   }
+
+  Widget _routineList(List<HydratedRoutine> routines) => SliverPadding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      sliver: SliverList(
+          delegate: SliverChildBuilderDelegate(
+              (context, i) => Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: RoutineCard(
+                      routineId: routines[i].routine.id,
+                      routineName: routines[i].routine.name,
+                      exerciseNames: routines[i].exerciseNames,
+                      muscleTags: routines[i].muscleTags,
+                      lastTrained: routines[i].lastTrained,
+                      workoutInProgress:
+                          ref.watch(activeWorkoutProvider) != null,
+                      onStartTap: () => _startRoutine(routines[i]))),
+              childCount: routines.length)));
 }
 
 /// Skeleton feed shown while routines load — mirrors the real card proportions.
@@ -320,41 +291,6 @@ class _RoutineCardSkeleton extends StatelessWidget {
               SkeletonBox(
                   width: 68, height: 32, radius: AppRadius.buttonPrimary),
             ],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// Calm empty state with an inline CTA (not just a text void).
-class _EmptyRoutines extends StatelessWidget {
-  final VoidCallback onNew;
-  const _EmptyRoutines({required this.onNew});
-
-  @override
-  Widget build(BuildContext context) {
-    final accent = context.accent;
-    return AppCard(
-      radius: AppRadius.card,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('No routines yet', style: AppText.exerciseName()),
-          const SizedBox(height: 4),
-          Text('Save a workout as a routine, or create one above.',
-              style: AppText.meta()),
-          const SizedBox(height: 12),
-          TextButton.icon(
-            onPressed: onNew,
-            style: TextButton.styleFrom(
-              padding: EdgeInsets.zero,
-              minimumSize: const Size(0, 44),
-              foregroundColor: accent.light,
-            ),
-            icon: Icon(Icons.add_rounded, size: 18, color: accent.light),
-            label:
-                Text('New Routine', style: AppText.button(color: accent.light)),
           ),
         ],
       ),

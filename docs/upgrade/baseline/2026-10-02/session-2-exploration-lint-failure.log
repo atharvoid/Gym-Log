@@ -1,0 +1,16 @@
+
+▸ check inline GoogleFonts
+
+▸ check non-semantic AppColors in migrated screens
+▸ format
+Formatted 368 files (0 changed) in 5.12 seconds.
+
+▸ analyze
+Analyzing gymlog...                                             
+
+   info - Statements in an if should be enclosed in a block. Try wrapping the statement in a block - test\upgrade\session_2_fixtures.dart:68:35 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block. Try wrapping the statement in a block - test\upgrade\session_2_fixtures.dart:111:35 - curly_braces_in_flow_control_structures
+   info - Statements in an if should be enclosed in a block. Try wrapping the statement in a block - test\upgrade\session_2_render_test.dart:23:47 - curly_braces_in_flow_control_structures
+
+3 issues found. (ran in 94.0s)
+✗ analyze failed

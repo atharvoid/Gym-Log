@@ -1,0 +1,14 @@
+
+▸ check inline GoogleFonts
+
+▸ check non-semantic AppColors in migrated screens
+▸ format
+Formatted 374 files (0 changed) in 3.50 seconds.
+
+▸ analyze
+Analyzing gymlog...                                             
+
+   info - Unnecessary 'const' keyword. Try removing the keyword - lib\features\workout\presentation\screens\workout_screen.dart:138:32 - unnecessary_const
+
+1 issue found. (ran in 69.6s)
+✗ analyze failed

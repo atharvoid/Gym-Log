@@ -1,0 +1,176 @@
+{
+  "home_screen_source_unchanged": true,
+  "chosen_screens": [
+    {
+      "render": "home-chosen-blazeOrange-1.0x-synthetic.png",
+      "changed_pixel_bounds": [
+        16,
+        98,
+        111,
+        108
+      ],
+      "below_270_identical": true
+    },
+    {
+      "render": "home-chosen-blazeOrange-1.6x-synthetic.png",
+      "changed_pixel_bounds": [
+        16,
+        126,
+        165,
+        141
+      ],
+      "below_270_identical": true
+    },
+    {
+      "render": "home-chosen-higgsfield-1.0x-synthetic.png",
+      "changed_pixel_bounds": [
+        16,
+        98,
+        111,
+        108
+      ],
+      "below_270_identical": true
+    },
+    {
+      "render": "home-chosen-higgsfield-1.6x-synthetic.png",
+      "changed_pixel_bounds": [
+        16,
+        126,
+        165,
+        141
+      ],
+      "below_270_identical": true
+    },
+    {
+      "render": "home-chosen-neonCyan-1.0x-synthetic.png",
+      "changed_pixel_bounds": [
+        16,
+        98,
+        111,
+        108
+      ],
+      "below_270_identical": true
+    },
+    {
+      "render": "home-chosen-neonCyan-1.6x-synthetic.png",
+      "changed_pixel_bounds": [
+        16,
+        126,
+        165,
+        141
+      ],
+      "below_270_identical": true
+    },
+    {
+      "render": "home-chosen-neonMagenta-1.0x-synthetic.png",
+      "changed_pixel_bounds": [
+        16,
+        98,
+        111,
+        108
+      ],
+      "below_270_identical": true
+    },
+    {
+      "render": "home-chosen-neonMagenta-1.6x-synthetic.png",
+      "changed_pixel_bounds": [
+        16,
+        126,
+        165,
+        141
+      ],
+      "below_270_identical": true
+    },
+    {
+      "render": "home-chosen-neonPurple-1.0x-synthetic.png",
+      "changed_pixel_bounds": [
+        16,
+        98,
+        111,
+        108
+      ],
+      "below_270_identical": true
+    },
+    {
+      "render": "home-chosen-neonPurple-1.6x-synthetic.png",
+      "changed_pixel_bounds": [
+        16,
+        126,
+        165,
+        141
+      ],
+      "below_270_identical": true
+    },
+    {
+      "render": "home-chosen-white-1.0x-synthetic.png",
+      "changed_pixel_bounds": [
+        16,
+        98,
+        111,
+        108
+      ],
+      "below_270_identical": true
+    },
+    {
+      "render": "home-chosen-white-1.6x-synthetic.png",
+      "changed_pixel_bounds": [
+        16,
+        126,
+        165,
+        141
+      ],
+      "below_270_identical": true
+    }
+  ],
+  "history_shortcut_screens": [
+    {
+      "render": "home-history-shortcut-blazeOrange-1.0x-synthetic.png",
+      "identical": true
+    },
+    {
+      "render": "home-history-shortcut-blazeOrange-1.6x-synthetic.png",
+      "identical": true
+    },
+    {
+      "render": "home-history-shortcut-higgsfield-1.0x-synthetic.png",
+      "identical": true
+    },
+    {
+      "render": "home-history-shortcut-higgsfield-1.6x-synthetic.png",
+      "identical": true
+    },
+    {
+      "render": "home-history-shortcut-neonCyan-1.0x-synthetic.png",
+      "identical": true
+    },
+    {
+      "render": "home-history-shortcut-neonCyan-1.6x-synthetic.png",
+      "identical": true
+    },
+    {
+      "render": "home-history-shortcut-neonMagenta-1.0x-synthetic.png",
+      "identical": true
+    },
+    {
+      "render": "home-history-shortcut-neonMagenta-1.6x-synthetic.png",
+      "identical": true
+    },
+    {
+      "render": "home-history-shortcut-neonPurple-1.0x-synthetic.png",
+      "identical": true
+    },
+    {
+      "render": "home-history-shortcut-neonPurple-1.6x-synthetic.png",
+      "identical": true
+    },
+    {
+      "render": "home-history-shortcut-white-1.0x-synthetic.png",
+      "identical": true
+    },
+    {
+      "render": "home-history-shortcut-white-1.6x-synthetic.png",
+      "identical": true
+    }
+  ],
+  "physical_device": "owner observation pending"
+}

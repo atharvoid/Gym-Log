@@ -1,0 +1,36 @@
+00:00 +0: loading C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_training_logic_test.dart
+00:00 +0: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_training_logic_test.dart: duplicate imported day positions do not produce a next suggestion
+00:00 +0 -1: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_training_logic_test.dart: duplicate imported day positions do not produce a next suggestion [E]
+  Expected: null
+    Actual: <Instance of 'ProgramSuggestion'>
+  
+  package:matcher                                       expect
+  package:flutter_test/src/widget_tester.dart 473:18    expect
+  test\upgrade\session_2_training_logic_test.dart 17:5  main.<fn>
+  
+00:00 +0 -1: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_training_logic_test.dart: logged context converts weight and speech; non-weighted context stays typed
+00:00 +1 -1: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_training_logic_test.dart: no routine becomes chosen until an explicit successful write
+00:00 +2 -1: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_training_logic_test.dart: a wrong-type stored choice is an error, not an empty account
+00:00 +3 -1: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_training_logic_test.dart: 14-day return uses the most recent completed session, not chosen plan age
+00:00 +4 -1: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_training_logic_test.dart: relative training date does not claim a future date is today
+00:00 +5 -1: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_training_logic_test.dart: next-program suggestion uses explicit linked saved order and wraps
+00:00 +6 -1: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_training_logic_test.dart: legacy names, partial imports and empty days cannot imply next order
+00:00 +7 -1: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_launch_actions_test.dart: account switch during routine lookup cannot launch old-account content
+00:00 +7 -2: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_launch_actions_test.dart: account switch during routine lookup cannot launch old-account content [E]
+  Expected: LaunchResult:<LaunchResult.unavailable>
+    Actual: LaunchResult:<LaunchResult.started>
+  
+  package:matcher                                       expect
+  package:flutter_test/src/widget_tester.dart 473:18    expect
+  test\upgrade\session_2_launch_actions_test.dart 69:5  main.<fn>
+  
+00:00 +7 -2: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_launch_actions_test.dart: valid routine Start seeds the saved plan and freestyle is explicit
+00:00 +8 -2: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_launch_actions_test.dart: deleted or emptied routine cannot start a session
+00:00 +9 -2: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_launch_actions_test.dart: a read failure never creates an empty workout
+00:00 +10 -2: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_launch_actions_test.dart: existing workout is resumed rather than overwritten
+00:00 +11 -2: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_launch_actions_test.dart: concurrent Start and an active workout appearing during lookup are guarded
+00:00 +12 -2: Some tests failed.
+
+Failing tests:
+  C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_launch_actions_test.dart: account switch during routine lookup cannot launch old-account content
+  C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_training_logic_test.dart: duplicate imported day positions do not produce a next suggestion
