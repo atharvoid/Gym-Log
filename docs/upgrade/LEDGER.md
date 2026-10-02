@@ -338,6 +338,72 @@ includes additional pre-existing tests not included in this scoped commit.
 The owner authorized committing these locally verified corrections. Pushed CI,
 device acceptance and deferred layouts are still unverified; no push is requested.
 
+## Separate Android build chore — Smartlook namespace
+
+Owner authorization: fix only the Android build configuration, retain Smartlook,
+avoid design/UI edits and confirm `flutter build apk --debug`. Session 1 and its
+wording follow-up were committed separately as **eb00e14** after both working-tree
+and isolated-candidate verification passed. Unrelated pre-existing edits remain
+outside that commit.
+
+Cause: installed `flutter_smartlook` 4.1.3 has a manifest package but no Gradle
+namespace. This repository uses AGP 9.0.1; AGP has required an explicit module
+namespace since 8.0. The
+[original build failure](baseline/2026-10-02/android-release-build-tcp-retry.log)
+names the Smartlook module. [Android's namespace requirement](https://developer.android.com/build/releases/agp-8-0-0-release-notes#namespace-dsl).
+
+Alternatives considered: (A) pin a maintained package release; (B) set the
+missing namespace in the root Android build script for Smartlook only;
+(C) modify the global Pub cache. Attempted A with 4.1.32, whose published Android
+module declares the same namespace, but dependency resolution requires SDK
+`flutter_localizations` and `intl` 0.20.2 while this app declares `intl` ^0.19.0.
+[Preserved resolver failure](baseline/2026-10-02/smartlook-pub-get.log).
+Earlier inspected releases also constrain the Dart SDK below the installed 3.12.
+Choose B to avoid broad dependency changes. Reject C because a cache edit would
+not travel with the repository. [Published package history](https://pub.dev/packages/flutter_smartlook/changelog).
+
+The root `android/build.gradle.kts` registers a `com.android.library` plugin hook
+for `flutter_smartlook` before evaluating `:app`, assigning the existing package
+`com.Smartlook.Smartlook.flutter_smartlook` as its namespace. No app UI, design,
+package constraint, lockfile or plugin-cache source was changed by this chore.
+The rejected pin was reverted; pubspec/lock hashes match the pre-chore snapshot.
+
+The build also needs the same process-local Windows/JDK loopback workaround used
+to reach the original namespace failure: `jdk.net.unixdomain.tmpdir` points at a
+nonexistent temporary subdirectory, with Gradle daemon disabled. No persistent
+Java/Flutter configuration or repository workaround for that host issue changed.
+
+The [first debug build](baseline/2026-10-02/smartlook-debug-build.log) passed
+Smartlook configuration and then failed at Rive native setup: the package's
+Windows `Expand-Archive` invocation splits the space in the user-folder path.
+Host preparation only: downloaded the package's published Android artifact
+`0.1.11+3`, checked its SHA512 against the installed `hash.txt`, and extracted
+the four ABI libraries with native PowerShell literal-path arguments into the
+package's native-binary cache. Created its normal setup-complete marker only
+after verified extraction. No package source, dependency or app code was edited.
+[Extraction evidence](baseline/2026-10-02/smartlook-rive-host-setup.log).
+[Rive's prebuilt-library setup workflow](https://github.com/rive-app/rive-flutter#troubleshooting).
+A fresh Windows cache with a spaced path may need the same host preparation;
+this is not claimed as a repository fix for Rive's setup script.
+
+The [debug retry](baseline/2026-10-02/smartlook-debug-build-retry.log) succeeded
+with **exit 0**, Gradle `assembleDebug` in **254.6 seconds**, producing
+`build/app/outputs/flutter-apk/app-debug.apk`.
+[Artifact size, timestamp and SHA256](baseline/2026-10-02/smartlook-debug-artifact.json).
+This is the current working-tree build, including the pre-existing edits that
+were preserved outside the scoped commits. Release signing, pushed CI and device
+behavior are not inferred from a debug compile. Nonfatal plugin built-in-Kotlin
+migration and SDK XML warnings remain recorded in the build log; they are outside
+the namespace-only chore.
+
+[Final Dart integrity audit](baseline/2026-10-02/final-source-integrity.txt) checks
+359 original Dart files and finds **zero unexpected changes** outside Session 1
+and the authorized copy pass. This separate chore changes only the root Android
+Gradle namespace hook plus ledger/build evidence. The app source and dependency
+files remain identical to their pre-chore contents; the already passing
+`verify.ps1` results remain applicable. The Smartlook build question is closed;
+the device and later layout questions below still require owner decisions.
+
 ## Open questions for owner
 
 - Which physical Android device and TalkBack configuration should qualify spoken

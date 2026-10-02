@@ -18,6 +18,17 @@ subprojects {
     val newSubprojectBuildDir: Directory = newBuildDir.dir(project.name)
     project.layout.buildDirectory.value(newSubprojectBuildDir)
 }
+// Smartlook 4.1.3 predates AGP's required namespace DSL. Register before
+// evaluating :app so its plugin module gets the existing manifest package.
+subprojects {
+    if (name == "flutter_smartlook") {
+        pluginManager.withPlugin("com.android.library") {
+            extensions.configure<com.android.build.gradle.LibraryExtension> {
+                namespace = "com.Smartlook.Smartlook.flutter_smartlook"
+            }
+        }
+    }
+}
 subprojects {
     project.evaluationDependsOn(":app")
 }

@@ -1,0 +1,13 @@
+Resolving dependencies...
+Note: intl is pinned to version 0.20.2 by flutter_localizations from the flutter SDK.
+See https://dart.dev/go/sdk-version-pinning for details.
+
+
+Because flutter_smartlook >=4.1.32 depends on flutter_localizations from sdk which depends on intl 0.20.2, flutter_smartlook >=4.1.32 requires intl 0.20.2.
+So, because gymlog depends on both intl ^0.19.0 and flutter_smartlook 4.1.32, version solving failed.
+
+
+You can try one of the following suggestions to make the pubspec resolve:
+* Try upgrading your constraint on intl: flutter pub add intl:^0.20.2
+* Consider downgrading your constraint on flutter_smartlook: flutter pub add flutter_smartlook:^4.1.3
+Failed to update packages.
