@@ -27,7 +27,8 @@ env:
 jobs:
   analyze-test:
     name: Analyze & Test
-    runs-on: ubuntu-latest
+    # Real-font goldens are recorded on Windows; use the same rasterization host.
+    runs-on: windows-2025
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
@@ -38,10 +39,10 @@ jobs:
           flutter-version: ${{ env.FLUTTER_VERSION }}
           cache: true
 
-      # DAO integration tests open host SQLite through dart:ffi. ubuntu ships
-      # libsqlite3.so.0; install the dev package so the unversioned soname the
-      # test prefers is also present.
+      # Linux DAO tests open host SQLite through dart:ffi. Windows uses
+      # package:sqlite3's built-in winsqlite3.dll fallback when needed.
       - name: Install SQLite
+        if: runner.os == 'Linux'
         run: sudo apt-get update && sudo apt-get install -y libsqlite3-dev
 
       - name: Resolve dependencies
@@ -61,12 +62,12 @@ jobs:
       - name: Custom lints (riverpod_lint)
         run: dart run custom_lint
 
-      # Machine-readable JSON report; pipefail propagates a test failure exit
-      # code through tee so the job fails on a single failing test.
+      # Preserve Flutter's exit code through the machine-report output pipeline.
       - name: Run tests
+        shell: pwsh
         run: |
-          set -o pipefail
-          flutter test --machine | tee test-results.json
+          flutter test --machine | Tee-Object -FilePath test-results.json
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Upload test report
         if: always()
