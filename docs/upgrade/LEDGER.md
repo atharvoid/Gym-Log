@@ -9,9 +9,9 @@ Targets are proposed acceptance goals of **8/10 per section**, not predicted res
 | 1. Visual identity and system | 6.5 | 8 | Revision needed (scope partial) | 4 | Establish distinct focal/supporting/reference composition; preserve accent tokens and improve meaningful text contrast. Session 1: shared contrast/Purple tokens; full section acceptance pending. |
 | 2. Sign-in / first impression | 6.5 | 8 | Not started (tokens checked) | 4 | Demonstrate a concrete product benefit while retaining a clear sign-in action. Session 1: shared contrast/Purple tokens; full section acceptance pending. |
 | 3. Onboarding / time to value | 5 | 8 | Not started (tokens checked) | 4 | Reduce required setup and end with a useful training action. Session 1: shared contrast/Purple tokens; full section acceptance pending. |
-| 4. Home / daily training intent | 7.8 | 8 | Critic passed | 11 | Final critic 7: Pass, 8/8/8/7/8; frozen verdict below. Real-workspace codegen, final 2,008-test gate and debug APK passed. History unchanged; below target, device/CI pending, not Accepted. |
+| 4. Home / daily training intent | 7.8 | 8 | Critic passed | 11 | Final critic 7: Pass, 8/8/8/7/8; frozen verdict below. Real-workspace codegen, final 2,008-test gate and debug APK passed; committed baseline CI Gate passed on 3 October. History unchanged; below target, device pending, not Accepted. |
 | 5. Workout history | 7 | 8 | Revision needed (scope partial) | 4 | Improve browsing density and specific result recognition without losing useful previews. Session 1: shared contrast/Purple tokens; full section acceptance pending. |
-| 6. Routine library | 7.6 | 8 | Critic passed | 11 | Final critic 7: Pass, 8/7/8/7/8; frozen verdict below. Shared choice, no second chooser, compact recovery and explicit empty-plan Home direction verified. Real-workspace final gate/APK passed; below target, device/CI pending, not Accepted. |
+| 6. Routine library | 7.6 | 8 | Critic passed | 11 | Final critic 7: Pass, 8/7/8/7/8; frozen verdict below. Shared choice, no second chooser, compact recovery and explicit empty-plan Home direction verified. Real-workspace final gate/APK and committed baseline CI Gate passed; below target, device pending, not Accepted. |
 | 7. Routine detail | 6.5 | 8 | Not started (tokens checked) | 4 | Put the exercise plan before analysis; clarify volume and muscle-share labels. Session 1: shared contrast/Purple tokens; full section acceptance pending. |
 | 8. Routine authoring | 6.5 | 8 | Not started (tokens checked) | 4 | Show whole-plan feedback; qualify populated plans, reordering, and import entry. Session 1: shared contrast/Purple tokens; full section acceptance pending. |
 | 9. Explore / program discovery | 6.5 | 8 | Not started (tokens checked) | 4 | Reduce header density and explain program fit using stated preferences. Session 1: shared contrast/Purple tokens; full section acceptance pending. |
@@ -989,7 +989,119 @@ time to identify/start training, previous-set readability at arm's length,
 Change speed, History reach, Start/Create emphasis, Home/Library agreement,
 deleted choice and fresh account. Findings must be recorded as actual owner
 observations after that test. Device/TalkBack, native safe areas/keyboard,
-haptics, reduced motion and pushed CI remain unverified.
+haptics and reduced motion remain unverified. Pushed CI is confirmed below.
+
+## Pre-Session 3 baseline — 3 October 2026
+
+Owner scope: push and check CI, preserve concurrent workout edits in a stash,
+and record polish debt; **no app-code changes and no Session 3 implementation**.
+
+Session 2 commit `decab02f1eead7ee8356259412b93ac607e4fd9a` was pushed to
+`origin/feat/explore-routine-first`. That branch and its existing PR target
+do not trigger the workflow's `main` / `remediation/**` filters, so the same
+commits were also pushed to `origin/remediation/session-2-baseline` for CI.
+No existing PR was retargeted.
+
+Three CI-only fixes preserve the fatal checks and exact real-font goldens:
+
+- `a3a7ff15`: pin Flutter **3.44.0**, matching the locally verified SDK; the [first run](https://github.com/atharvoid/Gym-Log/actions/runs/37098221745) used moving stable 3.47.6 and failed on the legacy analyzer-plugin configuration warning.
+- `82095be6`: run Analyze & Test on **windows-2025**, the golden recording platform, and preserve Flutter's exit status through PowerShell's report pipeline; the [Linux run](https://github.com/atharvoid/Gym-Log/actions/runs/37099467580) passed behavior suites but failed 989 exact golden comparisons. No comparator, baseline PNG or rendered text was weakened or changed.
+- `914674fc`: use Flutter's supported CocoaPods resolution switch in the iOS CI job; the [next run](https://github.com/atharvoid/Gym-Log/actions/runs/37100280520) passed Windows tests and Android release but failed Sentry's SwiftPM native compilation. The installed plugin's podspec pins Sentry 8.46.0 while its SwiftPM manifest permits newer 8.x; opting out of SwiftPM tests that compatibility path without changing the app or dependency versions.
+
+**CI confirmation:** [run 37101587373](https://github.com/atharvoid/Gym-Log/actions/runs/37101587373) **passed** on exact app/workflow baseline `914674fcfecd5b4634e0472b3efe751f326fd89c`: Analyze & Test, Android release, iOS release without codesigning and the aggregate CI Gate all succeeded. The subsequent ledger-only commit is pushed to the feature branch; the validation branch retains this tested SHA, and no app/workflow inputs differ in the documentation follow-up.
+
+The clean committed Session 2 snapshot passed `scripts/verify.ps1`: zero format
+changes, fatal analysis, custom_lint and **1,972 tests**. The prior real-workspace
+**2,008-test** result included 36 concurrent tests; it is not the committed-only
+baseline count. CI confirms committed inputs independently of those local edits.
+
+The concurrent PR work touched `workout_screen.dart`, workout detail, PR
+celebration, exercise blocks, DAOs and native sharing, so it was stashed before
+Session 3. Canonical recovery stash: **`907fe39954aee61512db8533684c95dd0e7bb61e`**,
+labelled `Pre-Session 3: concurrent PR and pre-existing app edits, verified cleanup`.
+All **491 selected blobs** (**69 tracked edits + 422 untracked files**) were
+compared with their pre-stash Git hashes; all match. App, native, dependency and
+test paths now match the committed baseline, and the index is empty. The first
+snapshot `d2d386e771c90c052607d47179599d37b6b373ca` is retained as an additional
+backup because its Windows command-length failure prevented initial cleanup.
+The ledger was excluded from both snapshots. Owner photos, audit references,
+design templates and the PR continuation notes/attachments remain in place.
+
+To resume the deferred work, use `git stash apply 907fe39954aee61512db8533684c95dd0e7bb61e`
+and retain the stash until integration is verified; later workout changes may
+require conflict resolution. Native device acceptance, haptics, TalkBack and
+owner History observations remain pending. CI builds are compilation evidence,
+not those device observations. Scores and acceptance status are unchanged.
+
+## Polish debt
+
+Recorded 3 October 2026; covers the requested sections **1, 4, 6, 14–17**.
+Home and Library have whole-section critic scores. Session 1 covered correctness
+within several sections: its combined verdict was **6.6**, and the reassurance
+follow-up was **6.4**; neither assigns a whole-section score to each of those
+sections. Their Current column values remain audit baselines. The scoped scores
+below are independent critic scores, not new builder scores. The unsupported
+error reassurance is fixed and is not outstanding debt.
+
+Sources: [Session 1 final review](reviews/session-1/iteration-4/VERDICT.md),
+[reassurance review](reviews/session-1-reassurance/iteration-2/VERDICT.md),
+[Session 2 final review](reviews/session-2/iteration-7/VERDICT.md), and the
+[unfinished audit checks](AUDIT.md). Under [RUBRIC.md](RUBRIC.md), 9 requires
+exceptional craft across evidenced states; closing this list requires a fresh
+critic review and does not automatically earn 9.
+
+| Section | Latest applicable critic evidence |
+|---|---|
+| 1. Visual identity and system | Reference text/placeholders **8**; whole section unscored. |
+| 4. Home | Whole section **7.8**; composition **7**, weekly progress **7**, inactive return **7**. |
+| 6. Routine Library | Whole section **7.6**; information, composition and metadata usefulness **7**. |
+| 14. Finish / recap | Finish review state **7**, measurement units **8**; whole section unscored. |
+| 15. PR recognition | Estimate/logged distinction and units **8**, Technical export footer **4**; whole section unscored. |
+| 16. Profile / progress | Neutral deltas **8**, large-text weekly chart **3**; whole section unscored. |
+| 17. Settings / appearance | Reassurance information **8**, sync heading and dialog labels **3**, sync recovery **5**; whole section unscored. |
+
+### (a) Fixable in code later
+
+- **1:** Strengthen focal/supporting/reference hierarchy through type and placement; tertiary and secondary now share a readable luminance floor.
+- **1:** Reflow split workout-detail labels so large text preserves complete words.
+- **1:** Fix the inherited SkeletonPulse reduced-motion disposal failure before qualifying loading/error states with reduced motion.
+- **4:** Reduce the competing large Train/routine titles and tall hero while preserving named Start, last-session context and the current History access.
+- **4:** Add real-font evidence for choice saving/write failure, Start failure, previous-context loading, non-weight logged sets and combined inactive/fallback states.
+- **6:** Reduce the repeated chosen-routine hero/list footprint at 1.6× while keeping Start stronger than creation and keeping management access.
+- **6:** Make exercise previews and compact plan scope useful without ellipsis hiding identity; retain only metadata supported by saved data.
+- **6:** Qualify multiple, partial, renamed and legacy program groups and large libraries beyond the five-routine render fixture.
+- **14:** Remove pre-save completion imagery and visibly distinguish review, saving, confirmed save and save failure; the current checkmark suggests completion early.
+- **14:** Qualify mixed-measurement totals, large totals and realistic populated recaps; reviewed renders do not establish all these cases.
+- **15:** Give the Technical export watermark dedicated clearance from logged-record/context text; the reviewed committed baseline still has footer collisions.
+- **15:** Qualify multiple/first PRs, long names and unavailable logged evidence at large text; single-record renders do not establish these cases.
+- **16:** Separate weekly chart values and dates at 390px/1.6× so each bar can be associated with its period without overlapping labels.
+- **16:** Explain empty progress instead of bare 0 / This week so absent history is distinguishable from a measured zero.
+- **16:** Qualify matched comparison periods rather than implying equal exposure between a partial current week and a complete prior week.
+- **17:** Wrap the sync heading within its text area while reserving the switch width; the existing 1.6× heading overflows.
+- **17:** Let storage-dialog confirmation buttons grow with scaled text and padding so the complete Got it label is visible.
+- **17:** Test the actual sync retry and backup transitions before adding recovery instructions or backup-status claims; current evidence stops at failure copy.
+
+### (b) Needs owner device verification
+
+- **1:** Check all six palettes, small metadata and Purple accent labels on the chosen OLED phone at arm's length and realistic brightness, with large text and reduced motion.
+- **4:** Observe returning-user identify/Start time, previous-set readability, one-tap Change and History reach; the owner reserved this History judgment.
+- **4:** Check real choice persistence across restart/account switching, deletion/emptying recovery, keyboard, TalkBack, native insets and touch feedback.
+- **6:** Check Start versus New routine emphasis, real imported grouping and Home/Library agreement on device, including long names and a large library.
+- **14:** Check name-sheet keyboard clearance, spoken measurement values, save-success/failure navigation and history after restart; a rendered review is not a confirmed save.
+- **15:** Check current/previous spoken units, estimate versus logged-set announcements, haptics/reduced motion and native share/cancel after the concurrent PR work is integrated.
+- **16:** Check real chart reading and neutral-delta comprehension during lower-volume/rest weeks, including TalkBack traversal and actual week boundaries.
+- **17:** Check native dialogs, sync-toggle speech/taps, offline-to-online recovery and confirmed backup/restore across reinstall or a second device.
+
+### (c) Needs a product decision
+
+- **1:** No additional product choice is recorded for the contrast fix; broader visual grammar and shared layout/motion work need a separately named scope.
+- **4:** After the phone test, decide whether current History access is sufficient; its visibility remains unchanged until the owner decides.
+- **6:** Decide whether a Go to Home action is worth adding to recovery; Home remains the sole chooser and Library must not gain a second setting.
+- **14:** Choose mixed-session summary priority and the confirmed-save recap's comparison/next action, including first-workout and no-PR cases.
+- **15:** No new choice is recorded for unit/estimate truth; reconcile record hierarchy and result-to-share continuation with the concurrent PR project's agreed scope.
+- **16:** Decide Profile versus Progress organization and weekly-plan/rest-day consistency framing before replacing day-streak motivation.
+- **17:** Decide whether appearance needs a compact preview of a real component using the selected palette.
+- **17:** Decide which confirmed-backup/retry information Settings should expose for non-connectivity failures.
 
 ## Open questions for owner
 
