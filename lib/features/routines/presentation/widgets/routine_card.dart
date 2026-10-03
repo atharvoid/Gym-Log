@@ -6,6 +6,8 @@ import 'package:gymlog/core/theme/dynamic_accent_theme.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text.dart';
 import '../../../../shared/widgets/ui/start_button.dart';
+import '../../../../shared/widgets/ui/primary_button.dart';
+import '../providers/training_launch_provider.dart';
 import '../../../../core/utils/tap_guard.dart';
 import '../../../../core/utils/relative_time.dart';
 import '../../../../core/providers/database_provider.dart';
@@ -29,6 +31,7 @@ class RoutineCard extends ConsumerWidget {
   final DateTime? lastTrained;
   final VoidCallback onStartTap;
   final bool workoutInProgress;
+  final bool isNext;
 
   const RoutineCard({
     super.key,
@@ -39,6 +42,7 @@ class RoutineCard extends ConsumerWidget {
     this.muscleTags = const [],
     this.lastTrained,
     this.workoutInProgress = false,
+    this.isNext = false,
   });
 
   Widget _tag(
@@ -63,7 +67,7 @@ class RoutineCard extends ConsumerWidget {
     final exLabel = count == 1 ? 'exercise' : 'exercises';
     final meta = lastTrained == null
         ? '$count $exLabel'
-        : '$count $exLabel · ${relativeDay(lastTrained!)}';
+        : '$count $exLabel · ${relativeDay(lastTrained!, now: ref.watch(trainingClockProvider)())}';
 
     final preview = exerciseNames.isEmpty
         ? 'No exercises yet'
@@ -106,15 +110,14 @@ class RoutineCard extends ConsumerWidget {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(routineName,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: AppText.cardTitle()),
+                              if (isNext) ...[
+                                Text('UP NEXT',
+                                    style: AppText.caption(color: accent.base)),
+                                const SizedBox(height: 6),
+                              ],
+                              Text(routineName, style: AppText.cardTitle()),
                               const SizedBox(height: 3),
-                              Text(meta,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: AppText.caption()),
+                              Text(meta, style: AppText.caption()),
                             ],
                           ),
                         ),
@@ -158,39 +161,57 @@ class RoutineCard extends ConsumerWidget {
                   // ── Footer: preview + Start pill ────────────────────
                   Padding(
                     padding: const EdgeInsets.only(top: 12),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            preview,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: AppText.caption(),
+                    child: LayoutBuilder(builder: (context, constraints) {
+                      final stacked = isNext ||
+                          MediaQuery.textScalerOf(context).scale(14) >= 21;
+                      final start = isNext &&
+                              !workoutInProgress &&
+                              exerciseNames.isNotEmpty
+                          ? PrimaryButton(
+                              label: routineName.length > 45
+                                  ? 'Start workout'
+                                  : 'Start $routineName',
+                              onPressed: onStartTap,
+                              semanticLabel: 'Start $routineName')
+                          : StartButton(
+                              label: 'Start',
+                              enabled: !workoutInProgress &&
+                                  exerciseNames.isNotEmpty,
+                              onPressed: workoutInProgress
+                                  ? null
+                                  : () {
+                                      if (exerciseNames.isEmpty) {
+                                        showAppSnackBar(context,
+                                            message:
+                                                'Add exercises to this routine first');
+                                        return;
+                                      }
+                                      onStartTap();
+                                    });
+                      if (stacked) {
+                        return Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              Text(preview, style: AppText.caption()),
+                              const SizedBox(height: 12),
+                              start,
+                            ]);
+                      }
+                      return Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              preview,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: AppText.caption(),
+                            ),
                           ),
-                        ),
-                        const SizedBox(width: 12),
-                        StartButton(
-                          label: 'Start',
-                          enabled:
-                              !workoutInProgress && exerciseNames.isNotEmpty,
-                          onPressed: workoutInProgress
-                              ? null
-                              : () {
-                                  // 0-exercise routine: don't silently no-op — tell
-                                  // the user why nothing happened.
-                                  if (exerciseNames.isEmpty) {
-                                    showAppSnackBar(
-                                      context,
-                                      message:
-                                          'Add exercises to this routine first',
-                                    );
-                                    return;
-                                  }
-                                  onStartTap();
-                                },
-                        ),
-                      ],
-                    ),
+                          const SizedBox(width: 12),
+                          start,
+                        ],
+                      );
+                    }),
                   ),
                 ],
               ),

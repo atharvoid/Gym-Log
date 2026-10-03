@@ -1,0 +1,1090 @@
+[
+  {
+    "file": "after/chooser-higgsfield-1.0x-synthetic.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "ab41b76b3890744da853d0eefcf0efca5c61907d9ff2305140f9c77ef0caefc1"
+  },
+  {
+    "file": "after/chooser-higgsfield-1.6x-synthetic.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "22674c2c18a09a6e7d93e3e4f89c1e251f1317c9a7c42e36b47af3b240338582"
+  },
+  {
+    "file": "after/chooser-neonPurple-1.0x-synthetic.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "1c51c0204d8792287acda4a1fad1bdca7db5ca1bcff2b103b799deb220206fae"
+  },
+  {
+    "file": "after/chooser-neonPurple-1.6x-synthetic.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "f9befdaae5b4e34fb835b2f3e5c746370cb64f2d57927bf28c363176f5cf9c6f"
+  },
+  {
+    "file": "after/chooser-no-results-higgsfield-1.0x-synthetic.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "d5c7b1048060c5731abf8d8ac98b35b1534910185d459187613824043d06cb96"
+  },
+  {
+    "file": "after/chooser-no-results-higgsfield-1.6x-synthetic.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "736e59e0f053384096a05e0c43bf26d8a1736359bbaaf80fd4fb4eb9508b603b"
+  },
+  {
+    "file": "after/chooser-no-results-neonPurple-1.0x-synthetic.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "1309dd31dbebed736df06a16f5aa9e61d01d7c2de3f3a146999c05e9c587977f"
+  },
+  {
+    "file": "after/chooser-no-results-neonPurple-1.6x-synthetic.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "7f46ed43a676b48e8d8953744c7276df7730fd7da57782c7db75cd84dbf71c19"
+  },
+  {
+    "file": "after/chooser-page-2-higgsfield-1.0x-synthetic.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "653d8ab9cdd35c604f2de66fe88b1a0b4c97433a6fb57246c574662e9ded7793"
+  },
+  {
+    "file": "after/chooser-page-2-higgsfield-1.6x-synthetic.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "d745aa4f95d16e61991b445d7e891fe6173bd59114b72b33577a40330a642397"
+  },
+  {
+    "file": "after/chooser-page-2-neonPurple-1.0x-synthetic.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "08c6bc997b6ded021dc7e5751fc500676062df9d7b8d6031a6c45dd65e4a2a61"
+  },
+  {
+    "file": "after/chooser-page-2-neonPurple-1.6x-synthetic.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "a04e3b941e880f21a96a2e930c34f65531b44c8577d629328cec96d836fed435"
+  },
+  {
+    "file": "after/chooser-search-higgsfield-1.0x-synthetic.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "cc9618c49e77c031884a9d379fa52ac995adf67023cf32778f83bc3b87a961d4"
+  },
+  {
+    "file": "after/chooser-search-higgsfield-1.6x-synthetic.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "6092d34d4b19355614b9f5efa806cc08697870e24d7338b00a3ef2eb472c2d0c"
+  },
+  {
+    "file": "after/chooser-search-neonPurple-1.0x-synthetic.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "dcf80b255ecf5acf7801bc4f03927ab08f22b81a328b0d92861792c6cfccee53"
+  },
+  {
+    "file": "after/chooser-search-neonPurple-1.6x-synthetic.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "4b037785b53724625431e03131c9f813c6f57c360a1deabae8a7f8ce95333b3b"
+  },
+  {
+    "file": "after/home-active-higgsfield-2.0x.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "af0a23aff48ddf97b2d5e396de0113727f8a29dea4756afb1f776860b7b272e2"
+  },
+  {
+    "file": "after/home-active-neonPurple-2.0x.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "a5e96ed2063b23aab12da7da567e193cd66c9e341ae1fdd71ecdb096b311c9ec"
+  },
+  {
+    "file": "after/home-choice-error-higgsfield-1.0x-synthetic.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "b993fd846e66c83af53a4b8b77acb9c2a6257358c6968c50e04a1a2fed700e4a"
+  },
+  {
+    "file": "after/home-choice-error-higgsfield-1.6x-synthetic.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "8f0b0c4ac64a91d7cf14e1a26034f687d3a2c3560a5ec15f5b9e0436d7c39a79"
+  },
+  {
+    "file": "after/home-choice-error-neonPurple-1.0x-synthetic.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "151a351bc6a821350dc5a1732aa0a1571522a9a3dc8cab540169e20a3275c3f1"
+  },
+  {
+    "file": "after/home-choice-error-neonPurple-1.6x-synthetic.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "f801e666aa482f7a9b94bc614c67c531481a00290d50d168dd410f9b6961b8c4"
+  },
+  {
+    "file": "after/home-chosen-higgsfield-1.0x-synthetic.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "3287ca04dfc408bd951def24a269794bb06378ac05a4cea04cb1f5904fa42932"
+  },
+  {
+    "file": "after/home-chosen-higgsfield-1.6x-synthetic.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "6c67cb6ffdbd1d57a728e448faf3539d4ba809930a204c495503bbd1789cb131"
+  },
+  {
+    "file": "after/home-chosen-neonPurple-1.0x-synthetic.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "995acaf2abcd8043ce0d176b534e7e8d53819922f6a079af783f329c87401fe1"
+  },
+  {
+    "file": "after/home-chosen-neonPurple-1.6x-synthetic.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "87f006249c2ba22e50d4848ada9378792047ba8af2ba02ea31ff5d82c199eb58"
+  },
+  {
+    "file": "after/home-completed-higgsfield-1.0x.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "659b72435dae7802758981811a5c2503f8ee8d60358618a8b7f96726799fbcf1"
+  },
+  {
+    "file": "after/home-completed-neonPurple-1.0x.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "45d771a66a84b724946ea09b2eca48699f75ee95b1b1ca2b190a1e07c8e58354"
+  },
+  {
+    "file": "after/home-deleted-choice-higgsfield-1.0x-synthetic.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "07ae45f5f75978e6ed719117853a97d832b702dc13f224bac8a08a7eef457f54"
+  },
+  {
+    "file": "after/home-deleted-choice-higgsfield-1.6x-synthetic.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "c5438d10b077abd970ced4aba65afc76f5a2310d470ad37294b072958f7af66e"
+  },
+  {
+    "file": "after/home-deleted-choice-neonPurple-1.0x-synthetic.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "62997321b685ba4bc06d1bb6f58ae79ada8b256abaffae1625a627e9c747e983"
+  },
+  {
+    "file": "after/home-deleted-choice-neonPurple-1.6x-synthetic.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "2f78fe723dd4bf7ab34e3bb7b840c0c55a02ceca1ca98d485e31a91b99b0102a"
+  },
+  {
+    "file": "after/home-empty-higgsfield-2.0x.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "373532acd893f5dba0c83af2311b5bcd8870521f2011b17ac38af720d8e42a71"
+  },
+  {
+    "file": "after/home-empty-neonPurple-2.0x.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "1fd50089716110a8b445f5ee629399086caf942cef4b3e19d228a81bbe2b0290"
+  },
+  {
+    "file": "after/home-empty-next-higgsfield-2.0x.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "f83ce508fa1ce4da246369ca86cafef2f28c796af0921aa03a2c75590cf740f6"
+  },
+  {
+    "file": "after/home-empty-next-neonPurple-2.0x.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "621c33619a3d34d0c916f18cebaa97d46b00d3028bd88e7d56b250514f522389"
+  },
+  {
+    "file": "after/home-error-higgsfield-2.0x.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "37e31e85f97fa7f43be8b52755df7c3d7d3aacb8b42ac3478e9916d37bbf2d61"
+  },
+  {
+    "file": "after/home-error-neonPurple-2.0x.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "4d536ca55324582e355a258c70e8f0e60a8d420afb91138026d67f59b9bf764b"
+  },
+  {
+    "file": "after/home-last-error-higgsfield-2.0x.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "eefa541c20ad87cf97d09b763a9ee4be8d77417f91533f7be2c2272fdb893818"
+  },
+  {
+    "file": "after/home-last-error-neonPurple-2.0x.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "32fd993dd50fa881a8125b529e270a407fe014a6cda32a5ecc1ac6be4c15b9f7"
+  },
+  {
+    "file": "after/home-last-older-higgsfield-2.0x.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "ee209d7a8fed82c788731bc2ad0fe42ad52acb9368cbbf835ea652740da08ca6"
+  },
+  {
+    "file": "after/home-last-older-neonPurple-2.0x.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "bb88e4bfd785385e7ca5b4101e0c8b66c7ec7db9b57446325227e9bf99053265"
+  },
+  {
+    "file": "after/home-long-name-higgsfield-2.0x.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "1829d4f38e184e09ba5a61884b679d2f5465f88e8e156fe251756c91a0a123df"
+  },
+  {
+    "file": "after/home-long-name-neonPurple-2.0x.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "e002985b2d2c9255f3c63c513e675c22d1d31f2e545bcc3b891fdc9bedc1a666"
+  },
+  {
+    "file": "after/home-narrow-ready-higgsfield-2.0x.png",
+    "size": [
+      640,
+      1688
+    ],
+    "sha256": "f45dd5558ac601989ff30e00e555efa37f3b8a5fa0b7129cc625add9dc8e9286"
+  },
+  {
+    "file": "after/home-narrow-ready-neonPurple-2.0x.png",
+    "size": [
+      640,
+      1688
+    ],
+    "sha256": "b55147438647119e4ba075e2c4062b32af1fc0d6b896af1deab631813e0b236a"
+  },
+  {
+    "file": "after/home-override-keyboard-higgsfield-1.0x.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "571bd2c78329a5102d54d718abbb2ee85e245d79aeb0f8deada74100986f5062"
+  },
+  {
+    "file": "after/home-override-keyboard-higgsfield-1.6x.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "b089af13cb6e962430b3f94dab7c5c1c2d644aedb7ce2c864e868b1ee41797ce"
+  },
+  {
+    "file": "after/home-override-keyboard-higgsfield-2.0x.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "06bf70635ca0e2aa1e7090f890e2e01b7467c74c067a86603f0d3625561d19e4"
+  },
+  {
+    "file": "after/home-override-keyboard-neonPurple-1.0x.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "ffec7c140ce36363b6588d338bb154f0dd68d217bca6b9e68e00c4cf242be34f"
+  },
+  {
+    "file": "after/home-override-keyboard-neonPurple-1.6x.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "b845a24162d248b362a8f0e9cfa915a475ce7a669daabdae444a9bd7b4842a7e"
+  },
+  {
+    "file": "after/home-override-keyboard-neonPurple-2.0x.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "ed454f196f5d7c4ad9ed6f9530379dd82470f5947d71cf2b2ef8f2e69f4c4379"
+  },
+  {
+    "file": "after/home-plan-empty-higgsfield-1.0x.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "b9bf58825222a34c5e9942e9cc89f4bd576b5ab05e75a0811c29298aa83348a7"
+  },
+  {
+    "file": "after/home-plan-empty-higgsfield-1.6x.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "3887621e5d170bfe764e9a8635bf794e684069cc8a333c5cfb7685c651620d9a"
+  },
+  {
+    "file": "after/home-plan-empty-higgsfield-2.0x.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "e58fa97f73ff4707448159b1dc6f68ee27d691f9a16583628256bd5daf6b84f9"
+  },
+  {
+    "file": "after/home-plan-empty-neonPurple-1.0x.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "a7e1e33ea707e255e5b4b2f841d765a4a8879bea24f13d3f13d6c98c00cdb759"
+  },
+  {
+    "file": "after/home-plan-empty-neonPurple-1.6x.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "7867e42248561793acecf24ba22370b87d638c6094af8e24a48b323b74f5f981"
+  },
+  {
+    "file": "after/home-plan-empty-neonPurple-2.0x.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "8585c962b1a96bc6ba456778edde2256a6a330f9871512f93d430337ad3c118c"
+  },
+  {
+    "file": "after/home-plan-keyboard-higgsfield-1.0x.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "96d264cb6ff155bc992f19579792c1b2e499d00565e1d2a5f1bd04a70fe83cd9"
+  },
+  {
+    "file": "after/home-plan-keyboard-higgsfield-1.6x.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "93e72c24c41d847895f53eb8b51abd8bb15935ec6477cd7cc85cc7a03894ecaf"
+  },
+  {
+    "file": "after/home-plan-keyboard-higgsfield-2.0x.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "b4c1b290cc332f546fceb05a2b55481d20353587cf5d910be2af5eae4ccb3d0a"
+  },
+  {
+    "file": "after/home-plan-keyboard-neonPurple-1.0x.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "1657f90ba0d52efc0f38e20ff38143f1c79adc584b4f81011bbda8c09147aef1"
+  },
+  {
+    "file": "after/home-plan-keyboard-neonPurple-1.6x.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "5da197f6697c172c0ca233660dea66b4a5fa69adb3115b8096368f735af7f4ad"
+  },
+  {
+    "file": "after/home-plan-keyboard-neonPurple-2.0x.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "98a7b1929722037220600e9e1f181c6ee515f528e1ac97dbe5fee56eca11282d"
+  },
+  {
+    "file": "after/home-plan-repeat-blazeOrange-1.0x.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "e94e02dfc8abbb1caa28a3ef8996234af5af20fb50aba11df1d685fdaf61dee5"
+  },
+  {
+    "file": "after/home-plan-repeat-higgsfield-1.0x.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "48a41180c7faf36d8d9edaf05fbd3c6923ca1ea1fc3e050cb42eadadba599518"
+  },
+  {
+    "file": "after/home-plan-repeat-higgsfield-1.6x.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "1d81191f5bca74531990bb6c8397a7518387f1a15a33f588e1c4083f2a60e84a"
+  },
+  {
+    "file": "after/home-plan-repeat-higgsfield-2.0x.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "dd7de3489190c88160251b11c71d84d83a7dfa13da33297be26a7459b7d5fa06"
+  },
+  {
+    "file": "after/home-plan-repeat-neonCyan-1.0x.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "6efef2371d75107441aaa3c0594bb31d750d4a493393866ad2005a7789e8b596"
+  },
+  {
+    "file": "after/home-plan-repeat-neonMagenta-1.0x.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "d117ae29db8199ec64739a1ce3b1fe2e8c88b705f535e5eb46de165cb5cc650a"
+  },
+  {
+    "file": "after/home-plan-repeat-neonPurple-1.0x.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "43c872c1f82383abae7527099c8655cd113cfc776696535fcc0e21b7b5275c7e"
+  },
+  {
+    "file": "after/home-plan-repeat-neonPurple-1.6x.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "a5d928466fafca7992253c5adf74f0822a6c3f7652d974f916b96f97b3091d33"
+  },
+  {
+    "file": "after/home-plan-repeat-neonPurple-2.0x.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "e704dea0bb2eadbcaca5e4eb2f4ba94a1807ef1cce917ef780df28c9fd7de2fd"
+  },
+  {
+    "file": "after/home-plan-repeat-white-1.0x.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "b78d394d67e7bef4604d2209823fa7a32e81948d8828efb492dd1e39e90f6148"
+  },
+  {
+    "file": "after/home-plan-save-error-higgsfield-2.0x.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "aa3a5846c2e4d0ce63c6443df041fa2029a192aff5db4a9ed2652d6225cfa77a"
+  },
+  {
+    "file": "after/home-plan-save-error-neonPurple-2.0x.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "5d5c4df13e607e28bc4691ff4437645eb5808a0301ced9727b2733dc58aab304"
+  },
+  {
+    "file": "after/home-plan-saving-higgsfield-2.0x.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "86707eeb65c6d98391cf917f36dd74bbe11eb6b77f41f202d56bb025ed6b4182"
+  },
+  {
+    "file": "after/home-plan-saving-neonPurple-2.0x.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "1f18504e844d6d330ff13a8e68646820b8d97ec70b960c46c011429ce4d863d9"
+  },
+  {
+    "file": "after/home-ready-blazeOrange-2.0x.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "2d8e3fdbce2a083b443dfe6a0ae081684fc7ba538f86d77ca75d50eff3a4ce83"
+  },
+  {
+    "file": "after/home-ready-higgsfield-2.0x.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "9c29282a06a70c3c5218252abf9cd1c2b65b819360a9fae8b119daaaf91a1145"
+  },
+  {
+    "file": "after/home-ready-neonCyan-2.0x.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "89e978b2c3aba08a4bc3ad5e321c6602e90392df17a77d3c3fbc7b5f05c7d639"
+  },
+  {
+    "file": "after/home-ready-neonMagenta-2.0x.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "7df4a2c5fa078273b48d2232e7920c32eefbe588ab515bdad7f62745ee597bdf"
+  },
+  {
+    "file": "after/home-ready-neonPurple-2.0x.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "363718757f85c991ee2520a1f2b1916d28fca0519d2d238c6024ff3344de6e56"
+  },
+  {
+    "file": "after/home-ready-white-2.0x.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "75d09dd00b75f9a865608ec0ea0386c0d1223e4a641364587a10a7fa32b362a3"
+  },
+  {
+    "file": "after/home-repeat-canceled-higgsfield-2.0x.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "f6f3066b43780285bca22ae2eccc56142d5a8b2bb450688454173948ba8541c2"
+  },
+  {
+    "file": "after/home-repeat-canceled-neonPurple-2.0x.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "41fad88b5540a058a0034e4b2fe1d5b4b88a6a36cc47b0d7b96a8c8fea07bf82"
+  },
+  {
+    "file": "after/home-repeat-committed-higgsfield-2.0x.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "a596efa4179dfc152ee71473ae7d63e7a77b850dca8553272a41dd3ad0de9a88"
+  },
+  {
+    "file": "after/home-repeat-committed-neonPurple-2.0x.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "d8754dba328d701a19b2f50fa87e8c3650f42f8f909ad04071ef46552c69687b"
+  },
+  {
+    "file": "after/library-active-higgsfield-2.0x.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "0b288ab3e81d4555cb680aa640c3c2873eaa51feed84f30dc333cc092d22e152"
+  },
+  {
+    "file": "after/library-active-neonPurple-2.0x.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "eb7223893da180fd307661d697376a44c9b60f76505f95fe2877409929aedce2"
+  },
+  {
+    "file": "after/library-chosen-higgsfield-1.0x-synthetic.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "45cb617431a59f0c40dd11640f2517c83b380a90acccdd62d440fa40d07b8e6a"
+  },
+  {
+    "file": "after/library-chosen-higgsfield-1.6x-synthetic.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "07a02bd573804e01a1215e933e2eb7066abe7d41249fb028313918503f78fc33"
+  },
+  {
+    "file": "after/library-chosen-neonPurple-1.0x-synthetic.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "b459c8233bb647e7029909bb6ad840d533ea2c8c3fe18196736fdc63f6a68d74"
+  },
+  {
+    "file": "after/library-chosen-neonPurple-1.6x-synthetic.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "ea72a33307a2b6d312d172dbaefd79637d6a3fd1f337b3452dbf536e70b7840b"
+  },
+  {
+    "file": "after/library-completed-higgsfield-1.0x.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "8302d605d9036757e0e529d0fbb4e646609833311bd2569191c5eb735bb4433f"
+  },
+  {
+    "file": "after/library-completed-neonPurple-1.0x.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "740e1f6223e6b14dda694bb877228eb0b6e3bde1b3fb6fd42f5e2653a7f2dc13"
+  },
+  {
+    "file": "after/library-empty-higgsfield-2.0x.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "3c9a5884c571ce505c8908d5c030bec2533c94fc9cfdde9b62a2c93a488564d2"
+  },
+  {
+    "file": "after/library-empty-neonPurple-2.0x.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "9b7e082985d7e80d6af33da6c68ba3abe57169b54d73e342e2c21a0a86ed6316"
+  },
+  {
+    "file": "after/library-error-higgsfield-2.0x.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "b3a3b2043ba55f853d16b7da24f1ed8cb5991abbc713a2d9121912f0b8fc5e2c"
+  },
+  {
+    "file": "after/library-error-neonPurple-2.0x.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "b077f21223d98a1484d94e131b0bd0ee39d91953f194e30bd599dc9e8be795e8"
+  },
+  {
+    "file": "after/library-long-name-higgsfield-2.0x.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "d0497e01913516747a3530231ccd255cc9a7e94822b363d6b45ea30c8fd96560"
+  },
+  {
+    "file": "after/library-long-name-neonPurple-2.0x.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "e01b0f1df230caf61b27a40a9dc8bb91171066e4b0756b3ee184dec1f07b1111"
+  },
+  {
+    "file": "after/library-narrow-ready-higgsfield-2.0x.png",
+    "size": [
+      640,
+      1688
+    ],
+    "sha256": "e581a48f420de9fdc7244f076d6a8359a0becee8749d86f18c1cd1987cbd38e9"
+  },
+  {
+    "file": "after/library-narrow-ready-neonPurple-2.0x.png",
+    "size": [
+      640,
+      1688
+    ],
+    "sha256": "8a84ca78effa34467bdc3a2f3f31656e250fff5bd70227a3d4f956aafff05ad6"
+  },
+  {
+    "file": "after/library-plan-error-higgsfield-2.0x.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "60767a0d68fd42fed846d8279335adfadf1d173b547526809fa4124a69a82462"
+  },
+  {
+    "file": "after/library-plan-error-neonPurple-2.0x.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "c7cfa6d361e926a85ce064a77f74ecc9159288678281dee341716ac769ff6fe1"
+  },
+  {
+    "file": "after/library-ready-blazeOrange-2.0x.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "7f1ce6fa3565bca996c9aca9f8f0650f9dc047ba29ad3c0c41c30e70ab329e32"
+  },
+  {
+    "file": "after/library-ready-higgsfield-2.0x.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "aea52f3b12ac002bc6ce83e31aafda44174e3029a020020fb7863162e5dac6e9"
+  },
+  {
+    "file": "after/library-ready-neonCyan-2.0x.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "b80a5d374bc950c63cb27354f24a5d00fd19ead2abaf99d73410a97d02ba1282"
+  },
+  {
+    "file": "after/library-ready-neonMagenta-2.0x.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "eebd37e851c948ed7046bbedc56192962ea766108f060a260d46ffa51e05014c"
+  },
+  {
+    "file": "after/library-ready-neonPurple-2.0x.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "0491e6f9c08d3638713b57edffc87b3cb21ffedb3494ec33cdc1b3ba3f05baa3"
+  },
+  {
+    "file": "after/library-ready-white-2.0x.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "e6fe4f0653ad049d6affbf6c9300161ba0da806c240859c5b88e2e8f6ed47f8c"
+  },
+  {
+    "file": "after/library-view-next-higgsfield-1.0x.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "07a5725815075bb8d0533d6a084e786aaaf05d84583d41f3e6a9b190c301b76a"
+  },
+  {
+    "file": "after/library-view-next-higgsfield-1.6x.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "109356f04fec65e3af5b91846476165879c7fee4313cee6f0e4d48434a42680a"
+  },
+  {
+    "file": "after/library-view-next-higgsfield-2.0x.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "a65e86c471e1bb69d95162a5e005b4d0a94021566611eed076960b0abc95b13c"
+  },
+  {
+    "file": "after/library-view-next-neonPurple-1.0x.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "01e4652525b7c6a1df76746d7f6a83dd6898acf30fbe11eadd1abbfbe82e422a"
+  },
+  {
+    "file": "after/library-view-next-neonPurple-1.6x.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "d6e11a45805d7724b9953e2f6e75867d6992e90ab562dd480091d92544140f99"
+  },
+  {
+    "file": "after/library-view-next-neonPurple-2.0x.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "392492f8ac71459583669a1be562d6410ac5e8a806434ac72073396e170e7325"
+  },
+  {
+    "file": "before/chooser-closed-higgsfield-1.0x.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "46bdae74b7c2d8cca4465e44f8590a6e47bb027f03a9b643dfd84592094a24a6"
+  },
+  {
+    "file": "before/chooser-closed-higgsfield-1.6x.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "c11acce4f637edaaa255bb558abc7093bc6d757356584d99eb6b232a60d53470"
+  },
+  {
+    "file": "before/chooser-closed-higgsfield-2.0x.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "0a6cb7616692cc48858048f4c7efc94ab3ebc01f29f37bb64cbaef0662589ef0"
+  },
+  {
+    "file": "before/chooser-keyboard-higgsfield-1.0x.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "bd5c0494a73fa4a0a764a9dc14423e6e93bbe0dece8fe6982a01838bb43858e2"
+  },
+  {
+    "file": "before/chooser-keyboard-higgsfield-1.6x.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "ae2b7191a3ac49f0ef314cd9e52570c04489743c20526a1436896e4e65c451b3"
+  },
+  {
+    "file": "before/chooser-keyboard-higgsfield-2.0x.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "68ec7def8b2ebea70a41f36c8bceacb391ba18fbb220ef10094d1098822e3087"
+  },
+  {
+    "file": "before/home-ready-higgsfield-1.0x.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "6d860514b0516db6b8aaeeb3b66fc9eeb88cded9b8b8a3d518cedf9d27c3c7bc"
+  },
+  {
+    "file": "before/home-ready-higgsfield-1.6x.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "9a998f333d801360fce72204751edddf46509c2113fd971be74bbc835c877291"
+  },
+  {
+    "file": "before/home-ready-higgsfield-2.0x.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "137d929f9adad82a62d1e743c42196da2415fa4e2fa137fbe58b399c3c923a40"
+  },
+  {
+    "file": "before/home-ready-neonPurple-1.0x.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "471880e12b99114cd3c31195f1354f9a426f28ca0ae778bc27620aa22e3f947d"
+  },
+  {
+    "file": "before/home-ready-neonPurple-1.6x.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "47b7c4fd455d50e64d528dde1fbd26481c71d3dda758bdb230665b748052c7b3"
+  },
+  {
+    "file": "before/home-ready-neonPurple-2.0x.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "559596bc14ad9bedda648769ac6725b208496724dfbbfcd35fd0c2ab1d0007cb"
+  },
+  {
+    "file": "before/library-ready-higgsfield-1.0x.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "94725f844e9ccd18205ffddb8d4ff432e96fa3e47f65c189720a9173394d92e3"
+  },
+  {
+    "file": "before/library-ready-higgsfield-1.6x.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "aa8305f998ac897a6052040eb0352a8926526b06af8146bd7c9ee507d69a4a18"
+  },
+  {
+    "file": "before/library-ready-higgsfield-2.0x.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "187f943332615abe0410b3ed882f3f4471cc1c596397f2f70edd4caec0a7022b"
+  },
+  {
+    "file": "before/library-ready-neonPurple-1.0x.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "994a727701ea4fc722b72f74674ce11183b15f6db5ca296a5b95678bc5adbde0"
+  },
+  {
+    "file": "before/library-ready-neonPurple-1.6x.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "aa95172095362a48cb5ffd23ff586e23ab09d7e05587771b57a35fd4e944eb92"
+  },
+  {
+    "file": "before/library-ready-neonPurple-2.0x.png",
+    "size": [
+      780,
+      1688
+    ],
+    "sha256": "fe07c9fc43cd5595638d1c9bdb798c75150e377af21d369baf0279d79a5f8989"
+  }
+]

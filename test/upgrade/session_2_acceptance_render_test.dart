@@ -128,8 +128,13 @@ void main() {
                   iteration);
               await tester.enterText(find.byType(TextField), '');
               await tester.pumpAndSettle();
+              await tester.ensureVisible(find.byTooltip('More choices'));
               await tester.tap(find.byTooltip('More choices'));
               await tester.pumpAndSettle();
+              expect(find.byKey(const ValueKey('choose-sample-4')),
+                  findsOneWidget);
+              expect(
+                  find.byKey(const ValueKey('choose-sample-0')), findsNothing);
               await _compareCapture(
                   tester,
                   key,
@@ -137,6 +142,7 @@ void main() {
                   iteration);
               await tester.tap(find.byTooltip('Close routine chooser'));
               await tester.pumpAndSettle();
+              await tester.ensureVisible(find.text('History'));
               await tester.tap(find.text('History'));
               await tester.pumpAndSettle();
               await _compareCapture(
@@ -176,9 +182,10 @@ Future<void> _capture(WidgetTester tester, Key key, String id) async {
   await tester.runAsync(() async {
     final boundary =
         tester.renderObject<RenderRepaintBoundary>(find.byKey(key));
-    final image = await boundary.toImage();
+    final image = await boundary.toImage(pixelRatio: 2);
     final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
-    final file = File('docs/upgrade/renders/session-2/after/$id.png');
+    final file =
+        File('docs/upgrade/renders/home-routines-correction/after/$id.png');
     await file.parent.create(recursive: true);
     await file.writeAsBytes(bytes!.buffer.asUint8List());
     image.dispose();

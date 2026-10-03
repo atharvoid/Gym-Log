@@ -27,7 +27,7 @@ import 'package:gymlog/shared/widgets/feedback/undoable_delete.dart';
 import 'package:gymlog/features/auth/presentation/providers/tour_provider.dart';
 import 'package:gymlog/features/routines/presentation/providers/routines_provider.dart';
 import 'package:gymlog/features/routines/presentation/widgets/training_launchpad.dart';
-import 'package:gymlog/features/routines/presentation/providers/training_launch_provider.dart';
+import '../widgets/last_workout_card.dart';
 import 'package:gymlog/shared/widgets/tour/spotlight_tour_overlay.dart';
 
 /// Whether the weekly-stats card should be rendered.
@@ -169,14 +169,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final unit = ref.watch(weightUnitProvider);
 
     final routines = ref.watch(hydratedRoutinesProvider);
-    final choice = ref.watch(chosenRoutineProvider);
-    final active = ref.watch(activeWorkoutProvider) != null;
-    final freestyleIsPrimary = routines.hasValue &&
-        !routines.hasError &&
-        routines.requireValue.isEmpty &&
-        choice.hasValue &&
-        !choice.hasError &&
-        choice.requireValue == null;
     final hasNoRoutines = routines.hasValue && routines.requireValue.isEmpty;
     final tourStep = ref.watch(firstRunTourProvider);
     final streak = ref.watch(streakStatsProvider);
@@ -237,27 +229,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                 context.push('/routines/explore');
                               }),
                           const SizedBox(height: AppSpacing.x3),
-                          Wrap(spacing: AppSpacing.x4, children: [
-                            if (!freestyleIsPrimary && !active)
-                              TextButton(
-                                  onPressed: () =>
-                                      launchTraining(context, ref, null),
-                                  style: TextButton.styleFrom(
-                                      foregroundColor: surface.textSecondary),
-                                  child: const Text('Log a different workout')),
-                            TextButton(
-                                onPressed: () {
-                                  final target =
-                                      _historyHeaderKey.currentContext;
-                                  if (target != null) {
-                                    Scrollable.ensureVisible(target,
-                                        duration: Duration.zero);
-                                  }
-                                },
-                                style: TextButton.styleFrom(
-                                    foregroundColor: surface.textSecondary),
-                                child: const Text('History')),
-                          ]),
+                          LastWorkoutCard(onHistory: () {
+                            final target = _historyHeaderKey.currentContext;
+                            if (target != null) {
+                              Scrollable.ensureVisible(target,
+                                  duration: Duration.zero);
+                            }
+                          }),
                           _HomeHeaderBand(
                               weeklyStatsKey: _weeklyStatsKey,
                               showWeeklyStats: showStats),

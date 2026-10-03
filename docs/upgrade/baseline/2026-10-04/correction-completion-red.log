@@ -1,0 +1,44 @@
+00:00 +0: loading C:/Users/Atharva Patil/.codex/worktrees/session-3-options/gymlog/test/upgrade/training_plan_test.dart
+00:00 +0: C:/Users/Atharva Patil/.codex/worktrees/session-3-options/gymlog/test/upgrade/training_plan_test.dart: program uses latest completion, wraps, and never persists a next cursor
+00:00 +1: C:/Users/Atharva Patil/.codex/worktrees/session-3-options/gymlog/test/upgrade/training_plan_test.dart: start, unfinished, discard, save failure and rest day have no completed evidence
+00:00 +2: C:/Users/Atharva Patil/.codex/worktrees/session-3-options/gymlog/test/upgrade/training_plan_test.dart: outside-program and freestyle completions do not advance chosen program
+00:00 +3: C:/Users/Atharva Patil/.codex/worktrees/session-3-options/gymlog/test/upgrade/training_plan_test.dart: same-program override continues after the day actually completed
+00:00 +4: C:/Users/Atharva Patil/.codex/worktrees/session-3-options/gymlog/test/upgrade/training_plan_test.dart: completion chronology overrides start-date order and ignores older imported history
+00:00 +5: C:/Users/Atharva Patil/.codex/worktrees/session-3-options/gymlog/test/upgrade/training_plan_test.dart: missing, duplicate, conflicting program metadata requires choice
+00:00 +6: C:/Users/Atharva Patil/.codex/worktrees/session-3-options/gymlog/test/upgrade/training_plan_test.dart: tied latest program days require explicit choice; same-day duplicate does not
+00:00 +7: C:/Users/Atharva Patil/.codex/worktrees/session-3-options/gymlog/test/upgrade/training_plan_test.dart: repeat mode stays on its chosen routine and rename preserves identity
+00:00 +8: C:/Users/Atharva Patil/.codex/worktrees/session-3-options/gymlog/test/upgrade/training_plan_test.dart: legacy complete program migrates durably and account choice is isolated
+00:00 +9: C:/Users/Atharva Patil/.codex/worktrees/session-3-options/gymlog/test/upgrade/training_plan_test.dart: legacy standalone repeats; partial/deleted choices do not become guessed programs
+00:00 +10: C:/Users/Atharva Patil/.codex/worktrees/session-3-options/gymlog/test/upgrade/training_plan_test.dart: malformed preferences surface a retryable error without deleting old choice
+00:00 +11: C:/Users/Atharva Patil/.codex/worktrees/session-3-options/gymlog/test/upgrade/training_plan_test.dart: failed preference write does not publish or claim a saved plan
+00:00 +12: C:/Users/Atharva Patil/.codex/worktrees/session-3-options/gymlog/test/upgrade/training_plan_test.dart: disposed account migration cannot finish writing obsolete intent
+00:00 +13: C:/Users/Atharva Patil/.codex/worktrees/session-3-options/gymlog/test/upgrade/training_completion_dao_test.dart: (setUpAll)
+00:00 +13: C:/Users/Atharva Patil/.codex/worktrees/session-3-options/gymlog/test/upgrade/training_completion_dao_test.dart: completed-only, account-scoped latest queries use endedAt rather than feed order
+00:00 +14: C:/Users/Atharva Patil/.codex/worktrees/session-3-options/gymlog/test/upgrade/training_completion_dao_test.dart: program completion outside first history page remains available
+00:00 +15: C:/Users/Atharva Patil/.codex/worktrees/session-3-options/gymlog/test/upgrade/training_completion_dao_test.dart: persisted edit, deletion and sync import recompute the narrow stream
+00:00 +15 -1: C:/Users/Atharva Patil/.codex/worktrees/session-3-options/gymlog/test/upgrade/training_completion_dao_test.dart: persisted edit, deletion and sync import recompute the narrow stream [E]
+  InvalidDataException: Sorry, WorkoutSessionsCompanion(id: Value(older), userId: Value.absent(), routineId: Value.absent(), name: Value(Renamed), startedAt: Value.absent(), endedAt: Value(2026-10-05 00:00:00.000), notes: Value.absent(), totalVolumeKg: Value.absent(), synced: Value.absent(), rowid: Value.absent()) cannot be used for that because: 
+  • userId: This value was required, but isn't present
+  • startedAt: This value was required, but isn't present
+  
+  package:drift/src/runtime/data_verification.dart 74:5                  VerificationContext.throwIfInvalid
+  package:drift/src/runtime/query_builder/statements/update.dart 127:10  UpdateStatement.replace
+  package:gymlog/core/database/daos/workouts_dao.dart 324:31             WorkoutsDao.updateSession
+  test\upgrade\training_completion_dao_test.dart 54:26                   main.<fn>
+  
+00:00 +15 -1: C:/Users/Atharva Patil/.codex/worktrees/session-3-options/gymlog/test/upgrade/training_completion_dao_test.dart: duplicate same-day records cannot hide an ambiguous tied program day
+00:00 +15 -2: C:/Users/Atharva Patil/.codex/worktrees/session-3-options/gymlog/test/upgrade/training_completion_dao_test.dart: duplicate same-day records cannot hide an ambiguous tied program day [E]
+  Expected: Set:['push', 'pull']
+    Actual: Set:['push']
+     Which: does not contain 'pull'
+  
+  package:matcher                                      expect
+  package:flutter_test/src/widget_tester.dart 473:18   expect
+  test\upgrade\training_completion_dao_test.dart 68:5  main.<fn>
+  
+00:00 +15 -2: C:/Users/Atharva Patil/.codex/worktrees/session-3-options/gymlog/test/upgrade/training_completion_dao_test.dart: (tearDownAll)
+00:00 +15 -2: Some tests failed.
+
+Failing tests:
+  C:/Users/Atharva Patil/.codex/worktrees/session-3-options/gymlog/test/upgrade/training_completion_dao_test.dart: duplicate same-day records cannot hide an ambiguous tied program day
+  C:/Users/Atharva Patil/.codex/worktrees/session-3-options/gymlog/test/upgrade/training_completion_dao_test.dart: persisted edit, deletion and sync import recompute the narrow stream

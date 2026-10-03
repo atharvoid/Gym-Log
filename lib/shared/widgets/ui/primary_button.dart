@@ -12,6 +12,7 @@ import '../motion/pressable_scale.dart';
 
 class PrimaryButton extends StatelessWidget {
   final String label;
+  final String? semanticLabel;
   final VoidCallback? onPressed;
   final bool isFullWidth;
   final IconData? icon;
@@ -24,6 +25,7 @@ class PrimaryButton extends StatelessWidget {
   const PrimaryButton({
     super.key,
     required this.label,
+    this.semanticLabel,
     this.onPressed,
     this.isFullWidth = true,
     this.icon,
@@ -118,7 +120,9 @@ class PrimaryButton extends StatelessWidget {
       container: true,
       button: true,
       enabled: !disabled,
-      label: isLoading ? '$label, in progress' : label,
+      label: isLoading
+          ? '${semanticLabel ?? label}, in progress'
+          : semanticLabel ?? label,
       excludeSemantics: true,
       onTap: handlePress,
       child: button,

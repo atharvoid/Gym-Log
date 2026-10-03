@@ -248,7 +248,18 @@ class _AppShellState extends ConsumerState<AppShell> {
                   child: ConstrainedBox(
                     constraints: BoxConstraints(
                         maxWidth: context.adaptive.contentMaxWidth),
-                    child: widget.navigationShell,
+                    child: ProviderScope(
+                      overrides: [
+                        bottomChromeInsetProvider.overrideWithValue(
+                            BottomNavBar.height +
+                                (isWorkoutActive
+                                    ? activeBarHeight(
+                                            MediaQuery.textScalerOf(context)) +
+                                        kActiveBarGap
+                                    : 0))
+                      ],
+                      child: widget.navigationShell,
+                    ),
                   ),
                 ),
               ),
