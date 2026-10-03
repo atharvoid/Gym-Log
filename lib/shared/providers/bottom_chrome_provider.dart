@@ -1,4 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter/material.dart';
+import '../../core/theme/app_text.dart';
 import '../../features/workout/presentation/providers/active_workout_provider.dart';
 import '../widgets/bottom_nav_bar.dart';
 
@@ -32,6 +34,26 @@ import '../widgets/bottom_nav_bar.dart';
 /// widget internals, and this file is imported by screens that never build the
 /// bar itself.
 const double kActiveBarHeight = 56.0;
+
+/// Measure the two existing single-line text styles; keep the compact height
+/// when they fit and grow the floating bar for accessibility text scaling.
+double activeBarHeight(TextScaler scaler) {
+  double height(TextStyle style) {
+    final painter = TextPainter(
+        text: TextSpan(text: 'Ag', style: style),
+        textDirection: TextDirection.ltr,
+        textScaler: scaler,
+        maxLines: 1)
+      ..layout();
+    final result = painter.height;
+    painter.dispose();
+    return result;
+  }
+
+  final measured =
+      height(AppText.rowLabel()) + height(AppText.statLabel()) + 17;
+  return measured < kActiveBarHeight ? kActiveBarHeight : measured;
+}
 
 /// Gap between the floating pill and the nav bar above which it docks.
 const double kActiveBarGap = 8.0;

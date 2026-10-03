@@ -9,9 +9,9 @@ Targets are proposed acceptance goals of **8/10 per section**, not predicted res
 | 1. Visual identity and system | 6.5 | 8 | Revision needed (scope partial) | 4 | Establish distinct focal/supporting/reference composition; preserve accent tokens and improve meaningful text contrast. Session 1: shared contrast/Purple tokens; full section acceptance pending. |
 | 2. Sign-in / first impression | 6.5 | 8 | Not started (tokens checked) | 4 | Demonstrate a concrete product benefit while retaining a clear sign-in action. Session 1: shared contrast/Purple tokens; full section acceptance pending. |
 | 3. Onboarding / time to value | 5 | 8 | Not started (tokens checked) | 4 | Reduce required setup and end with a useful training action. Session 1: shared contrast/Purple tokens; full section acceptance pending. |
-| 4. Home / daily training intent | 7.8 | 8 | Critic passed | 11 | Final critic 7: Pass, 8/8/8/7/8; frozen verdict below. Real-workspace codegen, final 2,008-test gate and debug APK passed; committed baseline CI Gate passed on 3 October. History unchanged; below target, device pending, not Accepted. |
+| 4. Home / daily training intent | 8.0 | 8 | Critic passed | 14 | Correction critic 3: Pass, 8/8/8/8/8. Final local verification and configured APK pass; pushed CI and device acceptance pending. Prior scores retained below. |
 | 5. Workout history | 7 | 8 | Revision needed (scope partial) | 4 | Improve browsing density and specific result recognition without losing useful previews. Session 1: shared contrast/Purple tokens; full section acceptance pending. |
-| 6. Routine library | 7.6 | 8 | Critic passed | 11 | Final critic 7: Pass, 8/7/8/7/8; frozen verdict below. Shared choice, no second chooser, compact recovery and explicit empty-plan Home direction verified. Real-workspace final gate/APK and committed baseline CI Gate passed; below target, device pending, not Accepted. |
+| 6. Routine library | 7.8 | 8 | Critic passed | 14 | Correction critic 3: Pass, 8/8/8/7/8. Target 8 remains unmet because of large-text density costs. Final local verification and configured APK pass; pushed CI and device acceptance pending. |
 | 7. Routine detail | 6.5 | 8 | Not started (tokens checked) | 4 | Put the exercise plan before analysis; clarify volume and muscle-share labels. Session 1: shared contrast/Purple tokens; full section acceptance pending. |
 | 8. Routine authoring | 6.5 | 8 | Not started (tokens checked) | 4 | Show whole-plan feedback; qualify populated plans, reordering, and import entry. Session 1: shared contrast/Purple tokens; full section acceptance pending. |
 | 9. Explore / program discovery | 6.5 | 8 | Not started (tokens checked) | 4 | Reduce header density and explain program fit using stated preferences. Session 1: shared contrast/Purple tokens; full section acceptance pending. |
@@ -1027,11 +1027,24 @@ backup because its Windows command-length failure prevented initial cleanup.
 The ledger was excluded from both snapshots. Owner photos, audit references,
 design templates and the PR continuation notes/attachments remain in place.
 
-To resume the deferred work, use `git stash apply 907fe39954aee61512db8533684c95dd0e7bb61e`
-and retain the stash until integration is verified; later workout changes may
-require conflict resolution. Native device acceptance, haptics, TalkBack and
-owner History observations remain pending. CI builds are compilation evidence,
-not those device observations. Scores and acceptance status are unchanged.
+**Binding owner decision — Session 3 stash isolation:** do not pop, apply,
+drop or modify stash `907fe39954aee61512db8533684c95dd0e7bb61e` during Session 3.
+Build Session 3 on the clean committed baseline: app/workflow SHA `914674fc`
+with subsequent ledger-only documentation. After Session 3 is complete, the
+owner will decide which deferred work to port, discard or reconcile with the
+other PR; do not restore it automatically. The recovery command
+`git stash apply 907fe39954aee61512db8533684c95dd0e7bb61e` is for that later
+decision, and the stash must remain until any integration is verified.
+
+At the time of this instruction, HEAD remains ledger-only follow-up `f12e8966`,
+but the shared checkout has newer unrelated tracked edits and deletions. Those
+changes are not part of the verified baseline; use a clean isolated checkout
+for Session 3 and preserve the shared work. This instruction records scope;
+it does not start Session 3 or resolve that newer work.
+
+Native device acceptance, haptics, TalkBack and owner History observations remain
+pending. CI builds are compilation evidence, not those device observations.
+Scores and acceptance status are unchanged.
 
 ## Polish debt
 
@@ -1129,3 +1142,430 @@ critic review and does not automatically earn 9.
 - Session 1: Purple base changes #BF00FF → #C400FF. Muted/glow and muscle-ramp
   first step follow; light/dark companions and near-black onAccent stay the same.
   All six palettes retain the dark OLED canvas. No light-mode rollout occurred.
+
+
+## Session 3 — active workout: owner selection gate
+
+3 October 2026. **Awaiting owner pick; stop before application implementation.**
+Scope is the active-workout hero and its rest presentation, audit section 12 plus
+the duplicated-context part of 13. Binding owner decisions remain: Home alone
+owns the routine choice, Library reflects it, and Home History visibility stays
+unchanged. No phone observations were supplied in this ledger; none are invented.
+
+The render baseline is committed **f12e8966**, including Sessions 1/2 and their
+CI/docs follow-ups. The current main checkout has unrelated package/import and
+asset edits, so it is not used as the render baseline. An isolated managed
+worktree at `C:/Users/Atharva Patil/.codex/worktrees/session-3-options/gymlog`
+contains the committed app and three new test-only fixture/concept/render files.
+Stash **907fe39954aee61512db8533684c95dd0e7bb61e** was never applied, popped or
+modified. No app, provider, database, package, design rule or shared token changes.
+
+**Understand.** Twelve fresh live-screen PNGs in `renders/session-3/before/`
+cover 390×844, real Inter, Volt/Purple, 1×/1.6×/2× and keyboard closed/open.
+[Normal baseline pair](renders/session-3/pairs/before-higgsfield-1.0x.png) ·
+[1.6× baseline pair](renders/session-3/pairs/before-higgsfield-1.6x.png).
+Timer/Finish lead the baseline, unfinished controls already show green checks,
+and Add Set repeatedly uses accent tint. Keyboard scrolling loses the exercise
+heading; the large-text table squeezes prior values and the floating rest bar
+is obscured by the simulated keyboard. These are render observations, not phone
+or logging-speed measurements. A bounded frame captures the repeating baseline
+rest animation; the failed settle attempt is preserved in the baseline logs.
+
+**Diverge.** All options use the same synthetic five-exercise/15-seeded-set
+routine. Bench set 1 is marked logged at 60 kg × 8; Bench set 2 is next. Header
+progress precedes elapsed time/volume; Finish stays a quiet visible action.
+Ready controls are neutral, while green checks identify the fixture's logged
+rows. Add Set is a quiet 48dp-or-larger action. One live countdown replaces
+repeated timer emphasis; rest duration configuration stays a menu proposal.
+Normal text keeps table entry directly available without a mode toggle. Large
+text uses labeled stacked fields and complete prior values. Explicit **Log
+previous: 60 kg × 8** proposes a fast commit path rather than claiming hints are
+logged already. Freestyle has only a logged count, with no invented denominator.
+
+**A — In-line focus. Provisional recommendation; owner approval pending.**
+The next table row has an accent edge and explicit Next label. At 1.6×/2× the
+numbered next set comes first, with logged rows below; ordinary text retains
+table order. Keyboard entry keeps exercise/set context and kg/reps dimensions
+visible. Motion intent: local completion feedback, then move the focus marker
+after a successful log; preserve the editing position instead of auto-scrolling.
+
+![A — in-line focus, keyboard closed/open](renders/session-3/option-a-1.0x.png)
+
+[A at 1.6×](renders/session-3/option-a-1.6x.png) ·
+[A at 2×](renders/session-3/option-a-2.0x.png) ·
+[A in Purple](renders/session-3/pairs/inline-ready-neonPurple-1.0x.png).
+Weaknesses: (1) the inline Log target changes vertical position as sets advance;
+(2) the previous-value shortcut adds height, with Log below the initial fold at
+2× when the keyboard is closed; (3) large-text next-first ordering
+differs from normal table order. One-handed suitability is **unverified, needs device**.
+
+**B — Next-set panel.** A dedicated form makes the exercise, set number,
+previous session and current inputs the focal group. The familiar table stays
+on the same scrolling view, with no tab or collapse gate. Supplemental table
+renders demonstrate access by scrolling. Motion intent: a bounded change of
+panel context only after the prior set commits; use existing reduced-motion
+helpers when implemented.
+
+![B — next-set panel, keyboard closed/open](renders/session-3/option-b-1.0x.png)
+
+[B at 1.6×](renders/session-3/option-b-1.6x.png) ·
+[B at 2×](renders/session-3/option-b-2.0x.png) ·
+[B table after scrolling](renders/session-3/pairs/table-focus-ready-higgsfield-1.0x.png).
+Weaknesses: (1) it repeats the current exercise/set representation; (2) the
+form's Log and the table can move below the initial fold at 2×; (3) form/table edits must share one
+coherent edit source during implementation. Static fields do not establish
+that synchronization. One-handed suitability is **unverified, needs device**.
+
+**C — Bench dock. Rejected as the default; still available for selection.**
+The table scrolls above a fixed named Log action. A single rest strip sits above
+the list; the dock stays above the simulated keyboard. Motion intent: keep the
+target fixed, updating its named exercise/set when selection changes, then
+reflect a successful log. Physical benefit from fixed targets is not established.
+
+![C — bench dock, keyboard closed/open](renders/session-3/option-c-1.0x.png)
+
+[C at 1.6×](renders/session-3/option-c-1.6x.png) ·
+[C at 2×](renders/session-3/option-c-2.0x.png).
+Weaknesses: (1) dock/timer space puts current inputs below the initial fold at
+2× with keyboard closed; (2) selection and dock identity must stay linked to
+avoid logging the wrong row; (3) fixed targets do not prove physical reach or
+accuracy. Reject C as default because these space/identity costs are visible
+while one-handed benefit is **unverified, needs device**. A offers the clearest
+continuation of the existing table without forcing a separate panel or dock.
+
+**Evidence and limits.** All 84 final render checks pass: 72 concepts and 12
+current-screen cases. There are 84 concept
+PNG captures (including 12 B table supplements) plus 12 current-screen captures;
+156 final PNGs are inventoried after pairing and overview assembly. Every
+presented comparison includes keyboard closed/open. Coverage includes both
+palettes and all three scales for ready state; empty, low-data, previous-read
+error and freestyle at 1.6×; long identity and all-logged at 2×. The
+[README](renders/session-3/README.md) records fixtures, proposed actions, weaknesses
+and motion boundaries; [inventory](renders/session-3/inventory.json) records hashes.
+[Final render log](baseline/2026-10-03/session-3-final-renders.log).
+
+The keys are a numeric keyboard silhouette with a simulated 280px viewInset.
+Checks establish both Weight and Reps inputs and Log above that inset, with
+both inputs below the context
+header, not a native IME, TalkBack, actual touch accuracy or durable logging.
+Controls/menus are inert concept callbacks; existing editing, reordering,
+replacement and undo are requirements for the picked implementation, not newly
+verified behavior. No new acceptance goldens, scores or critic iterations are
+claimed before the owner pick. Existing section scores/iteration counts remain.
+
+Local full verification: **failed**, with 1,918 passing tests and 138 failures
+in committed Session 2 Routine Library goldens. Those cards call
+`relativeDay`, which uses `DateTime.now()` rather than the fixture's fixed
+`trainingClockProvider`. The recorded card says “4 days ago”; the fresh card
+says “5 days ago” (another card changes 2 to 3 days). This is an existing
+clock-dependent comparison, reproduced by running the committed
+`library-chosen-higgsfield-1.0x-synthetic` test alone. The test, source and
+golden snapshots are unchanged from f12e8966. No Session 2 repairs, snapshot
+updates or weaker gates are included in Session 3.
+[Full verify log](baseline/2026-10-03/session-3-exploration-verify.log) ·
+[Independent reproduction](baseline/2026-10-03/session-3-committed-golden-repro.log) ·
+[Recorded image](baseline/2026-10-03/committed-golden-failure/library-chosen-higgsfield-1.0x-synthetic_masterImage.png) ·
+[Fresh image](baseline/2026-10-03/committed-golden-failure/library-chosen-higgsfield-1.0x-synthetic_testImage.png).
+No commit or CI/acceptance claim is made while this gate fails.
+
+After the last concept layout correction, final format (0 changed), fatal
+analysis and custom lint all **pass**.
+[Static exit results](baseline/2026-10-03/session-3-final-static-exits.json) ·
+[Analysis](baseline/2026-10-03/session-3-final-analyze.log) ·
+[Custom lint](baseline/2026-10-03/session-3-final-custom-lint.log).
+The earlier gate stopped on
+the generated timer override's scoped-provider lint. Its test-root scope is
+documented with a narrowly scoped ignore, matching the existing render-fixture
+pattern; no production provider or global gate is changed. Failed fixture
+compile, layout and scroll attempts are retained rather than counted as passing
+behavior tests. Visual review caught B's Reps input clipped under its context
+header at 2× with keyboard open. A strengthened check for both input bounds
+[failed before correction](baseline/2026-10-03/session-3-both-fields-red.log).
+Aligning the two field labels in one shared row keeps both inputs aligned; the
+final 84-case run passes. This is test-only geometry red/green evidence, not
+production logging or reordering evidence.
+[Source integrity](baseline/2026-10-03/session-3-source-integrity.json) records
+matching committed app/config blobs, final prototype hashes and the unchanged
+stash reference; [check summary](baseline/2026-10-03/session-3-check-summary.json)
+lists the existing golden failures.
+
+**Haptics: unverified, needs device.**
+**Timer feel: unverified, needs device.**
+**One-handed use: unverified, needs device.**
+Sweaty-finger accuracy, phone-on-bench/rack glanceability, real keyboard/insets,
+reduced-motion transitions and device accessibility also remain unverified.
+The existing owner question about phone/TalkBack configuration remains open.
+
+After selection: write failing behavior tests for next-set identity after edits
+and reorder, previous-value logging with in-flight input, commit/draft failure
+without success treatment, plan/freestyle counts, measurement and kg/lbs truth,
+timer identity and keyboard flush/clearance. Then implement the selected option,
+run verify.ps1, render affected-palette real-font goldens and after/error states,
+and follow the independent critic protocol. No independent or builder score is
+proposed for unimplemented options. **Stop here for the owner's A/B/C pick.**
+
+
+## Session 3 owner response — all options rejected
+
+3 October 2026. The owner says all three Session 3 options are worse than the
+current screen and requests a review of the changes committed in Sessions 1/2.
+This supersedes the provisional A recommendation and the pending A/B/C pick.
+**All three options are withdrawn; none is selected or implemented.**
+The sketches removed too much of the existing exercise-card identity and created
+additional control/context repetition. No rendered/device benefit is claimed.
+The existing active-workout design is retained while the owner reviews the
+committed work. Do not start another redesign from this request.
+
+[Committed Sessions 1/2 review](session-1-2-owner-review.md) lists the code changes,
+archived before/after images and phone checks. Session 1 changed units/metrics,
+contrast, PR/export truth, neutral deltas and error wording. Session 2 changed
+Home/Library launch and choice behavior. Neither authorizes the withdrawn
+Session 3 design to be applied. Stash 907fe399 remains untouched.
+Haptics, timer feel and one-handed use: **unverified, needs device**.
+
+## Session 2 owner correction — plan before implementation
+
+3 October 2026. The owner rejects the current Home/Routines workflow and
+presentation: a permanent chosen routine adds daily selection work, Home does
+not make actual last/next training clear, and New routine/Explore look disabled.
+The historical critic scores did not establish owner acceptance. Sections 4 and
+6 are reopened as **Revision needed**; their earlier scores and iteration counts
+remain historical evidence, not approval of this correction.
+
+**Confirmed owner decision:** choose a program once, follow its saved order after
+each completed workout, and allow a one-session override. Home remains the
+persistent plan chooser. Routines reflects the same resolved next workout
+without adding another persistent chooser. The proposed same-program override
+rule and migration details are explicitly identified as proposals in the plan.
+
+[Detailed Home/Routines correction plan](HOME_ROUTINES_CORRECTION_PLAN.md)
+records source findings, exact behavior, composition, recovery states, data
+requirements, implementation sequence and acceptance checks. The current next
+suggestion exists only in the chooser and reads the paginated history window
+(initially ten workouts). The correction must use reliable completed-history
+queries independently of pagination. Last workout means the latest completed
+session overall; Up next follows the selected program.
+
+Preserve existing rich cards, tonal depth, accent, type and motion. Restore real,
+visibly enabled New routine/Explore buttons and put the next marker on its
+existing routine card. The owner guardrail in PROTOCOL.md requires one
+high-fidelity candidate beside the before-render, then owner approval before
+application implementation. The withdrawn Session 3 options remain withdrawn.
+
+This pass is inspection and planning only. No new render, application change,
+critic score, test-pass or device acceptance is claimed. Existing concurrent
+branding/clock/workout changes are preserved; protected stash
+`907fe39954aee61512db8533684c95dd0e7bb61e` is untouched.
+Haptics, timer feel and one-handed use: **unverified, needs device**.
+
+## Session 2 correction — visual plan refinement
+
+3 October 2026. The owner requests stronger visual quality and an overall rating.
+The [correction plan](HOME_ROUTINES_CORRECTION_PLAN.md) now includes an explicit
+visual execution contract: contained Up next card, compact actual Last workout,
+consistent spacing/type roles, properly surfaced New routine/Explore buttons,
+and the same level of detail for loading, busy, active, error and keyboard states.
+The archived before/after boards confirm the loss of Home card containment and
+Library action affordance; this refinement preserves the existing visual system.
+
+View next is proposed as a labeled navigation action that reaches the actual
+next routine card without duplicating a hero, reordering the library or changing
+the plan. Large-text labels require a wrapping policy at affected call sites;
+existing button ellipsis is not evidence that their full identity is qualified.
+
+**Proposed builder rating: 8.5/10 for the whole revised plan.** It reflects
+specification quality, not an implemented-screen score, independent review or
+owner acceptance. Remaining weaknesses are first-fold balance, compact-history
+duplication/preview density, and proposed legacy/override details. The actual UI
+remains unrated pending matched high-fidelity evidence. No self-declared 9+.
+The confirmed program-following/one-session-override decision is unchanged.
+
+This refinement changes documentation only. No application code, new concept
+render, test-pass, commit or device acceptance is claimed; the protected stash
+remains untouched. One owner-approved direction beside before is still required
+before application implementation. Haptics, timer feel and one-handed use:
+**unverified, needs device**.
+
+## Session 2 correction — visual gate, 4 October 2026
+
+The owner authorizes proceeding with the whole correction. Per the binding
+PROTOCOL.md visual guardrail and Step 2, a rendered visual direction is prepared
+before production implementation. The visual approval question is pending;
+plan approval is not being requested again. Sections 4/6 remain Revision needed.
+
+[Review packet](renders/home-routines-correction/README.md) ·
+[Home before/proposed](renders/home-routines-correction/home-comparison-1.0x.png) ·
+[Routines before/proposed](renders/home-routines-correction/library-comparison-1.0x.png) ·
+[Keyboard pair](renders/home-routines-correction/override-keyboard-1.6x.png).
+The prototype uses real Flutter/theme/components and bundled fonts from f12e8966,
+with labeled synthetic data. Primary-checkout branding/clock/workout edits and
+stash `907fe39954aee61512db8533684c95dd0e7bb61e` remain untouched.
+
+Chosen refinement: contained Up next, compact actual Last workout, real Library
+action buttons, and next marker in the saved sequence. Rejected refinements:
+two side-by-side last/next cards squeeze phone content; a separate Library next
+banner repeats identity and launch controls. Only one direction is presented.
+Existing cards/depth/type/accent and compact ordinary-routine footers are retained.
+
+The real committed mini-player overflows at 1.6×/2× because it fixes height at
+56dp. The failed preview captures record this. The review-only version grows
+from measured text and reserves matching scroll clearance; no overflow checks
+were waived. Its actual production bar/shell/inset change is a listed dependency
+for the approved implementation. There is no new shared token change now.
+
+Evidence and limitations are in the packet and baseline logs. These are preview
+geometry/static checks, not production launch/save, migration, goldens, full
+verification, CI or physical-device acceptance. Earlier score/iteration counts
+are historical; 8.5/10 remains the plan rating. No final app/critic score is claimed.
+Remaining weaknesses: large text needs scrolling, saved Library order can put
+the next card offscreen, and Last workout repeats some history facts. Native
+system bars/keyboard, touch accuracy, accessibility and animation feel require
+device evidence. Haptics, timer feel and one-handed use: **unverified, needs device**.
+The rejected Session 3 options remain withdrawn.
+
+Final preview verification: **120 render checks pass; format (0 changed), fatal
+analysis and custom lint pass.** [Check summary](baseline/2026-10-04/home-routines-preview-checks.json)
+and [source integrity](baseline/2026-10-04/home-routines-source-integrity.json)
+record the evidence. All 348 observed committed app/assets/config files are
+unchanged; new code is confined to two review-only test files in the isolated
+worktree. Six before/proposed boards retain the final raw capture pixels. No
+app implementation or completion claim follows from these results.
+
+
+### Session 2 correction — owner approval and implementation (4 October 2026)
+
+The owner replied **“proceed”** after the before/after visual gate. This approves
+implementing the shown Home/Routines correction; no further visual permission
+is required for that scope. The rejected Session 3 active-workout concepts remain
+withdrawn. Implementation uses the isolated `codex/home-routines-correction`
+branch from committed `f12e8966`; stash `907fe39954aee61512db8533684c95dd0e7bb61e`
+and concurrent main-checkout app edits are excluded.
+
+The shared training plan persists account-scoped program/repeat intent and an
+initial member. Confirmed completions determine the next member by `endedAt`,
+independently of Home pagination. Same-program overrides continue after the
+member actually completed; outside-program and freestyle completions update
+Last workout without advancing that program. Tied imported completions require
+an explicit starting-day choice, recorded as a selection boundary rather than
+an advancing cursor. Invalid or incomplete order is never guessed.
+
+The approved rich cards, neutral raised utilities, current routine cards and
+editing/menu paths are retained. The keyboard sheet now pins its heading and
+search while choices scroll. Shared dependencies: measured mini-player height
+with matching AppShell content inset; optional full-identity button semantics;
+injected routine-card calendar clock. No accent tokens or packages changed.
+
+Haptics, timer feel and one-handed use: **unverified, needs device**. The rendered
+keyboard is illustrative; real platform keyboard behavior and screen readers
+remain unverified. Local verification and CI evidence will be appended after
+those checks finish; this entry does not claim completion.
+
+## Home/Routines correction — independent candidate 1
+
+Frozen [verdict](reviews/home-routines-correction/iteration-1/VERDICT.md): Home
+6.8/10, Revision needed; Library 7.8/10, Pass within the supplied evidence. The
+packet contains the exact f12e8966-based diff, real-component renders and rubric;
+the reviewer received no builder history. These scores replace the historical
+section scores; they do not mean owner or device acceptance.
+
+The new candidate restores a useful direct empty-Home start, preserves optional
+persistent repetition while automatic program following remains the default,
+and brings Start forward for long names at large text. It also corrects selecting
+a different program with tied imported history, disambiguates In progress/For
+later, includes years in Last workout dates, and explains missing Library plan
+markers without duplicating the persistent chooser. Failing-first review guards
+are recorded in correction-review-red.log, correction-new-program-tie-red.log
+and correction-state-red.log under baseline/2026-10-04. All 41 focused behavior
+checks pass in correction-state-green.log.
+
+Three remaining weaknesses to assess: full identities still create tall cards at
+2x; Last workout may require scrolling below Up next at large text; bounded
+chooser pages depend on search for very large libraries. No device benefit is
+claimed from these tradeoffs. Haptics, timer feel and one-handed use: **unverified,
+needs device**. Native keyboard and screen-reader use: **unverified, needs device**.
+
+The original 2,152-test verification pass predates these review fixes. The final
+candidate must pass verify.ps1 again before committing. The native build's Java
+loopback failure was isolated to Windows Unix-domain sockets; a process-local
+nonexistent socket directory allows TCP fallback and Gradle help succeeds. Both
+environment variables are restored after each command. No JVM, firewall, Pub
+cache or dependency configuration was changed. APK build remains in progress.
+
+## Home/Routines correction — independent candidate 2 and third candidate
+
+Frozen [verdict](reviews/home-routines-correction/iteration-2/VERDICT.md): Home
+7.4/10, Revision needed (8/8/8/7/6); Library 7.6/10, Pass within the supplied
+evidence (8/8/7/7/8). Both replace the prior whole-section scores without
+claiming acceptance.
+
+The third candidate uses a neutral selection-mode control with explicit
+“Tap a routine to save. Close without choosing to cancel.” Program choices follow saved
+order; standalone choices repeat. The existing write-on-row path remains,
+with saving and failures pinned above the scrolling choices. The narrow Library
+heading uses the existing smaller title role, preserving system text scaling
+and avoiding an orphan final letter. A zero-exercise next day reports zero
+planned sets even while detail refreshes, and offers Add exercises.
+
+The new behavior guards failed first in correction-mode-red.log and
+correction-empty-next-red.log; all 30 chooser/launch checks pass in
+correction-mode-green.log. Candidate 2's full verify.ps1 passed all 2,235 tests
+with format, fatal analysis and custom lint clean, but those results predate
+candidate 3; it must pass again before commit. Release APKs compiled both
+without configuration and with the existing root .env injected at compile time.
+Configuration was neither copied into this worktree nor staged. The final
+phone-review APK will be refreshed after candidate 3 validation.
+
+Haptics, timer feel and one-handed use: **unverified, needs device**. Native
+keyboard and screen-reader qualification: **unverified, needs device**. No
+active-workout-screen redesign, accent-token change or dependency change.
+
+Third candidate capture validation: all **738** real-component render checks
+pass, including saved/canceled repeat, pending/failed save and the actual empty
+next routine in all six palettes. The configured Android release APK compiles
+with R8/Dart obfuscation (correction-apk-third.log); SHA-256
+`073dfad48c7b743da10c6f2527c57143483f202d2179407c2a1a36b3d456992d`.
+The source implementation matches frozen reviewer packet 3; two test-only
+if-block braces were added afterward for fatal lint. The exact final source
+diff is [final-candidate.diff](reviews/home-routines-correction/final-candidate.diff).
+The frozen packet remains unchanged. Final full verification completed below.
+
+## Home/Routines correction — final validation and independent verdict
+
+Frozen [candidate 3 verdict](reviews/home-routines-correction/iteration-3/VERDICT.md):
+**Home 8.0/10, Pass; Library 7.8/10, Pass.** No material task, information or
+legibility failure was established by the packet. These are independent whole-section
+scores, not a whole-app or physical-device rating. Library has not reached the
+proposed 8/10 target; neither section is marked Accepted.
+
+Final `scripts/verify.ps1` completed with exit 0: 377 Dart files formatted with
+zero changes, fatal analysis and custom lint clean, **2,268 tests passing**.
+[Final verification log](baseline/2026-10-04/correction-verify-final-candidate.log).
+The focused real-component render run passed **738** checks, covering all six
+accent palettes, 1.0x/1.6x/2.0x text and the captured keyboard, pending/failed save,
+saved/canceled repeat, empty, active and recovery states.
+[Render verification log](baseline/2026-10-04/correction-final-mode-renders.log).
+Behavior changes have failing-first logs and the reported regression is recorded
+in [LOOP_LOG.md](../LOOP_LOG.md). The final provider/DAO generation completed.
+
+Configured Android release compilation with R8/Dart obfuscation passed.
+[Build log](baseline/2026-10-04/correction-apk-third.log).
+The phone-review APK is copied to the main checkout at
+`artifacts/home-routines-correction/app-release.apk` (78,928,953 bytes), SHA-256
+`073dfad48c7b743da10c6f2527c57143483f202d2179407c2a1a36b3d456992d`.
+The existing root `.env` was injected at compile time; it was not copied or staged.
+No native installation or device acceptance follows from a successful build.
+
+Three remaining weaknesses: full names and secondary controls make tall cards
+at 2x; Last workout/history can require scrolling; the mode chooser needs more
+reading than an immediate routine pick. The critic also identifies coverage gaps:
+combined 320px/2x/open-keyboard layout, the full long-name Library start control,
+and dismiss/back/drag behavior during a pending preference write. These are
+unknowns, not demonstrated failures. No further corrective implementation was
+required for the packet-level pass. [Implemented before/after gallery](renders/home-routines-correction/README.md).
+
+Pushed CI will be recorded separately once the exact committed candidate is checked.
+Owner device question: do the actual keyboard, touch targets and motion remain
+comfortable during a workout on the intended phone? Haptics, timer feel and
+one-handed use: **unverified, needs device**. Native keyboard and screen-reader
+use: **unverified, needs device**. The active-workout redesign remains withdrawn;
+the protected stash and concurrent main-checkout app changes remain excluded.
