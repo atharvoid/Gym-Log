@@ -201,13 +201,13 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
     HapticFeedback.selectionClick();
     try {
       final dir = await getTemporaryDirectory();
-      final file = File('${dir.path}/gymlog_import_template.csv');
+      final file = File('${dir.path}/delt_import_template.csv');
       await file.writeAsString(WorkoutExportService.buildTemplateCsv());
       await SharePlus.instance.share(ShareParams(
         files: [XFile(file.path, mimeType: 'text/csv')],
-        subject: 'GymLog import template',
+        subject: 'Delt import template',
         text:
-            'Fill this CSV with your workouts and import it in GymLog (template matches the app\'s own export format).',
+            'Fill this CSV with your workouts and import it in Delt (template matches the app\'s own export format).',
       ));
     } catch (_) {
       if (!mounted) return;
@@ -285,7 +285,7 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
         const SizedBox(height: 8),
         Text(
           'Import every workout you logged in Hevy or Strong. Export a CSV '
-          'from that app, then choose the file here. GymLog detects the '
+          'from that app, then choose the file here. Delt detects the '
           'format automatically and converts the units for you.',
           style: AppText.body(
             color: surface.textSecondary,
@@ -432,7 +432,7 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
             icon: Icons.task_alt_rounded,
             color: AppColors.success,
             text:
-                'Everything in this file is already in GymLog. Nothing to import.',
+                'Everything in this file is already in Delt. Nothing to import.',
           ),
         const SizedBox(height: 12),
         Center(

@@ -80,10 +80,10 @@ void main() {
       gymlogApp(ThemePalette.fallback, const AppErrorScreen()),
     );
 
-    // 'Restart GymLog' is the retry action; it must be a single button with
+    // 'Restart Delt' is the retry action; it must be a single button with
     // one label instead of wrapper + inner Text.
     final nodes =
-        _semanticsNodes(tester).where((n) => n.label == 'Restart GymLog');
+        _semanticsNodes(tester).where((n) => n.label == 'Restart Delt');
     expect(nodes.length, 1);
 
     handle.dispose();

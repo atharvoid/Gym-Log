@@ -21,9 +21,7 @@ final customerInfoProvider = StreamProvider<CustomerInfo>((ref) {
 /// Canonical verification function for CustomerInfo entitlements.
 /// Forbidden elsewhere: info.entitlements.active.isNotEmpty
 bool hasPremium(CustomerInfo info) {
-  return info.entitlements.active.containsKey(
-    PremiumService.entitlementId,
-  );
+  return PremiumService.hasPremium(info);
 }
 
 /// Single source of truth for premium entitlement.
@@ -90,7 +88,8 @@ String? chartLimitBannerCopy({
 /// the end of the grace window. Returns null when there is no active Pro
 /// entitlement or no billing issue has been flagged on it.
 String? billingIssueBannerCopy(CustomerInfo info) {
-  final entitlement = info.entitlements.active[PremiumService.entitlementId];
+  final entitlement = info.entitlements.active[PremiumService.entitlementId] ??
+      info.entitlements.active['pro'];
   if (entitlement == null || entitlement.billingIssueDetectedAt == null) {
     return null;
   }

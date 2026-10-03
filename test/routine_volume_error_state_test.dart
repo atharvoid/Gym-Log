@@ -96,5 +96,6 @@ void main() {
     expect(find.byType(RoutineVolumeGraph), findsNothing);
     // The tracked retry assistant is reachable.
     expect(find.byType(AsyncErrorState), findsOneWidget);
+    expect(find.textContaining('Your data is safe'), findsNothing);
   });
 }

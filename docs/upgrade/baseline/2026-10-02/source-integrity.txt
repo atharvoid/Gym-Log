@@ -1,0 +1,2 @@
+Files outside docs/upgrade snapshotted before verification: 1588 SHA-256 content differences outside docs/upgrade: 1 Audit unchanged: True AUDIT.md SHA-256: 36249023879DD1BE06D58A6A94B0087C119DA15064DB20EAB5213D1AE29A3970
+Changed: android/build/reports/problems/problems-report.html

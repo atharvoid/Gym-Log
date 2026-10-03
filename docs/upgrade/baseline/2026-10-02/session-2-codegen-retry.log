@@ -1,0 +1,64 @@
+[INFO] Generating build script...
+[INFO] Generating build script completed, took 548ms
+
+[INFO] Initializing inputs
+[INFO] Reading cached asset graph...
+[INFO] Reading cached asset graph completed, took 815ms
+
+[INFO] Checking for updates since last build...
+[INFO] Checking for updates since last build completed, took 3.3s
+
+[INFO] Running build...
+[WARNING] riverpod_generator on test/upgrade/session_2_launchpad_test.dart:
+Your current `analyzer` version may not fully support your current SDK version.
+
+Analyzer language version: 3.4.0
+SDK language version: 3.12.0
+
+Please update to the latest `analyzer` version (14.4.0) by running
+`flutter packages upgrade`.
+
+If you are not getting the latest version by running the above command, you
+can try adding a constraint like the following to your pubspec to start
+diagnosing why you can't get the latest version:
+
+dev_dependencies:
+  analyzer: ^14.4.0
+
+[INFO] 1.8s elapsed, 4/6 actions completed.
+[INFO] 2.8s elapsed, 4/6 actions completed.
+[INFO] 3.9s elapsed, 4/6 actions completed.
+[INFO] 5.0s elapsed, 4/6 actions completed.
+[INFO] 6.0s elapsed, 4/11 actions completed.
+[INFO] 7.1s elapsed, 19/25 actions completed.
+[INFO] 8.1s elapsed, 35/52 actions completed.
+[INFO] 9.4s elapsed, 36/100 actions completed.
+[INFO] 10.6s elapsed, 90/216 actions completed.
+[INFO] 11.6s elapsed, 112/250 actions completed.
+[INFO] 12.7s elapsed, 179/313 actions completed.
+[INFO] 13.7s elapsed, 244/384 actions completed.
+[INFO] 14.7s elapsed, 341/472 actions completed.
+[INFO] 15.8s elapsed, 461/562 actions completed.
+[INFO] 17.0s elapsed, 496/610 actions completed.
+[INFO] 18.0s elapsed, 548/662 actions completed.
+[INFO] 19.1s elapsed, 641/752 actions completed.
+[INFO] 20.2s elapsed, 763/823 actions completed.
+[INFO] 21.5s elapsed, 827/870 actions completed.
+[INFO] 22.6s elapsed, 924/960 actions completed.
+[INFO] 23.6s elapsed, 1038/1062 actions completed.
+[INFO] 24.7s elapsed, 1087/1098 actions completed.
+[INFO] 25.8s elapsed, 1160/1170 actions completed.
+[INFO] 1m 5s elapsed, 1168/1170 actions completed.
+[WARNING] No actions completed for 39.7s, waiting on:
+  - json_serializable on test/upgrade/session_2_acceptance_render_test.dart
+  - json_serializable on test/upgrade/session_2_launchpad_test.dart
+
+[INFO] Running build completed, took 1m 6s
+
+[INFO] Caching finalized dependency graph...
+[INFO] Caching finalized dependency graph completed, took 683ms
+
+[SEVERE] riverpod_generator on test/golden/share_cards_golden_test.dart (cached):
+
+Could not resolve annotation for `library asset:gymlog/test/golden/share_cards_golden_test.dart`.
+[SEVERE] Failed after 1m 7s

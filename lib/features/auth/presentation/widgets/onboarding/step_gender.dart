@@ -6,6 +6,7 @@ import 'package:gymlog/core/theme/app_colors.dart';
 import 'package:gymlog/core/theme/app_text.dart';
 import 'package:gymlog/core/theme/dynamic_accent_theme.dart';
 import 'package:gymlog/features/auth/presentation/providers/onboarding_draft_provider.dart';
+import 'package:gymlog/features/auth/presentation/widgets/onboarding/step_scroll_view.dart';
 import 'package:gymlog/shared/widgets/motion/pressable_scale.dart';
 import 'package:gymlog/shared/widgets/ui/primary_button.dart';
 
@@ -22,76 +23,80 @@ class StepGender extends ConsumerWidget {
     // Default to 'prefer_not_to_say' if not chosen yet
     final selectedGender = draft.gender ?? 'prefer_not_to_say';
 
-    return Padding(
-      padding: const EdgeInsets.all(24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const SizedBox(height: 48),
-          Text(
-            'Personalise',
-            style: AppText.caption(color: surface.textSecondary).copyWith(
-              fontSize: 14,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 0.2,
+    return StepScrollView(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: 48),
+            Text(
+              'Personalise',
+              style: AppText.caption(color: surface.textSecondary).copyWith(
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 0.2,
+              ),
             ),
-          ),
-          const SizedBox(height: 10),
-          Text(
-            'What is your gender?',
-            style: AppText.screenTitle(color: surface.textPrimary).copyWith(
-              fontSize: 32,
-              fontWeight: FontWeight.w800,
-              letterSpacing: -0.5,
-              height: 1.1,
+            const SizedBox(height: 10),
+            Text(
+              'What is your gender?',
+              style: AppText.screenTitle(color: surface.textPrimary).copyWith(
+                fontSize: 32,
+                fontWeight: FontWeight.w800,
+                letterSpacing: -0.5,
+                height: 1.1,
+              ),
             ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            "This chooses the body figure style displayed across your workouts.",
-            style: AppText.body(color: surface.textSecondary).copyWith(
-              fontSize: 15,
-              height: 1.4,
+            const SizedBox(height: 8),
+            Text(
+              "This chooses the body figure style displayed across your workouts.",
+              style: AppText.body(color: surface.textSecondary).copyWith(
+                fontSize: 15,
+                height: 1.4,
+              ),
             ),
-          ),
-          const SizedBox(height: 32),
-          _GenderCard(
-            title: 'Female',
-            genderKey: 'female',
-            selected: selectedGender == 'female',
-            assetPath: 'assets/icons/gender/female.svg',
-            onTap: () {
-              ref.read(onboardingDraftProvider.notifier).updateGender('female');
-            },
-          ),
-          _GenderCard(
-            title: 'Male',
-            genderKey: 'male',
-            selected: selectedGender == 'male',
-            assetPath: 'assets/icons/gender/male.svg',
-            onTap: () {
-              ref.read(onboardingDraftProvider.notifier).updateGender('male');
-            },
-          ),
-          _GenderCard(
-            title: 'Prefer not to say',
-            genderKey: 'prefer_not_to_say',
-            selected: selectedGender == 'prefer_not_to_say',
-            assetPath: 'assets/icons/gender/prefer_not_to_say.svg',
-            onTap: () {
-              ref
-                  .read(onboardingDraftProvider.notifier)
-                  .updateGender('prefer_not_to_say');
-            },
-          ),
-          const Spacer(),
-          PrimaryButton(
-            label: 'Continue',
-            onPressed: onNext,
-            icon: Icons.arrow_forward_rounded,
-          ),
-          const SizedBox(height: 16),
-        ],
+            const SizedBox(height: 32),
+            _GenderCard(
+              title: 'Female',
+              genderKey: 'female',
+              selected: selectedGender == 'female',
+              assetPath: 'assets/icons/gender/female.svg',
+              onTap: () {
+                ref
+                    .read(onboardingDraftProvider.notifier)
+                    .updateGender('female');
+              },
+            ),
+            _GenderCard(
+              title: 'Male',
+              genderKey: 'male',
+              selected: selectedGender == 'male',
+              assetPath: 'assets/icons/gender/male.svg',
+              onTap: () {
+                ref.read(onboardingDraftProvider.notifier).updateGender('male');
+              },
+            ),
+            _GenderCard(
+              title: 'Prefer not to say',
+              genderKey: 'prefer_not_to_say',
+              selected: selectedGender == 'prefer_not_to_say',
+              assetPath: 'assets/icons/gender/prefer_not_to_say.svg',
+              onTap: () {
+                ref
+                    .read(onboardingDraftProvider.notifier)
+                    .updateGender('prefer_not_to_say');
+              },
+            ),
+            const Spacer(),
+            PrimaryButton(
+              label: 'Continue',
+              onPressed: onNext,
+              icon: Icons.arrow_forward_rounded,
+            ),
+            const SizedBox(height: 16),
+          ],
+        ),
       ),
     );
   }

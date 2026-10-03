@@ -6,6 +6,7 @@ import '../tables/routine_days_table.dart';
 import '../tables/routine_exercises_table.dart';
 import 'workouts_dao.dart';
 import '../../services/sync_codec.dart';
+import '../../../features/routines/domain/ai_import_models.dart';
 
 part 'routines_dao.g.dart';
 
@@ -651,6 +652,81 @@ class RoutinesDao extends DatabaseAccessor<AppDatabase>
       ids.add(id);
     }
     return ids;
+  }
+
+  /// Atomically saves an AI-reconciled routine with all its days and exercises.
+  /// If any exercises are unmatched / custom (matchedExerciseId == null),
+  /// creates them as custom exercises within the SAME Drift transaction,
+  /// guaranteeing zero orphan exercises and zero partial routines.
+  /// Enqueues outbox sync on successful commit.
+  Future<String> saveReconciledRoutine({
+    required String userId,
+    required ReconciledRoutine routine,
+    String? sourceProgramName,
+  }) async {
+    assert(routine.days.isNotEmpty, 'Routine must have at least one day');
+    final routineId = const Uuid().v4();
+    final now = DateTime.now();
+
+    await transaction(() async {
+      await insertRoutine(RoutinesCompanion.insert(
+        id: Value(routineId),
+        userId: userId,
+        name: routine.routineName.trim().isNotEmpty
+            ? routine.routineName.trim()
+            : 'Imported Routine',
+        sourceProgramName: Value(sourceProgramName),
+        createdAt: now,
+        updatedAt: now,
+      ));
+
+      for (var dayIndex = 0; dayIndex < routine.days.length; dayIndex++) {
+        final day = routine.days[dayIndex];
+        final dayId = const Uuid().v4();
+
+        await insertDay(RoutineDaysCompanion.insert(
+          id: Value(dayId),
+          routineId: routineId,
+          name: day.dayName.trim().isNotEmpty
+              ? day.dayName.trim()
+              : 'Day ${dayIndex + 1}',
+          orderIndex: dayIndex,
+        ));
+
+        for (var exIndex = 0; exIndex < day.exercises.length; exIndex++) {
+          final ex = day.exercises[exIndex];
+          int exerciseId;
+
+          if (ex.matchedExerciseId != null) {
+            exerciseId = ex.matchedExerciseId!;
+          } else {
+            // Atomically create custom exercise inside this transaction
+            exerciseId = await db.exercisesDao.createCustomExercise(
+              ex.rawName.trim().isNotEmpty
+                  ? ex.rawName.trim()
+                  : 'Custom Exercise',
+              userId: userId,
+              equipment: ex.matchedEquipment ?? 'other',
+              bodyPart: ex.matchedBodyPart ?? 'other',
+            );
+          }
+
+          await insertRoutineExercise(RoutineExercisesCompanion.insert(
+            id: Value(const Uuid().v4()),
+            routineDayId: dayId,
+            exerciseId: exerciseId,
+            orderIndex: exIndex,
+            defaultSets: Value(ex.sets > 0 ? ex.sets : 3),
+            defaultReps: Value(ex.defaultReps),
+            defaultWeightKg: Value(ex.defaultWeightKg),
+            restSeconds: Value(ex.restSeconds),
+          ));
+        }
+      }
+    });
+
+    await _enqueueRoutineUpsert(routineId, userId);
+    return routineId;
   }
 
   /// Replaces a routine's name + exercise list with the editor's draft.

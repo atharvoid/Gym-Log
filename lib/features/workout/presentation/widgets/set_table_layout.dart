@@ -11,16 +11,15 @@ import 'package:flutter/material.dart';
 // misalignment accumulated left-to-right, worst at REPS and ✓
 // (ship-readiness #6).
 //
-// Layout, left → right: SET · PREVIOUS · KG · REPS · ✓
-const double kSetColW = 48; // fixed — "1" / "W" / "D" / "F"
-const double kCheckColW = 48; // fixed — completion square
-const int kPrevFlex = 5; // "999kg x 99" — read-only reference, widest
-const int kWeightFlex = 4; // editable number
-const int kRepsFlex = 4; // editable number
+const double kSetColW = 38; // fixed — "1" / "W" / "D" / "F"
+const double kCheckColW = 44; // fixed — completion square
+const int kPrevFlex = 6; // "999kg x 99" — read-only reference
+const int kWeightFlex = 4; // editable number (2-3 digits) or +KG
+const int kRepsFlex = 5; // editable number / duration / hold timer badge
 
 /// Horizontal inset applied ONCE around every [SetTableRow] — header strip
 /// and data rows alike. No consumer may add its own horizontal padding.
-const double kSetTableInset = 16;
+const double kSetTableInset = 8;
 
 /// One row of the set table: the header and the data rows are the SAME
 /// widget with different slot content. Owns, exactly once:
@@ -36,7 +35,7 @@ const double kSetTableInset = 16;
 class SetTableRow extends StatelessWidget {
   final Widget setSlot;
   final Widget previousSlot;
-  final Widget weightSlot;
+  final Widget? weightSlot;
   final Widget repsSlot;
   final Widget checkSlot;
 
@@ -48,7 +47,7 @@ class SetTableRow extends StatelessWidget {
     super.key,
     required this.setSlot,
     required this.previousSlot,
-    required this.weightSlot,
+    this.weightSlot,
     required this.repsSlot,
     required this.checkSlot,
     this.minHeight = 44,
@@ -64,8 +63,13 @@ class SetTableRow extends StatelessWidget {
           children: [
             SizedBox(width: kSetColW, child: setSlot),
             Expanded(flex: kPrevFlex, child: previousSlot),
-            Expanded(flex: kWeightFlex, child: weightSlot),
-            Expanded(flex: kRepsFlex, child: repsSlot),
+            if (weightSlot != null) ...[
+              Expanded(flex: kWeightFlex, child: weightSlot!),
+              Expanded(flex: kRepsFlex, child: repsSlot),
+            ] else ...[
+              // Reclaim the unused weight column space for the reps/time slot
+              Expanded(flex: kWeightFlex + kRepsFlex, child: repsSlot),
+            ],
             SizedBox(width: kCheckColW, child: checkSlot),
           ],
         ),

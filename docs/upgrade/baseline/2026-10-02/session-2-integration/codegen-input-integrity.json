@@ -1,0 +1,17 @@
+{
+  "changed_existing_inputs_after_codegen": [
+    "lib/features/workout/presentation/widgets/share_card/pr_flex_card.dart",
+    "lib/features/routines/presentation/widgets/training_launchpad.dart",
+    "test/pr_flex_render_test.dart",
+    "test/upgrade/session_2_launchpad_test.dart",
+    "test/golden/goldens/ci/pr_flex_accent.png",
+    "test/golden/goldens/ci/pr_flex_editor.png",
+    "test/golden/goldens/ci/pr_flex_photo.png",
+    "test/golden/goldens/windows/pr_flex_accent.png",
+    "test/golden/goldens/windows/pr_flex_black.png",
+    "test/golden/goldens/windows/pr_flex_editor.png",
+    "test/golden/goldens/windows/pr_flex_photo.png",
+    "android/app/src/main/kotlin/com/gym_log/MainActivity.kt"
+  ],
+  "new_generated_files": []
+}

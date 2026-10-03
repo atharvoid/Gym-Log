@@ -1,0 +1,2509 @@
+# Candidate: session-2 / critic iteration-1 / self-review render iteration-2
+# Sections: 4 Home and 6 Routine Library. Snapshot includes pre-existing uncommitted work.
+# Only candidate changes against that snapshot follow.
+# Renders: synthetic data, live Flutter widgets, 390x844, real Inter and Material icons.
+# Before: Volt/Purple at 1.0x/1.6x. After: six palettes at both scales.
+# Additional choice/error/loading after states have no corresponding pre-feature before state.
+# Native system bars, keyboard, TalkBack, haptics, physical device and CI are unverified.
+
+diff --git a/lib/features/home/presentation/screens/home_screen.dart b/lib/features/home/presentation/screens/home_screen.dart
+--- a/lib/features/home/presentation/screens/home_screen.dart
++++ b/lib/features/home/presentation/screens/home_screen.dart
+@@ -1,17 +1,14 @@
+-import 'dart:async';
+-
+ import 'package:flutter/material.dart';
+ import 'package:flutter/services.dart';
+ import 'package:flutter_riverpod/flutter_riverpod.dart';
+ import 'package:go_router/go_router.dart';
+ import 'package:gymlog/core/theme/app_colors.dart';
+ import 'package:gymlog/core/theme/app_text.dart';
+ import 'package:gymlog/core/theme/dynamic_accent_theme.dart';
+ import 'package:gymlog/shared/widgets/ui/app_card.dart';
+ import 'package:gymlog/shared/widgets/ui/app_refresh_indicator.dart';
+-import 'package:gymlog/shared/widgets/ui/start_button.dart';
+ import 'package:gymlog/shared/widgets/ui/action_bottom_sheet.dart';
+ import 'package:gymlog/shared/widgets/ui/app_dialog.dart';
+ import 'package:gymlog/shared/widgets/ui/app_snack_bar.dart';
+ import 'package:gymlog/shared/widgets/ui/skeleton.dart';
+ import 'package:gymlog/shared/widgets/async_error_state.dart';
+@@ -27,10 +24,12 @@
+ import 'package:gymlog/core/utils/tap_guard.dart';
+ import 'package:gymlog/shared/providers/bottom_chrome_provider.dart';
+ import 'package:gymlog/shared/widgets/feedback/undoable_delete.dart';
+ import 'package:gymlog/features/auth/presentation/providers/tour_provider.dart';
+ import 'package:gymlog/features/routines/presentation/providers/routines_provider.dart';
++import 'package:gymlog/features/routines/presentation/widgets/training_launchpad.dart';
++import 'package:gymlog/features/routines/presentation/providers/training_launch_provider.dart';
+ import 'package:gymlog/shared/widgets/tour/spotlight_tour_overlay.dart';
+ 
+ /// Whether the weekly-stats card should be rendered.
+ ///
+ /// Normally it is shown only once the user has logged at least one workout;
+@@ -99,10 +98,11 @@
+   final GlobalKey _weeklyStatsKey = GlobalKey();
+ 
+   /// Target for the step-0 tour spotlight when the user already has routines
+   /// (deferred tour start) and the "Find a program" card is not shown.
+   final GlobalKey _quickStartKey = GlobalKey();
++  final GlobalKey _historyHeaderKey = GlobalKey();
+ 
+   /// Latch for the deferred-tour kickoff. Without it, build scheduled a fresh
+   /// post-frame callback on every rebuild while the deferred condition held.
+   bool _tourKickoffScheduled = false;
+ 
+@@ -166,72 +166,39 @@
+ 
+     // Display unit for every aggregate figure in the feed. Watched once here
+     // and threaded down; the cards themselves stay provider-free.
+     final unit = ref.watch(weightUnitProvider);
+ 
+-    // Home only ever asks "does this user have any routines at all?", so it
+-    // selects that one boolean. Watching the whole hydrated list rebuilt the
+-    // entire screen — every visible history card included — whenever any
+-    // routine, exercise or set anywhere in the library changed.
+-    final hasNoRoutines = ref.watch(
+-      hydratedRoutinesProvider
+-          .select((async) => (async.valueOrNull ?? const []).isEmpty),
+-    );
++    final routines = ref.watch(hydratedRoutinesProvider);
++    final choice = ref.watch(chosenRoutineProvider);
++    final freestyleIsPrimary = routines.hasValue &&
++        !routines.hasError &&
++        routines.requireValue.isEmpty &&
++        choice.hasValue &&
++        !choice.hasError &&
++        choice.requireValue == null;
++    final hasNoRoutines = routines.hasValue && routines.requireValue.isEmpty;
+     final tourStep = ref.watch(firstRunTourProvider);
+     final streak = ref.watch(streakStatsProvider);
+ 
+     // Only ever true once the stats have actually resolved. A loading or
+     // failed stream reports zeroes, and treating those as "no activity" is
+     // what used to hide the card and then pop it back in.
+     final hasActivity = streak.isResolved &&
+         (streak.currentStreak > 0 || streak.workoutsThisWeek > 0);
+     final showStats = showWeeklyStatsCard(
+-      hasActivity: hasActivity,
++      hasActivity: hasActivity || historyState.items.isNotEmpty,
+       tourStep: tourStep,
+       statsPending: !streak.isResolved,
+     );
+-    final showFindProgram = hasNoRoutines ||
+-        tourStep == 0 ||
+-        tourStep == FirstRunTourNotifier.deferredStep;
+-
+     // If the tour is deferred and the user now has real content, kick it off.
+     if (tourStep == FirstRunTourNotifier.deferredStep &&
+-        (!hasNoRoutines || hasActivity)) {
++        (routines.hasValue && (!hasNoRoutines || hasActivity))) {
+       _scheduleDeferredTourStart();
+     }
+ 
+-    // ── Initial load: skeleton feed (no spinner, no layout jump) ───────
+-    if (historyState.isInitialLoad) {
+-      return Scaffold(
+-        backgroundColor: surface.bgBase,
+-        body: SafeArea(
+-          child: SkeletonPulse(
+-            label: 'Loading your workouts',
+-            child: ListView(
+-              physics: const NeverScrollableScrollPhysics(),
+-              padding: EdgeInsets.fromLTRB(16, 16, 16, bottomInset + 24),
+-              children: const [
+-                SkeletonBox(height: 96, radius: AppRadius.card),
+-                SizedBox(height: 20),
+-                SkeletonBox(height: 124, radius: AppRadius.card),
+-                SizedBox(height: 16),
+-                SkeletonBox(width: 150, height: 18),
+-                SizedBox(height: 12),
+-                WorkoutHistoryCardSkeleton(),
+-                SizedBox(height: 8),
+-                WorkoutHistoryCardSkeleton(),
+-                SizedBox(height: 8),
+-                WorkoutHistoryCardSkeleton(),
+-              ],
+-            ),
+-          ),
+-        ),
+-      );
+-    }
+-
+-    // itemCount: [HeaderBand] + [FindProgram]? + [QuickStart] + [Header] + [N cards] + [footer]
+-    final int baseCount = showFindProgram ? 4 : 3;
++    const baseCount = 1;
+     final itemCount = baseCount + totalItems + 1;
+ 
+     return Scaffold(
+       backgroundColor: surface.bgBase,
+       body: SafeArea(
+@@ -246,22 +213,63 @@
+                 physics: const AlwaysScrollableScrollPhysics(),
+                 padding: EdgeInsets.fromLTRB(16, 16, 16, bottomInset + 24),
+                 itemCount: itemCount,
+                 itemBuilder: (context, index) {
+                   if (index == 0) {
+-                    return _HomeHeaderBand(
+-                      weeklyStatsKey: _weeklyStatsKey,
+-                      showWeeklyStats: showStats,
+-                    );
+-                  }
+-                  if (showFindProgram) {
+-                    if (index == 1) return _findProgramCard();
+-                    if (index == 2) return _quickStart();
+-                    if (index == 3) return _header();
+-                  } else {
+-                    if (index == 1) return _quickStart();
+-                    if (index == 2) return _header();
++                    return Column(
++                        crossAxisAlignment: CrossAxisAlignment.start,
++                        children: [
++                          Text('Train',
++                              style: AppText.screenTitle(
++                                  color: surface.textPrimary)),
++                          const SizedBox(height: AppSpacing.x4),
++                          TrainingLaunchpad(
++                              key: _quickStartKey,
++                              browseKey: _findProgramKey,
++                              onBrowsePrograms: () {
++                                if (tourStep == 0 ||
++                                    tourStep ==
++                                        FirstRunTourNotifier.deferredStep) {
++                                  ref
++                                      .read(firstRunTourProvider.notifier)
++                                      .setStep(1);
++                                }
++                                context.push('/routines/explore');
++                              }),
++                          const SizedBox(height: AppSpacing.x3),
++                          Wrap(spacing: AppSpacing.x4, children: [
++                            if (!freestyleIsPrimary)
++                              TextButton(
++                                  onPressed: () =>
++                                      launchTraining(context, ref, null),
++                                  style: TextButton.styleFrom(
++                                      foregroundColor: surface.textSecondary),
++                                  child: const Text('Log a different workout')),
++                            TextButton(
++                                onPressed: () {
++                                  final target =
++                                      _historyHeaderKey.currentContext;
++                                  if (target != null) {
++                                    Scrollable.ensureVisible(target,
++                                        duration: Duration.zero);
++                                  }
++                                },
++                                style: TextButton.styleFrom(
++                                    foregroundColor: surface.textSecondary),
++                                child: const Text('History')),
++                          ]),
++                          _HomeHeaderBand(
++                              weeklyStatsKey: _weeklyStatsKey,
++                              showWeeklyStats: showStats),
++                          Semantics(
++                              key: _historyHeaderKey,
++                              header: true,
++                              child: Padding(
++                                  padding: const EdgeInsets.only(bottom: 12),
++                                  child: Text('Workout History',
++                                      style: AppText.sectionHeading()))),
++                        ]);
+                   }
+ 
+                   final historyIndex = index - baseCount;
+                   if (historyIndex < totalItems) {
+                     final preview = historyState.items[historyIndex];
+@@ -301,12 +309,12 @@
+                 targetKey: hasNoRoutines ? _findProgramKey : _quickStartKey,
+                 title: hasNoRoutines
+                     ? 'Find a training program'
+                     : 'Ready to train?',
+                 description: hasNoRoutines
+-                    ? 'Choose a trainer-built routine. Tap "Browse programs" to see workouts tailored for your experience level.'
+-                    : 'Tap "Start Empty Workout" to log a session, or browse your routine library for a structured program.',
++                    ? 'Tap "Browse programs" to add a saved plan, or log a different workout.'
++                    : 'Choose a routine and tap Start, or log a different workout.',
+                 step: 0,
+                 borderRadius: AppRadius.card,
+               ),
+ 
+             // Step 4 — Weekly stats spotlight. The card is forced to render
+@@ -317,117 +325,27 @@
+             if (tourStep == 4 && (ModalRoute.of(context)?.isCurrent ?? false))
+               SpotlightTourOverlay(
+                 targetKey: _weeklyStatsKey,
+                 title: 'Your weekly progress',
+                 description: hasActivity
+-                    ? 'This card tracks your workouts toward your weekly goal and your current streak. Keep it up to grow that streak!'
++                    ? 'This card shows logged training days against your weekly goal.'
+                     : 'This is where your weekly progress lives. Log your first workout to start filling the ring toward your goal.',
+                 step: 4,
+                 borderRadius: AppRadius.card,
+               ),
+           ],
+         ),
+       ),
+     );
+   }
+ 
+-  Widget _findProgramCard() {
+-    final tourStep = ref.read(firstRunTourProvider);
+-
+-    return Padding(
+-      padding: const EdgeInsets.only(bottom: 20),
+-      child: AppCard(
+-        key: _findProgramKey,
+-        radius: AppRadius.card,
+-        child: Column(
+-          crossAxisAlignment: CrossAxisAlignment.start,
+-          children: [
+-            Text('Import your first program', style: AppText.exerciseName()),
+-            const SizedBox(height: 3),
+-            Text(
+-              'Browse trainer-built routines and add one to your library to get started.',
+-              style: AppText.meta(),
+-            ),
+-            const SizedBox(height: 12),
+-            TextButton(
+-              onPressed: () {
+-                if (tourStep == 0 ||
+-                    tourStep == FirstRunTourNotifier.deferredStep) {
+-                  ref.read(firstRunTourProvider.notifier).setStep(1);
+-                }
+-                context.push('/routines/explore');
+-              },
+-              style: TextButton.styleFrom(
+-                padding: EdgeInsets.zero,
+-                minimumSize: const Size(0, 36),
+-                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+-              ),
+-              // The arrow is decoration. Left inside the Text it was read out
+-              // as "right arrow" by TalkBack.
+-              child: Text(
+-                'Browse programs →',
+-                semanticsLabel: 'Browse programs',
+-                style: AppText.label(color: context.accent.base),
+-              ),
+-            ),
+-          ],
+-        ),
+-      ),
+-    );
+-  }
+-
+-  // ── Quick Start ────────────────────────────────────────────────
+-  Widget _quickStart() {
+-    return Padding(
+-      padding: const EdgeInsets.only(bottom: 20),
+-      child: AppCard(
+-        key: _quickStartKey,
+-        radius: AppRadius.card,
+-        child: Column(
+-          crossAxisAlignment: CrossAxisAlignment.start,
+-          children: [
+-            Semantics(
+-              header: true,
+-              child: Text('Quick Start', style: AppText.sectionHeading()),
+-            ),
+-            const SizedBox(height: 16),
+-            StartButton(
+-              label: 'Start Empty Workout',
+-              icon: Icons.add_circle_outline,
+-              expand: true,
+-              onPressed: () {
+-                // Guard against a double-tap pushing two active-workout
+-                // screens (startWorkout sets state synchronously).
+-                if (ref.read(activeWorkoutProvider) != null) return;
+-                ref.read(activeWorkoutProvider.notifier).startWorkout();
+-                context.push('/workout/active');
+-              },
+-            ),
+-          ],
+-        ),
+-      ),
+-    );
+-  }
+-
+-  // ── Section header ─────────────────────────────────────────────
+-  Widget _header() {
+-    return Padding(
+-      padding: const EdgeInsets.only(bottom: 12),
+-      child: Semantics(
+-        header: true,
+-        child: Text(
+-          'Workout History',
+-          style: AppText.sectionHeading(),
+-          maxLines: 1,
+-          overflow: TextOverflow.ellipsis,
+-        ),
+-      ),
+-    );
+-  }
+-
+   // ── Footer: loading | error | empty | all-caught-up ───────────────────
+   Widget _footer(WorkoutHistoryState state) {
++    if (state.isInitialLoad) {
++      return const Padding(
++          padding: EdgeInsets.all(16), child: Text('Loading workout history'));
++    }
+     if (state.isLoadingMore) {
+       return const Padding(
+         padding: EdgeInsets.only(top: 4),
+         child: SkeletonPulse(
+           label: 'Loading more workouts',
+@@ -465,28 +383,10 @@
+             Text('No workouts yet', style: AppText.exerciseName()),
+             const SizedBox(height: 3),
+             Text(
+               'Your history lives here.',
+               style: AppText.meta(),
+-            ),
+-            const SizedBox(height: 12),
+-            TextButton(
+-              onPressed: () {
+-                if (ref.read(activeWorkoutProvider) != null) return;
+-                ref.read(activeWorkoutProvider.notifier).startWorkout();
+-                context.push('/workout/active');
+-              },
+-              style: TextButton.styleFrom(
+-                padding: EdgeInsets.zero,
+-                minimumSize: const Size(0, 36),
+-                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+-              ),
+-              child: Text(
+-                'Start your first workout →',
+-                semanticsLabel: 'Start your first workout',
+-                style: AppText.label(color: context.accent.base),
+-              ),
+             ),
+           ],
+         ),
+       );
+     }
+@@ -599,62 +499,20 @@
+   @override
+   ConsumerState<_HomeHeaderBand> createState() => _HomeHeaderBandState();
+ }
+ 
+ class _HomeHeaderBandState extends ConsumerState<_HomeHeaderBand> {
+-  late String _greeting;
+-  Timer? _greetingTimer;
+-
+-  @override
+-  void initState() {
+-    super.initState();
+-    _greeting = greetingForHour(DateTime.now().hour);
+-    _scheduleGreetingRefresh();
+-  }
+-
+-  /// One-shot timer aimed at the next greeting boundary, rescheduled each
+-  /// time it fires. Home is never disposed while the app is foregrounded
+-  /// (indexed-stack shell), so without this the greeting is frozen at
+-  /// whatever it was when the app launched.
+-  void _scheduleGreetingRefresh() {
+-    _greetingTimer?.cancel();
+-    final now = DateTime.now();
+-    // One second past the boundary, so the hour has definitely rolled over.
+-    final delay =
+-        nextGreetingBoundary(now).difference(now) + const Duration(seconds: 1);
+-    _greetingTimer = Timer(delay, () {
+-      if (!mounted) return;
+-      setState(() => _greeting = greetingForHour(DateTime.now().hour));
+-      _scheduleGreetingRefresh();
+-    });
+-  }
+-
+-  @override
+-  void dispose() {
+-    _greetingTimer?.cancel();
+-    super.dispose();
+-  }
+-
+   @override
+   Widget build(BuildContext context) {
+     final streak = ref.watch(streakStatsProvider);
+     final goal = ref.watch(weeklyGoalProvider);
+-    final surface = context.surface;
+ 
+     return Padding(
+       padding: const EdgeInsets.only(bottom: 20),
+       child: Column(
+         crossAxisAlignment: CrossAxisAlignment.start,
+         children: [
+-          // Identity (always present — top is never empty)
+-          Text(_greeting,
+-              style: AppText.screenTitle(color: surface.textPrimary)
+-                  .copyWith(letterSpacing: -0.5)),
+-          const SizedBox(height: 4),
+-          Text('Ready to train?',
+-              style: AppText.body(color: surface.textSecondary)),
+-
+           // Promoted week stats. Three mutually exclusive states, matching
+           // the rigour the history feed below already had.
+           if (widget.showWeeklyStats) ...[
+             const SizedBox(height: 20),
+             if (streak.isLoading)
+diff --git a/lib/features/routines/presentation/providers/training_launch_provider.dart b/lib/features/routines/presentation/providers/training_launch_provider.dart
+--- /dev/null
++++ b/lib/features/routines/presentation/providers/training_launch_provider.dart
+@@ -0,0 +1,203 @@
++import 'package:flutter_riverpod/flutter_riverpod.dart';
++import 'package:gymlog/core/database/daos/routines_dao.dart';
++import 'package:gymlog/core/database/daos/workouts_dao.dart';
++import 'package:gymlog/core/routines/program_membership.dart';
++import 'package:gymlog/core/models/measurement_type.dart';
++import 'package:gymlog/core/utils/formatters.dart';
++import 'package:gymlog/core/utils/units.dart';
++import 'package:gymlog/core/providers/database_provider.dart';
++import 'package:gymlog/features/auth/presentation/providers/auth_provider.dart';
++import 'package:gymlog/features/workout/domain/active_workout_state.dart';
++import 'package:gymlog/features/workout/presentation/providers/active_workout_provider.dart';
++import 'package:intl/intl.dart';
++import 'package:shared_preferences/shared_preferences.dart';
++
++final trainingClockProvider =
++    Provider<DateTime Function()>((ref) => DateTime.now);
++final chosenRoutineProvider =
++    StateNotifierProvider<ChosenRoutineNotifier, AsyncValue<String?>>((ref) {
++  final notifier =
++      ChosenRoutineNotifier(ref.watch(authProvider)?.id ?? 'local');
++  notifier.load();
++  return notifier;
++});
++
++class ChosenRoutineNotifier extends StateNotifier<AsyncValue<String?>> {
++  ChosenRoutineNotifier(String account)
++      : _key = 'training_routine:$account',
++        super(const AsyncLoading());
++  final String _key;
++  Future<void> load() async {
++    try {
++      final prefs = await SharedPreferences.getInstance();
++      final id = prefs.getString(_key);
++      if (mounted) state = AsyncData(id);
++    } catch (e, stack) {
++      if (mounted) state = AsyncError(e, stack);
++    }
++  }
++
++  Future<void> choose(String id) async {
++    final prefs = await SharedPreferences.getInstance();
++    if (!await prefs.setString(_key, id)) {
++      throw StateError('Choice write failed');
++    }
++    if (mounted) state = AsyncData(id);
++  }
++}
++
++class ProgramSuggestion {
++  const ProgramSuggestion(
++      this.routine, this.previousRoutineName, this.programName);
++  final HydratedRoutine routine;
++  final String previousRoutineName;
++  final String programName;
++}
++
++ProgramSuggestion? nextProgramSuggestion(List<HydratedRoutine> routines,
++    List<WorkoutSessionPreview> history, String? chosenId) {
++  final byId = {for (final r in routines) r.routine.id: r};
++  final chosen = byId[chosenId];
++  final selectedProgram =
++      decodeProgramMembership(chosen?.routine.notes)?.programSlug;
++  final completed = history.where((p) => p.session.endedAt != null).toList()
++    ..sort((a, b) => b.session.endedAt!.compareTo(a.session.endedAt!));
++  for (final session in completed) {
++    final previous = byId[session.session.routineId];
++    final membership = decodeProgramMembership(previous?.routine.notes);
++    if (previous == null ||
++        membership == null ||
++        (selectedProgram != null &&
++            selectedProgram != membership.programSlug)) {
++      continue;
++    }
++    final members = routines
++        .where((r) =>
++            decodeProgramMembership(r.routine.notes)?.programSlug ==
++            membership.programSlug)
++        .toList();
++    if (members.length != membership.totalRoutines) return null;
++    final days = {
++      for (final r in routines)
++        if (decodeProgramMembership(r.routine.notes)?.programSlug ==
++            membership.programSlug)
++          decodeProgramMembership(r.routine.notes)!.orderIndex: r
++    };
++    // No inference from legacy names/timestamps, missing days or inconsistent imports.
++    if (membership.totalRoutines < 2 ||
++        days.length != membership.totalRoutines ||
++        days.values.any((r) =>
++            decodeProgramMembership(r.routine.notes)!.totalRoutines !=
++            membership.totalRoutines) ||
++        List.generate(membership.totalRoutines, (i) => i)
++            .any((i) => !days.containsKey(i))) {
++      return null;
++    }
++    final next = days[(membership.orderIndex + 1) % membership.totalRoutines];
++    if (next == null || next.exerciseIds.isEmpty) return null;
++    return ProgramSuggestion(
++        next, previous.routine.name, membership.programLabel);
++  }
++  return null;
++}
++
++bool isInactiveReturn(List<WorkoutSessionPreview> history, DateTime now) {
++  DateTime? latest;
++  for (final p in history) {
++    final ended = p.session.endedAt;
++    if (ended != null && (latest == null || ended.isAfter(latest))) {
++      latest = ended;
++    }
++  }
++  return latest != null && now.difference(latest) >= const Duration(days: 14);
++}
++
++String trainingAgeLabel(DateTime? last, DateTime now) {
++  if (last == null) return 'No sessions logged for this routine';
++  final days = DateTime.utc(now.year, now.month, now.day)
++      .difference(DateTime.utc(last.year, last.month, last.day))
++      .inDays;
++  if (days < 0) {
++    return 'Last trained on ${DateFormat('d MMM yyyy').format(last)}';
++  }
++  if (days == 0) return 'Last trained today';
++  if (days == 1) return 'Last trained yesterday';
++  return 'Last trained $days days ago';
++}
++
++enum LaunchResult { started, resume, unavailable, busy }
++
++String? launchSetText(MeasurementType type, LastSessionSetData set, String unit,
++    {bool spoken = false}) {
++  switch (type) {
++    case MeasurementType.weightAndReps:
++      if (set.weightKg == null || set.reps == null) return null;
++      return spoken
++          ? '${formatWeight(set.weightKg!, unit)} ${unit == 'lbs' ? 'pounds' : 'kilograms'} for ${set.reps} reps'
++          : '${formatWeight(set.weightKg!, unit)} ${unitLabel(unit)} × ${set.reps}';
++    case MeasurementType.repsOnly:
++      return set.reps == null ? null : '${set.reps} reps';
++    case MeasurementType.duration:
++      if (set.reps == null) return null;
++      return spoken
++          ? '${set.reps} seconds'
++          : MeasurementFormatter.formatSet(
++              measurementType: type, reps: set.reps);
++    case MeasurementType.distance:
++      if (set.weightKg == null) return null;
++      return spoken
++          ? '${set.weightKg! == set.weightKg!.roundToDouble() ? set.weightKg!.toInt() : set.weightKg} metres${set.reps != null ? ', ${set.reps} seconds' : ''}'
++          : MeasurementFormatter.formatSet(
++              measurementType: type, weightKg: set.weightKg, reps: set.reps);
++    case MeasurementType.unknown:
++      return null;
++  }
++}
++
++final trainingRoutineLoaderProvider =
++    Provider<Future<HydratedRoutineDetail?> Function(String)>(
++        (ref) => (id) async {
++              final user = ref.read(authProvider);
++              if (user == null) return null;
++              return ref
++                  .read(databaseProvider)
++                  .routinesDao
++                  .getHydratedRoutineDetail(id, userId: user.id);
++            });
++final trainingLauncherProvider =
++    Provider<TrainingLauncher>(TrainingLauncher.new);
++
++class TrainingLauncher {
++  TrainingLauncher(this._ref);
++  final Ref _ref;
++  bool _busy = false;
++  Future<LaunchResult> startRoutine(String id) => _start(id);
++  Future<LaunchResult> startFreestyle() => _start(null);
++  Future<LaunchResult> _start(String? id) async {
++    if (_busy) return LaunchResult.busy;
++    if (_ref.read(activeWorkoutProvider) != null) return LaunchResult.resume;
++    _busy = true;
++    try {
++      final account = _ref.read(authProvider)?.id;
++      final detail = id == null
++          ? null
++          : await _ref.read(trainingRoutineLoaderProvider)(id);
++      if (_ref.read(authProvider)?.id != account) {
++        return LaunchResult.unavailable;
++      }
++      // Another launch surface can resume/start while the database lookup awaits.
++      if (_ref.read(activeWorkoutProvider) != null) return LaunchResult.resume;
++      if (id != null && (detail == null || detail.exercises.isEmpty)) {
++        return LaunchResult.unavailable;
++      }
++      await _ref.read(activeWorkoutProvider.notifier).startWorkout(
++          routineId: id,
++          name: detail?.routine.name,
++          initialExercises:
++              detail == null ? null : seedExercisesFromRoutine(detail));
++      return LaunchResult.started;
++    } finally {
++      _busy = false;
++    }
++  }
++}
+diff --git a/lib/features/routines/presentation/widgets/training_launchpad.dart b/lib/features/routines/presentation/widgets/training_launchpad.dart
+--- /dev/null
++++ b/lib/features/routines/presentation/widgets/training_launchpad.dart
+@@ -0,0 +1,475 @@
++import 'package:flutter/material.dart';
++import 'package:flutter_riverpod/flutter_riverpod.dart';
++import 'package:go_router/go_router.dart';
++import 'package:gymlog/core/database/daos/routines_dao.dart';
++import 'package:gymlog/core/database/daos/workouts_dao.dart';
++import 'package:gymlog/core/models/measurement_type.dart';
++import 'package:gymlog/core/providers/settings_provider.dart';
++import 'package:gymlog/core/theme/app_colors.dart';
++import 'package:gymlog/core/theme/app_text.dart';
++import 'package:gymlog/features/home/presentation/providers/home_provider.dart';
++import 'package:gymlog/features/workout/presentation/providers/active_workout_provider.dart';
++import 'package:gymlog/shared/widgets/ui/primary_button.dart';
++import 'package:gymlog/shared/widgets/ui/app_snack_bar.dart';
++import '../providers/routines_provider.dart';
++import '../providers/training_launch_provider.dart';
++
++Future<void> launchTraining(
++    BuildContext context, WidgetRef ref, String? id) async {
++  try {
++    final launcher = ref.read(trainingLauncherProvider);
++    final result = await (id == null
++        ? launcher.startFreestyle()
++        : launcher.startRoutine(id));
++    if (!context.mounted) return;
++    if (result == LaunchResult.started || result == LaunchResult.resume) {
++      context.push('/workout/active');
++    } else if (result == LaunchResult.unavailable) {
++      ref.invalidate(hydratedRoutinesProvider);
++      showAppSnackBar(context,
++          message:
++              'This routine is unavailable or has no exercises. Choose another routine.');
++    }
++  } catch (_) {
++    if (context.mounted) {
++      showAppSnackBar(context,
++          message: "Couldn't start the workout. Try again.");
++    }
++  }
++}
++
++Future<void> showTrainingChooser(BuildContext context) =>
++    showModalBottomSheet<void>(
++        context: context,
++        useSafeArea: true,
++        isScrollControlled: true,
++        backgroundColor: Colors.transparent,
++        builder: (_) => const _TrainingChooser());
++
++class TrainingLaunchpad extends ConsumerStatefulWidget {
++  const TrainingLaunchpad(
++      {super.key, this.browseKey, this.onBrowsePrograms, this.compact = false});
++  final Key? browseKey;
++  final VoidCallback? onBrowsePrograms;
++  final bool compact;
++  @override
++  ConsumerState<TrainingLaunchpad> createState() => _TrainingLaunchpadState();
++}
++
++class _TrainingLaunchpadState extends ConsumerState<TrainingLaunchpad> {
++  bool _starting = false;
++  Future<void> _start(String? id) async {
++    if (_starting) return;
++    setState(() => _starting = true);
++    await launchTraining(context, ref, id);
++    if (mounted) setState(() => _starting = false);
++  }
++
++  Widget _primary(String label, VoidCallback action, {Key? key}) =>
++      PrimaryButton(
++          key: key, label: label, isLoading: _starting, onPressed: action);
++  Widget _change({bool primary = false}) => primary
++      ? _primary('Choose routine', () => showTrainingChooser(context))
++      : TextButton.icon(
++          key: const ValueKey('change-training-routine'),
++          onPressed: () => showTrainingChooser(context),
++          style: TextButton.styleFrom(
++              foregroundColor: context.surface.textSecondary,
++              minimumSize: const Size(48, 48)),
++          icon: const Icon(Icons.swap_horiz_rounded),
++          label: const Text('Change'));
++
++  @override
++  Widget build(BuildContext context) {
++    final library = ref.watch(hydratedRoutinesProvider);
++    final choice = ref.watch(chosenRoutineProvider);
++    final history = ref.watch(workoutHistoryProvider);
++    final now = ref.watch(trainingClockProvider)();
++    final knownHistory = !history.isInitialLoad && !history.hasError;
++    final returnAfterBreak =
++        knownHistory && isInactiveReturn(history.items, now);
++    final s = context.surface;
++    Widget message(String title, String body, Widget action) =>
++        Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
++          Text(title, style: AppText.titleLarge(color: s.textPrimary)),
++          const SizedBox(height: AppSpacing.x3),
++          Text(body, style: AppText.body(color: s.textSecondary)),
++          const SizedBox(height: AppSpacing.x4),
++          action,
++        ]);
++    if (library.isLoading || choice.isLoading) {
++      return message(
++          'Loading your training choice',
++          'Your saved routine will appear when available.',
++          const LinearProgressIndicator());
++    }
++    if (library.hasError || choice.hasError) {
++      return message(
++          "Couldn't load your training choice",
++          'Your routine choice is unavailable.',
++          _primary('Try again', () {
++            ref.invalidate(hydratedRoutinesProvider);
++            ref.read(chosenRoutineProvider.notifier).load();
++          }));
++    }
++    final routines = library.requireValue;
++    final id = choice.requireValue;
++    HydratedRoutine? chosen;
++    for (final r in routines) {
++      if (r.routine.id == id) chosen = r;
++    }
++    if (routines.isEmpty && id == null) {
++      return message(
++          knownHistory && history.items.isEmpty
++              ? 'Your first session starts here'
++              : 'No saved routine to start',
++          'Log a workout, or add a routine to train from a plan.',
++          Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
++            if (widget.compact)
++              _primary(
++                  'Browse programs',
++                  widget.onBrowsePrograms ??
++                      () => context.push('/routines/explore'))
++            else
++              _primary('Log a different workout', () => _start(null)),
++            TextButton(
++                key: widget.browseKey,
++                onPressed: widget.compact
++                    ? () => _start(null)
++                    : widget.onBrowsePrograms ??
++                        () => context.push('/routines/explore'),
++                child: Text(widget.compact
++                    ? 'Log a different workout'
++                    : 'Browse programs')),
++          ]));
++    }
++    if (chosen != null && chosen.exerciseIds.isEmpty) {
++      final empty = chosen;
++      return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
++        Row(children: [
++          Expanded(
++              child: Text('YOUR CHOICE',
++                  style: AppText.caption(color: s.textSecondary))),
++          _change()
++        ]),
++        Text(empty.routine.name,
++            style: AppText.titleLarge(color: s.textPrimary)),
++        const SizedBox(height: AppSpacing.x2),
++        Text(trainingAgeLabel(empty.lastTrained, now),
++            style: AppText.meta(color: s.textSecondary)),
++        const SizedBox(height: AppSpacing.x4),
++        Text('Your chosen routine has no exercises',
++            style: AppText.sheetTitle(color: s.textPrimary)),
++        const SizedBox(height: AppSpacing.x2),
++        Text('Add exercises to this routine, or choose another.',
++            style: AppText.body(color: s.textSecondary)),
++        const SizedBox(height: AppSpacing.x4),
++        _primary('Add exercises',
++            () => context.push('/routines/edit?id=${empty.routine.id}')),
++      ]);
++    }
++    if (chosen == null) {
++      final title = id == null
++          ? 'Choose a routine for today'
++          : 'Chosen routine unavailable';
++      return message(
++          title,
++          id == null
++              ? 'Choose a saved plan. Nothing is selected automatically.'
++              : 'Choose another saved routine, or log a different workout.',
++          Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
++            if (routines.any((r) => r.exerciseIds.isNotEmpty))
++              _change(primary: true),
++            if (!routines.any((r) => r.exerciseIds.isNotEmpty))
++              TextButton(
++                  key: widget.browseKey,
++                  onPressed: widget.onBrowsePrograms ??
++                      () => context.push('/routines/explore'),
++                  child: const Text('Browse programs')),
++          ]));
++    }
++    final detail = ref.watch(routineDetailProvider(chosen.routine.id));
++    final lastSets = ref.watch(routineLastSetsProvider(chosen.routine.id));
++    final active = ref.watch(activeWorkoutProvider) != null;
++    final selected = chosen;
++    final planned = detail.valueOrNull?.exercises.fold<int>(
++        0,
++        (sum, e) =>
++            sum + (e.config.defaultSets > 0 ? e.config.defaultSets : 1));
++    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
++      if (returnAfterBreak) ...[
++        Text('Train at your own pace',
++            style: AppText.body(color: s.textPrimary)),
++        const SizedBox(height: AppSpacing.x2),
++      ],
++      Row(children: [
++        Expanded(
++            child: Text('YOUR CHOICE',
++                style: AppText.caption(color: s.textSecondary))),
++        _change()
++      ]),
++      Text(chosen.routine.name,
++          style: AppText.screenTitle(color: s.textPrimary)),
++      if (chosen.routine.sourceProgramName?.isNotEmpty ?? false) ...[
++        const SizedBox(height: AppSpacing.x2),
++        Text(chosen.routine.sourceProgramName!,
++            style: AppText.body(color: s.textSecondary)),
++      ],
++      const SizedBox(height: AppSpacing.x2),
++      Text(
++          '${chosen.exerciseIds.length} ${chosen.exerciseIds.length == 1 ? 'exercise' : 'exercises'}${planned != null ? ' · $planned planned ${planned == 1 ? 'set' : 'sets'}' : ''}',
++          style: AppText.body(color: s.textSecondary)),
++      if (chosen.muscleTags.isNotEmpty) ...[
++        const SizedBox(height: AppSpacing.x2),
++        Text(chosen.muscleTags.join(' · '),
++            style: AppText.body(color: s.textPrimary)),
++      ],
++      const SizedBox(height: AppSpacing.x2),
++      Text(trainingAgeLabel(chosen.lastTrained, now),
++          style: AppText.meta(color: s.textSecondary)),
++      if (!widget.compact) ...[
++        const SizedBox(height: AppSpacing.x4),
++        _previousContext(detail, lastSets),
++      ],
++      const SizedBox(height: AppSpacing.x4),
++      _primary(active ? 'Resume workout' : 'Start ${chosen.routine.name}',
++          () => _start(selected.routine.id),
++          key: const ValueKey('chosen-routine-start')),
++    ]);
++  }
++
++  Widget _previousContext(AsyncValue<HydratedRoutineDetail?> detail,
++      AsyncValue<Map<String, List<LastSessionSetData>>> sets) {
++    final s = context.surface;
++    String? result, spoken, exerciseName;
++    if (detail.hasValue && sets.hasValue) {
++      for (final e
++          in detail.valueOrNull?.exercises ?? <HydratedRoutineExercise>[]) {
++        final logged = sets.requireValue['${e.exercise.id}'] ?? [];
++        if (logged.isEmpty) continue;
++        final set = logged.firstWhere((s) => s.setType != 'warmup',
++            orElse: () => logged.first);
++        final type = MeasurementType.resolve(
++            explicitValue: e.exercise.measurementType,
++            equipment: e.exercise.equipment,
++            exerciseName: e.exercise.name);
++        final unit = ref.watch(exerciseUnitProvider(e.exercise.id));
++        result = launchSetText(type, set, unit);
++        if (result == null) continue;
++        spoken = launchSetText(type, set, unit, spoken: true);
++        exerciseName =
++            '${e.exercise.name}${set.setType == 'warmup' ? ' · warm-up' : ''}';
++        break;
++      }
++    }
++    final text = detail.hasError || sets.hasError
++        ? 'Previous-set context unavailable'
++        : detail.isLoading || sets.isLoading
++            ? 'Loading previous-set context'
++            : result == null
++                ? 'No previous logged set for this plan'
++                : 'Logged set · $exerciseName';
++    return Container(
++        width: double.infinity,
++        padding: const EdgeInsets.all(AppSpacing.x4),
++        decoration:
++            BoxDecoration(color: s.bgSurface, borderRadius: AppRadius.cardAll),
++        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
++          Text(text, style: AppText.meta(color: s.textSecondary)),
++          if (result != null) ...[
++            const SizedBox(height: AppSpacing.x2),
++            Text(result,
++                semanticsLabel: spoken,
++                style: AppText.sheetTitle(color: s.textPrimary)
++                    .copyWith(fontFeatures: kTabular)),
++          ],
++        ]));
++  }
++}
++
++class _TrainingChooser extends ConsumerStatefulWidget {
++  const _TrainingChooser();
++  @override
++  ConsumerState<_TrainingChooser> createState() => _TrainingChooserState();
++}
++
++class _TrainingChooserState extends ConsumerState<_TrainingChooser> {
++  String _query = '';
++  int _page = 0;
++  bool _saving = false;
++  String? _error;
++  Future<void> _choose(String id) async {
++    if (_saving) return;
++    setState(() {
++      _saving = true;
++      _error = null;
++    });
++    try {
++      await ref.read(chosenRoutineProvider.notifier).choose(id);
++      if (mounted) Navigator.pop(context);
++    } catch (_) {
++      if (mounted) {
++        setState(() {
++          _saving = false;
++          _error = "Couldn't save your choice. Try again.";
++        });
++      }
++    }
++  }
++
++  @override
++  Widget build(BuildContext context) {
++    final library = ref.watch(hydratedRoutinesProvider);
++    if (library.isLoading || library.hasError) {
++      return Material(
++          color: context.surface.surface2,
++          borderRadius: AppRadius.sheetTop,
++          child: SafeArea(
++              top: false,
++              child: Padding(
++                  padding: const EdgeInsets.all(16),
++                  child: Column(
++                      mainAxisSize: MainAxisSize.min,
++                      crossAxisAlignment: CrossAxisAlignment.stretch,
++                      children: [
++                        Text(
++                            library.hasError
++                                ? 'Routine choices unavailable'
++                                : 'Loading routine choices',
++                            style: AppText.sectionHeading(
++                                color: context.surface.textPrimary)),
++                        if (library.hasError)
++                          TextButton(
++                              onPressed: () =>
++                                  ref.invalidate(hydratedRoutinesProvider),
++                              child: const Text('Try again')),
++                        TextButton(
++                            onPressed: () => Navigator.pop(context),
++                            child: const Text('Close')),
++                      ]))));
++    }
++    final routines = library.requireValue;
++    final chosen = ref.watch(chosenRoutineProvider).valueOrNull;
++    final history = ref.watch(workoutHistoryProvider);
++    final suggestion =
++        _query.isEmpty && !history.hasError && !history.isInitialLoad
++            ? nextProgramSuggestion(routines, history.items, chosen)
++            : null;
++    final ordered = [...routines]..sort((a, b) =>
++        (b.lastTrained ?? DateTime(0)).compareTo(a.lastTrained ?? DateTime(0)));
++    final matches = ordered
++        .where((r) => '${r.routine.name} ${r.routine.sourceProgramName ?? ''}'
++            .toLowerCase()
++            .contains(_query.toLowerCase()))
++        .toList();
++    if (_query.isEmpty) {
++      matches.sort((a, b) => (a.routine.id == suggestion?.routine.routine.id
++              ? -2
++              : a.routine.id == chosen
++                  ? -1
++                  : 0)
++          .compareTo(b.routine.id == suggestion?.routine.routine.id
++              ? -2
++              : b.routine.id == chosen
++                  ? -1
++                  : 0));
++    }
++    final page =
++        _page.clamp(0, matches.isEmpty ? 0 : (matches.length - 1) ~/ 4);
++    final visible = matches.skip(page * 4).take(4);
++    final s = context.surface;
++    return Container(
++        constraints:
++            BoxConstraints(maxHeight: MediaQuery.sizeOf(context).height * .88),
++        padding: EdgeInsets.fromLTRB(
++            16, 16, 16, 16 + MediaQuery.viewInsetsOf(context).bottom),
++        decoration:
++            BoxDecoration(color: s.surface2, borderRadius: AppRadius.sheetTop),
++        child: SafeArea(
++            top: false,
++            child: SingleChildScrollView(
++                child: Column(
++                    crossAxisAlignment: CrossAxisAlignment.start,
++                    children: [
++                  Row(children: [
++                    Expanded(
++                        child: Text('Change routine',
++                            style:
++                                AppText.sectionHeading(color: s.textPrimary))),
++                    IconButton(
++                        onPressed: () => Navigator.pop(context),
++                        tooltip: 'Close routine chooser',
++                        icon: const Icon(Icons.close_rounded))
++                  ]),
++                  Text('Choose your training plan. Suggestions are optional.',
++                      style: AppText.meta(color: s.textSecondary)),
++                  const SizedBox(height: AppSpacing.x3),
++                  TextField(
++                      enabled: !_saving,
++                      decoration: const InputDecoration(
++                          labelText: 'Search your routines',
++                          prefixIcon: Icon(Icons.search_rounded)),
++                      onChanged: (value) => setState(() {
++                            _query = value;
++                            _page = 0;
++                          })),
++                  const SizedBox(height: AppSpacing.x2),
++                  if (matches.isEmpty)
++                    Text('No matching routines',
++                        style: AppText.body(color: s.textSecondary)),
++                  for (final r in visible) ...[
++                    if (r.routine.id == suggestion?.routine.routine.id)
++                      Padding(
++                          padding: const EdgeInsets.only(top: AppSpacing.x3),
++                          child: Text('Next in your program',
++                              style: AppText.sheetTitle(color: s.textPrimary))),
++                    Material(
++                        color: Colors.transparent,
++                        child: ListTile(
++                            key: ValueKey('choose-${r.routine.id}'),
++                            contentPadding: EdgeInsets.zero,
++                            enabled: !_saving && r.exerciseIds.isNotEmpty,
++                            selected: r.routine.id == chosen,
++                            leading: Icon(r.routine.id == chosen
++                                ? Icons.radio_button_checked
++                                : Icons.radio_button_unchecked),
++                            title: Text(r.routine.name,
++                                style:
++                                    AppText.sheetTitle(color: s.textPrimary)),
++                            subtitle: Text(
++                                r.routine.id == suggestion?.routine.routine.id
++                                    ? 'Follows ${suggestion!.previousRoutineName} in saved order'
++                                    : r.exerciseIds.isEmpty
++                                        ? 'Empty plan · add exercises first'
++                                        : '${r.exerciseIds.length} ${r.exerciseIds.length == 1 ? 'exercise' : 'exercises'} · ${r.routine.sourceProgramName ?? trainingAgeLabel(r.lastTrained, ref.read(trainingClockProvider)())}',
++                                style: AppText.meta(color: s.textSecondary)),
++                            onTap: () => _choose(r.routine.id))),
++                  ],
++                  if (matches.length > 4)
++                    Row(children: [
++                      Text(
++                          '${page * 4 + 1}–${(page * 4 + 4).clamp(0, matches.length)} of ${matches.length}',
++                          style: AppText.meta(color: s.textSecondary)),
++                      const Spacer(),
++                      IconButton(
++                          tooltip: 'Previous choices',
++                          onPressed: page == 0 || _saving
++                              ? null
++                              : () => setState(() => _page = page - 1),
++                          icon: const Icon(Icons.chevron_left_rounded)),
++                      IconButton(
++                          tooltip: 'More choices',
++                          onPressed: (page + 1) * 4 >= matches.length || _saving
++                              ? null
++                              : () => setState(() => _page = page + 1),
++                          icon: const Icon(Icons.chevron_right_rounded)),
++                    ]),
++                  if (_saving) const LinearProgressIndicator(),
++                  if (_error != null)
++                    Semantics(
++                        liveRegion: true,
++                        child: Text(_error!,
++                            style: AppText.body(color: s.textPrimary))),
++                ]))));
++  }
++}
+diff --git a/lib/features/workout/presentation/screens/workout_screen.dart b/lib/features/workout/presentation/screens/workout_screen.dart
+--- a/lib/features/workout/presentation/screens/workout_screen.dart
++++ b/lib/features/workout/presentation/screens/workout_screen.dart
+@@ -1,65 +1,39 @@
+ import 'package:flutter/material.dart';
+ import 'package:flutter/services.dart';
+ import 'package:flutter_riverpod/flutter_riverpod.dart';
+ import 'package:go_router/go_router.dart';
+ import 'package:gymlog/core/database/daos/routines_dao.dart';
+-import 'package:gymlog/core/providers/database_provider.dart';
++import 'package:gymlog/core/database/daos/program_grouping.dart';
++import 'package:gymlog/features/routines/presentation/widgets/training_launchpad.dart';
+ import '../../../../core/theme/app_colors.dart';
+ import '../../../../core/theme/app_text.dart';
+ import '../../../../core/theme/dynamic_accent_theme.dart';
+ import '../../../../core/utils/tap_guard.dart';
+-import '../../../../core/utils/relative_time.dart';
+ import '../../../../shared/providers/bottom_chrome_provider.dart';
+-import '../../../../shared/widgets/async_error_state.dart';
+ import '../../../../shared/widgets/ui/action_bottom_sheet.dart';
+ import '../../../../shared/widgets/ui/app_card.dart';
+-import '../../../../shared/widgets/ui/secondary_button.dart';
+ import '../../../../shared/widgets/ui/skeleton.dart';
+ import '../../../routines/presentation/widgets/routine_card.dart';
+ import '../../../routines/presentation/providers/routines_provider.dart';
+-import '../../domain/active_workout_state.dart';
+-import '../providers/active_workout_provider.dart';
+ import 'package:gymlog/shared/layout/adaptive.dart';
+ 
+ /// [workout_screen.dart]
+ /// Routines tab — the user's saved routines (reactive via hydratedRoutinesProvider).
+ ///
+-/// HEADER DISCIPLINE: this screen earns its vertical space or gives it up. The
+-/// previous version spent ~100dp on gaps plus a collapsible "My Routines (n)"
+-/// section header before the first card. That header duplicated the screen
+-/// title and the count already in the subtitle, and its collapse toggle could
+-/// only ever collapse the single list on the page — i.e. blank the screen. Both
+-/// are gone; the list starts immediately after the action row.
++/// The saved training choice leads the library. Creation stays available as a
++/// utility; source-program groups organize the other saved routines below it.
+ class WorkoutScreen extends ConsumerStatefulWidget {
+   const WorkoutScreen({super.key});
+ 
+   @override
+   ConsumerState<WorkoutScreen> createState() => _WorkoutScreenState();
+ }
+ 
+ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
+-  void _startRoutine(HydratedRoutine routine) async {
+-    if (routine.exerciseIds.isEmpty) {
+-      return; // guarded again in the card (with feedback)
+-    }
+-    if (!tapGuard()) return;
+-    HapticFeedback.mediumImpact();
+-
+-    final detail = await ref
+-        .read(databaseProvider)
+-        .routinesDao
+-        .getHydratedRoutineDetail(routine.routine.id);
+-    if (detail == null || !mounted) return;
+-
+-    ref.read(activeWorkoutProvider.notifier).startWorkout(
+-          routineId: routine.routine.id,
+-          name: routine.routine.name,
+-          initialExercises: seedExercisesFromRoutine(detail),
+-        );
+-    context.push('/workout/active');
+-  }
++  void _startRoutine(HydratedRoutine routine) =>
++      launchTraining(context, ref, routine.routine.id);
+ 
+   void _push(String path) {
+     if (!tapGuard()) return;
+     HapticFeedback.lightImpact();
+     context.push(path);
+@@ -95,31 +69,10 @@
+         ),
+       ],
+     );
+   }
+ 
+-  List<HydratedRoutine>? _prevRoutines;
+-  String? _cachedSummary;
+-
+-  String _summaryLine(List<HydratedRoutine> routines) {
+-    if (identical(_prevRoutines, routines) && _cachedSummary != null) {
+-      return _cachedSummary!;
+-    }
+-    final count = routines.length;
+-    final label = count == 1 ? 'routine' : 'routines';
+-    DateTime? maxLast;
+-    for (final r in routines) {
+-      final d = r.lastTrained;
+-      if (d != null && (maxLast == null || d.isAfter(maxLast))) maxLast = d;
+-    }
+-    _prevRoutines = routines;
+-    _cachedSummary = maxLast == null
+-        ? '$count $label'
+-        : '$count $label  ·  Last trained ${relativeDay(maxLast)}';
+-    return _cachedSummary!;
+-  }
+-
+   @override
+   Widget build(BuildContext context) {
+     final routinesAsync = ref.watch(hydratedRoutinesProvider);
+     final surface = context.surface;
+     // Reserve room for the nav bar and, when a session is live, the floating
+@@ -151,103 +104,103 @@
+                       routinesAsync.maybeWhen(
+                         data: (routines) => routines.isEmpty
+                             ? const SizedBox.shrink()
+                             : Padding(
+                                 padding: const EdgeInsets.only(top: 4),
+-                                child: Text(_summaryLine(routines),
++                                child: Text(
++                                    '${routines.length} saved ${routines.length == 1 ? 'routine' : 'routines'}',
+                                     style: AppText.body(
+                                         color: surface.textSecondary)),
+                               ),
+                         orElse: () => const SizedBox.shrink(),
+                       ),
+                     ],
+                   ),
+                 ),
+               ),
+ 
+-              // ── Action row: New (solid accent CTA) + Explore (neutral) ──
+               SliverToBoxAdapter(
+-                child: Padding(
+-                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+-                  child: Row(
+-                    children: [
+-                      Expanded(
+-                        child: SecondaryButton(
+-                          label: 'New Routine',
+-                          icon: Icons.add_rounded,
+-                          solid:
+-                              true, // solid accent fill + onAccent label - the one focal CTA
+-                          onPressed: _openCreateRoutineSheet,
+-                        ),
+-                      ),
+-                      const SizedBox(width: 12),
+-                      Expanded(
+-                        child: SecondaryButton(
+-                          label: 'Explore',
+-                          icon: Icons.explore_rounded,
+-                          onPressed: () => _push('/routines/explore'),
+-                        ),
+-                      ),
+-                    ],
+-                  ),
+-                ),
+-              ),
+-
+-              // ── The list itself — no section header, no disclosure toggle ──
++                  child: Padding(
++                      padding: const EdgeInsets.symmetric(horizontal: 16),
++                      child: Wrap(spacing: AppSpacing.x4, children: [
++                        TextButton(
++                            onPressed: _openCreateRoutineSheet,
++                            style: TextButton.styleFrom(
++                                foregroundColor: surface.textSecondary),
++                            child: const Text('New routine')),
++                        TextButton(
++                            onPressed: () => _push('/routines/explore'),
++                            style: TextButton.styleFrom(
++                                foregroundColor: surface.textSecondary),
++                            child: const Text('Explore')),
++                      ]))),
++              const SliverToBoxAdapter(
++                  child: Padding(
++                      padding: const EdgeInsets.all(16),
++                      child: AppCard(
++                          radius: AppRadius.card,
++                          child: TrainingLaunchpad(compact: true)))),
++
++              // Source-program groups and standalone saved plans.
+               ...routinesAsync.when(
+                 loading: () => [
+                   const SliverPadding(
+                     padding: EdgeInsets.fromLTRB(16, 14, 16, 0),
+                     sliver: SliverToBoxAdapter(child: _RoutinesLoading()),
+                   ),
+                 ],
+-                error: (e, _) => [
+-                  SliverPadding(
+-                    padding: const EdgeInsets.fromLTRB(16, 14, 16, 0),
+-                    sliver: SliverToBoxAdapter(
+-                      child: Semantics(
+-                        liveRegion: true,
+-                        child: AsyncErrorState(
+-                          message: "Couldn't load your routines.",
+-                          onRetry: () =>
+-                              ref.invalidate(hydratedRoutinesProvider),
+-                        ),
+-                      ),
+-                    ),
+-                  ),
+-                ],
++                // The launchpad already owns this read failure and its Retry action.
++                error: (e, _) => [],
+                 data: (routines) {
+                   if (routines.isEmpty) {
+                     return [
+                       SliverPadding(
+                         padding: const EdgeInsets.fromLTRB(16, 14, 16, 0),
+                         sliver: SliverToBoxAdapter(
+-                          child: _EmptyRoutines(onNew: _openCreateRoutineSheet),
++                          child: Text(
++                              'Browse programs or use New routine to add your own plan.',
++                              style:
++                                  AppText.body(color: surface.textSecondary)),
+                         ),
+                       ),
+                     ];
+                   }
++                  final grouping = groupProgramRoutines(routines
++                      .map((r) => ProgramRoutineRef.fromRoutine(r.routine))
++                      .toList());
++                  final byId = {for (final r in routines) r.routine.id: r};
+                   return [
+-                    SliverPadding(
+-                      padding: const EdgeInsets.fromLTRB(16, 14, 16, 0),
+-                      sliver: SliverList(
+-                        delegate: SliverChildBuilderDelegate(
+-                          (context, i) => Padding(
+-                            padding: const EdgeInsets.only(bottom: 12),
+-                            child: RoutineCard(
+-                              routineId: routines[i].routine.id,
+-                              routineName: routines[i].routine.name,
+-                              exerciseNames: routines[i].exerciseNames,
+-                              muscleTags: routines[i].muscleTags,
+-                              lastTrained: routines[i].lastTrained,
+-                              onStartTap: () => _startRoutine(routines[i]),
+-                            ),
+-                          ),
+-                          childCount: routines.length,
+-                        ),
+-                      ),
+-                    ),
++                    for (final group in grouping.programs) ...[
++                      SliverToBoxAdapter(
++                          child: Padding(
++                              key: ValueKey('program-${group.key}'),
++                              padding:
++                                  const EdgeInsets.fromLTRB(16, 16, 16, 12),
++                              child: Column(
++                                  crossAxisAlignment: CrossAxisAlignment.start,
++                                  children: [
++                                    Text(group.name,
++                                        style: AppText.sectionHeading(
++                                            color: surface.textPrimary)),
++                                    Text(
++                                        'Source program · ${group.routines.length} saved routines',
++                                        style: AppText.meta(
++                                            color: surface.textSecondary)),
++                                  ]))),
++                      _routineList(
++                          group.routines.map((r) => byId[r.id]!).toList()),
++                    ],
++                    if (grouping.standalone.isNotEmpty) ...[
++                      SliverToBoxAdapter(
++                          child: Padding(
++                              padding: const EdgeInsets.all(16),
++                              child: Text('Standalone routines',
++                                  style: AppText.sectionHeading(
++                                      color: surface.textPrimary)))),
++                      _routineList(
++                          grouping.standalone.map((r) => byId[r.id]!).toList()),
++                    ],
+                   ];
+                 },
+               ),
+ 
+               SliverToBoxAdapter(child: SizedBox(height: bottomInset + 16)),
+@@ -255,10 +208,25 @@
+           ),
+         ),
+       ),
+     );
+   }
++
++  Widget _routineList(List<HydratedRoutine> routines) => SliverPadding(
++      padding: const EdgeInsets.symmetric(horizontal: 16),
++      sliver: SliverList(
++          delegate: SliverChildBuilderDelegate(
++              (context, i) => Padding(
++                  padding: const EdgeInsets.only(bottom: 12),
++                  child: RoutineCard(
++                      routineId: routines[i].routine.id,
++                      routineName: routines[i].routine.name,
++                      exerciseNames: routines[i].exerciseNames,
++                      muscleTags: routines[i].muscleTags,
++                      lastTrained: routines[i].lastTrained,
++                      onStartTap: () => _startRoutine(routines[i]))),
++              childCount: routines.length)));
+ }
+ 
+ /// Skeleton feed shown while routines load — mirrors the real card proportions.
+ class _RoutinesLoading extends StatelessWidget {
+   const _RoutinesLoading();
+@@ -324,40 +292,5 @@
+         ],
+       ),
+     );
+   }
+ }
+-
+-/// Calm empty state with an inline CTA (not just a text void).
+-class _EmptyRoutines extends StatelessWidget {
+-  final VoidCallback onNew;
+-  const _EmptyRoutines({required this.onNew});
+-
+-  @override
+-  Widget build(BuildContext context) {
+-    final accent = context.accent;
+-    return AppCard(
+-      radius: AppRadius.card,
+-      child: Column(
+-        crossAxisAlignment: CrossAxisAlignment.start,
+-        children: [
+-          Text('No routines yet', style: AppText.exerciseName()),
+-          const SizedBox(height: 4),
+-          Text('Save a workout as a routine, or create one above.',
+-              style: AppText.meta()),
+-          const SizedBox(height: 12),
+-          TextButton.icon(
+-            onPressed: onNew,
+-            style: TextButton.styleFrom(
+-              padding: EdgeInsets.zero,
+-              minimumSize: const Size(0, 44),
+-              foregroundColor: accent.light,
+-            ),
+-            icon: Icon(Icons.add_rounded, size: 18, color: accent.light),
+-            label:
+-                Text('New Routine', style: AppText.button(color: accent.light)),
+-          ),
+-        ],
+-      ),
+-    );
+-  }
+-}
+diff --git a/test/upgrade/session_2_acceptance_render_test.dart b/test/upgrade/session_2_acceptance_render_test.dart
+--- /dev/null
++++ b/test/upgrade/session_2_acceptance_render_test.dart
+@@ -0,0 +1,120 @@
++import 'dart:io';
++import 'dart:ui' as ui;
++import 'package:flutter/material.dart';
++import 'package:flutter/rendering.dart';
++import 'package:flutter_test/flutter_test.dart';
++import 'package:gymlog/core/database/daos/routines_dao.dart';
++import 'package:gymlog/core/theme/theme_palette.dart';
++import 'package:shared_preferences/shared_preferences.dart';
++import 'session_1_render_test.dart' show loadSessionFonts;
++import 'session_2_fixtures.dart';
++
++void main() {
++  setUpAll(loadSessionFonts);
++  final iteration = Platform.environment['SESSION_2_ITERATION'] ?? '1';
++  for (final palette in ThemePalette.values) {
++    for (final scale in [1.0, 1.6]) {
++      for (final name in [
++        'chosen',
++        'no-choice',
++        'deleted-choice',
++        'empty-choice',
++        'new-user',
++        'no-routine',
++        'inactive-return',
++        'low-data',
++        'error',
++        'previous-error',
++        'choice-error',
++        'loading'
++      ]) {
++        for (final screen in ['home', 'library']) {
++          final id = '$screen-$name-${palette.name}-${scale}x-synthetic';
++          testWidgets(id, (tester) async {
++            tester.view.physicalSize = const ui.Size(390, 844);
++            tester.view.devicePixelRatio = 1;
++            addTearDown(tester.view.resetPhysicalSize);
++            addTearDown(tester.view.resetDevicePixelRatio);
++            final state = switch (name) {
++              'new-user' => LaunchState.empty,
++              'no-routine' => LaunchState.noRoutine,
++              'inactive-return' => LaunchState.inactive,
++              'low-data' => LaunchState.lowData,
++              'error' => LaunchState.error,
++              _ => LaunchState.returning,
++            };
++            final Object? chosen = switch (name) {
++              'no-choice' || 'new-user' || 'no-routine' => null,
++              'deleted-choice' => 'deleted',
++              'choice-error' => 7,
++              'low-data' => 'sample-4',
++              _ => 'sample-0',
++            };
++            SharedPreferences.setMockInitialValues({
++              'first_run_tour_step': -1,
++              if (chosen != null) 'training_routine:local': chosen
++            });
++            List<HydratedRoutine>? routines;
++            if (name == 'empty-choice') {
++              final plans = sampleRoutines(state);
++              routines = [
++                HydratedRoutine(
++                    routine: plans.first.routine,
++                    lastTrained: plans.first.lastTrained,
++                    exerciseNames: [],
++                    exerciseIds: []),
++                ...plans.skip(1)
++              ];
++            }
++            const key = ValueKey('session-2-live-capture');
++            await tester.pumpWidget(launchFixtureApp(
++                child: currentLaunchScreen(screen),
++                palette: palette,
++                scale: scale,
++                screen: screen,
++                fixtureState: state,
++                routines: routines,
++                previousError: name == 'previous-error',
++                routinesLoading: name == 'loading',
++                captureKey: key));
++            if (name == 'loading') {
++              await tester.pump(const Duration(milliseconds: 300));
++            } else {
++              await tester.pumpAndSettle();
++            }
++            expect(tester.takeException(), isNull);
++            await expectLater(find.byKey(key),
++                matchesGoldenFile('goldens/session-2/$id.png'));
++            await _capture(tester, key, 'iteration-$iteration/$id');
++            if (name == 'chosen' && screen == 'home') {
++              await tester
++                  .tap(find.byKey(const ValueKey('change-training-routine')));
++              await tester.pumpAndSettle();
++              expect(tester.takeException(), isNull);
++              final chooserId = 'chooser-${palette.name}-${scale}x-synthetic';
++              await expectLater(find.byKey(key),
++                  matchesGoldenFile('goldens/session-2/$chooserId.png'));
++              await _capture(tester, key, 'iteration-$iteration/$chooserId');
++            }
++            await tester.pumpWidget(const SizedBox.shrink());
++            await tester.pumpAndSettle();
++          });
++        }
++      }
++    }
++  }
++}
++
++Future<void> _capture(WidgetTester tester, Key key, String id) async {
++  if (Platform.environment['SESSION_2_SAVE_AFTER'] != '1') return;
++  await tester.runAsync(() async {
++    final boundary =
++        tester.renderObject<RenderRepaintBoundary>(find.byKey(key));
++    final image = await boundary.toImage();
++    final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
++    final file = File('docs/upgrade/renders/session-2/after/$id.png');
++    await file.parent.create(recursive: true);
++    await file.writeAsBytes(bytes!.buffer.asUint8List());
++    image.dispose();
++  });
++}
+diff --git a/test/upgrade/session_2_fixtures.dart b/test/upgrade/session_2_fixtures.dart
+--- a/test/upgrade/session_2_fixtures.dart
++++ b/test/upgrade/session_2_fixtures.dart
+@@ -10,10 +10,11 @@
+ import 'package:gymlog/features/auth/presentation/providers/auth_provider.dart';
+ import 'package:gymlog/features/home/presentation/providers/home_provider.dart';
+ import 'package:gymlog/features/home/presentation/screens/home_screen.dart';
+ import 'package:gymlog/features/profile/presentation/providers/profile_stats_provider.dart';
+ import 'package:gymlog/features/routines/presentation/providers/routines_provider.dart';
++import 'package:gymlog/features/routines/presentation/providers/training_launch_provider.dart';
+ import 'package:gymlog/features/workout/presentation/screens/workout_screen.dart';
+ import 'package:gymlog/shared/providers/bottom_chrome_provider.dart';
+ import 'package:gymlog/shared/widgets/bottom_nav_bar.dart';
+ 
+ enum LaunchState { returning, inactive, empty, noRoutine, lowData, error }
+@@ -163,18 +164,47 @@
+     {required Widget child,
+     required ThemePalette palette,
+     required double scale,
+     required String screen,
+     required LaunchState fixtureState,
++    List<HydratedRoutine>? routines,
++    Stream<List<HydratedRoutine>>? routineStream,
++    bool previousError = false,
++    bool routinesLoading = false,
+     required Key captureKey}) {
+   return ProviderScope(
+       overrides: [
+         authProvider.overrideWithValue(null),
++        trainingClockProvider.overrideWithValue(() => session2Date),
++        routineDetailProvider.overrideWith(
++            (ref, id) => Stream.value(sampleRoutineDetail(id, fixtureState))),
++        routineLastSetsProvider.overrideWith((ref, id) => previousError
++            ? Stream.error(StateError('Synthetic previous-set read failure'))
++            : Stream.value(fixtureState == LaunchState.lowData ||
++                    fixtureState == LaunchState.empty
++                ? <String, List<LastSessionSetData>>{}
++                : {
++                    '1': [
++                      const LastSessionSetData(
++                          setNumber: 1, weightKg: 60, reps: 8)
++                    ],
++                    '11': [
++                      const LastSessionSetData(
++                          setNumber: 1, weightKg: 50, reps: 10)
++                    ],
++                    '21': [
++                      const LastSessionSetData(
++                          setNumber: 1, weightKg: 80, reps: 5)
++                    ],
++                  })),
+         hydratedRoutinesProvider.overrideWith((ref) =>
+-            fixtureState == LaunchState.error
+-                ? Stream.error(StateError('Synthetic routine read failure'))
+-                : Stream.value(sampleRoutines(fixtureState))),
++            routineStream ??
++            (routinesLoading
++                ? const Stream.empty()
++                : fixtureState == LaunchState.error
++                    ? Stream.error(StateError('Synthetic routine read failure'))
++                    : Stream.value(routines ?? sampleRoutines(fixtureState)))),
+         workoutHistoryProvider
+             .overrideWith((ref) => _SampleHistory(ref, fixtureState)),
+         streakStatsProvider.overrideWithValue(StreakStats(
+             workoutsThisWeek: fixtureState == LaunchState.returning ||
+                     fixtureState == LaunchState.noRoutine
+@@ -199,5 +229,32 @@
+ Widget currentLaunchScreen(String screen) => Scaffold(
+       body: screen == 'home' ? const HomeScreen() : const WorkoutScreen(),
+       bottomNavigationBar:
+           BottomNavBar(currentIndex: screen == 'home' ? 0 : 1, onTap: (_) {}),
+     );
++
++HydratedRoutineDetail? sampleRoutineDetail(String id, LaunchState state) {
++  HydratedRoutine? plan;
++  for (final r in sampleRoutines(state)) {
++    if (r.routine.id == id) plan = r;
++  }
++  if (plan == null) return null;
++  return HydratedRoutineDetail(routine: plan.routine, exercises: [
++    for (var i = 0; i < plan.exerciseIds.length; i++)
++      HydratedRoutineExercise(
++          exercise: Exercise(
++              id: plan.exerciseIds[i],
++              name: plan.exerciseNames[i],
++              bodyPart: plan.muscleTags.isEmpty ? '' : plan.muscleTags.first,
++              equipment: id == 'sample-4' ? '' : 'Barbell',
++              target: '',
++              isCustom: false,
++              measurementType:
++                  id == 'sample-4' ? 'distance' : 'weight_and_reps'),
++          config: RoutineExercise(
++              id: '$id-$i',
++              routineDayId: 'fixture-day-$id',
++              exerciseId: plan.exerciseIds[i],
++              orderIndex: i,
++              defaultSets: id == 'sample-4' ? 1 : 3)),
++  ]);
++}
+diff --git a/test/upgrade/session_2_launch_actions_test.dart b/test/upgrade/session_2_launch_actions_test.dart
+--- /dev/null
++++ b/test/upgrade/session_2_launch_actions_test.dart
+@@ -0,0 +1,139 @@
++import 'dart:async';
++import 'package:flutter_riverpod/flutter_riverpod.dart';
++import 'package:flutter_test/flutter_test.dart';
++import 'package:gymlog/core/database/daos/routines_dao.dart';
++import 'package:gymlog/features/routines/presentation/providers/training_launch_provider.dart';
++import 'package:gymlog/features/workout/domain/active_workout_state.dart';
++import 'package:gymlog/features/workout/presentation/providers/active_workout_provider.dart';
++import 'package:shared_preferences/shared_preferences.dart';
++import 'package:supabase_flutter/supabase_flutter.dart';
++import 'package:gymlog/features/auth/presentation/providers/auth_provider.dart';
++import 'session_2_fixtures.dart';
++
++class _Active extends ActiveWorkoutNotifier {
++  _Active(super.ref);
++  int starts = 0;
++  void resumeFixture() => state = ActiveWorkoutState(
++      id: 'existing', startTime: session2Date, exercises: const []);
++  @override
++  Future<void> startWorkout(
++      {String? routineId,
++      String? name,
++      List<WorkoutExerciseState>? initialExercises}) async {
++    starts++;
++    state = ActiveWorkoutState(
++        id: 'new',
++        startTime: session2Date,
++        routineId: routineId,
++        name: name,
++        exercises: initialExercises ?? const []);
++  }
++}
++
++void main() {
++  setUp(() => SharedPreferences.setMockInitialValues({}));
++  ProviderContainer container(
++      Future<HydratedRoutineDetail?> Function(String) load) {
++    final c = ProviderContainer(overrides: [
++      activeWorkoutProvider.overrideWith(_Active.new),
++      trainingRoutineLoaderProvider.overrideWithValue(load),
++    ]);
++    addTearDown(c.dispose);
++    return c;
++  }
++
++  test('account switch during routine lookup cannot launch old-account content',
++      () async {
++    final lookup = Completer<HydratedRoutineDetail?>();
++    Future<HydratedRoutineDetail?> loader(String _) => lookup.future;
++    User user(String id) => User(
++        id: id,
++        appMetadata: {},
++        userMetadata: {},
++        aud: 'authenticated',
++        createdAt: '2026-01-01');
++    final c = ProviderContainer(overrides: [
++      activeWorkoutProvider.overrideWith(_Active.new),
++      trainingRoutineLoaderProvider.overrideWithValue(loader),
++      authProvider.overrideWithValue(user('a'))
++    ]);
++    addTearDown(c.dispose);
++    final start = c.read(trainingLauncherProvider).startRoutine('sample-0');
++    c.updateOverrides([
++      activeWorkoutProvider.overrideWith(_Active.new),
++      trainingRoutineLoaderProvider.overrideWithValue(loader),
++      authProvider.overrideWithValue(user('b'))
++    ]);
++    lookup.complete(sampleRoutineDetail('sample-0', LaunchState.returning));
++    expect(await start, LaunchResult.unavailable);
++    expect((c.read(activeWorkoutProvider.notifier) as _Active).starts, 0);
++  });
++
++  test('valid routine Start seeds the saved plan and freestyle is explicit',
++      () async {
++    final c = container(
++        (_) async => sampleRoutineDetail('sample-0', LaunchState.returning));
++    expect(await c.read(trainingLauncherProvider).startRoutine('sample-0'),
++        LaunchResult.started);
++    final active = c.read(activeWorkoutProvider)!;
++    expect(active.routineId, 'sample-0');
++    expect(active.name, 'Push A');
++    expect(active.exercises.length, 5);
++    expect(active.exercises.first.sets.length, 3);
++    final freestyle =
++        container((_) async => throw StateError('should not load'));
++    expect(await freestyle.read(trainingLauncherProvider).startFreestyle(),
++        LaunchResult.started);
++    expect(freestyle.read(activeWorkoutProvider)?.routineId, isNull);
++  });
++
++  test('deleted or emptied routine cannot start a session', () async {
++    final c = container((_) async => null);
++    expect(await c.read(trainingLauncherProvider).startRoutine('deleted'),
++        LaunchResult.unavailable);
++    final empty = HydratedRoutineDetail(
++        routine: sampleRoutines(LaunchState.returning).first.routine,
++        exercises: []);
++    final emptyContainer = container((_) async => empty);
++    expect(
++        await emptyContainer
++            .read(trainingLauncherProvider)
++            .startRoutine('empty'),
++        LaunchResult.unavailable);
++    expect((c.read(activeWorkoutProvider.notifier) as _Active).starts, 0);
++    expect(
++        (emptyContainer.read(activeWorkoutProvider.notifier) as _Active).starts,
++        0);
++  });
++  test('a read failure never creates an empty workout', () async {
++    final c = container((_) async => throw StateError('read failed'));
++    await expectLater(
++        c.read(trainingLauncherProvider).startRoutine('r'), throwsStateError);
++    expect((c.read(activeWorkoutProvider.notifier) as _Active).starts, 0);
++  });
++  test('existing workout is resumed rather than overwritten', () async {
++    final c = container((_) async => throw StateError('must not read'));
++    final active = c.read(activeWorkoutProvider.notifier) as _Active;
++    active.resumeFixture();
++    expect(await c.read(trainingLauncherProvider).startRoutine('r'),
++        LaunchResult.resume);
++    expect(await c.read(trainingLauncherProvider).startFreestyle(),
++        LaunchResult.resume);
++    expect(c.read(activeWorkoutProvider)?.id, 'existing');
++    expect(active.starts, 0);
++  });
++  test(
++      'concurrent Start and an active workout appearing during lookup are guarded',
++      () async {
++    final lookup = Completer<HydratedRoutineDetail?>();
++    final c = container((_) => lookup.future);
++    final first = c.read(trainingLauncherProvider).startRoutine('r');
++    expect(await c.read(trainingLauncherProvider).startRoutine('r'),
++        LaunchResult.busy);
++    final active = c.read(activeWorkoutProvider.notifier) as _Active;
++    active.resumeFixture();
++    lookup.complete(null);
++    expect(await first, LaunchResult.resume);
++    expect(active.starts, 0);
++  });
++}
+diff --git a/test/upgrade/session_2_launchpad_test.dart b/test/upgrade/session_2_launchpad_test.dart
+--- /dev/null
++++ b/test/upgrade/session_2_launchpad_test.dart
+@@ -0,0 +1,208 @@
++import 'package:flutter/material.dart';
++import 'dart:async';
++import 'dart:ui' as ui;
++import 'package:gymlog/shared/widgets/ui/primary_button.dart';
++import 'package:gymlog/core/database/daos/routines_dao.dart';
++import 'package:flutter_test/flutter_test.dart';
++import 'package:gymlog/core/theme/theme_palette.dart';
++import 'package:shared_preferences/shared_preferences.dart';
++import 'session_2_fixtures.dart';
++
++void main() {
++  Future<void> render(WidgetTester tester, String screen,
++      {Object? chosen = 'sample-0',
++      List<HydratedRoutine>? routines,
++      Stream<List<HydratedRoutine>>? routineStream,
++      bool previousError = false,
++      LaunchState state = LaunchState.returning}) async {
++    await tester.pumpWidget(const SizedBox.shrink());
++    await tester.pumpAndSettle();
++    SharedPreferences.setMockInitialValues({
++      'first_run_tour_step': -1,
++      if (chosen != null) 'training_routine:local': chosen,
++    });
++    tester.view.physicalSize = const Size(390, 844);
++    tester.view.devicePixelRatio = 1;
++    addTearDown(tester.view.resetPhysicalSize);
++    addTearDown(tester.view.resetDevicePixelRatio);
++    await tester.pumpWidget(launchFixtureApp(
++        child: currentLaunchScreen(screen),
++        palette: ThemePalette.higgsfield,
++        scale: 1,
++        screen: screen,
++        fixtureState: state,
++        routines: routines,
++        routineStream: routineStream,
++        previousError: previousError,
++        captureKey: const ValueKey('launchpad-test')));
++    if (routineStream == null) {
++      await tester.pumpAndSettle();
++    } else {
++      await tester.pump(const Duration(milliseconds: 100));
++    }
++  }
++
++  for (final screen in ['home', 'library']) {
++    testWidgets('$screen labels a one-set plan in the singular',
++        (tester) async {
++      await render(tester, screen,
++          chosen: 'sample-4', state: LaunchState.lowData);
++      expect(find.text('1 exercise · 1 planned set'), findsOneWidget);
++    });
++    testWidgets('$screen guards an emptied chosen plan', (tester) async {
++      final plans = sampleRoutines(LaunchState.returning);
++      await render(tester, screen, routines: [
++        HydratedRoutine(
++            routine: plans.first.routine,
++            lastTrained: plans.first.lastTrained,
++            exerciseNames: [],
++            exerciseIds: []),
++        ...plans.skip(1)
++      ]);
++      expect(find.text('Your chosen routine has no exercises'), findsOneWidget);
++      expect(find.byKey(const ValueKey('chosen-routine-start')), findsNothing);
++      expect(find.text('Add exercises'), findsOneWidget);
++      expect(find.text('Push A'), findsWidgets);
++      expect(find.text('Last trained 4 days ago'), findsWidgets);
++    });
++    testWidgets('$screen choice read failure is distinct from no choice',
++        (tester) async {
++      await render(tester, screen, chosen: 7);
++      expect(find.text("Couldn't load your training choice"), findsOneWidget);
++      expect(find.text('Choose a routine for today'), findsNothing);
++    });
++    testWidgets('$screen uses explicit choice and one-tap Change',
++        (tester) async {
++      await render(tester, screen);
++      expect(find.text('Start Push A'), findsWidgets);
++      expect(find.text('Last trained 4 days ago'), findsWidgets);
++      expect(find.byKey(const ValueKey('change-training-routine')),
++          findsOneWidget);
++      await tester.tap(find.byKey(const ValueKey('change-training-routine')));
++      await tester.pumpAndSettle();
++      expect(find.text('Change routine'), findsOneWidget);
++      expect(find.text('Next in your program'), findsOneWidget);
++      expect(find.text('Follows Pull A in saved order'), findsOneWidget);
++    });
++
++    testWidgets('$screen never chooses the first routine by inference',
++        (tester) async {
++      await render(tester, screen, chosen: null);
++      expect(find.text('Choose a routine for today'), findsOneWidget);
++      expect(find.byKey(const ValueKey('chosen-routine-start')), findsNothing);
++      expect(find.text('Next in your program'), findsNothing);
++    });
++
++    testWidgets('$screen shows a deleted choice without replacing it',
++        (tester) async {
++      await render(tester, screen, chosen: 'deleted');
++      expect(find.text('Chosen routine unavailable'), findsOneWidget);
++      expect(find.byKey(const ValueKey('chosen-routine-start')), findsNothing);
++    });
++
++    testWidgets('$screen new user has a designed first-session entry',
++        (tester) async {
++      await render(tester, screen, chosen: null, state: LaunchState.empty);
++      expect(find.text('Your first session starts here'), findsOneWidget);
++      expect(find.byKey(const ValueKey('chosen-routine-start')), findsNothing);
++    });
++  }
++
++  testWidgets('Empty Library prioritizes browsing and avoids duplicate errors',
++      (tester) async {
++    await render(tester, 'library', chosen: null, state: LaunchState.empty);
++    expect(
++        find.widgetWithText(PrimaryButton, 'Browse programs'), findsOneWidget);
++    await render(tester, 'library', state: LaunchState.error);
++    expect(find.text('Try again'), findsOneWidget);
++  });
++  testWidgets('Change exposes the selected choice to assistive technology',
++      (tester) async {
++    final handle = tester.ensureSemantics();
++    try {
++      await render(tester, 'home');
++      await tester.tap(find.byKey(const ValueKey('change-training-routine')));
++      await tester.pumpAndSettle();
++      expect(
++          tester
++              .getSemantics(find.byKey(const ValueKey('choose-sample-0')))
++              .flagsCollection
++              .isSelected,
++          ui.Tristate.isTrue);
++    } finally {
++      handle.dispose();
++    }
++  });
++
++  testWidgets(
++      'Home preserves freestyle during library read failure and deleted-only state',
++      (tester) async {
++    await render(tester, 'home', state: LaunchState.error);
++    expect(find.text('Log a different workout'), findsOneWidget);
++    await render(tester, 'home', chosen: 'deleted', routines: []);
++    expect(find.text('Log a different workout'), findsOneWidget);
++  });
++
++  testWidgets(
++      'Change uses bounded searchable choices and preserves choice on read failure',
++      (tester) async {
++    final stream = StreamController<List<HydratedRoutine>>.broadcast();
++    addTearDown(stream.close);
++    await render(tester, 'home', routineStream: stream.stream);
++    stream.add(sampleRoutines(LaunchState.returning));
++    await tester.pumpAndSettle();
++    await tester.tap(find.byKey(const ValueKey('change-training-routine')));
++    await tester.pumpAndSettle();
++    expect(find.byType(ListTile), findsNWidgets(4));
++    await tester.enterText(find.byType(TextField), 'Outdoor');
++    await tester.pumpAndSettle();
++    expect(find.byType(ListTile), findsOneWidget);
++    expect(find.byKey(const ValueKey('choose-sample-4')), findsOneWidget);
++    stream.addError(StateError('read failed'));
++    await tester.pumpAndSettle();
++    expect(find.text('Routine choices unavailable'), findsOneWidget);
++  });
++
++  testWidgets(
++      'Previous-set read failure does not invent no history or block Start',
++      (tester) async {
++    await render(tester, 'home', previousError: true);
++    expect(find.text('Previous-set context unavailable'), findsOneWidget);
++    expect(find.text('No previous logged set for this plan'), findsNothing);
++    expect(find.text('Start Push A'), findsOneWidget);
++  });
++
++  testWidgets('Home keeps freestyle and History secondary and accessible',
++      (tester) async {
++    await render(tester, 'home');
++    expect(find.text('Log a different workout'), findsOneWidget);
++    expect(find.text('History'), findsWidgets);
++  });
++
++  testWidgets('Home has no guilt language on an inactive return',
++      (tester) async {
++    await render(tester, 'home', state: LaunchState.inactive);
++    expect(find.text('Train at your own pace'), findsOneWidget);
++    expect(find.textContaining('lost'), findsNothing);
++    expect(find.text('Start Push A'), findsOneWidget);
++  });
++
++  testWidgets('Change selection updates both launch surfaces and persists',
++      (tester) async {
++    await render(tester, 'home');
++    await tester.tap(find.byKey(const ValueKey('change-training-routine')));
++    await tester.pumpAndSettle();
++    await tester.tap(find.byKey(const ValueKey('choose-sample-2')));
++    await tester.pumpAndSettle();
++    expect(find.text('Start Legs A'), findsOneWidget);
++    final prefs = await SharedPreferences.getInstance();
++    expect(prefs.getString('training_routine:local'), 'sample-2');
++  });
++
++  testWidgets('Library groups the program and quiets creation', (tester) async {
++    await render(tester, 'library');
++    expect(find.byKey(const ValueKey('program-sample-ppl')), findsOneWidget);
++    expect(find.widgetWithText(TextButton, 'New routine'), findsOneWidget);
++    expect(find.byKey(const ValueKey('chosen-routine-start')), findsOneWidget);
++  });
++}
+diff --git a/test/upgrade/session_2_render_test.dart b/test/upgrade/session_2_render_test.dart
+--- a/test/upgrade/session_2_render_test.dart
++++ b/test/upgrade/session_2_render_test.dart
+@@ -89,10 +89,15 @@
+     final boundary =
+         tester.renderObject<RenderRepaintBoundary>(find.byKey(key));
+     final image = await boundary.toImage();
+     final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
+     final file = File('docs/upgrade/renders/session-2/$id.png');
++    // Keep the recorded pre-build evidence immutable once app implementation starts.
++    if (id.startsWith('before/') && file.existsSync()) {
++      image.dispose();
++      return;
++    }
+     await file.parent.create(recursive: true);
+     await file.writeAsBytes(bytes!.buffer.asUint8List());
+     if (issues.isNotEmpty) {
+       await File('${file.path}.issues.txt').writeAsString(issues.join('\n\n'));
+     }
+diff --git a/test/upgrade/session_2_training_logic_test.dart b/test/upgrade/session_2_training_logic_test.dart
+--- /dev/null
++++ b/test/upgrade/session_2_training_logic_test.dart
+@@ -0,0 +1,133 @@
++import 'package:flutter_test/flutter_test.dart';
++import 'package:flutter_riverpod/flutter_riverpod.dart';
++import 'package:gymlog/core/database/daos/routines_dao.dart';
++import 'package:gymlog/core/database/daos/workouts_dao.dart';
++import 'package:gymlog/core/models/measurement_type.dart';
++import 'package:gymlog/features/routines/presentation/providers/training_launch_provider.dart';
++import 'package:shared_preferences/shared_preferences.dart';
++import 'session_2_fixtures.dart';
++
++void main() {
++  test('duplicate imported day positions do not produce a next suggestion', () {
++    final plans = sampleRoutines(LaunchState.returning);
++    final duplicate = HydratedRoutine(
++        routine: plans.first.routine.copyWith(id: 'duplicate-day'),
++        exerciseNames: plans.first.exerciseNames,
++        exerciseIds: plans.first.exerciseIds);
++    expect(
++        nextProgramSuggestion([...plans, duplicate],
++            sampleHistory(LaunchState.returning), 'sample-0'),
++        isNull);
++  });
++  test(
++      'logged context converts weight and speech; non-weighted context stays typed',
++      () {
++    const set = LastSessionSetData(setNumber: 1, weightKg: 60, reps: 8);
++    expect(launchSetText(MeasurementType.weightAndReps, set, 'lbs'),
++        '132.3 lbs × 8');
++    expect(
++        launchSetText(MeasurementType.weightAndReps, set, 'lbs', spoken: true),
++        '132.3 pounds for 8 reps');
++    expect(launchSetText(MeasurementType.repsOnly, set, 'lbs'), '8 reps');
++    const hold = LastSessionSetData(setNumber: 1, reps: 90);
++    expect(launchSetText(MeasurementType.duration, hold, 'lbs'), '1:30');
++    expect(launchSetText(MeasurementType.duration, hold, 'lbs', spoken: true),
++        '90 seconds');
++    const walk = LastSessionSetData(setNumber: 1, weightKg: 1200, reps: 120);
++    expect(
++        launchSetText(MeasurementType.distance, walk, 'lbs'), '1.2 km · 2:00');
++    expect(launchSetText(MeasurementType.distance, walk, 'lbs', spoken: true),
++        '1200 metres, 120 seconds');
++    expect(launchSetText(MeasurementType.unknown, set, 'lbs'), isNull);
++    expect(launchSetText(MeasurementType.weightAndReps, hold, 'lbs'), isNull);
++  });
++  setUp(() => SharedPreferences.setMockInitialValues({}));
++  test('no routine becomes chosen until an explicit successful write',
++      () async {
++    final choice = ChosenRoutineNotifier('owner');
++    await choice.load();
++    expect(choice.state.valueOrNull, isNull);
++    await choice.choose('sample-0');
++    expect(choice.state.valueOrNull, 'sample-0');
++    final restart = ChosenRoutineNotifier('owner');
++    await restart.load();
++    expect(restart.state.valueOrNull, 'sample-0');
++    final another = ChosenRoutineNotifier('another');
++    await another.load();
++    expect(another.state.valueOrNull, isNull);
++    choice.dispose();
++    restart.dispose();
++    another.dispose();
++  });
++  test('a wrong-type stored choice is an error, not an empty account',
++      () async {
++    SharedPreferences.setMockInitialValues({'training_routine:owner': 7});
++    final choice = ChosenRoutineNotifier('owner');
++    await choice.load();
++    expect(choice.state.hasError, isTrue);
++    choice.dispose();
++  });
++  test(
++      '14-day return uses the most recent completed session, not chosen plan age',
++      () {
++    final history = sampleHistory(LaunchState.returning);
++    final last = history.first.session.endedAt!;
++    expect(
++        isInactiveReturn(history, last.add(const Duration(days: 14))), isTrue);
++    expect(
++        isInactiveReturn(
++            history,
++            last
++                .add(const Duration(days: 14))
++                .subtract(const Duration(seconds: 1))),
++        isFalse);
++    expect(isInactiveReturn([], session2Date), isFalse);
++    expect(isInactiveReturn(history.reversed.toList(), session2Date), isFalse);
++  });
++  test('relative training date does not claim a future date is today', () {
++    expect(
++        trainingAgeLabel(
++            session2Date.subtract(const Duration(days: 4)), session2Date),
++        'Last trained 4 days ago');
++    expect(trainingAgeLabel(null, session2Date),
++        'No sessions logged for this routine');
++    expect(
++        trainingAgeLabel(
++            session2Date.add(const Duration(days: 1)), session2Date),
++        contains('3 Oct 2026'));
++  });
++  test('next-program suggestion uses explicit linked saved order and wraps',
++      () {
++    final routines = sampleRoutines(LaunchState.returning);
++    final suggestion = nextProgramSuggestion(
++        routines, sampleHistory(LaunchState.returning), 'sample-0');
++    expect(suggestion?.routine.routine.id, 'sample-2');
++    expect(suggestion?.previousRoutineName, 'Pull A');
++    expect(suggestion?.programName, 'Push / Pull / Legs');
++  });
++  test('legacy names, partial imports and empty days cannot imply next order',
++      () {
++    final routines = sampleRoutines(LaunchState.returning);
++    final history = sampleHistory(LaunchState.returning);
++    expect(
++        nextProgramSuggestion(routines.take(2).toList(), history, 'sample-0'),
++        isNull);
++    final legacy = [
++      for (final r in routines)
++        HydratedRoutine(
++            routine: r.routine.copyWith(notes: ''),
++            exerciseNames: r.exerciseNames,
++            exerciseIds: r.exerciseIds)
++    ];
++    expect(nextProgramSuggestion(legacy, history, 'sample-0'), isNull);
++    final empty = [
++      for (final r in routines)
++        r.routine.id == 'sample-2'
++            ? HydratedRoutine(
++                routine: r.routine, exerciseNames: [], exerciseIds: [])
++            : r
++    ];
++    expect(nextProgramSuggestion(empty, history, 'sample-0'), isNull);
++    expect(nextProgramSuggestion(routines, [], 'sample-0'), isNull);
++  });
++}
+
+# New binary golden files (identical capture IDs in after/):
+test/upgrade/goldens/session-2/chooser-blazeOrange-1.0x-synthetic.png SHA256 44205f92b21ec131b923df34418da08917b7c476561d9f54ebad5b93eb6f47fd
+test/upgrade/goldens/session-2/chooser-blazeOrange-1.6x-synthetic.png SHA256 cfb2b4cb079439f3b8967b2868eb38b377b0f2fa84712ccde72394f2608ad108
+test/upgrade/goldens/session-2/chooser-higgsfield-1.0x-synthetic.png SHA256 4eaa2cd615643e7bda257c0c3ca8c36cb6e943bf317d11284ffa9014885b4e79
+test/upgrade/goldens/session-2/chooser-higgsfield-1.6x-synthetic.png SHA256 21fa7f52ac44d663a0858ad86683682e44b55f8f32ca41f2e26ec10fc47bc3d6
+test/upgrade/goldens/session-2/chooser-neonCyan-1.0x-synthetic.png SHA256 3968a370909c24cff6929a02a2ad9717af321a478f60e7bd74321e2c8e273779
+test/upgrade/goldens/session-2/chooser-neonCyan-1.6x-synthetic.png SHA256 a8ffa0a2f7999ec6c588ae706dbfe5ae3e696f7f8c7299720d0c8989e811bc6a
+test/upgrade/goldens/session-2/chooser-neonMagenta-1.0x-synthetic.png SHA256 d4418015ad8d2b697615acb31cb739cd9a15edce33982689509577ccb42a31f8
+test/upgrade/goldens/session-2/chooser-neonMagenta-1.6x-synthetic.png SHA256 dc1a6f08c751c9f4794612e14ac4fd0fa6dfb6bf9fe70b121d40b9ceb770718b
+test/upgrade/goldens/session-2/chooser-neonPurple-1.0x-synthetic.png SHA256 f1dd93bc47e5288f7641055b8bcdf6b4d2b95b2100333a96a56a0d17359af57f
+test/upgrade/goldens/session-2/chooser-neonPurple-1.6x-synthetic.png SHA256 6d9d07c76994cf5327d5e6c83dce5ef7dde838e589ce9ea101da7626786eaaa4
+test/upgrade/goldens/session-2/chooser-white-1.0x-synthetic.png SHA256 1e618b8c71d1e7f7c1c05a3136d9073a4e8f549e3ea33c2ac069523c102df9b5
+test/upgrade/goldens/session-2/chooser-white-1.6x-synthetic.png SHA256 4594f25df8dfa8d606de214563daf7fa51fce5a7cc131146744bdb439ded5f0d
+test/upgrade/goldens/session-2/home-choice-error-blazeOrange-1.0x-synthetic.png SHA256 10480c6854e023b5282ff6a2f4bdc9d147aa55920a8b021dd3ce5fc94ccc9762
+test/upgrade/goldens/session-2/home-choice-error-blazeOrange-1.6x-synthetic.png SHA256 bc745dc45cde8e47943a8b1d6a30903794cdcc387fbd1878ce389cecd53bfd93
+test/upgrade/goldens/session-2/home-choice-error-higgsfield-1.0x-synthetic.png SHA256 217a906f47cbed13b3a9d423605e485bdc7af2076358935d89449718ad0cc1f6
+test/upgrade/goldens/session-2/home-choice-error-higgsfield-1.6x-synthetic.png SHA256 93a4418edafff7c8101b454bcb3c0b7535304ed74348d6b2b35b8eb85ae4d0ea
+test/upgrade/goldens/session-2/home-choice-error-neonCyan-1.0x-synthetic.png SHA256 b9b20b12206afb731e49bed23d74eac07bd92ff69c9a891118912589336e3da2
+test/upgrade/goldens/session-2/home-choice-error-neonCyan-1.6x-synthetic.png SHA256 c24c2260e791876ceb9d4dfca8aad8b6819b151bbe0468a4d63ea4cabcf7fa7d
+test/upgrade/goldens/session-2/home-choice-error-neonMagenta-1.0x-synthetic.png SHA256 67359fd27c5e09a2d65461cdde73262f18cb47cdc6e804aab70d96c9898ec1f0
+test/upgrade/goldens/session-2/home-choice-error-neonMagenta-1.6x-synthetic.png SHA256 2ec611b6ce78e02be236d1e34e10a7952588d4e6d8d301b7ce220c82a165906e
+test/upgrade/goldens/session-2/home-choice-error-neonPurple-1.0x-synthetic.png SHA256 48f1c56388120a678990dde5792916abc73c958cf0a389309e2f7a35ef60028f
+test/upgrade/goldens/session-2/home-choice-error-neonPurple-1.6x-synthetic.png SHA256 6f54ade766f78e909b9a5757099929748987053dccb26cf0a88bb3b2e593f9a3
+test/upgrade/goldens/session-2/home-choice-error-white-1.0x-synthetic.png SHA256 54ebbfb633e32786448e6a47f414e9afbc005fd482609686f85d0c99472fd853
+test/upgrade/goldens/session-2/home-choice-error-white-1.6x-synthetic.png SHA256 bc9c0ccb410a9b3eee67660bf09bd51c05a319cf2a6d73fc44416fe3400859ae
+test/upgrade/goldens/session-2/home-chosen-blazeOrange-1.0x-synthetic.png SHA256 8d5a9ffa616be52dc9fcf031899278ead7d8d9ee8b5e383ed078afad1cc3fd45
+test/upgrade/goldens/session-2/home-chosen-blazeOrange-1.6x-synthetic.png SHA256 45c6fd39cdf2d1ea2a972ad804622bba1012bcf5b2df1f0d58d007181f6c1559
+test/upgrade/goldens/session-2/home-chosen-higgsfield-1.0x-synthetic.png SHA256 3e0ac80240e119a75466183d6c36408eff3fcd4028beb84ff6b07abde3c2529a
+test/upgrade/goldens/session-2/home-chosen-higgsfield-1.6x-synthetic.png SHA256 9e3cfe9efeef5b44725a7356597290e19e793514abcfa92c72384d4451b1e1ad
+test/upgrade/goldens/session-2/home-chosen-neonCyan-1.0x-synthetic.png SHA256 b8c20188edd255ad9399c0aff7e6ef6494e87ddfe722aced7cb52c1bcbb7bab7
+test/upgrade/goldens/session-2/home-chosen-neonCyan-1.6x-synthetic.png SHA256 ffa7d4cb5b8b989c0a8ec73277915beee46814e601b3c16167eccea337eab4e5
+test/upgrade/goldens/session-2/home-chosen-neonMagenta-1.0x-synthetic.png SHA256 b75531166c8bd62736acfff90601c2a3e9a8d94c3f05516294af44ee3fab4b64
+test/upgrade/goldens/session-2/home-chosen-neonMagenta-1.6x-synthetic.png SHA256 edc569b18d3e339e0950a39052f7cdc09a56ae02010ba7f4c250d457724d2ccd
+test/upgrade/goldens/session-2/home-chosen-neonPurple-1.0x-synthetic.png SHA256 180e33e62f1bf1cc0fc4989479ec1765e3474aaddbd4b4fce89ae0f237612040
+test/upgrade/goldens/session-2/home-chosen-neonPurple-1.6x-synthetic.png SHA256 5ea99e2f74ea8a6b938f7314893ffbad54fdf5e15179a9ebf89b79434fe20e41
+test/upgrade/goldens/session-2/home-chosen-white-1.0x-synthetic.png SHA256 bcd73ba1b72d977187479ac7283c2342cab9a324ed48773c79090d577966ece9
+test/upgrade/goldens/session-2/home-chosen-white-1.6x-synthetic.png SHA256 fe531d8fa40f2e30a42c50ad1ea42f5b60f245d68819918aa73d0299b62b2bad
+test/upgrade/goldens/session-2/home-deleted-choice-blazeOrange-1.0x-synthetic.png SHA256 beb31146b3112eca154dcea2a920052a1b09bc56f8306385054fe096490d6e6c
+test/upgrade/goldens/session-2/home-deleted-choice-blazeOrange-1.6x-synthetic.png SHA256 f8ae056d97828a0bb7c3553c8f9fb275def80efaef3e5fb6df329ed3b98ec33e
+test/upgrade/goldens/session-2/home-deleted-choice-higgsfield-1.0x-synthetic.png SHA256 448ae8f2b13376d2691acac61994fd3dba856f97a606baf23931ca1a4504fc66
+test/upgrade/goldens/session-2/home-deleted-choice-higgsfield-1.6x-synthetic.png SHA256 fc98d71868bfc46efc27b56607677e2d781cc2f83448735e11238d7cdf19e35c
+test/upgrade/goldens/session-2/home-deleted-choice-neonCyan-1.0x-synthetic.png SHA256 5d9251f777f26e5d63af1abda66b724d83630b11f7e6e45062385aea7c258493
+test/upgrade/goldens/session-2/home-deleted-choice-neonCyan-1.6x-synthetic.png SHA256 a6388ca369b3ca1b7a2ae49d6daf4b37d2a1d48d44a82bbf27a454f80af5d746
+test/upgrade/goldens/session-2/home-deleted-choice-neonMagenta-1.0x-synthetic.png SHA256 6df816307577dc55e60b3e605327bdf5991369367ae0dc24679afd1e4fa31606
+test/upgrade/goldens/session-2/home-deleted-choice-neonMagenta-1.6x-synthetic.png SHA256 56f31f76569f710c7afaf122f20ca9a917876499128fbc211b0e4ea6b160e2dc
+test/upgrade/goldens/session-2/home-deleted-choice-neonPurple-1.0x-synthetic.png SHA256 d77100f1f06c3a755132dc703d3a48171ff1183b62bc6b46c0db1357c66376d2
+test/upgrade/goldens/session-2/home-deleted-choice-neonPurple-1.6x-synthetic.png SHA256 45dfdc5501a37ee3861d3f42c9eb9b41f8addf3dea1e721ac7bf2d5577bd00d4
+test/upgrade/goldens/session-2/home-deleted-choice-white-1.0x-synthetic.png SHA256 736fee9d7a7ed07a7b6b9942f4ea84401f3ab205496385d0fe3d5ee42709cfff
+test/upgrade/goldens/session-2/home-deleted-choice-white-1.6x-synthetic.png SHA256 5c026c8e96e86a7c2a15a30b3b0e407bc70e7c45021ccca5f431a1eb29ce1f38
+test/upgrade/goldens/session-2/home-empty-choice-blazeOrange-1.0x-synthetic.png SHA256 10037b025a98e6fef2efb171dc1f43ffada56d9315b02988f04bdd76da0f6b8d
+test/upgrade/goldens/session-2/home-empty-choice-blazeOrange-1.6x-synthetic.png SHA256 be92d88992a6ae6f6889f59a4a8d9fc7d1c06bf095067cb3c5bcf238bb816f6d
+test/upgrade/goldens/session-2/home-empty-choice-higgsfield-1.0x-synthetic.png SHA256 207f1eb13deefc807811e30c849c94f71cfbaa29cd5f221b5b9219f438a8aad5
+test/upgrade/goldens/session-2/home-empty-choice-higgsfield-1.6x-synthetic.png SHA256 2b6050d89af59e15730fe8aff43698f9d8584c2be20c92b5651a68449946d8ab
+test/upgrade/goldens/session-2/home-empty-choice-neonCyan-1.0x-synthetic.png SHA256 e6370d4e356105aab40fec9825734f7b54253243e2eb870594af1ac1f7414627
+test/upgrade/goldens/session-2/home-empty-choice-neonCyan-1.6x-synthetic.png SHA256 5c12ac9eae979a9a4ef386317e5e138bd7d7308e455fafb7aec9e92279bd1fde
+test/upgrade/goldens/session-2/home-empty-choice-neonMagenta-1.0x-synthetic.png SHA256 0aad477e504d49eb60da77844601dbb93a06a30a66f280ea7f44c6bcd56b37c8
+test/upgrade/goldens/session-2/home-empty-choice-neonMagenta-1.6x-synthetic.png SHA256 3951dc27ee17490e482798c9fa41577f7206e1078e2797612c16e7fcc5ec6358
+test/upgrade/goldens/session-2/home-empty-choice-neonPurple-1.0x-synthetic.png SHA256 e2615cea06da23ba9b863377848d5d4de1cb0506477871395ea476a9a07f1808
+test/upgrade/goldens/session-2/home-empty-choice-neonPurple-1.6x-synthetic.png SHA256 8a697b820a6450638e6b9ed4f4659b06a40d08610f9c08b58e551e62f245947c
+test/upgrade/goldens/session-2/home-empty-choice-white-1.0x-synthetic.png SHA256 458eeff945fa3a04d1c625846ab2fc4bbab7ec676819f8d19c1373c39627e154
+test/upgrade/goldens/session-2/home-empty-choice-white-1.6x-synthetic.png SHA256 c8d749bdd2edb7c3e203ccc80d2e782875ca39c2edad69858682bb3882bb160d
+test/upgrade/goldens/session-2/home-error-blazeOrange-1.0x-synthetic.png SHA256 fbfac8e2a3a6a9fdef1a528968d2007234a69ff1ea739a0eddcb9dec212772a9
+test/upgrade/goldens/session-2/home-error-blazeOrange-1.6x-synthetic.png SHA256 b51feb881d2ab707be087bc87c0db9ef764a2bed6860ef91aa2e9c0348ddc89d
+test/upgrade/goldens/session-2/home-error-higgsfield-1.0x-synthetic.png SHA256 f4e20fe5abcb061f9d3d2b27c413a7cef1f815988fc2a6989e4342c0453d2a80
+test/upgrade/goldens/session-2/home-error-higgsfield-1.6x-synthetic.png SHA256 3beb79a20bc3246876b6c3c5c5054158c3f63411a81b06342ef41d041bacc784
+test/upgrade/goldens/session-2/home-error-neonCyan-1.0x-synthetic.png SHA256 07b9fe131a2b3fae5e8e3da2afb6df8df4741d7379032fa015662794dec70d04
+test/upgrade/goldens/session-2/home-error-neonCyan-1.6x-synthetic.png SHA256 698a24de9ed39381a66560db698f5ef09e35051764844d7103b40d69df4a1d62
+test/upgrade/goldens/session-2/home-error-neonMagenta-1.0x-synthetic.png SHA256 05106c08fe38562cdc662e4a638365679e1077b44a060970a20d7d92afc821e7
+test/upgrade/goldens/session-2/home-error-neonMagenta-1.6x-synthetic.png SHA256 72f9664a87fa7ec9f142830be7c82eb13263bcd462ff39baa2e05799c28f0c4e
+test/upgrade/goldens/session-2/home-error-neonPurple-1.0x-synthetic.png SHA256 3f39a60b9dfdc70b40823ddfab0dffa56b9617e6a252c4306f57f6847dd5db20
+test/upgrade/goldens/session-2/home-error-neonPurple-1.6x-synthetic.png SHA256 8869736d4b65a0e2b9a6a6f2230ce05808cda7079c3a8ea36b6f66a48026f7f7
+test/upgrade/goldens/session-2/home-error-white-1.0x-synthetic.png SHA256 2f2932276badacc2ef4cd9f3495be08a3217245e0394380e1d7bdf878463e1d2
+test/upgrade/goldens/session-2/home-error-white-1.6x-synthetic.png SHA256 56dec1b181bee11c19c2fe410993fab4155223a79bcf1cfba04c55968442ac02
+test/upgrade/goldens/session-2/home-inactive-return-blazeOrange-1.0x-synthetic.png SHA256 7b510797c3243cc6e69245288b9725d819c56358dbdabf7aab578767df1d4688
+test/upgrade/goldens/session-2/home-inactive-return-blazeOrange-1.6x-synthetic.png SHA256 3da62c385c0cc77e9cb4b1db2257dac5bfe6de54cdce73eee9141d7d824191d3
+test/upgrade/goldens/session-2/home-inactive-return-higgsfield-1.0x-synthetic.png SHA256 38fe65317525dfb5e1349712f2c06a79105414cda80c02e5cd690e6d9910530f
+test/upgrade/goldens/session-2/home-inactive-return-higgsfield-1.6x-synthetic.png SHA256 099d19b8f42ed8002aec216ee936186cd340a62ade75319a11d529561efaf471
+test/upgrade/goldens/session-2/home-inactive-return-neonCyan-1.0x-synthetic.png SHA256 c0ddeed6b502b0a81deea2c98000694c76ac3a657f6cd52ab392c030500feace
+test/upgrade/goldens/session-2/home-inactive-return-neonCyan-1.6x-synthetic.png SHA256 dd21b2d5bbd8297049f4d6621c433214744f0d4557d066eb9b2687600224326a
+test/upgrade/goldens/session-2/home-inactive-return-neonMagenta-1.0x-synthetic.png SHA256 bed4b31a7512078583c4e2d3215985bb495b75ea2d904cfb1c9ffec2449c4e1e
+test/upgrade/goldens/session-2/home-inactive-return-neonMagenta-1.6x-synthetic.png SHA256 f6c4c0b541ececb2cb68d7ac88555c42b4b940dea66cda277fc1c2aa5146f0c8
+test/upgrade/goldens/session-2/home-inactive-return-neonPurple-1.0x-synthetic.png SHA256 3c7856c41a98622c45b744ac5e1d52067fca29024ffb76bf417e8e39293c5021
+test/upgrade/goldens/session-2/home-inactive-return-neonPurple-1.6x-synthetic.png SHA256 741a29a1795bfe6d07eab3cb011aadd9bb7471bbf7d1ac8c9b17b4755eb5ae79
+test/upgrade/goldens/session-2/home-inactive-return-white-1.0x-synthetic.png SHA256 593c51bcc000d4e4b984773b26b3b8b83437896632ad5aece9bdc59265c4a820
+test/upgrade/goldens/session-2/home-inactive-return-white-1.6x-synthetic.png SHA256 72efc82c4ffb93b89f661f3045dda9c032e154212c5b1c7761a601a5aaffea82
+test/upgrade/goldens/session-2/home-loading-blazeOrange-1.0x-synthetic.png SHA256 ea3a310194dd58956289277301d4fc2a1043bcf0aded0253036b489f1b117568
+test/upgrade/goldens/session-2/home-loading-blazeOrange-1.6x-synthetic.png SHA256 bb65a1acdc363d2a85b321b2f3130c1ef6325b7dd83fd2312930e2ca4a0c13b0
+test/upgrade/goldens/session-2/home-loading-higgsfield-1.0x-synthetic.png SHA256 03289262d7f9dde93e78cee19f715b06cd7d17372e4bc9343f3c55309089f04b
+test/upgrade/goldens/session-2/home-loading-higgsfield-1.6x-synthetic.png SHA256 31d849a2a1a3db4e7805945aed83224ff5b242ce0c8bf5e450ba542f65cc7178
+test/upgrade/goldens/session-2/home-loading-neonCyan-1.0x-synthetic.png SHA256 50ca5c1039696394bf154826c38ac652c1de3bdbd8d6486c8e5403a05c28e9be
+test/upgrade/goldens/session-2/home-loading-neonCyan-1.6x-synthetic.png SHA256 2b635c495790768d13671e57b2880684071d27ef8e0412babc751853edd8aa51
+test/upgrade/goldens/session-2/home-loading-neonMagenta-1.0x-synthetic.png SHA256 34db4c202b37fe2f761d4f8409b13a656719bbd3b659447e1fcf251f171d3a47
+test/upgrade/goldens/session-2/home-loading-neonMagenta-1.6x-synthetic.png SHA256 c30e7fe525bc05b8d0b6872273b63524fb66c99f08bc47e972137c5a1838b5ac
+test/upgrade/goldens/session-2/home-loading-neonPurple-1.0x-synthetic.png SHA256 b3dbed9b74aa7a1c4d3cff5ee5a6b083b4d1ef09337e42f19b23b929a49338ff
+test/upgrade/goldens/session-2/home-loading-neonPurple-1.6x-synthetic.png SHA256 c1b2685d2eeaacff89d20b342036d66b607f53089ed6126d856accb1ab4df042
+test/upgrade/goldens/session-2/home-loading-white-1.0x-synthetic.png SHA256 34f57c8f4e18a95185800ba251b08c723510b45435381972f0a86e47444b9b66
+test/upgrade/goldens/session-2/home-loading-white-1.6x-synthetic.png SHA256 a1a6d31227bd0ee66756ae95a3b6330703d8ffbc16c9ee1bf83a39b8ee09edb1
+test/upgrade/goldens/session-2/home-low-data-blazeOrange-1.0x-synthetic.png SHA256 59a67f5134e5d1082107e4dd103d594783d3fd43bd602cf049b3cb25a01e5ac2
+test/upgrade/goldens/session-2/home-low-data-blazeOrange-1.6x-synthetic.png SHA256 8a1f5512dc7e33effbce3392a5125b0200094c85443d233c5f80108568cc044b
+test/upgrade/goldens/session-2/home-low-data-higgsfield-1.0x-synthetic.png SHA256 45c08a23cb2c8b27ebed65d6c829b6ec1e123979e27b4d44031dc9c9734cf17a
+test/upgrade/goldens/session-2/home-low-data-higgsfield-1.6x-synthetic.png SHA256 362253fc1bdb435208a5142dc94a3669da7d8cc491084fb2a8d05c73658d2bbb
+test/upgrade/goldens/session-2/home-low-data-neonCyan-1.0x-synthetic.png SHA256 b889905366fb1eca35922ed9dcc5f787212c87f87298e73f095df29785231661
+test/upgrade/goldens/session-2/home-low-data-neonCyan-1.6x-synthetic.png SHA256 49799dd2e72f56b67b2bb9635631f4d40620ebdf3bf1ccdfb701ed1451fccfe1
+test/upgrade/goldens/session-2/home-low-data-neonMagenta-1.0x-synthetic.png SHA256 edb55519736af845260233bd4141cdc350885c777599a65f15036d6dbdec06f5
+test/upgrade/goldens/session-2/home-low-data-neonMagenta-1.6x-synthetic.png SHA256 6229d4fed01d7b008b8b2ca889e424a11d0fa0d1df574fd05627879d0093df01
+test/upgrade/goldens/session-2/home-low-data-neonPurple-1.0x-synthetic.png SHA256 e901ec4611ff1603e12d402e5bff4b7e1b1f5a5105af501d2da7566416b6e345
+test/upgrade/goldens/session-2/home-low-data-neonPurple-1.6x-synthetic.png SHA256 816cca16ee10e0af6ff1237932e999273d1ff7218e303437e9cc18641cd4d2aa
+test/upgrade/goldens/session-2/home-low-data-white-1.0x-synthetic.png SHA256 46704be85655ba94256c2636f2d3a4e6c94e52aebde5a0a264fe376f94a1303f
+test/upgrade/goldens/session-2/home-low-data-white-1.6x-synthetic.png SHA256 a0602fef44765964d5f694fee558a1e14b72fe4663b645e9c6715801a9049220
+test/upgrade/goldens/session-2/home-new-user-blazeOrange-1.0x-synthetic.png SHA256 3d106a62d70cbf78150d9e309df42dbd59fd70311cfdb2631d2fb9f27e13b7db
+test/upgrade/goldens/session-2/home-new-user-blazeOrange-1.6x-synthetic.png SHA256 de173703a5212cd65a74d7cc2d25a125c8ea37b3e5ea0bf6dc74337cbd8b4499
+test/upgrade/goldens/session-2/home-new-user-higgsfield-1.0x-synthetic.png SHA256 cc172eaa5534ef73ff5f8bcea43ad4e835d588e7c823453887b4144756670d13
+test/upgrade/goldens/session-2/home-new-user-higgsfield-1.6x-synthetic.png SHA256 6f988aa22e9065c49c00cadd74e6851bd0b7161d46cedeb88a640af46363afc2
+test/upgrade/goldens/session-2/home-new-user-neonCyan-1.0x-synthetic.png SHA256 21ed4bcbce7d7749fa781fe14ac6bcd11f0ce2505eb327d942bad5e3ac6c29cf
+test/upgrade/goldens/session-2/home-new-user-neonCyan-1.6x-synthetic.png SHA256 6689268a85670b4a99e1e738995de4efbf07d2729ae2ccc5b411e757e7f0e9be
+test/upgrade/goldens/session-2/home-new-user-neonMagenta-1.0x-synthetic.png SHA256 8f22fee7c7d73f1775aee18be49ea55a7c465ec269eec805655a0bd4b75d76bd
+test/upgrade/goldens/session-2/home-new-user-neonMagenta-1.6x-synthetic.png SHA256 4a24de91a57fd5852588c0a44da652b374506216cba9603ff570d00d197fe614
+test/upgrade/goldens/session-2/home-new-user-neonPurple-1.0x-synthetic.png SHA256 69530d8f653d89f6c4786cb03290928eb46a06eb9a3c54c7aeffbe8dcc84522e
+test/upgrade/goldens/session-2/home-new-user-neonPurple-1.6x-synthetic.png SHA256 b71b589976857e1d0b7f6e83c87030b088e92fc40dd7fef0ba2f6ebedba51415
+test/upgrade/goldens/session-2/home-new-user-white-1.0x-synthetic.png SHA256 909af237c5c57e44220914ddf2a1540deac3d50cc279624c3d65bd727d94fcfa
+test/upgrade/goldens/session-2/home-new-user-white-1.6x-synthetic.png SHA256 2cf2260f125426054ba3be02b717d945bab55379b2572d516f67ebb0e67ee866
+test/upgrade/goldens/session-2/home-no-choice-blazeOrange-1.0x-synthetic.png SHA256 42aa65ec5f3ae8768dc91de8735d153a7bb8dd9a2d509189a76acf20b98c915f
+test/upgrade/goldens/session-2/home-no-choice-blazeOrange-1.6x-synthetic.png SHA256 bf5b65c7fe2782f5d55b5b228cae727615de94edc8c2d3d666f31053485c44be
+test/upgrade/goldens/session-2/home-no-choice-higgsfield-1.0x-synthetic.png SHA256 3039d47349926efc5e61e8f35dda023d5619bc8ea90c239ff40f08e2ca5e1ae7
+test/upgrade/goldens/session-2/home-no-choice-higgsfield-1.6x-synthetic.png SHA256 c88fdc4abb7123552a419492a2d6a1d0ee70db5ac81b9ea5ffc827139e512967
+test/upgrade/goldens/session-2/home-no-choice-neonCyan-1.0x-synthetic.png SHA256 a9177a6aad2c41f98aca0cd469cc2943ecb02afd84f3e4b39ca8677924424d34
+test/upgrade/goldens/session-2/home-no-choice-neonCyan-1.6x-synthetic.png SHA256 7a9bdbc928e52d72ca4e2cbbb91edd583169286fac4f07186e8a9d594bef39a9
+test/upgrade/goldens/session-2/home-no-choice-neonMagenta-1.0x-synthetic.png SHA256 b0c81ac2697fb91757b32aa0bf1847b8a6b34edb9cb6308ef5c08888219ec054
+test/upgrade/goldens/session-2/home-no-choice-neonMagenta-1.6x-synthetic.png SHA256 74fdbdb20bab03cc118a4783484ba8b9f8b1ff9505f8efaf9ae356b9adf78d47
+test/upgrade/goldens/session-2/home-no-choice-neonPurple-1.0x-synthetic.png SHA256 ae31eb21f99b563c98653cfacf8fb51807d96199ab6ab272f14a4e23b14746b4
+test/upgrade/goldens/session-2/home-no-choice-neonPurple-1.6x-synthetic.png SHA256 1f14a6987465d07a119338220623ebea11a114ee57730591e1faad2f5f39c4f5
+test/upgrade/goldens/session-2/home-no-choice-white-1.0x-synthetic.png SHA256 f15486bbc63d78dc6148997552f0aa39630c7d214159ebf972f694685cd0588a
+test/upgrade/goldens/session-2/home-no-choice-white-1.6x-synthetic.png SHA256 0266b0d238caff38bb37abc5da10f7962ee7a6ca5a0f048ae3e8f1f3e640ea84
+test/upgrade/goldens/session-2/home-no-routine-blazeOrange-1.0x-synthetic.png SHA256 be75ba0ed39f3fbc60b5cf2b3a709a7e30402924b7b5f909b88b5eb4732717bb
+test/upgrade/goldens/session-2/home-no-routine-blazeOrange-1.6x-synthetic.png SHA256 0dc9822caff6b0f94f93e398ff0b199ca3b978b6d29a0198fe783c4a6d6c4572
+test/upgrade/goldens/session-2/home-no-routine-higgsfield-1.0x-synthetic.png SHA256 c7e3eb9c2ebc047c5355add13c5735964bb6cc3d8e5456be33c572adf7e4d4d7
+test/upgrade/goldens/session-2/home-no-routine-higgsfield-1.6x-synthetic.png SHA256 a36a3d21047c094d42486f52e915ea26e9941d725f378c8ab429abbc2fbbb9d8
+test/upgrade/goldens/session-2/home-no-routine-neonCyan-1.0x-synthetic.png SHA256 90134dad89b13330e8c4891bee2bb7efabb516360ce9eb30f7a2e895d43cee82
+test/upgrade/goldens/session-2/home-no-routine-neonCyan-1.6x-synthetic.png SHA256 a1b363cbbc6a0d480f419c26ef69362f9b3492235fdc5cfcae01743878723f2d
+test/upgrade/goldens/session-2/home-no-routine-neonMagenta-1.0x-synthetic.png SHA256 32086ae9631dde00a1a29cb2b52443e6ba97845c74f75ad2ea08c7f2294a3d06
+test/upgrade/goldens/session-2/home-no-routine-neonMagenta-1.6x-synthetic.png SHA256 087e82a80f457483e238578b8998577e27027d098234852d76b47ec0ff892c32
+test/upgrade/goldens/session-2/home-no-routine-neonPurple-1.0x-synthetic.png SHA256 4f9a21be84c3928d63531d1133e65e5a551364cbd4e8f3e27009ea6af39f6a18
+test/upgrade/goldens/session-2/home-no-routine-neonPurple-1.6x-synthetic.png SHA256 d282e757f7c27bc4cffe95f662a69eee7a26d2af8c3e7cc84caca72dc9d8aea8
+test/upgrade/goldens/session-2/home-no-routine-white-1.0x-synthetic.png SHA256 cc631b25cb7db2024690f57e4eda140dd2ab9de188c94c6261a81c7424fb4a37
+test/upgrade/goldens/session-2/home-no-routine-white-1.6x-synthetic.png SHA256 3cda787090e5a7c844a26a64666b5e65edabeca47284b12f3f7f5b3df8e3e5aa
+test/upgrade/goldens/session-2/home-previous-error-blazeOrange-1.0x-synthetic.png SHA256 6f877ba9d0fa5433eeb236332f4b3d49fb9535ebf71443eeb264a0adba06b2b6
+test/upgrade/goldens/session-2/home-previous-error-blazeOrange-1.6x-synthetic.png SHA256 78681b9cb7c46592c5dd28cf400e97668133bedebca7dae9166a190d9d9bf031
+test/upgrade/goldens/session-2/home-previous-error-higgsfield-1.0x-synthetic.png SHA256 8181c8a5b57668c23cf5e70d5ebe8b2452bbf75b5bdfb6e6b71e4dd6ca04ba03
+test/upgrade/goldens/session-2/home-previous-error-higgsfield-1.6x-synthetic.png SHA256 12d24b433b1990189303edee28641fd29cade053080d8211690b186a4fae2e68
+test/upgrade/goldens/session-2/home-previous-error-neonCyan-1.0x-synthetic.png SHA256 d4438435c738b099c269c6813a1a82c4992ea22ef2d4425efee82e1f1e7fc4d7
+test/upgrade/goldens/session-2/home-previous-error-neonCyan-1.6x-synthetic.png SHA256 e85e1398918ba57df73d8628fd816f6560b1520588b85ccbd6a4a42783f2ffbb
+test/upgrade/goldens/session-2/home-previous-error-neonMagenta-1.0x-synthetic.png SHA256 45abc575647a9ed2cf69fd3a07e524a54de427724b263f5c0d87f5aa0f87acc8
+test/upgrade/goldens/session-2/home-previous-error-neonMagenta-1.6x-synthetic.png SHA256 be933a878200da2143f7b8a8118634787cf956dc014d67d6059e01162058ec40
+test/upgrade/goldens/session-2/home-previous-error-neonPurple-1.0x-synthetic.png SHA256 9191dff2c2468bfa0afa2bb7fa795b7bc7de5d416efba4043e99cc90817bdb2c
+test/upgrade/goldens/session-2/home-previous-error-neonPurple-1.6x-synthetic.png SHA256 4f22ae64558dd3db60697b7c0b0a1c31f756559c339fa6dd58e09892373e1687
+test/upgrade/goldens/session-2/home-previous-error-white-1.0x-synthetic.png SHA256 5f3d5490b91cc3cb380e2364fdf384e823b918ff913cbf8e7b51fd01cb887995
+test/upgrade/goldens/session-2/home-previous-error-white-1.6x-synthetic.png SHA256 4761a10ae7c867e3ad6f5c74c38df2b56cd0adc55af3c2218c392212d2eb36b7
+test/upgrade/goldens/session-2/library-choice-error-blazeOrange-1.0x-synthetic.png SHA256 af42b1b256ab71180a1e4c171b9937fef2b557d4a87fb85c76caf8678dbbf93d
+test/upgrade/goldens/session-2/library-choice-error-blazeOrange-1.6x-synthetic.png SHA256 8de964d8a8b59d806d23ca3f81e3536100595d7a35abd7ad0d4f71b02dd4cdea
+test/upgrade/goldens/session-2/library-choice-error-higgsfield-1.0x-synthetic.png SHA256 fbcc81cd06e9f578bc30d3560a226e91acf4b322252f89152ee94e2c17895f9a
+test/upgrade/goldens/session-2/library-choice-error-higgsfield-1.6x-synthetic.png SHA256 0bbfe0a9171f5b023fcc0c5a151a83e9d55616345c3f1b5d93cc2e4d763a9f9e
+test/upgrade/goldens/session-2/library-choice-error-neonCyan-1.0x-synthetic.png SHA256 38c81f23b2a70d049e235d3306c3878cafa14c2a1ba9e044b38e808c1c776ac6
+test/upgrade/goldens/session-2/library-choice-error-neonCyan-1.6x-synthetic.png SHA256 be04b18b0d1ea042a4bfec899608f323fed5d2f2ce2c3c1e5fb40df47d0ba669
+test/upgrade/goldens/session-2/library-choice-error-neonMagenta-1.0x-synthetic.png SHA256 898784c93367f72b7f7dde654383a80c8e3a5f914205dd34f18b03ec33c0c92d
+test/upgrade/goldens/session-2/library-choice-error-neonMagenta-1.6x-synthetic.png SHA256 a71089817a65bc09f6ac2159baea0f8cb368a417c8c9eb18b90c54db7e755979
+test/upgrade/goldens/session-2/library-choice-error-neonPurple-1.0x-synthetic.png SHA256 c8413eafe376eb3d6e0c49fd88b330cdc080239d921d7e9aafeac7982fb9a9c8
+test/upgrade/goldens/session-2/library-choice-error-neonPurple-1.6x-synthetic.png SHA256 b93fd1a31b40dfbffd69a84d840299ea8c10cdc76763fc1ec372466e03d40f22
+test/upgrade/goldens/session-2/library-choice-error-white-1.0x-synthetic.png SHA256 589edb30dfbe4063bddbaef709385619ef0a11a1cead56de874c9dba42ac99fa
+test/upgrade/goldens/session-2/library-choice-error-white-1.6x-synthetic.png SHA256 d017c59b7dc9779ebc6fc02f81f761de363b6f7194561ea7fd4888737f000994
+test/upgrade/goldens/session-2/library-chosen-blazeOrange-1.0x-synthetic.png SHA256 7996c14405317212f5303c7f605e0da002fbd4db038996a7fdf44c48c31b81c9
+test/upgrade/goldens/session-2/library-chosen-blazeOrange-1.6x-synthetic.png SHA256 52200fab7e7655975b38f9de072fe41a5da2465080300cf68e4e21d22684d757
+test/upgrade/goldens/session-2/library-chosen-higgsfield-1.0x-synthetic.png SHA256 4e53ca3910dbaaac291d225c9e606991a32d4b875c32cbec2831d7c5457324b3
+test/upgrade/goldens/session-2/library-chosen-higgsfield-1.6x-synthetic.png SHA256 b19516b4c85b461b4f5da02752ac849dbb778df5a5e157ae12bd287478f70862
+test/upgrade/goldens/session-2/library-chosen-neonCyan-1.0x-synthetic.png SHA256 a9012f2b45cfc8dfaa2eb1a43828babd71a0f722d7d3e2e10a5dca35a0066abd
+test/upgrade/goldens/session-2/library-chosen-neonCyan-1.6x-synthetic.png SHA256 319776584ccb27901e2720300ab4f022129e146ca9d41ae0e9f606a7cc6c0c19
+test/upgrade/goldens/session-2/library-chosen-neonMagenta-1.0x-synthetic.png SHA256 e6c1f098917ae8166f0f8e80b42a58bb8c8fd1cad7f74012d7486f83927bc8b8
+test/upgrade/goldens/session-2/library-chosen-neonMagenta-1.6x-synthetic.png SHA256 8dbe2d8108346038d64d2d55818187e902f8957951af25fe99462fd2a258fac7
+test/upgrade/goldens/session-2/library-chosen-neonPurple-1.0x-synthetic.png SHA256 3d93ec585a93fc5215e2c806129dc71e38cf54915e50f6cfbe5f602188c03288
+test/upgrade/goldens/session-2/library-chosen-neonPurple-1.6x-synthetic.png SHA256 dea91bb53d87febb1ba60f5a1f70ffc01508dc58513b0caf6b76cf77823420d3
+test/upgrade/goldens/session-2/library-chosen-white-1.0x-synthetic.png SHA256 a9a234503e26062b99311d5f2a2a8fbdd5920abecbe0ea246bd5b3f49465ae5b
+test/upgrade/goldens/session-2/library-chosen-white-1.6x-synthetic.png SHA256 c5205685c8bca8a7c1c0ecdd6bb2bd2f4a19c82ff55f4897b62e156fe4726199
+test/upgrade/goldens/session-2/library-deleted-choice-blazeOrange-1.0x-synthetic.png SHA256 5de40f6ac52c8b47b967dda63c32f43c86cc36a42447df4a60f4f13d1f9658dd
+test/upgrade/goldens/session-2/library-deleted-choice-blazeOrange-1.6x-synthetic.png SHA256 38fe61bae232a3f1376e02c0c10a700d9ff1058692d0ebffafa662ad23be4aaf
+test/upgrade/goldens/session-2/library-deleted-choice-higgsfield-1.0x-synthetic.png SHA256 7f798de72e3af80bf21e522058c88aab99496e9384a4fe6f318a81f0931bf244
+test/upgrade/goldens/session-2/library-deleted-choice-higgsfield-1.6x-synthetic.png SHA256 4c6eb3e255ab998f18470c776abd7f2239deff33cfeaab53b9d2a0ab7083b22c
+test/upgrade/goldens/session-2/library-deleted-choice-neonCyan-1.0x-synthetic.png SHA256 ab8837f97ac64f42f6e20783c78c4ae62807e264350a3a76ffb21ad9626e1d7a
+test/upgrade/goldens/session-2/library-deleted-choice-neonCyan-1.6x-synthetic.png SHA256 979acb1fd169125e76d8e4ce8e2b00e71f387041732466c5eae7314c6fd4089f
+test/upgrade/goldens/session-2/library-deleted-choice-neonMagenta-1.0x-synthetic.png SHA256 69262b20464b8abbc6eebecfdb45e0ac8868ad7f685aeb49858ea49f54bd15f8
+test/upgrade/goldens/session-2/library-deleted-choice-neonMagenta-1.6x-synthetic.png SHA256 aec4d620d96b9cd3c78f4140b2fb003e0b875f4f921d2e31142e0bede0664357
+test/upgrade/goldens/session-2/library-deleted-choice-neonPurple-1.0x-synthetic.png SHA256 7e27a68137a528934eb7f60f40d194bd043178977f06c101a2bd45936234f6b9
+test/upgrade/goldens/session-2/library-deleted-choice-neonPurple-1.6x-synthetic.png SHA256 936fcae5001b4005742fc8afc4cf7ab988f3cb5c6542e633676f0b3b74686fe5
+test/upgrade/goldens/session-2/library-deleted-choice-white-1.0x-synthetic.png SHA256 f6f91b432b088d3aeffd6ce816f360982dd558a401c98fe4755321ba61889e19
+test/upgrade/goldens/session-2/library-deleted-choice-white-1.6x-synthetic.png SHA256 448b6846bf75e26e62271f38062c575672676b88d6b6657548aecb4d7d104519
+test/upgrade/goldens/session-2/library-empty-choice-blazeOrange-1.0x-synthetic.png SHA256 86ae94fe071629b06a2722c6f67238b0f30ba3beb96d0ef0687e3012b87c0a5e
+test/upgrade/goldens/session-2/library-empty-choice-blazeOrange-1.6x-synthetic.png SHA256 ee30e3df58beb8f59ce376d882df33542f38089a616b3e0d42345d098d08adff
+test/upgrade/goldens/session-2/library-empty-choice-higgsfield-1.0x-synthetic.png SHA256 edf68e0ed04826e81adf5a61cfac339af2fee217561cb055af65e6c9b2c2c3ef
+test/upgrade/goldens/session-2/library-empty-choice-higgsfield-1.6x-synthetic.png SHA256 b7cedb88349292fabf918faab192093332f2786e09b4ab76946b2a66cb4b557a
+test/upgrade/goldens/session-2/library-empty-choice-neonCyan-1.0x-synthetic.png SHA256 4860f42325ac6659a2fc129154976d57f840356a3952098655bba114d4e41c95
+test/upgrade/goldens/session-2/library-empty-choice-neonCyan-1.6x-synthetic.png SHA256 85dcbb8613729b340f9ac7812352bf887ffa93a7805ea1863752e9ddff8dc7ff
+test/upgrade/goldens/session-2/library-empty-choice-neonMagenta-1.0x-synthetic.png SHA256 2c85f13127879db1fd05814651600145cded17be084c32f5a9640b521b645f7f
+test/upgrade/goldens/session-2/library-empty-choice-neonMagenta-1.6x-synthetic.png SHA256 1b15d8836959e9c31beb495ed2f1cb175f0470e6e3f9a9ecc215501097abd2e7
+test/upgrade/goldens/session-2/library-empty-choice-neonPurple-1.0x-synthetic.png SHA256 e502662c08722ba7e863da83a8667e60b589e982776deebd877c16b077264492
+test/upgrade/goldens/session-2/library-empty-choice-neonPurple-1.6x-synthetic.png SHA256 385a0e09f48f95a1082afa46eaf1ce5f3080e583bcb110a819cb4ce4ef2b1848
+test/upgrade/goldens/session-2/library-empty-choice-white-1.0x-synthetic.png SHA256 15f3dae81e913e5ac9657a1e6796a80141513de885a209418c6083495ebf125e
+test/upgrade/goldens/session-2/library-empty-choice-white-1.6x-synthetic.png SHA256 038dbf4006af5f4c603d6a1b3bba05e5c7fd5d3df08f32c55a3bc9d78184bac9
+test/upgrade/goldens/session-2/library-error-blazeOrange-1.0x-synthetic.png SHA256 096594ef1e361ebffa2c221256cb75e20bc19fa1666fbfffa9e4b50c41e099f4
+test/upgrade/goldens/session-2/library-error-blazeOrange-1.6x-synthetic.png SHA256 87548c5176757e139f17fae6fdbe0d5e714e54bcf6389e59a9b02ab687053db5
+test/upgrade/goldens/session-2/library-error-higgsfield-1.0x-synthetic.png SHA256 35808ca26218ea9e8adc0e7f53757a63a6573d0ac9896ed4a1366137948f897b
+test/upgrade/goldens/session-2/library-error-higgsfield-1.6x-synthetic.png SHA256 82dfc1fa8c34640a4a245c9281458edb2c0216e68f712adc20102407201b4007
+test/upgrade/goldens/session-2/library-error-neonCyan-1.0x-synthetic.png SHA256 beee2befd80b23d76b9c5fdf36c481a27bd9cdb7a82ddcc1f4056a8d7b41d83a
+test/upgrade/goldens/session-2/library-error-neonCyan-1.6x-synthetic.png SHA256 ded729731e6bd04e3b1a12e3471e08a3a1f8c783be550a4a0bbea5db79e9e671
+test/upgrade/goldens/session-2/library-error-neonMagenta-1.0x-synthetic.png SHA256 0dea8680c75cc402ecdc3fe7b2e1ecccaf56e528535c06e0ce5d8e0eb3251aa1
+test/upgrade/goldens/session-2/library-error-neonMagenta-1.6x-synthetic.png SHA256 e78e7d12d363b76cdd6ad7b6dd6ee39db5b9fc88b760824a00c358ae95eb054d
+test/upgrade/goldens/session-2/library-error-neonPurple-1.0x-synthetic.png SHA256 6204a1423a9dc7abf67f97f183cf8e706f4639f02617d433b4a3a4894952c887
+test/upgrade/goldens/session-2/library-error-neonPurple-1.6x-synthetic.png SHA256 2cc83b044d0d46a0db98283e50c4c7db94613f10dd2a265e6c3f9442c2fbfd82
+test/upgrade/goldens/session-2/library-error-white-1.0x-synthetic.png SHA256 f8f340b2a13610f8dacb2340262f2a9d03a5b34569ec98f9174b5a0ddde235fd
+test/upgrade/goldens/session-2/library-error-white-1.6x-synthetic.png SHA256 fa5db929aa7277eb8b13e0ddba122d2ec6459b4a0d2de68e47a7988825c0cb97
+test/upgrade/goldens/session-2/library-inactive-return-blazeOrange-1.0x-synthetic.png SHA256 a18097964f15380010b3cdf4df09a2fa85f5ef1661c6900067f6f6c5098ab531
+test/upgrade/goldens/session-2/library-inactive-return-blazeOrange-1.6x-synthetic.png SHA256 b312833691df40fd92159fe59b28f4b9acf7286753ca006c3d1e00438aee9079
+test/upgrade/goldens/session-2/library-inactive-return-higgsfield-1.0x-synthetic.png SHA256 26f9b7ea33bdd2565fbdcf75adad915785908db028f9520ed45815cf85289ce7
+test/upgrade/goldens/session-2/library-inactive-return-higgsfield-1.6x-synthetic.png SHA256 e5f57dbc6b65d2c49056de60f722a5ea04119f44cff2c3a41449e64df5f85bd1
+test/upgrade/goldens/session-2/library-inactive-return-neonCyan-1.0x-synthetic.png SHA256 eaded058e3a0a7742731e81c60b2e0d1c87bde18210870aabbcc51245b3179be
+test/upgrade/goldens/session-2/library-inactive-return-neonCyan-1.6x-synthetic.png SHA256 364899af63cf23bf40c811c097648799b08d977aa9f34dc847baa1b4937b8229
+test/upgrade/goldens/session-2/library-inactive-return-neonMagenta-1.0x-synthetic.png SHA256 c1b7bed07311aa97ab82dd3779470bb1303976b5d33e2218ef7dfed737b44e8d
+test/upgrade/goldens/session-2/library-inactive-return-neonMagenta-1.6x-synthetic.png SHA256 637312b4f0b40fd71e3cdb447da465738a0641a7df3b4ba9b4020ca7f964ebe3
+test/upgrade/goldens/session-2/library-inactive-return-neonPurple-1.0x-synthetic.png SHA256 fed6e0cbe321405573e96859500cc221208170acfd98f992a81887b1381840c3
+test/upgrade/goldens/session-2/library-inactive-return-neonPurple-1.6x-synthetic.png SHA256 b5868035eae892cda57e658249bbf7de4625d092b78253501c00d3c3c1e2ef02
+test/upgrade/goldens/session-2/library-inactive-return-white-1.0x-synthetic.png SHA256 9eb3723961656339fa7e031ce8ab9801d8d7db60e51cd65ba625e15621dc6726
+test/upgrade/goldens/session-2/library-inactive-return-white-1.6x-synthetic.png SHA256 55602c13cfc792e5210f2a55b1bd6100876ebc4727bec0dda8e154644c57f0c1
+test/upgrade/goldens/session-2/library-loading-blazeOrange-1.0x-synthetic.png SHA256 91a7dbd7650cdbde8fd4322ce65eba93bdc80739a02cd2957c56f335e612c61a
+test/upgrade/goldens/session-2/library-loading-blazeOrange-1.6x-synthetic.png SHA256 269a6018c663c82888a88ec4bab93e0191163ba00611184707866be247063d4e
+test/upgrade/goldens/session-2/library-loading-higgsfield-1.0x-synthetic.png SHA256 a3e7e7273a4170b1b42f25dd23efb433b10afc2391b0e6584f45f32b75727791
+test/upgrade/goldens/session-2/library-loading-higgsfield-1.6x-synthetic.png SHA256 51a216047029cd0dc1ebfa4ae5bceaff0b11217f5235c3f833ccf3a3807d043c
+test/upgrade/goldens/session-2/library-loading-neonCyan-1.0x-synthetic.png SHA256 de19db1b438f6e77381243900da212d97f4553f0b6808ce49fb412a625149dc5
+test/upgrade/goldens/session-2/library-loading-neonCyan-1.6x-synthetic.png SHA256 f821405abfdb1000560bc83f5e84e6f61af998e494b5c8767e9036e3b0d5c874
+test/upgrade/goldens/session-2/library-loading-neonMagenta-1.0x-synthetic.png SHA256 67297fec2e4bc90ddbd6d330caa3ced42e4e1dd1433622cde5b01f03fd252f75
+test/upgrade/goldens/session-2/library-loading-neonMagenta-1.6x-synthetic.png SHA256 44ea629cfb8979045287ff168ccb6863d83aac68a4615a437d460767b12d5167
+test/upgrade/goldens/session-2/library-loading-neonPurple-1.0x-synthetic.png SHA256 1eead52a2f395a94c2d2aefbc51f68154eb4aa8b8296d333724924b7511d8573
+test/upgrade/goldens/session-2/library-loading-neonPurple-1.6x-synthetic.png SHA256 13ee22c697c91c2293fa31f172159970e41d2db07d860b9410256b50e75fb94a
+test/upgrade/goldens/session-2/library-loading-white-1.0x-synthetic.png SHA256 c068bb8e51697bbdf096e0efb136f033b27269fc75076b9d09676f216c1a933e
+test/upgrade/goldens/session-2/library-loading-white-1.6x-synthetic.png SHA256 c9c66dd222850eb85b1523d96c8bbf7d8e2fb89407313bafa6be5924b349be2a
+test/upgrade/goldens/session-2/library-low-data-blazeOrange-1.0x-synthetic.png SHA256 629cbfb5042d48db8272cd56dca0d77f7ea0c32ea4e8c466e2a57ed0d7d81052
+test/upgrade/goldens/session-2/library-low-data-blazeOrange-1.6x-synthetic.png SHA256 2b5a32c8926be3863ab6a28d66ca26cf4a4b03753e9d89e0441bfb3dd49c3540
+test/upgrade/goldens/session-2/library-low-data-higgsfield-1.0x-synthetic.png SHA256 7368ca4ff5cb967bc750261124670abb5eaed74d9a2d9d0d3a99d14c65693a51
+test/upgrade/goldens/session-2/library-low-data-higgsfield-1.6x-synthetic.png SHA256 4c6123f1ff865cb9fe3ec63d0729edeb528f77391391b995c7a9bf828564bed0
+test/upgrade/goldens/session-2/library-low-data-neonCyan-1.0x-synthetic.png SHA256 2230245b77544d1dd4b05255bde266401d415f0b401d6ecc1a14b2ff4739285f
+test/upgrade/goldens/session-2/library-low-data-neonCyan-1.6x-synthetic.png SHA256 a07b54a828d1e7d3ff825672cba9b9cf63939b584cc89fec19e0ee1acc186d5e
+test/upgrade/goldens/session-2/library-low-data-neonMagenta-1.0x-synthetic.png SHA256 34464016886b8e95479e5c175139b03808c5e3c29ea059f3e34e1bd6a51adb43
+test/upgrade/goldens/session-2/library-low-data-neonMagenta-1.6x-synthetic.png SHA256 be103bc09b40add3a7ff407675e1ca10b7d182743ea22aa1e90e858e7a557b9b
+test/upgrade/goldens/session-2/library-low-data-neonPurple-1.0x-synthetic.png SHA256 60957e8f53e1e14095481ef183a4a8d565d6ae872a84befb6c0f938ee1ffc007
+test/upgrade/goldens/session-2/library-low-data-neonPurple-1.6x-synthetic.png SHA256 08846ce76a71e23540c3e0ef9e5333ab5ec5cec03cc4a50195ae3d4db035e590
+test/upgrade/goldens/session-2/library-low-data-white-1.0x-synthetic.png SHA256 1b11dfa2f76bf1a68f4b68bcf30c27aac0bdc78f83a0af2fe074ef25fd3c9d97
+test/upgrade/goldens/session-2/library-low-data-white-1.6x-synthetic.png SHA256 2f72055ff5760ce504a48be5da2a66a17d343972b8a7835ee0eaf5c895e33eb5
+test/upgrade/goldens/session-2/library-new-user-blazeOrange-1.0x-synthetic.png SHA256 f900ed34a307f7978784e675eabdc8ca300b96eb3000b044a2284a710ca83f63
+test/upgrade/goldens/session-2/library-new-user-blazeOrange-1.6x-synthetic.png SHA256 fa7f08826011ba73c8faf4387001bc557ed77178850c3d05b0ccd45f1671333b
+test/upgrade/goldens/session-2/library-new-user-higgsfield-1.0x-synthetic.png SHA256 5a36640f9f085d10c0339bdc574a4564101eb46643b8861f58cd2d8053c4eb7f
+test/upgrade/goldens/session-2/library-new-user-higgsfield-1.6x-synthetic.png SHA256 fbedfb89cb5667ac5c07a69e75c8e149e65e058574293f82fcefc4920834f039
+test/upgrade/goldens/session-2/library-new-user-neonCyan-1.0x-synthetic.png SHA256 9859c86c3cbdc43c2394d4327336c23ee40490c731d71c42b66d42a56369ca9b
+test/upgrade/goldens/session-2/library-new-user-neonCyan-1.6x-synthetic.png SHA256 85fdd9158b66f6df5408a7c05c18abd0038ec0d756d762bef6ceb1a330f08af5
+test/upgrade/goldens/session-2/library-new-user-neonMagenta-1.0x-synthetic.png SHA256 fcdfeb7bd5e167ba352951c3ceb3f67824abf36dff2f0cc86bd15ee40aa474d2
+test/upgrade/goldens/session-2/library-new-user-neonMagenta-1.6x-synthetic.png SHA256 2c84c175c6f30579517c2962141acd3202b0630cf9b45cea119b2d245b876344
+test/upgrade/goldens/session-2/library-new-user-neonPurple-1.0x-synthetic.png SHA256 d18ce309872e5f964a1e2973c1c817d14b5a5543d1ec4c02d0b3c4dba103b43b
+test/upgrade/goldens/session-2/library-new-user-neonPurple-1.6x-synthetic.png SHA256 057ddbfb5a5c46ea212960d7817742afbca6e21d4a548fdc8b997074e760ac16
+test/upgrade/goldens/session-2/library-new-user-white-1.0x-synthetic.png SHA256 acc8f437c3607c5e3088155fa657e79a5b2886d62feaa230a77c02204fdce231
+test/upgrade/goldens/session-2/library-new-user-white-1.6x-synthetic.png SHA256 bf63ce25550908a306fd8cc0eb986a023a2263b4a49fe1deeb21fa08d00dc3b5
+test/upgrade/goldens/session-2/library-no-choice-blazeOrange-1.0x-synthetic.png SHA256 9ec3cc7b2c50727f94bb9126f4a861de07513e05a053b89c02656b490cec02ea
+test/upgrade/goldens/session-2/library-no-choice-blazeOrange-1.6x-synthetic.png SHA256 cef0d93464b8f166225099e98c6dcdb0918989eadbbd24e694f4dff28d446031
+test/upgrade/goldens/session-2/library-no-choice-higgsfield-1.0x-synthetic.png SHA256 d05321abc4d9e854490d40a0e8362e3fcebf13e21c868afdebe8441b12501c48
+test/upgrade/goldens/session-2/library-no-choice-higgsfield-1.6x-synthetic.png SHA256 e28bc73c18085ec61cb5371dd6d9e0f28c60325ca97f2eaa6cb18b636a1a0f72
+test/upgrade/goldens/session-2/library-no-choice-neonCyan-1.0x-synthetic.png SHA256 5f2e0f165c0b252ab3650a878b22d7ce095b8f15100bea0d2515458cf4a05da8
+test/upgrade/goldens/session-2/library-no-choice-neonCyan-1.6x-synthetic.png SHA256 126d2c54b43d46212c6fe1105f912f6586e51e969cf88e949d7a28614de65953
+test/upgrade/goldens/session-2/library-no-choice-neonMagenta-1.0x-synthetic.png SHA256 23c1b209600347fe1c77b836b3845670282cba1d463dd8c33ee069e936593a88
+test/upgrade/goldens/session-2/library-no-choice-neonMagenta-1.6x-synthetic.png SHA256 9a9052863e6c0bf4d35166b87fb22b1f32ed3787db4d3817e02890623487cbf5
+test/upgrade/goldens/session-2/library-no-choice-neonPurple-1.0x-synthetic.png SHA256 9e4c8090aed21df1d0235f457dbb9a7146be08731e782d77c543def0c6cdc54d
+test/upgrade/goldens/session-2/library-no-choice-neonPurple-1.6x-synthetic.png SHA256 5e676c9eb92001b3b08edd642a84ff4fd361a8feb50e3be70a3befcb8e2f2c85
+test/upgrade/goldens/session-2/library-no-choice-white-1.0x-synthetic.png SHA256 e8cb6fc2b6e015b27c829e2478d4867823173cd5ee570b27dbcf1b1718568ccc
+test/upgrade/goldens/session-2/library-no-choice-white-1.6x-synthetic.png SHA256 c1eec93a1f555f6d10c29c7cc5663b1a3c3727c32106b066d917a6d69ae780fa
+test/upgrade/goldens/session-2/library-no-routine-blazeOrange-1.0x-synthetic.png SHA256 60261cdcc5513511457bf27bae10ccfbc90de3a0b6febcd5a2ba51b1e475d5a9
+test/upgrade/goldens/session-2/library-no-routine-blazeOrange-1.6x-synthetic.png SHA256 fa4f7661c7fe238266628d04261bb60719cfddfa093de4fbf6a0ae57fd3d6a83
+test/upgrade/goldens/session-2/library-no-routine-higgsfield-1.0x-synthetic.png SHA256 158040695c8e8f31d7f4f29f04d43fdce0985a392f30e52287149cea40bc8abf
+test/upgrade/goldens/session-2/library-no-routine-higgsfield-1.6x-synthetic.png SHA256 f42f456ebee9bb49d99f4e44c7f8ba07fdeb3bf4a5232532316f9544a08f6544
+test/upgrade/goldens/session-2/library-no-routine-neonCyan-1.0x-synthetic.png SHA256 63cf60d5fdc86defe0f4710ccd4a385ae55c2d10a57926f7c8c95b578bbf2872
+test/upgrade/goldens/session-2/library-no-routine-neonCyan-1.6x-synthetic.png SHA256 29bacbdced84941c8d0ec2b9725eadc0787d7cc430a79df63fa1751d447234fd
+test/upgrade/goldens/session-2/library-no-routine-neonMagenta-1.0x-synthetic.png SHA256 04f895c744a2d60660923dd2b9dafe2007bc7cf32414bbadab2631fa2173b9bf
+test/upgrade/goldens/session-2/library-no-routine-neonMagenta-1.6x-synthetic.png SHA256 0a1c2204fa80c078275f304683e90e9071face24ff263d4e647ead14a3c6fdf7
+test/upgrade/goldens/session-2/library-no-routine-neonPurple-1.0x-synthetic.png SHA256 e211bbf633007d209acf8572497835da6466835fa59a4e1c72c1ae1a0da5e7d1
+test/upgrade/goldens/session-2/library-no-routine-neonPurple-1.6x-synthetic.png SHA256 b0824dc5a0d63f0bda578ed755aa0d86925c48bb85d6e9da1d5fb091229f66fc
+test/upgrade/goldens/session-2/library-no-routine-white-1.0x-synthetic.png SHA256 8e3fb5c0d344816b6302c03ffb737b54a90c487fd19f5ca54f77bf79636df39a
+test/upgrade/goldens/session-2/library-no-routine-white-1.6x-synthetic.png SHA256 f3cfa59b3d53583386f9f1cfd54161df9046dddca595bed857a843d74dc1f2e3
+test/upgrade/goldens/session-2/library-previous-error-blazeOrange-1.0x-synthetic.png SHA256 7996c14405317212f5303c7f605e0da002fbd4db038996a7fdf44c48c31b81c9
+test/upgrade/goldens/session-2/library-previous-error-blazeOrange-1.6x-synthetic.png SHA256 52200fab7e7655975b38f9de072fe41a5da2465080300cf68e4e21d22684d757
+test/upgrade/goldens/session-2/library-previous-error-higgsfield-1.0x-synthetic.png SHA256 4e53ca3910dbaaac291d225c9e606991a32d4b875c32cbec2831d7c5457324b3
+test/upgrade/goldens/session-2/library-previous-error-higgsfield-1.6x-synthetic.png SHA256 b19516b4c85b461b4f5da02752ac849dbb778df5a5e157ae12bd287478f70862
+test/upgrade/goldens/session-2/library-previous-error-neonCyan-1.0x-synthetic.png SHA256 a9012f2b45cfc8dfaa2eb1a43828babd71a0f722d7d3e2e10a5dca35a0066abd
+test/upgrade/goldens/session-2/library-previous-error-neonCyan-1.6x-synthetic.png SHA256 319776584ccb27901e2720300ab4f022129e146ca9d41ae0e9f606a7cc6c0c19
+test/upgrade/goldens/session-2/library-previous-error-neonMagenta-1.0x-synthetic.png SHA256 e6c1f098917ae8166f0f8e80b42a58bb8c8fd1cad7f74012d7486f83927bc8b8
+test/upgrade/goldens/session-2/library-previous-error-neonMagenta-1.6x-synthetic.png SHA256 8dbe2d8108346038d64d2d55818187e902f8957951af25fe99462fd2a258fac7
+test/upgrade/goldens/session-2/library-previous-error-neonPurple-1.0x-synthetic.png SHA256 3d93ec585a93fc5215e2c806129dc71e38cf54915e50f6cfbe5f602188c03288
+test/upgrade/goldens/session-2/library-previous-error-neonPurple-1.6x-synthetic.png SHA256 dea91bb53d87febb1ba60f5a1f70ffc01508dc58513b0caf6b76cf77823420d3
+test/upgrade/goldens/session-2/library-previous-error-white-1.0x-synthetic.png SHA256 a9a234503e26062b99311d5f2a2a8fbdd5920abecbe0ea246bd5b3f49465ae5b
+test/upgrade/goldens/session-2/library-previous-error-white-1.6x-synthetic.png SHA256 c5205685c8bca8a7c1c0ecdd6bb2bd2f4a19c82ff55f4897b62e156fe4726199

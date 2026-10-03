@@ -6,6 +6,8 @@ import 'package:gymlog/core/models/personal_record.dart';
 import 'package:gymlog/core/theme/app_colors.dart';
 import 'package:gymlog/core/theme/app_text.dart';
 import 'package:gymlog/core/theme/dynamic_accent_theme.dart';
+import 'package:gymlog/core/utils/units.dart';
+import 'package:gymlog/core/utils/formatters.dart';
 
 /// Full-screen celebration shown when a finished workout contains PRs.
 /// Turns a silent `is_pr = 1` database write into the app's best moment:
@@ -20,8 +22,9 @@ import 'package:gymlog/core/theme/dynamic_accent_theme.dart';
 /// Dependency-free — confetti is a lightweight CustomPainter, not a package.
 Future<void> showPrCelebration(
   BuildContext context,
-  List<PrRecord> prs,
-) {
+  List<PrRecord> prs, {
+  String weightUnit = 'kg',
+}) {
   if (prs.isEmpty) return Future.value();
   HapticFeedback.heavyImpact();
 
@@ -45,15 +48,17 @@ Future<void> showPrCelebration(
               child: ScaleTransition(scale: curved, child: child),
             );
           },
-    pageBuilder: (dialogCtx, _, __) =>
-        _PrCelebration(prs: prs, reduceMotion: reduceMotion),
+    pageBuilder: (dialogCtx, _, __) => _PrCelebration(
+        prs: prs, reduceMotion: reduceMotion, weightUnit: weightUnit),
   );
 }
 
 class _PrCelebration extends StatefulWidget {
   final List<PrRecord> prs;
   final bool reduceMotion;
-  const _PrCelebration({required this.prs, this.reduceMotion = false});
+  final String weightUnit;
+  const _PrCelebration(
+      {required this.prs, this.reduceMotion = false, required this.weightUnit});
 
   @override
   State<_PrCelebration> createState() => _PrCelebrationState();
@@ -84,19 +89,8 @@ class _PrCelebrationState extends State<_PrCelebration>
     super.dispose();
   }
 
-  String _fmtKg(double kg) => kg == kg.truncateToDouble()
-      ? kg.toInt().toString()
-      : kg.toStringAsFixed(1);
-
   @override
   Widget build(BuildContext context) {
-    final prs = widget.prs;
-    final title = prs.length == 1
-        ? 'New Personal Record!'
-        : '${prs.length} New Personal Records!';
-    final accent = context.accent;
-    final surface = context.surface;
-
     return Stack(
       children: [
         // ── Confetti layer (skipped entirely under reduce-motion) ──────────
@@ -114,170 +108,281 @@ class _PrCelebrationState extends State<_PrCelebration>
 
         // ── Card ───────────────────────────────────────────────
         Center(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 28),
-            child: Material(
-              color: Colors.transparent,
-              child: Container(
-                constraints: const BoxConstraints(maxWidth: 380),
-                padding: const EdgeInsets.fromLTRB(24, 28, 24, 20),
-                decoration: BoxDecoration(
-                  gradient: surface.isLight
-                      ? AppColors.cardGradientLight
-                      : AppColors.cardGradient,
-                  borderRadius: AppRadius.cardAll,
-                  border: Border.all(
-                    color: surface.borderSubtle,
-                    width: 1,
+          child: PrCelebrationCard(
+            prs: widget.prs,
+            weightUnit: widget.weightUnit,
+            onKeepGoing: () {
+              HapticFeedback.mediumImpact();
+              Navigator.of(context).pop();
+            },
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// The celebration card itself. Public so goldens and widget tests can render
+/// it directly, and so the fit logic lives in one place:
+///
+/// - Fits ANY viewport: `SafeArea` + a max-height constraint keep the card
+///   inside the screen (insets included), so short phones, landscape, large
+///   text scales and edge-to-edge 3-button nav bars can never clip it.
+/// - The PR list scrolls inside a `Flexible` region; the "Keep Going" CTA is
+///   pinned below it and always visible.
+class PrCelebrationCard extends StatelessWidget {
+  final List<PrRecord> prs;
+  final VoidCallback onKeepGoing;
+  final String weightUnit;
+
+  const PrCelebrationCard({
+    super.key,
+    required this.prs,
+    required this.onKeepGoing,
+    this.weightUnit = 'kg',
+  });
+
+  String _weightUnit({bool spoken = false}) => spoken
+      ? (weightUnit == 'lbs' ? 'pounds' : 'kilograms')
+      : unitLabel(weightUnit);
+
+  String _recordLabel(PrRecord pr) => switch (pr.type) {
+        PersonalRecordType.estimatedOneRepMax => 'Estimated 1RM',
+        PersonalRecordType.maxWeight => 'Max weight',
+        PersonalRecordType.maxReps => 'Max reps',
+        PersonalRecordType.maxDuration => 'Max hold',
+        PersonalRecordType.maxDistance => 'Max distance',
+        PersonalRecordType.bestPace => 'Best pace',
+      };
+
+  String _recordValue(PrRecord pr, double value, {bool spoken = false}) {
+    if (pr.type == PersonalRecordType.bestPace) {
+      return MeasurementFormatter.formatPaceFromSecondsPerMeter(value,
+          spoken: spoken);
+    }
+    if (pr.type == PersonalRecordType.estimatedOneRepMax ||
+        pr.type == PersonalRecordType.maxWeight) {
+      return '${formatWeight(value, weightUnit)} ${_weightUnit(spoken: spoken)}';
+    }
+    return '${value == value.truncateToDouble() ? value.toInt() : value.toStringAsFixed(1)} ${pr.unit}';
+  }
+
+  String _loggedSet(PrRecord pr, {bool spoken = false}) {
+    final reps = pr.loggedReps;
+    final load = pr.loggedWeightKg;
+    if (reps == null) return 'Logged set unavailable';
+    if (pr.type == PersonalRecordType.maxDistance ||
+        pr.type == PersonalRecordType.bestPace) {
+      return 'Logged: ${load ?? 0} m · $reps s';
+    }
+    if (pr.type == PersonalRecordType.maxDuration) {
+      return 'Logged: $reps s hold';
+    }
+    if (load == null) return 'Logged: $reps reps';
+    return 'Logged: ${formatWeight(load, weightUnit)} ${_weightUnit(spoken: spoken)} ${spoken ? 'for' : '×'} $reps reps';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final title = prs.length == 1
+        ? 'New Personal Record!'
+        : '${prs.length} New Personal Records!';
+    final accent = context.accent;
+    final surface = context.surface;
+
+    final size = MediaQuery.sizeOf(context);
+    final padding = MediaQuery.paddingOf(context);
+    // 20dp breathing room above and below the system insets.
+    final maxCardHeight = size.height - padding.top - padding.bottom - 40;
+
+    return Padding(
+      padding: EdgeInsets.fromLTRB(
+        28,
+        padding.top + 20,
+        28,
+        padding.bottom + 20,
+      ),
+      child: ConstrainedBox(
+        constraints: BoxConstraints(maxHeight: maxCardHeight),
+        child: Material(
+          color: Colors.transparent,
+          child: Container(
+            constraints: const BoxConstraints(maxWidth: 380),
+            padding: const EdgeInsets.fromLTRB(24, 28, 24, 20),
+            decoration: BoxDecoration(
+              gradient: surface.isLight
+                  ? AppColors.cardGradientLight
+                  : AppColors.cardGradient,
+              borderRadius: AppRadius.cardAll,
+              border: Border.all(
+                color: surface.borderSubtle,
+                width: 1,
+              ),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 64,
+                  height: 64,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: accent.base.withValues(alpha: 0.16),
+                    border: Border.all(
+                      color: accent.base.withValues(alpha: 0.4),
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: accent.base.withValues(alpha: 0.28),
+                        blurRadius: 28,
+                        spreadRadius: 4,
+                      ),
+                    ],
+                  ),
+                  // The trophy stays immutable gold — the achievement color.
+                  child: const Icon(
+                    Icons.emoji_events_rounded,
+                    color: AppColors.rewardGold,
+                    size: 30,
                   ),
                 ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(
-                      width: 64,
-                      height: 64,
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: accent.base.withValues(alpha: 0.16),
-                        border: Border.all(
-                          color: accent.base.withValues(alpha: 0.4),
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: accent.base.withValues(alpha: 0.28),
-                            blurRadius: 28,
-                            spreadRadius: 4,
-                          ),
-                        ],
-                      ),
-                      // The trophy stays immutable gold — the achievement color.
-                      child: const Icon(
-                        Icons.emoji_events_rounded,
-                        color: AppColors.rewardGold,
-                        size: 30,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      title,
-                      textAlign: TextAlign.center,
-                      style: AppText.sectionHeading(color: surface.textPrimary),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Stronger than every session before it.',
-                      style: AppText.meta(color: surface.textSecondary),
-                    ),
-                    const SizedBox(height: 20),
+                const SizedBox(height: 16),
+                Text(
+                  title,
+                  textAlign: TextAlign.center,
+                  // Never let the headline blow up the card: at extreme text
+                  // scales on narrow phones the card must still fit its
+                  // viewport, so wrap to at most 3 lines.
+                  maxLines: 3,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppText.sectionHeading(color: surface.textPrimary),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'A new record in your logged history.',
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppText.meta(color: surface.textSecondary),
+                ),
+                const SizedBox(height: 20),
 
-                    // ── PR rows (max 4 visible, scrolls beyond) ───────────
-                    ConstrainedBox(
-                      constraints: const BoxConstraints(maxHeight: 240),
-                      child: SingleChildScrollView(
-                        child: Column(
-                          children: [
-                            for (final pr in prs)
-                              Semantics(
-                                label: '${pr.exerciseName}: '
-                                    '${_fmtKg(pr.weightKg)} kilograms for ${pr.reps} reps, '
-                                    'estimated one-rep max ${_fmtKg(pr.estimated1rm)} kilograms'
-                                    '${pr.previousBest1rm > 0 ? ', up from ${_fmtKg(pr.previousBest1rm)} kilograms' : ', first record'}',
-                                excludeSemantics: true,
-                                child: Padding(
-                                  padding: const EdgeInsets.only(bottom: 10),
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 14, vertical: 12),
-                                    decoration: BoxDecoration(
-                                      color: surface.surface3,
-                                      borderRadius: AppRadius.badgeAll,
-                                    ),
-                                    child: Row(
-                                      children: [
-                                        Expanded(
-                                          child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Text(
-                                                pr.exerciseName,
-                                                maxLines: 1,
-                                                overflow: TextOverflow.ellipsis,
-                                                style: AppText.rowLabel(
-                                                    color: surface.textPrimary),
-                                              ),
-                                              const SizedBox(height: 2),
-                                              Text(
-                                                '${_fmtKg(pr.weightKg)} kg × ${pr.reps} reps',
-                                                style: AppText.caption(
-                                                    color:
-                                                        surface.textSecondary),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                        Column(
+                // ── PR rows: the list area is flexible — when the viewport is
+                //    short it shrinks and the list scrolls; when there's room
+                //    it caps at 240px so the card stays compact. ConstrainedBox
+                //    MUST sit outside the scroll view: bounded-inside-bounded
+                //    would force the row column and overflow it. ─────────────
+                Flexible(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxHeight: 240),
+                    child: SingleChildScrollView(
+                      child: Column(
+                        children: [
+                          for (final pr in prs)
+                            Semantics(
+                              label:
+                                  '${pr.exerciseName}: ${_recordLabel(pr)}, ${_recordValue(pr, pr.value, spoken: true)}. '
+                                  '${_loggedSet(pr, spoken: true)}. '
+                                  '${pr.previousValue != null ? 'Previous: ${_recordValue(pr, pr.previousValue!, spoken: true)}' : 'First recorded result'}',
+                              excludeSemantics: true,
+                              child: Padding(
+                                padding: const EdgeInsets.only(bottom: 10),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 14, vertical: 12),
+                                  decoration: BoxDecoration(
+                                    color: surface.surface3,
+                                    borderRadius: AppRadius.badgeAll,
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Expanded(
+                                        child: Column(
                                           crossAxisAlignment:
-                                              CrossAxisAlignment.end,
+                                              CrossAxisAlignment.start,
                                           children: [
-                                            // The beaten 1RM — the headline number
-                                            // — in active accent.
                                             Text(
-                                              '${_fmtKg(pr.estimated1rm)} kg',
-                                              style: AppText.value(
-                                                  color: accent.base),
+                                              pr.exerciseName,
+                                              maxLines: 2,
+                                              overflow: TextOverflow.ellipsis,
+                                              style: AppText.rowLabel(
+                                                  color: surface.textPrimary),
                                             ),
+                                            const SizedBox(height: 2),
                                             Text(
-                                              pr.previousBest1rm > 0
-                                                  ? 'prev ${_fmtKg(pr.previousBest1rm)} kg'
-                                                  : 'first 1RM',
+                                              _loggedSet(pr),
                                               style: AppText.caption(
                                                   color: surface.textSecondary),
                                             ),
                                           ],
                                         ),
-                                      ],
-                                    ),
+                                      ),
+                                      Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.end,
+                                        children: [
+                                          Text(_recordLabel(pr),
+                                              style: AppText.caption(
+                                                  color:
+                                                      surface.textSecondary)),
+                                          // The beaten 1RM — the headline
+                                          // number — in active accent.
+                                          Text(
+                                            _recordValue(pr, pr.value),
+                                            style: AppText.value(
+                                                color: accent.base),
+                                          ),
+                                          Text(
+                                            pr.previousValue != null
+                                                ? 'prev ${_recordValue(pr, pr.previousValue!)}'
+                                                : 'first record',
+                                            style: AppText.caption(
+                                                color: surface.textSecondary),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ),
-                          ],
-                        ),
+                            ),
+                        ],
                       ),
                     ),
-                    const SizedBox(height: 8),
-
-                    SizedBox(
-                      width: double.infinity,
-                      height: 50,
-                      child: ElevatedButton(
-                        onPressed: () {
-                          HapticFeedback.mediumImpact();
-                          Navigator.of(context).pop();
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: accent.base,
-                          foregroundColor: accent.onAccent,
-                          elevation: 0,
-                          shape: const RoundedRectangleBorder(
-                            borderRadius: AppRadius.buttonPrimaryAll,
-                          ),
-                        ),
-                        child: Text(
-                          'Keep Going',
-                          style: AppText.button(color: accent.onAccent),
-                        ),
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
-              ),
+                const SizedBox(height: 8),
+
+                ConstrainedBox(
+                  constraints: const BoxConstraints(minHeight: 52),
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: onKeepGoing,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: accent.base,
+                        foregroundColor: accent.onAccent,
+                        elevation: 0,
+                        minimumSize: const Size(double.infinity, 52),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 24, vertical: 12),
+                        shape: const RoundedRectangleBorder(
+                          borderRadius: AppRadius.buttonPrimaryAll,
+                        ),
+                      ),
+                      child: Text(
+                        'Keep Going',
+                        style: AppText.button(color: accent.onAccent)
+                            .copyWith(fontWeight: FontWeight.w700),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ),
-      ],
+      ),
     );
   }
 }

@@ -9,6 +9,7 @@ import '../../../../core/providers/premium_provider.dart';
 import '../../../../core/services/profile_image_sync_service.dart';
 import '../../../../core/services/profile_sync_service.dart';
 import '../../../../core/services/sync_engine.dart';
+import '../../../../shared/widgets/ui/delt_logo.dart';
 
 import '../providers/auth_provider.dart';
 
@@ -157,21 +158,28 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
     final theme = Theme.of(context);
     return Scaffold(
       body: Center(
-        child: AnimatedOpacity(
-          opacity: _showProgress ? 1.0 : 0.0,
-          duration: const Duration(milliseconds: 200),
-          child: Semantics(
-            label: 'Starting GymLog',
-            liveRegion: true,
-            child: SizedBox(
-              width: 24,
-              height: 24,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                color: theme.colorScheme.primary,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const DeltLogo(size: 84),
+            const SizedBox(height: 36),
+            AnimatedOpacity(
+              opacity: _showProgress ? 1.0 : 0.0,
+              duration: const Duration(milliseconds: 200),
+              child: Semantics(
+                label: 'Starting Delt',
+                liveRegion: true,
+                child: SizedBox(
+                  width: 24,
+                  height: 24,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: theme.colorScheme.primary,
+                  ),
+                ),
               ),
             ),
-          ),
+          ],
         ),
       ),
     );

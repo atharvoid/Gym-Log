@@ -1,0 +1,138 @@
+00:00 +0: loading C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart
+00:00 +0: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart: home guards an emptied chosen plan
+00:00 +1: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart: home guards an emptied chosen plan
+00:00 +2: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart: home guards an emptied chosen plan
+00:00 +3: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart: home guards an emptied chosen plan
+00:00 +4: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart: home guards an emptied chosen plan
+00:00 +5: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart: home guards an emptied chosen plan
+00:00 +6: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart: home guards an emptied chosen plan
+00:00 +7: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart: home guards an emptied chosen plan
+00:00 +8: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart: home guards an emptied chosen plan
+00:00 +9: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart: home guards an emptied chosen plan
+00:00 +10: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart: home guards an emptied chosen plan
+00:00 +11: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart: home guards an emptied chosen plan
+00:00 +12: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart: home guards an emptied chosen plan
+00:00 +13: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart: home guards an emptied chosen plan
+00:00 +14: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart: home guards an emptied chosen plan
+══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
+The following TestFailure was thrown running a test:
+Expected: at least one matching candidate
+  Actual: _TextWidgetFinder:<Found 0 widgets with text "Last trained 4 days ago": []>
+   Which: means none were found but some were expected
+
+When the exception was thrown, this was the stack:
+#4      main.<anonymous closure> (file:///C:/Users/Atharva%20Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart:55:7)
+<asynchronous suspension>
+#5      testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#6      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1952:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided one frame from package:stack_trace)
+
+This was caught by the test expectation on the following line:
+  file:///C:/Users/Atharva%20Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart line 55
+The test description was:
+  home guards an emptied chosen plan
+════════════════════════════════════════════════════════════════════════════════════════════════════
+00:01 +14 -1: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart: home guards an emptied chosen plan [E]
+  Test failed. See exception logs above.
+  The test description was: home guards an emptied chosen plan
+  
+00:01 +14 -1: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart: home choice read failure is distinct from no choice
+00:01 +15 -1: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart: home uses explicit choice and one-tap Change
+00:01 +16 -1: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart: home never chooses the first routine by inference
+00:01 +17 -1: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart: home shows a deleted choice without replacing it
+00:01 +18 -1: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart: home new user has a designed first-session entry
+00:01 +19 -1: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart: library guards an emptied chosen plan
+══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
+The following TestFailure was thrown running a test:
+Expected: at least one matching candidate
+  Actual: _TextWidgetFinder:<Found 0 widgets with text "Last trained 4 days ago": []>
+   Which: means none were found but some were expected
+
+When the exception was thrown, this was the stack:
+#4      main.<anonymous closure> (file:///C:/Users/Atharva%20Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart:55:7)
+<asynchronous suspension>
+#5      testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#6      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1952:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided one frame from package:stack_trace)
+
+This was caught by the test expectation on the following line:
+  file:///C:/Users/Atharva%20Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart line 55
+The test description was:
+  library guards an emptied chosen plan
+════════════════════════════════════════════════════════════════════════════════════════════════════
+00:02 +19 -2: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart: library guards an emptied chosen plan [E]
+  Test failed. See exception logs above.
+  The test description was: library guards an emptied chosen plan
+  
+00:02 +19 -2: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart: library choice read failure is distinct from no choice
+00:02 +20 -2: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart: library uses explicit choice and one-tap Change
+00:02 +21 -2: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart: library never chooses the first routine by inference
+00:02 +22 -2: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart: library shows a deleted choice without replacing it
+00:02 +23 -2: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart: library new user has a designed first-session entry
+00:02 +24 -2: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart: Empty Library prioritizes browsing and avoids duplicate errors
+══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
+The following TestFailure was thrown running a test:
+Expected: exactly one matching candidate
+  Actual: _TextWidgetFinder:<Found 0 widgets with text "Try again": []>
+   Which: means none were found but one was expected
+
+When the exception was thrown, this was the stack:
+#4      main.<anonymous closure> (file:///C:/Users/Atharva%20Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart:106:5)
+<asynchronous suspension>
+#5      testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#6      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1952:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided one frame from package:stack_trace)
+
+This was caught by the test expectation on the following line:
+  file:///C:/Users/Atharva%20Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart line 106
+The test description was:
+  Empty Library prioritizes browsing and avoids duplicate errors
+════════════════════════════════════════════════════════════════════════════════════════════════════
+00:03 +24 -3: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart: Empty Library prioritizes browsing and avoids duplicate errors [E]
+  Test failed. See exception logs above.
+  The test description was: Empty Library prioritizes browsing and avoids duplicate errors
+  
+00:03 +24 -3: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart: Change exposes the selected choice to assistive technology
+══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
+The following assertion was thrown running a test:
+A SemanticsHandle was active at the end of the test.
+All SemanticsHandle instances must be disposed by calling dispose() on the SemanticsHandle.
+
+When the exception was thrown, this was the stack:
+#0      WidgetTester._verifySemanticsHandlesWereDisposed (package:flutter_test/src/widget_tester.dart:1074:7)
+#1      WidgetTester._endOfTestVerifications (package:flutter_test/src/widget_tester.dart:1063:5)
+#2      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1968:22)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided one frame from package:stack_trace)
+
+The test description was:
+  Change exposes the selected choice to assistive technology
+════════════════════════════════════════════════════════════════════════════════════════════════════
+00:03 +24 -4: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart: Change exposes the selected choice to assistive technology [E]
+  Test failed. See exception logs above.
+  The test description was: Change exposes the selected choice to assistive technology
+  
+00:03 +24 -4: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart: Home preserves freestyle during library read failure and deleted-only state
+00:03 +25 -4: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart: Change uses bounded searchable choices and preserves choice on read failure
+00:03 +26 -4: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart: Previous-set read failure does not invent no history or block Start
+00:03 +27 -4: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart: Home keeps freestyle and History secondary and accessible
+00:03 +28 -4: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart: Home has no guilt language on an inactive return
+00:03 +29 -4: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart: Change selection updates both launch surfaces and persists
+00:04 +30 -4: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart: Library groups the program and quiets creation
+00:04 +31 -4: Some tests failed.
+
+Failing tests:
+  C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart: Change exposes the selected choice to assistive technology
+  C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart: Empty Library prioritizes browsing and avoids duplicate errors
+  C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart: home guards an emptied chosen plan
+  C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart: library guards an emptied chosen plan

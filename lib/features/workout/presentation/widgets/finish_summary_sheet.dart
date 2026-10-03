@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:gymlog/core/theme/app_colors.dart';
 import 'package:gymlog/core/theme/app_text.dart';
 import 'package:gymlog/core/theme/dynamic_accent_theme.dart';
-import 'package:gymlog/core/utils/units.dart';
+import 'package:gymlog/core/models/workout_metric_summary.dart';
 import 'package:gymlog/shared/widgets/ui/primary_button.dart';
 import 'package:gymlog/shared/widgets/ui/secondary_button.dart';
 
@@ -16,6 +16,7 @@ Future<String?> showFinishSummarySheet({
   required BuildContext context,
   required Duration duration,
   required double volumeKg,
+  WorkoutMetricSummary? metricSummary,
   required int sets,
   required String unit,
   required String initialName,
@@ -28,6 +29,7 @@ Future<String?> showFinishSummarySheet({
     builder: (_) => _FinishSummarySheet(
       duration: duration,
       volumeKg: volumeKg,
+      metricSummary: metricSummary,
       sets: sets,
       unit: unit,
       initialName: initialName,
@@ -47,6 +49,7 @@ String _fmtDuration(Duration d) {
 class _FinishSummarySheet extends StatefulWidget {
   final Duration duration;
   final double volumeKg;
+  final WorkoutMetricSummary? metricSummary;
   final int sets;
   final String unit;
   final String initialName;
@@ -54,6 +57,7 @@ class _FinishSummarySheet extends StatefulWidget {
   const _FinishSummarySheet({
     required this.duration,
     required this.volumeKg,
+    this.metricSummary,
     required this.sets,
     required this.unit,
     required this.initialName,
@@ -95,6 +99,13 @@ class _FinishSummarySheetState extends State<_FinishSummarySheet> {
   Widget build(BuildContext context) {
     final accent = context.accent;
     final surface = context.surface;
+    final summary = widget.metricSummary ??
+        WorkoutMetricSummary(
+            weightedVolumeKg: widget.volumeKg,
+            totalReps: 0,
+            totalDurationSeconds: 0,
+            totalDistanceMeters: 0);
+    final metricLabel = summary.primaryMetricLabel();
     return Padding(
       // Lift above the keyboard when the name field is focused.
       padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom),
@@ -145,7 +156,7 @@ class _FinishSummarySheetState extends State<_FinishSummarySheet> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('Workout complete',
+                          Text('Finish workout',
                               style: AppText.sectionHeading()),
                           Text('Name it and save to your history',
                               style: AppText.caption()),
@@ -156,16 +167,21 @@ class _FinishSummarySheetState extends State<_FinishSummarySheet> {
                 ),
                 const SizedBox(height: 22),
                 Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Expanded(
                         child: _Stat(
                             value: _fmtDuration(widget.duration),
-                            label: 'DURATION')),
+                            label: 'ELAPSED')),
+                    const SizedBox(width: 12),
                     Expanded(
                         child: _Stat(
                             value:
-                                '${groupThousands(kgToDisplay(widget.volumeKg, widget.unit))} ${widget.unit}',
-                            label: 'VOLUME')),
+                                summary.primaryMetricValue(unit: widget.unit),
+                            label: metricLabel == 'DURATION'
+                                ? 'LOGGED TIME'
+                                : metricLabel)),
+                    const SizedBox(width: 12),
                     Expanded(
                         child: _Stat(value: '${widget.sets}', label: 'SETS')),
                   ],

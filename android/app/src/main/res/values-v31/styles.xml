@@ -22,7 +22,8 @@
     <style name="LaunchTheme" parent="@android:style/Theme.Black.NoTitleBar">
         <item name="android:windowBackground">@drawable/launch_background</item>
         <item name="android:windowSplashScreenBackground">#FF000000</item>
-        <item name="android:windowSplashScreenAnimatedIcon">@mipmap/ic_launcher</item>
+        <item name="android:windowSplashScreenAnimatedIcon">@mipmap/ic_launcher_foreground</item>
+        <item name="android:windowSplashScreenIconBackgroundColor">#FF000000</item>
         <!--
           Hands the window off to NormalTheme when the splash dismisses. Without
           this the OS keeps LaunchTheme, and the re-theme that Flutter performs a

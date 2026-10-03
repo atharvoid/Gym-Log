@@ -1,0 +1,99 @@
+00:00 +0: loading C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart
+00:00 +0: (setUpAll)
+00:00 +0: Home chooser explains its setting and scopes the suggestion to one row
+══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
+The following TestFailure was thrown running a test:
+Expected: exactly one matching candidate
+  Actual: _TextWidgetFinder:<Found 0 widgets with text "Routine on Home": []>
+   Which: means none were found but one was expected
+
+When the exception was thrown, this was the stack:
+#4      main.<anonymous closure> (file:///C:/Users/Atharva%20Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart:63:5)
+<asynchronous suspension>
+#5      testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#6      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1952:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided one frame from package:stack_trace)
+
+This was caught by the test expectation on the following line:
+  file:///C:/Users/Atharva%20Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart line 63
+The test description was:
+  Home chooser explains its setting and scopes the suggestion to one row
+════════════════════════════════════════════════════════════════════════════════════════════════════
+00:05 +0 -1: Home chooser explains its setting and scopes the suggestion to one row [E]
+  Test failed. See exception logs above.
+  The test description was: Home chooser explains its setting and scopes the suggestion to one row
+  
+00:05 +0 -1: Library has no second routine chooser in ready or recovery states
+══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
+The following TestFailure was thrown running a test:
+Expected: no matching candidates
+  Actual: _KeyWidgetFinder:<Found 1 widget with key [<'change-training-routine'>]: [
+            TextButton-[<'change-training-routine'>](style: ButtonStyle#176f6(foregroundColor:
+WidgetStateMapper<Color?>({WidgetState.disabled: null, WidgetState.any: Color(alpha: 0.6000, red:
+1.0000, green: 1.0000, blue: 1.0000, colorSpace: ColorSpace.sRGB)}), overlayColor:
+WidgetStateMapper<Color?>({WidgetState.pressed: Color(alpha: 0.1020, red: 1.0000, green: 1.0000,
+blue: 1.0000, colorSpace: ColorSpace.sRGB), WidgetState.hovered: Color(alpha: 0.0784, red: 1.0000,
+green: 1.0000, blue: 1.0000, colorSpace: ColorSpace.sRGB), WidgetState.focused: Color(alpha: 0.1020,
+red: 1.0000, green: 1.0000, blue: 1.0000, colorSpace: ColorSpace.sRGB)}), minimumSize:
+WidgetStatePropertyAll(Size(48.0, 48.0)), mouseCursor:
+WidgetStateMapper<MouseCursor?>({WidgetState.disabled: null, WidgetState.any: null})), dependencies:
+[IconTheme, InheritedCupertinoTheme, MediaQuery, _InheritedTheme,
+_LocalizationsScope-[GlobalKey#fbed1]], state: _ButtonStyleState#e79f8),
+          ]>
+   Which: means one was found but none were expected
+
+When the exception was thrown, this was the stack:
+#4      main.<anonymous closure> (file:///C:/Users/Atharva%20Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart:74:9)
+<asynchronous suspension>
+#5      testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#6      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1952:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided one frame from package:stack_trace)
+
+This was caught by the test expectation on the following line:
+  file:///C:/Users/Atharva%20Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart line 74
+The test description was:
+  Library has no second routine chooser in ready or recovery states
+════════════════════════════════════════════════════════════════════════════════════════════════════
+00:06 +0 -2: Library has no second routine chooser in ready or recovery states [E]
+  Test failed. See exception logs above.
+  The test description was: Library has no second routine chooser in ready or recovery states
+  
+00:06 +0 -2: Home selection updates the same read-only Library marker without remounting state
+══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
+The following TestFailure was thrown running a test:
+Expected: exactly one matching candidate
+  Actual: _TextWidgetFinder:<Found 0 widgets with text "HOME ROUTINE": []>
+   Which: means none were found but one was expected
+
+When the exception was thrown, this was the stack:
+#4      main.<anonymous closure> (file:///C:/Users/Atharva%20Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart:87:5)
+<asynchronous suspension>
+#5      testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#6      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1952:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided one frame from package:stack_trace)
+
+This was caught by the test expectation on the following line:
+  file:///C:/Users/Atharva%20Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart line 87
+The test description was:
+  Home selection updates the same read-only Library marker without remounting state
+════════════════════════════════════════════════════════════════════════════════════════════════════
+00:07 +0 -3: Home selection updates the same read-only Library marker without remounting state [E]
+  Test failed. See exception logs above.
+  The test description was: Home selection updates the same read-only Library marker without remounting state
+  
+00:07 +0 -3: (tearDownAll)
+00:08 +0 -3: Some tests failed.
+
+Failing tests:
+  C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart: Home chooser explains its setting and scopes the suggestion to one row
+  C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart: Home selection updates the same read-only Library marker without remounting state
+  C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart: Library has no second routine chooser in ready or recovery states

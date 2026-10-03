@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:uuid/uuid.dart';
 import '../../models/measurement_type.dart';
 import '../../models/personal_record.dart';
+import '../../models/workout_metric_summary.dart';
 import '../database.dart';
 import '../tables/workouts_table.dart';
 import '../../../features/workout/domain/active_workout_state.dart';
@@ -1053,6 +1054,8 @@ class WorkoutsDao extends DatabaseAccessor<AppDatabase>
                 value: reps.toDouble(),
                 unit: 'reps',
                 setId: set.id,
+                loggedWeightKg: set.weightKg,
+                loggedReps: set.reps,
                 previousValue: maxRepsAtLoad,
               ));
             }
@@ -1088,6 +1091,8 @@ class WorkoutsDao extends DatabaseAccessor<AppDatabase>
                 value: e1rm,
                 unit: 'kg',
                 setId: set.id,
+                loggedWeightKg: set.weightKg,
+                loggedReps: set.reps,
                 previousValue: priorMaxE1rm > 0 ? priorMaxE1rm : null,
               ));
             } else if (priorSets.isNotEmpty && weight > priorMaxWeight) {
@@ -1098,6 +1103,8 @@ class WorkoutsDao extends DatabaseAccessor<AppDatabase>
                 value: weight,
                 unit: 'kg',
                 setId: set.id,
+                loggedWeightKg: set.weightKg,
+                loggedReps: set.reps,
                 previousValue: priorMaxWeight > 0 ? priorMaxWeight : null,
               ));
             } else if (priorSets.isNotEmpty &&
@@ -1111,6 +1118,8 @@ class WorkoutsDao extends DatabaseAccessor<AppDatabase>
                 value: reps.toDouble(),
                 unit: 'reps',
                 setId: set.id,
+                loggedWeightKg: set.weightKg,
+                loggedReps: set.reps,
                 previousValue: priorMaxRepsAtWeight,
               ));
             } else if (priorSets.isEmpty) {
@@ -1121,6 +1130,8 @@ class WorkoutsDao extends DatabaseAccessor<AppDatabase>
                 value: e1rm,
                 unit: 'kg',
                 setId: set.id,
+                loggedWeightKg: set.weightKg,
+                loggedReps: set.reps,
                 previousValue: null,
               ));
             }
@@ -1143,6 +1154,8 @@ class WorkoutsDao extends DatabaseAccessor<AppDatabase>
               value: reps.toDouble(),
               unit: 'reps',
               setId: set.id,
+              loggedWeightKg: set.weightKg,
+              loggedReps: set.reps,
               previousValue: priorMaxReps > 0 ? priorMaxReps : null,
             ));
           }
@@ -1164,6 +1177,8 @@ class WorkoutsDao extends DatabaseAccessor<AppDatabase>
               value: duration.toDouble(),
               unit: 's',
               setId: set.id,
+              loggedWeightKg: set.weightKg,
+              loggedReps: set.reps,
               previousValue: priorMaxDuration > 0 ? priorMaxDuration : null,
             ));
           }
@@ -1194,6 +1209,8 @@ class WorkoutsDao extends DatabaseAccessor<AppDatabase>
               value: dist,
               unit: 'm',
               setId: set.id,
+              loggedWeightKg: set.weightKg,
+              loggedReps: set.reps,
               previousValue: priorMaxDist > 0 ? priorMaxDist : null,
             ));
           }
@@ -1208,6 +1225,8 @@ class WorkoutsDao extends DatabaseAccessor<AppDatabase>
                 value: pace,
                 unit: 's/m',
                 setId: set.id,
+                loggedWeightKg: set.weightKg,
+                loggedReps: set.reps,
                 previousValue: priorBestPace,
               ));
             }
@@ -1283,35 +1302,30 @@ class WorkoutsDao extends DatabaseAccessor<AppDatabase>
 
   // ── Routine Volume History ───────────────────────────────────────────────
 
+  /// Returns the volume history for a routine, tracking each completed session
+  /// individually so multiple workouts (even on the same day) plot their progression.
   Stream<List<DailyVolumeSample>> watchDailyVolumeForRoutine(
     String routineId, {
     DateTime? since,
   }) {
-    final dayExpr = workoutSessions.startedAt.date;
-    final volSum = workoutSessions.totalVolumeKg.sum();
-
-    final query = selectOnly(workoutSessions)
-      ..addColumns([dayExpr, volSum])
-      ..where(workoutSessions.routineId.equals(routineId))
-      ..where(workoutSessions.endedAt.isNotNull())
-      ..groupBy([dayExpr])
-      ..orderBy([OrderingTerm.asc(dayExpr)]);
+    final query = select(workoutSessions)
+      ..where((t) => t.routineId.equals(routineId))
+      ..where((t) => t.endedAt.isNotNull())
+      ..orderBy([(t) => OrderingTerm.asc(t.startedAt)]);
     if (since != null) {
-      query.where(workoutSessions.startedAt.isBiggerOrEqualValue(since));
+      query.where((t) => t.startedAt.isBiggerOrEqualValue(since));
     }
 
-    return query.watch().map((rows) => rows
-        .map((r) => DailyVolumeSample(
-              day: DateTime.parse(r.read(dayExpr)!),
-              volume: (r.read(volSum) ?? 0).toDouble(),
+    return query.watch().map((sessions) => sessions
+        .map((s) => DailyVolumeSample(
+              day: s.endedAt ?? s.startedAt,
+              volume: s.totalVolumeKg,
             ))
         .toList());
   }
 
   /// TRUE per-session stats for a routine (count / total / best session
-  /// volume). Deliberately NOT day-grouped — [watchDailyVolumeForRoutine] groups
-  /// by day for the chart trend, but the header's "Sessions" count must reflect
-  /// every completed session, so two on the same day are counted as two.
+  /// volume). Reflects every completed session, so two on the same day are counted as two.
   Stream<RoutineSessionStats> watchRoutineSessionStats(String routineId) {
     final countExpr = workoutSessions.id.count();
     final sumExpr = workoutSessions.totalVolumeKg.sum();
@@ -1376,14 +1390,8 @@ class WorkoutsDao extends DatabaseAccessor<AppDatabase>
       final existing = await getSession(sessionId);
 
       // 2. Calculate total volume from completed sets
-      double totalVolume = 0;
-      for (final ex in state.exercises) {
-        for (final set in ex.sets) {
-          if (set.isCompleted) {
-            totalVolume += (set.weightKg ?? 0.0) * set.reps;
-          }
-        }
-      }
+      final totalVolume =
+          WorkoutMetricSummary.fromWorkout(state).weightedVolumeKg;
 
       // 3. Update session — only mutable fields
       await (update(workoutSessions)..where((t) => t.id.equals(sessionId)))

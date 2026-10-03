@@ -1,0 +1,54 @@
+00:00 +0: loading C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_correctness_test.dart
+00:00 +0: higgsfield: composed tertiary text and chart ticks meet 4.5:1
+00:00 +1: higgsfield: solid accent label meets 4.5:1
+00:00 +2: neonPurple: composed tertiary text and chart ticks meet 4.5:1
+00:00 +3: neonPurple: solid accent label meets 4.5:1
+00:00 +4: white: composed tertiary text and chart ticks meet 4.5:1
+00:00 +5: white: solid accent label meets 4.5:1
+00:00 +6: neonCyan: composed tertiary text and chart ticks meet 4.5:1
+00:00 +7: neonCyan: solid accent label meets 4.5:1
+00:00 +8: neonMagenta: composed tertiary text and chart ticks meet 4.5:1
+00:00 +9: neonMagenta: solid accent label meets 4.5:1
+00:00 +10: blazeOrange: composed tertiary text and chart ticks meet 4.5:1
+00:00 +11: blazeOrange: solid accent label meets 4.5:1
+00:00 +12: summary uses the existing display conversion for pounds
+00:00 +13: summary preserves logged hold seconds
+00:00 +14: short distance summary preserves metres
+00:00 +15: an estimated record value is not its logged weight
+00:00 +16: estimated share hero never implies the estimate was lifted for seven reps
+00:00 +17: a timed PR shares seconds once, without a rep multiplier
+00:00 +17 -1: a timed PR shares seconds once, without a rep multiplier [E]
+  Expected: '75 SEC'
+    Actual: '75 SEC × 75'
+     Which: is different. Both strings start the same, but the actual value also has the following trailing characters:  × 75
+  
+  package:matcher                                     expect
+  package:flutter_test/src/widget_tester.dart 473:18  expect
+  test\upgrade\session_1_correctness_test.dart 103:5  main.<fn>
+  
+00:00 +17 -1: distance and pace PR shares preserve their recorded dimensions
+00:00 +17 -2: distance and pace PR shares preserve their recorded dimensions [E]
+  Expected: 'M'
+    Actual: 'LBS'
+     Which: is different.
+            Expected: M
+              Actual: LBS
+                      ^
+             Differ at offset 0
+  
+  package:matcher                                     expect
+  package:flutter_test/src/widget_tester.dart 473:18  expect
+  test\upgrade\session_1_correctness_test.dart 128:7  main.<fn>
+  
+00:00 +17 -2: distance metres times seconds never become weighted session volume
+00:00 +18 -2: workout detail volume converts once to pounds
+00:00 +19 -2: missing 1RM estimate never borrows the logged weight
+00:01 +20 -2: editing distance workout does not persist metres times seconds as kg volume
+00:01 +21 -2: PR visibly labels the estimate and does not invent zero-rep logged set
+00:01 +22 -2: finish review does not announce completion before save
+00:01 +23 -2: volume and duration changes use neutral color with their direction intact
+00:01 +24 -2: Some tests failed.
+
+Failing tests:
+  C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_correctness_test.dart: a timed PR shares seconds once, without a rep multiplier
+  C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_correctness_test.dart: distance and pace PR shares preserve their recorded dimensions

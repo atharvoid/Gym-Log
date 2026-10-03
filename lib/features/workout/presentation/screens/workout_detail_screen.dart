@@ -6,6 +6,8 @@ import 'package:intl/intl.dart';
 import 'package:gymlog/core/theme/app_colors.dart';
 import 'package:gymlog/core/theme/app_text.dart';
 import 'package:gymlog/core/utils/formatters.dart';
+import 'package:gymlog/core/utils/units.dart';
+import 'package:gymlog/core/providers/settings_provider.dart';
 import 'package:gymlog/core/database/daos/workouts_dao.dart';
 import 'package:gymlog/core/providers/database_provider.dart';
 import 'package:gymlog/shared/layout/adaptive.dart';
@@ -95,8 +97,7 @@ class WorkoutDetailScreen extends ConsumerWidget {
         ),
         body: AdaptiveContent(
           child: AsyncErrorState(
-            message:
-                "Couldn't load this workout. Your data is safe on this device.",
+            message: "Couldn't load this workout.",
             onRetry: () {
               HapticFeedback.lightImpact();
               ref.invalidate(workoutDetailProvider(sessionId));
@@ -123,7 +124,8 @@ class WorkoutDetailScreen extends ConsumerWidget {
         formatWorkoutDuration(session.startedAt, session.endedAt);
     final totalSets =
         workout.exercises.fold<int>(0, (s, e) => s + e.sets.length);
-    final volumeStr = _formatVolume(session.totalVolumeKg);
+    final volumeStr =
+        formatVolume(session.totalVolumeKg, ref.watch(weightUnitProvider));
     final dateStr = _kDateFormat.format(session.startedAt);
 
     // Muscle split — sets-per-target share.
@@ -182,12 +184,6 @@ class WorkoutDetailScreen extends ConsumerWidget {
   }
 
   // ── Helpers ──────────────────────────────────────────────────────────────────
-
-  static final _volumeFormat = NumberFormat('#,##0.##');
-
-  static String _formatVolume(double kg) {
-    return '${_volumeFormat.format(kg)} kg';
-  }
 
   void _saveAsRoutine(
     BuildContext context,

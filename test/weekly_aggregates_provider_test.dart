@@ -50,7 +50,7 @@ void main() {
         sessionStatsProvider.overrideWith(
           (ref) => Stream<List<SessionStat>>.value([
             SessionStat(
-              date: DateTime(2026, 7, 1, 12),
+              date: DateTime.now().subtract(const Duration(days: 2)),
               volumeKg: 3000,
               reps: 120,
               duration: const Duration(minutes: 45),

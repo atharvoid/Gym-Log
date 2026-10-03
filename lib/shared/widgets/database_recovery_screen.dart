@@ -89,7 +89,7 @@ class _DatabaseRecoveryScreenState extends State<DatabaseRecoveryScreen> {
               const SizedBox(height: AppSpacing.x2),
               Text(
                 _done
-                    ? 'Reopen GymLog to continue. If you are signed in, your\n'
+                    ? 'Reopen Delt to continue. If you are signed in, your\n'
                         'cloud history will restore automatically.'
                     : (_errorMessage ??
                         'Your local data appears corrupted. Reset to continue?\n'
@@ -104,7 +104,7 @@ class _DatabaseRecoveryScreenState extends State<DatabaseRecoveryScreen> {
               const SizedBox(height: AppSpacing.x6),
               if (_done)
                 _RecoveryAction(
-                  label: 'Reopen GymLog',
+                  label: 'Reopen Delt',
                   primary: true,
                   onTap: () => SystemNavigator.pop(),
                 )

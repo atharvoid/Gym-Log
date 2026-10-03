@@ -1,0 +1,10 @@
+lib/shared/widgets/async_error_state.dart
+lib/shared/widgets/app_error_screen.dart
+lib/features/workout/presentation/screens/workout_detail_screen.dart
+lib/features/routines/presentation/screens/routine_detail_screen.dart
+lib/features/profile/presentation/screens/settings_screen.dart
+test/routine_volume_error_state_test.dart
+test/upgrade/session_1_fixtures.dart
+test/upgrade/error_reassurance_test.dart
+test/upgrade/error_reassurance_fixtures.dart
+test/upgrade/error_reassurance_render_test.dart

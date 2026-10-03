@@ -1,0 +1,56 @@
+ M .flutter-plugins-dependencies
+ M analysis_options.yaml
+ M android/build/reports/problems/problems-report.html
+ M lib/core/database/daos/workouts_dao.dart
+ M lib/core/services/sync_engine.dart
+ M lib/features/home/presentation/screens/home_screen.dart
+ M lib/features/profile/presentation/providers/profile_stats_provider.dart
+ M lib/features/profile/presentation/screens/profile_screen.dart
+ M lib/features/profile/presentation/widgets/weekly_bar_chart.dart
+ M lib/features/routines/presentation/screens/routine_detail_screen.dart
+ M lib/features/routines/presentation/widgets/routine_card.dart
+ M lib/features/workout/presentation/screens/workout_detail_screen.dart
+ M lib/features/workout/presentation/screens/workout_screen.dart
+ M lib/features/workout/presentation/widgets/exercise_block.dart
+ M lib/shared/widgets/branded_line_chart.dart
+ M linux/flutter/generated_plugin_registrant.cc
+ M linux/flutter/generated_plugins.cmake
+ M macos/Flutter/GeneratedPluginRegistrant.swift
+ M pubspec.lock
+ M pubspec.yaml
+ M test/active_workout_persistence_fail_closed_test.dart
+ M test/commerce_and_deletion_test.dart
+ M test/import/import_service_test.dart
+ M test/premium/strict_entitlement_verification_test.dart
+ M test/sync/sync_quarantine_and_monotonic_test.dart
+ M test/sync_engine_test.dart
+ M test/tour_sequencing_test.dart
+ M test/workout_draft_store_test.dart
+ M windows/flutter/generated_plugin_registrant.cc
+ M windows/flutter/generated_plugins.cmake
+?? DESIGN.md
+?? design-ai-prompt-templates.zip
+?? design-ai-prompt-templates/
+?? docs/APP_EXPERIENCE_TOOLS.md
+?? docs/PR_FLEX_CARD_DESIGN_PLAN.md
+?? "docs/SOCIAL_SHARING_STRATEGY - Copy.md"
+?? docs/SOCIAL_SHARING_STRATEGY.md
+?? docs/audit/delt-visual-2026-10-02/
+?? docs/upgrade/
+?? lib/core/models/pr_card_data.dart
+?? lib/core/services/share_card_service.dart
+?? lib/features/workout/presentation/screens/share_card_gallery_screen.dart
+?? lib/features/workout/presentation/widgets/share_card/
+?? test/chart_density_test.dart
+?? test/delt_audit_render_temp_test.dart
+?? test/export_share_previews_test.dart
+?? test/golden/goldens/ci/delt_share_card_monument.png
+?? test/golden/goldens/ci/delt_share_card_sticker.png
+?? test/golden/goldens/ci/delt_share_card_technical.png
+?? test/golden/goldens/windows/delt_share_card_monument.png
+?? test/golden/goldens/windows/delt_share_card_sticker.png
+?? test/golden/goldens/windows/delt_share_card_technical.png
+?? test/golden/share_cards_golden_test.dart
+?? test/pr_detection_defects_test.dart
+?? test/streak_dst_test.dart
+?? tools/

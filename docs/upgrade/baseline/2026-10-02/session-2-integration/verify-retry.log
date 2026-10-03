@@ -1,0 +1,1366 @@
+
+â–¸ check inline GoogleFonts
+
+â–¸ check non-semantic AppColors in migrated screens
+â–¸ format
+Formatted 383 files (0 changed) in 12.49 seconds.
+
+â–¸ analyze
+Analyzing gymlog...                                             
+No issues found! (ran in 287.2s)
+
+â–¸ custom_lint
+Analyzing...
+
+No issues found!
+
+â–¸ test
+Resolving dependencies...
+Downloading packages...
+  _fe_analyzer_shared 67.0.0 (108.0.0 available)
+  alchemist 0.12.1 (0.14.0 available)
+  analyzer 6.4.1 (14.4.0 available)
+  analyzer_plugin 0.11.3 (0.14.17 available)
+  app_links 7.1.1 (7.2.1 available)
+  app_links_platform_interface 2.0.2 (2.0.4 available)
+  archive 4.0.9 (4.3.0 available)
+  build 2.4.1 (4.0.11 available)
+  build_config 1.1.2 (1.3.3 available)
+  build_daemon 4.1.1 (4.1.6 available)
+  build_resolvers 2.4.2 (3.0.4 available)
+  build_runner 2.4.13 (2.16.1 available)
+  build_runner_core 7.3.2 (9.3.2 available)
+  built_collection 5.1.1 (5.1.2 available)
+  built_value 8.12.6 (8.13.0 available)
+  cached_network_image 3.4.1 (4.0.4 available)
+  cached_network_image_platform_interface 4.1.1 (5.0.3 available)
+  cached_network_image_web 1.3.1 (2.0.3 available)
+  cli_util 0.4.2 (0.6.0 available)
+  clock 1.1.2 (1.1.3 available)
+  code_assets 1.2.1 (2.1.0 available)
+  code_builder 4.11.1 (4.12.0 available)
+  connectivity_plus 7.1.1 (7.3.2 available)
+  crop_your_image 2.0.0 (2.0.1 available)
+  cross_file 0.3.5+2 (0.4.0 available)
+  custom_lint 0.6.4 (0.8.1 available)
+  custom_lint_builder 0.6.4 (0.8.1 available)
+  custom_lint_core 0.6.3 (0.8.2 available)
+  dart_style 2.3.6 (3.1.13 available)
+  dbus 0.7.14 (0.8.0 available)
+  drift 2.21.0 (2.35.1 available)
+  drift_dev 2.21.2 (2.35.1 available)
+  equatable 2.0.8 (3.0.0 available)
+  file_picker 8.3.7 (13.1.0 available)
+  file_selector_linux 0.9.4 (0.9.4+1 available)
+  file_selector_macos 0.9.5 (0.9.5+1 available)
+  file_selector_windows 0.9.3+5 (0.9.3+6 available)
+  fl_chart 0.68.0 (1.2.0 available)
+  flutter_cache_manager 3.4.1 (3.4.5 available)
+  flutter_image_compress 2.4.0 (2.5.1 available)
+  flutter_image_compress_common 1.0.6 (1.1.1 available)
+  flutter_image_compress_macos 1.0.3 (1.1.0 available)
+  flutter_image_compress_ohos 0.0.3 (0.0.3+1 available)
+  flutter_image_compress_platform_interface 1.0.5 (1.1.0 available)
+  flutter_image_compress_web 0.1.5 (0.1.5+1 available)
+  flutter_lints 4.0.0 (6.0.0 available)
+  flutter_local_notifications 22.1.0 (22.3.1 available)
+  flutter_local_notifications_platform_interface 12.0.1 (12.2.0 available)
+  flutter_riverpod 2.6.1 (3.4.3 available)
+  flutter_secure_storage 9.2.4 (11.2.0 available)
+  flutter_secure_storage_linux 1.2.3 (3.0.3 available)
+  flutter_secure_storage_macos 3.1.3 (4.0.0 available)
+  flutter_secure_storage_platform_interface 1.1.2 (2.1.1 available)
+  flutter_secure_storage_web 1.2.1 (2.1.1 available)
+  flutter_secure_storage_windows 3.1.2 (4.2.2 available)
+  flutter_smartlook 4.1.3 (4.1.32 available)
+  freezed 2.5.2 (4.0.2 available)
+  freezed_annotation 2.4.4 (3.1.0 available)
+  functions_client 2.6.0 (2.7.1 available)
+  glob 2.1.3 (2.2.0 available)
+  go_router 14.8.1 (18.0.2 available)
+  google_fonts 6.3.3 (9.0.0 available)
+  google_sign_in 6.3.0 (7.2.0 available)
+  google_sign_in_android 6.2.1 (7.2.17 available)
+  google_sign_in_ios 5.9.0 (6.3.6 available)
+  google_sign_in_platform_interface 2.5.0 (3.1.0 available)
+  google_sign_in_web 0.12.4+4 (1.1.3 available)
+  gotrue 2.21.0 (2.27.2 available)
+  haptic_feedback 0.6.5 (0.8.0 available)
+  hooks 2.0.2 (2.2.0 available)
+  image 4.8.0 (4.10.1 available)
+  image_picker 1.2.2 (1.2.3 available)
+  image_picker_android 0.8.13+19 (0.8.13+23 available)
+  image_picker_ios 0.8.13+6 (0.8.13+9 available)
+  injector 3.0.0 (4.0.0 available)
+  intl 0.19.0 (0.20.3 available)
+  io 1.0.5 (1.1.0 available)
+  jni 1.0.0 (1.1.0 available)
+  jni_flutter 1.0.1 (1.0.3 available)
+  js 0.6.7 (0.7.2 available)
+  json_annotation 4.9.0 (4.12.0 available)
+  json_serializable 6.8.0 (6.14.1 available)
+  lints 4.0.0 (6.1.0 available)
+  matcher 0.12.19 (0.12.20 available)
+  material_color_utilities 0.13.0 (0.13.1 available)
+  meta 1.18.0 (1.19.0 available)
+  mime 2.0.0 (2.1.0 available)
+  nm 0.5.0 (0.6.0 available)
+  objective_c 9.4.1 (9.6.2 available)
+  octo_image 2.1.0 (2.1.2 available)
+  package_config 2.2.0 (3.0.0 available)
+  package_info_plus 8.3.1 (10.2.2 available)
+  package_info_plus_platform_interface 3.2.1 (4.1.0 available)
+  path_provider 2.1.5 (2.1.6 available)
+  path_provider_linux 2.2.1 (2.2.2 available)
+  path_provider_platform_interface 2.1.2 (2.1.3 available)
+  permission_handler 11.4.0 (13.0.2 available)
+  permission_handler_android 12.1.0 (14.1.0 available)
+  permission_handler_apple 9.5.0 (9.6.2 available)
+  permission_handler_platform_interface 4.4.0 (4.4.1 available)
+  petitparser 7.0.2 (7.1.0 available)
+  platform 3.1.6 (3.2.0 available)
+  pool 1.5.2 (1.5.3 available)
+  posix 6.5.0 (6.5.2 available)
+  postgrest 2.7.0 (2.9.1 available)
+  process 5.0.5 (5.0.6 available)
+  pub_semver 2.2.0 (2.2.1 available)
+  pubspec_parse 1.5.0 (1.6.0 available)
+  purchases_flutter 10.4.2 (10.14.0 available)
+  realtime_client 2.7.3 (2.13.0 available)
+  record_use 0.6.0 (1.1.1 available)
+  riverpod 2.6.1 (3.4.3 available)
+  riverpod_analyzer_utils 0.5.1 (0.5.10 available)
+  riverpod_annotation 2.6.1 (4.0.7 available)
+  riverpod_generator 2.4.0 (4.0.9 available)
+  riverpod_lint 2.3.10 (3.1.9 available)
+  rxdart 0.27.7 (0.28.0 available)
+  sentry 8.14.2 (9.30.1 available)
+  sentry_flutter 8.14.2 (9.30.1 available)
+  share_plus 12.0.2 (13.3.1 available)
+  share_plus_platform_interface 6.1.0 (7.2.0 available)
+  shared_preferences_android 2.4.25 (2.4.28 available)
+  shared_preferences_foundation 2.5.6 (2.5.7 available)
+  shelf_web_socket 2.0.1 (3.0.0 available)
+  source_gen 1.5.0 (4.3.0 available)
+  source_helper 1.3.5 (1.3.13 available)
+  sqflite 2.4.3 (2.4.4 available)
+  sqflite_android 2.4.3 (2.4.4 available)
+  sqflite_common 2.5.9 (2.5.13 available)
+  sqflite_darwin 2.4.3 (2.4.4 available)
+  sqflite_platform_interface 2.4.1 (2.4.2 available)
+  sqlite3 2.9.4 (3.7.0 available)
+  sqlite3_flutter_libs 0.5.42 (0.6.0+eol available)
+  sqlparser 0.39.2 (0.45.0 available)
+  stack_trace 1.12.1 (1.12.2 available)
+  storage_client 2.5.5 (2.8.1 available)
+  stream_transform 2.1.1 (2.1.2 available)
+  supabase 2.12.1 (2.16.2 available)
+  supabase_flutter 2.14.1 (2.18.0 available)
+  synchronized 3.4.1 (3.4.2 available)
+  test_api 0.7.11 (0.7.14 available)
+  url_launcher_android 6.3.32 (6.3.33 available)
+  url_launcher_ios 6.4.1 (6.4.2 available)
+  url_launcher_linux 3.2.2 (3.2.3 available)
+  url_launcher_macos 3.2.5 (3.2.6 available)
+  url_launcher_windows 3.1.5 (3.1.6 available)
+  uuid 4.5.3 (4.6.0 available)
+  vector_graphics 1.2.2 (1.2.3 available)
+  vector_graphics_compiler 1.2.6 (1.3.0 available)
+  vector_math 2.2.0 (2.4.3 available)
+  vm_service 15.2.0 (15.3.0 available)
+  win32 5.15.0 (6.4.0 available)
+  xml 6.6.1 (7.1.0 available)
+  yaml 3.1.3 (3.1.4 available)
+  yet_another_json_isolate 2.1.0 (2.1.1 available)
+Got dependencies!
+155 packages have newer versions incompatible with dependency constraints.
+Try `flutter pub outdated` for more information.
+00:00 +0: loading C:/Users/Atharva Patil/Documents/projects/gymlog/test/a11y_wrapper_single_node_test.dart
+00:00 +0: C:/Users/Atharva Patil/Documents/projects/gymlog/test/a11y_wrapper_single_node_test.dart: ProLockPill publishes a single semantic node with its label
+00:01 +1: C:/Users/Atharva Patil/Documents/projects/gymlog/test/accessibility_atomic_12_test.dart: ATOMIC-12 Accessibility & Screen-Reader Qualification SetRow renders single coherent semantic label with custom actions
+00:01 +2: C:/Users/Atharva Patil/Documents/projects/gymlog/test/accessibility_atomic_12_test.dart: ATOMIC-12 Accessibility & Screen-Reader Qualification SetRow renders single coherent semantic label with custom actions
+00:01 +3: C:/Users/Atharva Patil/Documents/projects/gymlog/test/accessibility_atomic_12_test.dart: ATOMIC-12 Accessibility & Screen-Reader Qualification SetRow renders single coherent semantic label with custom actions
+00:02 +4: C:/Users/Atharva Patil/Documents/projects/gymlog/test/accessibility_atomic_12_test.dart: ATOMIC-12 Accessibility & Screen-Reader Qualification SetRow renders single coherent semantic label with custom actions
+00:02 +5: C:/Users/Atharva Patil/Documents/projects/gymlog/test/accessibility_core_journey_test.dart: SetRow interactive elements meet 48dp touch target requirements
+00:03 +6: C:/Users/Atharva Patil/Documents/projects/gymlog/test/accessibility_core_journey_test.dart: SetRow interactive elements meet 48dp touch target requirements
+00:03 +7: C:/Users/Atharva Patil/Documents/projects/gymlog/test/accessibility_core_journey_test.dart: SetRow interactive elements meet 48dp touch target requirements
+00:07 +8: C:/Users/Atharva Patil/Documents/projects/gymlog/test/accessibility_core_journey_test.dart: SetRow interactive elements meet 48dp touch target requirements
+00:07 +9: C:/Users/Atharva Patil/Documents/projects/gymlog/test/accessibility_core_journey_test.dart: SetRow interactive elements meet 48dp touch target requirements
+00:07 +10: C:/Users/Atharva Patil/Documents/projects/gymlog/test/accessibility_core_journey_test.dart: SetRow interactive elements meet 48dp touch target requirements
+00:07 +11: C:/Users/Atharva Patil/Documents/projects/gymlog/test/accessibility_target_size_test.dart: _FilterChipButton in ExerciseSelectionScreen is at least 48dp tall
+00:08 +11: C:/Users/Atharva Patil/Documents/projects/gymlog/test/accessibility_core_journey_test.dart: RestOverrideChip meets 48dp touch target requirements
+WARNING (drift): It looks like you've created the database class AppDatabase multiple times. When these two databases use the same QueryExecutor, race conditions will occur and might corrupt the database. 
+Try to follow the advice at https://drift.simonbinder.eu/faq/#using-the-database or, if you know what you're doing, set driftRuntimeOptions.dontWarnAboutMultipleDatabases = true
+Here is the stacktrace from when the database was opened a second time:
+#0      GeneratedDatabase._handleInstantiated (package:drift/src/runtime/api/db_base.dart:96:30)
+#1      GeneratedDatabase._whenConstructed (package:drift/src/runtime/api/db_base.dart:73:12)
+#2      new GeneratedDatabase (package:drift/src/runtime/api/db_base.dart:64:5)
+#3      new _$AppDatabase (package:gymlog/core/database/database.g.dart:4170:36)
+#4      new AppDatabase.forTesting (package:gymlog/core/database/database.dart)
+#5      main.<anonymous closure> (file:///C:/Users/Atharva%20Patil/Documents/projects/gymlog/test/accessibility_core_journey_test.dart:41:22)
+#6      Declarer._runSetUps.<anonymous closure> (package:test_api/src/backend/declarer.dart:439:61)
+#7      Future.forEach.<anonymous closure> (dart:async/future.dart:674:26)
+#8      Future.doWhile.<anonymous closure> (dart:async/future.dart:732:26)
+#9      StackZoneSpecification._registerUnaryCallback.<anonymous closure>.<anonymous closure> (package:stack_trace/src/stack_zone_specification.dart:127:36)
+#10     StackZoneSpecification._run (package:stack_trace/src/stack_zone_specification.dart:207:15)
+#11     StackZoneSpecification._registerUnaryCallback.<anonymous closure> (package:stack_trace/src/stack_zone_specification.dart:127:24)
+#12     _rootRunUnary (dart:async/zone_root.dart:48:47)
+#13     _CustomZone.runUnary (dart:async/zone.dart:733:19)
+#14     _CustomZone.runUnaryGuarded (dart:async/zone.dart:633:7)
+#15     _CustomZone.bindUnaryCallbackGuarded.<anonymous closure> (dart:async/zone.dart:671:26)
+#16     Future.doWhile (dart:async/future.dart:749:18)
+#17     Future.forEach (dart:async/future.dart:672:12)
+#18     Declarer._runSetUps (package:test_api/src/backend/declarer.dart:439:18)
+#19     Declarer.test.<anonymous closure>.<anonymous closure> (package:test_api/src/backend/declarer.dart:252:21)
+#20     _rootRun (dart:async/zone_root.dart:35:13)
+#21     _CustomZone.run (dart:async/zone.dart:726:19)
+#22     _runZoned (dart:async/zone_api.dart:166:6)
+#23     runZoned (dart:async/zone_api.dart:92:10)
+#24     Declarer.test.<anonymous closure> (package:test_api/src/backend/declarer.dart:250:17)
+#25     Invoker._waitForOutstandingCallbacks.<anonymous closure> (package:test_api/src/backend/invoker.dart:318:17)
+#26     _rootRun (dart:async/zone_root.dart:35:13)
+#27     _CustomZone.run (dart:async/zone.dart:726:19)
+#28     _runZoned (dart:async/zone_api.dart:166:6)
+#29     runZoned (dart:async/zone_api.dart:92:10)
+#30     Invoker._waitForOutstandingCallbacks (package:test_api/src/backend/invoker.dart:314:5)
+#31     Invoker._onRun.<anonymous closure>.<anonymous closure>.<anonymous closure> (package:test_api/src/backend/invoker.dart:457:21)
+<asynchronous suspension>
+This warning will only appear on debug builds.
+00:08 +12: C:/Users/Atharva Patil/Documents/projects/gymlog/test/accessibility_target_size_test.dart: _FilterChipButton in ExerciseSelectionScreen is at least 48dp tall
+00:08 +12: C:/Users/Atharva Patil/Documents/projects/gymlog/test/accessibility_core_journey_test.dart: RestOverride sheet elements meet 48dp touch target requirements
+WARNING (drift): It looks like you've created the database class AppDatabase multiple times. When these two databases use the same QueryExecutor, race conditions will occur and might corrupt the database. 
+00:10 +13: C:/Users/Atharva Patil/Documents/projects/gymlog/test/accessibility_target_size_test.dart: _FilterChipButton in ExerciseSelectionScreen is at least 48dp tall
+00:10 +14: C:/Users/Atharva Patil/Documents/projects/gymlog/test/accessibility_target_size_test.dart: _FilterChipButton in ExerciseSelectionScreen is at least 48dp tall
+00:10 +14: C:/Users/Atharva Patil/Documents/projects/gymlog/test/accessibility_core_journey_test.dart: RestOverride sheet elements meet 48dp touch target requirements
+Try to follow the advice at https://drift.simonbinder.eu/faq/#using-the-database or, if you know what you're doing, set driftRuntimeOptions.dontWarnAboutMultipleDatabases = true
+Here is the stacktrace from when the database was opened a second time:
+#0      GeneratedDatabase._handleInstantiated (package:drift/src/runtime/api/db_base.dart:96:30)
+#1      GeneratedDatabase._whenConstructed (package:drift/src/runtime/api/db_base.dart:73:12)
+#2      new GeneratedDatabase (package:drift/src/runtime/api/db_base.dart:64:5)
+#3      new _$AppDatabase (package:gymlog/core/database/database.g.dart:4170:36)
+#4      new AppDatabase.forTesting (package:gymlog/core/database/database.dart)
+#5      main.<anonymous closure> (file:///C:/Users/Atharva%20Patil/Documents/projects/gymlog/test/accessibility_core_journey_test.dart:41:22)
+#6      Declarer._runSetUps.<anonymous closure> (package:test_api/src/backend/declarer.dart:439:61)
+#7      Future.forEach.<anonymous closure> (dart:async/future.dart:674:26)
+#8      Future.doWhile.<anonymous closure> (dart:async/future.dart:732:26)
+#9      StackZoneSpecification._registerUnaryCallback.<anonymous closure>.<anonymous closure> (package:stack_trace/src/stack_zone_specification.dart:127:36)
+#10     StackZoneSpecification._run (package:stack_trace/src/stack_zone_specification.dart:207:15)
+#11     StackZoneSpecification._registerUnaryCallback.<anonymous closure> (package:stack_trace/src/stack_zone_specification.dart:127:24)
+#12     _rootRunUnary (dart:async/zone_root.dart:48:47)
+#13     _CustomZone.runUnary (dart:async/zone.dart:733:19)
+#14     _CustomZone.runUnaryGuarded (dart:async/zone.dart:633:7)
+#15     _CustomZone.bindUnaryCallbackGuarded.<anonymous closure> (dart:async/zone.dart:671:26)
+#16     Future.doWhile (dart:async/future.dart:749:18)
+#17     Future.forEach (dart:async/future.dart:672:12)
+#18     Declarer._runSetUps (package:test_api/src/backend/declarer.dart:439:18)
+#19     Declarer.test.<anonymous closure>.<anonymous closure> (package:test_api/src/backend/declarer.dart:252:21)
+#20     _rootRun (dart:async/zone_root.dart:35:13)
+#21     _CustomZone.run (dart:async/zone.dart:726:19)
+#22     _runZoned (dart:async/zone_api.dart:166:6)
+#23     runZoned (dart:async/zone_api.dart:92:10)
+#24     Declarer.test.<anonymous closure> (package:test_api/src/backend/declarer.dart:250:17)
+#25     Invoker._waitForOutstandingCallbacks.<anonymous closure> (package:test_api/src/backend/invoker.dart:318:17)
+#26     _rootRun (dart:async/zone_root.dart:35:13)
+#27     _CustomZone.run (dart:async/zone.dart:726:19)
+#28     _runZoned (dart:async/zone_api.dart:166:6)
+#29     runZoned (dart:async/zone_api.dart:92:10)
+#30     Invoker._waitForOutstandingCallbacks (package:test_api/src/backend/invoker.dart:314:5)
+#31     Invoker._onRun.<anonymous closure>.<anonymous closure>.<anonymous closure> (package:test_api/src/backend/invoker.dart:457:21)
+<asynchronous suspension>
+This warning will only appear on debug builds.
+00:10 +15: C:/Users/Atharva Patil/Documents/projects/gymlog/test/accessibility_target_size_test.dart: _FilterChipButton in ExerciseSelectionScreen is at least 48dp tall
+00:10 +15: C:/Users/Atharva Patil/Documents/projects/gymlog/test/accessibility_core_journey_test.dart: RestTimerBar action buttons meet 48dp height requirement
+WARNING (drift): It looks like you've created the database class AppDatabase multiple times. When these two databases use the same QueryExecutor, race conditions will occur and might corrupt the database. 
+Try to follow the advice at https://drift.simonbinder.eu/faq/#using-the-database or, if you know what you're doing, set driftRuntimeOptions.dontWarnAboutMultipleDatabases = true
+Here is the stacktrace from when the database was opened a second time:
+#0      GeneratedDatabase._handleInstantiated (package:drift/src/runtime/api/db_base.dart:96:30)
+#1      GeneratedDatabase._whenConstructed (package:drift/src/runtime/api/db_base.dart:73:12)
+#2      new GeneratedDatabase (package:drift/src/runtime/api/db_base.dart:64:5)
+#3      new _$AppDatabase (package:gymlog/core/database/database.g.dart:4170:36)
+#4      new AppDatabase.forTesting (package:gymlog/core/database/database.dart)
+#5      main.<anonymous closure> (file:///C:/Users/Atharva%20Patil/Documents/projects/gymlog/test/accessibility_core_journey_test.dart:41:22)
+#6      Declarer._runSetUps.<anonymous closure> (package:test_api/src/backend/declarer.dart:439:61)
+#7      Future.forEach.<anonymous closure> (dart:async/future.dart:674:26)
+#8      Future.doWhile.<anonymous closure> (dart:async/future.dart:732:26)
+#9      StackZoneSpecification._registerUnaryCallback.<anonymous closure>.<anonymous closure> (package:stack_trace/src/stack_zone_specification.dart:127:36)
+#10     StackZoneSpecification._run (package:stack_trace/src/stack_zone_specification.dart:207:15)
+#11     StackZoneSpecification._registerUnaryCallback.<anonymous closure> (package:stack_trace/src/stack_zone_specification.dart:127:24)
+#12     _rootRunUnary (dart:async/zone_root.dart:48:47)
+#13     _CustomZone.runUnary (dart:async/zone.dart:733:19)
+#14     _CustomZone.runUnaryGuarded (dart:async/zone.dart:633:7)
+#15     _CustomZone.bindUnaryCallbackGuarded.<anonymous closure> (dart:async/zone.dart:671:26)
+#16     Future.doWhile (dart:async/future.dart:749:18)
+#17     Future.forEach (dart:async/future.dart:672:12)
+#18     Declarer._runSetUps (package:test_api/src/backend/declarer.dart:439:18)
+#19     Declarer.test.<anonymous closure>.<anonymous closure> (package:test_api/src/backend/declarer.dart:252:21)
+#20     _rootRun (dart:async/zone_root.dart:35:13)
+#21     _CustomZone.run (dart:async/zone.dart:726:19)
+#22     _runZoned (dart:async/zone_api.dart:166:6)
+#23     runZoned (dart:async/zone_api.dart:92:10)
+#24     Declarer.test.<anonymous closure> (package:test_api/src/backend/declarer.dart:250:17)
+#25     Invoker._waitForOutstandingCallbacks.<anonymous closure> (package:test_api/src/backend/invoker.dart:318:17)
+#26     _rootRun (dart:async/zone_root.dart:35:13)
+#27     _CustomZone.run (dart:async/zone.dart:726:19)
+#28     _runZoned (dart:async/zone_api.dart:166:6)
+#29     runZoned (dart:async/zone_api.dart:92:10)
+#30     Invoker._waitForOutstandingCallbacks (package:test_api/src/backend/invoker.dart:314:5)
+#31     Invoker._onRun.<anonymous closure>.<anonymous closure>.<anonymous closure> (package:test_api/src/backend/invoker.dart:457:21)
+<asynchronous suspension>
+This warning will only appear on debug builds.
+00:10 +16: C:/Users/Atharva Patil/Documents/projects/gymlog/test/accessibility_target_size_test.dart: _FilterChipButton in ExerciseSelectionScreen is at least 48dp tall
+00:10 +16: C:/Users/Atharva Patil/Documents/projects/gymlog/test/accessibility_core_journey_test.dart: ActiveWorkoutScreen renders correctly at 200% text scale without overflow
+WARNING (drift): It looks like you've created the database class AppDatabase multiple times. When these two databases use the same QueryExecutor, race conditions will occur and might corrupt the database. 
+00:10 +17: C:/Users/Atharva Patil/Documents/projects/gymlog/test/active_workout_atomic_03_test.dart: ATOMIC-03 Active Workout & Card Geometry Suite 3. SetRow cells have minHeight 48 and SetRow minHeight 56
+00:10 +17: C:/Users/Atharva Patil/Documents/projects/gymlog/test/accessibility_core_journey_test.dart: ActiveWorkoutScreen renders correctly at 200% text scale without overflow
+Try to follow the advice at https://drift.simonbinder.eu/faq/#using-the-database or, if you know what you're doing, set driftRuntimeOptions.dontWarnAboutMultipleDatabases = true
+Here is the stacktrace from when the database was opened a second time:
+#0      GeneratedDatabase._handleInstantiated (package:drift/src/runtime/api/db_base.dart:96:30)
+#1      GeneratedDatabase._whenConstructed (package:drift/src/runtime/api/db_base.dart:73:12)
+#2      new GeneratedDatabase (package:drift/src/runtime/api/db_base.dart:64:5)
+#3      new _$AppDatabase (package:gymlog/core/database/database.g.dart:4170:36)
+#4      new AppDatabase.forTesting (package:gymlog/core/database/database.dart)
+#5      main.<anonymous closure> (file:///C:/Users/Atharva%20Patil/Documents/projects/gymlog/test/accessibility_core_journey_test.dart:41:22)
+#6      Declarer._runSetUps.<anonymous closure> (package:test_api/src/backend/declarer.dart:439:61)
+#7      Future.forEach.<anonymous closure> (dart:async/future.dart:674:26)
+#8      Future.doWhile.<anonymous closure> (dart:async/future.dart:732:26)
+#9      StackZoneSpecification._registerUnaryCallback.<anonymous closure>.<anonymous closure> (package:stack_trace/src/stack_zone_specification.dart:127:36)
+#10     StackZoneSpecification._run (package:stack_trace/src/stack_zone_specification.dart:207:15)
+#11     StackZoneSpecification._registerUnaryCallback.<anonymous closure> (package:stack_trace/src/stack_zone_specification.dart:127:24)
+#12     _rootRunUnary (dart:async/zone_root.dart:48:47)
+#13     _CustomZone.runUnary (dart:async/zone.dart:733:19)
+#14     _CustomZone.runUnaryGuarded (dart:async/zone.dart:633:7)
+#15     _CustomZone.bindUnaryCallbackGuarded.<anonymous closure> (dart:async/zone.dart:671:26)
+#16     Future.doWhile (dart:async/future.dart:749:18)
+#17     Future.forEach (dart:async/future.dart:672:12)
+#18     Declarer._runSetUps (package:test_api/src/backend/declarer.dart:439:18)
+#19     Declarer.test.<anonymous closure>.<anonymous closure> (package:test_api/src/backend/declarer.dart:252:21)
+#20     _rootRun (dart:async/zone_root.dart:35:13)
+#21     _CustomZone.run (dart:async/zone.dart:726:19)
+#22     _runZoned (dart:async/zone_api.dart:166:6)
+#23     runZoned (dart:async/zone_api.dart:92:10)
+#24     Declarer.test.<anonymous closure> (package:test_api/src/backend/declarer.dart:250:17)
+#25     Invoker._waitForOutstandingCallbacks.<anonymous closure> (package:test_api/src/backend/invoker.dart:318:17)
+#26     _rootRun (dart:async/zone_root.dart:35:13)
+#27     _CustomZone.run (dart:async/zone.dart:726:19)
+#28     _runZoned (dart:async/zone_api.dart:166:6)
+#29     runZoned (dart:async/zone_api.dart:92:10)
+#30     Invoker._waitForOutstandingCallbacks (package:test_api/src/backend/invoker.dart:314:5)
+#31     Invoker._onRun.<anonymous closure>.<anonymous closure>.<anonymous closure> (package:test_api/src/backend/invoker.dart:457:21)
+<asynchronous suspension>
+This warning will only appear on debug builds.
+00:11 +18: C:/Users/Atharva Patil/Documents/projects/gymlog/test/active_workout_atomic_03_test.dart: ATOMIC-03 Active Workout & Card Geometry Suite 3. SetRow cells have minHeight 48 and SetRow minHeight 56
+00:11 +19: C:/Users/Atharva Patil/Documents/projects/gymlog/test/accessibility_target_size_test.dart: Legal links in AuthScreen flow inline and expose link semantics
+00:11 +20: C:/Users/Atharva Patil/Documents/projects/gymlog/test/accessibility_target_size_test.dart: Legal links in AuthScreen flow inline and expose link semantics
+00:11 +21: C:/Users/Atharva Patil/Documents/projects/gymlog/test/accessibility_target_size_test.dart: Legal links in AuthScreen flow inline and expose link semantics
+00:11 +22: C:/Users/Atharva Patil/Documents/projects/gymlog/test/accessibility_target_size_test.dart: Legal links in AuthScreen flow inline and expose link semantics
+00:11 +23: C:/Users/Atharva Patil/Documents/projects/gymlog/test/accessibility_target_size_test.dart: Legal links in AuthScreen flow inline and expose link semantics
+00:11 +24: C:/Users/Atharva Patil/Documents/projects/gymlog/test/active_workout_atomic_03_test.dart: ATOMIC-03 Active Workout & Card Geometry Suite 5. showAppSnackBar renders floating snackbar with radius 14
+00:11 +25: C:/Users/Atharva Patil/Documents/projects/gymlog/test/active_workout_atomic_03_test.dart: ATOMIC-03 Active Workout & Card Geometry Suite 5. showAppSnackBar renders floating snackbar with radius 14
+00:11 +26: C:/Users/Atharva Patil/Documents/projects/gymlog/test/active_workout_atomic_03_test.dart: ATOMIC-03 Active Workout & Card Geometry Suite 5. showAppSnackBar renders floating snackbar with radius 14
+00:11 +27: C:/Users/Atharva Patil/Documents/projects/gymlog/test/active_workout_atomic_03_test.dart: ATOMIC-03 Active Workout & Card Geometry Suite 5. showAppSnackBar renders floating snackbar with radius 14
+00:11 +28: C:/Users/Atharva Patil/Documents/projects/gymlog/test/active_workout_atomic_03_test.dart: ATOMIC-03 Active Workout & Card Geometry Suite 5. showAppSnackBar renders floating snackbar with radius 14
+00:11 +29: C:/Users/Atharva Patil/Documents/projects/gymlog/test/active_workout_atomic_03_test.dart: ATOMIC-03 Active Workout & Card Geometry Suite 5. showAppSnackBar renders floating snackbar with radius 14
+00:11 +30: C:/Users/Atharva Patil/Documents/projects/gymlog/test/active_workout_atomic_04_test.dart: ATOMIC-04 Reversible Deletion & Replacement Policy Suite 8. compatible replacement preserves values
+00:11 +31: C:/Users/Atharva Patil/Documents/projects/gymlog/test/active_workout_atomic_03_test.dart: ATOMIC-03 Active Workout & Card Geometry Suite 6. showAppSnackBar clears rest timer bar offset when active
+00:12 +32: C:/Users/Atharva Patil/Documents/projects/gymlog/test/active_workout_atomic_03_test.dart: ATOMIC-03 Active Workout & Card Geometry Suite 6. showAppSnackBar clears rest timer bar offset when active
+00:13 +33: C:/Users/Atharva Patil/Documents/projects/gymlog/test/active_workout_draft_upgrade_test.dart: ATOMIC-RC3-05 Workout Draft and Routine Upgrades 1. WorkoutDraftStore upgrades legacy exercises via name inference on parse
+00:13 +34: C:/Users/Atharva Patil/Documents/projects/gymlog/test/active_workout_draft_upgrade_test.dart: ATOMIC-RC3-05 Workout Draft and Routine Upgrades 2. ActiveWorkoutNotifier resumeDraft upgrades draft against database metadata
+00:14 +35: C:/Users/Atharva Patil/Documents/projects/gymlog/test/active_workout_header_test.dart: ActiveWorkoutHeader normal layout renders elapsed time once at 1.0x
+00:15 +36: C:/Users/Atharva Patil/Documents/projects/gymlog/test/active_workout_header_test.dart: ActiveWorkoutHeader normal layout renders elapsed time once at 1.6x
+00:15 +37: C:/Users/Atharva Patil/Documents/projects/gymlog/test/active_workout_header_test.dart: ActiveWorkoutHeader normal layout renders at 2.0x without overflow
+00:15 +38: C:/Users/Atharva Patil/Documents/projects/gymlog/test/active_workout_header_test.dart: ActiveWorkoutHeader normal layout reflowed shows workout name as title
+00:16 +39: C:/Users/Atharva Patil/Documents/projects/gymlog/test/active_workout_header_test.dart: ActiveWorkoutHeader normal layout compact triggers reflow at 320px showing workout name
+00:16 +40: C:/Users/Atharva Patil/Documents/projects/gymlog/test/active_workout_header_test.dart: ActiveWorkoutHeader normal layout renders long elapsed time
+00:16 +41: C:/Users/Atharva Patil/Documents/projects/gymlog/test/active_workout_header_test.dart: ActiveWorkoutHeader normal layout renders large volume and sets
+00:16 +42: C:/Users/Atharva Patil/Documents/projects/gymlog/test/active_workout_header_test.dart: ActiveWorkoutHeader behavior Finish is present when finishEnabled is true
+00:16 +43: C:/Users/Atharva Patil/Documents/projects/gymlog/test/active_workout_large_text_test.dart: ActiveWorkout large-text header pumps at 390x844 1.0x
+00:16 +44: C:/Users/Atharva Patil/Documents/projects/gymlog/test/active_workout_large_text_test.dart: ActiveWorkout large-text header pumps at 390x844 1.0x
+00:16 +45: C:/Users/Atharva Patil/Documents/projects/gymlog/test/active_workout_large_text_test.dart: ActiveWorkout large-text header pumps at 390x844 1.0x
+00:16 +46: C:/Users/Atharva Patil/Documents/projects/gymlog/test/active_workout_large_text_test.dart: ActiveWorkout large-text header pumps at 390x844 1.0x
+00:16 +47: C:/Users/Atharva Patil/Documents/projects/gymlog/test/active_workout_large_text_test.dart: ActiveWorkout large-text header pumps at 390x844 1.0x
+00:16 +48: C:/Users/Atharva Patil/Documents/projects/gymlog/test/active_workout_large_text_test.dart: ActiveWorkout large-text header pumps at 390x844 1.0x
+00:16 +49: C:/Users/Atharva Patil/Documents/projects/gymlog/test/active_workout_large_text_test.dart: ActiveWorkout large-text header pumps at 390x844 1.0x
+00:16 +50: C:/Users/Atharva Patil/Documents/projects/gymlog/test/active_workout_large_text_test.dart: ActiveWorkout large-text header pumps at 390x844 1.0x
+00:17 +51: C:/Users/Atharva Patil/Documents/projects/gymlog/test/active_workout_large_text_test.dart: ActiveWorkout large-text header pumps at 390x844 1.0x
+00:17 +52: C:/Users/Atharva Patil/Documents/projects/gymlog/test/active_workout_large_text_test.dart: ActiveWorkout large-text header pumps at 390x844 1.0x
+00:17 +53: C:/Users/Atharva Patil/Documents/projects/gymlog/test/active_workout_large_text_test.dart: ActiveWorkout large-text header pumps at 390x844 1.0x
+00:17 +54: C:/Users/Atharva Patil/Documents/projects/gymlog/test/active_workout_large_text_test.dart: ActiveWorkout large-text header pumps at 390x844 1.0x
+00:17 +55: C:/Users/Atharva Patil/Documents/projects/gymlog/test/active_workout_large_text_test.dart: ActiveWorkout large-text header pumps at 390x844 1.0x
+00:18 +56: C:/Users/Atharva Patil/Documents/projects/gymlog/test/active_workout_large_text_test.dart: ActiveWorkout large-text header pumps at 390x844 1.6x
+00:18 +57: C:/Users/Atharva Patil/Documents/projects/gymlog/test/active_workout_minimize_test.dart: ActiveWorkoutScreen minimize handle has tap gesture, semantics and pops router
+00:18 +58: C:/Users/Atharva Patil/Documents/projects/gymlog/test/active_workout_minimize_test.dart: ActiveWorkoutScreen minimize handle has tap gesture, semantics and pops router
+00:19 +59: C:/Users/Atharva Patil/Documents/projects/gymlog/test/active_workout_minimize_test.dart: ActiveWorkoutScreen minimize handle has tap gesture, semantics and pops router
+00:20 +60: C:/Users/Atharva Patil/Documents/projects/gymlog/test/active_workout_persistence_fail_closed_test.dart: ATOMIC-RC3-01 Persistence Fail Closed Suite 1. Transaction failure retains state and draft
+[finishWorkout] transaction failed: Exception: Simulated database write error
+00:20 +61: C:/Users/Atharva Patil/Documents/projects/gymlog/test/active_workout_persistence_fail_closed_test.dart: ATOMIC-RC3-01 Persistence Fail Closed Suite 2. Successful save clears state and draft
+00:20 +62: C:/Users/Atharva Patil/Documents/projects/gymlog/test/active_workout_persistence_fail_closed_test.dart: ATOMIC-RC3-01 Persistence Fail Closed Suite 3. Edited-workout failure retains state
+[saveEditedWorkout] transaction failed: Exception: Simulated database edit error
+00:21 +63: C:/Users/Atharva Patil/Documents/projects/gymlog/test/active_workout_set_invariants_test.dart: ATOMIC-RC3-02 Set State Invariants Suite 1. Clearing weight sets it to null, clearing reps sets it to 0
+00:22 +64: C:/Users/Atharva Patil/Documents/projects/gymlog/test/active_workout_set_invariants_test.dart: ATOMIC-RC3-02 Set State Invariants Suite 2. Direct notifier cannot complete invalid set
+00:22 +65: C:/Users/Atharva Patil/Documents/projects/gymlog/test/active_workout_set_invariants_test.dart: ATOMIC-RC3-02 Set State Invariants Suite 3. Untouched weighted placeholder is not meaningful
+00:22 +66: C:/Users/Atharva Patil/Documents/projects/gymlog/test/active_workout_set_invariants_test.dart: ATOMIC-RC3-02 Set State Invariants Suite 4. Reps-only / duration sets normalize weight to null, distance normalizes reps to 0
+00:23 +67: C:/Users/Atharva Patil/Documents/projects/gymlog/test/active_workout_set_row_test.dart: PREVIOUS column shows "15kg x 12" when prior data exists
+00:24 +68: C:/Users/Atharva Patil/Documents/projects/gymlog/test/active_workout_set_row_test.dart: PREVIOUS shows blank when there is no prior data
+00:25 +69: C:/Users/Atharva Patil/Documents/projects/gymlog/test/active_workout_set_row_test.dart: SET column renders the type letter, never a number, for warmup
+00:25 +70: C:/Users/Atharva Patil/Documents/projects/gymlog/test/active_workout_set_row_test.dart: normal set shows its 1-based number in the SET column
+00:25 +71: C:/Users/Atharva Patil/Documents/projects/gymlog/test/active_workout_set_row_test.dart: no inline "kg" label and no "×" divider on the row
+00:25 +72: C:/Users/Atharva Patil/Documents/projects/gymlog/test/active_workout_start_test.dart: startWorkout backfills unique ids for exercises passed without one
+[WorkoutDraftStore] save failed: Binding has not yet been initialized.
+The "instance" getter on the ServicesBinding binding mixin is only available once that binding has been initialized.
+Typically, this is done by calling "WidgetsFlutterBinding.ensureInitialized()" or "runApp()" (the latter calls the former). Typically this call is done in the "void main()" method. The "ensureInitialized" method is idempotent; calling it multiple times is not harmful. After calling that method, the "instance" getter will return the binding.
+In a test, one can call "TestWidgetsFlutterBinding.ensureInitialized()" as the first line in the test's "main()" method to initialize the binding.
+If ServicesBinding is a custom binding mixin, there must also be a custom binding class, like WidgetsFlutterBinding, but that mixes in the selected binding, and that is the class that must be constructed before using the "instance" getter.
+00:25 +73: C:/Users/Atharva Patil/Documents/projects/gymlog/test/active_workout_start_test.dart: startWorkout preserves ids that callers already set
+[WorkoutDraftStore] save failed: Binding has not yet been initialized.
+The "instance" getter on the ServicesBinding binding mixin is only available once that binding has been initialized.
+Typically, this is done by calling "WidgetsFlutterBinding.ensureInitialized()" or "runApp()" (the latter calls the former). Typically this call is done in the "void main()" method. The "ensureInitialized" method is idempotent; calling it multiple times is not harmful. After calling that method, the "instance" getter will return the binding.
+In a test, one can call "TestWidgetsFlutterBinding.ensureInitialized()" as the first line in the test's "main()" method to initialize the binding.
+If ServicesBinding is a custom binding mixin, there must also be a custom binding class, like WidgetsFlutterBinding, but that mixes in the selected binding, and that is the class that must be constructed before using the "instance" getter.
+00:25 +74: C:/Users/Atharva Patil/Documents/projects/gymlog/test/analytics/metric_aware_pr_test.dart: ATOMIC-07: PersonalRecord Model & Formatters PersonalRecord backwards compatibility getters
+00:25 +75: C:/Users/Atharva Patil/Documents/projects/gymlog/test/analytics/metric_aware_pr_test.dart: ATOMIC-07: PersonalRecord Model & Formatters MeasurementFormatter formats all canonical MeasurementTypes correctly
+00:25 +76: C:/Users/Atharva Patil/Documents/projects/gymlog/test/analytics/metric_aware_pr_test.dart: ATOMIC-07: PersonalRecord Model & Formatters Null weight never renders 0 kg for reps-only
+00:25 +77: C:/Users/Atharva Patil/Documents/projects/gymlog/test/analytics/metric_aware_pr_test.dart: ATOMIC-07: PR Detection Engine Detects weighted e1RM PRs and Max Weight PRs
+00:26 +78: C:/Users/Atharva Patil/Documents/projects/gymlog/test/analytics/metric_aware_pr_test.dart: ATOMIC-07: PR Detection Engine Detects Reps-Only PRs correctly
+00:26 +79: C:/Users/Atharva Patil/Documents/projects/gymlog/test/analytics/metric_aware_pr_test.dart: ATOMIC-07: PR Detection Engine Detects Duration PRs correctly
+00:26 +80: C:/Users/Atharva Patil/Documents/projects/gymlog/test/analytics/metric_aware_pr_test.dart: ATOMIC-07: PR Detection Engine Assisted exercises do not award max weight PR for higher assistance
+00:26 +81: C:/Users/Atharva Patil/Documents/projects/gymlog/test/analytics/metric_aware_pr_test.dart: ATOMIC-07: PR Detection Engine recalculateAllPrs is idempotent and preserves chronological history
+00:26 +82: C:/Users/Atharva Patil/Documents/projects/gymlog/test/analytics/metric_aware_pr_test.dart: ATOMIC-07: PR Detection Engine Editing or deleting a PR recalculates later history
+00:28 +83: C:/Users/Atharva Patil/Documents/projects/gymlog/test/auth/account_isolation_test.dart: (setUpAll)
+00:28 +83: C:/Users/Atharva Patil/Documents/projects/gymlog/test/auth/account_isolation_test.dart: account A workouts hidden from account B
+00:28 +84: C:/Users/Atharva Patil/Documents/projects/gymlog/test/auth/account_isolation_test.dart: account A drafts hidden from B
+[WorkoutDraftStore] Ignoring draft from different user (user-a vs user-b)
+00:28 +85: C:/Users/Atharva Patil/Documents/projects/gymlog/test/auth/account_isolation_test.dart: account A sync queue not uploaded as B
+00:28 +86: C:/Users/Atharva Patil/Documents/projects/gymlog/test/auth/account_isolation_test.dart: custom exercises isolation policy
+00:28 +87: C:/Users/Atharva Patil/Documents/projects/gymlog/test/auth/account_isolation_test.dart: pending sync warning and offline sign-out / restart flow
+00:28 +88: C:/Users/Atharva Patil/Documents/projects/gymlog/test/auth/account_isolation_test.dart: (tearDownAll)
+00:30 +88: C:/Users/Atharva Patil/Documents/projects/gymlog/test/auth/auth_screen_behavior_test.dart: AuthScreen Behavior Tests (AUTH-01 to AUTH-20) AUTH-01: Initial screen contains one primary CTA
+00:31 +89: C:/Users/Atharva Patil/Documents/projects/gymlog/test/auth/auth_screen_behavior_test.dart: AuthScreen Behavior Tests (AUTH-01 to AUTH-20) AUTH-01: Initial screen contains one primary CTA
+00:31 +90: C:/Users/Atharva Patil/Documents/projects/gymlog/test/auth/auth_screen_behavior_test.dart: AuthScreen Behavior Tests (AUTH-01 to AUTH-20) AUTH-01: Initial screen contains one primary CTA
+00:31 +91: C:/Users/Atharva Patil/Documents/projects/gymlog/test/auth/auth_screen_behavior_test.dart: AuthScreen Behavior Tests (AUTH-01 to AUTH-20) AUTH-01: Initial screen contains one primary CTA
+00:31 +92: C:/Users/Atharva Patil/Documents/projects/gymlog/test/auth/auth_screen_behavior_test.dart: AuthScreen Behavior Tests (AUTH-01 to AUTH-20) AUTH-01: Initial screen contains one primary CTA
+00:31 +93: C:/Users/Atharva Patil/Documents/projects/gymlog/test/auth/auth_screen_behavior_test.dart: AuthScreen Behavior Tests (AUTH-01 to AUTH-20) AUTH-01: Initial screen contains one primary CTA
+00:31 +94: C:/Users/Atharva Patil/Documents/projects/gymlog/test/auth/auth_screen_behavior_test.dart: AuthScreen Behavior Tests (AUTH-01 to AUTH-20) AUTH-01: Initial screen contains one primary CTA
+00:31 +95: C:/Users/Atharva Patil/Documents/projects/gymlog/test/auth/auth_screen_behavior_test.dart: AuthScreen Behavior Tests (AUTH-01 to AUTH-20) AUTH-01: Initial screen contains one primary CTA
+00:31 +96: C:/Users/Atharva Patil/Documents/projects/gymlog/test/auth/auth_screen_behavior_test.dart: AuthScreen Behavior Tests (AUTH-01 to AUTH-20) AUTH-01: Initial screen contains one primary CTA
+00:31 +97: C:/Users/Atharva Patil/Documents/projects/gymlog/test/auth/auth_screen_behavior_test.dart: AuthScreen Behavior Tests (AUTH-01 to AUTH-20) AUTH-01: Initial screen contains one primary CTA
+00:31 +98: C:/Users/Atharva Patil/Documents/projects/gymlog/test/auth/auth_screen_behavior_test.dart: AuthScreen Behavior Tests (AUTH-01 to AUTH-20) AUTH-01: Initial screen contains one primary CTA
+00:31 +99: C:/Users/Atharva Patil/Documents/projects/gymlog/test/auth/auth_screen_behavior_test.dart: AuthScreen Behavior Tests (AUTH-01 to AUTH-20) AUTH-01: Initial screen contains one primary CTA
+00:31 +100: C:/Users/Atharva Patil/Documents/projects/gymlog/test/auth/auth_screen_behavior_test.dart: AuthScreen Behavior Tests (AUTH-01 to AUTH-20) AUTH-01: Initial screen contains one primary CTA
+00:31 +101: C:/Users/Atharva Patil/Documents/projects/gymlog/test/auth/auth_screen_behavior_test.dart: AuthScreen Behavior Tests (AUTH-01 to AUTH-20) AUTH-01: Initial screen contains one primary CTA
+00:31 +102: C:/Users/Atharva Patil/Documents/projects/gymlog/test/auth/auth_screen_behavior_test.dart: AuthScreen Behavior Tests (AUTH-01 to AUTH-20) AUTH-01: Initial screen contains one primary CTA
+00:31 +103: C:/Users/Atharva Patil/Documents/projects/gymlog/test/auth/auth_screen_behavior_test.dart: AuthScreen Behavior Tests (AUTH-01 to AUTH-20) AUTH-01: Initial screen contains one primary CTA
+00:31 +104: C:/Users/Atharva Patil/Documents/projects/gymlog/test/auth/auth_screen_behavior_test.dart: AuthScreen Behavior Tests (AUTH-01 to AUTH-20) AUTH-01: Initial screen contains one primary CTA
+00:31 +105: C:/Users/Atharva Patil/Documents/projects/gymlog/test/auth/auth_screen_behavior_test.dart: AuthScreen Behavior Tests (AUTH-01 to AUTH-20) AUTH-01: Initial screen contains one primary CTA
+00:31 +106: C:/Users/Atharva Patil/Documents/projects/gymlog/test/auth/auth_screen_behavior_test.dart: AuthScreen Behavior Tests (AUTH-01 to AUTH-20) AUTH-01: Initial screen contains one primary CTA
+00:31 +107: C:/Users/Atharva Patil/Documents/projects/gymlog/test/auth/auth_screen_behavior_test.dart: AuthScreen Behavior Tests (AUTH-01 to AUTH-20) AUTH-01: Initial screen contains one primary CTA
+00:31 +108: C:/Users/Atharva Patil/Documents/projects/gymlog/test/auth/auth_screen_behavior_test.dart: AuthScreen Behavior Tests (AUTH-01 to AUTH-20) AUTH-01: Initial screen contains one primary CTA
+00:31 +109: C:/Users/Atharva Patil/Documents/projects/gymlog/test/auth/auth_screen_behavior_test.dart: AuthScreen Behavior Tests (AUTH-01 to AUTH-20) AUTH-01: Initial screen contains one primary CTA
+00:31 +110: C:/Users/Atharva Patil/Documents/projects/gymlog/test/auth/auth_screen_behavior_test.dart: AuthScreen Behavior Tests (AUTH-01 to AUTH-20) AUTH-01: Initial screen contains one primary CTA
+00:31 +111: C:/Users/Atharva Patil/Documents/projects/gymlog/test/auth/auth_screen_behavior_test.dart: AuthScreen Behavior Tests (AUTH-01 to AUTH-20) AUTH-01: Initial screen contains one primary CTA
+00:31 +112: C:/Users/Atharva Patil/Documents/projects/gymlog/test/auth/auth_screen_behavior_test.dart: AuthScreen Behavior Tests (AUTH-01 to AUTH-20) AUTH-01: Initial screen contains one primary CTA
+00:31 +113: C:/Users/Atharva Patil/Documents/projects/gymlog/test/auth/auth_screen_behavior_test.dart: AuthScreen Behavior Tests (AUTH-01 to AUTH-20) AUTH-01: Initial screen contains one primary CTA
+00:31 +114: C:/Users/Atharva Patil/Documents/projects/gymlog/test/auth/auth_screen_behavior_test.dart: AuthScreen Behavior Tests (AUTH-01 to AUTH-20) AUTH-01: Initial screen contains one primary CTA
+00:31 +115: C:/Users/Atharva Patil/Documents/projects/gymlog/test/auth/auth_screen_behavior_test.dart: AuthScreen Behavior Tests (AUTH-01 to AUTH-20) AUTH-02: Only the atmosphere drift repeats; reduced motion halts it
+00:31 +116: C:/Users/Atharva Patil/Documents/projects/gymlog/test/auth/auth_screen_behavior_test.dart: AuthScreen Behavior Tests (AUTH-01 to AUTH-20) AUTH-03: Reduced motion renders final state with no animation
+00:31 +117: C:/Users/Atharva Patil/Documents/projects/gymlog/test/auth/auth_screen_behavior_test.dart: AuthScreen Behavior Tests (AUTH-01 to AUTH-20) AUTH-04: Sign-in button is disabled while request is in progress
+00:31 +118: C:/Users/Atharva Patil/Documents/projects/gymlog/test/auth/auth_screen_behavior_test.dart: AuthScreen Behavior Tests (AUTH-01 to AUTH-20) AUTH-05: Rapid double tap starts one repository operation
+00:32 +119: C:/Users/Atharva Patil/Documents/projects/gymlog/test/auth/auth_screen_behavior_test.dart: AuthScreen Behavior Tests (AUTH-01 to AUTH-20) AUTH-05: Rapid double tap starts one repository operation
+00:32 +120: C:/Users/Atharva Patil/Documents/projects/gymlog/test/auth/auth_screen_behavior_test.dart: AuthScreen Behavior Tests (AUTH-01 to AUTH-20) AUTH-05: Rapid double tap starts one repository operation
+00:32 +121: C:/Users/Atharva Patil/Documents/projects/gymlog/test/auth/auth_screen_behavior_test.dart: AuthScreen Behavior Tests (AUTH-01 to AUTH-20) AUTH-05: Rapid double tap starts one repository operation
+00:32 +122: C:/Users/Atharva Patil/Documents/projects/gymlog/test/chart_axis_format_test.dart: BrandedLineChart.yAxisUnit renders unit suffix on both Y axes
+00:32 +123: C:/Users/Atharva Patil/Documents/projects/gymlog/test/chart_axis_format_test.dart: BrandedLineChart.yAxisUnit renders unit suffix on both Y axes
+00:32 +123: C:/Users/Atharva Patil/Documents/projects/gymlog/test/auth/auth_screen_behavior_test.dart: AuthScreen Behavior Tests (AUTH-01 to AUTH-20) AUTH-07: Network failure shows recovery copy
+[Auth] failure=network
+00:32 +124: C:/Users/Atharva Patil/Documents/projects/gymlog/test/chart_axis_format_test.dart: BrandedLineChart.yAxisUnit renders unit suffix on both Y axes
+00:32 +124: C:/Users/Atharva Patil/Documents/projects/gymlog/test/auth/auth_screen_behavior_test.dart: AuthScreen Behavior Tests (AUTH-01 to AUTH-20) AUTH-08: Configuration failure does not expose SHA-1 or ApiException 10
+[Auth] failure=configuration code=google_android_configuration
+00:32 +125: C:/Users/Atharva Patil/Documents/projects/gymlog/test/chart_axis_format_test.dart: BrandedLineChart.yAxisUnit renders unit suffix on both Y axes
+00:32 +125: C:/Users/Atharva Patil/Documents/projects/gymlog/test/auth/auth_screen_behavior_test.dart: AuthScreen Behavior Tests (AUTH-01 to AUTH-20) AUTH-09: Unknown error shows generic safe copy
+[Auth] failure=unknown
+00:32 +126: C:/Users/Atharva Patil/Documents/projects/gymlog/test/chart_axis_format_test.dart: BrandedLineChart.yAxisUnit renders unit suffix on both Y axes
+00:32 +127: C:/Users/Atharva Patil/Documents/projects/gymlog/test/chart_axis_format_test.dart: BrandedLineChart.yAxisUnit renders unit suffix on both Y axes
+00:33 +128: C:/Users/Atharva Patil/Documents/projects/gymlog/test/chart_axis_format_test.dart: BrandedLineChart.yAxisUnit renders unit suffix on both Y axes
+00:33 +129: C:/Users/Atharva Patil/Documents/projects/gymlog/test/chart_axis_format_test.dart: BrandedLineChart.yAxisUnit renders unit suffix on both Y axes
+00:33 +130: C:/Users/Atharva Patil/Documents/projects/gymlog/test/chart_axis_format_test.dart: BrandedLineChart.yAxisUnit renders unit suffix on both Y axes
+00:33 +131: C:/Users/Atharva Patil/Documents/projects/gymlog/test/auth/auth_screen_behavior_test.dart: AuthScreen Behavior Tests (AUTH-01 to AUTH-20) AUTH-16: No overflow at all required viewports
+00:33 +132: C:/Users/Atharva Patil/Documents/projects/gymlog/test/chart_density_test.dart: BrandedLineChart 300-point performance and grid density vertical grid interval scales with labelStep rather than 1 per point
+00:33 +133: C:/Users/Atharva Patil/Documents/projects/gymlog/test/chart_density_test.dart: BrandedLineChart 300-point performance and grid density vertical grid interval scales with labelStep rather than 1 per point
+00:33 +134: C:/Users/Atharva Patil/Documents/projects/gymlog/test/chart_density_test.dart: BrandedLineChart 300-point performance and grid density vertical grid interval scales with labelStep rather than 1 per point
+00:34 +135: C:/Users/Atharva Patil/Documents/projects/gymlog/test/chart_density_test.dart: BrandedLineChart 300-point performance and grid density vertical grid interval scales with labelStep rather than 1 per point
+00:34 +136: C:/Users/Atharva Patil/Documents/projects/gymlog/test/chart_density_test.dart: BrandedLineChart 300-point performance and grid density vertical grid interval scales with labelStep rather than 1 per point
+00:34 +136: C:/Users/Atharva Patil/Documents/projects/gymlog/test/auth/auth_screen_behavior_test.dart: AuthScreen Behavior Tests (AUTH-01 to AUTH-20) AUTH-22 (AU-C): Timeout failure surfaces honest recovery copy
+[Auth] failure=timeout
+00:34 +137: C:/Users/Atharva Patil/Documents/projects/gymlog/test/chart_density_test.dart: BrandedLineChart 300-point performance and grid density vertical grid interval scales with labelStep rather than 1 per point
+00:36 +138: C:/Users/Atharva Patil/Documents/projects/gymlog/test/commerce_and_deletion_test.dart: (setUpAll)
+00:36 +138: C:/Users/Atharva Patil/Documents/projects/gymlog/test/commerce_and_deletion_test.dart: Account Deletion Service & UI Guidance Idempotency — wipes local storage and finishes safely even when user is null (signed out)
+[ExercisesDao] Hydration v9 complete: 822 exercises.
+00:36 +139: C:/Users/Atharva Patil/Documents/projects/gymlog/test/commerce_and_deletion_test.dart: Account Deletion Service & UI Guidance Wipes local databases, secure preferences and settings on deletion
+[ExercisesDao] Hydration v9 complete: 822 exercises.
+00:37 +140: C:/Users/Atharva Patil/Documents/projects/gymlog/test/commerce_and_deletion_test.dart: Premium Service Entitlements & Caching isPremiumProvider returns false when no user is signed in
+00:37 +141: C:/Users/Atharva Patil/Documents/projects/gymlog/test/commerce_and_deletion_test.dart: Premium Service Entitlements & Caching isPremiumProvider falls back to local user profile when CustomerInfo stream has no value (offline launch)
+00:37 +142: C:/Users/Atharva Patil/Documents/projects/gymlog/test/commerce_and_deletion_test.dart: Premium Service Entitlements & Caching isPremiumProvider respects active entitlements from CustomerInfo over local SQLite profile
+00:37 +143: C:/Users/Atharva Patil/Documents/projects/gymlog/test/commerce_and_deletion_test.dart: (tearDownAll)
+00:38 +143: C:/Users/Atharva Patil/Documents/projects/gymlog/test/compile_surface_test.dart: full app graph compiles
+00:40 +144: C:/Users/Atharva Patil/Documents/projects/gymlog/test/core/app_startup_test.dart: GymLogApp builds without throwing when cloud is not ready
+00:42 +145: C:/Users/Atharva Patil/Documents/projects/gymlog/test/core/app_startup_test.dart: GymLogApp builds without throwing when cloud is not ready
+00:42 +146: C:/Users/Atharva Patil/Documents/projects/gymlog/test/core/app_startup_test.dart: GymLogApp builds without throwing when cloud is not ready
+00:42 +147: C:/Users/Atharva Patil/Documents/projects/gymlog/test/core/app_startup_test.dart: GymLogApp builds without throwing when cloud is not ready
+00:42 +148: C:/Users/Atharva Patil/Documents/projects/gymlog/test/core/app_startup_test.dart: GymLogApp builds without throwing when cloud is not ready
+00:42 +149: C:/Users/Atharva Patil/Documents/projects/gymlog/test/core/app_startup_test.dart: GymLogApp builds without throwing when cloud is not ready
+00:42 +150: C:/Users/Atharva Patil/Documents/projects/gymlog/test/core/app_startup_test.dart: GymLogApp builds without throwing when cloud is not ready
+00:42 +151: C:/Users/Atharva Patil/Documents/projects/gymlog/test/core/app_startup_test.dart: GymLogApp builds without throwing when cloud is not ready
+00:42 +152: C:/Users/Atharva Patil/Documents/projects/gymlog/test/core/app_startup_test.dart: GymLogApp builds without throwing when cloud is not ready
+00:42 +153: C:/Users/Atharva Patil/Documents/projects/gymlog/test/core/app_startup_test.dart: GymLogApp builds without throwing when cloud is not ready
+00:42 +154: C:/Users/Atharva Patil/Documents/projects/gymlog/test/core/app_startup_test.dart: GymLogApp builds without throwing when cloud is not ready
+00:42 +155: C:/Users/Atharva Patil/Documents/projects/gymlog/test/core/app_startup_test.dart: GymLogApp builds without throwing when cloud is not ready
+00:42 +156: C:/Users/Atharva Patil/Documents/projects/gymlog/test/core/app_startup_test.dart: GymLogApp builds without throwing when cloud is not ready
+00:42 +157: C:/Users/Atharva Patil/Documents/projects/gymlog/test/core/app_startup_test.dart: GymLogApp builds without throwing when cloud is not ready
+00:42 +158: C:/Users/Atharva Patil/Documents/projects/gymlog/test/core/app_startup_test.dart: GymLogApp builds without throwing when cloud is not ready
+00:43 +159: C:/Users/Atharva Patil/Documents/projects/gymlog/test/core/app_startup_test.dart: router is constructable without Supabase being initialized
+00:43 +160: C:/Users/Atharva Patil/Documents/projects/gymlog/test/core/models/measurement_type_duration_test.dart: MeasurementType Duration Taxonomy & Resolver resolves isometric and duration exercises to duration
+00:43 +161: C:/Users/Atharva Patil/Documents/projects/gymlog/test/core/models/measurement_type_duration_test.dart: MeasurementType Duration Taxonomy & Resolver preserves Olympic barbell and dumbbell lifts with hang as weighted
+00:43 +162: C:/Users/Atharva Patil/Documents/projects/gymlog/test/core/models/measurement_type_duration_test.dart: MeasurementType Duration Taxonomy & Resolver explicit exceptions override default weight_and_reps
+00:43 +163: C:/Users/Atharva Patil/Documents/projects/gymlog/test/core/models/measurement_type_duration_test.dart: MeasurementType Duration Taxonomy & Resolver repsColumnLabel is TIME for duration
+00:43 +164: C:/Users/Atharva Patil/Documents/projects/gymlog/test/core/models/measurement_type_duration_test.dart: MeasurementType Duration Taxonomy & Resolver weighted duration shows weight column and provides +KG header
+00:43 +165: C:/Users/Atharva Patil/Documents/projects/gymlog/test/core/models/measurement_type_duration_test.dart: MeasurementType Duration Taxonomy & Resolver dynamic hanging exercises resolve to reps, not duration
+00:44 +166: C:/Users/Atharva Patil/Documents/projects/gymlog/test/core/premium/library_quota_test.dart: the free-tier dead end a new free user CAN import the featured 6-day program
+00:44 +167: C:/Users/Atharva Patil/Documents/projects/gymlog/test/core/premium/library_quota_test.dart: the free-tier dead end program size does not consume routine slots
+00:44 +168: C:/Users/Atharva Patil/Documents/projects/gymlog/test/core/premium/library_quota_test.dart: program slot the second program is where the paywall lands
+00:44 +169: C:/Users/Atharva Patil/Documents/projects/gymlog/test/core/premium/library_quota_test.dart: program slot Pro is never gated
+00:44 +170: C:/Users/Atharva Patil/Documents/projects/gymlog/test/core/premium/library_quota_test.dart: program slot hasUsedFreeProgramSlot tracks the cap
+00:44 +171: C:/Users/Atharva Patil/Documents/projects/gymlog/test/core/premium/library_quota_test.dart: completing an owned program is always free even when both caps are already exhausted
+00:44 +172: C:/Users/Atharva Patil/Documents/projects/gymlog/test/core/premium/library_quota_test.dart: standalone routines fills exactly to the cap
+00:44 +173: C:/Users/Atharva Patil/Documents/projects/gymlog/test/core/premium/library_quota_test.dart: standalone routines blocks the one that would overflow
+00:44 +174: C:/Users/Atharva Patil/Documents/projects/gymlog/test/core/premium/library_quota_test.dart: standalone routines checks the whole batch, not one at a time
+00:44 +175: C:/Users/Atharva Patil/Documents/projects/gymlog/test/core/premium/library_quota_test.dart: standalone routines remaining slots never go negative for grandfathered users
+00:44 +176: C:/Users/Atharva Patil/Documents/projects/gymlog/test/core/premium/library_quota_test.dart: copy allowed has no blocking copy
+00:44 +177: C:/Users/Atharva Patil/Documents/projects/gymlog/test/core/premium/library_quota_test.dart: copy every blocked verdict has copy
+00:46 +178: C:/Users/Atharva Patil/Documents/projects/gymlog/test/core/router_deeplink_test.dart: deep link without extra loads the exercise by id instead of crashing
+00:47 +179: C:/Users/Atharva Patil/Documents/projects/gymlog/test/core/router_deeplink_test.dart: deep link without extra loads the exercise by id instead of crashing
+00:47 +180: C:/Users/Atharva Patil/Documents/projects/gymlog/test/core/router_deeplink_test.dart: deep link without extra loads the exercise by id instead of crashing
+00:47 +181: C:/Users/Atharva Patil/Documents/projects/gymlog/test/core/router_deeplink_test.dart: deep link without extra loads the exercise by id instead of crashing
+00:47 +182: C:/Users/Atharva Patil/Documents/projects/gymlog/test/core/router_deeplink_test.dart: deep link without extra loads the exercise by id instead of crashing
+00:47 +183: C:/Users/Atharva Patil/Documents/projects/gymlog/test/core/router_deeplink_test.dart: deep link without extra loads the exercise by id instead of crashing
+00:47 +184: C:/Users/Atharva Patil/Documents/projects/gymlog/test/core/router_deeplink_test.dart: deep link without extra loads the exercise by id instead of crashing
+00:47 +185: C:/Users/Atharva Patil/Documents/projects/gymlog/test/core/router_deeplink_test.dart: deep link without extra loads the exercise by id instead of crashing
+00:47 +186: C:/Users/Atharva Patil/Documents/projects/gymlog/test/core/router_deeplink_test.dart: deep link without extra loads the exercise by id instead of crashing
+00:47 +187: C:/Users/Atharva Patil/Documents/projects/gymlog/test/core/router_deeplink_test.dart: deep link without extra loads the exercise by id instead of crashing
+00:47 +188: C:/Users/Atharva Patil/Documents/projects/gymlog/test/core/router_deeplink_test.dart: deep link without extra loads the exercise by id instead of crashing
+00:47 +189: C:/Users/Atharva Patil/Documents/projects/gymlog/test/core/router_deeplink_test.dart: deep link without extra loads the exercise by id instead of crashing
+00:47 +190: C:/Users/Atharva Patil/Documents/projects/gymlog/test/core/router_deeplink_test.dart: deep link without extra loads the exercise by id instead of crashing
+00:47 +191: C:/Users/Atharva Patil/Documents/projects/gymlog/test/core/router_deeplink_test.dart: deep link without extra loads the exercise by id instead of crashing
+00:47 +192: C:/Users/Atharva Patil/Documents/projects/gymlog/test/core/router_deeplink_test.dart: deep link without extra loads the exercise by id instead of crashing
+00:47 +193: C:/Users/Atharva Patil/Documents/projects/gymlog/test/core/router_deeplink_test.dart: deep link without extra loads the exercise by id instead of crashing
+00:47 +194: C:/Users/Atharva Patil/Documents/projects/gymlog/test/core/router_deeplink_test.dart: deep link without extra loads the exercise by id instead of crashing
+00:47 +195: C:/Users/Atharva Patil/Documents/projects/gymlog/test/core/router_deeplink_test.dart: deep link without extra loads the exercise by id instead of crashing
+00:47 +196: C:/Users/Atharva Patil/Documents/projects/gymlog/test/core/router_deeplink_test.dart: deep link without extra loads the exercise by id instead of crashing
+00:49 +197: C:/Users/Atharva Patil/Documents/projects/gymlog/test/core/theme/border_affordance_test.dart: Three-Tier Visual Grammar Affordance Tests AppStatusTag strictly renders NO border under any configuration
+00:49 +198: C:/Users/Atharva Patil/Documents/projects/gymlog/test/core/router_deeplink_test.dart: non-numeric deep link falls back to the library, no crash
+00:50 +199: C:/Users/Atharva Patil/Documents/projects/gymlog/test/core/router_deeplink_test.dart: non-numeric deep link falls back to the library, no crash
+00:50 +200: C:/Users/Atharva Patil/Documents/projects/gymlog/test/core/router_deeplink_test.dart: non-numeric deep link falls back to the library, no crash
+00:50 +201: C:/Users/Atharva Patil/Documents/projects/gymlog/test/core/router_deeplink_test.dart: non-numeric deep link falls back to the library, no crash
+00:50 +202: C:/Users/Atharva Patil/Documents/projects/gymlog/test/core/router_deeplink_test.dart: non-numeric deep link falls back to the library, no crash
+00:50 +203: C:/Users/Atharva Patil/Documents/projects/gymlog/test/core/router_deeplink_test.dart: non-numeric deep link falls back to the library, no crash
+00:50 +204: C:/Users/Atharva Patil/Documents/projects/gymlog/test/dao_integration_test.dart: getHydratedWorkout returns full graph incl. previous-session sets
+00:50 +205: C:/Users/Atharva Patil/Documents/projects/gymlog/test/dao_integration_test.dart: getHydratedWorkout survives a session with zero exercises
+00:50 +206: C:/Users/Atharva Patil/Documents/projects/gymlog/test/dao_integration_test.dart: getSessionPreviewsForUser batches stats + top exercises
+00:50 +207: C:/Users/Atharva Patil/Documents/projects/gymlog/test/dao_integration_test.dart: detectAndMarkPrs fires on a fresh database and returns records
+00:50 +208: C:/Users/Atharva Patil/Documents/projects/gymlog/test/dao_integration_test.dart: exercise history honors since-filter with typed date binds
+00:50 +209: C:/Users/Atharva Patil/Documents/projects/gymlog/test/dao_integration_test.dart: exercise history best-1RM uses per-set Epley, not MAX(w)×MAX(reps)
+00:50 +210: C:/Users/Atharva Patil/Documents/projects/gymlog/test/dao_integration_test.dart: detectAndMarkPrs fires for a genuine heavier single (1-rep guard)
+00:50 +211: C:/Users/Atharva Patil/Documents/projects/gymlog/test/dao_integration_test.dart: countRoutinesForUser + exerciseNameExists back the gates
+00:50 +212: C:/Users/Atharva Patil/Documents/projects/gymlog/test/dao_integration_test.dart: wipeAllData empties every table (account deletion local wipe)
+00:50 +213: C:/Users/Atharva Patil/Documents/projects/gymlog/test/dao_integration_test.dart: deleteSession cascades sets + exercises with FKs enforced
+00:50 +214: C:/Users/Atharva Patil/Documents/projects/gymlog/test/dao_integration_test.dart: routine hydration + last-session sets + daily volume
+00:50 +215: C:/Users/Atharva Patil/Documents/projects/gymlog/test/dao_integration_test.dart: session and routine restore-after-delete (SYS-3)
+00:50 +216: C:/Users/Atharva Patil/Documents/projects/gymlog/test/dao_integration_test.dart: watchDailyVolumeForRoutine tracks each completed session individually on the same day
+00:50 +217: C:/Users/Atharva Patil/Documents/projects/gymlog/test/dao_integration_test.dart: (tearDownAll)
+00:51 +217: C:/Users/Atharva Patil/Documents/projects/gymlog/test/das1_delete_completion_test.dart: DAS-1 Delete Account Completion Honesty full success shows permanent-deletion copy and routes to auth
+00:53 +218: C:/Users/Atharva Patil/Documents/projects/gymlog/test/das1_delete_completion_test.dart: DAS-1 Delete Account Completion Honesty full success shows permanent-deletion copy and routes to auth
+00:54 +219: C:/Users/Atharva Patil/Documents/projects/gymlog/test/das1_delete_completion_test.dart: DAS-1 Delete Account Completion Honesty full success shows permanent-deletion copy and routes to auth
+00:55 +220: C:/Users/Atharva Patil/Documents/projects/gymlog/test/delivery_diagnostics_test.dart: Tapping Version AppActionRow 5 times throws controlled StateError
+00:56 +221: C:/Users/Atharva Patil/Documents/projects/gymlog/test/delivery_diagnostics_test.dart: Tapping Version AppActionRow 5 times throws controlled StateError
+00:56 +222: C:/Users/Atharva Patil/Documents/projects/gymlog/test/delivery_diagnostics_test.dart: Tapping Version AppActionRow 5 times throws controlled StateError
+00:56 +223: C:/Users/Atharva Patil/Documents/projects/gymlog/test/delivery_diagnostics_test.dart: Tapping Version AppActionRow 5 times throws controlled StateError
+00:57 +224: C:/Users/Atharva Patil/Documents/projects/gymlog/test/delivery_diagnostics_test.dart: Tapping Version AppActionRow 5 times throws controlled StateError
+00:57 +225: C:/Users/Atharva Patil/Documents/projects/gymlog/test/delivery_diagnostics_test.dart: Tapping Version AppActionRow 5 times throws controlled StateError
+00:58 +226: C:/Users/Atharva Patil/Documents/projects/gymlog/test/delivery_diagnostics_test.dart: Tapping Version AppActionRow 5 times throws controlled StateError
+01:01 +227: C:/Users/Atharva Patil/Documents/projects/gymlog/test/delivery_diagnostics_test.dart: Tapping Version AppActionRow 5 times throws controlled StateError
+01:02 +228: C:/Users/Atharva Patil/Documents/projects/gymlog/test/delivery_diagnostics_test.dart: Tapping Version AppActionRow 5 times throws controlled StateError
+01:02 +229: C:/Users/Atharva Patil/Documents/projects/gymlog/test/delivery_diagnostics_test.dart: Tapping Version AppActionRow 5 times throws controlled StateError
+01:04 +230: C:/Users/Atharva Patil/Documents/projects/gymlog/test/delivery_diagnostics_test.dart: Tapping Version AppActionRow 5 times throws controlled StateError
+01:04 +231: C:/Users/Atharva Patil/Documents/projects/gymlog/test/delivery_diagnostics_test.dart: Tapping Version AppActionRow 5 times throws controlled StateError
+01:04 +232: C:/Users/Atharva Patil/Documents/projects/gymlog/test/delivery_diagnostics_test.dart: Tapping Version AppActionRow 5 times throws controlled StateError
+01:06 +232: C:/Users/Atharva Patil/Documents/projects/gymlog/test/exercises_hydration_test.dart: ATOMIC-RC3-04 Exercises Hydration Engine v9 1. Runs hydration and converts raw types when v9 key is missing
+[ExercisesDao] Hydration v9 complete: 822 exercises.
+01:06 +233: C:/Users/Atharva Patil/Documents/projects/gymlog/test/delivery_diagnostics_test.dart: Tapping Version AppActionRow 5 times throws controlled StateError
+01:06 +234: C:/Users/Atharva Patil/Documents/projects/gymlog/test/delivery_diagnostics_test.dart: Tapping Version AppActionRow 5 times throws controlled StateError
+01:06 +235: C:/Users/Atharva Patil/Documents/projects/gymlog/test/delivery_diagnostics_test.dart: Tapping Version AppActionRow 5 times throws controlled StateError
+01:07 +236: C:/Users/Atharva Patil/Documents/projects/gymlog/test/exercise_detail_polish_test.dart: worked-muscle chips distinguish primary and secondary targets
+01:11 +237: C:/Users/Atharva Patil/Documents/projects/gymlog/test/exercise_hero_transition_test.dart: Library(browse:true) row renders a Hero with tag exercise-hero-<id>
+01:12 +238: C:/Users/Atharva Patil/Documents/projects/gymlog/test/exercise_hero_transition_test.dart: Library(browse:true) row renders a Hero with tag exercise-hero-<id>
+01:13 +239: C:/Users/Atharva Patil/Documents/projects/gymlog/test/exercise_selection_polish_test.dart: ExerciseSelectionScreen filters catalog and handles caching correctly
+01:13 +240: C:/Users/Atharva Patil/Documents/projects/gymlog/test/exercise_selection_polish_test.dart: ExerciseSelectionScreen filters catalog and handles caching correctly
+01:14 +241: C:/Users/Atharva Patil/Documents/projects/gymlog/test/exercise_selection_polish_test.dart: ExerciseSelectionScreen filters catalog and handles caching correctly
+01:14 +242: C:/Users/Atharva Patil/Documents/projects/gymlog/test/exercise_selection_polish_test.dart: ExerciseSelectionScreen filters catalog and handles caching correctly
+01:14 +243: C:/Users/Atharva Patil/Documents/projects/gymlog/test/exercise_selection_polish_test.dart: ExerciseSelectionScreen filters catalog and handles caching correctly
+01:14 +244: C:/Users/Atharva Patil/Documents/projects/gymlog/test/exercise_selection_polish_test.dart: ExerciseSelectionScreen filters catalog and handles caching correctly
+01:16 +245: C:/Users/Atharva Patil/Documents/projects/gymlog/test/expiry_symptom_test.dart: timer expiry does not trigger Set removed snackbar
+01:17 +246: C:/Users/Atharva Patil/Documents/projects/gymlog/test/explore_catalog_integrity_test.dart: every importable Explore catalog exercise exists in the library
+01:17 +247: C:/Users/Atharva Patil/Documents/projects/gymlog/test/explore_catalog_integrity_test.dart: conditioning-note slots are intentionally excluded from lookup
+01:17 +248: C:/Users/Atharva Patil/Documents/projects/gymlog/test/explore_catalog_integrity_test.dart: every template is in a known category, non-empty, and well-formed
+01:17 +249: C:/Users/Atharva Patil/Documents/projects/gymlog/test/explore_catalog_integrity_test.dart: every template day label matches the Day N - pattern or is a known exception
+01:18 +250: C:/Users/Atharva Patil/Documents/projects/gymlog/test/explore_contrast_guard_test.dart: dark surface text tokens meet WCAG AA (4.5:1) on their surfaces
+01:18 +251: C:/Users/Atharva Patil/Documents/projects/gymlog/test/explore_contrast_guard_test.dart: intermediate levelColor is never the brand accent hue
+01:20 +252: C:/Users/Atharva Patil/Documents/projects/gymlog/test/export_share_previews_test.dart: (setUpAll)
+01:20 +252: C:/Users/Atharva Patil/Documents/projects/gymlog/test/export_share_previews_test.dart: Export 1080x1920 preview PNGs for visual inspection
+01:23 +253: C:/Users/Atharva Patil/Documents/projects/gymlog/test/export_share_previews_test.dart: Export 1080x1920 preview PNGs for visual inspection
+01:23 +254: C:/Users/Atharva Patil/Documents/projects/gymlog/test/export_share_previews_test.dart: Export 1080x1920 preview PNGs for visual inspection
+01:23 +255: C:/Users/Atharva Patil/Documents/projects/gymlog/test/export_share_previews_test.dart: Export 1080x1920 preview PNGs for visual inspection
+01:24 +256: C:/Users/Atharva Patil/Documents/projects/gymlog/test/export_share_previews_test.dart: Export 1080x1920 preview PNGs for visual inspection
+01:26 +257: C:/Users/Atharva Patil/Documents/projects/gymlog/test/export_share_previews_test.dart: Export 1080x1920 preview PNGs for visual inspection
+01:26 +258: C:/Users/Atharva Patil/Documents/projects/gymlog/test/export_share_previews_test.dart: Export 1080x1920 preview PNGs for visual inspection
+01:26 +259: C:/Users/Atharva Patil/Documents/projects/gymlog/test/export_share_previews_test.dart: Export 1080x1920 preview PNGs for visual inspection
+01:26 +260: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/auth/onboarding_age_step_test.dart: StepAge age 100 stays on one line at every viewport and text scale
+01:26 +261: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/auth/onboarding_age_step_test.dart: StepAge age 100 stays on one line at every viewport and text scale
+01:26 +262: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/auth/onboarding_weekly_goal_step_test.dart: StepWeeklyGoal preview consistency goal 3 previews 2 of 3 workouts completed
+01:26 +263: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/auth/onboarding_age_step_test.dart: StepAge tapping + at 99 shows 100 on a single line
+01:27 +264: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/auth/onboarding_age_step_test.dart: StepAge tapping + at 99 shows 100 on a single line
+01:27 +265: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/auth/onboarding_weekly_goal_step_test.dart: StepWeeklyGoal preview consistency tapping goal 1 updates caption and ring together
+01:27 +266: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/auth/onboarding_age_step_test.dart: StepAge decrement disabled at 14, increment disabled at 100
+01:29 +267: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/routines/domain/ai_exercise_reconciler_test.dart: AiExerciseReconciler - Exercise Matching resolves exact match to verified status
+01:29 +268: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/routines/domain/ai_exercise_reconciler_test.dart: AiExerciseReconciler - Exercise Matching resolves common gym acronyms and aliases via Tier 1 dictionary
+01:29 +269: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/routines/domain/ai_exercise_reconciler_test.dart: AiExerciseReconciler - Exercise Matching strictly preserves equipment isolation (DB vs Barbell)
+01:29 +270: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/routines/domain/ai_exercise_reconciler_test.dart: AiExerciseReconciler - Exercise Matching marks novel or non-existent exercises as unmatched without dropping them
+01:29 +271: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/routines/domain/ai_exercise_reconciler_test.dart: AiExerciseReconciler - Exercise Matching strips coach styles and fuses compound words to match catalog (N1-Style Cross-Body Triceps Extension)
+01:29 +272: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/routines/domain/ai_exercise_reconciler_test.dart: AiExerciseReconciler - Exercise Matching strips muscle annotations and maps cable y-raise to catalog lateral raise
+01:29 +273: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/routines/domain/ai_exercise_reconciler_test.dart: AiExerciseReconciler - Exercise Matching strips superset tags and duration from raw exercise names
+01:29 +274: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/routines/domain/ai_exercise_reconciler_test.dart: AiExerciseReconciler - Exercise Matching provides intelligent catalog suggestions for near-miss lifts like Larsen Press
+01:29 +275: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/routines/domain/ai_exercise_reconciler_test.dart: AiExerciseReconciler - Numeric Sets & Reps & Weight Conversion parses rep ranges by picking representative midpoint
+01:29 +276: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/routines/domain/ai_exercise_reconciler_test.dart: AiExerciseReconciler - Numeric Sets & Reps & Weight Conversion converts weight from lbs to kg when preferred unit is kg
+01:29 +277: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/routines/domain/ai_exercise_reconciler_test.dart: AiExerciseReconciler - Numeric Sets & Reps & Weight Conversion preserves kg weight when target unit is kg
+01:29 +278: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/routines/domain/ai_exercise_reconciler_test.dart: AiExerciseReconciler - Numeric Sets & Reps & Weight Conversion flags isDefaultedSets as true when sets is omitted in raw input
+01:29 +279: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/routines/domain/ai_exercise_reconciler_test.dart: AiExerciseReconciler - Multi-Day Routine Structure reconciles multi-day routine preserving day groupings
+01:30 +280: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/routines/domain/exercise_resolver_test.dart: normalisation lowercases and strips punctuation
+01:30 +281: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/routines/domain/exercise_resolver_test.dart: normalisation base form drops the equipment parenthetical
+01:30 +282: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/routines/domain/exercise_resolver_test.dart: resolve matches an exact name
+01:30 +283: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/routines/domain/exercise_resolver_test.dart: resolve matches regardless of case and punctuation
+01:30 +284: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/routines/domain/exercise_resolver_test.dart: resolve matches across an equipment parenthetical
+01:30 +285: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/routines/domain/exercise_resolver_test.dart: resolve prefers the shortest qualifying candidate
+01:30 +286: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/routines/domain/exercise_resolver_test.dart: resolve returns null rather than guessing wrong
+01:30 +287: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/routines/domain/exercise_resolver_test.dart: resolve a single shared word is not enough to match
+01:30 +288: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/routines/domain/exercise_resolver_test.dart: resolve known aliases collapse onto one exercise
+01:30 +289: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/routines/domain/exercise_resolver_test.dart: resolve an alias pointing at nothing is ignored, not fatal
+01:30 +290: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/routines/domain/exercise_resolver_test.dart: resolve repeat lookups are memoised to the same instance
+01:30 +291: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/routines/domain/exercise_resolver_test.dart: resolve an empty catalog resolves nothing without throwing
+01:30 +292: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/routines/domain/exercise_resolver_test.dart: unresolvedNames reports only the gaps
+01:30 +293: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/routines/domain/exercise_resolver_test.dart: muscleProfileFor a push day does not report leg muscles
+01:30 +294: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/routines/domain/exercise_resolver_test.dart: muscleProfileFor secondary never duplicates a primary group
+01:30 +295: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/routines/domain/exercise_resolver_test.dart: muscleProfileFor unresolvable slots are skipped, not fatal
+01:30 +296: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/routines/domain/exercise_resolver_test.dart: muscleProfileFor an all-unresolvable day yields an empty profile
+01:30 +297: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/routines/domain/exercise_resolver_test.dart: muscleProfileFor two different days produce different profiles
+01:30 +298: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/routines/domain/exercise_resolver_test.dart: exerciseIdsFor returns ids in slot order and skips gaps
+01:32 +299: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/routines/presentation/ai_routine_import_screen_test.dart: AiRoutineImportScreen renders segmented control and photo mode initially
+01:34 +300: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/routines/presentation/ai_routine_import_screen_test.dart: AiRoutineImportScreen renders segmented control and photo mode initially
+01:34 +301: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/routines/presentation/ai_routine_import_screen_test.dart: AiRoutineImportScreen renders segmented control and photo mode initially
+01:34 +302: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/routines/presentation/ai_routine_import_screen_test.dart: AiRoutineImportScreen renders segmented control and photo mode initially
+01:34 +303: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/routines/presentation/ai_routine_import_screen_test.dart: AiRoutineImportScreen renders segmented control and photo mode initially
+01:34 +304: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/routines/presentation/ai_routine_import_screen_test.dart: AiRoutineImportScreen renders segmented control and photo mode initially
+01:34 +305: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/routines/presentation/ai_routine_import_screen_test.dart: AiRoutineImportScreen renders segmented control and photo mode initially
+01:34 +306: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/routines/presentation/ai_routine_review_screen_test.dart: AiRoutineReviewScreen renders reconciled exercises and badges
+01:34 +307: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/routines/presentation/ai_routine_review_screen_test.dart: AiRoutineReviewScreen renders reconciled exercises and badges
+01:34 +308: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/routines/presentation/ai_routine_review_screen_test.dart: AiRoutineReviewScreen renders reconciled exercises and badges
+01:34 +309: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/routines/presentation/ai_routine_review_screen_test.dart: AiRoutineReviewScreen renders reconciled exercises and badges
+01:34 +310: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/routines/presentation/ai_routine_review_screen_test.dart: AiRoutineReviewScreen renders reconciled exercises and badges
+01:34 +311: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/routines/presentation/ai_routine_review_screen_test.dart: AiRoutineReviewScreen renders reconciled exercises and badges
+01:35 +312: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/routines/presentation/ai_routine_review_screen_test.dart: AiRoutineReviewScreen renders reconciled exercises and badges
+01:35 +313: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/routines/presentation/ai_routine_review_screen_test.dart: AiRoutineReviewScreen renders reconciled exercises and badges
+01:35 +314: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/routines/presentation/ai_routine_review_screen_test.dart: AiRoutineReviewScreen renders reconciled exercises and badges
+01:35 +315: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/routines/presentation/ai_routine_review_screen_test.dart: AiRoutineReviewScreen renders reconciled exercises and badges
+01:35 +316: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/routines/presentation/ai_routine_review_screen_test.dart: AiRoutineReviewScreen renders reconciled exercises and badges
+01:35 +317: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/routines/presentation/ai_routine_review_screen_test.dart: AiRoutineReviewScreen renders reconciled exercises and badges
+01:35 +318: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/routines/presentation/ai_routine_review_screen_test.dart: AiRoutineReviewScreen renders reconciled exercises and badges
+01:35 +319: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/routines/presentation/ai_routine_review_screen_test.dart: AiRoutineReviewScreen renders reconciled exercises and badges
+01:35 +320: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/routines/presentation/ai_routine_review_screen_test.dart: AiRoutineReviewScreen renders reconciled exercises and badges
+01:35 +321: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/routines/presentation/ai_routine_review_screen_test.dart: AiRoutineReviewScreen renders reconciled exercises and badges
+01:35 +322: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/routines/presentation/ai_routine_review_screen_test.dart: AiRoutineReviewScreen renders reconciled exercises and badges
+01:35 +323: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/routines/presentation/ai_routine_review_screen_test.dart: AiRoutineReviewScreen renders reconciled exercises and badges
+01:35 +324: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/routines/presentation/ai_routine_review_screen_test.dart: AiRoutineReviewScreen renders reconciled exercises and badges
+01:35 +325: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/routines/presentation/ai_routine_review_screen_test.dart: AiRoutineReviewScreen renders reconciled exercises and badges
+01:35 +326: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/routines/presentation/ai_routine_review_screen_test.dart: AiRoutineReviewScreen renders reconciled exercises and badges
+01:35 +327: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/routines/presentation/ai_routine_review_screen_test.dart: AiRoutineReviewScreen renders reconciled exercises and badges
+01:35 +328: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/routines/presentation/ai_routine_review_screen_test.dart: AiRoutineReviewScreen renders reconciled exercises and badges
+01:35 +329: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/routines/presentation/ai_routine_review_screen_test.dart: AiRoutineReviewScreen renders reconciled exercises and badges
+01:35 +330: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/routines/presentation/ai_routine_review_screen_test.dart: AiRoutineReviewScreen renders reconciled exercises and badges
+01:35 +331: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/routines/presentation/ai_routine_review_screen_test.dart: AiRoutineReviewScreen renders reconciled exercises and badges
+01:35 +332: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/routines/presentation/ai_routine_review_screen_test.dart: AiRoutineReviewScreen renders reconciled exercises and badges
+01:35 +333: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/routines/presentation/ai_routine_review_screen_test.dart: AiRoutineReviewScreen renders reconciled exercises and badges
+01:36 +334: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/routines/presentation/ai_routine_review_screen_test.dart: AiRoutineReviewScreen stepper increments set count
+01:37 +335: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/routines/presentation/ai_routine_review_screen_test.dart: AiRoutineReviewScreen stepper increments set count
+01:37 +336: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/routines/presentation/ai_routine_review_screen_test.dart: AiRoutineReviewScreen stepper increments set count
+01:37 +337: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/routines/presentation/ai_routine_review_screen_test.dart: AiRoutineReviewScreen stepper increments set count
+01:37 +338: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/routines/presentation/providers/explore_filters_test.dart: equipment capability owning more equipment never shows less
+01:37 +339: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/routines/presentation/providers/explore_filters_test.dart: applyExploreFilters no filters returns everything
+01:37 +340: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/routines/presentation/providers/explore_filters_test.dart: applyExploreFilters an empty filter set is reported as empty
+01:37 +341: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/routines/presentation/providers/explore_filters_test.dart: applyExploreFilters search finds routines by exercise name
+01:37 +342: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/routines/presentation/providers/explore_filters_test.dart: applyExploreFilters a nonsense query returns nothing rather than everything
+01:37 +343: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/routines/presentation/providers/explore_filters_test.dart: applyExploreFilters level filter keeps only matching routines
+01:37 +344: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/routines/presentation/providers/explore_filters_test.dart: applyExploreFilters duration filter keeps only matching bands
+01:37 +345: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/routines/presentation/providers/explore_filters_test.dart: applyExploreFilters filters compose
+01:37 +346: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/routines/presentation/providers/explore_filters_test.dart: applyExploreFilters activeCount tracks how many constraints are on
+01:37 +347: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/routines/presentation/providers/explore_filters_test.dart: applyExploreFilters clearing equipment removes the constraint
+01:39 +348: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/routines/presentation/widgets/explore_preview_sheet_test.dart: RoutinePreviewSheet renders routine details, exercises, and muscle map
+01:40 +349: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/routines/presentation/widgets/explore_preview_sheet_test.dart: RoutinePreviewSheet renders routine details, exercises, and muscle map
+01:40 +350: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/routines/presentation/widgets/explore_preview_sheet_test.dart: RoutinePreviewSheet renders routine details, exercises, and muscle map
+01:40 +351: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/routines/presentation/widgets/explore_preview_sheet_test.dart: RoutinePreviewSheet renders routine details, exercises, and muscle map
+01:40 +352: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/routines/presentation/widgets/explore_preview_sheet_test.dart: RoutinePreviewSheet renders routine details, exercises, and muscle map
+01:40 +353: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/routines/presentation/widgets/explore_preview_sheet_test.dart: RoutinePreviewSheet renders routine details, exercises, and muscle map
+01:41 +354: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/routines/presentation/widgets/explore_preview_sheet_test.dart: RoutinePreviewSheet renders routine details, exercises, and muscle map
+01:41 +355: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/routines/presentation/widgets/explore_preview_sheet_test.dart: RoutinePreviewSheet renders routine details, exercises, and muscle map
+01:41 +356: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/routines/presentation/widgets/explore_preview_sheet_test.dart: RoutinePreviewSheet renders routine details, exercises, and muscle map
+01:41 +357: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/routines/presentation/widgets/explore_preview_sheet_test.dart: RoutinePreviewSheet renders routine details, exercises, and muscle map
+01:41 +358: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/routines/presentation/widgets/explore_preview_sheet_test.dart: RoutinePreviewSheet renders routine details, exercises, and muscle map
+01:41 +359: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/routines/presentation/widgets/explore_preview_sheet_test.dart: RoutinePreviewSheet renders routine details, exercises, and muscle map
+01:41 +360: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/routines/presentation/widgets/explore_preview_sheet_test.dart: RoutinePreviewSheet renders routine details, exercises, and muscle map
+01:41 +361: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/routines/presentation/widgets/explore_preview_sheet_test.dart: RoutinePreviewSheet renders routine details, exercises, and muscle map
+01:41 +362: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/routines/presentation/widgets/explore_preview_sheet_test.dart: RoutinePreviewSheet renders routine details, exercises, and muscle map
+01:41 +363: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/routines/presentation/widgets/explore_preview_sheet_test.dart: RoutinePreviewSheet renders routine details, exercises, and muscle map
+01:41 +364: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/routines/presentation/widgets/explore_preview_sheet_test.dart: RoutinePreviewSheet renders routine details, exercises, and muscle map
+01:41 +365: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/routines/presentation/widgets/explore_preview_sheet_test.dart: RoutinePreviewSheet renders routine details, exercises, and muscle map
+01:41 +366: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/routines/presentation/widgets/explore_preview_sheet_test.dart: RoutinePreviewSheet renders routine details, exercises, and muscle map
+01:41 +367: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/routines/presentation/widgets/explore_preview_sheet_test.dart: RoutinePreviewSheet renders routine details, exercises, and muscle map
+01:41 +368: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/routines/presentation/widgets/explore_preview_sheet_test.dart: RoutinePreviewSheet renders routine details, exercises, and muscle map
+01:41 +369: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/routines/presentation/widgets/explore_preview_sheet_test.dart: RoutinePreviewSheet renders routine details, exercises, and muscle map
+01:41 +370: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/routines/presentation/widgets/explore_preview_sheet_test.dart: RoutinePreviewSheet renders routine details, exercises, and muscle map
+01:41 +371: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/routines/presentation/widgets/explore_preview_sheet_test.dart: RoutinePreviewSheet renders routine details, exercises, and muscle map
+01:41 +372: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/routines/presentation/widgets/explore_preview_sheet_test.dart: RoutinePreviewSheet renders routine details, exercises, and muscle map
+01:41 +373: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/routines/presentation/widgets/explore_preview_sheet_test.dart: RoutinePreviewSheet renders routine details, exercises, and muscle map
+01:41 +374: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/routines/presentation/widgets/explore_preview_sheet_test.dart: RoutinePreviewSheet renders routine details, exercises, and muscle map
+01:41 +375: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/routines/presentation/widgets/explore_preview_sheet_test.dart: RoutinePreviewSheet renders routine details, exercises, and muscle map
+01:41 +376: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/routines/presentation/widgets/explore_preview_sheet_test.dart: RoutinePreviewSheet renders routine details, exercises, and muscle map
+01:41 +377: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/routines/presentation/widgets/explore_preview_sheet_test.dart: RoutinePreviewSheet renders routine details, exercises, and muscle map
+01:44 +378: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/routines/presentation/widgets/explore_preview_sheet_test.dart: RoutinePreviewSheet renders routine details, exercises, and muscle map
+01:44 +379: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/routines/presentation/widgets/explore_preview_sheet_test.dart: RoutinePreviewSheet renders routine details, exercises, and muscle map
+01:44 +380: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/routines/presentation/widgets/explore_preview_sheet_test.dart: RoutinePreviewSheet renders routine details, exercises, and muscle map
+01:44 +381: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/routines/presentation/widgets/explore_preview_sheet_test.dart: RoutinePreviewSheet renders routine details, exercises, and muscle map
+01:44 +382: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/routines/presentation/widgets/explore_preview_sheet_test.dart: RoutinePreviewSheet renders routine details, exercises, and muscle map
+01:44 +383: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/routines/presentation/widgets/explore_preview_sheet_test.dart: RoutinePreviewSheet renders routine details, exercises, and muscle map
+01:44 +384: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/routines/presentation/widgets/explore_preview_sheet_test.dart: RoutinePreviewSheet renders routine details, exercises, and muscle map
+01:45 +385: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/routines/presentation/widgets/explore_preview_sheet_test.dart: RoutinePreviewSheet renders routine details, exercises, and muscle map
+01:45 +386: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/routines/presentation/widgets/explore_preview_sheet_test.dart: RoutinePreviewSheet renders routine details, exercises, and muscle map
+unhandled element <style/>; Picture key: Svg loader
+01:45 +387: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/routines/presentation/widgets/explore_preview_sheet_test.dart: RoutinePreviewSheet shows View in My Routines when isOwned is true
+01:46 +388: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/workout/presentation/screens/active_workout_hold_timer_integration_test.dart: ExerciseBlock renders TIMER column and triggers HoldTimer
+01:47 +389: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/workout/presentation/screens/active_workout_hold_timer_integration_test.dart: ExerciseBlock renders TIMER column and triggers HoldTimer
+01:49 +390: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/workout/presentation/screens/active_workout_hold_timer_integration_test.dart: ExerciseBlock renders TIMER column and triggers HoldTimer
+01:50 +391: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/workout/presentation/screens/active_workout_hold_timer_integration_test.dart: ExerciseBlock renders TIMER column and triggers HoldTimer
+01:50 +392: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/workout/presentation/screens/active_workout_hold_timer_integration_test.dart: ExerciseBlock renders TIMER column and triggers HoldTimer
+01:54 +392: loading C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/active_workout_header_golden_test.dart
+Warning: A tag was used that wasn't specified in dart_test.yaml.
+  golden was used in the suite itself
+
+01:54 +393: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/workout/presentation/screens/active_workout_hold_timer_integration_test.dart: ExerciseBlock renders TIMER column and triggers HoldTimer
+01:55 +394: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/workout/presentation/screens/active_workout_hold_timer_integration_test.dart: ExerciseBlock renders TIMER column and triggers HoldTimer
+01:55 +395: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/workout/presentation/screens/active_workout_hold_timer_integration_test.dart: ExerciseBlock renders TIMER column and triggers HoldTimer
+01:56 +396: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/workout/presentation/screens/active_workout_hold_timer_integration_test.dart: ExerciseBlock renders TIMER column and triggers HoldTimer
+01:56 +397: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/workout/pr_celebration_overlay_test.dart: PR celebration overlay share action opens the editor with the originating set
+01:56 +398: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/workout/pr_celebration_overlay_test.dart: PR celebration overlay share action opens the editor with the originating set
+01:56 +399: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/workout/pr_celebration_overlay_test.dart: PR celebration overlay share action opens the editor with the originating set
+01:57 +400: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/workout/pr_celebration_overlay_test.dart: PR celebration overlay share action opens the editor with the originating set
+01:57 +401: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/workout/pr_celebration_overlay_test.dart: PR celebration overlay share action opens the editor with the originating set
+01:58 +402: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/active_workout_header_golden_test.dart: ActiveWorkoutHeader renders correctly per theme (normal layout) (variant: Windows)
+01:58 +403: C:/Users/Atharva Patil/Documents/projects/gymlog/test/features/workout/pr_celebration_overlay_test.dart: PR celebration overlay Keep Going stays fully on-screen on a short viewport with large text and many PRs
+01:59 +404: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/active_workout_header_golden_test.dart: ActiveWorkoutHeader renders correctly per theme (normal layout) (variant: CI)
+02:00 +405: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/active_workout_header_golden_test.dart: ActiveWorkoutHeader renders correctly per theme (normal layout) (variant: CI)
+02:00 +406: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/auth_screen_golden_test.dart: AuthScreen Golden Tests 1. Dark Purple Palette 390x844
+02:00 +407: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/auth_screen_golden_test.dart: AuthScreen Golden Tests 1. Dark Purple Palette 390x844
+02:01 +408: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/auth_screen_golden_test.dart: AuthScreen Golden Tests 1. Dark Purple Palette 390x844
+02:01 +409: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/auth_screen_golden_test.dart: AuthScreen Golden Tests 1. Dark Purple Palette 390x844
+02:01 +409: loading C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/muscle_load_bar_golden_test.dart
+Warning: A tag was used that wasn't specified in dart_test.yaml.
+  golden was used in the suite itself
+
+02:02 +410: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/auth_screen_golden_test.dart: AuthScreen Golden Tests 1. Dark Purple Palette 390x844
+02:02 +411: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/muscle_load_bar_golden_test.dart: MuscleLoadBar renders in all six accent palettes (variant: Windows)
+02:02 +412: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/muscle_load_bar_golden_test.dart: MuscleLoadBar renders in all six accent palettes (variant: Windows)
+02:02 +413: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/muscle_load_bar_golden_test.dart: MuscleLoadBar renders in all six accent palettes (variant: Windows)
+02:03 +414: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/muscle_load_bar_golden_test.dart: MuscleLoadBar renders in all six accent palettes (variant: Windows)
+02:03 +415: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/muscle_load_bar_golden_test.dart: MuscleLoadBar renders in all six accent palettes (variant: Windows)
+02:03 +416: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/muscle_load_bar_golden_test.dart: MuscleLoadBar renders in all six accent palettes (variant: Windows)
+02:03 +417: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/muscle_load_bar_golden_test.dart: MuscleLoadBar renders in all six accent palettes (variant: Windows)
+02:04 +418: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/muscle_load_bar_golden_test.dart: MuscleLoadBar renders in all six accent palettes (variant: Windows)
+02:04 +419: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/muscle_load_bar_golden_test.dart: MuscleLoadBar renders in all six accent palettes (variant: Windows)
+02:04 +419: loading C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/muscle_map_golden_test.dart
+Warning: A tag was used that wasn't specified in dart_test.yaml.
+  golden was used in the suite itself
+
+02:04 +420: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/muscle_load_bar_golden_test.dart: MuscleLoadBar renders in all six accent palettes (variant: Windows)
+02:04 +421: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/muscle_load_bar_golden_test.dart: MuscleLoadBar renders in all six accent palettes (variant: Windows)
+02:04 +422: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/muscle_load_bar_golden_test.dart: MuscleLoadBar renders in all six accent palettes (variant: Windows)
+02:05 +423: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/muscle_map_golden_test.dart: MuscleMap front-only male highlights Chest and Triceps (variant: Windows)
+02:05 +424: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/muscle_map_golden_test.dart: MuscleMap front-only male highlights Chest and Triceps (variant: Windows)
+02:06 +425: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/muscle_map_golden_test.dart: MuscleMap front-only male highlights Chest and Triceps (variant: Windows)
+unhandled element <style/>; Picture key: Svg loader
+02:07 +426: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/muscle_map_golden_test.dart: MuscleMap front-only male highlights Chest and Triceps (variant: Windows)
+02:07 +427: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/muscle_map_golden_test.dart: MuscleMap front-only male highlights Chest and Triceps (variant: Windows)
+02:07 +428: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/auth_screen_golden_test.dart: AuthScreen Golden Tests 13. Offline Snackbar
+[Auth] failure=network
+02:07 +429: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/muscle_map_golden_test.dart: MuscleMap front-only male highlights Chest and Triceps (variant: CI)
+02:08 +429: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/auth_screen_golden_test.dart: AuthScreen Golden Tests 14. Configuration-error Snackbar
+[Auth] failure=configuration code=google_android_configuration
+02:08 +430: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/muscle_map_golden_test.dart: MuscleMap front-only male highlights Chest and Triceps (variant: CI)
+02:08 +431: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/muscle_map_golden_test.dart: MuscleMap front+back female highlights Back and Biceps (variant: Windows)
+02:09 +431: loading C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/nav_bar_golden_test.dart
+Warning: A tag was used that wasn't specified in dart_test.yaml.
+  golden was used in the suite itself
+
+02:11 +432: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/nav_bar_golden_test.dart: BottomNavBar — all palettes, tab 0 selected, standard sizes (variant: Windows)
+02:11 +432: loading C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/onboarding_steps_golden_test.dart
+Warning: A tag was used that wasn't specified in dart_test.yaml.
+  golden was used in the suite itself
+
+02:12 +433: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/nav_bar_golden_test.dart: BottomNavBar — all palettes, tab 0 selected, standard sizes (variant: Windows)
+02:12 +433: loading C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/pr_celebration_golden_test.dart
+Warning: A tag was used that wasn't specified in dart_test.yaml.
+  golden was used in the suite itself
+
+02:12 +434: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/nav_bar_golden_test.dart: BottomNavBar — all palettes, tab 0 selected, standard sizes (variant: Windows)
+02:13 +435: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/onboarding_steps_golden_test.dart: StepAge renders per theme (variant: Windows)
+02:13 +436: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/onboarding_steps_golden_test.dart: StepAge renders per theme (variant: Windows)
+02:14 +437: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/onboarding_steps_golden_test.dart: StepAge renders per theme (variant: Windows)
+02:14 +438: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/pr_celebration_golden_test.dart: PrCelebrationCard renders per theme (variant: Windows)
+02:15 +439: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/nav_bar_golden_test.dart: BottomNavBar — all palettes, tab 1 selected (variant: Windows)
+02:15 +440: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/onboarding_steps_golden_test.dart: StepAge renders per theme (variant: CI)
+02:15 +440: loading C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/pr_flex_golden_test.dart
+Warning: A tag was used that wasn't specified in dart_test.yaml.
+  golden was used in the suite itself
+
+02:15 +440: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/onboarding_steps_golden_test.dart: StepAge renders per theme (variant: CI)
+02:15 +441: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/pr_celebration_golden_test.dart: PrCelebrationCard renders per theme (variant: CI)
+02:16 +442: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/pr_celebration_golden_test.dart: PrCelebrationCard renders per theme (variant: CI)
+02:16 +443: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/pr_flex_golden_test.dart: PR Flex black, all six app accents (variant: Windows)
+02:17 +444: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/pr_flex_golden_test.dart: PR Flex black, all six app accents (variant: Windows)
+02:17 +445: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/pr_flex_golden_test.dart: PR Flex black, all six app accents (variant: Windows)
+02:17 +446: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/pr_flex_golden_test.dart: PR Flex black, all six app accents (variant: Windows)
+02:17 +447: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/pr_flex_golden_test.dart: PR Flex black, all six app accents (variant: Windows)
+02:17 +448: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/onboarding_steps_golden_test.dart: StepAge at 100 renders per theme (regression: 3 digits must not wrap) (variant: CI)
+02:18 +449: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/pr_celebration_golden_test.dart: PrCelebrationCard fits a short viewport with a bottom inset (3-button nav edge-to-edge) — Keep Going must stay on-screen (variant: CI)
+02:18 +450: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/pr_celebration_golden_test.dart: PrCelebrationCard fits a short viewport with a bottom inset (3-button nav edge-to-edge) — Keep Going must stay on-screen (variant: CI)
+02:18 +451: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/pr_flex_golden_test.dart: PR Flex black, all six app accents (variant: CI)
+02:18 +452: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/onboarding_steps_golden_test.dart: StepWeeklyGoal renders per theme (variant: Windows)
+02:19 +453: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/onboarding_steps_golden_test.dart: StepWeeklyGoal renders per theme (variant: Windows)
+02:19 +454: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/pr_flex_golden_test.dart: PR Flex accent, all six app accents (variant: Windows)
+02:20 +455: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/nav_bar_golden_test.dart: BottomNavBar — tablet 600x1024 (variant: Windows)
+02:20 +456: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/onboarding_steps_golden_test.dart: StepWeeklyGoal renders per theme (variant: CI)
+02:21 +457: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/onboarding_steps_golden_test.dart: StepWeeklyGoal renders per theme (variant: CI)
+02:21 +458: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/onboarding_steps_golden_test.dart: StepWeeklyGoal renders per theme (variant: CI)
+02:21 +459: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/nav_bar_golden_test.dart: BottomNavBar — landscape 800x360 (variant: Windows)
+02:21 +459: loading C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/segmented_control_golden_test.dart
+Warning: A tag was used that wasn't specified in dart_test.yaml.
+  golden was used in the suite itself
+
+02:21 +460: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/pr_flex_golden_test.dart: PR Flex photo, all six app accents (variant: Windows)
+02:22 +461: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/pr_flex_golden_test.dart: PR Flex photo, all six app accents (variant: Windows)
+02:22 +462: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/segmented_control_golden_test.dart: SegmentedControl renders correctly per theme (variant: Windows)
+02:23 +463: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/segmented_control_golden_test.dart: SegmentedControl renders correctly per theme (variant: Windows)
+02:23 +464: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/pr_flex_golden_test.dart: PR Flex photo, all six app accents (variant: CI)
+02:23 +465: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/pr_flex_golden_test.dart: PR Flex photo, all six app accents (variant: CI)
+02:23 +465: loading C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/share_cards_golden_test.dart
+Warning: A tag was used that wasn't specified in dart_test.yaml.
+  golden was used in the suite itself
+
+02:23 +466: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/pr_flex_golden_test.dart: PR Flex photo, all six app accents (variant: CI)
+02:24 +467: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/pr_flex_golden_test.dart: PR Flex photo, all six app accents (variant: CI)
+02:24 +468: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/pr_flex_golden_test.dart: PR Flex photo, all six app accents (variant: CI)
+02:24 +469: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/share_cards_golden_test.dart: DELT Share Card - Monument Variant across all themes (variant: Windows)
+02:25 +470: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/pr_flex_golden_test.dart: Story editor follows every app accent (variant: Windows)
+02:27 +471: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/pr_flex_golden_test.dart: Story editor follows every app accent (variant: Windows)
+02:27 +472: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/pr_flex_golden_test.dart: Story editor follows every app accent (variant: Windows)
+02:27 +473: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/pr_flex_golden_test.dart: Story editor follows every app accent (variant: Windows)
+02:27 +474: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/pr_flex_golden_test.dart: Story editor follows every app accent (variant: Windows)
+02:27 +475: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/pr_flex_golden_test.dart: Story editor follows every app accent (variant: Windows)
+02:27 +476: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/pr_flex_golden_test.dart: Story editor follows every app accent (variant: Windows)
+02:27 +477: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/pr_flex_golden_test.dart: Story editor follows every app accent (variant: Windows)
+02:27 +478: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/pr_flex_golden_test.dart: Story editor follows every app accent (variant: Windows)
+02:27 +479: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/pr_flex_golden_test.dart: Story editor follows every app accent (variant: Windows)
+02:27 +480: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/pr_flex_golden_test.dart: Story editor follows every app accent (variant: Windows)
+02:27 +481: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/pr_flex_golden_test.dart: Story editor follows every app accent (variant: Windows)
+02:27 +482: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/pr_flex_golden_test.dart: Story editor follows every app accent (variant: Windows)
+02:27 +483: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/pr_flex_golden_test.dart: Story editor follows every app accent (variant: Windows)
+02:27 +484: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/pr_flex_golden_test.dart: Story editor follows every app accent (variant: Windows)
+02:27 +485: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/pr_flex_golden_test.dart: Story editor follows every app accent (variant: Windows)
+02:28 +486: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/pr_flex_golden_test.dart: Story editor follows every app accent (variant: Windows)
+02:29 +487: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/pr_flex_golden_test.dart: Story editor follows every app accent (variant: Windows)
+02:29 +488: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/pr_flex_golden_test.dart: Story editor follows every app accent (variant: Windows)
+02:29 +489: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/pr_flex_golden_test.dart: Story editor follows every app accent (variant: Windows)
+02:29 +490: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/pr_flex_golden_test.dart: Story editor follows every app accent (variant: Windows)
+02:29 +491: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/pr_flex_golden_test.dart: Story editor follows every app accent (variant: Windows)
+02:29 +492: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/pr_flex_golden_test.dart: Story editor follows every app accent (variant: Windows)
+02:29 +493: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/pr_flex_golden_test.dart: Story editor follows every app accent (variant: Windows)
+02:30 +494: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/pr_flex_golden_test.dart: Story editor follows every app accent (variant: Windows)
+02:30 +495: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/pr_flex_golden_test.dart: Story editor follows every app accent (variant: CI)
+02:31 +496: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/pr_flex_golden_test.dart: Story editor follows every app accent (variant: CI)
+02:31 +497: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/pr_flex_golden_test.dart: Story editor follows every app accent (variant: CI)
+02:31 +498: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/pr_flex_golden_test.dart: Story editor follows every app accent (variant: CI)
+02:31 +499: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/pr_flex_golden_test.dart: Story editor follows every app accent (variant: CI)
+02:31 +500: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/pr_flex_golden_test.dart: Story editor follows every app accent (variant: CI)
+02:31 +501: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/pr_flex_golden_test.dart: Story editor follows every app accent (variant: CI)
+02:31 +502: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/pr_flex_golden_test.dart: Story editor follows every app accent (variant: CI)
+02:31 +503: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/pr_flex_golden_test.dart: Story editor follows every app accent (variant: CI)
+02:31 +504: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/pr_flex_golden_test.dart: Story editor follows every app accent (variant: CI)
+02:31 +505: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/pr_flex_golden_test.dart: Story editor follows every app accent (variant: CI)
+02:33 +506: C:/Users/Atharva Patil/Documents/projects/gymlog/test/golden/pr_flex_golden_test.dart: (tearDownAll)
+02:33 +506: C:/Users/Atharva Patil/Documents/projects/gymlog/test/import/exercise_matcher_test.dart: exact match (case-insensitive)
+02:33 +507: C:/Users/Atharva Patil/Documents/projects/gymlog/test/import/exercise_matcher_test.dart: word-order independent: parenthetical ↔ prefixed equipment
+02:33 +508: C:/Users/Atharva Patil/Documents/projects/gymlog/test/import/exercise_matcher_test.dart: equipment is preserved (no cross-equipment link)
+02:33 +509: C:/Users/Atharva Patil/Documents/projects/gymlog/test/import/exercise_matcher_test.dart: equipment-less import name links to the single movement match
+02:33 +510: C:/Users/Atharva Patil/Documents/projects/gymlog/test/import/exercise_matcher_test.dart: returns null when the movement is unknown
+02:33 +511: C:/Users/Atharva Patil/Documents/projects/gymlog/test/import/exercise_matcher_test.dart: movementKey strips equipment and ignores word order
+02:33 +512: C:/Users/Atharva Patil/Documents/projects/gymlog/test/import/exercise_matcher_test.dart: equipFromName reads parenthetical or prefixed equipment
+02:35 +513: C:/Users/Atharva Patil/Documents/projects/gymlog/test/import/export_roundtrip_test.dart: (setUpAll)
+02:35 +513: C:/Users/Atharva Patil/Documents/projects/gymlog/test/import/export_roundtrip_test.dart: ATOMIC-06: Lossless GymLog v2 Import/Export Round-Trip Round-trip invariant: decode(encode(workout)) preserves full history
+WARNING (drift): It looks like you've created the database class AppDatabase multiple times. When these two databases use the same QueryExecutor, race conditions will occur and might corrupt the database. 
+Try to follow the advice at https://drift.simonbinder.eu/faq/#using-the-database or, if you know what you're doing, set driftRuntimeOptions.dontWarnAboutMultipleDatabases = true
+Here is the stacktrace from when the database was opened a second time:
+#0      GeneratedDatabase._handleInstantiated (package:drift/src/runtime/api/db_base.dart:96:30)
+#1      GeneratedDatabase._whenConstructed (package:drift/src/runtime/api/db_base.dart:73:12)
+#2      new GeneratedDatabase (package:drift/src/runtime/api/db_base.dart:64:5)
+#3      new _$AppDatabase (package:gymlog/core/database/database.g.dart:4170:36)
+#4      new AppDatabase.forTesting (package:gymlog/core/database/database.dart)
+#5      main.<anonymous closure>.<anonymous closure> (file:///C:/Users/Atharva%20Patil/Documents/projects/gymlog/test/import/export_roundtrip_test.dart:199:31)
+<asynchronous suspension>
+#6      Declarer.test.<anonymous closure>.<anonymous closure> (package:test_api/src/backend/declarer.dart:253:15)
+<asynchronous suspension>
+#7      Declarer.test.<anonymous closure> (package:test_api/src/backend/declarer.dart:250:11)
+<asynchronous suspension>
+#8      Invoker._waitForOutstandingCallbacks.<anonymous closure> (package:test_api/src/backend/invoker.dart:318:9)
+<asynchronous suspension>
+This warning will only appear on debug builds.
+02:35 +514: C:/Users/Atharva Patil/Documents/projects/gymlog/test/import/export_roundtrip_test.dart: ATOMIC-06: Lossless GymLog v2 Import/Export Round-Trip v1 GymLog CSV remains readable
+02:35 +515: C:/Users/Atharva Patil/Documents/projects/gymlog/test/import/export_roundtrip_test.dart: ATOMIC-06: Lossless GymLog v2 Import/Export Round-Trip unsupported future version throws explicit ImportException
+02:35 +516: C:/Users/Atharva Patil/Documents/projects/gymlog/test/import/export_roundtrip_test.dart: ATOMIC-06: Lossless GymLog v2 Import/Export Round-Trip missing required v2 columns throws explicit ImportException
+02:36 +517: C:/Users/Atharva Patil/Documents/projects/gymlog/test/import/export_roundtrip_test.dart: (tearDownAll)
+02:37 +517: C:/Users/Atharva Patil/Documents/projects/gymlog/test/import/import_cluster_regression_test.dart: (setUpAll)
+02:37 +517: C:/Users/Atharva Patil/Documents/projects/gymlog/test/import/import_cluster_regression_test.dart: CP-A: GymLog v2 rows are metric-validated (no silent garbage) a weight_and_reps row missing weight warns and skips
+02:37 +518: C:/Users/Atharva Patil/Documents/projects/gymlog/test/import/import_cluster_regression_test.dart: CP-A: GymLog v2 rows are metric-validated (no silent garbage) a reps_only row missing reps warns and skips
+02:37 +519: C:/Users/Atharva Patil/Documents/projects/gymlog/test/import/import_cluster_regression_test.dart: CP-B: UTC export dates come back as local wall-clock UTC-suffixed startedAt is converted to local on parse
+02:37 +520: C:/Users/Atharva Patil/Documents/projects/gymlog/test/import/import_cluster_regression_test.dart: CP-C: case-insensitive session grouping same workout name in different case collapses to one session
+02:37 +521: C:/Users/Atharva Patil/Documents/projects/gymlog/test/import/import_cluster_regression_test.dart: IM-A: kg is the default assumed unit parser defaults a unitless Strong file to kg
+02:37 +522: C:/Users/Atharva Patil/Documents/projects/gymlog/test/import/import_cluster_regression_test.dart: IM-B: progress counts only importable sessions a duplicate does not move the progress counter
+02:37 +523: C:/Users/Atharva Patil/Documents/projects/gymlog/test/import/import_cluster_regression_test.dart: IM-B: progress counts only importable sessions two fresh sessions report 2 of 2
+02:37 +524: C:/Users/Atharva Patil/Documents/projects/gymlog/test/import/import_cluster_regression_test.dart: IM-C: cancel mid-import returns partial result isCancelled after the first session stops the rest
+02:37 +525: C:/Users/Atharva Patil/Documents/projects/gymlog/test/import/import_cluster_regression_test.dart: IM-H: custom exercises roll back with a failing session a failed session transaction leaves no orphan custom exercise
+02:37 +526: C:/Users/Atharva Patil/Documents/projects/gymlog/test/import/import_cluster_regression_test.dart: IM-I: honest partial-import reporting first session commits, second fails, partial result kept
+02:37 +527: C:/Users/Atharva Patil/Documents/projects/gymlog/test/import/import_cluster_regression_test.dart: IM-2: template CSV round-trips template parses as GymLog v2 with one weight_and_reps set
+02:37 +528: C:/Users/Atharva Patil/Documents/projects/gymlog/test/import/import_cluster_regression_test.dart: (tearDownAll)
+02:38 +528: C:/Users/Atharva Patil/Documents/projects/gymlog/test/import/import_screen_polish_test.dart: _Banner renders with AppRadius.cardAll and semantic label
+02:40 +529: C:/Users/Atharva Patil/Documents/projects/gymlog/test/import/import_screen_polish_test.dart: _StatRow renders with semantic label
+02:40 +530: C:/Users/Atharva Patil/Documents/projects/gymlog/test/import/import_screen_polish_test.dart: _UnitChooser renders with custom height, color tokens, and semantics
+02:40 +531: C:/Users/Atharva Patil/Documents/projects/gymlog/test/import/import_service_test.dart: imports the Hevy export into the local database
+02:40 +532: C:/Users/Atharva Patil/Documents/projects/gymlog/test/import/import_service_test.dart: stores weights in kilograms when importing a Strong (lbs) export
+02:40 +533: C:/Users/Atharva Patil/Documents/projects/gymlog/test/import/import_service_test.dart: re-importing the same file is idempotent
+02:41 +534: C:/Users/Atharva Patil/Documents/projects/gymlog/test/import/import_service_test.dart: preview reports the same shape without writing anything
+02:41 +535: C:/Users/Atharva Patil/Documents/projects/gymlog/test/import/import_service_test.dart: (tearDownAll)
+02:42 +535: C:/Users/Atharva Patil/Documents/projects/gymlog/test/import/muscle_taxonomy_test.dart: parent groups exist and are ordered
+02:42 +536: C:/Users/Atharva Patil/Documents/projects/gymlog/test/import/muscle_taxonomy_test.dart: specific muscle resolves to its parent group
+02:42 +537: C:/Users/Atharva Patil/Documents/projects/gymlog/test/import/muscle_taxonomy_test.dart: specific muscle resolves to its coarse region
+02:42 +538: C:/Users/Atharva Patil/Documents/projects/gymlog/test/import/muscle_taxonomy_test.dart: parent → child lists are populated (e.g. Back)
+02:42 +539: C:/Users/Atharva Patil/Documents/projects/gymlog/test/import/muscle_taxonomy_test.dart: unknown muscle falls back gracefully
+02:44 +540: C:/Users/Atharva Patil/Documents/projects/gymlog/test/import/workout_csv_parser_test.dart: Hevy parses sessions, sets, and kg volume from a real export
+02:44 +541: C:/Users/Atharva Patil/Documents/projects/gymlog/test/import/workout_csv_parser_test.dart: Hevy respects the explicit set_type column (no warmups here)
+02:44 +542: C:/Users/Atharva Patil/Documents/projects/gymlog/test/import/workout_csv_parser_test.dart: Hevy orders sets 0-based and contiguous within each exercise
+02:44 +543: C:/Users/Atharva Patil/Documents/projects/gymlog/test/import/workout_csv_parser_test.dart: Hevy reads weight_lbs header variant and converts to kg
+02:44 +544: C:/Users/Atharva Patil/Documents/projects/gymlog/test/import/workout_csv_parser_test.dart: Strong parses semicolon export and converts lbs → kg
+02:44 +545: C:/Users/Atharva Patil/Documents/projects/gymlog/test/import/workout_csv_parser_test.dart: Strong infers warmups from the Notes column
+02:44 +546: C:/Users/Atharva Patil/Documents/projects/gymlog/test/import/workout_csv_parser_test.dart: Strong derives session end time from Workout Duration
+02:44 +547: C:/Users/Atharva Patil/Documents/projects/gymlog/test/import/workout_csv_parser_test.dart: Strong flags an assumed unit when Weight Unit column is missing
+02:44 +548: C:/Users/Atharva Patil/Documents/projects/gymlog/test/import/workout_csv_parser_test.dart: cross-check Hevy and Strong files describe the same training volume
+02:44 +549: C:/Users/Atharva Patil/Documents/projects/gymlog/test/import/workout_csv_parser_test.dart: errors throws on an unrecognised header
+02:44 +550: C:/Users/Atharva Patil/Documents/projects/gymlog/test/import/workout_csv_parser_test.dart: errors throws on an empty file
+02:45 +551: C:/Users/Atharva Patil/Documents/projects/gymlog/test/instagram_story_service_test.dart: hands Instagram both layers and the registered source ID
+02:46 +552: C:/Users/Atharva Patil/Documents/projects/gymlog/test/instagram_story_service_test.dart: missing registration does not make a fake successful handoff
+02:46 +553: C:/Users/Atharva Patil/Documents/projects/gymlog/test/instagram_story_service_test.dart: uninstalled and unsupported platforms remain recoverable
+02:47 +554: C:/Users/Atharva Patil/Documents/projects/gymlog/test/legal_consistency_test.dart: Legal URLs are valid and secure HTTPS links
+02:49 +555: C:/Users/Atharva Patil/Documents/projects/gymlog/test/muscle_load_bar_accent_test.dart: legend dots equal the higgsfield (Volt, app default) ramp
+02:51 +556: C:/Users/Atharva Patil/Documents/projects/gymlog/test/no_ai_slop_copy_test.dart: no em/en dashes in lib copy (comments stripped)
+02:51 +557: C:/Users/Atharva Patil/Documents/projects/gymlog/test/no_ai_slop_copy_test.dart: no em/en dashes in lib copy (comments stripped)
+02:51 +558: C:/Users/Atharva Patil/Documents/projects/gymlog/test/muscle_load_bar_accent_test.dart: no legend dot uses the legacy static purple literal
+02:51 +559: C:/Users/Atharva Patil/Documents/projects/gymlog/test/muscle_load_bar_accent_test.dart: legend caps at 3 items and shows +N overflow text
+02:51 +560: C:/Users/Atharva Patil/Documents/projects/gymlog/test/muscle_load_bar_accent_test.dart: empty entries render nothing
+02:52 +561: C:/Users/Atharva Patil/Documents/projects/gymlog/test/no_equipment_logging_certification_test.dart: ATOMIC-RC3-06 No-Equipment Logging End-to-End Certification Logs push-up and pull-up exercises without weight and exports cleanly
+02:53 +562: C:/Users/Atharva Patil/Documents/projects/gymlog/test/performance/bounded_cache_and_startup_test.dart: (setUpAll)
+02:53 +562: C:/Users/Atharva Patil/Documents/projects/gymlog/test/performance/bounded_cache_and_startup_test.dart: ATOMIC-11: Bounded Exercise Media Cache & Nonblocking Startup 1. Cache object limit is configured to 160 objects
+02:54 +563: C:/Users/Atharva Patil/Documents/projects/gymlog/test/performance/bounded_cache_and_startup_test.dart: ATOMIC-11: Bounded Exercise Media Cache & Nonblocking Startup 2. Maintenance policy runs safely
+[ExerciseMediaCacheManager] cache dir resolve error: MissingPluginException(No implementation found for method getTemporaryDirectory on channel plugins.flutter.io/path_provider)
+02:54 +564: C:/Users/Atharva Patil/Documents/projects/gymlog/test/performance/bounded_cache_and_startup_test.dart: ATOMIC-11: Bounded Exercise Media Cache & Nonblocking Startup 3. Reduced-motion GIF behavior renders static poster/frame
+02:55 +565: C:/Users/Atharva Patil/Documents/projects/gymlog/test/performance/bounded_cache_and_startup_test.dart: ATOMIC-11: Bounded Exercise Media Cache & Nonblocking Startup 4. Cancellation on widget unmount leaves no memory leak
+02:55 +566: C:/Users/Atharva Patil/Documents/projects/gymlog/test/performance/bounded_cache_and_startup_test.dart: ATOMIC-11: Bounded Exercise Media Cache & Nonblocking Startup 5. Offline startup proceeds immediately without cloud
+02:55 +567: C:/Users/Atharva Patil/Documents/projects/gymlog/test/performance/bounded_cache_and_startup_test.dart: ATOMIC-11: Bounded Exercise Media Cache & Nonblocking Startup 6. RevenueCat timeout fallback does not block launch
+02:55 +568: C:/Users/Atharva Patil/Documents/projects/gymlog/test/performance/bounded_cache_and_startup_test.dart: ATOMIC-11: Bounded Exercise Media Cache & Nonblocking Startup 7. Supabase timeout leads to remoteDegraded state without crashing
+02:55 +569: C:/Users/Atharva Patil/Documents/projects/gymlog/test/performance/bounded_cache_and_startup_test.dart: ATOMIC-11: Bounded Exercise Media Cache & Nonblocking Startup 8. Database migration failure triggers migrationFailure status
+02:55 +570: C:/Users/Atharva Patil/Documents/projects/gymlog/test/performance/bounded_cache_and_startup_test.dart: ATOMIC-11: Bounded Exercise Media Cache & Nonblocking Startup 9. Startup trace metrics targets (cold launch first frame <= 1.5s)
+02:55 +571: C:/Users/Atharva Patil/Documents/projects/gymlog/test/performance/bounded_cache_and_startup_test.dart: ATOMIC-11: Bounded Exercise Media Cache & Nonblocking Startup 10. Memory timeline does not show unbounded growth with static decodes
+02:55 +572: C:/Users/Atharva Patil/Documents/projects/gymlog/test/performance/bounded_cache_and_startup_test.dart: (tearDownAll)
+02:55 +572: C:/Users/Atharva Patil/Documents/projects/gymlog/test/premium/strict_entitlement_verification_test.dart: ATOMIC-08: Strict Premium Entitlement Verification 1. Required entitlement ("premium") active returns true
+02:55 +573: C:/Users/Atharva Patil/Documents/projects/gymlog/test/premium/strict_entitlement_verification_test.dart: ATOMIC-08: Strict Premium Entitlement Verification 2. Unrelated entitlement ("gold" or "pro_tier") active returns false
+02:55 +574: C:/Users/Atharva Patil/Documents/projects/gymlog/test/premium/strict_entitlement_verification_test.dart: ATOMIC-08: Strict Premium Entitlement Verification 3. Empty entitlement map returns false
+02:55 +575: C:/Users/Atharva Patil/Documents/projects/gymlog/test/premium/strict_entitlement_verification_test.dart: ATOMIC-08: Strict Premium Entitlement Verification 4. Expiration check in isPremiumProvider rejects expired profile cache
+02:56 +576: C:/Users/Atharva Patil/Documents/projects/gymlog/test/premium/strict_entitlement_verification_test.dart: ATOMIC-08: Strict Premium Entitlement Verification 5. Valid unexpired profile cache returns true when RevenueCat unavailable
+02:56 +577: C:/Users/Atharva Patil/Documents/projects/gymlog/test/premium/strict_entitlement_verification_test.dart: ATOMIC-08: Strict Premium Entitlement Verification 6. Account A (premium) to Account B (free) transition does not leak entitlement
+02:56 +578: C:/Users/Atharva Patil/Documents/projects/gymlog/test/premium/strict_entitlement_verification_test.dart: ATOMIC-08: Strict Premium Entitlement Verification 7. Stale local cache with null expiry but isPremium=false is rejected
+02:56 +579: C:/Users/Atharva Patil/Documents/projects/gymlog/test/pressable_scale_test.dart: forwards taps to the child (does not steal the gesture)
+02:58 +580: C:/Users/Atharva Patil/Documents/projects/gymlog/test/pressable_scale_test.dart: press squeezes, release springs back
+02:58 +581: C:/Users/Atharva Patil/Documents/projects/gymlog/test/pressable_scale_test.dart: reduce motion → no squeeze
+02:58 +582: C:/Users/Atharva Patil/Documents/projects/gymlog/test/profile/help_report_form_test.dart: UX-95-03 — Adaptive Help report form renders fields at default text scale
+03:00 +583: C:/Users/Atharva Patil/Documents/projects/gymlog/test/profile/help_report_form_test.dart: UX-95-03 — Adaptive Help report form renders at max text scale in scrollable container
+03:00 +584: C:/Users/Atharva Patil/Documents/projects/gymlog/test/profile_cluster_polish_test.dart: ProfileAvatar fallback displays display name letter
+03:01 +585: C:/Users/Atharva Patil/Documents/projects/gymlog/test/profile_cluster_polish_test.dart: WeeklyBarChart low-data comparison view dynamic colors
+03:01 +586: C:/Users/Atharva Patil/Documents/projects/gymlog/test/profile_cluster_polish_test.dart: PremiumPaywall UI headline resolves and sheet themes dynamically
+03:03 +587: C:/Users/Atharva Patil/Documents/projects/gymlog/test/profile_sync_service_test.dart: submitDisplayName writes local immediately and pushes to remote on success
+03:03 +588: C:/Users/Atharva Patil/Documents/projects/gymlog/test/profile_sync_service_test.dart: submitDisplayName onboarding completion marks remote flag true
+03:03 +589: C:/Users/Atharva Patil/Documents/projects/gymlog/test/profile_cluster_polish_test.dart: OnboardingScreen resolves colors and borders under dark theme
+03:03 +589: C:/Users/Atharva Patil/Documents/projects/gymlog/test/profile_sync_service_test.dart: submitDisplayName keeps local + queues when remote is offline, retry delivers later
+[ProfileSyncService] Remote sync failed: Exception: offline
+#0      FakeRemote.upsert (file:///C:/Users/Atharva%20Patil/Documents/projects/gymlog/test/profile_sync_service_test.dart:38:19)
+#1      ProfileSyncService._flushPendingOrThrow (package:gymlog/core/services/profile_sync_service.dart:195:10)
+<asynchronous suspension>
+#2      ProfileSyncService.submitDisplayName (package:gymlog/core/services/profile_sync_service.dart:80:7)
+<asynchronous suspension>
+#3      main.<anonymous closure>.<anonymous closure> (file:///C:/Users/Atharva%20Patil/Documents/projects/gymlog/test/profile_sync_service_test.dart:101:7)
+<asynchronous suspension>
+#4      Declarer.test.<anonymous closure>.<anonymous closure> (package:test_api/src/backend/declarer.dart:253:15)
+<asynchronous suspension>
+#5      Declarer.test.<anonymous closure> (package:test_api/src/backend/declarer.dart:250:11)
+<asynchronous suspension>
+#6      Invoker._waitForOutstandingCallbacks.<anonymous closure> (package:test_api/src/backend/invoker.dart:318:9)
+<asynchronous suspension>
+
+03:03 +590: C:/Users/Atharva Patil/Documents/projects/gymlog/test/profile_cluster_polish_test.dart: OnboardingScreen resolves colors and borders under dark theme
+03:03 +591: C:/Users/Atharva Patil/Documents/projects/gymlog/test/profile_cluster_polish_test.dart: OnboardingScreen resolves colors and borders under dark theme
+03:03 +592: C:/Users/Atharva Patil/Documents/projects/gymlog/test/profile_cluster_polish_test.dart: OnboardingScreen resolves colors and borders under dark theme
+03:03 +593: C:/Users/Atharva Patil/Documents/projects/gymlog/test/profile_cluster_polish_test.dart: OnboardingScreen resolves colors and borders under dark theme
+03:03 +594: C:/Users/Atharva Patil/Documents/projects/gymlog/test/profile_cluster_polish_test.dart: OnboardingScreen resolves colors and borders under dark theme
+03:03 +595: C:/Users/Atharva Patil/Documents/projects/gymlog/test/profile_cluster_polish_test.dart: OnboardingScreen resolves colors and borders under dark theme
+03:03 +596: C:/Users/Atharva Patil/Documents/projects/gymlog/test/profile_cluster_polish_test.dart: OnboardingScreen resolves colors and borders under dark theme
+03:03 +597: C:/Users/Atharva Patil/Documents/projects/gymlog/test/profile_cluster_polish_test.dart: OnboardingScreen resolves colors and borders under dark theme
+03:03 +598: C:/Users/Atharva Patil/Documents/projects/gymlog/test/profile_cluster_polish_test.dart: OnboardingScreen resolves colors and borders under dark theme
+03:05 +599: C:/Users/Atharva Patil/Documents/projects/gymlog/test/profile_weekly_bar_chart_test.dart: ProfileGraphEmptyState renders title, subtitle and CTA
+03:06 +600: C:/Users/Atharva Patil/Documents/projects/gymlog/test/profile_weekly_bar_chart_test.dart: ProfileGraphEmptyState renders title, subtitle and CTA
+03:06 +601: C:/Users/Atharva Patil/Documents/projects/gymlog/test/profile_weekly_bar_chart_test.dart: ProfileGraphEmptyState renders title, subtitle and CTA
+03:07 +602: C:/Users/Atharva Patil/Documents/projects/gymlog/test/profile_weekly_bar_chart_test.dart: GraphKpiHeader shows latest value and "This week" caption always when data exists
+03:07 +603: C:/Users/Atharva Patil/Documents/projects/gymlog/test/profile_weekly_bar_chart_test.dart: GraphKpiHeader hides delta pill when fewer than 4 filled weeks have data
+03:07 +604: C:/Users/Atharva Patil/Documents/projects/gymlog/test/profile_weekly_bar_chart_test.dart: GraphKpiHeader shows delta pill once 4+ filled weeks have data
+03:07 +605: C:/Users/Atharva Patil/Documents/projects/gymlog/test/profile_weekly_bar_chart_test.dart: GraphKpiHeader shows neutral dash in delta pill when previous week value is zero
+03:08 +606: C:/Users/Atharva Patil/Documents/projects/gymlog/test/profile_weekly_bar_chart_test.dart: WeeklyBarChart renders 8 weekly x-axis labels
+03:08 +607: C:/Users/Atharva Patil/Documents/projects/gymlog/test/profile_weekly_bar_chart_test.dart: WeeklyBarChart renders 8 weekly x-axis labels
+03:08 +608: C:/Users/Atharva Patil/Documents/projects/gymlog/test/profile_weekly_bar_chart_test.dart: WeeklyBarChart renders 8 weekly x-axis labels
+03:08 +609: C:/Users/Atharva Patil/Documents/projects/gymlog/test/profile_weekly_bar_chart_test.dart: WeeklyBarChart renders 8 weekly x-axis labels
+03:08 +610: C:/Users/Atharva Patil/Documents/projects/gymlog/test/profile_weekly_bar_chart_test.dart: WeeklyBarChart uses duration unit on Y-axis for duration metric
+03:09 +611: C:/Users/Atharva Patil/Documents/projects/gymlog/test/profile_weekly_bar_chart_test.dart: WeeklyBarChart uses compact numbers on Y-axis for volume metric
+03:09 +612: C:/Users/Atharva Patil/Documents/projects/gymlog/test/profile_weekly_bar_chart_test.dart: WeeklyBarChart shows comparison view when fewer than 4 filled weeks
+03:09 +613: C:/Users/Atharva Patil/Documents/projects/gymlog/test/profile_weekly_bar_chart_test.dart: ProfileGraphLowDataBanner renders info message
+03:10 +614: C:/Users/Atharva Patil/Documents/projects/gymlog/test/pr_flex_card_test.dart: share keeps its source and compares the same metric
+03:10 +615: C:/Users/Atharva Patil/Documents/projects/gymlog/test/pr_flex_card_test.dart: rep comparison includes its load, without converting reps
+03:10 +616: C:/Users/Atharva Patil/Documents/projects/gymlog/test/pr_flex_card_test.dart: estimate carries the actual set and has an estimate comparison
+03:10 +617: C:/Users/Atharva Patil/Documents/projects/gymlog/test/pr_flex_card_test.dart: first result cannot pretend to beat a previous best
+03:10 +618: C:/Users/Atharva Patil/Documents/projects/gymlog/test/pr_flex_card_test.dart: imperial conversion is applied only at the display boundary
+03:11 +619: C:/Users/Atharva Patil/Documents/projects/gymlog/test/pr_flex_render_test.dart: (setUpAll)
+03:11 +619: C:/Users/Atharva Patil/Documents/projects/gymlog/test/pr_flex_render_test.dart: all values and photo placements stay in the Story safe area without collisions
+03:12 +620: C:/Users/Atharva Patil/Documents/projects/gymlog/test/pr_flex_render_test.dart: export actual Flutter renders and separate transparent Story layers
+03:16 +620: C:/Users/Atharva Patil/Documents/projects/gymlog/test/reorder_exercise_test.dart: move first item down (A→index 2): B, C, A, D
+[WorkoutDraftStore] save failed: Binding has not yet been initialized.
+The "instance" getter on the ServicesBinding binding mixin is only available once that binding has been initialized.
+Typically, this is done by calling "WidgetsFlutterBinding.ensureInitialized()" or "runApp()" (the latter calls the former). Typically this call is done in the "void main()" method. The "ensureInitialized" method is idempotent; calling it multiple times is not harmful. After calling that method, the "instance" getter will return the binding.
+In a test, one can call "TestWidgetsFlutterBinding.ensureInitialized()" as the first line in the test's "main()" method to initialize the binding.
+If ServicesBinding is a custom binding mixin, there must also be a custom binding class, like WidgetsFlutterBinding, but that mixes in the selected binding, and that is the class that must be constructed before using the "instance" getter.
+[WorkoutDraftStore] save failed: Binding has not yet been initialized.
+The "instance" getter on the ServicesBinding binding mixin is only available once that binding has been initialized.
+Typically, this is done by calling "WidgetsFlutterBinding.ensureInitialized()" or "runApp()" (the latter calls the former). Typically this call is done in the "void main()" method. The "ensureInitialized" method is idempotent; calling it multiple times is not harmful. After calling that method, the "instance" getter will return the binding.
+In a test, one can call "TestWidgetsFlutterBinding.ensureInitialized()" as the first line in the test's "main()" method to initialize the binding.
+If ServicesBinding is a custom binding mixin, there must also be a custom binding class, like WidgetsFlutterBinding, but that mixes in the selected binding, and that is the class that must be constructed before using the "instance" getter.
+03:16 +621: C:/Users/Atharva Patil/Documents/projects/gymlog/test/pr_flex_render_test.dart: export actual Flutter renders and separate transparent Story layers
+03:16 +621: C:/Users/Atharva Patil/Documents/projects/gymlog/test/reorder_exercise_test.dart: move last item to front (D→index 0): D, A, B, C
+[WorkoutDraftStore] save failed: Binding has not yet been initialized.
+The "instance" getter on the ServicesBinding binding mixin is only available once that binding has been initialized.
+Typically, this is done by calling "WidgetsFlutterBinding.ensureInitialized()" or "runApp()" (the latter calls the former). Typically this call is done in the "void main()" method. The "ensureInitialized" method is idempotent; calling it multiple times is not harmful. After calling that method, the "instance" getter will return the binding.
+In a test, one can call "TestWidgetsFlutterBinding.ensureInitialized()" as the first line in the test's "main()" method to initialize the binding.
+If ServicesBinding is a custom binding mixin, there must also be a custom binding class, like WidgetsFlutterBinding, but that mixes in the selected binding, and that is the class that must be constructed before using the "instance" getter.
+[WorkoutDraftStore] save failed: Binding has not yet been initialized.
+The "instance" getter on the ServicesBinding binding mixin is only available once that binding has been initialized.
+Typically, this is done by calling "WidgetsFlutterBinding.ensureInitialized()" or "runApp()" (the latter calls the former). Typically this call is done in the "void main()" method. The "ensureInitialized" method is idempotent; calling it multiple times is not harmful. After calling that method, the "instance" getter will return the binding.
+In a test, one can call "TestWidgetsFlutterBinding.ensureInitialized()" as the first line in the test's "main()" method to initialize the binding.
+If ServicesBinding is a custom binding mixin, there must also be a custom binding class, like WidgetsFlutterBinding, but that mixes in the selected binding, and that is the class that must be constructed before using the "instance" getter.
+03:17 +622: C:/Users/Atharva Patil/Documents/projects/gymlog/test/pr_flex_render_test.dart: export actual Flutter renders and separate transparent Story layers
+03:17 +622: C:/Users/Atharva Patil/Documents/projects/gymlog/test/reorder_exercise_test.dart: move middle up (C→index 1): A, C, B, D
+[WorkoutDraftStore] save failed: Binding has not yet been initialized.
+The "instance" getter on the ServicesBinding binding mixin is only available once that binding has been initialized.
+Typically, this is done by calling "WidgetsFlutterBinding.ensureInitialized()" or "runApp()" (the latter calls the former). Typically this call is done in the "void main()" method. The "ensureInitialized" method is idempotent; calling it multiple times is not harmful. After calling that method, the "instance" getter will return the binding.
+In a test, one can call "TestWidgetsFlutterBinding.ensureInitialized()" as the first line in the test's "main()" method to initialize the binding.
+If ServicesBinding is a custom binding mixin, there must also be a custom binding class, like WidgetsFlutterBinding, but that mixes in the selected binding, and that is the class that must be constructed before using the "instance" getter.
+[WorkoutDraftStore] save failed: Binding has not yet been initialized.
+The "instance" getter on the ServicesBinding binding mixin is only available once that binding has been initialized.
+Typically, this is done by calling "WidgetsFlutterBinding.ensureInitialized()" or "runApp()" (the latter calls the former). Typically this call is done in the "void main()" method. The "ensureInitialized" method is idempotent; calling it multiple times is not harmful. After calling that method, the "instance" getter will return the binding.
+In a test, one can call "TestWidgetsFlutterBinding.ensureInitialized()" as the first line in the test's "main()" method to initialize the binding.
+If ServicesBinding is a custom binding mixin, there must also be a custom binding class, like WidgetsFlutterBinding, but that mixes in the selected binding, and that is the class that must be constructed before using the "instance" getter.
+03:17 +623: C:/Users/Atharva Patil/Documents/projects/gymlog/test/pr_flex_render_test.dart: export actual Flutter renders and separate transparent Story layers
+03:17 +623: C:/Users/Atharva Patil/Documents/projects/gymlog/test/reorder_exercise_test.dart: out-of-range oldIndex is ignored (no throw, order intact)
+[WorkoutDraftStore] save failed: Binding has not yet been initialized.
+The "instance" getter on the ServicesBinding binding mixin is only available once that binding has been initialized.
+Typically, this is done by calling "WidgetsFlutterBinding.ensureInitialized()" or "runApp()" (the latter calls the former). Typically this call is done in the "void main()" method. The "ensureInitialized" method is idempotent; calling it multiple times is not harmful. After calling that method, the "instance" getter will return the binding.
+In a test, one can call "TestWidgetsFlutterBinding.ensureInitialized()" as the first line in the test's "main()" method to initialize the binding.
+If ServicesBinding is a custom binding mixin, there must also be a custom binding class, like WidgetsFlutterBinding, but that mixes in the selected binding, and that is the class that must be constructed before using the "instance" getter.
+03:17 +624: C:/Users/Atharva Patil/Documents/projects/gymlog/test/pr_flex_render_test.dart: export actual Flutter renders and separate transparent Story layers
+03:18 +625: C:/Users/Atharva Patil/Documents/projects/gymlog/test/pr_flex_render_test.dart: export actual Flutter renders and separate transparent Story layers
+03:18 +626: C:/Users/Atharva Patil/Documents/projects/gymlog/test/pr_flex_render_test.dart: export actual Flutter renders and separate transparent Story layers
+03:20 +627: C:/Users/Atharva Patil/Documents/projects/gymlog/test/pr_flex_render_test.dart: export actual Flutter renders and separate transparent Story layers
+03:20 +628: C:/Users/Atharva Patil/Documents/projects/gymlog/test/pr_flex_render_test.dart: export actual Flutter renders and separate transparent Story layers
+03:20 +629: C:/Users/Atharva Patil/Documents/projects/gymlog/test/pr_flex_render_test.dart: export actual Flutter renders and separate transparent Story layers
+03:20 +630: C:/Users/Atharva Patil/Documents/projects/gymlog/test/pr_flex_render_test.dart: export actual Flutter renders and separate transparent Story layers
+03:20 +631: C:/Users/Atharva Patil/Documents/projects/gymlog/test/pr_flex_render_test.dart: export actual Flutter renders and separate transparent Story layers
+03:20 +632: C:/Users/Atharva Patil/Documents/projects/gymlog/test/pr_flex_render_test.dart: export actual Flutter renders and separate transparent Story layers
+03:20 +632: C:/Users/Atharva Patil/Documents/projects/gymlog/test/reps_only_exercise_test.dart: ActiveWorkoutNotifier Reps-Only & Switching Logic adding reps-only exercise initializes weightKg to null
+[WorkoutDraftStore] save failed: Binding has not yet been initialized.
+The "instance" getter on the ServicesBinding binding mixin is only available once that binding has been initialized.
+Typically, this is done by calling "WidgetsFlutterBinding.ensureInitialized()" or "runApp()" (the latter calls the former). Typically this call is done in the "void main()" method. The "ensureInitialized" method is idempotent; calling it multiple times is not harmful. After calling that method, the "instance" getter will return the binding.
+In a test, one can call "TestWidgetsFlutterBinding.ensureInitialized()" as the first line in the test's "main()" method to initialize the binding.
+If ServicesBinding is a custom binding mixin, there must also be a custom binding class, like WidgetsFlutterBinding, but that mixes in the selected binding, and that is the class that must be constructed before using the "instance" getter.
+[WorkoutDraftStore] save failed: Binding has not yet been initialized.
+The "instance" getter on the ServicesBinding binding mixin is only available once that binding has been initialized.
+Typically, this is done by calling "WidgetsFlutterBinding.ensureInitialized()" or "runApp()" (the latter calls the former). Typically this call is done in the "void main()" method. The "ensureInitialized" method is idempotent; calling it multiple times is not harmful. After calling that method, the "instance" getter will return the binding.
+In a test, one can call "TestWidgetsFlutterBinding.ensureInitialized()" as the first line in the test's "main()" method to initialize the binding.
+If ServicesBinding is a custom binding mixin, there must also be a custom binding class, like WidgetsFlutterBinding, but that mixes in the selected binding, and that is the class that must be constructed before using the "instance" getter.
+03:20 +633: C:/Users/Atharva Patil/Documents/projects/gymlog/test/pr_flex_render_test.dart: export actual Flutter renders and separate transparent Story layers
+03:20 +633: C:/Users/Atharva Patil/Documents/projects/gymlog/test/reps_only_exercise_test.dart: ActiveWorkoutNotifier Reps-Only & Switching Logic adding weighted exercise initializes weightKg to 0.0
+[WorkoutDraftStore] save failed: Binding has not yet been initialized.
+The "instance" getter on the ServicesBinding binding mixin is only available once that binding has been initialized.
+Typically, this is done by calling "WidgetsFlutterBinding.ensureInitialized()" or "runApp()" (the latter calls the former). Typically this call is done in the "void main()" method. The "ensureInitialized" method is idempotent; calling it multiple times is not harmful. After calling that method, the "instance" getter will return the binding.
+In a test, one can call "TestWidgetsFlutterBinding.ensureInitialized()" as the first line in the test's "main()" method to initialize the binding.
+If ServicesBinding is a custom binding mixin, there must also be a custom binding class, like WidgetsFlutterBinding, but that mixes in the selected binding, and that is the class that must be constructed before using the "instance" getter.
+[WorkoutDraftStore] save failed: Binding has not yet been initialized.
+The "instance" getter on the ServicesBinding binding mixin is only available once that binding has been initialized.
+Typically, this is done by calling "WidgetsFlutterBinding.ensureInitialized()" or "runApp()" (the latter calls the former). Typically this call is done in the "void main()" method. The "ensureInitialized" method is idempotent; calling it multiple times is not harmful. After calling that method, the "instance" getter will return the binding.
+In a test, one can call "TestWidgetsFlutterBinding.ensureInitialized()" as the first line in the test's "main()" method to initialize the binding.
+If ServicesBinding is a custom binding mixin, there must also be a custom binding class, like WidgetsFlutterBinding, but that mixes in the selected binding, and that is the class that must be constructed before using the "instance" getter.
+03:20 +634: C:/Users/Atharva Patil/Documents/projects/gymlog/test/pr_flex_render_test.dart: export actual Flutter renders and separate transparent Story layers
+03:20 +634: C:/Users/Atharva Patil/Documents/projects/gymlog/test/reps_only_exercise_test.dart: ActiveWorkoutNotifier Reps-Only & Switching Logic switching between weighted and reps-only respects target measurementType
+[WorkoutDraftStore] save failed: Binding has not yet been initialized.
+The "instance" getter on the ServicesBinding binding mixin is only available once that binding has been initialized.
+Typically, this is done by calling "WidgetsFlutterBinding.ensureInitialized()" or "runApp()" (the latter calls the former). Typically this call is done in the "void main()" method. The "ensureInitialized" method is idempotent; calling it multiple times is not harmful. After calling that method, the "instance" getter will return the binding.
+In a test, one can call "TestWidgetsFlutterBinding.ensureInitialized()" as the first line in the test's "main()" method to initialize the binding.
+If ServicesBinding is a custom binding mixin, there must also be a custom binding class, like WidgetsFlutterBinding, but that mixes in the selected binding, and that is the class that must be constructed before using the "instance" getter.
+[WorkoutDraftStore] save failed: Binding has not yet been initialized.
+The "instance" getter on the ServicesBinding binding mixin is only available once that binding has been initialized.
+Typically, this is done by calling "WidgetsFlutterBinding.ensureInitialized()" or "runApp()" (the latter calls the former). Typically this call is done in the "void main()" method. The "ensureInitialized" method is idempotent; calling it multiple times is not harmful. After calling that method, the "instance" getter will return the binding.
+In a test, one can call "TestWidgetsFlutterBinding.ensureInitialized()" as the first line in the test's "main()" method to initialize the binding.
+If ServicesBinding is a custom binding mixin, there must also be a custom binding class, like WidgetsFlutterBinding, but that mixes in the selected binding, and that is the class that must be constructed before using the "instance" getter.
+[WorkoutDraftStore] save failed: Binding has not yet been initialized.
+The "instance" getter on the ServicesBinding binding mixin is only available once that binding has been initialized.
+Typically, this is done by calling "WidgetsFlutterBinding.ensureInitialized()" or "runApp()" (the latter calls the former). Typically this call is done in the "void main()" method. The "ensureInitialized" method is idempotent; calling it multiple times is not harmful. After calling that method, the "instance" getter will return the binding.
+In a test, one can call "TestWidgetsFlutterBinding.ensureInitialized()" as the first line in the test's "main()" method to initialize the binding.
+If ServicesBinding is a custom binding mixin, there must also be a custom binding class, like WidgetsFlutterBinding, but that mixes in the selected binding, and that is the class that must be constructed before using the "instance" getter.
+[WorkoutDraftStore] save failed: Binding has not yet been initialized.
+The "instance" getter on the ServicesBinding binding mixin is only available once that binding has been initialized.
+Typically, this is done by calling "WidgetsFlutterBinding.ensureInitialized()" or "runApp()" (the latter calls the former). Typically this call is done in the "void main()" method. The "ensureInitialized" method is idempotent; calling it multiple times is not harmful. After calling that method, the "instance" getter will return the binding.
+In a test, one can call "TestWidgetsFlutterBinding.ensureInitialized()" as the first line in the test's "main()" method to initialize the binding.
+If ServicesBinding is a custom binding mixin, there must also be a custom binding class, like WidgetsFlutterBinding, but that mixes in the selected binding, and that is the class that must be constructed before using the "instance" getter.
+03:20 +635: C:/Users/Atharva Patil/Documents/projects/gymlog/test/pr_flex_render_test.dart: export actual Flutter renders and separate transparent Story layers
+03:20 +636: C:/Users/Atharva Patil/Documents/projects/gymlog/test/pr_flex_render_test.dart: export actual Flutter renders and separate transparent Story layers
+03:20 +636: C:/Users/Atharva Patil/Documents/projects/gymlog/test/reps_only_exercise_test.dart: ActiveWorkoutNotifier Reps-Only & Switching Logic sessionTotals volume calculation ignores null weights
+[WorkoutDraftStore] save failed: Binding has not yet been initialized.
+The "instance" getter on the ServicesBinding binding mixin is only available once that binding has been initialized.
+Typically, this is done by calling "WidgetsFlutterBinding.ensureInitialized()" or "runApp()" (the latter calls the former). Typically this call is done in the "void main()" method. The "ensureInitialized" method is idempotent; calling it multiple times is not harmful. After calling that method, the "instance" getter will return the binding.
+In a test, one can call "TestWidgetsFlutterBinding.ensureInitialized()" as the first line in the test's "main()" method to initialize the binding.
+If ServicesBinding is a custom binding mixin, there must also be a custom binding class, like WidgetsFlutterBinding, but that mixes in the selected binding, and that is the class that must be constructed before using the "instance" getter.
+[WorkoutDraftStore] save failed: Binding has not yet been initialized.
+The "instance" getter on the ServicesBinding binding mixin is only available once that binding has been initialized.
+Typically, this is done by calling "WidgetsFlutterBinding.ensureInitialized()" or "runApp()" (the latter calls the former). Typically this call is done in the "void main()" method. The "ensureInitialized" method is idempotent; calling it multiple times is not harmful. After calling that method, the "instance" getter will return the binding.
+In a test, one can call "TestWidgetsFlutterBinding.ensureInitialized()" as the first line in the test's "main()" method to initialize the binding.
+If ServicesBinding is a custom binding mixin, there must also be a custom binding class, like WidgetsFlutterBinding, but that mixes in the selected binding, and that is the class that must be constructed before using the "instance" getter.
+[WorkoutDraftStore] save failed: Binding has not yet been initialized.
+The "instance" getter on the ServicesBinding binding mixin is only available once that binding has been initialized.
+Typically, this is done by calling "WidgetsFlutterBinding.ensureInitialized()" or "runApp()" (the latter calls the former). Typically this call is done in the "void main()" method. The "ensureInitialized" method is idempotent; calling it multiple times is not harmful. After calling that method, the "instance" getter will return the binding.
+In a test, one can call "TestWidgetsFlutterBinding.ensureInitialized()" as the first line in the test's "main()" method to initialize the binding.
+If ServicesBinding is a custom binding mixin, there must also be a custom binding class, like WidgetsFlutterBinding, but that mixes in the selected binding, and that is the class that must be constructed before using the "instance" getter.
+[WorkoutDraftStore] save failed: Binding has not yet been initialized.
+The "instance" getter on the ServicesBinding binding mixin is only available once that binding has been initialized.
+Typically, this is done by calling "WidgetsFlutterBinding.ensureInitialized()" or "runApp()" (the latter calls the former). Typically this call is done in the "void main()" method. The "ensureInitialized" method is idempotent; calling it multiple times is not harmful. After calling that method, the "instance" getter will return the binding.
+In a test, one can call "TestWidgetsFlutterBinding.ensureInitialized()" as the first line in the test's "main()" method to initialize the binding.
+If ServicesBinding is a custom binding mixin, there must also be a custom binding class, like WidgetsFlutterBinding, but that mixes in the selected binding, and that is the class that must be constructed before using the "instance" getter.
+[WorkoutDraftStore] save failed: Binding has not yet been initialized.
+The "instance" getter on the ServicesBinding binding mixin is only available once that binding has been initialized.
+Typically, this is done by calling "WidgetsFlutterBinding.ensureInitialized()" or "runApp()" (the latter calls the former). Typically this call is done in the "void main()" method. The "ensureInitialized" method is idempotent; calling it multiple times is not harmful. After calling that method, the "instance" getter will return the binding.
+In a test, one can call "TestWidgetsFlutterBinding.ensureInitialized()" as the first line in the test's "main()" method to initialize the binding.
+If ServicesBinding is a custom binding mixin, there must also be a custom binding class, like WidgetsFlutterBinding, but that mixes in the selected binding, and that is the class that must be constructed before using the "instance" getter.
+[WorkoutDraftStore] save failed: Binding has not yet been initialized.
+The "instance" getter on the ServicesBinding binding mixin is only available once that binding has been initialized.
+Typically, this is done by calling "WidgetsFlutterBinding.ensureInitialized()" or "runApp()" (the latter calls the former). Typically this call is done in the "void main()" method. The "ensureInitialized" method is idempotent; calling it multiple times is not harmful. After calling that method, the "instance" getter will return the binding.
+03:20 +637: C:/Users/Atharva Patil/Documents/projects/gymlog/test/pr_flex_render_test.dart: export actual Flutter renders and separate transparent Story layers
+03:21 +638: C:/Users/Atharva Patil/Documents/projects/gymlog/test/pr_flex_render_test.dart: export actual Flutter renders and separate transparent Story layers
+03:22 +639: C:/Users/Atharva Patil/Documents/projects/gymlog/test/pr_flex_render_test.dart: export actual Flutter renders and separate transparent Story layers
+03:22 +640: C:/Users/Atharva Patil/Documents/projects/gymlog/test/pr_flex_render_test.dart: export actual Flutter renders and separate transparent Story layers
+03:22 +641: C:/Users/Atharva Patil/Documents/projects/gymlog/test/pr_flex_render_test.dart: export actual Flutter renders and separate transparent Story layers
+03:22 +642: C:/Users/Atharva Patil/Documents/projects/gymlog/test/pr_flex_render_test.dart: export actual Flutter renders and separate transparent Story layers
+03:22 +643: C:/Users/Atharva Patil/Documents/projects/gymlog/test/pr_flex_render_test.dart: export actual Flutter renders and separate transparent Story layers
+03:22 +644: C:/Users/Atharva Patil/Documents/projects/gymlog/test/pr_flex_render_test.dart: export actual Flutter renders and separate transparent Story layers
+03:22 +645: C:/Users/Atharva Patil/Documents/projects/gymlog/test/pr_flex_render_test.dart: export actual Flutter renders and separate transparent Story layers
+03:28 +646: C:/Users/Atharva Patil/Documents/projects/gymlog/test/pr_flex_render_test.dart: export actual Flutter renders and separate transparent Story layers
+03:29 +647: C:/Users/Atharva Patil/Documents/projects/gymlog/test/pr_flex_render_test.dart: export actual Flutter renders and separate transparent Story layers
+03:29 +648: C:/Users/Atharva Patil/Documents/projects/gymlog/test/rest_preference_atomic_test.dart: ATOMIC-01 RestPreference & Normalization Suite 8. No production widget contains visible text None
+03:29 +649: C:/Users/Atharva Patil/Documents/projects/gymlog/test/rest_preference_atomic_test.dart: ATOMIC-01 RestPreference & Normalization Suite 9. Draft round trip preserves all three states
+03:29 +650: C:/Users/Atharva Patil/Documents/projects/gymlog/test/rest_preference_atomic_test.dart: ATOMIC-01 RestPreference & Normalization Suite 10. Legacy stored values restore safely
+03:33 +651: C:/Users/Atharva Patil/Documents/projects/gymlog/test/rest_timer_override_test.dart: GymLog P0-04 Rest Timer Override & Precedence Suite precedence: override > global setting default > safe fallback (90s)
+03:33 +652: C:/Users/Atharva Patil/Documents/projects/gymlog/test/rest_timer_override_test.dart: GymLog P0-04 Rest Timer Override & Precedence Suite override scope: override on exercise A does not leak to exercise B
+03:33 +653: C:/Users/Atharva Patil/Documents/projects/gymlog/test/rest_timer_override_test.dart: GymLog P0-04 Rest Timer Override & Precedence Suite new-workout starts without copying previous workout overrides
+03:33 +654: C:/Users/Atharva Patil/Documents/projects/gymlog/test/rest_timer_override_test.dart: GymLog P0-04 Rest Timer Override & Precedence Suite background/resume: timer expired while backgrounded triggers finish on sync
+03:33 +655: C:/Users/Atharva Patil/Documents/projects/gymlog/test/rest_timer_override_test.dart: GymLog P0-04 Rest Timer Override & Precedence Suite active timer change rule: mutating override does not alter already-running timer deadline
+03:33 +656: C:/Users/Atharva Patil/Documents/projects/gymlog/test/rest_timer_override_test.dart: GymLog P0-04 Rest Timer Override & Precedence Suite process-death: restores override and running timer context successfully
+03:33 +657: C:/Users/Atharva Patil/Documents/projects/gymlog/test/rest_timer_override_test.dart: GymLog P0-04 Rest Timer Override & Precedence Suite idempotency: multiple start, cancel, and skip calls behave predictably
+03:33 +658: C:/Users/Atharva Patil/Documents/projects/gymlog/test/rest_timer_override_test.dart: GymLog P0-04 Rest Timer Override & Precedence Suite boundaries: custom overrides are clamped inside user UI picker sheets
+03:37 +659: C:/Users/Atharva Patil/Documents/projects/gymlog/test/rest_time_sheet_atomic_test.dart: ATOMIC-02 RestTimeSheet Suite 1. no None or Matches default in sheet
+03:40 +660: C:/Users/Atharva Patil/Documents/projects/gymlog/test/rest_time_sheet_atomic_test.dart: ATOMIC-02 RestTimeSheet Suite 1. no None or Matches default in sheet
+03:40 +661: C:/Users/Atharva Patil/Documents/projects/gymlog/test/rest_time_sheet_atomic_test.dart: ATOMIC-02 RestTimeSheet Suite 1. no None or Matches default in sheet
+03:43 +662: C:/Users/Atharva Patil/Documents/projects/gymlog/test/rest_time_sheet_atomic_test.dart: ATOMIC-02 RestTimeSheet Suite 2. option buttons replace preset chips; steppers + slider used
+03:45 +663: C:/Users/Atharva Patil/Documents/projects/gymlog/test/routine_detail_scroll_and_loading_test.dart: RoutineDetailScreen loaded view uses AlwaysScrollableScrollPhysics
+03:45 +664: C:/Users/Atharva Patil/Documents/projects/gymlog/test/routine_detail_scroll_and_loading_test.dart: RoutineDetailScreen loaded view uses AlwaysScrollableScrollPhysics
+03:46 +665: C:/Users/Atharva Patil/Documents/projects/gymlog/test/routine_detail_scroll_and_loading_test.dart: RoutineDetailScreen loaded view uses AlwaysScrollableScrollPhysics
+03:47 +666: C:/Users/Atharva Patil/Documents/projects/gymlog/test/routine_detail_scroll_and_loading_test.dart: RoutineDetailScreen loaded view uses AlwaysScrollableScrollPhysics
+03:50 +667: C:/Users/Atharva Patil/Documents/projects/gymlog/test/routine_detail_scroll_and_loading_test.dart: RoutineDetailScreen loaded view uses AlwaysScrollableScrollPhysics
+03:51 +668: C:/Users/Atharva Patil/Documents/projects/gymlog/test/routine_detail_scroll_and_loading_test.dart: RoutineDetailScreen loaded view uses AlwaysScrollableScrollPhysics
+03:52 +669: C:/Users/Atharva Patil/Documents/projects/gymlog/test/routine_editor_reorder_test.dart: full list renders through a drag and reorders correctly
+03:52 +670: C:/Users/Atharva Patil/Documents/projects/gymlog/test/routine_volume_error_state_test.dart: failed volume stream renders error+retry, never a zeroed volume graph
+03:53 +671: C:/Users/Atharva Patil/Documents/projects/gymlog/test/routine_volume_error_state_test.dart: failed volume stream renders error+retry, never a zeroed volume graph
+03:57 +672: C:/Users/Atharva Patil/Documents/projects/gymlog/test/routine_editor_reorder_test.dart: RoutineEditorScreen reorders exercises and respects bounds
+04:03 +673: C:/Users/Atharva Patil/Documents/projects/gymlog/test/screens_theme_test.dart: Screens Theme Verification Tests HomeScreen renders under multiple accents
+04:06 +674: C:/Users/Atharva Patil/Documents/projects/gymlog/test/screens_typography_test.dart: AuthScreen renders without exceptions and key text is present
+04:09 +675: C:/Users/Atharva Patil/Documents/projects/gymlog/test/screens_typography_test.dart: AuthScreen renders without exceptions and key text is present
+04:10 +676: C:/Users/Atharva Patil/Documents/projects/gymlog/test/screens_typography_test.dart: AuthScreen renders without exceptions and key text is present
+04:12 +677: C:/Users/Atharva Patil/Documents/projects/gymlog/test/set_row_debounce_persistence_test.dart: dispose mid-debounce flushes the in-flight weight (navigate-away gate)
+04:14 +678: C:/Users/Atharva Patil/Documents/projects/gymlog/test/set_row_debounce_persistence_test.dart: dispose mid-debounce flushes the in-flight weight (navigate-away gate)
+04:18 +679: C:/Users/Atharva Patil/Documents/projects/gymlog/test/set_row_focus_test.dart: SetRow keeps focus + value across an ancestor rebuild
+04:19 +680: C:/Users/Atharva Patil/Documents/projects/gymlog/test/set_row_focus_test.dart: SetRow keeps focus + value across an ancestor rebuild
+04:19 +681: C:/Users/Atharva Patil/Documents/projects/gymlog/test/set_row_focus_test.dart: SetRow keeps focus + value across an ancestor rebuild
+04:20 +682: C:/Users/Atharva Patil/Documents/projects/gymlog/test/set_row_focus_test.dart: SetRow keeps focus + value across an ancestor rebuild
+04:20 +683: C:/Users/Atharva Patil/Documents/projects/gymlog/test/set_row_focus_test.dart: SetRow keeps focus + value across an ancestor rebuild
+04:21 +684: C:/Users/Atharva Patil/Documents/projects/gymlog/test/set_row_focus_test.dart: SetRow keeps focus + value across an ancestor rebuild
+04:21 +685: C:/Users/Atharva Patil/Documents/projects/gymlog/test/set_row_focus_test.dart: SetRow keeps focus + value across an ancestor rebuild
+04:22 +686: C:/Users/Atharva Patil/Documents/projects/gymlog/test/set_row_focus_test.dart: SetRow keeps focus + value across an ancestor rebuild
+04:23 +687: C:/Users/Atharva Patil/Documents/projects/gymlog/test/set_row_focus_test.dart: SetRow keeps focus + value across an ancestor rebuild
+04:25 +688: C:/Users/Atharva Patil/Documents/projects/gymlog/test/set_row_measurement_types_test.dart: R1 — Field visibility weightAndReps: both weight and reps fields visible
+04:29 +689: C:/Users/Atharva Patil/Documents/projects/gymlog/test/set_row_measurement_types_test.dart: R1 — Field visibility weightAndReps: both weight and reps fields visible
+04:29 +690: C:/Users/Atharva Patil/Documents/projects/gymlog/test/set_row_measurement_types_test.dart: R1 — Field visibility weightAndReps: both weight and reps fields visible
+04:29 +691: C:/Users/Atharva Patil/Documents/projects/gymlog/test/set_row_measurement_types_test.dart: R1 — Field visibility weightAndReps: both weight and reps fields visible
+04:29 +692: C:/Users/Atharva Patil/Documents/projects/gymlog/test/set_row_measurement_types_test.dart: R1 — Field visibility weightAndReps: both weight and reps fields visible
+04:29 +693: C:/Users/Atharva Patil/Documents/projects/gymlog/test/set_row_measurement_types_test.dart: R1 — Field visibility weightAndReps: both weight and reps fields visible
+04:29 +694: C:/Users/Atharva Patil/Documents/projects/gymlog/test/shared/adaptive_layout_test.dart: AdaptiveContext text scale 2.0 passes through (clamp removed per UX‑95‑02)
+04:29 +695: C:/Users/Atharva Patil/Documents/projects/gymlog/test/shared/adaptive_layout_test.dart: AdaptiveContext text scale 0.8 passes through (clamp removed per UX‑95‑02)
+04:29 +696: C:/Users/Atharva Patil/Documents/projects/gymlog/test/set_row_measurement_types_test.dart: R1 — Field visibility repsOnly: weight field absent, reps field present
+04:29 +697: C:/Users/Atharva Patil/Documents/projects/gymlog/test/set_row_measurement_types_test.dart: R1 — Field visibility duration: weight field absent, reps field present
+04:30 +698: C:/Users/Atharva Patil/Documents/projects/gymlog/test/set_row_measurement_types_test.dart: R1 — Field visibility distance: weight-slot field present, reps field absent
+04:30 +699: C:/Users/Atharva Patil/Documents/projects/gymlog/test/set_row_measurement_types_test.dart: R1 — Field visibility distance: weight-slot field present, reps field absent
+04:30 +700: C:/Users/Atharva Patil/Documents/projects/gymlog/test/shared/chrome_tokens_test.dart: ChromeContextX context.chrome returns ChromeTokens in dark theme
+04:31 +701: C:/Users/Atharva Patil/Documents/projects/gymlog/test/set_row_measurement_types_test.dart: R1 — Field visibility check button is always present regardless of type
+04:31 +702: C:/Users/Atharva Patil/Documents/projects/gymlog/test/set_row_measurement_types_test.dart: R1 — Field visibility check button is always present regardless of type
+04:32 +703: C:/Users/Atharva Patil/Documents/projects/gymlog/test/set_row_measurement_types_test.dart: R2 — Stable completion action tapping check never throws — even with empty required fields
+04:33 +704: C:/Users/Atharva Patil/Documents/projects/gymlog/test/set_row_measurement_types_test.dart: R2 — Stable completion action tapping check never throws — even with empty required fields
+04:33 +705: C:/Users/Atharva Patil/Documents/projects/gymlog/test/set_row_measurement_types_test.dart: R2 — Stable completion action tapping check never throws — even with empty required fields
+04:33 +705: C:/Users/Atharva Patil/Documents/projects/gymlog/test/shared/draft_recovery_test.dart: UX-95-02 — Safe Draft Recovery store.loadSnapshot handles corrupted payload internally
+[WorkoutDraftStore] Corrupted or invalid draft payload: FormatException: Unterminated string (at character 30)
+{"corrupted: no closing brace
+                             ^
+. Clearing draft.
+04:33 +706: C:/Users/Atharva Patil/Documents/projects/gymlog/test/set_row_measurement_types_test.dart: R2 — Stable completion action tapping check never throws — even with empty required fields
+04:33 +707: C:/Users/Atharva Patil/Documents/projects/gymlog/test/set_row_measurement_types_test.dart: R2 — Stable completion action tapping check never throws — even with empty required fields
+04:33 +708: C:/Users/Atharva Patil/Documents/projects/gymlog/test/set_row_measurement_types_test.dart: R2 — Stable completion action tapping check never throws — even with empty required fields
+04:35 +709: C:/Users/Atharva Patil/Documents/projects/gymlog/test/set_row_measurement_types_test.dart: R3 — Reps-only / duration / distance complete without weight kg repsOnly completes with reps only
+04:35 +710: C:/Users/Atharva Patil/Documents/projects/gymlog/test/set_row_measurement_types_test.dart: R3 — Reps-only / duration / distance complete without weight kg repsOnly completes with reps only
+04:35 +711: C:/Users/Atharva Patil/Documents/projects/gymlog/test/set_row_measurement_types_test.dart: R3 — Reps-only / duration / distance complete without weight kg duration completes with reps (seconds) only
+04:35 +712: C:/Users/Atharva Patil/Documents/projects/gymlog/test/set_row_measurement_types_test.dart: R3 — Reps-only / duration / distance complete without weight kg duration completes with reps (seconds) only
+04:35 +713: C:/Users/Atharva Patil/Documents/projects/gymlog/test/set_row_measurement_types_test.dart: R3 — Reps-only / duration / distance complete without weight kg duration completes with reps (seconds) only
+04:35 +714: C:/Users/Atharva Patil/Documents/projects/gymlog/test/set_row_measurement_types_test.dart: R3 — Reps-only / duration / distance complete without weight kg duration completes with reps (seconds) only
+04:35 +715: C:/Users/Atharva Patil/Documents/projects/gymlog/test/set_row_measurement_types_test.dart: R3 — Reps-only / duration / distance complete without weight kg duration completes with reps (seconds) only
+04:35 +716: C:/Users/Atharva Patil/Documents/projects/gymlog/test/set_row_measurement_types_test.dart: R3 — Reps-only / duration / distance complete without weight kg duration completes with reps (seconds) only
+04:35 +717: C:/Users/Atharva Patil/Documents/projects/gymlog/test/set_row_measurement_types_test.dart: R3 — Reps-only / duration / distance complete without weight kg duration completes with reps (seconds) only
+04:35 +718: C:/Users/Atharva Patil/Documents/projects/gymlog/test/set_row_measurement_types_test.dart: R3 — Reps-only / duration / distance complete without weight kg duration completes with reps (seconds) only
+04:35 +719: C:/Users/Atharva Patil/Documents/projects/gymlog/test/set_row_measurement_types_test.dart: R3 — Reps-only / duration / distance complete without weight kg duration completes with reps (seconds) only
+04:35 +720: C:/Users/Atharva Patil/Documents/projects/gymlog/test/set_row_measurement_types_test.dart: R3 — Reps-only / duration / distance complete without weight kg distance completes with distance (weightKg) only
+04:36 +721: C:/Users/Atharva Patil/Documents/projects/gymlog/test/set_row_measurement_types_test.dart: R3 — Reps-only / duration / distance complete without weight kg repsOnly completes when only previousReps is available
+04:36 +722: C:/Users/Atharva Patil/Documents/projects/gymlog/test/set_row_measurement_types_test.dart: R4 — weightAndReps requires weight AND reps cannot complete with reps only (no weight, no previous)
+04:37 +723: C:/Users/Atharva Patil/Documents/projects/gymlog/test/set_row_measurement_types_test.dart: R4 — weightAndReps requires weight AND reps cannot complete with weight only (no reps, no previous)
+04:37 +724: C:/Users/Atharva Patil/Documents/projects/gymlog/test/set_row_measurement_types_test.dart: R4 — weightAndReps requires weight AND reps completes with both weight and reps present
+04:38 +725: C:/Users/Atharva Patil/Documents/projects/gymlog/test/set_row_measurement_types_test.dart: R4 — weightAndReps requires weight AND reps completes when previousWeight satisfies the weight requirement
+04:38 +726: C:/Users/Atharva Patil/Documents/projects/gymlog/test/set_row_measurement_types_test.dart: R4 — weightAndReps requires weight AND reps completes when previousWeight satisfies the weight requirement
+04:38 +727: C:/Users/Atharva Patil/Documents/projects/gymlog/test/set_row_measurement_types_test.dart: R4 — weightAndReps requires weight AND reps completes when previousWeight satisfies the weight requirement
+04:38 +728: C:/Users/Atharva Patil/Documents/projects/gymlog/test/set_row_measurement_types_test.dart: R4 — weightAndReps requires weight AND reps completes when previousWeight satisfies the weight requirement
+04:38 +729: C:/Users/Atharva Patil/Documents/projects/gymlog/test/set_row_measurement_types_test.dart: R5 — Exercise type switch switching from weightAndReps to repsOnly hides the weight field
+04:39 +730: C:/Users/Atharva Patil/Documents/projects/gymlog/test/set_row_measurement_types_test.dart: R5 — Exercise type switch switching from repsOnly to distance hides reps field
+04:39 +731: C:/Users/Atharva Patil/Documents/projects/gymlog/test/set_row_measurement_types_test.dart: R6 — Inline validation tapping check with empty required fields does NOT call onToggleComplete
+04:40 +732: C:/Users/Atharva Patil/Documents/projects/gymlog/test/set_row_measurement_types_test.dart: R6 — Inline validation widget survives validation tap without throwing
+04:40 +733: C:/Users/Atharva Patil/Documents/projects/gymlog/test/set_row_measurement_types_test.dart: R7 — Double-tap prevention double-tap on completable set fires onToggleComplete once
+04:40 +734: C:/Users/Atharva Patil/Documents/projects/gymlog/test/set_row_measurement_types_test.dart: R8 — Focus order and keyboard actions weightAndReps: weight has TextInputAction.next, reps has .next
+04:41 +735: C:/Users/Atharva Patil/Documents/projects/gymlog/test/skeleton_radii_test.dart: WorkoutHistoryCardSkeleton thumbnail uses AppRadius.thumbnail
+04:41 +736: C:/Users/Atharva Patil/Documents/projects/gymlog/test/skeleton_radii_test.dart: WorkoutHistoryCardSkeleton thumbnail uses AppRadius.thumbnail
+04:42 +737: C:/Users/Atharva Patil/Documents/projects/gymlog/test/skeleton_radii_test.dart: WorkoutHistoryCardSkeleton thumbnail uses AppRadius.thumbnail
+04:42 +738: C:/Users/Atharva Patil/Documents/projects/gymlog/test/skeleton_radii_test.dart: WorkoutHistoryCardSkeleton thumbnail uses AppRadius.thumbnail
+04:42 +739: C:/Users/Atharva Patil/Documents/projects/gymlog/test/skeleton_radii_test.dart: WorkoutHistoryCardSkeleton thumbnail uses AppRadius.thumbnail
+04:43 +740: C:/Users/Atharva Patil/Documents/projects/gymlog/test/skeleton_radii_test.dart: WorkoutHistoryCardSkeleton thumbnail uses AppRadius.thumbnail
+04:43 +741: C:/Users/Atharva Patil/Documents/projects/gymlog/test/skeleton_radii_test.dart: WorkoutHistoryCardSkeleton thumbnail uses AppRadius.thumbnail
+04:43 +742: C:/Users/Atharva Patil/Documents/projects/gymlog/test/skeleton_radii_test.dart: WorkoutHistoryCardSkeleton thumbnail uses AppRadius.thumbnail
+04:44 +743: C:/Users/Atharva Patil/Documents/projects/gymlog/test/skeleton_radii_test.dart: WorkoutHistoryCardSkeleton thumbnail uses AppRadius.thumbnail
+04:44 +744: C:/Users/Atharva Patil/Documents/projects/gymlog/test/skeleton_radii_test.dart: WorkoutHistoryCardSkeleton thumbnail uses AppRadius.thumbnail
+04:44 +745: C:/Users/Atharva Patil/Documents/projects/gymlog/test/skeleton_radii_test.dart: WorkoutHistoryCardSkeleton thumbnail uses AppRadius.thumbnail
+04:44 +746: C:/Users/Atharva Patil/Documents/projects/gymlog/test/skeleton_radii_test.dart: WorkoutHistoryCardSkeleton thumbnail uses AppRadius.thumbnail
+04:44 +747: C:/Users/Atharva Patil/Documents/projects/gymlog/test/skeleton_radii_test.dart: WorkoutHistoryCardSkeleton thumbnail uses AppRadius.thumbnail
+04:45 +748: C:/Users/Atharva Patil/Documents/projects/gymlog/test/skeleton_radii_test.dart: WorkoutHistoryCardSkeleton thumbnail uses AppRadius.thumbnail
+04:46 +749: C:/Users/Atharva Patil/Documents/projects/gymlog/test/skeleton_radii_test.dart: RoutineDetailScreen skeleton uses correct tokenized radii
+04:46 +749: C:/Users/Atharva Patil/Documents/projects/gymlog/test/sync/sync_quarantine_and_monotonic_test.dart: corrupt payload is quarantined and does not abort pull of good objects
+[SyncEngine] Quarantined object session:corrupt (reason: decodeFailure)
+04:47 +750: C:/Users/Atharva Patil/Documents/projects/gymlog/test/skeleton_radii_test.dart: RoutineDetailScreen skeleton uses correct tokenized radii
+04:47 +750: C:/Users/Atharva Patil/Documents/projects/gymlog/test/sync/sync_quarantine_and_monotonic_test.dart: unsupported schema version is quarantined
+[SyncEngine] Quarantined object session:s_future (reason: unsupportedVersion)
+[SyncEngine] Quarantined object session:s_future (reason: unsupportedVersion)
+04:47 +751: C:/Users/Atharva Patil/Documents/projects/gymlog/test/skeleton_radii_test.dart: RoutineDetailScreen skeleton uses correct tokenized radii
+04:47 +751: C:/Users/Atharva Patil/Documents/projects/gymlog/test/sync/sync_quarantine_and_monotonic_test.dart: quarantined object is removed from outbox and does not retry on every sync
+[SyncEngine] Quarantined object session:bad_obj (reason: decodeFailure)
+04:47 +752: C:/Users/Atharva Patil/Documents/projects/gymlog/test/skeleton_radii_test.dart: RoutineDetailScreen skeleton uses correct tokenized radii
+04:47 +753: C:/Users/Atharva Patil/Documents/projects/gymlog/test/skeleton_radii_test.dart: RoutineDetailScreen skeleton uses correct tokenized radii
+04:47 +753: C:/Users/Atharva Patil/Documents/projects/gymlog/test/sync/sync_quarantine_and_monotonic_test.dart: duplicate operation is idempotent
+[SyncEngine] Quarantined object session:s1 (reason: localConstraintFailure)
+04:47 +754: C:/Users/Atharva Patil/Documents/projects/gymlog/test/skeleton_radii_test.dart: RoutineDetailScreen skeleton uses correct tokenized radii
+04:47 +754: C:/Users/Atharva Patil/Documents/projects/gymlog/test/sync/sync_quarantine_and_monotonic_test.dart: stale revision reports conflict and clock skew does not decide winner
+[SyncEngine] Quarantined object session:s1 (reason: localConstraintFailure)
+04:47 +755: C:/Users/Atharva Patil/Documents/projects/gymlog/test/skeleton_radii_test.dart: RoutineDetailScreen skeleton uses correct tokenized radii
+04:47 +755: C:/Users/Atharva Patil/Documents/projects/gymlog/test/sync/sync_quarantine_and_monotonic_test.dart: account ownership mismatch is quarantined
+[SyncEngine] Quarantined object session:s1 (reason: ownershipMismatch)
+[SyncEngine] Quarantined object session:s1 (reason: ownershipMismatch)
+04:47 +756: C:/Users/Atharva Patil/Documents/projects/gymlog/test/skeleton_radii_test.dart: RoutineDetailScreen skeleton uses correct tokenized radii
+04:47 +757: C:/Users/Atharva Patil/Documents/projects/gymlog/test/skeleton_radii_test.dart: RoutineDetailScreen skeleton uses correct tokenized radii
+04:47 +758: C:/Users/Atharva Patil/Documents/projects/gymlog/test/skeleton_radii_test.dart: RoutineDetailScreen skeleton uses correct tokenized radii
+04:47 +759: C:/Users/Atharva Patil/Documents/projects/gymlog/test/skeleton_radii_test.dart: WorkoutScreen routines skeleton uses correct tokenized radii
+04:48 +760: C:/Users/Atharva Patil/Documents/projects/gymlog/test/sync_engine_test.dart: codec round-trips and actually compresses repetitive JSON
+04:48 +761: C:/Users/Atharva Patil/Documents/projects/gymlog/test/sync_engine_test.dart: enqueueSession queues one row; syncNow uploads and clears it
+04:48 +762: C:/Users/Atharva Patil/Documents/projects/gymlog/test/sync_engine_test.dart: offline keeps the queue; a later retry delivers it
+[SyncEngine] push failed: Exception: offline
+04:49 +763: C:/Users/Atharva Patil/Documents/projects/gymlog/test/sync_engine_test.dart: re-enqueuing the same session coalesces to one queued row
+04:49 +764: C:/Users/Atharva Patil/Documents/projects/gymlog/test/sync_engine_test.dart: session round-trip: push, wipe local, pull, rehydrate
+04:49 +765: C:/Users/Atharva Patil/Documents/projects/gymlog/test/sync_engine_test.dart: batches large queues across multiple push calls
+04:51 +766: C:/Users/Atharva Patil/Documents/projects/gymlog/test/sync_engine_test.dart: batches large queues across multiple push calls
+04:52 +767: C:/Users/Atharva Patil/Documents/projects/gymlog/test/sync_engine_test.dart: batches large queues across multiple push calls
+04:54 +768: C:/Users/Atharva Patil/Documents/projects/gymlog/test/sync_engine_test.dart: batches large queues across multiple push calls
+04:54 +769: C:/Users/Atharva Patil/Documents/projects/gymlog/test/sync_engine_test.dart: batches large queues across multiple push calls
+04:54 +770: C:/Users/Atharva Patil/Documents/projects/gymlog/test/sync_engine_test.dart: batches large queues across multiple push calls
+04:54 +771: C:/Users/Atharva Patil/Documents/projects/gymlog/test/sync_engine_test.dart: batches large queues across multiple push calls
+04:54 +772: C:/Users/Atharva Patil/Documents/projects/gymlog/test/sync_engine_test.dart: batches large queues across multiple push calls
+04:54 +773: C:/Users/Atharva Patil/Documents/projects/gymlog/test/sync_engine_test.dart: batches large queues across multiple push calls
+04:54 +774: C:/Users/Atharva Patil/Documents/projects/gymlog/test/sync_engine_test.dart: batches large queues across multiple push calls
+04:54 +775: C:/Users/Atharva Patil/Documents/projects/gymlog/test/sync_engine_test.dart: batches large queues across multiple push calls
+04:54 +776: C:/Users/Atharva Patil/Documents/projects/gymlog/test/sync_engine_test.dart: batches large queues across multiple push calls
+04:54 +777: C:/Users/Atharva Patil/Documents/projects/gymlog/test/sync_engine_test.dart: batches large queues across multiple push calls
+04:54 +778: C:/Users/Atharva Patil/Documents/projects/gymlog/test/sync_engine_test.dart: batches large queues across multiple push calls
+04:54 +779: C:/Users/Atharva Patil/Documents/projects/gymlog/test/sync_engine_test.dart: batches large queues across multiple push calls
+04:54 +780: C:/Users/Atharva Patil/Documents/projects/gymlog/test/sync_engine_test.dart: batches large queues across multiple push calls
+04:54 +781: C:/Users/Atharva Patil/Documents/projects/gymlog/test/sync_engine_test.dart: batches large queues across multiple push calls
+04:54 +782: C:/Users/Atharva Patil/Documents/projects/gymlog/test/sync_engine_test.dart: batches large queues across multiple push calls
+04:54 +783: C:/Users/Atharva Patil/Documents/projects/gymlog/test/sync_engine_test.dart: batches large queues across multiple push calls
+04:54 +784: C:/Users/Atharva Patil/Documents/projects/gymlog/test/sync_engine_test.dart: batches large queues across multiple push calls
+04:54 +785: C:/Users/Atharva Patil/Documents/projects/gymlog/test/sync_engine_test.dart: batches large queues across multiple push calls
+04:54 +786: C:/Users/Atharva Patil/Documents/projects/gymlog/test/sync_engine_test.dart: batches large queues across multiple push calls

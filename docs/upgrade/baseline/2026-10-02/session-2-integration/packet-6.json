@@ -1,0 +1,61 @@
+{
+  "snapshot": "C:\\Users\\ATHARV~1\\AppData\\Local\\Temp\\gymlog-session-2-build-55bbfe74f0024a4abb01f6197b154f0a",
+  "snapshot_inputs": 375,
+  "changed_existing_inputs": [
+    "docs/LOOP_LOG.md",
+    "docs/upgrade/LEDGER.md",
+    "lib/core/config/env.dart",
+    "lib/core/database/daos/workouts_dao.dart",
+    "lib/core/models/personal_record.dart",
+    "lib/core/models/pr_card_data.dart",
+    "lib/core/services/share_card_service.dart",
+    "lib/features/home/presentation/screens/home_screen.dart",
+    "lib/features/routines/presentation/widgets/routine_card.dart",
+    "lib/features/workout/presentation/screens/workout_screen.dart",
+    "lib/features/workout/presentation/widgets/pr_celebration_overlay.dart",
+    "pubspec.yaml",
+    "test/features/workout/pr_celebration_overlay_test.dart",
+    "test/radius_token_test.dart",
+    "test/screens_theme_test.dart",
+    "test/upgrade/session_2_fixtures.dart",
+    "test/upgrade/session_2_render_test.dart"
+  ],
+  "concurrent_input_changes_excluded": [
+    "lib/core/config/env.dart",
+    "lib/core/database/daos/workouts_dao.dart",
+    "lib/core/models/personal_record.dart",
+    "lib/core/models/pr_card_data.dart",
+    "lib/core/services/share_card_service.dart",
+    "lib/features/workout/presentation/widgets/pr_celebration_overlay.dart",
+    "pubspec.yaml",
+    "test/features/workout/pr_celebration_overlay_test.dart"
+  ],
+  "new_candidate_sources": [
+    "lib/features/routines/presentation/providers/training_launch_provider.dart",
+    "lib/features/routines/presentation/widgets/training_launchpad.dart",
+    "test/upgrade/session_2_launchpad_test.dart",
+    "test/upgrade/session_2_training_logic_test.dart",
+    "test/upgrade/session_2_launch_actions_test.dart",
+    "test/upgrade/session_2_acceptance_render_test.dart"
+  ],
+  "candidate_sources": [
+    "lib/features/home/presentation/screens/home_screen.dart",
+    "lib/features/routines/presentation/providers/training_launch_provider.dart",
+    "lib/features/routines/presentation/widgets/routine_card.dart",
+    "lib/features/routines/presentation/widgets/training_launchpad.dart",
+    "lib/features/workout/presentation/screens/workout_screen.dart",
+    "test/radius_token_test.dart",
+    "test/screens_theme_test.dart",
+    "test/upgrade/session_2_acceptance_render_test.dart",
+    "test/upgrade/session_2_fixtures.dart",
+    "test/upgrade/session_2_launch_actions_test.dart",
+    "test/upgrade/session_2_launchpad_test.dart",
+    "test/upgrade/session_2_render_test.dart",
+    "test/upgrade/session_2_training_logic_test.dart"
+  ],
+  "new_goldens": 528,
+  "before_pngs": 56,
+  "after_pngs": 528,
+  "diff_sha256": "4220759607a57503496e61eb01b920ef77da8da1839c26d3ea05e053e2630ed3",
+  "no_package_or_shared_token_changes": true
+}

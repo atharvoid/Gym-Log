@@ -1,0 +1,15 @@
+00:00 +0: loading C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_launch_actions_test.dart
+00:00 +0: deleted or emptied routine cannot start a session
+00:00 +0 -1: deleted or emptied routine cannot start a session [E]
+  'package:riverpod/src/framework/container.dart': Failed assertion: line 356 pos 7: '_debugOverridesLength == overrides.length': Tried to change the number of overrides. This is not allowed – overrides cannot be removed/added, they can only be updated.
+  dart:core                                             _AssertionError._throwNew
+  package:riverpod/src/framework/container.dart 356:7   ProviderContainer.updateOverrides
+  test\upgrade\session_2_launch_actions_test.dart 50:7  main.<fn>
+  
+00:00 +0 -1: a read failure never creates an empty workout
+00:00 +1 -1: existing workout is resumed rather than overwritten
+00:00 +2 -1: concurrent Start and an active workout appearing during lookup are guarded
+00:00 +3 -1: Some tests failed.
+
+Failing tests:
+  C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_launch_actions_test.dart: deleted or emptied routine cannot start a session

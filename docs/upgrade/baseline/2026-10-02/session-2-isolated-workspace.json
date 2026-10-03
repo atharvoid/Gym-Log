@@ -1,0 +1,29 @@
+{
+  "isolated_workspace": "C:\\Users\\ATHARV~1\\AppData\\Local\\Temp\\gymlog-session-2-isolated-_7ofw15r",
+  "baseline_snapshot": "C:\\Users\\ATHARV~1\\AppData\\Local\\Temp\\gymlog-session-2-build-55bbfe74f0024a4abb01f6197b154f0a",
+  "current_session_2_files": [
+    "docs/LOOP_LOG.md",
+    "docs/upgrade/LEDGER.md",
+    "lib/features/home/presentation/screens/home_screen.dart",
+    "lib/features/routines/presentation/providers/training_launch_provider.dart",
+    "lib/features/routines/presentation/widgets/routine_card.dart",
+    "lib/features/routines/presentation/widgets/training_launchpad.dart",
+    "lib/features/workout/presentation/screens/workout_screen.dart",
+    "test/radius_token_test.dart",
+    "test/screens_theme_test.dart",
+    "test/upgrade/session_2_acceptance_render_test.dart",
+    "test/upgrade/session_2_fixtures.dart",
+    "test/upgrade/session_2_launch_actions_test.dart",
+    "test/upgrade/session_2_launchpad_test.dart",
+    "test/upgrade/session_2_render_test.dart",
+    "test/upgrade/session_2_training_logic_test.dart"
+  ],
+  "concurrent_changes_excluded": [
+    "lib/core/database/daos/workouts_dao.dart",
+    "pubspec.yaml",
+    "lib/core/models/personal_record.dart",
+    "lib/core/models/pr_card_data.dart"
+  ],
+  "original_app_sources_modified": false,
+  "env_file_copied": false
+}

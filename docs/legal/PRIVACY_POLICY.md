@@ -1,4 +1,4 @@
-# GymLog Privacy Policy
+# Delt Privacy Policy
 
 > **Status:** Active / Production Authoritative
 > **Owner:** Legal & Product Compliance
@@ -8,7 +8,7 @@
 
 **Effective date:** 14 June 2026
 
-GymLog is a local-first workout tracker. This policy is short because the
+Delt is a local-first workout tracker. This policy is short because the
 honest answer to "what do you do with my data?" is: very little, and you can
 delete all of it at any time.
 
@@ -24,7 +24,7 @@ delete all of it at any time.
 
 ## Cloud sync — what actually leaves the device
 
-When you are signed in, GymLog can sync your routines, workout history, and
+When you are signed in, Delt can sync your routines, workout history, and
 preferences to our backend (Supabase) so they follow you across devices and
 survive a reinstall. The synced body is a compressed payload tied to your
 account ID and protected by row-level security (only you can read it). If you
@@ -66,9 +66,9 @@ data stored locally on the device.
 2. **Without the app** (e.g. after uninstalling): visit
    **https://atharvoid.github.io/Gym-Log/legal/delete-account.html**, sign in to
    verify ownership, and confirm deletion.
-3. **By email:** if you cannot use either option, email
-   **support@gymlog.app** from your registered address and we will delete your
-   account within 30 days.
+3. **By Telegram or community:** if you cannot use either option, reach out via
+   the Delt discussion group at **https://t.me/+E66f3thMUOE2NTc1** or the Delt channel
+   at **https://t.me/gym_log** and we will delete your account within 30 days.
 
 CSV files you have exported to your device's Downloads/Files are **your
 property** and are never accessed or removed by deletion.
@@ -85,5 +85,5 @@ effective date and noted in release notes.
 
 ## Contact
 
-Questions or deletion help: **support@gymlog.app**, or open an issue on the
-GymLog repository.
+Questions or deletion help: reach out in the Delt discussion group at
+**https://t.me/+E66f3thMUOE2NTc1** or the Delt channel at **https://t.me/gym_log**.

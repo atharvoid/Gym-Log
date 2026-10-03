@@ -1,0 +1,110 @@
+00:00 +0: loading C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_training_logic_test.dart
+test/upgrade/session_2_training_logic_test.dart:3:8: Error: Error when reading 'lib/features/routines/presentation/providers/training_launch_provider.dart': The system cannot find the file specified
+import 'package:gymlog/features/routines/presentation/providers/training_launch_provider.dart';
+       ^
+test/upgrade/session_2_training_logic_test.dart:11:20: Error: Method not found: 'ChosenRoutineNotifier'.
+    final choice = ChosenRoutineNotifier('owner');
+                   ^^^^^^^^^^^^^^^^^^^^^
+test/upgrade/session_2_training_logic_test.dart:16:21: Error: Method not found: 'ChosenRoutineNotifier'.
+    final restart = ChosenRoutineNotifier('owner');
+                    ^^^^^^^^^^^^^^^^^^^^^
+test/upgrade/session_2_training_logic_test.dart:19:21: Error: Method not found: 'ChosenRoutineNotifier'.
+    final another = ChosenRoutineNotifier('another');
+                    ^^^^^^^^^^^^^^^^^^^^^
+test/upgrade/session_2_training_logic_test.dart:29:20: Error: Method not found: 'ChosenRoutineNotifier'.
+    final choice = ChosenRoutineNotifier('owner');
+                   ^^^^^^^^^^^^^^^^^^^^^
+test/upgrade/session_2_training_logic_test.dart:40:9: Error: Method not found: 'isInactiveReturn'.
+        isInactiveReturn(history, last.add(const Duration(days: 14))), isTrue);
+        ^^^^^^^^^^^^^^^^
+test/upgrade/session_2_training_logic_test.dart:42:9: Error: Method not found: 'isInactiveReturn'.
+        isInactiveReturn(
+        ^^^^^^^^^^^^^^^^
+test/upgrade/session_2_training_logic_test.dart:48:12: Error: Method not found: 'isInactiveReturn'.
+    expect(isInactiveReturn([], session2Date), isFalse);
+           ^^^^^^^^^^^^^^^^
+test/upgrade/session_2_training_logic_test.dart:49:12: Error: Method not found: 'isInactiveReturn'.
+    expect(isInactiveReturn(history.reversed.toList(), session2Date), isFalse);
+           ^^^^^^^^^^^^^^^^
+test/upgrade/session_2_training_logic_test.dart:53:9: Error: Method not found: 'trainingAgeLabel'.
+        trainingAgeLabel(
+        ^^^^^^^^^^^^^^^^
+test/upgrade/session_2_training_logic_test.dart:56:12: Error: Method not found: 'trainingAgeLabel'.
+    expect(trainingAgeLabel(null, session2Date),
+           ^^^^^^^^^^^^^^^^
+test/upgrade/session_2_training_logic_test.dart:59:9: Error: Method not found: 'trainingAgeLabel'.
+        trainingAgeLabel(
+        ^^^^^^^^^^^^^^^^
+test/upgrade/session_2_training_logic_test.dart:66:24: Error: Method not found: 'nextProgramSuggestion'.
+    final suggestion = nextProgramSuggestion(
+                       ^^^^^^^^^^^^^^^^^^^^^
+test/upgrade/session_2_training_logic_test.dart:77:9: Error: Method not found: 'nextProgramSuggestion'.
+        nextProgramSuggestion(routines.take(2).toList(), history, 'sample-0'),
+        ^^^^^^^^^^^^^^^^^^^^^
+test/upgrade/session_2_training_logic_test.dart:86:12: Error: Method not found: 'nextProgramSuggestion'.
+    expect(nextProgramSuggestion(legacy, history, 'sample-0'), isNull);
+           ^^^^^^^^^^^^^^^^^^^^^
+test/upgrade/session_2_training_logic_test.dart:94:12: Error: Method not found: 'nextProgramSuggestion'.
+    expect(nextProgramSuggestion(empty, history, 'sample-0'), isNull);
+           ^^^^^^^^^^^^^^^^^^^^^
+test/upgrade/session_2_training_logic_test.dart:95:12: Error: Method not found: 'nextProgramSuggestion'.
+    expect(nextProgramSuggestion(routines, [], 'sample-0'), isNull);
+           ^^^^^^^^^^^^^^^^^^^^^
+00:00 +0 -1: loading C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_training_logic_test.dart [E]
+  Failed to load "C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_training_logic_test.dart":
+  Compilation failed for testPath=C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_training_logic_test.dart: test/upgrade/session_2_training_logic_test.dart:3:8: Error: Error when reading 'lib/features/routines/presentation/providers/training_launch_provider.dart': The system cannot find the file specified
+  import 'package:gymlog/features/routines/presentation/providers/training_launch_provider.dart';
+         ^
+  test/upgrade/session_2_training_logic_test.dart:11:20: Error: Method not found: 'ChosenRoutineNotifier'.
+      final choice = ChosenRoutineNotifier('owner');
+                     ^^^^^^^^^^^^^^^^^^^^^
+  test/upgrade/session_2_training_logic_test.dart:16:21: Error: Method not found: 'ChosenRoutineNotifier'.
+      final restart = ChosenRoutineNotifier('owner');
+                      ^^^^^^^^^^^^^^^^^^^^^
+  test/upgrade/session_2_training_logic_test.dart:19:21: Error: Method not found: 'ChosenRoutineNotifier'.
+      final another = ChosenRoutineNotifier('another');
+                      ^^^^^^^^^^^^^^^^^^^^^
+  test/upgrade/session_2_training_logic_test.dart:29:20: Error: Method not found: 'ChosenRoutineNotifier'.
+      final choice = ChosenRoutineNotifier('owner');
+                     ^^^^^^^^^^^^^^^^^^^^^
+  test/upgrade/session_2_training_logic_test.dart:40:9: Error: Method not found: 'isInactiveReturn'.
+          isInactiveReturn(history, last.add(const Duration(days: 14))), isTrue);
+          ^^^^^^^^^^^^^^^^
+  test/upgrade/session_2_training_logic_test.dart:42:9: Error: Method not found: 'isInactiveReturn'.
+          isInactiveReturn(
+          ^^^^^^^^^^^^^^^^
+  test/upgrade/session_2_training_logic_test.dart:48:12: Error: Method not found: 'isInactiveReturn'.
+      expect(isInactiveReturn([], session2Date), isFalse);
+             ^^^^^^^^^^^^^^^^
+  test/upgrade/session_2_training_logic_test.dart:49:12: Error: Method not found: 'isInactiveReturn'.
+      expect(isInactiveReturn(history.reversed.toList(), session2Date), isFalse);
+             ^^^^^^^^^^^^^^^^
+  test/upgrade/session_2_training_logic_test.dart:53:9: Error: Method not found: 'trainingAgeLabel'.
+          trainingAgeLabel(
+          ^^^^^^^^^^^^^^^^
+  test/upgrade/session_2_training_logic_test.dart:56:12: Error: Method not found: 'trainingAgeLabel'.
+      expect(trainingAgeLabel(null, session2Date),
+             ^^^^^^^^^^^^^^^^
+  test/upgrade/session_2_training_logic_test.dart:59:9: Error: Method not found: 'trainingAgeLabel'.
+          trainingAgeLabel(
+          ^^^^^^^^^^^^^^^^
+  test/upgrade/session_2_training_logic_test.dart:66:24: Error: Method not found: 'nextProgramSuggestion'.
+      final suggestion = nextProgramSuggestion(
+                         ^^^^^^^^^^^^^^^^^^^^^
+  test/upgrade/session_2_training_logic_test.dart:77:9: Error: Method not found: 'nextProgramSuggestion'.
+          nextProgramSuggestion(routines.take(2).toList(), history, 'sample-0'),
+          ^^^^^^^^^^^^^^^^^^^^^
+  test/upgrade/session_2_training_logic_test.dart:86:12: Error: Method not found: 'nextProgramSuggestion'.
+      expect(nextProgramSuggestion(legacy, history, 'sample-0'), isNull);
+             ^^^^^^^^^^^^^^^^^^^^^
+  test/upgrade/session_2_training_logic_test.dart:94:12: Error: Method not found: 'nextProgramSuggestion'.
+      expect(nextProgramSuggestion(empty, history, 'sample-0'), isNull);
+             ^^^^^^^^^^^^^^^^^^^^^
+  test/upgrade/session_2_training_logic_test.dart:95:12: Error: Method not found: 'nextProgramSuggestion'.
+      expect(nextProgramSuggestion(routines, [], 'sample-0'), isNull);
+             ^^^^^^^^^^^^^^^^^^^^^
+  .
+00:00 +0 -1: Some tests failed.
+
+Failing tests:
+  C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_training_logic_test.dart: loading C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_training_logic_test.dart

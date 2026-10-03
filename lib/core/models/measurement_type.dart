@@ -14,6 +14,25 @@ enum MeasurementType {
     'plank': MeasurementType.duration,
     'wall sit': MeasurementType.duration,
     'l-sit': MeasurementType.duration,
+    'v-sit': MeasurementType.duration,
+    'dead hang': MeasurementType.duration,
+    'deadhang': MeasurementType.duration,
+    'passive hang': MeasurementType.duration,
+    'active hang': MeasurementType.duration,
+    'bar hang': MeasurementType.duration,
+    'scapular hang': MeasurementType.duration,
+    'pec stretch': MeasurementType.duration,
+    'chest stretch': MeasurementType.duration,
+    'shoulder stretch': MeasurementType.duration,
+    'lat stretch': MeasurementType.duration,
+    'quad stretch': MeasurementType.duration,
+    'hamstring stretch': MeasurementType.duration,
+    'calf stretch': MeasurementType.duration,
+    'hip flexor stretch': MeasurementType.duration,
+    'biceps stretch': MeasurementType.duration,
+    'triceps stretch': MeasurementType.duration,
+    'static stretch': MeasurementType.duration,
+    'stretch': MeasurementType.duration,
 
     // Reps-only exercises
     'push up': MeasurementType.repsOnly,
@@ -62,6 +81,39 @@ enum MeasurementType {
     return parsed;
   }
 
+  static bool _isExplicitDurationName(String nameNorm) {
+    final isOlympicOrDynamic = nameNorm.contains('raise') ||
+        nameNorm.contains('wiper') ||
+        nameNorm.contains('crunch') ||
+        nameNorm.contains('clean') ||
+        nameNorm.contains('snatch') ||
+        nameNorm.contains('pull') ||
+        nameNorm.contains('curl') ||
+        nameNorm.contains('swing');
+
+    if (isOlympicOrDynamic) {
+      return false;
+    }
+
+    for (final entry in _explicitExceptions.entries) {
+      if (entry.value == MeasurementType.duration &&
+          nameNorm.contains(entry.key)) {
+        return true;
+      }
+    }
+
+    if (nameNorm.contains('hold') ||
+        nameNorm.contains('plank') ||
+        nameNorm.contains('wall sit') ||
+        nameNorm.contains('dead hang') ||
+        nameNorm.contains('deadhang') ||
+        nameNorm.contains('stretch') ||
+        nameNorm.contains('hang')) {
+      return true;
+    }
+    return false;
+  }
+
   /// Authoritative measurement type resolver.
   /// Valid explicit metadata wins; otherwise legacy inference runs.
   static MeasurementType resolve({
@@ -70,7 +122,15 @@ enum MeasurementType {
     required String? exerciseName,
   }) {
     final parsed = tryParse(explicitValue);
+    final nameNorm = (exerciseName ?? '').toLowerCase().trim();
     if (parsed != null) {
+      // If db default 'weight_and_reps' was stamped on an explicit duration exercise
+      // (e.g. Plank, Dead Hang, Pec Stretch, or Weighted Front Plank), let duration win
+      // so the Hold Timer is accessible.
+      if (parsed == MeasurementType.weightAndReps &&
+          _isExplicitDurationName(nameNorm)) {
+        return MeasurementType.duration;
+      }
       return parsed;
     }
     return inferLegacyMeasurementType(
@@ -108,9 +168,7 @@ enum MeasurementType {
     }
 
     // 3. Check if name is explicitly duration
-    if (nameNorm.contains('hold') ||
-        nameNorm.contains('plank') ||
-        nameNorm.contains('wall sit')) {
+    if (_isExplicitDurationName(nameNorm)) {
       return MeasurementType.duration;
     }
 
@@ -172,9 +230,20 @@ enum MeasurementType {
 
   // ── Column visibility ────────────────────────────────────────────────────
   /// True when a weight / load / distance input column should be shown.
-  /// Only [weightAndReps] and [distance] use the weight-slot column.
+  /// Only [weightAndReps] and [distance] use the weight-slot column by default.
   bool get showsWeightColumn =>
       this == MeasurementType.weightAndReps || this == MeasurementType.distance;
+
+  /// Returns true when a weight column should be displayed for the given
+  /// [exerciseName]. Returns true for standard weighted/distance exercises and
+  /// for weighted duration exercises (e.g., "Weighted Front Plank").
+  bool showsWeightColumnFor([String? exerciseName]) {
+    if (showsWeightColumn) return true;
+    if (this == MeasurementType.duration && exerciseName != null) {
+      return exerciseName.toLowerCase().contains('weighted');
+    }
+    return false;
+  }
 
   /// True when a reps / count / seconds column should be shown.
   /// [distance] stores its single metric in the weight slot, so it hides
@@ -183,9 +252,9 @@ enum MeasurementType {
       this != MeasurementType.distance && this != MeasurementType.unknown;
 
   // ── Column labels ────────────────────────────────────────────────────────
-  /// Header label for the reps-slot column.
+  /// Header label for the reps/duration-slot column.
   String get repsColumnLabel =>
-      this == MeasurementType.duration ? 'SECS' : 'REPS';
+      this == MeasurementType.duration ? 'TIME' : 'REPS';
 
   /// Accessibility label for the reps-slot input field.
   String get repsFieldSemanticLabel =>
@@ -196,4 +265,15 @@ enum MeasurementType {
   /// Null means: either show the user's unit label or hide the column.
   String? get fixedWeightColumnLabel =>
       this == MeasurementType.distance ? 'DIST' : null;
+
+  /// Fixed header label for the weight-slot column taking [exerciseName] into account.
+  String? fixedWeightColumnLabelFor(String? exerciseName, String unit) {
+    if (this == MeasurementType.distance) return 'DIST';
+    if (this == MeasurementType.duration &&
+        exerciseName != null &&
+        exerciseName.toLowerCase().contains('weighted')) {
+      return '+${unit.toUpperCase()}';
+    }
+    return fixedWeightColumnLabel;
+  }
 }

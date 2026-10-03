@@ -79,7 +79,7 @@ void main() {
       ),
     );
 
-    expect(find.text('GymLog'), findsOneWidget);
+    expect(find.text('Delt'), findsOneWidget);
     expect(find.text('Continue with Google'), findsOneWidget);
   });
 

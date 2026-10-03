@@ -124,15 +124,15 @@ enum ThemePalette {
           ),
         // 2 — Neon Purple: the app's on-brand purple identity.
         ThemePalette.neonPurple => const ThemePaletteTokens(
-            base: Color(0xFFBF00FF),
+            base: Color(0xFFC400FF),
             light: Color(0xFFD966FF),
             dark: Color(0xFF9900CC),
-            muted: Color(0x24BF00FF),
-            glow: Color(0x1FBF00FF),
+            muted: Color(0x24C400FF),
+            glow: Color(0x1FC400FF),
             onAccent:
                 Color(0xFF0A0A0A), // near-black on every palette — uniform rule
             muscleSplitRamp: [
-              Color(0xFFBF00FF),
+              Color(0xFFC400FF),
               Color(0xFFCC29FF),
               Color(0xFFD952FF),
               Color(0xFFE67AFF),

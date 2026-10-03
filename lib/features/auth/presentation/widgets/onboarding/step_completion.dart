@@ -9,6 +9,7 @@ import 'package:gymlog/core/theme/app_text.dart';
 import 'package:gymlog/core/theme/dynamic_accent_theme.dart';
 import 'package:gymlog/features/auth/presentation/providers/auth_provider.dart';
 import 'package:gymlog/features/auth/presentation/providers/onboarding_draft_provider.dart';
+import 'package:gymlog/features/auth/presentation/widgets/onboarding/step_scroll_view.dart';
 import 'package:gymlog/features/profile/presentation/providers/profile_provider.dart';
 import 'package:gymlog/features/profile/presentation/providers/profile_stats_provider.dart';
 import 'package:gymlog/features/routines/presentation/data/explore_catalog.dart';
@@ -140,82 +141,84 @@ class _StepCompletionState extends ConsumerState<StepCompletion> {
         .where((t) => t.levels.any((l) => l.name == level))
         .length;
 
-    return Padding(
-      padding: const EdgeInsets.all(24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const SizedBox(height: 48),
-          Text(
-            'Setup complete',
-            style: AppText.caption(color: surface.textSecondary).copyWith(
-              fontSize: 14,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 0.2,
+    return StepScrollView(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: 48),
+            Text(
+              'Setup complete',
+              style: AppText.caption(color: surface.textSecondary).copyWith(
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 0.2,
+              ),
             ),
-          ),
-          const SizedBox(height: 10),
-          Text(
-            "You're all set,\n$name",
-            style: AppText.screenTitle(color: surface.textPrimary).copyWith(
-              fontSize: 32,
-              fontWeight: FontWeight.w800,
-              letterSpacing: -0.5,
-              height: 1.1,
+            const SizedBox(height: 10),
+            Text(
+              "You're all set,\n$name",
+              style: AppText.screenTitle(color: surface.textPrimary).copyWith(
+                fontSize: 32,
+                fontWeight: FontWeight.w800,
+                letterSpacing: -0.5,
+                height: 1.1,
+              ),
             ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Your personalised training plan is ready to launch.',
-            style: AppText.body(color: surface.textSecondary).copyWith(
-              fontSize: 15,
-              height: 1.4,
+            const SizedBox(height: 8),
+            Text(
+              'Your personalised training plan is ready to launch.',
+              style: AppText.body(color: surface.textSecondary).copyWith(
+                fontSize: 15,
+                height: 1.4,
+              ),
             ),
-          ),
-          const SizedBox(height: 32),
-          AppCard(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              children: [
-                _SummaryRow(
-                  icon: Icons.directions_run_rounded,
-                  title: 'Level & Programs',
-                  value:
-                      '${level[0].toUpperCase()}${level.substring(1)} ($levelTemplatesCount starter programs)',
-                  iconColor: accent.light,
-                ),
-                Divider(height: 24, color: surface.borderSubtle),
-                _SummaryRow(
-                  icon: Icons.flag_rounded,
-                  title: 'Weekly Target',
-                  value: '$weeklyGoal workouts / week',
-                  iconColor: accent.light,
-                  trailing: const GoalRing(progress: 0.0, size: 20),
-                ),
-                Divider(height: 24, color: surface.borderSubtle),
-                _SummaryRow(
-                  icon: Icons.scale_rounded,
-                  title: 'Logging Unit',
-                  value: unit == 'kg' ? 'Kilograms (kg)' : 'Pounds (lbs)',
-                  iconColor: accent.light,
-                ),
-              ],
+            const SizedBox(height: 32),
+            AppCard(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                children: [
+                  _SummaryRow(
+                    icon: Icons.directions_run_rounded,
+                    title: 'Level & Programs',
+                    value:
+                        '${level[0].toUpperCase()}${level.substring(1)} ($levelTemplatesCount starter programs)',
+                    iconColor: accent.light,
+                  ),
+                  Divider(height: 24, color: surface.borderSubtle),
+                  _SummaryRow(
+                    icon: Icons.flag_rounded,
+                    title: 'Weekly Target',
+                    value: '$weeklyGoal workouts / week',
+                    iconColor: accent.light,
+                    trailing: const GoalRing(progress: 0.0, size: 20),
+                  ),
+                  Divider(height: 24, color: surface.borderSubtle),
+                  _SummaryRow(
+                    icon: Icons.scale_rounded,
+                    title: 'Logging Unit',
+                    value: unit == 'kg' ? 'Kilograms (kg)' : 'Pounds (lbs)',
+                    iconColor: accent.light,
+                  ),
+                ],
+              ),
             ),
-          ),
-          const Spacer(),
-          PrimaryButton(
-            label: 'Take the 60-second tour',
-            onPressed: _isSaving ? null : () => _persistAndComplete(true),
-            isLoading: _isSaving,
-            icon: Icons.tour_rounded,
-          ),
-          const SizedBox(height: 12),
-          SecondaryButton(
-            label: 'Skip tour & start',
-            onPressed: _isSaving ? null : () => _persistAndComplete(false),
-          ),
-          const SizedBox(height: 16),
-        ],
+            const Spacer(),
+            PrimaryButton(
+              label: 'Take the 60-second tour',
+              onPressed: _isSaving ? null : () => _persistAndComplete(true),
+              isLoading: _isSaving,
+              icon: Icons.tour_rounded,
+            ),
+            const SizedBox(height: 12),
+            SecondaryButton(
+              label: 'Skip tour & start',
+              onPressed: _isSaving ? null : () => _persistAndComplete(false),
+            ),
+            const SizedBox(height: 16),
+          ],
+        ),
       ),
     );
   }

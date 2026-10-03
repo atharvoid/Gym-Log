@@ -1,0 +1,77 @@
+00:00 +0: loading C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart
+00:00 +0: home guards an emptied chosen plan
+00:00 +1: home choice read failure is distinct from no choice
+00:00 +2: home uses explicit choice and one-tap Change
+00:01 +3: home never chooses the first routine by inference
+00:01 +4: home shows a deleted choice without replacing it
+00:01 +5: home new user has a designed first-session entry
+00:01 +6: library guards an emptied chosen plan
+00:01 +7: library choice read failure is distinct from no choice
+00:01 +8: library uses explicit choice and one-tap Change
+00:01 +9: library never chooses the first routine by inference
+00:01 +10: library shows a deleted choice without replacing it
+00:01 +11: library new user has a designed first-session entry
+00:01 +12: Home preserves freestyle during library read failure and deleted-only state
+══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
+The following TestFailure was thrown running a test:
+Expected: exactly one matching candidate
+  Actual: _TextWidgetFinder:<Found 0 widgets with text "Log a different workout": []>
+   Which: means none were found but one was expected
+
+When the exception was thrown, this was the stack:
+#4      main.<anonymous closure> (file:///C:/Users/Atharva%20Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart:96:5)
+<asynchronous suspension>
+#5      testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#6      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1952:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided one frame from package:stack_trace)
+
+This was caught by the test expectation on the following line:
+  file:///C:/Users/Atharva%20Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart line 96
+The test description was:
+  Home preserves freestyle during library read failure and deleted-only state
+════════════════════════════════════════════════════════════════════════════════════════════════════
+00:02 +12 -1: Home preserves freestyle during library read failure and deleted-only state [E]
+  Test failed. See exception logs above.
+  The test description was: Home preserves freestyle during library read failure and deleted-only state
+  
+00:02 +12 -1: Change uses bounded searchable choices and preserves choice on read failure
+══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
+The following assertion was thrown running a test:
+pumpAndSettle timed out
+
+When the exception was thrown, this was the stack:
+#0      WidgetTester.pumpAndSettle.<anonymous closure> (package:flutter_test/src/widget_tester.dart:717:11)
+<asynchronous suspension>
+#1      TestAsyncUtils.guard.<anonymous closure> (package:flutter_test/src/test_async_utils.dart:130:27)
+<asynchronous suspension>
+#2      main.render (file:///C:/Users/Atharva%20Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart:34:5)
+<asynchronous suspension>
+#3      main.<anonymous closure> (file:///C:/Users/Atharva%20Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart:106:5)
+<asynchronous suspension>
+#4      testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#5      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1952:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided one frame from package:stack_trace)
+
+The test description was:
+  Change uses bounded searchable choices and preserves choice on read failure
+════════════════════════════════════════════════════════════════════════════════════════════════════
+00:05 +12 -2: Change uses bounded searchable choices and preserves choice on read failure [E]
+  Test failed. See exception logs above.
+  The test description was: Change uses bounded searchable choices and preserves choice on read failure
+  
+00:05 +12 -2: Previous-set read failure does not invent no history or block Start
+00:05 +13 -2: Home keeps freestyle and History secondary and accessible
+00:05 +14 -2: Home has no guilt language on an inactive return
+00:05 +15 -2: Change selection updates both launch surfaces and persists
+00:05 +16 -2: Library groups the program and quiets creation
+00:05 +17 -2: Some tests failed.
+
+Failing tests:
+  C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart: Change uses bounded searchable choices and preserves choice on read failure
+  C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart: Home preserves freestyle during library read failure and deleted-only state

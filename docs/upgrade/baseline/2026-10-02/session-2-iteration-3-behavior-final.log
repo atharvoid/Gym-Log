@@ -1,0 +1,88 @@
+00:00 +0: loading C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart
+00:00 +0: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart: (setUpAll)
+00:00 +0: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart: home first-session logging has an explicit start label
+00:00 +1: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart: home first-session logging has an explicit start label
+00:00 +2: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart: home first-session logging has an explicit start label
+00:00 +3: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart: home first-session logging has an explicit start label
+00:00 +4: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart: home first-session logging has an explicit start label
+00:00 +5: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart: home first-session logging has an explicit start label
+00:00 +6: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart: home first-session logging has an explicit start label
+00:00 +7: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart: home first-session logging has an explicit start label
+00:00 +8: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart: home first-session logging has an explicit start label
+00:01 +9: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart: home first-session logging has an explicit start label
+00:01 +10: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart: home first-session logging has an explicit start label
+00:01 +11: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart: home first-session logging has an explicit start label
+00:01 +12: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart: home first-session logging has an explicit start label
+00:01 +13: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart: home first-session logging has an explicit start label
+00:01 +14: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart: home first-session logging has an explicit start label
+00:01 +15: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart: home active-workout controls communicate Resume in fallback states
+00:02 +16: C:/Users/Atharva Patil/Documents/projects/gymlog/test/radius_token_test.dart: DeleteAccountScreen danger chip and _SectionCard use correct AppRadius tokens
+00:02 +17: C:/Users/Atharva Patil/Documents/projects/gymlog/test/radius_token_test.dart: DeleteAccountScreen danger chip and _SectionCard use correct AppRadius tokens
+00:02 +18: C:/Users/Atharva Patil/Documents/projects/gymlog/test/radius_token_test.dart: DeleteAccountScreen danger chip and _SectionCard use correct AppRadius tokens
+00:02 +19: C:/Users/Atharva Patil/Documents/projects/gymlog/test/radius_token_test.dart: DeleteAccountScreen danger chip and _SectionCard use correct AppRadius tokens
+00:03 +20: C:/Users/Atharva Patil/Documents/projects/gymlog/test/radius_token_test.dart: DeleteAccountScreen danger chip and _SectionCard use correct AppRadius tokens
+00:03 +21: C:/Users/Atharva Patil/Documents/projects/gymlog/test/radius_token_test.dart: DeleteAccountScreen danger chip and _SectionCard use correct AppRadius tokens
+00:03 +22: C:/Users/Atharva Patil/Documents/projects/gymlog/test/radius_token_test.dart: DeleteAccountScreen danger chip and _SectionCard use correct AppRadius tokens
+00:03 +23: C:/Users/Atharva Patil/Documents/projects/gymlog/test/screens_theme_test.dart: Screens Theme Verification Tests HomeScreen renders under multiple accents
+00:03 +24: C:/Users/Atharva Patil/Documents/projects/gymlog/test/screens_theme_test.dart: Screens Theme Verification Tests HomeScreen renders under multiple accents
+00:04 +25: C:/Users/Atharva Patil/Documents/projects/gymlog/test/screens_theme_test.dart: Screens Theme Verification Tests HomeScreen renders under multiple accents
+00:04 +26: C:/Users/Atharva Patil/Documents/projects/gymlog/test/screens_theme_test.dart: Screens Theme Verification Tests HomeScreen renders under multiple accents
+00:04 +27: C:/Users/Atharva Patil/Documents/projects/gymlog/test/screens_theme_test.dart: Screens Theme Verification Tests HomeScreen renders under multiple accents
+00:04 +28: C:/Users/Atharva Patil/Documents/projects/gymlog/test/screens_theme_test.dart: Screens Theme Verification Tests HomeScreen renders under multiple accents
+00:04 +29: C:/Users/Atharva Patil/Documents/projects/gymlog/test/screens_theme_test.dart: Screens Theme Verification Tests HomeScreen renders under multiple accents
+00:04 +30: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart: library labels a one-set plan in the singular
+00:04 +31: C:/Users/Atharva Patil/Documents/projects/gymlog/test/screens_theme_test.dart: Screens Theme Verification Tests WorkoutDetailScreen renders under multiple accents
+00:04 +32: C:/Users/Atharva Patil/Documents/projects/gymlog/test/screens_theme_test.dart: Screens Theme Verification Tests WorkoutDetailScreen renders under multiple accents
+00:05 +33: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart: library choice read failure is distinct from no choice
+00:05 +34: C:/Users/Atharva Patil/Documents/projects/gymlog/test/screens_theme_test.dart: Screens Theme Verification Tests RoutineDetailScreen renders under multiple accents
+00:05 +35: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart: library uses explicit choice and one-tap Change
+00:05 +36: C:/Users/Atharva Patil/Documents/projects/gymlog/test/screens_theme_test.dart: Screens Theme Verification Tests ExerciseDetailScreen renders under multiple accents
+00:05 +37: C:/Users/Atharva Patil/Documents/projects/gymlog/test/screens_theme_test.dart: Screens Theme Verification Tests ExerciseDetailScreen renders under multiple accents
+00:05 +38: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart: library shows a deleted choice without replacing it
+00:05 +39: C:/Users/Atharva Patil/Documents/projects/gymlog/test/screens_theme_test.dart: Screens Theme Verification Tests DeleteAccountScreen renders under multiple accents
+00:05 +40: C:/Users/Atharva Patil/Documents/projects/gymlog/test/screens_theme_test.dart: Screens Theme Verification Tests DeleteAccountScreen renders under multiple accents
+00:06 +41: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart: Library keeps a routine Start reachable below a compact choice at 1.6x
+══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
+The following TestFailure was thrown running a test:
+Expected: a value less than or equal to <772>
+  Actual: <775.0>
+   Which: is not a value less than or equal to <772>
+
+When the exception was thrown, this was the stack:
+#4      main.<anonymous closure> (file:///C:/Users/Atharva%20Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart:161:5)
+<asynchronous suspension>
+#5      testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#6      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1952:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided one frame from package:stack_trace)
+
+This was caught by the test expectation on the following line:
+  file:///C:/Users/Atharva%20Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart line 161
+The test description was:
+  Library keeps a routine Start reachable below a compact choice at 1.6x
+════════════════════════════════════════════════════════════════════════════════════════════════════
+00:06 +41 -1: C:/Users/Atharva Patil/Documents/projects/gymlog/test/screens_theme_test.dart: Screens Theme Verification Tests ImportScreen renders under multiple accents
+00:06 +41 -1: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart: Library keeps a routine Start reachable below a compact choice at 1.6x [E]
+  Test failed. See exception logs above.
+  The test description was: Library keeps a routine Start reachable below a compact choice at 1.6x
+  
+00:06 +42 -1: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart: Deleted Library choice exposes the logging action it describes
+00:06 +43 -1: C:/Users/Atharva Patil/Documents/projects/gymlog/test/screens_theme_test.dart: Screens Theme Verification Tests ActiveWorkoutScreen renders under multiple accents
+00:06 +44 -1: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart: Library announces arriving read errors
+00:06 +45 -1: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart: Home explains the weekly counted unit visually and in speech
+00:06 +46 -1: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart: Empty Library prioritizes browsing and avoids duplicate errors
+00:06 +47 -1: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart: Change exposes the selected choice to assistive technology
+00:07 +48 -1: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart: Home preserves freestyle during library read failure and deleted-only state
+00:07 +49 -1: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart: Change uses bounded searchable choices and preserves choice on read failure
+00:07 +50 -1: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart: Previous-set read failure does not invent no history or block Start
+00:07 +51 -1: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart: Home keeps freestyle and History secondary and accessible
+00:07 +52 -1: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart: Home has no guilt language on an inactive return
+00:07 +53 -1: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart: Change selection updates both launch surfaces and persists
+00:07 +54 -1: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart: Library groups the program and quiets creation
+00:08 +55 -1: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart: (tearDownAll)
+00:08 +55 -1: Some tests failed.
+
+Failing tests:
+  C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart: Library keeps a routine Start reachable below a compact choice at 1.6x

@@ -524,16 +524,29 @@ abstract final class Bootstrap {
     // stale. Re-assert it. but only when non-null, because setUser(null) on a
     // configured SDK issues a pointless Purchases.logOut() for a user who was
     // never logged in.
-    final resolvedUserId = client.auth.currentUser?.id;
-    if (resolvedUserId != null) {
-      unawaited(premiumService.setUser(resolvedUserId));
+    final resolvedUser = client.auth.currentUser;
+    if (resolvedUser != null) {
+      unawaited(premiumService.setUser(
+        resolvedUser.id,
+        email: resolvedUser.email,
+        displayName: resolvedUser.userMetadata?['full_name'] as String? ??
+            resolvedUser.userMetadata?['name'] as String?,
+      ));
     }
 
     // Idempotent by construction: the retry path must never leave two live
     // subscriptions delivering duplicate identity changes to RevenueCat.
     unawaited(_authSubscription?.cancel());
     _authSubscription = client.auth.onAuthStateChange.listen(
-      (state) => unawaited(premiumService.setUser(state.session?.user.id)),
+      (state) {
+        final user = state.session?.user;
+        unawaited(premiumService.setUser(
+          user?.id,
+          email: user?.email,
+          displayName: user?.userMetadata?['full_name'] as String? ??
+              user?.userMetadata?['name'] as String?,
+        ));
+      },
       // onAuthStateChange is a broadcast stream and can emit AuthException —
       // a failed token refresh is the common case. Without a handler that
       // surfaced as an unhandled async error in the root zone, invisible in

@@ -1,0 +1,98 @@
+00:00 +0: loading C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_launch_actions_test.dart
+test/upgrade/session_2_launch_actions_test.dart:37:7: Error: Undefined name 'trainingRoutineLoaderProvider'.
+      trainingRoutineLoaderProvider.overrideWithValue(load),
+      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test/upgrade/session_2_launch_actions_test.dart:45:25: Error: Undefined name 'trainingLauncherProvider'.
+    expect(await c.read(trainingLauncherProvider).startRoutine('deleted'),
+                        ^^^^^^^^^^^^^^^^^^^^^^^^
+test/upgrade/session_2_launch_actions_test.dart:46:9: Error: Undefined name 'LaunchResult'.
+        LaunchResult.unavailable);
+        ^^^^^^^^^^^^
+test/upgrade/session_2_launch_actions_test.dart:51:10: Error: Undefined name 'trainingRoutineLoaderProvider'.
+        [trainingRoutineLoaderProvider.overrideWithValue((_) async => empty)]);
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test/upgrade/session_2_launch_actions_test.dart:52:25: Error: Undefined name 'trainingLauncherProvider'.
+    expect(await c.read(trainingLauncherProvider).startRoutine('empty'),
+                        ^^^^^^^^^^^^^^^^^^^^^^^^
+test/upgrade/session_2_launch_actions_test.dart:53:9: Error: Undefined name 'LaunchResult'.
+        LaunchResult.unavailable);
+        ^^^^^^^^^^^^
+test/upgrade/session_2_launch_actions_test.dart:59:16: Error: Undefined name 'trainingLauncherProvider'.
+        c.read(trainingLauncherProvider).startRoutine('r'), throwsStateError);
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+test/upgrade/session_2_launch_actions_test.dart:66:25: Error: Undefined name 'trainingLauncherProvider'.
+    expect(await c.read(trainingLauncherProvider).startRoutine('r'),
+                        ^^^^^^^^^^^^^^^^^^^^^^^^
+test/upgrade/session_2_launch_actions_test.dart:67:9: Error: Undefined name 'LaunchResult'.
+        LaunchResult.resume);
+        ^^^^^^^^^^^^
+test/upgrade/session_2_launch_actions_test.dart:68:25: Error: Undefined name 'trainingLauncherProvider'.
+    expect(await c.read(trainingLauncherProvider).startFreestyle(),
+                        ^^^^^^^^^^^^^^^^^^^^^^^^
+test/upgrade/session_2_launch_actions_test.dart:69:9: Error: Undefined name 'LaunchResult'.
+        LaunchResult.resume);
+        ^^^^^^^^^^^^
+test/upgrade/session_2_launch_actions_test.dart:78:26: Error: Undefined name 'trainingLauncherProvider'.
+    final first = c.read(trainingLauncherProvider).startRoutine('r');
+                         ^^^^^^^^^^^^^^^^^^^^^^^^
+test/upgrade/session_2_launch_actions_test.dart:79:25: Error: Undefined name 'trainingLauncherProvider'.
+    expect(await c.read(trainingLauncherProvider).startRoutine('r'),
+                        ^^^^^^^^^^^^^^^^^^^^^^^^
+test/upgrade/session_2_launch_actions_test.dart:80:9: Error: Undefined name 'LaunchResult'.
+        LaunchResult.busy);
+        ^^^^^^^^^^^^
+test/upgrade/session_2_launch_actions_test.dart:84:25: Error: Undefined name 'LaunchResult'.
+    expect(await first, LaunchResult.resume);
+                        ^^^^^^^^^^^^
+00:00 +0 -1: loading C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_launch_actions_test.dart [E]
+  Failed to load "C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_launch_actions_test.dart":
+  Compilation failed for testPath=C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_launch_actions_test.dart: test/upgrade/session_2_launch_actions_test.dart:37:7: Error: Undefined name 'trainingRoutineLoaderProvider'.
+        trainingRoutineLoaderProvider.overrideWithValue(load),
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  test/upgrade/session_2_launch_actions_test.dart:45:25: Error: Undefined name 'trainingLauncherProvider'.
+      expect(await c.read(trainingLauncherProvider).startRoutine('deleted'),
+                          ^^^^^^^^^^^^^^^^^^^^^^^^
+  test/upgrade/session_2_launch_actions_test.dart:46:9: Error: Undefined name 'LaunchResult'.
+          LaunchResult.unavailable);
+          ^^^^^^^^^^^^
+  test/upgrade/session_2_launch_actions_test.dart:51:10: Error: Undefined name 'trainingRoutineLoaderProvider'.
+          [trainingRoutineLoaderProvider.overrideWithValue((_) async => empty)]);
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  test/upgrade/session_2_launch_actions_test.dart:52:25: Error: Undefined name 'trainingLauncherProvider'.
+      expect(await c.read(trainingLauncherProvider).startRoutine('empty'),
+                          ^^^^^^^^^^^^^^^^^^^^^^^^
+  test/upgrade/session_2_launch_actions_test.dart:53:9: Error: Undefined name 'LaunchResult'.
+          LaunchResult.unavailable);
+          ^^^^^^^^^^^^
+  test/upgrade/session_2_launch_actions_test.dart:59:16: Error: Undefined name 'trainingLauncherProvider'.
+          c.read(trainingLauncherProvider).startRoutine('r'), throwsStateError);
+                 ^^^^^^^^^^^^^^^^^^^^^^^^
+  test/upgrade/session_2_launch_actions_test.dart:66:25: Error: Undefined name 'trainingLauncherProvider'.
+      expect(await c.read(trainingLauncherProvider).startRoutine('r'),
+                          ^^^^^^^^^^^^^^^^^^^^^^^^
+  test/upgrade/session_2_launch_actions_test.dart:67:9: Error: Undefined name 'LaunchResult'.
+          LaunchResult.resume);
+          ^^^^^^^^^^^^
+  test/upgrade/session_2_launch_actions_test.dart:68:25: Error: Undefined name 'trainingLauncherProvider'.
+      expect(await c.read(trainingLauncherProvider).startFreestyle(),
+                          ^^^^^^^^^^^^^^^^^^^^^^^^
+  test/upgrade/session_2_launch_actions_test.dart:69:9: Error: Undefined name 'LaunchResult'.
+          LaunchResult.resume);
+          ^^^^^^^^^^^^
+  test/upgrade/session_2_launch_actions_test.dart:78:26: Error: Undefined name 'trainingLauncherProvider'.
+      final first = c.read(trainingLauncherProvider).startRoutine('r');
+                           ^^^^^^^^^^^^^^^^^^^^^^^^
+  test/upgrade/session_2_launch_actions_test.dart:79:25: Error: Undefined name 'trainingLauncherProvider'.
+      expect(await c.read(trainingLauncherProvider).startRoutine('r'),
+                          ^^^^^^^^^^^^^^^^^^^^^^^^
+  test/upgrade/session_2_launch_actions_test.dart:80:9: Error: Undefined name 'LaunchResult'.
+          LaunchResult.busy);
+          ^^^^^^^^^^^^
+  test/upgrade/session_2_launch_actions_test.dart:84:25: Error: Undefined name 'LaunchResult'.
+      expect(await first, LaunchResult.resume);
+                          ^^^^^^^^^^^^
+  .
+00:00 +0 -1: Some tests failed.
+
+Failing tests:
+  C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_launch_actions_test.dart: loading C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_launch_actions_test.dart

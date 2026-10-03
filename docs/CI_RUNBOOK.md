@@ -17,25 +17,25 @@ Two workflows live in `.github/workflows/`:
 
 | Workflow | File | Trigger | Blocks merge? |
 |---|---|---|---|
-| **CI** | `ci.yml` | every PR to `main` + every push to `main` | **Yes** |
+| **CI** | `ci.yml` | pushes and PRs targeting `main` or `remediation/**` | **Yes** |
 | **Dependency Audit** | `dependency-audit.yml` | weekly cron (Mon 09:00 UTC) + manual | No (report only) |
 
 **CI** runs four jobs:
 
-1. **Analyze & Test** (`ubuntu`) — `flutter pub get` → `dart format` check → `flutter analyze --fatal-infos --fatal-warnings` (zero tolerance) → `dart run custom_lint` (riverpod_lint) → `flutter test --machine` (uploads `test-results.json`). Installs `libsqlite3-dev` so the DAO integration tests can open host SQLite.
+1. **Analyze & Test** (`windows-2025`) — `flutter pub get` → `dart format` check → `flutter analyze --fatal-infos --fatal-warnings` (zero tolerance) → `dart run custom_lint` (riverpod_lint) → `flutter test --machine` (uploads `test-results.json`). Windows is the recording host for the unmasked real-font goldens. SQLite uses the existing package's Windows loader; the Linux-only installation step remains conditional.
 2. **Build Android (release)** (`ubuntu`) — `flutter build apk --release --obfuscate --split-debug-info=…` (R8 shrink is configured in `build.gradle.kts`). Uploads the obfuscation symbols artifact.
-3. **Build iOS (release, no codesign)** (`macos`) — `flutter build ios --release --no-codesign`.
+3. **Build iOS (release, no codesign)** (`macos`) — configure CocoaPods resolution, then `flutter build ios --release --no-codesign`. The existing `sentry_flutter` podspec pins its matching native SDK; its SwiftPM range can otherwise select an incompatible newer API. Package versions and app code are unchanged.
 4. **CI Gate** — passes only if all three above pass. Mark **this** as the required status check (simplest), or require all three individually.
 
-> **Pin the Flutter version.** `ci.yml` uses `channel: stable`. For reproducible
-> analyzer output, set `FLUTTER_CHANNEL`/`flutter-version` to match your local
-> `flutter --version`. A different Flutter version can surface different lints.
+> **Pinned toolchain.** `ci.yml` uses Flutter **3.44.0**, matching local verification,
+> in all three jobs. Change `FLUTTER_VERSION` only with fresh verification and
+> golden compatibility checks; `stable` alone can advance the analyzer and SDK.
 
 ### Expected execution time & resources
 
 | Job | Cold | Warm (cache hit) | Runner |
 |---|---|---|---|
-| Analyze & Test | ~4–7 min | ~2–4 min | ubuntu (2-core, free) |
+| Analyze & Test | Not remeasured | Not remeasured | Windows 2025 (golden recording host) |
 | Build Android | ~6–10 min | ~4–6 min | ubuntu (2-core, free) |
 | Build iOS | ~10–18 min | ~7–12 min | **macOS (10× minute multiplier)** |
 | Dependency Audit | ~2–3 min | — | ubuntu |

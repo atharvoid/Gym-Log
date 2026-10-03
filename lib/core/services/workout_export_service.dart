@@ -178,7 +178,7 @@ class WorkoutExportService {
     final csv = await buildCsv(userId);
     final dir = await getTemporaryDirectory();
     final stamp = DateFormat('yyyyMMdd_HHmm').format(DateTime.now());
-    final file = File(p.join(dir.path, 'gymlog_export_$stamp.csv'));
+    final file = File(p.join(dir.path, 'delt_export_$stamp.csv'));
     return file.writeAsString(csv);
   }
 

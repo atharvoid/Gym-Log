@@ -244,8 +244,8 @@ void main() {
 
       expect(
         () => WorkoutCsvParser.parse(badCsv),
-        throwsA(isA<ImportException>().having((e) => e.message, 'message',
-            contains('Invalid GymLog CSV format: missing required column'))),
+        throwsA(isA<ImportException>().having(
+            (e) => e.message, 'message', contains('missing required column'))),
       );
     });
   });

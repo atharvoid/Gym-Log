@@ -1,0 +1,250 @@
+00:00 +0: loading C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart
+00:00 +0: home first-session logging has an explicit start label
+══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
+The following TestFailure was thrown running a test:
+Expected: exactly one matching candidate
+  Actual: _TextWidgetFinder:<Found 0 widgets with text "Start workout": []>
+   Which: means none were found but one was expected
+
+When the exception was thrown, this was the stack:
+#4      main.<anonymous closure> (file:///C:/Users/Atharva%20Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart:53:7)
+<asynchronous suspension>
+#5      testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#6      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1952:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided one frame from package:stack_trace)
+
+This was caught by the test expectation on the following line:
+  file:///C:/Users/Atharva%20Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart line 53
+The test description was:
+  home first-session logging has an explicit start label
+════════════════════════════════════════════════════════════════════════════════════════════════════
+00:00 +0 -1: home first-session logging has an explicit start label [E]
+  Test failed. See exception logs above.
+  The test description was: home first-session logging has an explicit start label
+  
+00:00 +0 -1: home active-workout controls communicate Resume in fallback states
+══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
+The following TestFailure was thrown running a test:
+Expected: no matching candidates
+  Actual: _TextWidgetFinder:<Found 1 widget with text "Log a different workout": [
+            Text("Log a different workout", dependencies: [DefaultSelectionStyle, DefaultTextStyle,
+MediaQuery]),
+          ]>
+   Which: means one was found but none were expected
+
+When the exception was thrown, this was the stack:
+#4      main.<anonymous closure> (file:///C:/Users/Atharva%20Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart:61:9)
+<asynchronous suspension>
+#5      testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#6      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1952:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided one frame from package:stack_trace)
+
+This was caught by the test expectation on the following line:
+  file:///C:/Users/Atharva%20Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart line 61
+The test description was:
+  home active-workout controls communicate Resume in fallback states
+════════════════════════════════════════════════════════════════════════════════════════════════════
+00:01 +0 -2: home active-workout controls communicate Resume in fallback states [E]
+  Test failed. See exception logs above.
+  The test description was: home active-workout controls communicate Resume in fallback states
+  
+00:01 +0 -2: home labels a one-set plan in the singular
+00:01 +1 -2: home guards an emptied chosen plan
+00:01 +2 -2: home choice read failure is distinct from no choice
+00:01 +3 -2: home uses explicit choice and one-tap Change
+00:01 +4 -2: home never chooses the first routine by inference
+00:02 +5 -2: home shows a deleted choice without replacing it
+00:02 +6 -2: home new user has a designed first-session entry
+00:02 +7 -2: library first-session logging has an explicit start label
+══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
+The following TestFailure was thrown running a test:
+Expected: exactly one matching candidate
+  Actual: _TextWidgetFinder:<Found 0 widgets with text "Start workout": []>
+   Which: means none were found but one was expected
+
+When the exception was thrown, this was the stack:
+#4      main.<anonymous closure> (file:///C:/Users/Atharva%20Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart:53:7)
+<asynchronous suspension>
+#5      testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#6      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1952:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided one frame from package:stack_trace)
+
+This was caught by the test expectation on the following line:
+  file:///C:/Users/Atharva%20Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart line 53
+The test description was:
+  library first-session logging has an explicit start label
+════════════════════════════════════════════════════════════════════════════════════════════════════
+00:02 +7 -3: library first-session logging has an explicit start label [E]
+  Test failed. See exception logs above.
+  The test description was: library first-session logging has an explicit start label
+  
+00:02 +7 -3: library active-workout controls communicate Resume in fallback states
+══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
+The following TestFailure was thrown running a test:
+Expected: no matching candidates
+  Actual: _AncestorWidgetFinder:<Found 2 widgets with type "StartButton" that are ancestors of
+widgets with text "Start": [
+            StartButton(dependencies: [InheritedCupertinoTheme, _InheritedTheme,
+_LocalizationsScope-[GlobalKey#8f8b6]]),
+            StartButton(dependencies: [InheritedCupertinoTheme, _InheritedTheme,
+_LocalizationsScope-[GlobalKey#8f8b6]]),
+          ]>
+   Which: means some were found but none were expected
+
+When the exception was thrown, this was the stack:
+#4      main.<anonymous closure> (file:///C:/Users/Atharva%20Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart:64:11)
+<asynchronous suspension>
+#5      testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#6      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1952:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided one frame from package:stack_trace)
+
+This was caught by the test expectation on the following line:
+  file:///C:/Users/Atharva%20Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart line 64
+The test description was:
+  library active-workout controls communicate Resume in fallback states
+════════════════════════════════════════════════════════════════════════════════════════════════════
+00:02 +7 -4: library active-workout controls communicate Resume in fallback states [E]
+  Test failed. See exception logs above.
+  The test description was: library active-workout controls communicate Resume in fallback states
+  
+00:02 +7 -4: library labels a one-set plan in the singular
+00:02 +8 -4: library guards an emptied chosen plan
+00:03 +9 -4: library choice read failure is distinct from no choice
+00:03 +10 -4: library uses explicit choice and one-tap Change
+00:03 +11 -4: library never chooses the first routine by inference
+00:03 +12 -4: library shows a deleted choice without replacing it
+00:03 +13 -4: library new user has a designed first-session entry
+00:03 +14 -4: Library keeps a routine Start reachable below a compact choice at 1.6x
+══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
+The following TestFailure was thrown running a test:
+Expected: a value less than or equal to <772>
+  Actual: <948.0>
+   Which: is not a value less than or equal to <772>
+
+When the exception was thrown, this was the stack:
+#4      main.<anonymous closure> (file:///C:/Users/Atharva%20Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart:137:5)
+<asynchronous suspension>
+#5      testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#6      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1952:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided one frame from package:stack_trace)
+
+This was caught by the test expectation on the following line:
+  file:///C:/Users/Atharva%20Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart line 137
+The test description was:
+  Library keeps a routine Start reachable below a compact choice at 1.6x
+════════════════════════════════════════════════════════════════════════════════════════════════════
+00:03 +14 -5: Library keeps a routine Start reachable below a compact choice at 1.6x [E]
+  Test failed. See exception logs above.
+  The test description was: Library keeps a routine Start reachable below a compact choice at 1.6x
+  
+00:03 +14 -5: Deleted Library choice exposes the logging action it describes
+══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
+The following TestFailure was thrown running a test:
+Expected: exactly one matching candidate
+  Actual: _TextWidgetFinder:<Found 0 widgets with text "Log a different workout": []>
+   Which: means none were found but one was expected
+
+When the exception was thrown, this was the stack:
+#4      main.<anonymous closure> (file:///C:/Users/Atharva%20Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart:141:5)
+<asynchronous suspension>
+#5      testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#6      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1952:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided one frame from package:stack_trace)
+
+This was caught by the test expectation on the following line:
+  file:///C:/Users/Atharva%20Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart line 141
+The test description was:
+  Deleted Library choice exposes the logging action it describes
+════════════════════════════════════════════════════════════════════════════════════════════════════
+00:04 +14 -6: Deleted Library choice exposes the logging action it describes [E]
+  Test failed. See exception logs above.
+  The test description was: Deleted Library choice exposes the logging action it describes
+  
+00:04 +14 -6: Library announces arriving read errors
+══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
+The following TestFailure was thrown running a test:
+Expected: exactly one matching candidate
+  Actual: _DescendantWidgetFinder:<Found 0 widgets with text "Couldn't load your training choice"
+descending from widgets with widget matching predicate: []>
+   Which: means none were found but one was expected
+
+When the exception was thrown, this was the stack:
+#4      main.<anonymous closure> (file:///C:/Users/Atharva%20Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart:146:5)
+<asynchronous suspension>
+#5      testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#6      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1952:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided one frame from package:stack_trace)
+
+This was caught by the test expectation on the following line:
+  file:///C:/Users/Atharva%20Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart line 146
+The test description was:
+  Library announces arriving read errors
+════════════════════════════════════════════════════════════════════════════════════════════════════
+00:04 +14 -7: Library announces arriving read errors [E]
+  Test failed. See exception logs above.
+  The test description was: Library announces arriving read errors
+  
+00:04 +14 -7: Home explains the weekly counted unit visually and in speech
+══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
+The following TestFailure was thrown running a test:
+Expected: exactly one matching candidate
+  Actual: _TextWidgetFinder:<Found 0 widgets with text "Training days this week": []>
+   Which: means none were found but one was expected
+
+When the exception was thrown, this was the stack:
+#4      main.<anonymous closure> (file:///C:/Users/Atharva%20Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart:150:5)
+<asynchronous suspension>
+#5      testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#6      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1952:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided one frame from package:stack_trace)
+
+This was caught by the test expectation on the following line:
+  file:///C:/Users/Atharva%20Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart line 150
+The test description was:
+  Home explains the weekly counted unit visually and in speech
+════════════════════════════════════════════════════════════════════════════════════════════════════
+00:04 +14 -8: Home explains the weekly counted unit visually and in speech [E]
+  Test failed. See exception logs above.
+  The test description was: Home explains the weekly counted unit visually and in speech
+  
+00:04 +14 -8: Empty Library prioritizes browsing and avoids duplicate errors
+00:04 +15 -8: Change exposes the selected choice to assistive technology
+00:05 +16 -8: Home preserves freestyle during library read failure and deleted-only state
+00:05 +17 -8: Change uses bounded searchable choices and preserves choice on read failure
+00:05 +18 -8: Previous-set read failure does not invent no history or block Start
+00:05 +19 -8: Home keeps freestyle and History secondary and accessible
+00:05 +20 -8: Home has no guilt language on an inactive return
+00:05 +21 -8: Change selection updates both launch surfaces and persists
+00:05 +22 -8: Library groups the program and quiets creation
+00:06 +23 -8: Some tests failed.
+
+Failing tests:
+  C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart: Deleted Library choice exposes the logging action it describes
+  C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart: Home explains the weekly counted unit visually and in speech
+  C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart: Library announces arriving read errors
+  C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart: Library keeps a routine Start reachable below a compact choice at 1.6x
+  ... and 4 more

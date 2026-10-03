@@ -12,6 +12,7 @@ import '../../../../core/services/sync_engine.dart';
 import '../../../../core/services/workout_draft_store.dart';
 import '../../../../core/models/measurement_type.dart';
 import '../../../../core/models/personal_record.dart';
+import '../../../../core/models/workout_metric_summary.dart';
 import '../../../../core/models/rest_preference.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
@@ -249,14 +250,8 @@ class ActiveWorkoutNotifier extends StateNotifier<ActiveWorkoutState?> {
     final user = _ref.read(authProvider);
     final userId = user?.id ?? '';
 
-    double totalVolume = 0;
-    for (final ex in state!.exercises) {
-      for (final set in ex.sets) {
-        if (set.isCompleted) {
-          totalVolume += (set.weightKg ?? 0.0) * set.reps;
-        }
-      }
-    }
+    final totalVolume =
+        WorkoutMetricSummary.fromWorkout(state).weightedVolumeKg;
 
     final sessionId = const Uuid().v4();
     final workoutName =
@@ -800,19 +795,8 @@ class ActiveWorkoutNotifier extends StateNotifier<ActiveWorkoutState?> {
   }
 
   (double, int) get sessionTotals {
-    final current = state;
-    if (current == null) return (0, 0);
-    double volume = 0;
-    var sets = 0;
-    for (final ex in current.exercises) {
-      for (final set in ex.sets) {
-        if (set.isCompleted) {
-          volume += (set.weightKg ?? 0.0) * set.reps;
-          sets++;
-        }
-      }
-    }
-    return (volume, sets);
+    final summary = WorkoutMetricSummary.fromWorkout(state);
+    return (summary.weightedVolumeKg, summary.completedSets);
   }
 }
 
@@ -828,17 +812,27 @@ final activeWorkoutProvider =
 /// weight/reps field.
 final sessionTotalsProvider = Provider<(double, int)>((ref) {
   return ref.watch(activeWorkoutProvider.select((state) {
-    if (state == null) return (0.0, 0);
-    double volume = 0;
-    int completed = 0;
-    for (final ex in state.exercises) {
-      for (final set in ex.sets) {
-        if (set.isCompleted) {
-          volume += (set.weightKg ?? 0.0) * set.reps;
-          completed++;
-        }
-      }
-    }
-    return (volume, completed);
+    final summary = WorkoutMetricSummary.fromWorkout(state);
+    return (summary.weightedVolumeKg, summary.completedSets);
   }));
+});
+
+/// Logged measures only; measurement types determine the meaning of each field.
+final workoutMetricSummaryProvider = Provider<WorkoutMetricSummary>((ref) {
+  final totals = ref.watch(activeWorkoutProvider.select((state) {
+    final s = WorkoutMetricSummary.fromWorkout(state);
+    return (
+      s.weightedVolumeKg,
+      s.totalReps,
+      s.totalDurationSeconds,
+      s.totalDistanceMeters,
+      s.completedSets
+    );
+  }));
+  return WorkoutMetricSummary(
+      weightedVolumeKg: totals.$1,
+      totalReps: totals.$2,
+      totalDurationSeconds: totals.$3,
+      totalDistanceMeters: totals.$4,
+      completedSets: totals.$5);
 });

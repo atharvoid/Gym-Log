@@ -1,0 +1,17 @@
+{
+  "iteration": "owner-fix-4",
+  "live_after_pngs": 528,
+  "goldens": 528,
+  "viewport": [
+    390,
+    844
+  ],
+  "text_scales": [
+    1.0,
+    1.6
+  ],
+  "palettes": 6,
+  "synthetic": true,
+  "native_surfaces": "unverified",
+  "masked_text": false
+}

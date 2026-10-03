@@ -1,4 +1,4 @@
-# GymLog Open Source Dependency & License Inventory
+# Delt Open Source Dependency & License Inventory
 
 > **Status:** Active / Production Authoritative
 > **Owner:** Legal & Product Compliance
@@ -6,13 +6,13 @@
 > **Last reviewed date:** 2026-07-22
 > **Next review date:** 2026-10-22
 
-This document lists all direct open-source dependencies used by GymLog, their licensing status, and an audit of the exercise media library.
+This document lists all direct open-source dependencies used by Delt, their licensing status, and an audit of the exercise media library.
 
 ---
 
 ## 1. Direct Dependency Inventory
 
-| Package Name | Version | License | Purpose in GymLog |
+| Package Name | Version | License | Purpose in Delt |
 |---|---|---|---|
 | `drift` | `^2.18.0` | Apache-2.0 | Core local SQLite ORM and reactive database queries |
 | `sqlite3_flutter_libs` | `^0.5.42` | MIT | SQLite database FFI binary wrapper for Android/iOS/Desktop |

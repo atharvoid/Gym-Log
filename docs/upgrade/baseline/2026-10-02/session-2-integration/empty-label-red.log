@@ -1,0 +1,37 @@
+00:00 +0: loading C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart
+00:00 +0: (setUpAll)
+00:00 +0: Empty Library plan uses one clear Home ownership label at 1.6x
+══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
+The following TestFailure was thrown running a test:
+Expected: no matching candidates
+  Actual: _TextWidgetFinder:<Found 1 widget with text "Chosen on Home": [
+            Text("Chosen on Home", inherit: true, color: Color(alpha: 0.6000, red: 1.0000, green:
+1.0000, blue: 1.0000, colorSpace: ColorSpace.sRGB), family: Inter_regular, familyFallback: [Inter],
+size: 13.0, weight: 400, dependencies: [DefaultSelectionStyle, DefaultTextStyle, MediaQuery]),
+          ]>
+   Which: means one was found but none were expected
+
+When the exception was thrown, this was the stack:
+#4      main.<anonymous closure> (file:///C:/Users/Atharva%20Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart:310:5)
+<asynchronous suspension>
+#5      testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#6      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1952:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided one frame from package:stack_trace)
+
+This was caught by the test expectation on the following line:
+  file:///C:/Users/Atharva%20Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart line 310
+The test description was:
+  Empty Library plan uses one clear Home ownership label at 1.6x
+════════════════════════════════════════════════════════════════════════════════════════════════════
+00:01 +0 -1: Empty Library plan uses one clear Home ownership label at 1.6x [E]
+  Test failed. See exception logs above.
+  The test description was: Empty Library plan uses one clear Home ownership label at 1.6x
+  
+00:01 +0 -1: (tearDownAll)
+00:01 +0 -1: Some tests failed.
+
+Failing tests:
+  C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_2_launchpad_test.dart: Empty Library plan uses one clear Home ownership label at 1.6x

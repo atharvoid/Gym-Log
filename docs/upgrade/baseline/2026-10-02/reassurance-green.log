@@ -1,0 +1,18 @@
+00:00 +0: loading C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/error_reassurance_test.dart
+00:00 +0: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/error_reassurance_test.dart: async-error does not guarantee storage integrity on an error
+00:00 +1: C:/Users/Atharva Patil/Documents/projects/gymlog/test/routine_volume_error_state_test.dart: failed volume stream renders error+retry, never a zeroed volume graph
+00:01 +2: C:/Users/Atharva Patil/Documents/projects/gymlog/test/routine_volume_error_state_test.dart: failed volume stream renders error+retry, never a zeroed volume graph
+00:01 +2: C:/Users/Atharva Patil/Documents/projects/gymlog/test/active_workout_persistence_fail_closed_test.dart: ATOMIC-RC3-01 Persistence Fail Closed Suite 1. Transaction failure retains state and draft
+[finishWorkout] transaction failed: Exception: Simulated database write error
+00:01 +3: C:/Users/Atharva Patil/Documents/projects/gymlog/test/routine_volume_error_state_test.dart: failed volume stream renders error+retry, never a zeroed volume graph
+00:01 +4: C:/Users/Atharva Patil/Documents/projects/gymlog/test/routine_volume_error_state_test.dart: failed volume stream renders error+retry, never a zeroed volume graph
+00:01 +5: C:/Users/Atharva Patil/Documents/projects/gymlog/test/routine_volume_error_state_test.dart: failed volume stream renders error+retry, never a zeroed volume graph
+00:01 +5: C:/Users/Atharva Patil/Documents/projects/gymlog/test/active_workout_persistence_fail_closed_test.dart: ATOMIC-RC3-01 Persistence Fail Closed Suite 3. Edited-workout failure retains state
+[saveEditedWorkout] transaction failed: Exception: Simulated database edit error
+00:01 +6: C:/Users/Atharva Patil/Documents/projects/gymlog/test/routine_volume_error_state_test.dart: failed volume stream renders error+retry, never a zeroed volume graph
+00:01 +7: C:/Users/Atharva Patil/Documents/projects/gymlog/test/routine_volume_error_state_test.dart: failed volume stream renders error+retry, never a zeroed volume graph
+00:01 +8: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/error_reassurance_test.dart: storage-free describes successful saves without instant/guaranteed backup claims
+00:01 +9: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/error_reassurance_test.dart: storage-pro describes successful saves without instant/guaranteed backup claims
+00:02 +10: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/error_reassurance_test.dart: sync error does not promise an automatic retry
+00:02 +11: C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/error_reassurance_test.dart: Pro storage heading does not assert an existing cloud backup
+00:02 +12: All tests passed!

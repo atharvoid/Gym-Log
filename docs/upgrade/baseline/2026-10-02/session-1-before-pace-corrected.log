@@ -1,0 +1,20 @@
+00:00 +0: loading C:/Users/Atharva Patil/AppData/Local/Temp/gymlog-session-1-e59da5b148c9422eb5b38291499006f6/test/upgrade/session_1_render_test.dart
+00:00 +0: (setUpAll)
+00:00 +0: pr-pace-higgsfield-1.0x-synthetic
+00:05 +1: share-pace-monument-higgsfield-1.0x-synthetic
+00:06 +2: share-pace-technical-higgsfield-1.0x-synthetic
+00:07 +3: share-pace-sticker-higgsfield-1.0x-synthetic
+00:08 +4: pr-pace-higgsfield-1.6x-synthetic
+00:09 +5: share-pace-monument-higgsfield-1.6x-synthetic
+00:09 +6: share-pace-technical-higgsfield-1.6x-synthetic
+00:10 +7: share-pace-sticker-higgsfield-1.6x-synthetic
+00:12 +8: pr-pace-neonPurple-1.0x-synthetic
+00:13 +9: share-pace-monument-neonPurple-1.0x-synthetic
+00:13 +10: share-pace-technical-neonPurple-1.0x-synthetic
+00:14 +11: share-pace-sticker-neonPurple-1.0x-synthetic
+00:14 +12: pr-pace-neonPurple-1.6x-synthetic
+00:14 +13: share-pace-monument-neonPurple-1.6x-synthetic
+00:15 +14: share-pace-technical-neonPurple-1.6x-synthetic
+00:15 +15: share-pace-sticker-neonPurple-1.6x-synthetic
+00:15 +16: (tearDownAll)
+00:16 +16: All tests passed!

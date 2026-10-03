@@ -14,6 +14,7 @@ import '../../../../shared/widgets/ui/app_dialog.dart';
 import '../../../../shared/widgets/feedback/undoable_delete.dart';
 import '../../../../shared/widgets/motion/pressable_scale.dart';
 import '../../../../shared/widgets/ui/app_snack_bar.dart';
+import '../../../../shared/widgets/ui/app_status_tag.dart';
 
 /// Premium routine card for the Routines list.
 /// - Tapping the body opens the routine detail (`/routines/:id`).
@@ -27,6 +28,7 @@ class RoutineCard extends ConsumerWidget {
   final List<String> muscleTags;
   final DateTime? lastTrained;
   final VoidCallback onStartTap;
+  final bool workoutInProgress;
 
   const RoutineCard({
     super.key,
@@ -36,6 +38,7 @@ class RoutineCard extends ConsumerWidget {
     required this.onStartTap,
     this.muscleTags = const [],
     this.lastTrained,
+    this.workoutInProgress = false,
   });
 
   Widget _tag(
@@ -44,15 +47,10 @@ class RoutineCard extends ConsumerWidget {
     Color? backgroundColor,
     Color? textColor,
   }) {
-    final surface = context.surface;
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3),
-      decoration: BoxDecoration(
-        color: backgroundColor ?? surface.surface3,
-        borderRadius: AppRadius.badgeAll,
-      ),
-      child: Text(label,
-          style: AppText.badge(color: textColor ?? surface.textSecondary)),
+    return AppStatusTag(
+      label: label,
+      backgroundColor: backgroundColor,
+      textColor: textColor,
     );
   }
 
@@ -173,19 +171,23 @@ class RoutineCard extends ConsumerWidget {
                         const SizedBox(width: 12),
                         StartButton(
                           label: 'Start',
-                          enabled: exerciseNames.isNotEmpty,
-                          onPressed: () {
-                            // 0-exercise routine: don't silently no-op — tell
-                            // the user why nothing happened.
-                            if (exerciseNames.isEmpty) {
-                              showAppSnackBar(
-                                context,
-                                message: 'Add exercises to this routine first',
-                              );
-                              return;
-                            }
-                            onStartTap();
-                          },
+                          enabled:
+                              !workoutInProgress && exerciseNames.isNotEmpty,
+                          onPressed: workoutInProgress
+                              ? null
+                              : () {
+                                  // 0-exercise routine: don't silently no-op — tell
+                                  // the user why nothing happened.
+                                  if (exerciseNames.isEmpty) {
+                                    showAppSnackBar(
+                                      context,
+                                      message:
+                                          'Add exercises to this routine first',
+                                    );
+                                    return;
+                                  }
+                                  onStartTap();
+                                },
                         ),
                       ],
                     ),

@@ -1,0 +1,15 @@
+{
+  "baseline_head": "653158525e887c116e210dd113174329acdabaab",
+  "checked_existing_inputs": 373,
+  "changed_existing_inputs": [
+    "docs/upgrade/LEDGER.md"
+  ],
+  "unexpected_changes": [],
+  "new_dart_files": [
+    "test/upgrade/session_2_fixtures.dart",
+    "test/upgrade/session_2_options.dart",
+    "test/upgrade/session_2_render_test.dart"
+  ],
+  "production_code_changes": 0,
+  "existing_dirty_work_preserved": true
+}

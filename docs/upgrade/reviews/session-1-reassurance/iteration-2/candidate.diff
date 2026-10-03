@@ -1,0 +1,310 @@
+Candidate: session-1-reassurance / iteration-2. Cumulative copy-only candidate against preserved pre-pass working tree. Synthetic live widgets, 390x844, real Inter, scales 1.0/1.6. Before Volt/Purple; after all six OLED palettes. Inherited Settings sync-title 72px Pro/77px free overflow and dialog control clipping at 1.6x remain unqualified. Storage dialogs opened through existing callbacks. Native touch, persistence, backup and reconnection unverified.
+diff --git a/lib/shared/widgets/async_error_state.dart b/lib/shared/widgets/async_error_state.dart
+--- a/lib/shared/widgets/async_error_state.dart
++++ b/lib/shared/widgets/async_error_state.dart
+@@ -21,17 +21,17 @@
+ /// media.
+ class AsyncErrorState extends StatelessWidget {
+   final String message;
+   final VoidCallback? onRetry;
+   final IconData icon;
+ 
+   const AsyncErrorState({
+     super.key,
+-    this.message = "Something went wrong. Your data is safe.",
++    this.message = "Something went wrong.",
+     this.onRetry,
+     this.icon = Icons.error_outline_rounded,
+   });
+ 
+   @override
+   Widget build(BuildContext context) {
+     final accent = context.accent;
+     return Center(
+diff --git a/lib/shared/widgets/app_error_screen.dart b/lib/shared/widgets/app_error_screen.dart
+--- a/lib/shared/widgets/app_error_screen.dart
++++ b/lib/shared/widgets/app_error_screen.dart
+@@ -69,17 +69,16 @@
+                   ).copyWith(
+                     fontSize: 17,
+                     fontWeight: FontWeight.w700,
+                     decoration: TextDecoration.none,
+                   ),
+                 ),
+                 const SizedBox(height: 8),
+                 Text(
+-                  'Your workout data is safe on this device.\n'
+                   'Restart Delt or head back home.',
+                   textAlign: TextAlign.center,
+                   style: AppText.body(
+                     color: AppColors.textSecondary,
+                   ).copyWith(
+                     fontSize: 13.5,
+                     height: 1.5,
+                     fontWeight: FontWeight.w400,
+diff --git a/lib/features/workout/presentation/screens/workout_detail_screen.dart b/lib/features/workout/presentation/screens/workout_detail_screen.dart
+--- a/lib/features/workout/presentation/screens/workout_detail_screen.dart
++++ b/lib/features/workout/presentation/screens/workout_detail_screen.dart
+@@ -92,18 +92,17 @@
+         backgroundColor: context.surface.bgBase,
+         appBar: AppBar(
+           backgroundColor: context.surface.bgBase,
+           scrolledUnderElevation: 0,
+           leading: BackButton(color: context.surface.textPrimary),
+         ),
+         body: AdaptiveContent(
+           child: AsyncErrorState(
+-            message:
+-                "Couldn't load this workout. Your data is safe on this device.",
++            message: "Couldn't load this workout.",
+             onRetry: () {
+               HapticFeedback.lightImpact();
+               ref.invalidate(workoutDetailProvider(sessionId));
+             },
+           ),
+         ),
+       );
+ 
+diff --git a/lib/features/routines/presentation/screens/routine_detail_screen.dart b/lib/features/routines/presentation/screens/routine_detail_screen.dart
+--- a/lib/features/routines/presentation/screens/routine_detail_screen.dart
++++ b/lib/features/routines/presentation/screens/routine_detail_screen.dart
+@@ -774,17 +774,17 @@
+                 height: 198,
+                 radius: AppRadius.card,
+               ),
+             ),
+             // A failed load must never render as a zeroed chart. that looks
+             // identical to "you did nothing this period" and lies about the
+             // user's data. Show an error state with a real retry instead.
+             error: (_, __) => AsyncErrorState(
+-              message: "Couldn't load your volume history. Your data is safe.",
++              message: "Couldn't load your volume history.",
+               onRetry: () => ref.invalidate(routineDailyVolumeProvider(
+                   (widget.routineId, _selectedTimeRange))),
+             ),
+             data: (_) => AnimatedSwitcher(
+               duration: const Duration(milliseconds: 300),
+               child: RoutineVolumeGraph(
+                 key: ValueKey('$_selectedTimeRange${visible.length}'),
+                 data: visible,
+diff --git a/lib/features/profile/presentation/screens/settings_screen.dart b/lib/features/profile/presentation/screens/settings_screen.dart
+--- a/lib/features/profile/presentation/screens/settings_screen.dart
++++ b/lib/features/profile/presentation/screens/settings_screen.dart
+@@ -333,20 +333,19 @@
+     final String syncSubtitle;
+     if (!isPremium) {
+       syncSubtitle = 'Upgrade to Pro to sync across devices';
+     } else if (_syncEnabled == false) {
+       syncSubtitle = 'Sync paused. Your data stays on this device.';
+     } else if (syncPhase == SyncPhase.syncing) {
+       syncSubtitle = 'Syncing…';
+     } else if (syncPhase == SyncPhase.offline) {
+-      syncSubtitle =
+-          "Offline. Your workouts are saved and will sync when you're back online";
++      syncSubtitle = 'Offline. Cloud sync is paused.';
+     } else if (syncPhase == SyncPhase.error) {
+-      syncSubtitle = "Couldn't sync. Will retry automatically";
++      syncSubtitle = "Couldn't sync. Check your connection.";
+     } else {
+       syncSubtitle = 'Backup across devices and protect against data loss';
+     }
+ 
+     return AnnotatedRegion<SystemUiOverlayStyle>(
+       value: surface.isLight
+           ? SystemUiOverlayStyle.dark
+           : SystemUiOverlayStyle.light,
+@@ -724,17 +723,17 @@
+                             context.push('/settings/help');
+                           },
+                         ),
+                         const AppActionDivider(),
+                         AppActionRow(
+                           icon: Icons.shield_rounded,
+                           title: 'Your data',
+                           subtitle: isPremium
+-                              ? 'Stored on-device, backed up to your account'
++                              ? 'Local storage and optional cloud sync'
+                               : 'Stored locally on this device',
+                           onTap: () => _showDataInfo(context, isPremium),
+                         ),
+                         const AppActionDivider(),
+                         AppActionRow(
+                           icon: Icons.privacy_tip_rounded,
+                           title: 'Privacy Policy',
+                           subtitle: 'Local-first. No tracking.',
+@@ -1095,26 +1094,24 @@
+     );
+   }
+ }
+ 
+ void _showDataInfo(BuildContext context, bool isPremium) {
+   HapticFeedback.lightImpact();
+   showAppConfirmDialog(
+     context: context,
+-    title: isPremium ? 'Local-first, cloud-backed' : 'Local-first privacy',
++    title: isPremium ? 'Local storage and cloud sync' : 'Local-first privacy',
+     message: isPremium
+-        ? 'Every workout is saved instantly to a private database '
+-            'on this device. Delt works fully offline. Workouts are '
+-            'automatically backed up to your account so your history survives '
+-            'a reinstall or a new phone. Only you can read it.'
+-        : 'Every workout is saved instantly to a private database '
+-            'on this device. Delt works fully offline. Upgrade to '
+-            'Delt Pro to automatically back up your history to the cloud '
+-            'and sync across devices.',
++        ? 'Completed workouts are stored in a private database on this device '
++            'after a successful save. Pro cloud sync can back up saved workouts '
++            'when enabled and connected. Check sync status before relying on a backup.'
++        : 'Completed workouts are stored in a private database on this device '
++            'after a successful save. Pro offers optional cloud backup and '
++            'sync across devices.',
+     confirmLabel: 'Got it',
+     cancelLabel: 'Close',
+   );
+ }
+ 
+ /// launchUrl THROWS a PlatformException when the platform has no handler for
+ /// the scheme - it does not merely return false. The original code inspected
+ /// only the bool, so on a device with no browser the Privacy Policy and Terms
+diff --git a/test/routine_volume_error_state_test.dart b/test/routine_volume_error_state_test.dart
+--- a/test/routine_volume_error_state_test.dart
++++ b/test/routine_volume_error_state_test.dart
+@@ -91,10 +91,11 @@
+ 
+     await tester.pumpAndSettle();
+ 
+     // A failed load must NEVER look like "you did nothing this period":
+     // no zeroed chart, no graph at all.
+     expect(find.byType(RoutineVolumeGraph), findsNothing);
+     // The tracked retry assistant is reachable.
+     expect(find.byType(AsyncErrorState), findsOneWidget);
++    expect(find.textContaining('Your data is safe'), findsNothing);
+   });
+ }
+diff --git a/test/upgrade/session_1_fixtures.dart b/test/upgrade/session_1_fixtures.dart
+--- a/test/upgrade/session_1_fixtures.dart
++++ b/test/upgrade/session_1_fixtures.dart
+@@ -203,19 +203,17 @@
+                             padding: const EdgeInsets.all(12),
+                             child: Text('PREVIOUS · 24 SEP · Local processing',
+                                 style: AppText.caption(
+                                     color: context.surface.textTertiary))),
+                       const TextField(
+                           decoration:
+                               InputDecoration(hintText: 'Workout name')),
+                       const SizedBox(height: 12),
+-                      const AsyncErrorState(
+-                          message:
+-                              'Could not load history. Your data is safe on this device.')
++                      const AsyncErrorState(message: 'Could not load history.')
+                     ]))));
+   }
+   return Builder(
+       builder: (context) => Scaffold(
+           body: Center(
+               child: TextButton(
+                   onPressed: () {
+                     showFinishSummarySheet(
+diff --git a/test/upgrade/error_reassurance_test.dart b/test/upgrade/error_reassurance_test.dart
+--- /dev/null
++++ b/test/upgrade/error_reassurance_test.dart
+@@ -0,0 +1,72 @@
++import 'package:flutter/material.dart';
++import 'package:flutter_test/flutter_test.dart';
++import 'package:gymlog/core/theme/theme_palette.dart';
++import 'package:shared_preferences/shared_preferences.dart';
++import 'error_reassurance_fixtures.dart';
++
++void main() {
++  setUp(() => SharedPreferences.setMockInitialValues({}));
++  for (final name in ['async-error', 'app-error', 'detail-error']) {
++    testWidgets('$name does not guarantee storage integrity on an error',
++        (tester) async {
++      await tester
++          .pumpWidget(errorFixtureApp(name, ThemePalette.higgsfield, 1));
++      await tester.pumpAndSettle();
++      expect(find.textContaining(RegExp('data is safe', caseSensitive: false)),
++          findsNothing);
++      expect(find.textContaining(RegExp('wrong|load')), findsWidgets);
++      if (name != 'app-error') {
++        expect(find.text('Try again'), findsOneWidget);
++      } else {
++        expect(find.text('Restart Delt'), findsOneWidget);
++        expect(find.text('Go Home'), findsOneWidget);
++      }
++    });
++  }
++  testWidgets(
++      'offline sync status does not claim a completed save or guaranteed backup',
++      (tester) async {
++    await tester
++        .pumpWidget(errorFixtureApp('offline', ThemePalette.higgsfield, 1));
++    await tester.pumpAndSettle();
++    await prepareErrorFixture(tester, 'offline');
++    expect(find.textContaining('Your workouts are saved'), findsNothing);
++    expect(find.textContaining('will sync when'), findsNothing);
++    expect(find.text('Offline. Cloud sync is paused.'), findsOneWidget);
++  });
++  for (final name in ['storage-free', 'storage-pro']) {
++    testWidgets(
++        '$name describes successful saves without instant/guaranteed backup claims',
++        (tester) async {
++      await tester
++          .pumpWidget(errorFixtureApp(name, ThemePalette.higgsfield, 1));
++      await tester.pumpAndSettle();
++      await prepareErrorFixture(tester, name);
++      expect(find.textContaining('Every workout is saved instantly'),
++          findsNothing);
++      expect(find.textContaining('so your history survives'), findsNothing);
++      expect(find.textContaining('after a successful save'), findsOneWidget);
++      await tester.pumpWidget(const SizedBox.shrink());
++      await tester.pumpAndSettle();
++    });
++  }
++  testWidgets('sync error does not promise an automatic retry', (tester) async {
++    await tester
++        .pumpWidget(errorFixtureApp('sync-error', ThemePalette.higgsfield, 1));
++    await tester.pumpAndSettle();
++    await prepareErrorFixture(tester, 'sync-error');
++    expect(find.textContaining('Will retry automatically'), findsNothing);
++    expect(find.text("Couldn't sync. Check your connection."), findsOneWidget);
++  });
++  testWidgets('Pro storage heading does not assert an existing cloud backup',
++      (tester) async {
++    await tester
++        .pumpWidget(errorFixtureApp('storage-pro', ThemePalette.higgsfield, 1));
++    await tester.pumpAndSettle();
++    await prepareErrorFixture(tester, 'storage-pro');
++    expect(find.text('Local-first, cloud-backed'), findsNothing);
++    expect(find.text('Local storage and cloud sync'), findsOneWidget);
++    await tester.pumpWidget(const SizedBox.shrink());
++    await tester.pumpAndSettle();
++  });
++}
+diff --git a/test/upgrade/error_reassurance_fixtures.dart b/test/upgrade/error_reassurance_fixtures.dart
+diff --git a/test/upgrade/error_reassurance_render_test.dart b/test/upgrade/error_reassurance_render_test.dart
+--- a/test/upgrade/error_reassurance_render_test.dart
++++ b/test/upgrade/error_reassurance_render_test.dart
+@@ -67,20 +67,21 @@
+                   await image.toByteData(format: ui.ImageByteFormat.png);
+               final file = File(
+                   'docs/upgrade/renders/session-1-reassurance/$phase/$id.png');
+               await file.parent.create(recursive: true);
+               await file.writeAsBytes(bytes!.buffer.asUint8List());
+               image.dispose();
+             });
+           }
+-          if (phase == 'after')
++          if (phase == 'after') {
+             await expectLater(
+                 find.byKey(key),
+                 matchesGoldenFile(
+                     '../golden/goldens/session-1-reassurance/$id.png'));
++          }
+           await tester.pumpWidget(const SizedBox.shrink());
+           await tester.pumpAndSettle();
+         });
+       }
+     }
+   }
+ }

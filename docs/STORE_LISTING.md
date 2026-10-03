@@ -1,4 +1,4 @@
-# GymLog Store Listing & Metadata Specification
+# Delt Store Listing & Metadata Specification
 
 > **Status:** Active / Production Authoritative
 > **Owner:** Core Engineering
@@ -12,9 +12,9 @@
 
 | Field | Google Play Store | Apple App Store |
 |---|---|---|
-| **App Name** | GymLog — Workout Tracker | GymLog: Workout Tracker |
+| **App Name** | Delt — Workout Tracker | Delt: Workout Tracker |
 | **Short Description** | OLED-first workout logger, local-first data, zero bloat, analytics & PRs. | High-density workout logger, local-first privacy, zero bloat, analytics & PRs. |
-| **Support Email** | `support@gymlog.app` | `support@gymlog.app` |
+| **Support Contact** | `https://t.me/gym_log` / `https://t.me/+E66f3thMUOE2NTc1` | `https://t.me/gym_log` / `https://t.me/+E66f3thMUOE2NTc1` |
 | **Privacy Policy URL** | `https://atharvoid.github.io/Gym-Log/legal/privacy-policy.html` | `https://atharvoid.github.io/Gym-Log/legal/privacy-policy.html` |
 | **Terms of Service URL** | `https://atharvoid.github.io/Gym-Log/legal/terms-of-service.html` | `https://atharvoid.github.io/Gym-Log/legal/terms-of-service.html` |
 | **Account Deletion URL** | `https://atharvoid.github.io/Gym-Log/legal/delete-account.html` | `https://atharvoid.github.io/Gym-Log/legal/delete-account.html` |
@@ -25,7 +25,7 @@
 
 ## Full App Description
 
-GymLog is a fast, OLED-first workout logger designed for gym enthusiasts who want clean, high-density tracking without ads, social clutter, or unnecessary bloat.
+Delt is a fast, OLED-first workout logger designed for gym enthusiasts who want clean, high-density tracking without ads, social clutter, or unnecessary bloat.
 
 ### Key Features
 
@@ -41,4 +41,4 @@ GymLog is a fast, OLED-first workout logger designed for gym enthusiasts who wan
 ## Entitlements & Pricing
 
 - **Free Tier**: Unlimited workout logging, exercise catalog, routine templates, and local backups.
-- **GymLog Pro**: Optional subscription for extended historical analytics (1Y and All-Time chart ranges) and cross-device cloud sync via RevenueCat (`premium` entitlement ID).
+- **Delt Pro**: Optional subscription for extended historical analytics (1Y and All-Time chart ranges) and cross-device cloud sync via RevenueCat (`premium` entitlement ID).

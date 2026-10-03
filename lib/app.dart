@@ -199,7 +199,7 @@ class _GymLogAppState extends ConsumerState<GymLogApp> {
           // OS "increase contrast" boost, on exactly the screen a user sees
           // when their data is already at risk.
           return MaterialApp(
-            title: 'GymLog',
+            title: 'Delt',
             theme: appTheme,
             highContrastTheme: appHighContrastTheme,
             highContrastDarkTheme: appHighContrastTheme,
@@ -231,7 +231,7 @@ class _GymLogAppState extends ConsumerState<GymLogApp> {
     final tokens = palette.tokens;
 
     return MaterialApp.router(
-      title: 'GymLog',
+      title: 'Delt',
       theme: buildAppTheme(tokens, palette: palette),
       highContrastTheme: buildHighContrastTheme(tokens, palette: palette),
       highContrastDarkTheme: buildHighContrastTheme(tokens, palette: palette),

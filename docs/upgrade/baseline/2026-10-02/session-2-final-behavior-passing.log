@@ -1,0 +1,64 @@
+00:00 +0: loading C:/Users/Atharva Patil/AppData/Local/Temp/gymlog-session-2-isolated-_7ofw15r/test/upgrade/session_2_launchpad_test.dart
+00:00 +0: C:/Users/Atharva Patil/AppData/Local/Temp/gymlog-session-2-isolated-_7ofw15r/test/upgrade/session_2_launchpad_test.dart: (setUpAll)
+00:00 +0: C:/Users/Atharva Patil/AppData/Local/Temp/gymlog-session-2-isolated-_7ofw15r/test/upgrade/session_2_launchpad_test.dart: home first-session logging has an explicit start label
+00:01 +1: C:/Users/Atharva Patil/AppData/Local/Temp/gymlog-session-2-isolated-_7ofw15r/test/upgrade/session_2_launchpad_test.dart: home first-session logging has an explicit start label
+00:01 +2: C:/Users/Atharva Patil/AppData/Local/Temp/gymlog-session-2-isolated-_7ofw15r/test/upgrade/session_2_launchpad_test.dart: home first-session logging has an explicit start label
+00:01 +3: C:/Users/Atharva Patil/AppData/Local/Temp/gymlog-session-2-isolated-_7ofw15r/test/upgrade/session_2_launchpad_test.dart: home first-session logging has an explicit start label
+00:02 +4: C:/Users/Atharva Patil/AppData/Local/Temp/gymlog-session-2-isolated-_7ofw15r/test/upgrade/session_2_launchpad_test.dart: home first-session logging has an explicit start label
+00:02 +5: C:/Users/Atharva Patil/AppData/Local/Temp/gymlog-session-2-isolated-_7ofw15r/test/upgrade/session_2_launchpad_test.dart: home first-session logging has an explicit start label
+00:02 +6: C:/Users/Atharva Patil/AppData/Local/Temp/gymlog-session-2-isolated-_7ofw15r/test/upgrade/session_2_launchpad_test.dart: home first-session logging has an explicit start label
+00:02 +7: C:/Users/Atharva Patil/AppData/Local/Temp/gymlog-session-2-isolated-_7ofw15r/test/upgrade/session_2_launchpad_test.dart: home first-session logging has an explicit start label
+00:02 +8: C:/Users/Atharva Patil/AppData/Local/Temp/gymlog-session-2-isolated-_7ofw15r/test/upgrade/session_2_launchpad_test.dart: home first-session logging has an explicit start label
+00:02 +9: C:/Users/Atharva Patil/AppData/Local/Temp/gymlog-session-2-isolated-_7ofw15r/test/upgrade/session_2_launchpad_test.dart: home prioritizes the actual active workout in fallback states
+00:02 +10: C:/Users/Atharva Patil/AppData/Local/Temp/gymlog-session-2-isolated-_7ofw15r/test/upgrade/session_2_launchpad_test.dart: home prioritizes the actual active workout in fallback states
+00:02 +11: C:/Users/Atharva Patil/AppData/Local/Temp/gymlog-session-2-isolated-_7ofw15r/test/upgrade/session_2_launchpad_test.dart: home prioritizes the actual active workout in fallback states
+00:02 +12: C:/Users/Atharva Patil/AppData/Local/Temp/gymlog-session-2-isolated-_7ofw15r/test/upgrade/session_2_launchpad_test.dart: home prioritizes the actual active workout in fallback states
+00:02 +13: C:/Users/Atharva Patil/AppData/Local/Temp/gymlog-session-2-isolated-_7ofw15r/test/upgrade/session_2_launchpad_test.dart: home prioritizes the actual active workout in fallback states
+00:02 +14: C:/Users/Atharva Patil/AppData/Local/Temp/gymlog-session-2-isolated-_7ofw15r/test/upgrade/session_2_launchpad_test.dart: home prioritizes the actual active workout in fallback states
+00:02 +15: C:/Users/Atharva Patil/AppData/Local/Temp/gymlog-session-2-isolated-_7ofw15r/test/upgrade/session_2_launchpad_test.dart: home prioritizes the actual active workout in fallback states
+00:03 +16: C:/Users/Atharva Patil/AppData/Local/Temp/gymlog-session-2-isolated-_7ofw15r/test/upgrade/session_2_launchpad_test.dart: home labels a one-set plan in the singular
+00:03 +17: C:/Users/Atharva Patil/AppData/Local/Temp/gymlog-session-2-isolated-_7ofw15r/test/upgrade/session_2_launchpad_test.dart: home guards an emptied chosen plan
+00:03 +18: C:/Users/Atharva Patil/AppData/Local/Temp/gymlog-session-2-isolated-_7ofw15r/test/radius_token_test.dart: DeleteAccountScreen danger chip and _SectionCard use correct AppRadius tokens
+00:04 +19: C:/Users/Atharva Patil/AppData/Local/Temp/gymlog-session-2-isolated-_7ofw15r/test/radius_token_test.dart: DeleteAccountScreen danger chip and _SectionCard use correct AppRadius tokens
+00:05 +20: C:/Users/Atharva Patil/AppData/Local/Temp/gymlog-session-2-isolated-_7ofw15r/test/radius_token_test.dart: DeleteAccountScreen danger chip and _SectionCard use correct AppRadius tokens
+00:05 +21: C:/Users/Atharva Patil/AppData/Local/Temp/gymlog-session-2-isolated-_7ofw15r/test/upgrade/session_2_launchpad_test.dart: home keeps Resume primary when choice is missing or damaged
+00:07 +22: C:/Users/Atharva Patil/AppData/Local/Temp/gymlog-session-2-isolated-_7ofw15r/test/upgrade/session_2_launchpad_test.dart: home keeps Resume primary when choice is missing or damaged
+00:08 +23: C:/Users/Atharva Patil/AppData/Local/Temp/gymlog-session-2-isolated-_7ofw15r/test/radius_token_test.dart: ExerciseSelectionScreen filter chip uses AppRadius.buttonSecondaryAll
+00:08 +24: C:/Users/Atharva Patil/AppData/Local/Temp/gymlog-session-2-isolated-_7ofw15r/test/screens_theme_test.dart: Screens Theme Verification Tests HomeScreen renders under multiple accents
+00:09 +25: C:/Users/Atharva Patil/AppData/Local/Temp/gymlog-session-2-isolated-_7ofw15r/test/screens_theme_test.dart: Screens Theme Verification Tests HomeScreen renders under multiple accents
+00:09 +26: C:/Users/Atharva Patil/AppData/Local/Temp/gymlog-session-2-isolated-_7ofw15r/test/screens_theme_test.dart: Screens Theme Verification Tests HomeScreen renders under multiple accents
+00:09 +27: C:/Users/Atharva Patil/AppData/Local/Temp/gymlog-session-2-isolated-_7ofw15r/test/screens_theme_test.dart: Screens Theme Verification Tests HomeScreen renders under multiple accents
+00:09 +28: C:/Users/Atharva Patil/AppData/Local/Temp/gymlog-session-2-isolated-_7ofw15r/test/screens_theme_test.dart: Screens Theme Verification Tests HomeScreen renders under multiple accents
+00:09 +29: C:/Users/Atharva Patil/AppData/Local/Temp/gymlog-session-2-isolated-_7ofw15r/test/screens_theme_test.dart: Screens Theme Verification Tests HomeScreen renders under multiple accents
+00:09 +30: C:/Users/Atharva Patil/AppData/Local/Temp/gymlog-session-2-isolated-_7ofw15r/test/screens_theme_test.dart: Screens Theme Verification Tests HomeScreen renders under multiple accents
+00:11 +31: C:/Users/Atharva Patil/AppData/Local/Temp/gymlog-session-2-isolated-_7ofw15r/test/screens_theme_test.dart: Screens Theme Verification Tests HomeScreen renders under multiple accents
+00:11 +32: C:/Users/Atharva Patil/AppData/Local/Temp/gymlog-session-2-isolated-_7ofw15r/test/screens_theme_test.dart: Screens Theme Verification Tests HomeScreen renders under multiple accents
+00:11 +33: C:/Users/Atharva Patil/AppData/Local/Temp/gymlog-session-2-isolated-_7ofw15r/test/screens_theme_test.dart: Screens Theme Verification Tests HomeScreen renders under multiple accents
+00:11 +34: C:/Users/Atharva Patil/AppData/Local/Temp/gymlog-session-2-isolated-_7ofw15r/test/upgrade/session_2_launchpad_test.dart: library choice read failure is distinct from no choice
+00:12 +35: C:/Users/Atharva Patil/AppData/Local/Temp/gymlog-session-2-isolated-_7ofw15r/test/screens_theme_test.dart: Screens Theme Verification Tests WorkoutDetailScreen renders under multiple accents
+00:12 +36: C:/Users/Atharva Patil/AppData/Local/Temp/gymlog-session-2-isolated-_7ofw15r/test/upgrade/session_2_launchpad_test.dart: library repairs a damaged saved choice through explicit selection
+00:12 +37: C:/Users/Atharva Patil/AppData/Local/Temp/gymlog-session-2-isolated-_7ofw15r/test/upgrade/session_2_launchpad_test.dart: library repairs a damaged saved choice through explicit selection
+00:12 +38: C:/Users/Atharva Patil/AppData/Local/Temp/gymlog-session-2-isolated-_7ofw15r/test/screens_theme_test.dart: Screens Theme Verification Tests ExerciseDetailScreen renders under multiple accents
+00:13 +39: C:/Users/Atharva Patil/AppData/Local/Temp/gymlog-session-2-isolated-_7ofw15r/test/upgrade/session_2_launchpad_test.dart: library keeps Resume primary when choice is missing or damaged
+00:13 +40: C:/Users/Atharva Patil/AppData/Local/Temp/gymlog-session-2-isolated-_7ofw15r/test/screens_theme_test.dart: Screens Theme Verification Tests DeleteAccountScreen renders under multiple accents
+00:14 +41: C:/Users/Atharva Patil/AppData/Local/Temp/gymlog-session-2-isolated-_7ofw15r/test/screens_theme_test.dart: Screens Theme Verification Tests DeleteAccountScreen renders under multiple accents
+00:14 +42: C:/Users/Atharva Patil/AppData/Local/Temp/gymlog-session-2-isolated-_7ofw15r/test/screens_theme_test.dart: Screens Theme Verification Tests DeleteAccountScreen renders under multiple accents
+00:14 +43: C:/Users/Atharva Patil/AppData/Local/Temp/gymlog-session-2-isolated-_7ofw15r/test/screens_theme_test.dart: Screens Theme Verification Tests DeleteAccountScreen renders under multiple accents
+00:14 +44: C:/Users/Atharva Patil/AppData/Local/Temp/gymlog-session-2-isolated-_7ofw15r/test/upgrade/session_2_launchpad_test.dart: library new user has a designed first-session entry
+00:15 +45: C:/Users/Atharva Patil/AppData/Local/Temp/gymlog-session-2-isolated-_7ofw15r/test/screens_theme_test.dart: Screens Theme Verification Tests ImportScreen renders under multiple accents
+00:15 +46: C:/Users/Atharva Patil/AppData/Local/Temp/gymlog-session-2-isolated-_7ofw15r/test/screens_theme_test.dart: Screens Theme Verification Tests ImportScreen renders under multiple accents
+00:15 +47: C:/Users/Atharva Patil/AppData/Local/Temp/gymlog-session-2-isolated-_7ofw15r/test/upgrade/session_2_launchpad_test.dart: Deleted Library choice exposes the logging action it describes
+00:15 +48: C:/Users/Atharva Patil/AppData/Local/Temp/gymlog-session-2-isolated-_7ofw15r/test/screens_theme_test.dart: Screens Theme Verification Tests ActiveWorkoutScreen renders under multiple accents
+00:15 +49: C:/Users/Atharva Patil/AppData/Local/Temp/gymlog-session-2-isolated-_7ofw15r/test/screens_theme_test.dart: Screens Theme Verification Tests ActiveWorkoutScreen renders under multiple accents
+00:16 +50: C:/Users/Atharva Patil/AppData/Local/Temp/gymlog-session-2-isolated-_7ofw15r/test/upgrade/session_2_launchpad_test.dart: Home explains the weekly counted unit visually and in speech
+00:16 +51: C:/Users/Atharva Patil/AppData/Local/Temp/gymlog-session-2-isolated-_7ofw15r/test/upgrade/session_2_launchpad_test.dart: Empty Library prioritizes browsing and avoids duplicate errors
+00:16 +52: C:/Users/Atharva Patil/AppData/Local/Temp/gymlog-session-2-isolated-_7ofw15r/test/upgrade/session_2_launchpad_test.dart: Change exposes the selected choice to assistive technology
+00:16 +53: C:/Users/Atharva Patil/AppData/Local/Temp/gymlog-session-2-isolated-_7ofw15r/test/upgrade/session_2_launchpad_test.dart: Home preserves freestyle during library read failure and deleted-only state
+00:17 +54: C:/Users/Atharva Patil/AppData/Local/Temp/gymlog-session-2-isolated-_7ofw15r/test/upgrade/session_2_launchpad_test.dart: Change uses bounded searchable choices and preserves choice on read failure
+00:18 +55: C:/Users/Atharva Patil/AppData/Local/Temp/gymlog-session-2-isolated-_7ofw15r/test/upgrade/session_2_launchpad_test.dart: Previous-set read failure does not invent no history or block Start
+00:18 +56: C:/Users/Atharva Patil/AppData/Local/Temp/gymlog-session-2-isolated-_7ofw15r/test/upgrade/session_2_launchpad_test.dart: Home keeps freestyle and History secondary and accessible
+00:18 +57: C:/Users/Atharva Patil/AppData/Local/Temp/gymlog-session-2-isolated-_7ofw15r/test/upgrade/session_2_launchpad_test.dart: Home has no guilt language on an inactive return
+00:18 +58: C:/Users/Atharva Patil/AppData/Local/Temp/gymlog-session-2-isolated-_7ofw15r/test/upgrade/session_2_launchpad_test.dart: Change selection updates both launch surfaces and persists
+00:19 +59: C:/Users/Atharva Patil/AppData/Local/Temp/gymlog-session-2-isolated-_7ofw15r/test/upgrade/session_2_launchpad_test.dart: Library groups the program and quiets creation
+00:19 +60: C:/Users/Atharva Patil/AppData/Local/Temp/gymlog-session-2-isolated-_7ofw15r/test/upgrade/session_2_launchpad_test.dart: (tearDownAll)
+00:19 +60: All tests passed!

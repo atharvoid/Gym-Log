@@ -50,7 +50,7 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
     switch (mType) {
       case MeasurementType.weightAndReps:
         return [
-          'One Rep Max',
+          'Estimated 1RM',
           'Heaviest Weight',
           'Session Volume',
           'Total Reps'
@@ -85,7 +85,7 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
       case MeasurementType.weightAndReps:
         switch (index) {
           case 0:
-            return e.estimated1RM ?? e.weight;
+            return e.estimated1RM;
           case 1:
             return e.weight;
           case 2:
@@ -93,7 +93,7 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
           case 3:
             return e.reps.toDouble();
           default:
-            return e.estimated1RM ?? e.weight;
+            return e.estimated1RM;
         }
       case MeasurementType.repsOnly:
         return e.reps.toDouble();
@@ -435,6 +435,10 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
     final activeIndex =
         _activeToggleIndex < toggles.length ? _activeToggleIndex : 0;
     final activeLabel = toggles.isEmpty ? 'Progress' : toggles[activeIndex];
+    final missingEstimate = mType == MeasurementType.weightAndReps &&
+        activeIndex == 0 &&
+        history.isNotEmpty &&
+        history.every((entry) => entry.estimated1RM == null);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -481,8 +485,11 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
             // from the toggle label so the repsOnly / duration / distance sets
             // are covered without a second mapping to keep in sync.
             metricLabel: '$activeLabel chart',
-            emptyTitle: 'No data yet',
-            emptySubtitle: 'Log this exercise to see your progress',
+            emptyTitle:
+                missingEstimate ? 'No estimate available' : 'No data yet',
+            emptySubtitle: missingEstimate
+                ? 'View logged history in Heaviest Weight or Total Reps'
+                : 'Log this exercise to see your progress',
           ),
         ),
       ],
@@ -605,7 +612,7 @@ class _ExerciseDetailScreenState extends ConsumerState<ExerciseDetailScreen> {
         rows.addAll([
           _prRow('Heaviest Weight', _weightPr(prs.maxWeight, unit), surface),
           _prDivider(surface),
-          _prRow('Best 1RM', _weightPr(prs.max1RM, unit), surface),
+          _prRow('Estimated 1RM', _weightPr(prs.max1RM, unit), surface),
           _prDivider(surface),
           _prRow('Max Session Volume', _weightPr(prs.maxVolume, unit), surface),
           _prDivider(surface),

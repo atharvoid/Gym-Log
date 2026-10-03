@@ -1,0 +1,31 @@
+00:00 +0: loading C:/Users/Atharva Patil/Documents/projects/gymlog/test/upgrade/session_1_correctness_test.dart
+00:00 +0: higgsfield: composed tertiary text and chart ticks meet 4.5:1
+00:00 +1: higgsfield: solid accent label meets 4.5:1
+00:00 +2: neonPurple: composed tertiary text and chart ticks meet 4.5:1
+00:00 +3: neonPurple: solid accent label meets 4.5:1
+00:00 +4: white: composed tertiary text and chart ticks meet 4.5:1
+00:00 +5: white: solid accent label meets 4.5:1
+00:00 +6: neonCyan: composed tertiary text and chart ticks meet 4.5:1
+00:00 +7: neonCyan: solid accent label meets 4.5:1
+00:00 +8: neonMagenta: composed tertiary text and chart ticks meet 4.5:1
+00:00 +9: neonMagenta: solid accent label meets 4.5:1
+00:00 +10: blazeOrange: composed tertiary text and chart ticks meet 4.5:1
+00:00 +11: blazeOrange: solid accent label meets 4.5:1
+00:00 +12: summary uses the existing display conversion for pounds
+00:00 +13: summary preserves logged hold seconds
+00:00 +14: short distance summary preserves metres
+00:00 +15: an estimated record value is not its logged weight
+00:00 +16: estimated share hero never implies the estimate was lifted for seven reps
+00:00 +17: a timed PR shares seconds once, without a rep multiplier
+00:00 +18: distance and pace PR shares preserve their recorded dimensions
+00:00 +19: pace exports preserve actual DAO seconds-per-metre precision
+00:00 +20: pace celebration converts current and previous spoken pace
+00:00 +21: distance metres times seconds never become weighted session volume
+00:00 +22: workout detail volume converts once to pounds
+00:00 +23: PR exports describe recorded results without certification claims
+00:01 +24: missing 1RM estimate never borrows the logged weight
+00:01 +25: editing distance workout does not persist metres times seconds as kg volume
+00:01 +26: PR visibly labels the estimate and does not invent zero-rep logged set
+00:01 +27: finish review does not announce completion before save
+00:01 +28: volume and duration changes use neutral color with their direction intact
+00:01 +29: All tests passed!
