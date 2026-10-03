@@ -24,7 +24,7 @@ Two workflows live in `.github/workflows/`:
 
 1. **Analyze & Test** (`windows-2025`) — `flutter pub get` → `dart format` check → `flutter analyze --fatal-infos --fatal-warnings` (zero tolerance) → `dart run custom_lint` (riverpod_lint) → `flutter test --machine` (uploads `test-results.json`). Windows is the recording host for the unmasked real-font goldens. SQLite uses the existing package's Windows loader; the Linux-only installation step remains conditional.
 2. **Build Android (release)** (`ubuntu`) — `flutter build apk --release --obfuscate --split-debug-info=…` (R8 shrink is configured in `build.gradle.kts`). Uploads the obfuscation symbols artifact.
-3. **Build iOS (release, no codesign)** (`macos`) — `flutter build ios --release --no-codesign`.
+3. **Build iOS (release, no codesign)** (`macos`) — configure CocoaPods resolution, then `flutter build ios --release --no-codesign`. The existing `sentry_flutter` podspec pins its matching native SDK; its SwiftPM range can otherwise select an incompatible newer API. Package versions and app code are unchanged.
 4. **CI Gate** — passes only if all three above pass. Mark **this** as the required status check (simplest), or require all three individually.
 
 > **Pinned toolchain.** `ci.yml` uses Flutter **3.44.0**, matching local verification,
@@ -35,7 +35,7 @@ Two workflows live in `.github/workflows/`:
 
 | Job | Cold | Warm (cache hit) | Runner |
 |---|---|---|---|
-| Analyze & Test | ~4–7 min | ~2–4 min | Windows 2025 (golden recording host) |
+| Analyze & Test | Not remeasured | Not remeasured | Windows 2025 (golden recording host) |
 | Build Android | ~6–10 min | ~4–6 min | ubuntu (2-core, free) |
 | Build iOS | ~10–18 min | ~7–12 min | **macOS (10× minute multiplier)** |
 | Dependency Audit | ~2–3 min | — | ubuntu |

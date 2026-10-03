@@ -120,6 +120,10 @@ jobs:
           channel: ${{ env.FLUTTER_CHANNEL }}
           flutter-version: ${{ env.FLUTTER_VERSION }}
           cache: true
+      # sentry_flutter 8.14.2 pins its matching native SDK in its podspec;
+      # its SwiftPM range can resolve an incompatible newer Sentry API.
+      - name: Use CocoaPods dependency resolution
+        run: flutter config --no-enable-swift-package-manager
       - run: flutter pub get
       # Generic device target, no signing — proves Dart + native (Pod) deps
       # compile. Code signing for store submission remains a manual step.
