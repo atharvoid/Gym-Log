@@ -210,11 +210,11 @@ class _DeleteAccountScreenState extends ConsumerState<DeleteAccountScreen> {
                         contentPadding: const EdgeInsets.symmetric(
                             horizontal: 16, vertical: 14),
                         enabledBorder: const OutlineInputBorder(
-                          borderRadius: BorderRadius.zero,
+                          borderRadius: AppRadius.inputAll,
                           borderSide: BorderSide.none,
                         ),
                         focusedBorder: const OutlineInputBorder(
-                          borderRadius: BorderRadius.zero,
+                          borderRadius: AppRadius.inputAll,
                           borderSide:
                               BorderSide(color: AppColors.error, width: 1.5),
                         ),

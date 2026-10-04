@@ -9,9 +9,9 @@ Targets are proposed acceptance goals of **8/10 per section**, not predicted res
 | 1. Visual identity and system | 6.5 | 8 | Revision needed (scope partial) | 4 | Establish distinct focal/supporting/reference composition; preserve accent tokens and improve meaningful text contrast. Session 1: shared contrast/Purple tokens; full section acceptance pending. |
 | 2. Sign-in / first impression | 6.5 | 8 | Not started (tokens checked) | 4 | Demonstrate a concrete product benefit while retaining a clear sign-in action. Session 1: shared contrast/Purple tokens; full section acceptance pending. |
 | 3. Onboarding / time to value | 5 | 8 | Not started (tokens checked) | 4 | Reduce required setup and end with a useful training action. Session 1: shared contrast/Purple tokens; full section acceptance pending. |
-| 4. Home / daily training intent | 8.0 | 8 | Critic passed | 14 | Correction critic 3: Pass, 8/8/8/8/8. Final local verification and configured APK pass; pushed CI and device acceptance pending. Prior scores retained below. |
+| 4. Home / daily training intent | 8.0 | 8 | Critic passed | 14 | Correction critic 3: Pass, 8/8/8/8/8. Final local verification and configured APK pass; pushed CI passes; device acceptance pending. Prior scores retained below. |
 | 5. Workout history | 7 | 8 | Revision needed (scope partial) | 4 | Improve browsing density and specific result recognition without losing useful previews. Session 1: shared contrast/Purple tokens; full section acceptance pending. |
-| 6. Routine library | 7.8 | 8 | Critic passed | 14 | Correction critic 3: Pass, 8/8/8/7/8. Target 8 remains unmet because of large-text density costs. Final local verification and configured APK pass; pushed CI and device acceptance pending. |
+| 6. Routine library | 7.8 | 8 | Critic passed | 14 | Correction critic 3: Pass, 8/8/8/7/8. Target 8 remains unmet because of large-text density costs. Final local verification and configured APK pass; pushed CI passes; device acceptance pending. |
 | 7. Routine detail | 6.5 | 8 | Not started (tokens checked) | 4 | Put the exercise plan before analysis; clarify volume and muscle-share labels. Session 1: shared contrast/Purple tokens; full section acceptance pending. |
 | 8. Routine authoring | 6.5 | 8 | Not started (tokens checked) | 4 | Show whole-plan feedback; qualify populated plans, reordering, and import entry. Session 1: shared contrast/Purple tokens; full section acceptance pending. |
 | 9. Explore / program discovery | 6.5 | 8 | Not started (tokens checked) | 4 | Reduce header density and explain program fit using stated preferences. Session 1: shared contrast/Purple tokens; full section acceptance pending. |
@@ -1569,3 +1569,121 @@ comfortable during a workout on the intended phone? Haptics, timer feel and
 one-handed use: **unverified, needs device**. Native keyboard and screen-reader
 use: **unverified, needs device**. The active-workout redesign remains withdrawn;
 the protected stash and concurrent main-checkout app changes remain excluded.
+
+## Home/Routines correction — exact candidate CI passed
+
+[CI run 37159029277](https://github.com/atharvoid/Gym-Log/actions/runs/37159029277)
+completed successfully at 2026-10-03 22:55:35 UTC (4 October, local time), for
+4b3d544c4cd74b30b260c75e1e6d7789abc35b7e. Analyze & Test, Android release,
+iOS release/no-codesign and the aggregate CI Gate all passed.
+[Structured result](baseline/2026-10-04/correction-ci-result.json),
+[Android log](baseline/2026-10-04/correction-ci-android.log),
+[iOS log](baseline/2026-10-04/correction-ci-ios.log).
+[Draft PR #44](https://github.com/atharvoid/Gym-Log/pull/44) remains unmerged.
+
+The source implementation and automated validation are complete. Device
+acceptance is open; Library's proposed 8/10 target is not reached by its 7.8
+independent score. Both rows remain Critic passed. This post-CI evidence is
+recorded locally after the candidate commit, so the verified source SHA remains
+unchanged. Haptics, timer feel and one-handed use: **unverified, needs device**.
+Native keyboard and screen-reader use: **unverified, needs device**.
+
+## Typing-field consistency — owner-requested audit (4 October 2026)
+
+Owner reports hard-square search/typing boxes and asks to check every typing
+surface. The source audit finds 16 TextField declarations across 13 files in
+both the committed 4b3d544c candidate and concurrent main checkout: seven square
+boxed fields, seven rounded fields, two unboxed numeric templates. Declaration
+shapes match between those source states. DESIGN.md and AppRadius.input still
+explicitly specify zero-radius inputs; local 10/12/14px overrides explain the
+mixed result. This is a source-design mismatch with the owner's preference,
+not a renderer defect.
+
+[Complete inventory, findings and proposed correction](INPUT_CONSISTENCY_AUDIT.md).
+Three refinements considered: shared 10px input radius (recommended, existing
+form/card language), shared 14px button radius (rejected, broader form reshaping),
+search-only rounding (rejected, leaves other typing boxes inconsistent).
+[One real-component before/proposed direction with keyboard](renders/input-consistency/chooser-higgsfield-1.0x-comparison.png),
+[1.6x](renders/input-consistency/chooser-higgsfield-1.6x-comparison.png),
+[2x](renders/input-consistency/chooser-higgsfield-2.0x-comparison.png).
+
+The review-only theme override passes 16 bounded captures: chooser at all three
+scales and AI paste at 1x, in two palettes, before/proposed. The expanded sweep
+also catches the existing AI paste header row overflow at 1.6x/2x; eight red
+checks (before and radius-only proposal) remain recorded. Its label needs wrapping
+beside Paste. This is not claimed fixed by the corner preview. Analysis of the
+review fixture could not be confirmed because the local Analysis Server failed
+during Windows Dart/perf cleanup (OS error 1920); no analysis pass is claimed.
+
+Contemplated shared change: AppRadius.input 0 -> 10 plus all boxed-field local
+overrides and consistent border states. Preserve the numeric table/editing
+behaviour, existing colours/type/motion, destructive focus state, and Profile
+text-loading placeholders; match adjacent new-exercise selects. Update DESIGN.md
+on approval, then verify actual affected surfaces in all six palettes and run
+verify.ps1 before committing. The proposed implementation also wraps the AI paste
+header. No new app code, commit, push or APK was made for this audit; 4b3d544c
+remains the previously verified candidate. Scores and acceptance rows are unchanged.
+
+Owner decision pending: approve the shown 10px boxed-input treatment and AI paste
+heading wrap. PROTOCOL.md step 2 requires stopping for visual approval before
+app-code changes. Remaining weaknesses: representative rather than every-form
+render coverage; unresolved AI large-text overflow; actual phone focus/keyboard
+and reach still unverified. Haptics, timer feel and one-handed use: **unverified,
+needs device**. Native keyboard and screen-reader use: **unverified, needs device**.
+Stash 907fe399 and concurrent main-checkout application edits remain untouched.
+
+## Typing-field consistency — owner approval
+
+Owner said **“implement it”** after reviewing the before/proposed 10px field
+comparison. This authorizes the shared input-token correction, local boxed-field
+overrides and AI paste heading wrap. The archived before/proposed renders stay
+frozen. Implementation uses the isolated committed 4b3d544c baseline; protected
+stash 907fe399 and concurrent main-checkout app edits remain excluded.
+
+Failing-first AI paste test reproduces the 28px heading overflow at 1.6x.
+Validation and final evidence will follow. No new whole-section score is claimed.
+Haptics, timer feel and one-handed use: **unverified, needs device**.
+
+## Typing-field consistency — implemented candidate
+
+Approved 10px boxed-input shape now uses AppRadius.input/inputAll across all
+14 boxed declarations. Existing 0/12/14px local overrides are aligned; the
+10px forms now reference the input role explicitly. Exercise muscle/equipment
+selectors inherit the same shape. Nine Profile text-loading skeletons keep
+zero-radius ends independently of this token. DESIGN.md is updated.
+The two dense workout numeric templates and active-workout screen are unchanged.
+Existing fills, colours, focus widths, controllers, validation and edit/save
+paths are preserved. Error/disabled states retain Flutter fallback semantics
+and inherit the rounded base shape.
+
+AI paste now wraps its heading beside Paste with Expanded; the inner field
+inherits a consistent outlined base instead of mixing InputBorder.none with
+theme enabled/focused outlines. [Failing-first 28px overflow](baseline/2026-10-04/input-implementation-red.log)
+precedes app changes. [Final declaration inventory](baseline/2026-10-04/input-field-final-inventory.json).
+[Actual implemented gallery](renders/input-consistency/README.md): **114**
+new real-font golden checks cover all boxed declarations in all six palettes,
+chooser/AI paste at 1x/1.6x/2x, and ready/disabled/error/focused-error states.
+Every new capture includes an illustrative keyboard and a 280px view inset.
+Focused runs pass 42 + 72; refreshed existing chooser runs pass 36 + 12.
+
+Three remaining weaknesses: secondary forms have 1x capture coverage; AI
+multiline input remains tall and scrolls at large text with an open keyboard;
+native keyboard focus and reach need device qualification. Proposed scoped
+visual score: **8/10 self-assessment**, supported by consistent corners and
+preserved depth/type/accent. This is not a whole-app rating or acceptance.
+Independent Home 8.0/10 and Library 7.8/10 scores remain unchanged.
+
+Haptics, timer feel and one-handed use: **unverified, needs device**. Native
+keyboard and screen-reader use: **unverified, needs device**. Stash 907fe399
+and concurrent main-checkout application edits remain untouched.
+
+The full suite identifies 126 additional old-shape golden comparisons; the
+focused naming/rename and chooser save/recovery refresh passes all 126. Total
+pre-existing goldens refreshed: 210. Dimensions are unchanged; largest diff
+873 pixels, tallest diff bounding box 77 logical pixels. [Comparison inventory](baseline/2026-10-04/input-existing-golden-diff-inventory.json).
+No unrelated header/share/navigation golden changes are staged.
+
+Final input-correction local `scripts/verify.ps1` **passes**, exit 0: format,
+fatal analysis, custom lint and **2,382 tests**. [Verification log](baseline/2026-10-04/input-verify-complete.log).
+The correction is ready to commit. Updated configured Android APK and exact
+pushed CI will be recorded after their results are confirmed.

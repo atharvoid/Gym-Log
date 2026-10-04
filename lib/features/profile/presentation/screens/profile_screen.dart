@@ -566,6 +566,7 @@ class _StatCell extends StatelessWidget {
 
 /// Rendered instead of [_StatCell] while [StreakStats.isLoading] is true.
 /// The streak/week numbers are not real yet and must not read as fact.
+/// Text-loading bars retain their flat ends independently of boxed-input corners.
 class _StatCellSkeleton extends StatelessWidget {
   const _StatCellSkeleton();
 
@@ -573,9 +574,9 @@ class _StatCellSkeleton extends StatelessWidget {
   Widget build(BuildContext context) {
     return const Column(
       children: [
-        SkeletonBox(width: 40, height: 17, radius: AppRadius.input),
+        SkeletonBox(width: 40, height: 17, radius: 0),
         SizedBox(height: 5),
-        SkeletonBox(width: 56, height: 10, radius: AppRadius.input),
+        SkeletonBox(width: 56, height: 10, radius: 0),
       ],
     );
   }
@@ -781,7 +782,7 @@ class _ChartLoadingPlaceholder extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SkeletonBox(width: 120, height: 16, radius: AppRadius.input),
+          SkeletonBox(width: 120, height: 16, radius: 0),
           SizedBox(height: 12),
           SkeletonBox(
               width: double.infinity, height: 150, radius: AppRadius.card),
@@ -870,11 +871,9 @@ class _LoadingBody extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    SkeletonBox(
-                        width: 140, height: 19, radius: AppRadius.input),
+                    SkeletonBox(width: 140, height: 19, radius: 0),
                     SizedBox(height: 6),
-                    SkeletonBox(
-                        width: 180, height: 13, radius: AppRadius.input),
+                    SkeletonBox(width: 180, height: 13, radius: 0),
                   ],
                 ),
               ),
@@ -889,11 +888,9 @@ class _LoadingBody extends StatelessWidget {
                   const Expanded(
                     child: Column(
                       children: [
-                        SkeletonBox(
-                            width: 50, height: 17, radius: AppRadius.input),
+                        SkeletonBox(width: 50, height: 17, radius: 0),
                         SizedBox(height: 5),
-                        SkeletonBox(
-                            width: 56, height: 10, radius: AppRadius.input),
+                        SkeletonBox(width: 56, height: 10, radius: 0),
                       ],
                     ),
                   ),
@@ -908,7 +905,7 @@ class _LoadingBody extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                SkeletonBox(width: 120, height: 16, radius: AppRadius.input),
+                SkeletonBox(width: 120, height: 16, radius: 0),
                 SizedBox(height: 12),
                 SkeletonBox(
                     width: double.infinity,
@@ -929,9 +926,7 @@ class _LoadingBody extends StatelessWidget {
               children: [
                 for (var i = 0; i < 1; i++) ...[
                   const SkeletonBox(
-                      width: double.infinity,
-                      height: 48,
-                      radius: AppRadius.input),
+                      width: double.infinity, height: 48, radius: 0),
                 ],
               ],
             ),

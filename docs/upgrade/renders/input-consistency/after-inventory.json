@@ -1,0 +1,474 @@
+{
+  "source": "production theme, approved 10px input token",
+  "dimensions": {
+    "logical": [
+      390,
+      844
+    ],
+    "pixels": [
+      780,
+      1688
+    ],
+    "keyboard_inset": 280
+  },
+  "palettes": 6,
+  "capture_count": 114,
+  "renders": [
+    {
+      "file": "after/ai-paste-blazeOrange-1.0x.png",
+      "bytes": 75575
+    },
+    {
+      "file": "after/ai-paste-blazeOrange-1.6x.png",
+      "bytes": 83439
+    },
+    {
+      "file": "after/ai-paste-blazeOrange-2.0x.png",
+      "bytes": 93099
+    },
+    {
+      "file": "after/ai-paste-higgsfield-1.0x.png",
+      "bytes": 75724
+    },
+    {
+      "file": "after/ai-paste-higgsfield-1.6x.png",
+      "bytes": 83535
+    },
+    {
+      "file": "after/ai-paste-higgsfield-2.0x.png",
+      "bytes": 93213
+    },
+    {
+      "file": "after/ai-paste-neonCyan-1.0x.png",
+      "bytes": 75873
+    },
+    {
+      "file": "after/ai-paste-neonCyan-1.6x.png",
+      "bytes": 83705
+    },
+    {
+      "file": "after/ai-paste-neonCyan-2.0x.png",
+      "bytes": 93517
+    },
+    {
+      "file": "after/ai-paste-neonMagenta-1.0x.png",
+      "bytes": 75835
+    },
+    {
+      "file": "after/ai-paste-neonMagenta-1.6x.png",
+      "bytes": 83856
+    },
+    {
+      "file": "after/ai-paste-neonMagenta-2.0x.png",
+      "bytes": 93439
+    },
+    {
+      "file": "after/ai-paste-neonPurple-1.0x.png",
+      "bytes": 75969
+    },
+    {
+      "file": "after/ai-paste-neonPurple-1.6x.png",
+      "bytes": 84092
+    },
+    {
+      "file": "after/ai-paste-neonPurple-2.0x.png",
+      "bytes": 93746
+    },
+    {
+      "file": "after/ai-paste-white-1.0x.png",
+      "bytes": 76681
+    },
+    {
+      "file": "after/ai-paste-white-1.6x.png",
+      "bytes": 84831
+    },
+    {
+      "file": "after/ai-paste-white-2.0x.png",
+      "bytes": 94525
+    },
+    {
+      "file": "after/chooser-blazeOrange-1.0x.png",
+      "bytes": 91528
+    },
+    {
+      "file": "after/chooser-blazeOrange-1.6x.png",
+      "bytes": 87505
+    },
+    {
+      "file": "after/chooser-blazeOrange-2.0x.png",
+      "bytes": 87984
+    },
+    {
+      "file": "after/chooser-higgsfield-1.0x.png",
+      "bytes": 91712
+    },
+    {
+      "file": "after/chooser-higgsfield-1.6x.png",
+      "bytes": 87611
+    },
+    {
+      "file": "after/chooser-higgsfield-2.0x.png",
+      "bytes": 87966
+    },
+    {
+      "file": "after/chooser-neonCyan-1.0x.png",
+      "bytes": 91859
+    },
+    {
+      "file": "after/chooser-neonCyan-1.6x.png",
+      "bytes": 87816
+    },
+    {
+      "file": "after/chooser-neonCyan-2.0x.png",
+      "bytes": 88158
+    },
+    {
+      "file": "after/chooser-neonMagenta-1.0x.png",
+      "bytes": 91608
+    },
+    {
+      "file": "after/chooser-neonMagenta-1.6x.png",
+      "bytes": 87443
+    },
+    {
+      "file": "after/chooser-neonMagenta-2.0x.png",
+      "bytes": 87936
+    },
+    {
+      "file": "after/chooser-neonPurple-1.0x.png",
+      "bytes": 91985
+    },
+    {
+      "file": "after/chooser-neonPurple-1.6x.png",
+      "bytes": 87800
+    },
+    {
+      "file": "after/chooser-neonPurple-2.0x.png",
+      "bytes": 88296
+    },
+    {
+      "file": "after/chooser-white-1.0x.png",
+      "bytes": 92046
+    },
+    {
+      "file": "after/chooser-white-1.6x.png",
+      "bytes": 87923
+    },
+    {
+      "file": "after/chooser-white-2.0x.png",
+      "bytes": 88320
+    },
+    {
+      "file": "after/create-exercise-blazeOrange.png",
+      "bytes": 72876
+    },
+    {
+      "file": "after/create-exercise-higgsfield.png",
+      "bytes": 73092
+    },
+    {
+      "file": "after/create-exercise-neonCyan.png",
+      "bytes": 73141
+    },
+    {
+      "file": "after/create-exercise-neonMagenta.png",
+      "bytes": 72878
+    },
+    {
+      "file": "after/create-exercise-neonPurple.png",
+      "bytes": 72975
+    },
+    {
+      "file": "after/create-exercise-white.png",
+      "bytes": 72638
+    },
+    {
+      "file": "after/delete-confirmation-blazeOrange.png",
+      "bytes": 100905
+    },
+    {
+      "file": "after/delete-confirmation-higgsfield.png",
+      "bytes": 100905
+    },
+    {
+      "file": "after/delete-confirmation-neonCyan.png",
+      "bytes": 100905
+    },
+    {
+      "file": "after/delete-confirmation-neonMagenta.png",
+      "bytes": 100905
+    },
+    {
+      "file": "after/delete-confirmation-neonPurple.png",
+      "bytes": 100905
+    },
+    {
+      "file": "after/delete-confirmation-white.png",
+      "bytes": 100905
+    },
+    {
+      "file": "after/exercise-search-blazeOrange.png",
+      "bytes": 64907
+    },
+    {
+      "file": "after/exercise-search-higgsfield.png",
+      "bytes": 65282
+    },
+    {
+      "file": "after/exercise-search-neonCyan.png",
+      "bytes": 65289
+    },
+    {
+      "file": "after/exercise-search-neonMagenta.png",
+      "bytes": 64908
+    },
+    {
+      "file": "after/exercise-search-neonPurple.png",
+      "bytes": 65364
+    },
+    {
+      "file": "after/exercise-search-white.png",
+      "bytes": 65459
+    },
+    {
+      "file": "after/explore-search-blazeOrange.png",
+      "bytes": 82079
+    },
+    {
+      "file": "after/explore-search-higgsfield.png",
+      "bytes": 82559
+    },
+    {
+      "file": "after/explore-search-neonCyan.png",
+      "bytes": 82667
+    },
+    {
+      "file": "after/explore-search-neonMagenta.png",
+      "bytes": 82142
+    },
+    {
+      "file": "after/explore-search-neonPurple.png",
+      "bytes": 82876
+    },
+    {
+      "file": "after/explore-search-white.png",
+      "bytes": 82916
+    },
+    {
+      "file": "after/feedback-details-blazeOrange.png",
+      "bytes": 88252
+    },
+    {
+      "file": "after/feedback-details-higgsfield.png",
+      "bytes": 88374
+    },
+    {
+      "file": "after/feedback-details-neonCyan.png",
+      "bytes": 88499
+    },
+    {
+      "file": "after/feedback-details-neonMagenta.png",
+      "bytes": 88306
+    },
+    {
+      "file": "after/feedback-details-neonPurple.png",
+      "bytes": 88634
+    },
+    {
+      "file": "after/feedback-details-white.png",
+      "bytes": 89121
+    },
+    {
+      "file": "after/feedback-topic-blazeOrange.png",
+      "bytes": 92798
+    },
+    {
+      "file": "after/feedback-topic-higgsfield.png",
+      "bytes": 92962
+    },
+    {
+      "file": "after/feedback-topic-neonCyan.png",
+      "bytes": 93155
+    },
+    {
+      "file": "after/feedback-topic-neonMagenta.png",
+      "bytes": 92880
+    },
+    {
+      "file": "after/feedback-topic-neonPurple.png",
+      "bytes": 93322
+    },
+    {
+      "file": "after/feedback-topic-white.png",
+      "bytes": 93850
+    },
+    {
+      "file": "after/finish-name-blazeOrange.png",
+      "bytes": 78678
+    },
+    {
+      "file": "after/finish-name-higgsfield.png",
+      "bytes": 78800
+    },
+    {
+      "file": "after/finish-name-neonCyan.png",
+      "bytes": 78829
+    },
+    {
+      "file": "after/finish-name-neonMagenta.png",
+      "bytes": 78888
+    },
+    {
+      "file": "after/finish-name-neonPurple.png",
+      "bytes": 78980
+    },
+    {
+      "file": "after/finish-name-white.png",
+      "bytes": 79233
+    },
+    {
+      "file": "after/input-states-blazeOrange.png",
+      "bytes": 51813
+    },
+    {
+      "file": "after/input-states-higgsfield.png",
+      "bytes": 51813
+    },
+    {
+      "file": "after/input-states-neonCyan.png",
+      "bytes": 51813
+    },
+    {
+      "file": "after/input-states-neonMagenta.png",
+      "bytes": 51813
+    },
+    {
+      "file": "after/input-states-neonPurple.png",
+      "bytes": 51813
+    },
+    {
+      "file": "after/input-states-white.png",
+      "bytes": 51813
+    },
+    {
+      "file": "after/onboarding-name-blazeOrange.png",
+      "bytes": 68671
+    },
+    {
+      "file": "after/onboarding-name-higgsfield.png",
+      "bytes": 68723
+    },
+    {
+      "file": "after/onboarding-name-neonCyan.png",
+      "bytes": 68766
+    },
+    {
+      "file": "after/onboarding-name-neonMagenta.png",
+      "bytes": 68808
+    },
+    {
+      "file": "after/onboarding-name-neonPurple.png",
+      "bytes": 68861
+    },
+    {
+      "file": "after/onboarding-name-white.png",
+      "bytes": 69162
+    },
+    {
+      "file": "after/review-name-blazeOrange.png",
+      "bytes": 70909
+    },
+    {
+      "file": "after/review-name-higgsfield.png",
+      "bytes": 70955
+    },
+    {
+      "file": "after/review-name-neonCyan.png",
+      "bytes": 71005
+    },
+    {
+      "file": "after/review-name-neonMagenta.png",
+      "bytes": 70974
+    },
+    {
+      "file": "after/review-name-neonPurple.png",
+      "bytes": 71015
+    },
+    {
+      "file": "after/review-name-white.png",
+      "bytes": 71106
+    },
+    {
+      "file": "after/review-reps-blazeOrange.png",
+      "bytes": 62580
+    },
+    {
+      "file": "after/review-reps-higgsfield.png",
+      "bytes": 62730
+    },
+    {
+      "file": "after/review-reps-neonCyan.png",
+      "bytes": 62849
+    },
+    {
+      "file": "after/review-reps-neonMagenta.png",
+      "bytes": 62744
+    },
+    {
+      "file": "after/review-reps-neonPurple.png",
+      "bytes": 62871
+    },
+    {
+      "file": "after/review-reps-white.png",
+      "bytes": 63030
+    },
+    {
+      "file": "after/routine-name-blazeOrange.png",
+      "bytes": 66668
+    },
+    {
+      "file": "after/routine-name-higgsfield.png",
+      "bytes": 66786
+    },
+    {
+      "file": "after/routine-name-neonCyan.png",
+      "bytes": 66949
+    },
+    {
+      "file": "after/routine-name-neonMagenta.png",
+      "bytes": 67114
+    },
+    {
+      "file": "after/routine-name-neonPurple.png",
+      "bytes": 67365
+    },
+    {
+      "file": "after/routine-name-white.png",
+      "bytes": 68466
+    },
+    {
+      "file": "after/shared-name-blazeOrange.png",
+      "bytes": 48378
+    },
+    {
+      "file": "after/shared-name-higgsfield.png",
+      "bytes": 48429
+    },
+    {
+      "file": "after/shared-name-neonCyan.png",
+      "bytes": 48485
+    },
+    {
+      "file": "after/shared-name-neonMagenta.png",
+      "bytes": 48581
+    },
+    {
+      "file": "after/shared-name-neonPurple.png",
+      "bytes": 48654
+    },
+    {
+      "file": "after/shared-name-white.png",
+      "bytes": 48245
+    }
+  ]
+}

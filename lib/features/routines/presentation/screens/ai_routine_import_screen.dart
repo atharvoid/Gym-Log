@@ -306,9 +306,11 @@ class _AiRoutineImportScreenState extends ConsumerState<AiRoutineImportScreen> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
-              'Paste Workout Routine',
-              style: AppText.body(color: surface.textSecondary),
+            Expanded(
+              child: Text(
+                'Paste Workout Routine',
+                style: AppText.body(color: surface.textSecondary),
+              ),
             ),
             TextButton.icon(
               onPressed: _pasteFromClipboard,
@@ -322,7 +324,7 @@ class _AiRoutineImportScreenState extends ConsumerState<AiRoutineImportScreen> {
         Container(
           decoration: BoxDecoration(
             color: surface.surface2,
-            borderRadius: AppRadius.cardAll,
+            borderRadius: AppRadius.inputAll,
             border: Border.all(color: surface.borderSubtle),
           ),
           child: TextField(
@@ -337,7 +339,6 @@ class _AiRoutineImportScreenState extends ConsumerState<AiRoutineImportScreen> {
               hintText:
                   'e.g.\nPush Day A:\nIncline Dumbbell Bench 3x8-10 @ 28kg\nFlat Barbell Bench Press 4x6\nCable Lateral Raises 3x15\nTriceps Pushdowns 3x12',
               hintStyle: AppText.body(color: surface.textTertiary),
-              border: InputBorder.none,
               contentPadding: const EdgeInsets.all(16),
             ),
           ),

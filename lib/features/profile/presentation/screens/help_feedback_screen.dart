@@ -106,18 +106,18 @@ class _ReportProblemFormState extends State<ReportProblemForm> {
 
   /// Low-density form doctrine (final-seven #3): high-density tables stay
   /// unboxed (see set_row.dart), but a standalone form field gets a soft box.
-  /// Radius card (10) sits correctly inside the sheet's 12, and the border
+  /// Input radius (10) sits correctly inside the sheet's 12, and the border
   /// only speaks on focus, in the accent at 45%.
   InputDecoration _fieldDecoration(String hint) {
     final accent = context.accent;
     final surface = context.surface;
-    final radius = BorderRadius.circular(AppRadius.card);
+    const radius = AppRadius.inputAll;
     return InputDecoration(
       hintText: hint,
       hintStyle: AppText.body(color: surface.textSecondary),
       filled: true,
       fillColor: surface.surface2,
-      border: OutlineInputBorder(
+      border: const OutlineInputBorder(
         borderRadius: radius,
         borderSide: BorderSide.none,
       ),

@@ -1,0 +1,2946 @@
+{
+  "baseline": "4b3d544c4cd74b30b260c75e1e6d7789abc35b7e",
+  "count": 210,
+  "comparisons": [
+    {
+      "file": "test/golden/goldens/session-1-reassurance/roles-blazeOrange-1.0x-synthetic.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        250,
+        374,
+        302
+      ],
+      "changed_pixels": 176
+    },
+    {
+      "file": "test/golden/goldens/session-1-reassurance/roles-blazeOrange-1.6x-synthetic.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        452,
+        374,
+        518
+      ],
+      "changed_pixels": 176
+    },
+    {
+      "file": "test/golden/goldens/session-1-reassurance/roles-higgsfield-1.0x-synthetic.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        250,
+        374,
+        302
+      ],
+      "changed_pixels": 176
+    },
+    {
+      "file": "test/golden/goldens/session-1-reassurance/roles-higgsfield-1.6x-synthetic.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        452,
+        374,
+        518
+      ],
+      "changed_pixels": 176
+    },
+    {
+      "file": "test/golden/goldens/session-1-reassurance/roles-neonCyan-1.0x-synthetic.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        250,
+        374,
+        302
+      ],
+      "changed_pixels": 176
+    },
+    {
+      "file": "test/golden/goldens/session-1-reassurance/roles-neonCyan-1.6x-synthetic.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        452,
+        374,
+        518
+      ],
+      "changed_pixels": 176
+    },
+    {
+      "file": "test/golden/goldens/session-1-reassurance/roles-neonMagenta-1.0x-synthetic.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        250,
+        374,
+        302
+      ],
+      "changed_pixels": 176
+    },
+    {
+      "file": "test/golden/goldens/session-1-reassurance/roles-neonMagenta-1.6x-synthetic.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        452,
+        374,
+        518
+      ],
+      "changed_pixels": 176
+    },
+    {
+      "file": "test/golden/goldens/session-1-reassurance/roles-neonPurple-1.0x-synthetic.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        250,
+        374,
+        302
+      ],
+      "changed_pixels": 176
+    },
+    {
+      "file": "test/golden/goldens/session-1-reassurance/roles-neonPurple-1.6x-synthetic.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        452,
+        374,
+        518
+      ],
+      "changed_pixels": 176
+    },
+    {
+      "file": "test/golden/goldens/session-1-reassurance/roles-white-1.0x-synthetic.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        250,
+        374,
+        302
+      ],
+      "changed_pixels": 176
+    },
+    {
+      "file": "test/golden/goldens/session-1-reassurance/roles-white-1.6x-synthetic.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        452,
+        374,
+        518
+      ],
+      "changed_pixels": 176
+    },
+    {
+      "file": "test/golden/goldens/session-1/finish-distance-blazeOrange-1.0x-synthetic.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        20,
+        698,
+        370,
+        750
+      ],
+      "changed_pixels": 132
+    },
+    {
+      "file": "test/golden/goldens/session-1/finish-distance-blazeOrange-1.6x-synthetic.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        20,
+        671,
+        370,
+        737
+      ],
+      "changed_pixels": 132
+    },
+    {
+      "file": "test/golden/goldens/session-1/finish-distance-higgsfield-1.0x-synthetic.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        20,
+        698,
+        370,
+        750
+      ],
+      "changed_pixels": 132
+    },
+    {
+      "file": "test/golden/goldens/session-1/finish-distance-higgsfield-1.6x-synthetic.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        20,
+        671,
+        370,
+        737
+      ],
+      "changed_pixels": 132
+    },
+    {
+      "file": "test/golden/goldens/session-1/finish-distance-neonCyan-1.0x-synthetic.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        20,
+        698,
+        370,
+        750
+      ],
+      "changed_pixels": 132
+    },
+    {
+      "file": "test/golden/goldens/session-1/finish-distance-neonCyan-1.6x-synthetic.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        20,
+        671,
+        370,
+        737
+      ],
+      "changed_pixels": 132
+    },
+    {
+      "file": "test/golden/goldens/session-1/finish-distance-neonMagenta-1.0x-synthetic.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        20,
+        698,
+        370,
+        750
+      ],
+      "changed_pixels": 132
+    },
+    {
+      "file": "test/golden/goldens/session-1/finish-distance-neonMagenta-1.6x-synthetic.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        20,
+        671,
+        370,
+        737
+      ],
+      "changed_pixels": 132
+    },
+    {
+      "file": "test/golden/goldens/session-1/finish-distance-neonPurple-1.0x-synthetic.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        20,
+        698,
+        370,
+        750
+      ],
+      "changed_pixels": 132
+    },
+    {
+      "file": "test/golden/goldens/session-1/finish-distance-neonPurple-1.6x-synthetic.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        20,
+        671,
+        370,
+        737
+      ],
+      "changed_pixels": 132
+    },
+    {
+      "file": "test/golden/goldens/session-1/finish-distance-white-1.0x-synthetic.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        20,
+        698,
+        370,
+        750
+      ],
+      "changed_pixels": 132
+    },
+    {
+      "file": "test/golden/goldens/session-1/finish-distance-white-1.6x-synthetic.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        20,
+        671,
+        370,
+        737
+      ],
+      "changed_pixels": 132
+    },
+    {
+      "file": "test/golden/goldens/session-1/finish-reps-blazeOrange-1.0x-synthetic.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        20,
+        698,
+        370,
+        750
+      ],
+      "changed_pixels": 132
+    },
+    {
+      "file": "test/golden/goldens/session-1/finish-reps-blazeOrange-1.6x-synthetic.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        20,
+        671,
+        370,
+        737
+      ],
+      "changed_pixels": 132
+    },
+    {
+      "file": "test/golden/goldens/session-1/finish-reps-higgsfield-1.0x-synthetic.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        20,
+        698,
+        370,
+        750
+      ],
+      "changed_pixels": 132
+    },
+    {
+      "file": "test/golden/goldens/session-1/finish-reps-higgsfield-1.6x-synthetic.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        20,
+        671,
+        370,
+        737
+      ],
+      "changed_pixels": 132
+    },
+    {
+      "file": "test/golden/goldens/session-1/finish-reps-neonCyan-1.0x-synthetic.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        20,
+        698,
+        370,
+        750
+      ],
+      "changed_pixels": 132
+    },
+    {
+      "file": "test/golden/goldens/session-1/finish-reps-neonCyan-1.6x-synthetic.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        20,
+        671,
+        370,
+        737
+      ],
+      "changed_pixels": 132
+    },
+    {
+      "file": "test/golden/goldens/session-1/finish-reps-neonMagenta-1.0x-synthetic.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        20,
+        698,
+        370,
+        750
+      ],
+      "changed_pixels": 132
+    },
+    {
+      "file": "test/golden/goldens/session-1/finish-reps-neonMagenta-1.6x-synthetic.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        20,
+        671,
+        370,
+        737
+      ],
+      "changed_pixels": 132
+    },
+    {
+      "file": "test/golden/goldens/session-1/finish-reps-neonPurple-1.0x-synthetic.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        20,
+        698,
+        370,
+        750
+      ],
+      "changed_pixels": 132
+    },
+    {
+      "file": "test/golden/goldens/session-1/finish-reps-neonPurple-1.6x-synthetic.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        20,
+        671,
+        370,
+        737
+      ],
+      "changed_pixels": 132
+    },
+    {
+      "file": "test/golden/goldens/session-1/finish-reps-white-1.0x-synthetic.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        20,
+        698,
+        370,
+        750
+      ],
+      "changed_pixels": 132
+    },
+    {
+      "file": "test/golden/goldens/session-1/finish-reps-white-1.6x-synthetic.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        20,
+        671,
+        370,
+        737
+      ],
+      "changed_pixels": 132
+    },
+    {
+      "file": "test/golden/goldens/session-1/finish-timed-blazeOrange-1.0x-synthetic.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        20,
+        698,
+        370,
+        750
+      ],
+      "changed_pixels": 132
+    },
+    {
+      "file": "test/golden/goldens/session-1/finish-timed-blazeOrange-1.6x-synthetic.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        20,
+        671,
+        370,
+        737
+      ],
+      "changed_pixels": 132
+    },
+    {
+      "file": "test/golden/goldens/session-1/finish-timed-higgsfield-1.0x-synthetic.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        20,
+        698,
+        370,
+        750
+      ],
+      "changed_pixels": 132
+    },
+    {
+      "file": "test/golden/goldens/session-1/finish-timed-higgsfield-1.6x-synthetic.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        20,
+        671,
+        370,
+        737
+      ],
+      "changed_pixels": 132
+    },
+    {
+      "file": "test/golden/goldens/session-1/finish-timed-neonCyan-1.0x-synthetic.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        20,
+        698,
+        370,
+        750
+      ],
+      "changed_pixels": 132
+    },
+    {
+      "file": "test/golden/goldens/session-1/finish-timed-neonCyan-1.6x-synthetic.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        20,
+        671,
+        370,
+        737
+      ],
+      "changed_pixels": 132
+    },
+    {
+      "file": "test/golden/goldens/session-1/finish-timed-neonMagenta-1.0x-synthetic.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        20,
+        698,
+        370,
+        750
+      ],
+      "changed_pixels": 132
+    },
+    {
+      "file": "test/golden/goldens/session-1/finish-timed-neonMagenta-1.6x-synthetic.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        20,
+        671,
+        370,
+        737
+      ],
+      "changed_pixels": 132
+    },
+    {
+      "file": "test/golden/goldens/session-1/finish-timed-neonPurple-1.0x-synthetic.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        20,
+        698,
+        370,
+        750
+      ],
+      "changed_pixels": 132
+    },
+    {
+      "file": "test/golden/goldens/session-1/finish-timed-neonPurple-1.6x-synthetic.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        20,
+        671,
+        370,
+        737
+      ],
+      "changed_pixels": 132
+    },
+    {
+      "file": "test/golden/goldens/session-1/finish-timed-white-1.0x-synthetic.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        20,
+        698,
+        370,
+        750
+      ],
+      "changed_pixels": 132
+    },
+    {
+      "file": "test/golden/goldens/session-1/finish-timed-white-1.6x-synthetic.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        20,
+        671,
+        370,
+        737
+      ],
+      "changed_pixels": 132
+    },
+    {
+      "file": "test/golden/goldens/session-1/finish-weighted-blazeOrange-1.0x-synthetic.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        20,
+        698,
+        370,
+        750
+      ],
+      "changed_pixels": 132
+    },
+    {
+      "file": "test/golden/goldens/session-1/finish-weighted-blazeOrange-1.6x-synthetic.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        20,
+        671,
+        370,
+        737
+      ],
+      "changed_pixels": 132
+    },
+    {
+      "file": "test/golden/goldens/session-1/finish-weighted-higgsfield-1.0x-synthetic.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        20,
+        698,
+        370,
+        750
+      ],
+      "changed_pixels": 132
+    },
+    {
+      "file": "test/golden/goldens/session-1/finish-weighted-higgsfield-1.6x-synthetic.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        20,
+        671,
+        370,
+        737
+      ],
+      "changed_pixels": 132
+    },
+    {
+      "file": "test/golden/goldens/session-1/finish-weighted-neonCyan-1.0x-synthetic.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        20,
+        698,
+        370,
+        750
+      ],
+      "changed_pixels": 132
+    },
+    {
+      "file": "test/golden/goldens/session-1/finish-weighted-neonCyan-1.6x-synthetic.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        20,
+        671,
+        370,
+        737
+      ],
+      "changed_pixels": 132
+    },
+    {
+      "file": "test/golden/goldens/session-1/finish-weighted-neonMagenta-1.0x-synthetic.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        20,
+        698,
+        370,
+        750
+      ],
+      "changed_pixels": 132
+    },
+    {
+      "file": "test/golden/goldens/session-1/finish-weighted-neonMagenta-1.6x-synthetic.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        20,
+        671,
+        370,
+        737
+      ],
+      "changed_pixels": 132
+    },
+    {
+      "file": "test/golden/goldens/session-1/finish-weighted-neonPurple-1.0x-synthetic.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        20,
+        698,
+        370,
+        750
+      ],
+      "changed_pixels": 132
+    },
+    {
+      "file": "test/golden/goldens/session-1/finish-weighted-neonPurple-1.6x-synthetic.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        20,
+        671,
+        370,
+        737
+      ],
+      "changed_pixels": 132
+    },
+    {
+      "file": "test/golden/goldens/session-1/finish-weighted-white-1.0x-synthetic.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        20,
+        698,
+        370,
+        750
+      ],
+      "changed_pixels": 132
+    },
+    {
+      "file": "test/golden/goldens/session-1/finish-weighted-white-1.6x-synthetic.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        20,
+        671,
+        370,
+        737
+      ],
+      "changed_pixels": 132
+    },
+    {
+      "file": "test/golden/goldens/session-1/roles-blazeOrange-1.0x-synthetic.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        250,
+        374,
+        302
+      ],
+      "changed_pixels": 176
+    },
+    {
+      "file": "test/golden/goldens/session-1/roles-blazeOrange-1.6x-synthetic.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        452,
+        374,
+        518
+      ],
+      "changed_pixels": 176
+    },
+    {
+      "file": "test/golden/goldens/session-1/roles-higgsfield-1.0x-synthetic.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        250,
+        374,
+        302
+      ],
+      "changed_pixels": 176
+    },
+    {
+      "file": "test/golden/goldens/session-1/roles-higgsfield-1.6x-synthetic.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        452,
+        374,
+        518
+      ],
+      "changed_pixels": 176
+    },
+    {
+      "file": "test/golden/goldens/session-1/roles-neonCyan-1.0x-synthetic.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        250,
+        374,
+        302
+      ],
+      "changed_pixels": 176
+    },
+    {
+      "file": "test/golden/goldens/session-1/roles-neonCyan-1.6x-synthetic.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        452,
+        374,
+        518
+      ],
+      "changed_pixels": 176
+    },
+    {
+      "file": "test/golden/goldens/session-1/roles-neonMagenta-1.0x-synthetic.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        250,
+        374,
+        302
+      ],
+      "changed_pixels": 176
+    },
+    {
+      "file": "test/golden/goldens/session-1/roles-neonMagenta-1.6x-synthetic.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        452,
+        374,
+        518
+      ],
+      "changed_pixels": 176
+    },
+    {
+      "file": "test/golden/goldens/session-1/roles-neonPurple-1.0x-synthetic.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        250,
+        374,
+        302
+      ],
+      "changed_pixels": 176
+    },
+    {
+      "file": "test/golden/goldens/session-1/roles-neonPurple-1.6x-synthetic.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        452,
+        374,
+        518
+      ],
+      "changed_pixels": 176
+    },
+    {
+      "file": "test/golden/goldens/session-1/roles-white-1.0x-synthetic.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        250,
+        374,
+        302
+      ],
+      "changed_pixels": 176
+    },
+    {
+      "file": "test/golden/goldens/session-1/roles-white-1.6x-synthetic.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        452,
+        374,
+        518
+      ],
+      "changed_pixels": 176
+    },
+    {
+      "file": "test/upgrade/goldens/home-routines-correction/home-override-keyboard-blazeOrange-1.0x.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        281,
+        374,
+        333
+      ],
+      "changed_pixels": 204
+    },
+    {
+      "file": "test/upgrade/goldens/home-routines-correction/home-override-keyboard-blazeOrange-1.6x.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        162,
+        374,
+        229
+      ],
+      "changed_pixels": 846
+    },
+    {
+      "file": "test/upgrade/goldens/home-routines-correction/home-override-keyboard-blazeOrange-2.0x.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        235,
+        374,
+        312
+      ],
+      "changed_pixels": 848
+    },
+    {
+      "file": "test/upgrade/goldens/home-routines-correction/home-override-keyboard-higgsfield-1.0x.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        281,
+        374,
+        333
+      ],
+      "changed_pixels": 204
+    },
+    {
+      "file": "test/upgrade/goldens/home-routines-correction/home-override-keyboard-higgsfield-1.6x.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        162,
+        374,
+        229
+      ],
+      "changed_pixels": 846
+    },
+    {
+      "file": "test/upgrade/goldens/home-routines-correction/home-override-keyboard-higgsfield-2.0x.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        235,
+        374,
+        312
+      ],
+      "changed_pixels": 838
+    },
+    {
+      "file": "test/upgrade/goldens/home-routines-correction/home-override-keyboard-neonCyan-1.0x.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        281,
+        374,
+        333
+      ],
+      "changed_pixels": 204
+    },
+    {
+      "file": "test/upgrade/goldens/home-routines-correction/home-override-keyboard-neonCyan-1.6x.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        162,
+        374,
+        229
+      ],
+      "changed_pixels": 856
+    },
+    {
+      "file": "test/upgrade/goldens/home-routines-correction/home-override-keyboard-neonCyan-2.0x.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        235,
+        374,
+        312
+      ],
+      "changed_pixels": 833
+    },
+    {
+      "file": "test/upgrade/goldens/home-routines-correction/home-override-keyboard-neonMagenta-1.0x.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        281,
+        374,
+        333
+      ],
+      "changed_pixels": 204
+    },
+    {
+      "file": "test/upgrade/goldens/home-routines-correction/home-override-keyboard-neonMagenta-1.6x.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        162,
+        374,
+        229
+      ],
+      "changed_pixels": 861
+    },
+    {
+      "file": "test/upgrade/goldens/home-routines-correction/home-override-keyboard-neonMagenta-2.0x.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        235,
+        374,
+        312
+      ],
+      "changed_pixels": 845
+    },
+    {
+      "file": "test/upgrade/goldens/home-routines-correction/home-override-keyboard-neonPurple-1.0x.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        281,
+        374,
+        333
+      ],
+      "changed_pixels": 204
+    },
+    {
+      "file": "test/upgrade/goldens/home-routines-correction/home-override-keyboard-neonPurple-1.6x.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        162,
+        374,
+        229
+      ],
+      "changed_pixels": 852
+    },
+    {
+      "file": "test/upgrade/goldens/home-routines-correction/home-override-keyboard-neonPurple-2.0x.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        235,
+        374,
+        312
+      ],
+      "changed_pixels": 846
+    },
+    {
+      "file": "test/upgrade/goldens/home-routines-correction/home-override-keyboard-white-1.0x.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        281,
+        374,
+        333
+      ],
+      "changed_pixels": 204
+    },
+    {
+      "file": "test/upgrade/goldens/home-routines-correction/home-override-keyboard-white-1.6x.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        162,
+        374,
+        229
+      ],
+      "changed_pixels": 861
+    },
+    {
+      "file": "test/upgrade/goldens/home-routines-correction/home-override-keyboard-white-2.0x.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        235,
+        374,
+        312
+      ],
+      "changed_pixels": 843
+    },
+    {
+      "file": "test/upgrade/goldens/home-routines-correction/home-plan-empty-blazeOrange-1.0x.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        691,
+        374,
+        743
+      ],
+      "changed_pixels": 176
+    },
+    {
+      "file": "test/upgrade/goldens/home-routines-correction/home-plan-empty-blazeOrange-1.6x.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        655,
+        374,
+        721
+      ],
+      "changed_pixels": 176
+    },
+    {
+      "file": "test/upgrade/goldens/home-routines-correction/home-plan-empty-blazeOrange-2.0x.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        627,
+        374,
+        703
+      ],
+      "changed_pixels": 176
+    },
+    {
+      "file": "test/upgrade/goldens/home-routines-correction/home-plan-empty-higgsfield-1.0x.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        691,
+        374,
+        743
+      ],
+      "changed_pixels": 176
+    },
+    {
+      "file": "test/upgrade/goldens/home-routines-correction/home-plan-empty-higgsfield-1.6x.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        655,
+        374,
+        721
+      ],
+      "changed_pixels": 176
+    },
+    {
+      "file": "test/upgrade/goldens/home-routines-correction/home-plan-empty-higgsfield-2.0x.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        627,
+        374,
+        703
+      ],
+      "changed_pixels": 176
+    },
+    {
+      "file": "test/upgrade/goldens/home-routines-correction/home-plan-empty-neonCyan-1.0x.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        691,
+        374,
+        743
+      ],
+      "changed_pixels": 176
+    },
+    {
+      "file": "test/upgrade/goldens/home-routines-correction/home-plan-empty-neonCyan-1.6x.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        655,
+        374,
+        721
+      ],
+      "changed_pixels": 176
+    },
+    {
+      "file": "test/upgrade/goldens/home-routines-correction/home-plan-empty-neonCyan-2.0x.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        627,
+        374,
+        703
+      ],
+      "changed_pixels": 176
+    },
+    {
+      "file": "test/upgrade/goldens/home-routines-correction/home-plan-empty-neonMagenta-1.0x.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        691,
+        374,
+        743
+      ],
+      "changed_pixels": 176
+    },
+    {
+      "file": "test/upgrade/goldens/home-routines-correction/home-plan-empty-neonMagenta-1.6x.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        655,
+        374,
+        721
+      ],
+      "changed_pixels": 176
+    },
+    {
+      "file": "test/upgrade/goldens/home-routines-correction/home-plan-empty-neonMagenta-2.0x.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        627,
+        374,
+        703
+      ],
+      "changed_pixels": 176
+    },
+    {
+      "file": "test/upgrade/goldens/home-routines-correction/home-plan-empty-neonPurple-1.0x.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        691,
+        374,
+        743
+      ],
+      "changed_pixels": 176
+    },
+    {
+      "file": "test/upgrade/goldens/home-routines-correction/home-plan-empty-neonPurple-1.6x.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        655,
+        374,
+        721
+      ],
+      "changed_pixels": 176
+    },
+    {
+      "file": "test/upgrade/goldens/home-routines-correction/home-plan-empty-neonPurple-2.0x.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        627,
+        374,
+        703
+      ],
+      "changed_pixels": 176
+    },
+    {
+      "file": "test/upgrade/goldens/home-routines-correction/home-plan-empty-white-1.0x.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        691,
+        374,
+        743
+      ],
+      "changed_pixels": 176
+    },
+    {
+      "file": "test/upgrade/goldens/home-routines-correction/home-plan-empty-white-1.6x.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        655,
+        374,
+        721
+      ],
+      "changed_pixels": 176
+    },
+    {
+      "file": "test/upgrade/goldens/home-routines-correction/home-plan-empty-white-2.0x.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        627,
+        374,
+        703
+      ],
+      "changed_pixels": 176
+    },
+    {
+      "file": "test/upgrade/goldens/home-routines-correction/home-plan-keyboard-blazeOrange-1.0x.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        151,
+        374,
+        204
+      ],
+      "changed_pixels": 865
+    },
+    {
+      "file": "test/upgrade/goldens/home-routines-correction/home-plan-keyboard-blazeOrange-1.6x.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        192,
+        374,
+        259
+      ],
+      "changed_pixels": 846
+    },
+    {
+      "file": "test/upgrade/goldens/home-routines-correction/home-plan-keyboard-blazeOrange-2.0x.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        215,
+        374,
+        292
+      ],
+      "changed_pixels": 848
+    },
+    {
+      "file": "test/upgrade/goldens/home-routines-correction/home-plan-keyboard-higgsfield-1.0x.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        151,
+        374,
+        204
+      ],
+      "changed_pixels": 852
+    },
+    {
+      "file": "test/upgrade/goldens/home-routines-correction/home-plan-keyboard-higgsfield-1.6x.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        192,
+        374,
+        259
+      ],
+      "changed_pixels": 846
+    },
+    {
+      "file": "test/upgrade/goldens/home-routines-correction/home-plan-keyboard-higgsfield-2.0x.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        215,
+        374,
+        292
+      ],
+      "changed_pixels": 838
+    },
+    {
+      "file": "test/upgrade/goldens/home-routines-correction/home-plan-keyboard-neonCyan-1.0x.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        151,
+        374,
+        204
+      ],
+      "changed_pixels": 860
+    },
+    {
+      "file": "test/upgrade/goldens/home-routines-correction/home-plan-keyboard-neonCyan-1.6x.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        192,
+        374,
+        259
+      ],
+      "changed_pixels": 856
+    },
+    {
+      "file": "test/upgrade/goldens/home-routines-correction/home-plan-keyboard-neonCyan-2.0x.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        215,
+        374,
+        292
+      ],
+      "changed_pixels": 833
+    },
+    {
+      "file": "test/upgrade/goldens/home-routines-correction/home-plan-keyboard-neonMagenta-1.0x.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        151,
+        374,
+        204
+      ],
+      "changed_pixels": 865
+    },
+    {
+      "file": "test/upgrade/goldens/home-routines-correction/home-plan-keyboard-neonMagenta-1.6x.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        192,
+        374,
+        259
+      ],
+      "changed_pixels": 861
+    },
+    {
+      "file": "test/upgrade/goldens/home-routines-correction/home-plan-keyboard-neonMagenta-2.0x.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        215,
+        374,
+        292
+      ],
+      "changed_pixels": 845
+    },
+    {
+      "file": "test/upgrade/goldens/home-routines-correction/home-plan-keyboard-neonPurple-1.0x.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        151,
+        374,
+        204
+      ],
+      "changed_pixels": 871
+    },
+    {
+      "file": "test/upgrade/goldens/home-routines-correction/home-plan-keyboard-neonPurple-1.6x.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        192,
+        374,
+        259
+      ],
+      "changed_pixels": 852
+    },
+    {
+      "file": "test/upgrade/goldens/home-routines-correction/home-plan-keyboard-neonPurple-2.0x.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        215,
+        374,
+        292
+      ],
+      "changed_pixels": 846
+    },
+    {
+      "file": "test/upgrade/goldens/home-routines-correction/home-plan-keyboard-white-1.0x.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        151,
+        374,
+        204
+      ],
+      "changed_pixels": 866
+    },
+    {
+      "file": "test/upgrade/goldens/home-routines-correction/home-plan-keyboard-white-1.6x.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        192,
+        374,
+        259
+      ],
+      "changed_pixels": 861
+    },
+    {
+      "file": "test/upgrade/goldens/home-routines-correction/home-plan-keyboard-white-2.0x.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        215,
+        374,
+        292
+      ],
+      "changed_pixels": 843
+    },
+    {
+      "file": "test/upgrade/goldens/home-routines-correction/home-plan-repeat-blazeOrange-1.0x.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        264,
+        374,
+        316
+      ],
+      "changed_pixels": 176
+    },
+    {
+      "file": "test/upgrade/goldens/home-routines-correction/home-plan-repeat-blazeOrange-1.6x.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        250,
+        374,
+        317
+      ],
+      "changed_pixels": 869
+    },
+    {
+      "file": "test/upgrade/goldens/home-routines-correction/home-plan-repeat-blazeOrange-2.0x.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        280,
+        374,
+        357
+      ],
+      "changed_pixels": 869
+    },
+    {
+      "file": "test/upgrade/goldens/home-routines-correction/home-plan-repeat-higgsfield-1.0x.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        264,
+        374,
+        316
+      ],
+      "changed_pixels": 176
+    },
+    {
+      "file": "test/upgrade/goldens/home-routines-correction/home-plan-repeat-higgsfield-1.6x.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        250,
+        374,
+        317
+      ],
+      "changed_pixels": 869
+    },
+    {
+      "file": "test/upgrade/goldens/home-routines-correction/home-plan-repeat-higgsfield-2.0x.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        280,
+        374,
+        357
+      ],
+      "changed_pixels": 869
+    },
+    {
+      "file": "test/upgrade/goldens/home-routines-correction/home-plan-repeat-neonCyan-1.0x.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        264,
+        374,
+        316
+      ],
+      "changed_pixels": 176
+    },
+    {
+      "file": "test/upgrade/goldens/home-routines-correction/home-plan-repeat-neonCyan-1.6x.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        250,
+        374,
+        317
+      ],
+      "changed_pixels": 869
+    },
+    {
+      "file": "test/upgrade/goldens/home-routines-correction/home-plan-repeat-neonCyan-2.0x.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        280,
+        374,
+        357
+      ],
+      "changed_pixels": 869
+    },
+    {
+      "file": "test/upgrade/goldens/home-routines-correction/home-plan-repeat-neonMagenta-1.0x.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        264,
+        374,
+        316
+      ],
+      "changed_pixels": 176
+    },
+    {
+      "file": "test/upgrade/goldens/home-routines-correction/home-plan-repeat-neonMagenta-1.6x.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        250,
+        374,
+        317
+      ],
+      "changed_pixels": 869
+    },
+    {
+      "file": "test/upgrade/goldens/home-routines-correction/home-plan-repeat-neonMagenta-2.0x.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        280,
+        374,
+        357
+      ],
+      "changed_pixels": 869
+    },
+    {
+      "file": "test/upgrade/goldens/home-routines-correction/home-plan-repeat-neonPurple-1.0x.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        264,
+        374,
+        316
+      ],
+      "changed_pixels": 176
+    },
+    {
+      "file": "test/upgrade/goldens/home-routines-correction/home-plan-repeat-neonPurple-1.6x.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        250,
+        374,
+        317
+      ],
+      "changed_pixels": 869
+    },
+    {
+      "file": "test/upgrade/goldens/home-routines-correction/home-plan-repeat-neonPurple-2.0x.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        280,
+        374,
+        357
+      ],
+      "changed_pixels": 869
+    },
+    {
+      "file": "test/upgrade/goldens/home-routines-correction/home-plan-repeat-white-1.0x.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        264,
+        374,
+        316
+      ],
+      "changed_pixels": 176
+    },
+    {
+      "file": "test/upgrade/goldens/home-routines-correction/home-plan-repeat-white-1.6x.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        250,
+        374,
+        317
+      ],
+      "changed_pixels": 869
+    },
+    {
+      "file": "test/upgrade/goldens/home-routines-correction/home-plan-repeat-white-2.0x.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        280,
+        374,
+        357
+      ],
+      "changed_pixels": 869
+    },
+    {
+      "file": "test/upgrade/goldens/home-routines-correction/home-plan-save-error-blazeOrange-2.0x.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        280,
+        374,
+        357
+      ],
+      "changed_pixels": 869
+    },
+    {
+      "file": "test/upgrade/goldens/home-routines-correction/home-plan-save-error-higgsfield-2.0x.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        280,
+        374,
+        357
+      ],
+      "changed_pixels": 869
+    },
+    {
+      "file": "test/upgrade/goldens/home-routines-correction/home-plan-save-error-neonCyan-2.0x.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        280,
+        374,
+        357
+      ],
+      "changed_pixels": 869
+    },
+    {
+      "file": "test/upgrade/goldens/home-routines-correction/home-plan-save-error-neonMagenta-2.0x.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        280,
+        374,
+        357
+      ],
+      "changed_pixels": 869
+    },
+    {
+      "file": "test/upgrade/goldens/home-routines-correction/home-plan-save-error-neonPurple-2.0x.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        280,
+        374,
+        357
+      ],
+      "changed_pixels": 869
+    },
+    {
+      "file": "test/upgrade/goldens/home-routines-correction/home-plan-save-error-white-2.0x.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        280,
+        374,
+        357
+      ],
+      "changed_pixels": 869
+    },
+    {
+      "file": "test/upgrade/goldens/home-routines-correction/home-plan-saving-blazeOrange-2.0x.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        280,
+        374,
+        357
+      ],
+      "changed_pixels": 873
+    },
+    {
+      "file": "test/upgrade/goldens/home-routines-correction/home-plan-saving-higgsfield-2.0x.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        280,
+        374,
+        357
+      ],
+      "changed_pixels": 873
+    },
+    {
+      "file": "test/upgrade/goldens/home-routines-correction/home-plan-saving-neonCyan-2.0x.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        280,
+        374,
+        357
+      ],
+      "changed_pixels": 873
+    },
+    {
+      "file": "test/upgrade/goldens/home-routines-correction/home-plan-saving-neonMagenta-2.0x.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        280,
+        374,
+        357
+      ],
+      "changed_pixels": 873
+    },
+    {
+      "file": "test/upgrade/goldens/home-routines-correction/home-plan-saving-neonPurple-2.0x.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        280,
+        374,
+        357
+      ],
+      "changed_pixels": 873
+    },
+    {
+      "file": "test/upgrade/goldens/home-routines-correction/home-plan-saving-white-2.0x.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        280,
+        374,
+        357
+      ],
+      "changed_pixels": 873
+    },
+    {
+      "file": "test/upgrade/goldens/home-routines-correction/home-repeat-canceled-blazeOrange-2.0x.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        280,
+        374,
+        357
+      ],
+      "changed_pixels": 869
+    },
+    {
+      "file": "test/upgrade/goldens/home-routines-correction/home-repeat-canceled-higgsfield-2.0x.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        280,
+        374,
+        357
+      ],
+      "changed_pixels": 869
+    },
+    {
+      "file": "test/upgrade/goldens/home-routines-correction/home-repeat-canceled-neonCyan-2.0x.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        280,
+        374,
+        357
+      ],
+      "changed_pixels": 869
+    },
+    {
+      "file": "test/upgrade/goldens/home-routines-correction/home-repeat-canceled-neonMagenta-2.0x.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        280,
+        374,
+        357
+      ],
+      "changed_pixels": 869
+    },
+    {
+      "file": "test/upgrade/goldens/home-routines-correction/home-repeat-canceled-neonPurple-2.0x.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        280,
+        374,
+        357
+      ],
+      "changed_pixels": 869
+    },
+    {
+      "file": "test/upgrade/goldens/home-routines-correction/home-repeat-canceled-white-2.0x.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        280,
+        374,
+        357
+      ],
+      "changed_pixels": 869
+    },
+    {
+      "file": "test/upgrade/goldens/session-2/chooser-blazeOrange-1.0x-synthetic.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        245,
+        374,
+        297
+      ],
+      "changed_pixels": 176
+    },
+    {
+      "file": "test/upgrade/goldens/session-2/chooser-blazeOrange-1.6x-synthetic.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        250,
+        374,
+        317
+      ],
+      "changed_pixels": 869
+    },
+    {
+      "file": "test/upgrade/goldens/session-2/chooser-higgsfield-1.0x-synthetic.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        245,
+        374,
+        297
+      ],
+      "changed_pixels": 176
+    },
+    {
+      "file": "test/upgrade/goldens/session-2/chooser-higgsfield-1.6x-synthetic.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        250,
+        374,
+        317
+      ],
+      "changed_pixels": 869
+    },
+    {
+      "file": "test/upgrade/goldens/session-2/chooser-neonCyan-1.0x-synthetic.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        245,
+        374,
+        297
+      ],
+      "changed_pixels": 176
+    },
+    {
+      "file": "test/upgrade/goldens/session-2/chooser-neonCyan-1.6x-synthetic.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        250,
+        374,
+        317
+      ],
+      "changed_pixels": 869
+    },
+    {
+      "file": "test/upgrade/goldens/session-2/chooser-neonMagenta-1.0x-synthetic.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        245,
+        374,
+        297
+      ],
+      "changed_pixels": 176
+    },
+    {
+      "file": "test/upgrade/goldens/session-2/chooser-neonMagenta-1.6x-synthetic.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        250,
+        374,
+        317
+      ],
+      "changed_pixels": 869
+    },
+    {
+      "file": "test/upgrade/goldens/session-2/chooser-neonPurple-1.0x-synthetic.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        245,
+        374,
+        297
+      ],
+      "changed_pixels": 176
+    },
+    {
+      "file": "test/upgrade/goldens/session-2/chooser-neonPurple-1.6x-synthetic.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        250,
+        374,
+        317
+      ],
+      "changed_pixels": 869
+    },
+    {
+      "file": "test/upgrade/goldens/session-2/chooser-no-results-blazeOrange-1.0x-synthetic.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        628,
+        374,
+        680
+      ],
+      "changed_pixels": 204
+    },
+    {
+      "file": "test/upgrade/goldens/session-2/chooser-no-results-blazeOrange-1.6x-synthetic.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        514,
+        374,
+        580
+      ],
+      "changed_pixels": 204
+    },
+    {
+      "file": "test/upgrade/goldens/session-2/chooser-no-results-higgsfield-1.0x-synthetic.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        628,
+        374,
+        680
+      ],
+      "changed_pixels": 204
+    },
+    {
+      "file": "test/upgrade/goldens/session-2/chooser-no-results-higgsfield-1.6x-synthetic.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        514,
+        374,
+        580
+      ],
+      "changed_pixels": 204
+    },
+    {
+      "file": "test/upgrade/goldens/session-2/chooser-no-results-neonCyan-1.0x-synthetic.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        628,
+        374,
+        680
+      ],
+      "changed_pixels": 204
+    },
+    {
+      "file": "test/upgrade/goldens/session-2/chooser-no-results-neonCyan-1.6x-synthetic.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        514,
+        374,
+        580
+      ],
+      "changed_pixels": 204
+    },
+    {
+      "file": "test/upgrade/goldens/session-2/chooser-no-results-neonMagenta-1.0x-synthetic.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        628,
+        374,
+        680
+      ],
+      "changed_pixels": 204
+    },
+    {
+      "file": "test/upgrade/goldens/session-2/chooser-no-results-neonMagenta-1.6x-synthetic.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        514,
+        374,
+        580
+      ],
+      "changed_pixels": 204
+    },
+    {
+      "file": "test/upgrade/goldens/session-2/chooser-no-results-neonPurple-1.0x-synthetic.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        628,
+        374,
+        680
+      ],
+      "changed_pixels": 204
+    },
+    {
+      "file": "test/upgrade/goldens/session-2/chooser-no-results-neonPurple-1.6x-synthetic.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        514,
+        374,
+        580
+      ],
+      "changed_pixels": 204
+    },
+    {
+      "file": "test/upgrade/goldens/session-2/chooser-no-results-white-1.0x-synthetic.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        628,
+        374,
+        680
+      ],
+      "changed_pixels": 204
+    },
+    {
+      "file": "test/upgrade/goldens/session-2/chooser-no-results-white-1.6x-synthetic.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        514,
+        374,
+        580
+      ],
+      "changed_pixels": 204
+    },
+    {
+      "file": "test/upgrade/goldens/session-2/chooser-page-2-blazeOrange-1.0x-synthetic.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        512,
+        374,
+        564
+      ],
+      "changed_pixels": 204
+    },
+    {
+      "file": "test/upgrade/goldens/session-2/chooser-page-2-blazeOrange-1.6x-synthetic.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        355,
+        374,
+        421
+      ],
+      "changed_pixels": 204
+    },
+    {
+      "file": "test/upgrade/goldens/session-2/chooser-page-2-higgsfield-1.0x-synthetic.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        512,
+        374,
+        564
+      ],
+      "changed_pixels": 204
+    },
+    {
+      "file": "test/upgrade/goldens/session-2/chooser-page-2-higgsfield-1.6x-synthetic.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        355,
+        374,
+        421
+      ],
+      "changed_pixels": 204
+    },
+    {
+      "file": "test/upgrade/goldens/session-2/chooser-page-2-neonCyan-1.0x-synthetic.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        512,
+        374,
+        564
+      ],
+      "changed_pixels": 204
+    },
+    {
+      "file": "test/upgrade/goldens/session-2/chooser-page-2-neonCyan-1.6x-synthetic.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        355,
+        374,
+        421
+      ],
+      "changed_pixels": 204
+    },
+    {
+      "file": "test/upgrade/goldens/session-2/chooser-page-2-neonMagenta-1.0x-synthetic.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        512,
+        374,
+        564
+      ],
+      "changed_pixels": 204
+    },
+    {
+      "file": "test/upgrade/goldens/session-2/chooser-page-2-neonMagenta-1.6x-synthetic.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        355,
+        374,
+        421
+      ],
+      "changed_pixels": 204
+    },
+    {
+      "file": "test/upgrade/goldens/session-2/chooser-page-2-neonPurple-1.0x-synthetic.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        512,
+        374,
+        564
+      ],
+      "changed_pixels": 204
+    },
+    {
+      "file": "test/upgrade/goldens/session-2/chooser-page-2-neonPurple-1.6x-synthetic.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        355,
+        374,
+        421
+      ],
+      "changed_pixels": 204
+    },
+    {
+      "file": "test/upgrade/goldens/session-2/chooser-page-2-white-1.0x-synthetic.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        512,
+        374,
+        564
+      ],
+      "changed_pixels": 204
+    },
+    {
+      "file": "test/upgrade/goldens/session-2/chooser-page-2-white-1.6x-synthetic.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        355,
+        374,
+        421
+      ],
+      "changed_pixels": 204
+    },
+    {
+      "file": "test/upgrade/goldens/session-2/chooser-search-blazeOrange-1.0x-synthetic.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        560,
+        374,
+        612
+      ],
+      "changed_pixels": 204
+    },
+    {
+      "file": "test/upgrade/goldens/session-2/chooser-search-blazeOrange-1.6x-synthetic.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        403,
+        374,
+        469
+      ],
+      "changed_pixels": 204
+    },
+    {
+      "file": "test/upgrade/goldens/session-2/chooser-search-higgsfield-1.0x-synthetic.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        560,
+        374,
+        612
+      ],
+      "changed_pixels": 204
+    },
+    {
+      "file": "test/upgrade/goldens/session-2/chooser-search-higgsfield-1.6x-synthetic.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        403,
+        374,
+        469
+      ],
+      "changed_pixels": 204
+    },
+    {
+      "file": "test/upgrade/goldens/session-2/chooser-search-neonCyan-1.0x-synthetic.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        560,
+        374,
+        612
+      ],
+      "changed_pixels": 204
+    },
+    {
+      "file": "test/upgrade/goldens/session-2/chooser-search-neonCyan-1.6x-synthetic.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        403,
+        374,
+        469
+      ],
+      "changed_pixels": 204
+    },
+    {
+      "file": "test/upgrade/goldens/session-2/chooser-search-neonMagenta-1.0x-synthetic.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        560,
+        374,
+        612
+      ],
+      "changed_pixels": 204
+    },
+    {
+      "file": "test/upgrade/goldens/session-2/chooser-search-neonMagenta-1.6x-synthetic.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        403,
+        374,
+        469
+      ],
+      "changed_pixels": 204
+    },
+    {
+      "file": "test/upgrade/goldens/session-2/chooser-search-neonPurple-1.0x-synthetic.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        560,
+        374,
+        612
+      ],
+      "changed_pixels": 204
+    },
+    {
+      "file": "test/upgrade/goldens/session-2/chooser-search-neonPurple-1.6x-synthetic.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        403,
+        374,
+        469
+      ],
+      "changed_pixels": 204
+    },
+    {
+      "file": "test/upgrade/goldens/session-2/chooser-search-white-1.0x-synthetic.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        560,
+        374,
+        612
+      ],
+      "changed_pixels": 204
+    },
+    {
+      "file": "test/upgrade/goldens/session-2/chooser-search-white-1.6x-synthetic.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        403,
+        374,
+        469
+      ],
+      "changed_pixels": 204
+    },
+    {
+      "file": "test/upgrade/goldens/session-2/chooser-white-1.0x-synthetic.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        245,
+        374,
+        297
+      ],
+      "changed_pixels": 176
+    },
+    {
+      "file": "test/upgrade/goldens/session-2/chooser-white-1.6x-synthetic.png",
+      "size": [
+        390,
+        844
+      ],
+      "difference_bbox": [
+        16,
+        250,
+        374,
+        317
+      ],
+      "changed_pixels": 869
+    }
+  ]
+}

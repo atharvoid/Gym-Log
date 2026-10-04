@@ -396,13 +396,13 @@ abstract class AppText {
 
 /// Border-radius scale. The premium "sweet spot" curvature: cards and
 /// thumbnails 10px, primary CTAs 14px, secondary actions 14px, badges 8px,
-/// sheets 12px. Data-entry fields stay sharp at 0px — this is intentional
-/// per the design system.
+/// sheets 12px. Boxed data-entry fields use 10px; dense workout cells remain
+/// unboxed. See DESIGN.md for the owner-approved input geometry.
 abstract class AppRadius {
   static const double card = 10;
   static const double buttonPrimary = 14;
   static const double buttonSecondary = 14;
-  static const double input = 0;
+  static const double input = 10;
   static const double badge = 8;
   static const double thumbnail = 10;
   static const double sheet = 12;
