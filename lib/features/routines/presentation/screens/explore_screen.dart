@@ -278,15 +278,15 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen> {
         contentPadding:
             const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: AppRadius.inputAll,
           borderSide: BorderSide(color: surface.borderSubtle),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: AppRadius.inputAll,
           borderSide: BorderSide(color: surface.borderSubtle),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: AppRadius.inputAll,
           borderSide: BorderSide(color: accent.base.withAlpha(0x88)),
         ),
       ),

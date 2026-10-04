@@ -114,7 +114,7 @@ The user selects one accent palette in Settings (`context.accent`). The active a
 - Primary CTAs & Buttons: `14px` (`AppRadius.buttonPrimary`)
 - Badges & Pills: `8px` (`AppRadius.badge`)
 - Sheets: `12px` (`AppRadius.sheet`)
-- Inputs / Data-entry: `0px` (`AppRadius.input` — intentional sharp design)
+- Boxed inputs / Data-entry: `10px` (`AppRadius.input`); keep dense workout numeric cells unboxed. Owner-approved 4 October 2026.
 
 ### 4.2 Spacing (`AppSpacing`)
 - Base unit is 4pt:

@@ -321,17 +321,17 @@ class _ExerciseSelectionScreenState
                     filled: true,
                     fillColor: surface.surface3,
                     enabledBorder: OutlineInputBorder(
-                      borderRadius: AppRadius.buttonSecondaryAll,
+                      borderRadius: AppRadius.inputAll,
                       borderSide:
                           BorderSide(color: surface.borderSubtle, width: 1),
                     ),
                     border: OutlineInputBorder(
-                      borderRadius: AppRadius.buttonSecondaryAll,
+                      borderRadius: AppRadius.inputAll,
                       borderSide:
                           BorderSide(color: surface.borderSubtle, width: 1),
                     ),
                     focusedBorder: OutlineInputBorder(
-                      borderRadius: AppRadius.buttonSecondaryAll,
+                      borderRadius: AppRadius.inputAll,
                       borderSide: BorderSide(color: accent.base, width: 1.5),
                     ),
                     contentPadding: const EdgeInsets.symmetric(horizontal: 16),

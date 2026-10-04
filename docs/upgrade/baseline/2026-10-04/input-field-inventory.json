@@ -1,0 +1,590 @@
+{
+  "candidate": "4b3d544c4cd74b30b260c75e1e6d7789abc35b7e",
+  "sources": [
+    {
+      "root": "C:\\Users\\Atharva Patil\\.codex\\worktrees\\session-3-options\\gymlog",
+      "typing_sites": 16,
+      "files": 13,
+      "sites": [
+        {
+          "file": "lib/features/auth/presentation/widgets/onboarding/step_name.dart",
+          "line": 76,
+          "ordinal": 1,
+          "widget": "TextField",
+          "kind": "boxed typing field",
+          "declared_radii": [
+            "BorderRadius.zero"
+          ],
+          "decoration_helper": null,
+          "inherits_zero_radius_theme": false,
+          "declares_only_base_border_none": false,
+          "explicit_border_states": [
+            "enabledBorder",
+            "focusedBorder"
+          ],
+          "source_sha256": "d3b50a70a447778ca2cf7b5c099dfa1ba45c6ac254360147c3eaab247f79fa6b"
+        },
+        {
+          "file": "lib/features/exercises/presentation/screens/exercise_selection_screen.dart",
+          "line": 299,
+          "ordinal": 1,
+          "widget": "TextField",
+          "kind": "boxed typing field",
+          "declared_radii": [
+            "AppRadius.buttonSecondaryAll"
+          ],
+          "decoration_helper": null,
+          "inherits_zero_radius_theme": false,
+          "declares_only_base_border_none": false,
+          "explicit_border_states": [
+            "enabledBorder",
+            "border",
+            "focusedBorder"
+          ],
+          "source_sha256": "17f789c5b96777703129c57f41a247165808a5313589fb56fd38e092e0553ade"
+        },
+        {
+          "file": "lib/features/exercises/presentation/widgets/create_exercise_dialog.dart",
+          "line": 170,
+          "ordinal": 1,
+          "widget": "TextField",
+          "kind": "boxed typing field",
+          "declared_radii": [
+            "AppRadius.inputAll"
+          ],
+          "decoration_helper": null,
+          "inherits_zero_radius_theme": false,
+          "declares_only_base_border_none": false,
+          "explicit_border_states": [
+            "enabledBorder",
+            "focusedBorder"
+          ],
+          "source_sha256": "2eac97c5292afa4c49ca57c01f4126d14b2bba9aaab9d219f0aee2626251d7d4"
+        },
+        {
+          "file": "lib/features/profile/presentation/screens/delete_account_screen.dart",
+          "line": 187,
+          "ordinal": 1,
+          "widget": "TextField",
+          "kind": "boxed typing field",
+          "declared_radii": [
+            "BorderRadius.zero"
+          ],
+          "decoration_helper": null,
+          "inherits_zero_radius_theme": false,
+          "declares_only_base_border_none": false,
+          "explicit_border_states": [
+            "enabledBorder",
+            "focusedBorder"
+          ],
+          "source_sha256": "9e6c787ef3993fef22ba4ea19f5c35ba94394fd78ee8e405af0913881b7dee11"
+        },
+        {
+          "file": "lib/features/profile/presentation/screens/help_feedback_screen.dart",
+          "line": 284,
+          "ordinal": 1,
+          "widget": "TextField",
+          "kind": "boxed typing field",
+          "declared_radii": [
+            "BorderRadius.circular(AppRadius.card)"
+          ],
+          "decoration_helper": "_fieldDecoration",
+          "inherits_zero_radius_theme": false,
+          "declares_only_base_border_none": false,
+          "explicit_border_states": [
+            "border",
+            "enabledBorder",
+            "focusedBorder"
+          ],
+          "source_sha256": "5b8394dc696046e085f2de43738704dc26317190e87dd8cc12cb09845da94556"
+        },
+        {
+          "file": "lib/features/profile/presentation/screens/help_feedback_screen.dart",
+          "line": 296,
+          "ordinal": 2,
+          "widget": "TextField",
+          "kind": "boxed typing field",
+          "declared_radii": [
+            "BorderRadius.circular(AppRadius.card)"
+          ],
+          "decoration_helper": "_fieldDecoration",
+          "inherits_zero_radius_theme": false,
+          "declares_only_base_border_none": false,
+          "explicit_border_states": [
+            "border",
+            "enabledBorder",
+            "focusedBorder"
+          ],
+          "source_sha256": "5b8394dc696046e085f2de43738704dc26317190e87dd8cc12cb09845da94556"
+        },
+        {
+          "file": "lib/features/routines/presentation/screens/ai_routine_import_screen.dart",
+          "line": 328,
+          "ordinal": 1,
+          "widget": "TextField",
+          "kind": "boxed typing field",
+          "declared_radii": [],
+          "decoration_helper": null,
+          "inherits_zero_radius_theme": true,
+          "declares_only_base_border_none": true,
+          "explicit_border_states": [
+            "border"
+          ],
+          "source_sha256": "c98279698853eb09c55800858ff847af404b7bffea8bc0607f95dc46f1f10a2b"
+        },
+        {
+          "file": "lib/features/routines/presentation/screens/ai_routine_review_screen.dart",
+          "line": 103,
+          "ordinal": 1,
+          "widget": "TextField",
+          "kind": "boxed typing field",
+          "declared_radii": [
+            "AppRadius.cardAll"
+          ],
+          "decoration_helper": null,
+          "inherits_zero_radius_theme": false,
+          "declares_only_base_border_none": false,
+          "explicit_border_states": [
+            "border",
+            "enabledBorder",
+            "focusedBorder"
+          ],
+          "source_sha256": "b0d723430002ed2274ee1a9451742fff74eff964445a1cd822fccdebaaa81a15"
+        },
+        {
+          "file": "lib/features/routines/presentation/screens/ai_routine_review_screen.dart",
+          "line": 283,
+          "ordinal": 2,
+          "widget": "TextField",
+          "kind": "boxed typing field",
+          "declared_radii": [
+            "AppRadius.cardAll"
+          ],
+          "decoration_helper": null,
+          "inherits_zero_radius_theme": false,
+          "declares_only_base_border_none": false,
+          "explicit_border_states": [
+            "border",
+            "enabledBorder",
+            "focusedBorder"
+          ],
+          "source_sha256": "b0d723430002ed2274ee1a9451742fff74eff964445a1cd822fccdebaaa81a15"
+        },
+        {
+          "file": "lib/features/routines/presentation/screens/explore_screen.dart",
+          "line": 245,
+          "ordinal": 1,
+          "widget": "TextField",
+          "kind": "boxed typing field",
+          "declared_radii": [
+            "BorderRadius.circular(12)"
+          ],
+          "decoration_helper": null,
+          "inherits_zero_radius_theme": false,
+          "declares_only_base_border_none": false,
+          "explicit_border_states": [
+            "border",
+            "enabledBorder",
+            "focusedBorder"
+          ],
+          "source_sha256": "fb5d67302d9710b267a0c165d1b7a336559288c754e6e13dc5b0a65b69c1f280"
+        },
+        {
+          "file": "lib/features/routines/presentation/screens/routine_editor_screen.dart",
+          "line": 388,
+          "ordinal": 1,
+          "widget": "TextField",
+          "kind": "boxed typing field",
+          "declared_radii": [
+            "AppRadius.cardAll"
+          ],
+          "decoration_helper": null,
+          "inherits_zero_radius_theme": false,
+          "declares_only_base_border_none": false,
+          "explicit_border_states": [
+            "border",
+            "enabledBorder",
+            "focusedBorder"
+          ],
+          "source_sha256": "ccb288e9fad8906f0ffef67126fd72176125a93b7e10faac24bfbe5964cb9f03"
+        },
+        {
+          "file": "lib/features/routines/presentation/widgets/training_launchpad.dart",
+          "line": 390,
+          "ordinal": 1,
+          "widget": "TextField",
+          "kind": "boxed typing field",
+          "declared_radii": [],
+          "decoration_helper": null,
+          "inherits_zero_radius_theme": true,
+          "declares_only_base_border_none": false,
+          "explicit_border_states": [],
+          "source_sha256": "68a9db2e41cd33790c589b6074c5d415f446ee69988ec467611bc699827516a3"
+        },
+        {
+          "file": "lib/features/workout/presentation/widgets/finish_summary_sheet.dart",
+          "line": 190,
+          "ordinal": 1,
+          "widget": "TextField",
+          "kind": "boxed typing field",
+          "declared_radii": [
+            "AppRadius.inputAll"
+          ],
+          "decoration_helper": null,
+          "inherits_zero_radius_theme": false,
+          "declares_only_base_border_none": false,
+          "explicit_border_states": [
+            "enabledBorder",
+            "focusedBorder"
+          ],
+          "source_sha256": "cb0b40ecc027a6a3ba9cec58f1ceef5042071b8aaae82d0bff84be6a2b0c427b"
+        },
+        {
+          "file": "lib/features/workout/presentation/widgets/set_row.dart",
+          "line": 515,
+          "ordinal": 1,
+          "widget": "TextField",
+          "kind": "unboxed numeric template",
+          "declared_radii": [],
+          "decoration_helper": null,
+          "inherits_zero_radius_theme": false,
+          "declares_only_base_border_none": false,
+          "explicit_border_states": [
+            "border",
+            "focusedBorder",
+            "enabledBorder"
+          ],
+          "source_sha256": "5735d0b2eaaf770bc00b35c464bd5d2c6dacd09dc7bff0cf97c26ff3d2ba53b9"
+        },
+        {
+          "file": "lib/features/workout/presentation/widgets/set_row.dart",
+          "line": 867,
+          "ordinal": 2,
+          "widget": "TextField",
+          "kind": "unboxed numeric template",
+          "declared_radii": [],
+          "decoration_helper": null,
+          "inherits_zero_radius_theme": false,
+          "declares_only_base_border_none": false,
+          "explicit_border_states": [
+            "border",
+            "focusedBorder",
+            "enabledBorder"
+          ],
+          "source_sha256": "5735d0b2eaaf770bc00b35c464bd5d2c6dacd09dc7bff0cf97c26ff3d2ba53b9"
+        },
+        {
+          "file": "lib/shared/widgets/ui/app_dialog.dart",
+          "line": 306,
+          "ordinal": 1,
+          "widget": "TextField",
+          "kind": "boxed typing field",
+          "declared_radii": [
+            "AppRadius.inputAll"
+          ],
+          "decoration_helper": null,
+          "inherits_zero_radius_theme": false,
+          "declares_only_base_border_none": false,
+          "explicit_border_states": [
+            "enabledBorder",
+            "focusedBorder"
+          ],
+          "source_sha256": "0e13e5f08ddd486c1f97f5ff7981c13c864f4b1c0a4b4106e225b3ad28396a97"
+        }
+      ]
+    },
+    {
+      "root": "C:\\Users\\Atharva Patil\\Documents\\projects\\gymlog",
+      "typing_sites": 16,
+      "files": 13,
+      "sites": [
+        {
+          "file": "lib/features/auth/presentation/widgets/onboarding/step_name.dart",
+          "line": 76,
+          "ordinal": 1,
+          "widget": "TextField",
+          "kind": "boxed typing field",
+          "declared_radii": [
+            "BorderRadius.zero"
+          ],
+          "decoration_helper": null,
+          "inherits_zero_radius_theme": false,
+          "declares_only_base_border_none": false,
+          "explicit_border_states": [
+            "enabledBorder",
+            "focusedBorder"
+          ],
+          "source_sha256": "77abef7f09d6fbc4889040007afba1895f5e04559bab78ee6399a38cb7a05d98"
+        },
+        {
+          "file": "lib/features/exercises/presentation/screens/exercise_selection_screen.dart",
+          "line": 299,
+          "ordinal": 1,
+          "widget": "TextField",
+          "kind": "boxed typing field",
+          "declared_radii": [
+            "AppRadius.buttonSecondaryAll"
+          ],
+          "decoration_helper": null,
+          "inherits_zero_radius_theme": false,
+          "declares_only_base_border_none": false,
+          "explicit_border_states": [
+            "enabledBorder",
+            "border",
+            "focusedBorder"
+          ],
+          "source_sha256": "0e51cb88083668acfe0daa05cd67da2953e25296d5d99015ab3b00fafc13b17b"
+        },
+        {
+          "file": "lib/features/exercises/presentation/widgets/create_exercise_dialog.dart",
+          "line": 170,
+          "ordinal": 1,
+          "widget": "TextField",
+          "kind": "boxed typing field",
+          "declared_radii": [
+            "AppRadius.inputAll"
+          ],
+          "decoration_helper": null,
+          "inherits_zero_radius_theme": false,
+          "declares_only_base_border_none": false,
+          "explicit_border_states": [
+            "enabledBorder",
+            "focusedBorder"
+          ],
+          "source_sha256": "b2bb612d976d41b682b91c76a1b468cb5aee586800a7f1cdd6d884aed3cf9dac"
+        },
+        {
+          "file": "lib/features/profile/presentation/screens/delete_account_screen.dart",
+          "line": 187,
+          "ordinal": 1,
+          "widget": "TextField",
+          "kind": "boxed typing field",
+          "declared_radii": [
+            "BorderRadius.zero"
+          ],
+          "decoration_helper": null,
+          "inherits_zero_radius_theme": false,
+          "declares_only_base_border_none": false,
+          "explicit_border_states": [
+            "enabledBorder",
+            "focusedBorder"
+          ],
+          "source_sha256": "5717d97f8d172447076a21142057dfb79e2e1d0130048b68862095ed133a750a"
+        },
+        {
+          "file": "lib/features/profile/presentation/screens/help_feedback_screen.dart",
+          "line": 284,
+          "ordinal": 1,
+          "widget": "TextField",
+          "kind": "boxed typing field",
+          "declared_radii": [
+            "BorderRadius.circular(AppRadius.card)"
+          ],
+          "decoration_helper": "_fieldDecoration",
+          "inherits_zero_radius_theme": false,
+          "declares_only_base_border_none": false,
+          "explicit_border_states": [
+            "border",
+            "enabledBorder",
+            "focusedBorder"
+          ],
+          "source_sha256": "314cdf0f38c0e3131a7de6d7a2336220cbfe1628512238a5c0c0fb3b519055bb"
+        },
+        {
+          "file": "lib/features/profile/presentation/screens/help_feedback_screen.dart",
+          "line": 296,
+          "ordinal": 2,
+          "widget": "TextField",
+          "kind": "boxed typing field",
+          "declared_radii": [
+            "BorderRadius.circular(AppRadius.card)"
+          ],
+          "decoration_helper": "_fieldDecoration",
+          "inherits_zero_radius_theme": false,
+          "declares_only_base_border_none": false,
+          "explicit_border_states": [
+            "border",
+            "enabledBorder",
+            "focusedBorder"
+          ],
+          "source_sha256": "314cdf0f38c0e3131a7de6d7a2336220cbfe1628512238a5c0c0fb3b519055bb"
+        },
+        {
+          "file": "lib/features/routines/presentation/screens/ai_routine_import_screen.dart",
+          "line": 328,
+          "ordinal": 1,
+          "widget": "TextField",
+          "kind": "boxed typing field",
+          "declared_radii": [],
+          "decoration_helper": null,
+          "inherits_zero_radius_theme": true,
+          "declares_only_base_border_none": true,
+          "explicit_border_states": [
+            "border"
+          ],
+          "source_sha256": "8a73ac63eee21ce440378c609a1759ee54c417448b2b26a7013fe86620c82ae3"
+        },
+        {
+          "file": "lib/features/routines/presentation/screens/ai_routine_review_screen.dart",
+          "line": 103,
+          "ordinal": 1,
+          "widget": "TextField",
+          "kind": "boxed typing field",
+          "declared_radii": [
+            "AppRadius.cardAll"
+          ],
+          "decoration_helper": null,
+          "inherits_zero_radius_theme": false,
+          "declares_only_base_border_none": false,
+          "explicit_border_states": [
+            "border",
+            "enabledBorder",
+            "focusedBorder"
+          ],
+          "source_sha256": "c0426d1ab0097b74220e43587ea2e6a6a059c4e698fd6de6ff51aac5d744f0c6"
+        },
+        {
+          "file": "lib/features/routines/presentation/screens/ai_routine_review_screen.dart",
+          "line": 283,
+          "ordinal": 2,
+          "widget": "TextField",
+          "kind": "boxed typing field",
+          "declared_radii": [
+            "AppRadius.cardAll"
+          ],
+          "decoration_helper": null,
+          "inherits_zero_radius_theme": false,
+          "declares_only_base_border_none": false,
+          "explicit_border_states": [
+            "border",
+            "enabledBorder",
+            "focusedBorder"
+          ],
+          "source_sha256": "c0426d1ab0097b74220e43587ea2e6a6a059c4e698fd6de6ff51aac5d744f0c6"
+        },
+        {
+          "file": "lib/features/routines/presentation/screens/explore_screen.dart",
+          "line": 245,
+          "ordinal": 1,
+          "widget": "TextField",
+          "kind": "boxed typing field",
+          "declared_radii": [
+            "BorderRadius.circular(12)"
+          ],
+          "decoration_helper": null,
+          "inherits_zero_radius_theme": false,
+          "declares_only_base_border_none": false,
+          "explicit_border_states": [
+            "border",
+            "enabledBorder",
+            "focusedBorder"
+          ],
+          "source_sha256": "04644414f42c9bfca5f94594e8b4c376245334a9ebc5e8f2c8d5c2ec47b8e71a"
+        },
+        {
+          "file": "lib/features/routines/presentation/screens/routine_editor_screen.dart",
+          "line": 388,
+          "ordinal": 1,
+          "widget": "TextField",
+          "kind": "boxed typing field",
+          "declared_radii": [
+            "AppRadius.cardAll"
+          ],
+          "decoration_helper": null,
+          "inherits_zero_radius_theme": false,
+          "declares_only_base_border_none": false,
+          "explicit_border_states": [
+            "border",
+            "enabledBorder",
+            "focusedBorder"
+          ],
+          "source_sha256": "6303a2810e7fe171c5a8d99ead0d8b422c54b3fac32340fa39aab63db6205bb1"
+        },
+        {
+          "file": "lib/features/routines/presentation/widgets/training_launchpad.dart",
+          "line": 551,
+          "ordinal": 1,
+          "widget": "TextField",
+          "kind": "boxed typing field",
+          "declared_radii": [],
+          "decoration_helper": null,
+          "inherits_zero_radius_theme": true,
+          "declares_only_base_border_none": false,
+          "explicit_border_states": [],
+          "source_sha256": "752432d06273e248ccb957ad62d41c21d22beb3b0eee6c97951c06769a38c82d"
+        },
+        {
+          "file": "lib/features/workout/presentation/widgets/finish_summary_sheet.dart",
+          "line": 190,
+          "ordinal": 1,
+          "widget": "TextField",
+          "kind": "boxed typing field",
+          "declared_radii": [
+            "AppRadius.inputAll"
+          ],
+          "decoration_helper": null,
+          "inherits_zero_radius_theme": false,
+          "declares_only_base_border_none": false,
+          "explicit_border_states": [
+            "enabledBorder",
+            "focusedBorder"
+          ],
+          "source_sha256": "66b60154e9a4409a1b75b31a46cb16f3e756fb0b33dda004836c2644a9835d0b"
+        },
+        {
+          "file": "lib/features/workout/presentation/widgets/set_row.dart",
+          "line": 515,
+          "ordinal": 1,
+          "widget": "TextField",
+          "kind": "unboxed numeric template",
+          "declared_radii": [],
+          "decoration_helper": null,
+          "inherits_zero_radius_theme": false,
+          "declares_only_base_border_none": false,
+          "explicit_border_states": [
+            "border",
+            "focusedBorder",
+            "enabledBorder"
+          ],
+          "source_sha256": "9e06acb44d4a126ac5a62784204990b2409e785201f025cac0cea239cb82c4a9"
+        },
+        {
+          "file": "lib/features/workout/presentation/widgets/set_row.dart",
+          "line": 867,
+          "ordinal": 2,
+          "widget": "TextField",
+          "kind": "unboxed numeric template",
+          "declared_radii": [],
+          "decoration_helper": null,
+          "inherits_zero_radius_theme": false,
+          "declares_only_base_border_none": false,
+          "explicit_border_states": [
+            "border",
+            "focusedBorder",
+            "enabledBorder"
+          ],
+          "source_sha256": "9e06acb44d4a126ac5a62784204990b2409e785201f025cac0cea239cb82c4a9"
+        },
+        {
+          "file": "lib/shared/widgets/ui/app_dialog.dart",
+          "line": 306,
+          "ordinal": 1,
+          "widget": "TextField",
+          "kind": "boxed typing field",
+          "declared_radii": [
+            "AppRadius.inputAll"
+          ],
+          "decoration_helper": null,
+          "inherits_zero_radius_theme": false,
+          "declares_only_base_border_none": false,
+          "explicit_border_states": [
+            "enabledBorder",
+            "focusedBorder"
+          ],
+          "source_sha256": "0e13e5f08ddd486c1f97f5ff7981c13c864f4b1c0a4b4106e225b3ad28396a97"
+        }
+      ]
+    }
+  ],
+  "shape_declarations_match": true
+}

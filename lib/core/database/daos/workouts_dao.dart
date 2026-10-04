@@ -867,6 +867,53 @@ class WorkoutsDao extends DatabaseAccessor<AppDatabase>
           ..limit(limit, offset: offset))
         .get();
 
+    return _sessionPreviews(sessions);
+  }
+
+  /// Completion chronology is independent of the paginated, start-date feed.
+  /// Keep two rows so a tied latest completion cannot invent program order.
+  Stream<List<WorkoutSessionPreview>> watchLatestCompletedPreviews(
+      String userId,
+      {List<String>? routineIds}) {
+    return watchHistoryRevision(userId).asyncMap((_) async {
+      if (routineIds != null && routineIds.isEmpty) return [];
+      if (routineIds != null) {
+        // One representative per routine prevents duplicate imported sessions
+        // from hiding a different routine with the same latest completion time.
+        final placeholders = List.filled(routineIds.length, '?').join(',');
+        final rows = await customSelect('''
+          SELECT * FROM (
+            SELECT s.*, ROW_NUMBER() OVER (
+              PARTITION BY routine_id ORDER BY ended_at DESC, id ASC
+            ) AS completion_rank
+            FROM workout_sessions s
+            WHERE user_id = ? AND ended_at IS NOT NULL
+              AND routine_id IN ($placeholders)
+          ) WHERE completion_rank = 1
+          ORDER BY ended_at DESC, id ASC LIMIT 2
+          ''', variables: [
+          Variable.withString(userId),
+          for (final id in routineIds) Variable.withString(id)
+        ], readsFrom: {
+          workoutSessions
+        }).get();
+        return _sessionPreviews(
+            rows.map((r) => workoutSessions.map(r.data)).toList());
+      }
+      final query = select(workoutSessions)
+        ..where((t) => t.userId.equals(userId) & t.endedAt.isNotNull());
+      query
+        ..orderBy([
+          (t) => OrderingTerm.desc(t.endedAt),
+          (t) => OrderingTerm.asc(t.id),
+        ])
+        ..limit(2);
+      return _sessionPreviews(await query.get());
+    });
+  }
+
+  Future<List<WorkoutSessionPreview>> _sessionPreviews(
+      List<WorkoutSession> sessions) async {
     if (sessions.isEmpty) return [];
 
     final ids = sessions.map((s) => s.id).toList();

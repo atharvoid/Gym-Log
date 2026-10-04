@@ -1,7 +1,11 @@
 /// Human "time ago" at day granularity. Shared by the routines list summary
 /// and the routine card (previously duplicated, and divergent, in both).
-String relativeDay(DateTime d) {
-  final diff = DateTime.now().difference(d);
+String relativeDay(DateTime d, {DateTime? now}) {
+  final today = (now ?? DateTime.now()).toLocal();
+  final date = d.toLocal();
+  final diff = DateTime.utc(today.year, today.month, today.day)
+      .difference(DateTime.utc(date.year, date.month, date.day));
+  if (diff.isNegative) return '${date.day}/${date.month}/${date.year}';
   if (diff.inDays < 1) return 'today';
   if (diff.inDays == 1) return 'yesterday';
   if (diff.inDays < 7) return '${diff.inDays} days ago';

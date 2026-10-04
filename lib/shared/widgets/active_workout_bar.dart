@@ -13,8 +13,8 @@ import 'motion/pressable_scale.dart';
 /// Minimized "workout in progress" mini player.
 ///
 /// PLACEMENT CONTRACT: this widget FLOATS. It is positioned in [AppShell]'s
-/// body Stack, [kActiveBarGap] above the nav bar, and is exactly
-/// [kActiveBarHeight] tall. It must never be placed inside
+/// body Stack, [kActiveBarGap] above the nav bar, and is
+/// at least [kActiveBarHeight] tall, growing with text. It must never be placed inside
 /// `bottomNavigationBar` again — doing that changes the height of the bottom
 /// chrome when a session starts, which re-lays-out every tab and makes the nav
 /// bar itself animate downward.
@@ -73,7 +73,7 @@ class ActiveWorkoutBar extends ConsumerWidget {
             if ((details.primaryVelocity ?? 0) < -180) _expand(context);
           },
           child: Container(
-            height: kActiveBarHeight,
+            height: activeBarHeight(MediaQuery.textScalerOf(context)),
             padding: const EdgeInsets.symmetric(horizontal: 10),
             decoration: BoxDecoration(
               color: context.chrome.activeBarBg,

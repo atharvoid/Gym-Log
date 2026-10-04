@@ -1,0 +1,20 @@
+00:00 +0: loading C:/Users/Atharva Patil/.codex/worktrees/session-3-options/gymlog/test/upgrade/input_radius_review_render_test.dart
+00:00 +0: (setUpAll)
+00:00 +0: before-chooser-higgsfield-1.0x
+00:03 +1: before-ai-paste-higgsfield-1.0x
+00:04 +2: proposed-chooser-higgsfield-1.0x
+00:05 +3: proposed-ai-paste-higgsfield-1.0x
+00:06 +4: before-chooser-higgsfield-1.6x
+00:07 +5: proposed-chooser-higgsfield-1.6x
+00:08 +6: before-chooser-higgsfield-2.0x
+00:09 +7: proposed-chooser-higgsfield-2.0x
+00:10 +8: before-chooser-neonPurple-1.0x
+00:11 +9: before-ai-paste-neonPurple-1.0x
+00:11 +10: proposed-chooser-neonPurple-1.0x
+00:12 +11: proposed-ai-paste-neonPurple-1.0x
+00:13 +12: before-chooser-neonPurple-1.6x
+00:14 +13: proposed-chooser-neonPurple-1.6x
+00:14 +14: before-chooser-neonPurple-2.0x
+00:15 +15: proposed-chooser-neonPurple-2.0x
+00:16 +16: (tearDownAll)
+00:16 +16: All tests passed!

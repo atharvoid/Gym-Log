@@ -5,6 +5,8 @@ import 'package:go_router/go_router.dart';
 import 'package:gymlog/core/database/daos/routines_dao.dart';
 import 'package:gymlog/core/database/daos/program_grouping.dart';
 import 'package:gymlog/features/routines/presentation/widgets/training_launchpad.dart';
+import 'package:gymlog/features/routines/presentation/widgets/training_utility_button.dart';
+import 'package:gymlog/features/routines/presentation/providers/training_plan_provider.dart';
 import 'package:gymlog/features/workout/presentation/providers/active_workout_provider.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_text.dart';
@@ -14,6 +16,7 @@ import '../../../../shared/providers/bottom_chrome_provider.dart';
 import '../../../../shared/widgets/ui/action_bottom_sheet.dart';
 import '../../../../shared/widgets/ui/app_card.dart';
 import '../../../../shared/widgets/ui/skeleton.dart';
+import '../../../../shared/widgets/ui/primary_button.dart';
 import '../../../routines/presentation/widgets/routine_card.dart';
 import '../../../routines/presentation/providers/routines_provider.dart';
 import 'package:gymlog/shared/layout/adaptive.dart';
@@ -31,6 +34,56 @@ class WorkoutScreen extends ConsumerStatefulWidget {
 }
 
 class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
+  final _scrollController = ScrollController();
+  final _routineKeys = <String, GlobalKey>{};
+  bool _locating = false;
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _viewNext(String id) async {
+    if (_locating || !_scrollController.hasClients) return;
+    _locating = true;
+    final original = _scrollController.offset;
+    try {
+      // Lazy slivers only expose mounted cards. Scan only on this explicit
+      // navigation action; data changes never move the reader's scroll position.
+      if (_routineKeys[id]?.currentContext == null) _scrollController.jumpTo(0);
+      while (mounted && _scrollController.hasClients) {
+        await WidgetsBinding.instance.endOfFrame;
+        if (!mounted ||
+            ref
+                    .read(trainingPlanResolutionProvider)
+                    .valueOrNull
+                    ?.next
+                    ?.routine
+                    .id !=
+                id) {
+          break;
+        }
+        final target = _routineKeys[id]?.currentContext;
+        if (target != null && target.mounted) {
+          await Scrollable.ensureVisible(target,
+              alignment: 0, duration: Duration.zero);
+          return;
+        }
+        final position = _scrollController.position;
+        if (position.pixels >= position.maxScrollExtent) break;
+        _scrollController.jumpTo(
+            (position.pixels + position.viewportDimension * .8)
+                .clamp(0, position.maxScrollExtent));
+      }
+      if (mounted && _scrollController.hasClients) {
+        _scrollController.jumpTo(
+            original.clamp(0, _scrollController.position.maxScrollExtent));
+      }
+    } finally {
+      _locating = false;
+    }
+  }
+
   void _startRoutine(HydratedRoutine routine) =>
       launchTraining(context, ref, routine.routine.id);
 
@@ -75,6 +128,9 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
   @override
   Widget build(BuildContext context) {
     final routinesAsync = ref.watch(hydratedRoutinesProvider);
+    final planState = ref.watch(trainingPlanResolutionProvider);
+    final resolution = planState.valueOrNull;
+    final nextId = resolution?.next?.routine.id;
     final surface = context.surface;
     // Reserve room for the nav bar and, when a session is live, the floating
     // mini player. Replaces the old hardcoded 24dp bottom padding, which hid
@@ -86,6 +142,8 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
       body: AdaptiveContent(
         child: SafeArea(
           child: CustomScrollView(
+            key: const PageStorageKey('routine_library'),
+            controller: _scrollController,
             slivers: [
               // ── Identity header (replaces AppBar — matches Home's chrome) ──
               SliverToBoxAdapter(
@@ -96,11 +154,17 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
                     children: [
                       Semantics(
                         header: true,
-                        child: Text(
-                          'Routines',
-                          style: AppText.screenTitle(color: surface.textPrimary)
-                              .copyWith(letterSpacing: -0.5),
-                        ),
+                        child: LayoutBuilder(
+                            builder: (context, constraints) => Text('Routines',
+                                style: (constraints.maxWidth < 320 &&
+                                            MediaQuery.textScalerOf(context)
+                                                    .scale(14) >=
+                                                21
+                                        ? AppText.titleLarge(
+                                            color: surface.textPrimary)
+                                        : AppText.screenTitle(
+                                            color: surface.textPrimary))
+                                    .copyWith(letterSpacing: -0.5))),
                       ),
                       routinesAsync.maybeWhen(
                         data: (routines) => routines.isEmpty
@@ -122,25 +186,68 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
               SliverToBoxAdapter(
                   child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: Wrap(spacing: AppSpacing.x4, children: [
-                        TextButton(
-                            onPressed: _openCreateRoutineSheet,
-                            style: TextButton.styleFrom(
-                                foregroundColor: surface.textSecondary),
-                            child: const Text('New routine')),
-                        TextButton(
-                            onPressed: () => _push('/routines/explore'),
-                            style: TextButton.styleFrom(
-                                foregroundColor: surface.textSecondary),
-                            child: const Text('Explore')),
-                      ]))),
-              const SliverToBoxAdapter(
-                  child: Padding(
-                      padding: EdgeInsets.all(16),
-                      child: AppCard(
-                          radius: AppRadius.card,
-                          child: TrainingLaunchpad(compact: true)))),
+                      child: Padding(
+                          padding: const EdgeInsets.only(top: 16, bottom: 8),
+                          child: LayoutBuilder(builder: (context, constraints) {
+                            final Widget create = routinesAsync
+                                        .valueOrNull?.isEmpty ==
+                                    true
+                                ? PrimaryButton(
+                                    key: const ValueKey('library-New routine'),
+                                    label: 'New routine',
+                                    onPressed: _openCreateRoutineSheet)
+                                : TrainingUtilityButton(
+                                    key: const ValueKey('library-New routine'),
+                                    label: 'New routine',
+                                    icon: Icons.add_rounded,
+                                    onPressed: _openCreateRoutineSheet);
+                            final explore = TrainingUtilityButton(
+                                key: const ValueKey('library-Explore'),
+                                label: 'Explore',
+                                icon: Icons.explore_outlined,
+                                onPressed: () => _push('/routines/explore'));
+                            if (MediaQuery.textScalerOf(context).scale(14) >=
+                                    21 ||
+                                constraints.maxWidth < 320) {
+                              return Column(children: [
+                                create,
+                                const SizedBox(height: 8),
+                                explore
+                              ]);
+                            }
+                            return Row(children: [
+                              Expanded(child: create),
+                              const SizedBox(width: 12),
+                              Expanded(child: explore)
+                            ]);
+                          })))),
 
+              if (routinesAsync.hasValue &&
+                  routinesAsync.requireValue.isNotEmpty &&
+                  (planState.hasError || resolution?.problem != null))
+                SliverPadding(
+                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+                    sliver: SliverToBoxAdapter(
+                        child: AppCard(
+                            child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                          Semantics(
+                              liveRegion: true,
+                              child: Text('Training plan needs attention',
+                                  style: AppText.sheetTitle(
+                                      color: surface.textPrimary))),
+                          const SizedBox(height: 4),
+                          Text(
+                              'Your saved routines are available. Check the plan on Home.',
+                              style:
+                                  AppText.body(color: surface.textSecondary)),
+                          Align(
+                              alignment: Alignment.centerLeft,
+                              child: TextButton(
+                                  onPressed: () => context.go('/'),
+                                  child: const Text('View Home'))),
+                        ])))),
               // Source-program groups and standalone saved plans.
               ...routinesAsync.when(
                 loading: () => [
@@ -149,8 +256,26 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
                     sliver: SliverToBoxAdapter(child: _RoutinesLoading()),
                   ),
                 ],
-                // The launchpad already owns this read failure and its Retry action.
-                error: (e, _) => [],
+                error: (e, _) => [
+                  SliverToBoxAdapter(
+                      child: Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: AppCard(
+                              child: Column(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.stretch,
+                                  children: [
+                                Semantics(
+                                    liveRegion: true,
+                                    child: Text("Couldn't load your routines",
+                                        style: AppText.sectionHeading(
+                                            color: surface.textPrimary))),
+                                TextButton(
+                                    onPressed: () => ref
+                                        .invalidate(hydratedRoutinesProvider),
+                                    child: const Text('Try again')),
+                              ]))))
+                ],
                 data: (routines) {
                   if (routines.isEmpty) {
                     return [
@@ -186,6 +311,30 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
                                         'Source program · ${group.routines.length} saved routines',
                                         style: AppText.meta(
                                             color: surface.textSecondary)),
+                                    if (group.routines
+                                        .any((r) => r.id == nextId))
+                                      Wrap(
+                                          crossAxisAlignment:
+                                              WrapCrossAlignment.center,
+                                          spacing: 12,
+                                          children: [
+                                            Text(
+                                                resolution?.following == true
+                                                    ? 'Following on Home'
+                                                    : 'Chosen on Home',
+                                                style: AppText.meta(
+                                                    color:
+                                                        context.accent.base)),
+                                            TextButton(
+                                                style: TextButton.styleFrom(
+                                                    minimumSize:
+                                                        const Size(48, 48),
+                                                    foregroundColor:
+                                                        surface.textPrimary),
+                                                onPressed: () =>
+                                                    _viewNext(nextId!),
+                                                child: const Text('View next')),
+                                          ]),
                                   ]))),
                       _routineList(
                           group.routines.map((r) => byId[r.id]!).toList()),
@@ -194,9 +343,34 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
                       SliverToBoxAdapter(
                           child: Padding(
                               padding: const EdgeInsets.all(16),
-                              child: Text('Standalone routines',
-                                  style: AppText.sectionHeading(
-                                      color: surface.textPrimary)))),
+                              child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text('Standalone routines',
+                                        style: AppText.sectionHeading(
+                                            color: surface.textPrimary)),
+                                    if (grouping.standalone
+                                        .any((r) => r.id == nextId))
+                                      Wrap(
+                                          spacing: 12,
+                                          crossAxisAlignment:
+                                              WrapCrossAlignment.center,
+                                          children: [
+                                            Text('Chosen on Home',
+                                                style: AppText.meta(
+                                                    color:
+                                                        context.accent.base)),
+                                            TextButton(
+                                                style: TextButton.styleFrom(
+                                                    minimumSize:
+                                                        const Size(48, 48),
+                                                    foregroundColor:
+                                                        surface.textPrimary),
+                                                onPressed: () =>
+                                                    _viewNext(nextId!),
+                                                child: const Text('View next')),
+                                          ]),
+                                  ]))),
                       _routineList(
                           grouping.standalone.map((r) => byId[r.id]!).toList()),
                     ],
@@ -219,6 +393,8 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
               (context, i) => Padding(
                   padding: const EdgeInsets.only(bottom: 12),
                   child: RoutineCard(
+                      key: _routineKeys.putIfAbsent(
+                          routines[i].routine.id, GlobalKey.new),
                       routineId: routines[i].routine.id,
                       routineName: routines[i].routine.name,
                       exerciseNames: routines[i].exerciseNames,
@@ -226,6 +402,13 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
                       lastTrained: routines[i].lastTrained,
                       workoutInProgress:
                           ref.watch(activeWorkoutProvider) != null,
+                      isNext: ref
+                              .watch(trainingPlanResolutionProvider)
+                              .valueOrNull
+                              ?.next
+                              ?.routine
+                              .id ==
+                          routines[i].routine.id,
                       onStartTap: () => _startRoutine(routines[i]))),
               childCount: routines.length)));
 }

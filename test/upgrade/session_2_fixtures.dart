@@ -1,5 +1,7 @@
 // Synthetic evidence for Session 2 exploration, not production launch logic.
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:gymlog/shared/widgets/active_workout_bar.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gymlog/core/database/database.dart';
 import 'package:gymlog/core/database/daos/routines_dao.dart';
@@ -13,6 +15,7 @@ import 'package:gymlog/features/home/presentation/screens/home_screen.dart';
 import 'package:gymlog/features/profile/presentation/providers/profile_stats_provider.dart';
 import 'package:gymlog/features/routines/presentation/providers/routines_provider.dart';
 import 'package:gymlog/features/routines/presentation/providers/training_launch_provider.dart';
+import 'package:gymlog/features/routines/presentation/providers/training_plan_provider.dart';
 import 'package:gymlog/features/workout/presentation/screens/workout_screen.dart';
 import 'package:gymlog/features/workout/presentation/providers/active_workout_provider.dart';
 import 'package:gymlog/features/workout/domain/active_workout_state.dart';
@@ -185,13 +188,31 @@ Widget launchFixtureApp(
     bool previousError = false,
     bool routinesLoading = false,
     bool activeWorkout = false,
+    List<Override> overrides = const [],
+    Stream<List<WorkoutSessionPreview>>? completedStream,
+    Stream<List<WorkoutSessionPreview>>? programStream,
+    GoRouter? router,
+    Widget? keyboardOverlay,
     required Key captureKey}) {
   return ProviderScope(
       overrides: [
+        trainingCompletionLookupProvider.overrideWith((ref) => (_) async =>
+            List.of(await ref.read(programCompletionsProvider.future))),
         authProvider.overrideWithValue(null),
         activeWorkoutProvider
             .overrideWith((ref) => _SampleActive(ref, activeWorkout)),
         trainingClockProvider.overrideWithValue(() => session2Date),
+        latestCompletedWorkoutsProvider.overrideWith((ref) =>
+            completedStream ??
+            (fixtureState == LaunchState.error
+                ? Stream.error(StateError('Synthetic completion read failure'))
+                : Stream.value(sampleHistory(fixtureState)))),
+        programCompletionsProvider.overrideWith((ref) =>
+            programStream ??
+            (fixtureState == LaunchState.error
+                ? Stream.error(
+                    StateError('Synthetic program completion read failure'))
+                : Stream.value(sampleHistory(fixtureState)))),
         routineDetailProvider.overrideWith(
             (ref, id) => Stream.value(sampleRoutineDetail(id, fixtureState))),
         routineLastSetsProvider.overrideWith((ref, id) => previousError
@@ -228,23 +249,55 @@ Widget launchFixtureApp(
                 ? 2
                 : 0,
             hasError: fixtureState == LaunchState.error)),
-        bottomChromeInsetProvider.overrideWithValue(BottomNavBar.height),
+        bottomChromeInsetProvider.overrideWithValue(BottomNavBar.height +
+            (activeWorkout
+                ? activeBarHeight(TextScaler.linear(scale)) + kActiveBarGap
+                : 0)),
+        ...overrides,
       ],
       child: RepaintBoundary(
           key: captureKey,
-          child: MaterialApp(
-            debugShowCheckedModeBanner: false,
-            theme: buildAppTheme(palette.tokens, palette: palette),
-            builder: (context, child) => MediaQuery(
-                data: MediaQuery.of(context)
-                    .copyWith(textScaler: TextScaler.linear(scale)),
-                child: child!),
-            home: child,
-          )));
+          child: router == null
+              ? MaterialApp(
+                  debugShowCheckedModeBanner: false,
+                  theme: buildAppTheme(palette.tokens, palette: palette),
+                  builder: (context, child) => MediaQuery(
+                      data: MediaQuery.of(context)
+                          .copyWith(textScaler: TextScaler.linear(scale)),
+                      child: Stack(children: [
+                        child!,
+                        if (keyboardOverlay != null &&
+                            MediaQuery.viewInsetsOf(context).bottom > 0)
+                          Positioned(
+                              left: 0,
+                              right: 0,
+                              bottom: 0,
+                              child: keyboardOverlay)
+                      ])),
+                  home: child,
+                )
+              : MaterialApp.router(
+                  debugShowCheckedModeBanner: false,
+                  routerConfig: router,
+                  theme: buildAppTheme(palette.tokens, palette: palette),
+                  builder: (context, child) => MediaQuery(
+                      data: MediaQuery.of(context)
+                          .copyWith(textScaler: TextScaler.linear(scale)),
+                      child: child!),
+                )));
 }
 
-Widget currentLaunchScreen(String screen) => Scaffold(
-      body: screen == 'home' ? const HomeScreen() : const WorkoutScreen(),
+Widget currentLaunchScreen(String screen, {bool miniPlayer = false}) =>
+    Scaffold(
+      body: Stack(children: [
+        screen == 'home' ? const HomeScreen() : const WorkoutScreen(),
+        if (miniPlayer)
+          const Positioned(
+              left: 16,
+              right: 16,
+              bottom: kActiveBarGap,
+              child: ActiveWorkoutBar())
+      ]),
       bottomNavigationBar:
           BottomNavBar(currentIndex: screen == 'home' ? 0 : 1, onTap: (_) {}),
     );

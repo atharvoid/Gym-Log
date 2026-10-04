@@ -1,0 +1,227 @@
+00:00 +0: loading C:/Users/Atharva Patil/.codex/worktrees/session-3-options/gymlog/test/upgrade/input_radius_review_render_test.dart
+00:00 +0: (setUpAll)
+00:00 +0: before-chooser-higgsfield-1.0x
+00:03 +1: before-ai-paste-higgsfield-1.0x
+00:04 +2: proposed-chooser-higgsfield-1.0x
+00:05 +3: proposed-ai-paste-higgsfield-1.0x
+00:06 +4: before-chooser-higgsfield-1.6x
+00:07 +5: before-ai-paste-higgsfield-1.6x
+══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
+The following TestFailure was thrown running a test:
+Expected: null
+  Actual: FlutterError:<A RenderFlex overflowed by 28 pixels on the right.>
+
+When the exception was thrown, this was the stack:
+#4      main.<anonymous closure> (file:///C:/Users/Atharva%20Patil/.codex/worktrees/session-3-options/gymlog/test/upgrade/input_radius_review_render_test.dart:139:13)
+<asynchronous suspension>
+#5      testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#6      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1952:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided one frame from package:stack_trace)
+
+This was caught by the test expectation on the following line:
+  file:///C:/Users/Atharva%20Patil/.codex/worktrees/session-3-options/gymlog/test/upgrade/input_radius_review_render_test.dart line 139
+The test description was:
+  before-ai-paste-higgsfield-1.6x
+════════════════════════════════════════════════════════════════════════════════════════════════════
+00:08 +5 -1: before-ai-paste-higgsfield-1.6x [E]
+  Test failed. See exception logs above.
+  The test description was: before-ai-paste-higgsfield-1.6x
+  
+00:08 +5 -1: proposed-chooser-higgsfield-1.6x
+00:09 +6 -1: proposed-ai-paste-higgsfield-1.6x
+══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
+The following TestFailure was thrown running a test:
+Expected: null
+  Actual: FlutterError:<A RenderFlex overflowed by 28 pixels on the right.>
+
+When the exception was thrown, this was the stack:
+#4      main.<anonymous closure> (file:///C:/Users/Atharva%20Patil/.codex/worktrees/session-3-options/gymlog/test/upgrade/input_radius_review_render_test.dart:139:13)
+<asynchronous suspension>
+#5      testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#6      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1952:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided one frame from package:stack_trace)
+
+This was caught by the test expectation on the following line:
+  file:///C:/Users/Atharva%20Patil/.codex/worktrees/session-3-options/gymlog/test/upgrade/input_radius_review_render_test.dart line 139
+The test description was:
+  proposed-ai-paste-higgsfield-1.6x
+════════════════════════════════════════════════════════════════════════════════════════════════════
+00:10 +6 -2: proposed-ai-paste-higgsfield-1.6x [E]
+  Test failed. See exception logs above.
+  The test description was: proposed-ai-paste-higgsfield-1.6x
+  
+00:10 +6 -2: before-chooser-higgsfield-2.0x
+00:11 +7 -2: before-ai-paste-higgsfield-2.0x
+══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
+The following TestFailure was thrown running a test:
+Expected: null
+  Actual: FlutterError:<A RenderFlex overflowed by 108 pixels on the right.>
+
+When the exception was thrown, this was the stack:
+#4      main.<anonymous closure> (file:///C:/Users/Atharva%20Patil/.codex/worktrees/session-3-options/gymlog/test/upgrade/input_radius_review_render_test.dart:139:13)
+<asynchronous suspension>
+#5      testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#6      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1952:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided one frame from package:stack_trace)
+
+This was caught by the test expectation on the following line:
+  file:///C:/Users/Atharva%20Patil/.codex/worktrees/session-3-options/gymlog/test/upgrade/input_radius_review_render_test.dart line 139
+The test description was:
+  before-ai-paste-higgsfield-2.0x
+════════════════════════════════════════════════════════════════════════════════════════════════════
+00:12 +7 -3: before-ai-paste-higgsfield-2.0x [E]
+  Test failed. See exception logs above.
+  The test description was: before-ai-paste-higgsfield-2.0x
+  
+00:12 +7 -3: proposed-chooser-higgsfield-2.0x
+00:13 +8 -3: proposed-ai-paste-higgsfield-2.0x
+══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
+The following TestFailure was thrown running a test:
+Expected: null
+  Actual: FlutterError:<A RenderFlex overflowed by 108 pixels on the right.>
+
+When the exception was thrown, this was the stack:
+#4      main.<anonymous closure> (file:///C:/Users/Atharva%20Patil/.codex/worktrees/session-3-options/gymlog/test/upgrade/input_radius_review_render_test.dart:139:13)
+<asynchronous suspension>
+#5      testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#6      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1952:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided one frame from package:stack_trace)
+
+This was caught by the test expectation on the following line:
+  file:///C:/Users/Atharva%20Patil/.codex/worktrees/session-3-options/gymlog/test/upgrade/input_radius_review_render_test.dart line 139
+The test description was:
+  proposed-ai-paste-higgsfield-2.0x
+════════════════════════════════════════════════════════════════════════════════════════════════════
+00:14 +8 -4: proposed-ai-paste-higgsfield-2.0x [E]
+  Test failed. See exception logs above.
+  The test description was: proposed-ai-paste-higgsfield-2.0x
+  
+00:14 +8 -4: before-chooser-neonPurple-1.0x
+00:15 +9 -4: before-ai-paste-neonPurple-1.0x
+00:16 +10 -4: proposed-chooser-neonPurple-1.0x
+00:17 +11 -4: proposed-ai-paste-neonPurple-1.0x
+00:18 +12 -4: before-chooser-neonPurple-1.6x
+00:19 +13 -4: before-ai-paste-neonPurple-1.6x
+══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
+The following TestFailure was thrown running a test:
+Expected: null
+  Actual: FlutterError:<A RenderFlex overflowed by 28 pixels on the right.>
+
+When the exception was thrown, this was the stack:
+#4      main.<anonymous closure> (file:///C:/Users/Atharva%20Patil/.codex/worktrees/session-3-options/gymlog/test/upgrade/input_radius_review_render_test.dart:139:13)
+<asynchronous suspension>
+#5      testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#6      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1952:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided one frame from package:stack_trace)
+
+This was caught by the test expectation on the following line:
+  file:///C:/Users/Atharva%20Patil/.codex/worktrees/session-3-options/gymlog/test/upgrade/input_radius_review_render_test.dart line 139
+The test description was:
+  before-ai-paste-neonPurple-1.6x
+════════════════════════════════════════════════════════════════════════════════════════════════════
+00:19 +13 -5: before-ai-paste-neonPurple-1.6x [E]
+  Test failed. See exception logs above.
+  The test description was: before-ai-paste-neonPurple-1.6x
+  
+00:19 +13 -5: proposed-chooser-neonPurple-1.6x
+00:20 +14 -5: proposed-ai-paste-neonPurple-1.6x
+══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
+The following TestFailure was thrown running a test:
+Expected: null
+  Actual: FlutterError:<A RenderFlex overflowed by 28 pixels on the right.>
+
+When the exception was thrown, this was the stack:
+#4      main.<anonymous closure> (file:///C:/Users/Atharva%20Patil/.codex/worktrees/session-3-options/gymlog/test/upgrade/input_radius_review_render_test.dart:139:13)
+<asynchronous suspension>
+#5      testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#6      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1952:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided one frame from package:stack_trace)
+
+This was caught by the test expectation on the following line:
+  file:///C:/Users/Atharva%20Patil/.codex/worktrees/session-3-options/gymlog/test/upgrade/input_radius_review_render_test.dart line 139
+The test description was:
+  proposed-ai-paste-neonPurple-1.6x
+════════════════════════════════════════════════════════════════════════════════════════════════════
+00:21 +14 -6: proposed-ai-paste-neonPurple-1.6x [E]
+  Test failed. See exception logs above.
+  The test description was: proposed-ai-paste-neonPurple-1.6x
+  
+00:21 +14 -6: before-chooser-neonPurple-2.0x
+00:22 +15 -6: before-ai-paste-neonPurple-2.0x
+══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
+The following TestFailure was thrown running a test:
+Expected: null
+  Actual: FlutterError:<A RenderFlex overflowed by 108 pixels on the right.>
+
+When the exception was thrown, this was the stack:
+#4      main.<anonymous closure> (file:///C:/Users/Atharva%20Patil/.codex/worktrees/session-3-options/gymlog/test/upgrade/input_radius_review_render_test.dart:139:13)
+<asynchronous suspension>
+#5      testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#6      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1952:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided one frame from package:stack_trace)
+
+This was caught by the test expectation on the following line:
+  file:///C:/Users/Atharva%20Patil/.codex/worktrees/session-3-options/gymlog/test/upgrade/input_radius_review_render_test.dart line 139
+The test description was:
+  before-ai-paste-neonPurple-2.0x
+════════════════════════════════════════════════════════════════════════════════════════════════════
+00:22 +15 -7: before-ai-paste-neonPurple-2.0x [E]
+  Test failed. See exception logs above.
+  The test description was: before-ai-paste-neonPurple-2.0x
+  
+00:22 +15 -7: proposed-chooser-neonPurple-2.0x
+00:23 +16 -7: proposed-ai-paste-neonPurple-2.0x
+══╡ EXCEPTION CAUGHT BY FLUTTER TEST FRAMEWORK ╞════════════════════════════════════════════════════
+The following TestFailure was thrown running a test:
+Expected: null
+  Actual: FlutterError:<A RenderFlex overflowed by 108 pixels on the right.>
+
+When the exception was thrown, this was the stack:
+#4      main.<anonymous closure> (file:///C:/Users/Atharva%20Patil/.codex/worktrees/session-3-options/gymlog/test/upgrade/input_radius_review_render_test.dart:139:13)
+<asynchronous suspension>
+#5      testWidgets.<anonymous closure>.<anonymous closure> (package:flutter_test/src/widget_tester.dart:192:15)
+<asynchronous suspension>
+#6      TestWidgetsFlutterBinding._runTestBody (package:flutter_test/src/binding.dart:1952:5)
+<asynchronous suspension>
+<asynchronous suspension>
+(elided one frame from package:stack_trace)
+
+This was caught by the test expectation on the following line:
+  file:///C:/Users/Atharva%20Patil/.codex/worktrees/session-3-options/gymlog/test/upgrade/input_radius_review_render_test.dart line 139
+The test description was:
+  proposed-ai-paste-neonPurple-2.0x
+════════════════════════════════════════════════════════════════════════════════════════════════════
+00:24 +16 -8: proposed-ai-paste-neonPurple-2.0x [E]
+  Test failed. See exception logs above.
+  The test description was: proposed-ai-paste-neonPurple-2.0x
+  
+00:24 +16 -8: (tearDownAll)
+00:24 +16 -8: Some tests failed.
+
+Failing tests:
+  C:/Users/Atharva Patil/.codex/worktrees/session-3-options/gymlog/test/upgrade/input_radius_review_render_test.dart: before-ai-paste-higgsfield-1.6x
+  C:/Users/Atharva Patil/.codex/worktrees/session-3-options/gymlog/test/upgrade/input_radius_review_render_test.dart: before-ai-paste-higgsfield-2.0x
+  C:/Users/Atharva Patil/.codex/worktrees/session-3-options/gymlog/test/upgrade/input_radius_review_render_test.dart: before-ai-paste-neonPurple-1.6x
+  C:/Users/Atharva Patil/.codex/worktrees/session-3-options/gymlog/test/upgrade/input_radius_review_render_test.dart: before-ai-paste-neonPurple-2.0x
+  ... and 4 more

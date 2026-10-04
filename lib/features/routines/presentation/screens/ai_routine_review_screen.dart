@@ -113,15 +113,15 @@ class _AiRoutineReviewScreenState extends ConsumerState<AiRoutineReviewScreen> {
               contentPadding:
                   const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
               border: OutlineInputBorder(
-                borderRadius: AppRadius.cardAll,
+                borderRadius: AppRadius.inputAll,
                 borderSide: BorderSide(color: surface.borderSubtle),
               ),
               enabledBorder: OutlineInputBorder(
-                borderRadius: AppRadius.cardAll,
+                borderRadius: AppRadius.inputAll,
                 borderSide: BorderSide(color: surface.borderSubtle),
               ),
               focusedBorder: OutlineInputBorder(
-                borderRadius: AppRadius.cardAll,
+                borderRadius: AppRadius.inputAll,
                 borderSide: BorderSide(color: accent.base, width: 1.5),
               ),
             ),
@@ -297,15 +297,15 @@ class _AiRoutineReviewScreenState extends ConsumerState<AiRoutineReviewScreen> {
                     contentPadding: const EdgeInsets.symmetric(
                         horizontal: 16, vertical: 14),
                     border: OutlineInputBorder(
-                      borderRadius: AppRadius.cardAll,
+                      borderRadius: AppRadius.inputAll,
                       borderSide: BorderSide(color: surface.borderSubtle),
                     ),
                     enabledBorder: OutlineInputBorder(
-                      borderRadius: AppRadius.cardAll,
+                      borderRadius: AppRadius.inputAll,
                       borderSide: BorderSide(color: surface.borderSubtle),
                     ),
                     focusedBorder: OutlineInputBorder(
-                      borderRadius: AppRadius.cardAll,
+                      borderRadius: AppRadius.inputAll,
                       borderSide: BorderSide(color: accent.base, width: 1.5),
                     ),
                   ),

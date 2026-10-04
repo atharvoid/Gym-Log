@@ -1,0 +1,4244 @@
+diff --git a/lib/core/database/daos/workouts_dao.dart b/lib/core/database/daos/workouts_dao.dart
+index d273cc07..e68020d3 100644
+--- a/lib/core/database/daos/workouts_dao.dart
++++ b/lib/core/database/daos/workouts_dao.dart
+@@ -867,6 +867,53 @@ class WorkoutsDao extends DatabaseAccessor<AppDatabase>
+           ..limit(limit, offset: offset))
+         .get();
+ 
++    return _sessionPreviews(sessions);
++  }
++
++  /// Completion chronology is independent of the paginated, start-date feed.
++  /// Keep two rows so a tied latest completion cannot invent program order.
++  Stream<List<WorkoutSessionPreview>> watchLatestCompletedPreviews(
++      String userId,
++      {List<String>? routineIds}) {
++    return watchHistoryRevision(userId).asyncMap((_) async {
++      if (routineIds != null && routineIds.isEmpty) return [];
++      if (routineIds != null) {
++        // One representative per routine prevents duplicate imported sessions
++        // from hiding a different routine with the same latest completion time.
++        final placeholders = List.filled(routineIds.length, '?').join(',');
++        final rows = await customSelect('''
++          SELECT * FROM (
++            SELECT s.*, ROW_NUMBER() OVER (
++              PARTITION BY routine_id ORDER BY ended_at DESC, id ASC
++            ) AS completion_rank
++            FROM workout_sessions s
++            WHERE user_id = ? AND ended_at IS NOT NULL
++              AND routine_id IN ($placeholders)
++          ) WHERE completion_rank = 1
++          ORDER BY ended_at DESC, id ASC LIMIT 2
++          ''', variables: [
++          Variable.withString(userId),
++          for (final id in routineIds) Variable.withString(id)
++        ], readsFrom: {
++          workoutSessions
++        }).get();
++        return _sessionPreviews(
++            rows.map((r) => workoutSessions.map(r.data)).toList());
++      }
++      final query = select(workoutSessions)
++        ..where((t) => t.userId.equals(userId) & t.endedAt.isNotNull());
++      query
++        ..orderBy([
++          (t) => OrderingTerm.desc(t.endedAt),
++          (t) => OrderingTerm.asc(t.id),
++        ])
++        ..limit(2);
++      return _sessionPreviews(await query.get());
++    });
++  }
++
++  Future<List<WorkoutSessionPreview>> _sessionPreviews(
++      List<WorkoutSession> sessions) async {
+     if (sessions.isEmpty) return [];
+ 
+     final ids = sessions.map((s) => s.id).toList();
+diff --git a/lib/core/utils/relative_time.dart b/lib/core/utils/relative_time.dart
+index 9fc0ca6b..004e5379 100644
+--- a/lib/core/utils/relative_time.dart
++++ b/lib/core/utils/relative_time.dart
+@@ -1,7 +1,11 @@
+ /// Human "time ago" at day granularity. Shared by the routines list summary
+ /// and the routine card (previously duplicated, and divergent, in both).
+-String relativeDay(DateTime d) {
+-  final diff = DateTime.now().difference(d);
++String relativeDay(DateTime d, {DateTime? now}) {
++  final today = (now ?? DateTime.now()).toLocal();
++  final date = d.toLocal();
++  final diff = DateTime.utc(today.year, today.month, today.day)
++      .difference(DateTime.utc(date.year, date.month, date.day));
++  if (diff.isNegative) return '${date.day}/${date.month}/${date.year}';
+   if (diff.inDays < 1) return 'today';
+   if (diff.inDays == 1) return 'yesterday';
+   if (diff.inDays < 7) return '${diff.inDays} days ago';
+diff --git a/lib/features/home/presentation/screens/home_screen.dart b/lib/features/home/presentation/screens/home_screen.dart
+index a40dcbc9..c53f4a5c 100644
+--- a/lib/features/home/presentation/screens/home_screen.dart
++++ b/lib/features/home/presentation/screens/home_screen.dart
+@@ -27,7 +27,7 @@ import 'package:gymlog/shared/widgets/feedback/undoable_delete.dart';
+ import 'package:gymlog/features/auth/presentation/providers/tour_provider.dart';
+ import 'package:gymlog/features/routines/presentation/providers/routines_provider.dart';
+ import 'package:gymlog/features/routines/presentation/widgets/training_launchpad.dart';
+-import 'package:gymlog/features/routines/presentation/providers/training_launch_provider.dart';
++import '../widgets/last_workout_card.dart';
+ import 'package:gymlog/shared/widgets/tour/spotlight_tour_overlay.dart';
+ 
+ /// Whether the weekly-stats card should be rendered.
+@@ -169,14 +169,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
+     final unit = ref.watch(weightUnitProvider);
+ 
+     final routines = ref.watch(hydratedRoutinesProvider);
+-    final choice = ref.watch(chosenRoutineProvider);
+-    final active = ref.watch(activeWorkoutProvider) != null;
+-    final freestyleIsPrimary = routines.hasValue &&
+-        !routines.hasError &&
+-        routines.requireValue.isEmpty &&
+-        choice.hasValue &&
+-        !choice.hasError &&
+-        choice.requireValue == null;
+     final hasNoRoutines = routines.hasValue && routines.requireValue.isEmpty;
+     final tourStep = ref.watch(firstRunTourProvider);
+     final streak = ref.watch(streakStatsProvider);
+@@ -237,27 +229,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
+                                 context.push('/routines/explore');
+                               }),
+                           const SizedBox(height: AppSpacing.x3),
+-                          Wrap(spacing: AppSpacing.x4, children: [
+-                            if (!freestyleIsPrimary && !active)
+-                              TextButton(
+-                                  onPressed: () =>
+-                                      launchTraining(context, ref, null),
+-                                  style: TextButton.styleFrom(
+-                                      foregroundColor: surface.textSecondary),
+-                                  child: const Text('Log a different workout')),
+-                            TextButton(
+-                                onPressed: () {
+-                                  final target =
+-                                      _historyHeaderKey.currentContext;
+-                                  if (target != null) {
+-                                    Scrollable.ensureVisible(target,
+-                                        duration: Duration.zero);
+-                                  }
+-                                },
+-                                style: TextButton.styleFrom(
+-                                    foregroundColor: surface.textSecondary),
+-                                child: const Text('History')),
+-                          ]),
++                          LastWorkoutCard(onHistory: () {
++                            final target = _historyHeaderKey.currentContext;
++                            if (target != null) {
++                              Scrollable.ensureVisible(target,
++                                  duration: Duration.zero);
++                            }
++                          }),
+                           _HomeHeaderBand(
+                               weeklyStatsKey: _weeklyStatsKey,
+                               showWeeklyStats: showStats),
+diff --git a/lib/features/home/presentation/widgets/last_workout_card.dart b/lib/features/home/presentation/widgets/last_workout_card.dart
+new file mode 100644
+index 00000000..8764906c
+--- /dev/null
++++ b/lib/features/home/presentation/widgets/last_workout_card.dart
+@@ -0,0 +1,102 @@
++import 'package:flutter/material.dart';
++import 'package:gymlog/core/theme/app_colors.dart';
++import 'package:flutter_riverpod/flutter_riverpod.dart';
++import 'package:go_router/go_router.dart';
++import 'package:intl/intl.dart';
++import 'package:gymlog/core/providers/settings_provider.dart';
++import 'package:gymlog/core/theme/app_text.dart';
++import 'package:gymlog/core/utils/units.dart';
++import 'package:gymlog/features/routines/presentation/providers/training_plan_provider.dart';
++import 'package:gymlog/shared/widgets/ui/app_card.dart';
++
++class LastWorkoutCard extends ConsumerWidget {
++  const LastWorkoutCard({super.key, required this.onHistory});
++  final VoidCallback onHistory;
++  @override
++  Widget build(BuildContext context, WidgetRef ref) {
++    final latest = ref.watch(latestCompletedWorkoutsProvider);
++    final unit = ref.watch(weightUnitProvider);
++    final s = context.surface;
++    final preview = latest.valueOrNull?.firstOrNull;
++    final ended = preview?.session.endedAt?.toLocal();
++    return AppCard(
++        onTap: preview == null
++            ? null
++            : () => context.push('/workout/detail/${preview.session.id}'),
++        child:
++            Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
++          Row(children: [
++            Expanded(
++                child: Text('Last workout',
++                    style: AppText.caption(color: s.textSecondary))),
++            TextButton(
++                onPressed: onHistory,
++                style: TextButton.styleFrom(
++                    foregroundColor: s.textPrimary,
++                    minimumSize: const Size(48, 48)),
++                child: const Text('History'))
++          ]),
++          if (latest.hasError) ...[
++            Semantics(
++                liveRegion: true,
++                child: Text("Couldn't load your last workout",
++                    style: AppText.sheetTitle(color: s.textPrimary))),
++            TextButton(
++                onPressed: () =>
++                    ref.invalidate(latestCompletedWorkoutsProvider),
++                child: const Text('Try again')),
++          ] else if (latest.isLoading) ...[
++            Text('Loading your last workout',
++                style: AppText.body(color: s.textSecondary)),
++          ] else if (preview == null) ...[
++            Text('No completed workouts yet',
++                style: AppText.body(color: s.textSecondary)),
++          ] else ...[
++            Text(
++                (preview.session.name ?? '').trim().isEmpty
++                    ? 'Workout'
++                    : preview.session.name!,
++                style: AppText.sectionHeading(color: s.textPrimary)),
++            const SizedBox(height: 4),
++            Text(
++                '${DateFormat('d MMM yyyy · HH:mm').format(ended!)} · completed',
++                style: AppText.caption(color: s.textSecondary)),
++            const SizedBox(height: 12),
++            Wrap(spacing: 16, runSpacing: 8, children: [
++              _LastFact(
++                icon: Icons.timer_outlined,
++                label: preview.duration.isNegative
++                    ? 'Elapsed unavailable'
++                    : preview.duration.inSeconds < 60
++                        ? '${preview.duration.inSeconds} sec elapsed'
++                        : '${preview.duration.inMinutes} min elapsed',
++              ),
++              _LastFact(
++                icon: preview.totalVolumeKg > 0
++                    ? Icons.fitness_center_rounded
++                    : Icons.format_list_numbered_rounded,
++                label: preview.totalVolumeKg > 0
++                    ? '${NumberFormat('#,##0.#').format(kgToDisplay(preview.totalVolumeKg, unit))} ${unitLabel(unit)} volume'
++                    : '${preview.totalExerciseCount} ${preview.totalExerciseCount == 1 ? 'exercise' : 'exercises'}',
++              ),
++            ]),
++          ],
++        ]));
++  }
++}
++
++class _LastFact extends StatelessWidget {
++  const _LastFact({required this.icon, required this.label});
++  final IconData icon;
++  final String label;
++  @override
++  Widget build(BuildContext context) =>
++      Row(mainAxisSize: MainAxisSize.min, children: [
++        Icon(icon, size: 16, color: context.surface.textSecondary),
++        const SizedBox(width: 8),
++        Flexible(
++            child: Text(label,
++                style: AppText.caption(color: context.surface.textSecondary)
++                    .copyWith(fontFeatures: kTabular))),
++      ]);
++}
+diff --git a/lib/features/routines/presentation/providers/training_plan_provider.dart b/lib/features/routines/presentation/providers/training_plan_provider.dart
+new file mode 100644
+index 00000000..ad2f7ebe
+--- /dev/null
++++ b/lib/features/routines/presentation/providers/training_plan_provider.dart
+@@ -0,0 +1,288 @@
++import 'dart:convert';
++import 'package:flutter_riverpod/flutter_riverpod.dart';
++import 'package:shared_preferences/shared_preferences.dart';
++import 'package:gymlog/core/database/daos/routines_dao.dart';
++import 'package:gymlog/core/database/daos/workouts_dao.dart';
++import 'package:gymlog/core/providers/database_provider.dart';
++import 'package:gymlog/core/routines/program_membership.dart';
++import 'package:gymlog/features/auth/presentation/providers/auth_provider.dart';
++import 'routines_provider.dart';
++
++/// Persist intent, never a mutable next-day cursor. Completion remains in SQLite.
++class TrainingPlan {
++  const TrainingPlan(
++      {required this.anchorId,
++      this.programSlug,
++      this.needsChoice = false,
++      this.startAfter});
++  final String anchorId;
++  final String? programSlug;
++  final bool needsChoice;
++
++  /// Explicit owner choice after an ambiguous import, not an advancing cursor.
++  final DateTime? startAfter;
++  bool get followsProgram => programSlug != null;
++  String encode() => jsonEncode({
++        'version': 1,
++        'anchor': anchorId,
++        'mode': followsProgram ? 'program' : 'repeat',
++        'program': programSlug,
++        if (startAfter != null)
++          'startAfter': startAfter!.toUtc().toIso8601String(),
++      });
++  static TrainingPlan decode(String value) {
++    final data = jsonDecode(value) as Map<String, dynamic>;
++    if (data['version'] != 1 ||
++        data['anchor'] is! String ||
++        (data['anchor'] as String).isEmpty ||
++        !['repeat', 'program'].contains(data['mode']) ||
++        (data['mode'] == 'program' &&
++            (data['program'] is! String ||
++                (data['program'] as String).isEmpty))) {
++      throw const FormatException('Invalid training plan');
++    }
++    return TrainingPlan(
++        anchorId: data['anchor'] as String,
++        programSlug:
++            data['mode'] == 'program' ? data['program'] as String : null,
++        startAfter: data['startAfter'] == null
++            ? null
++            : DateTime.parse(data['startAfter'] as String));
++  }
++}
++
++List<HydratedRoutine>? orderedProgram(
++    List<HydratedRoutine> routines, String slug) {
++  final members = routines
++      .where(
++          (r) => decodeProgramMembership(r.routine.notes)?.programSlug == slug)
++      .toList();
++  if (members.isEmpty) return null;
++  final total =
++      decodeProgramMembership(members.first.routine.notes)!.totalRoutines;
++  if (total < 2 || members.length != total) return null;
++  final positions = <int>{};
++  final days = <String>{};
++  for (final r in members) {
++    final m = decodeProgramMembership(r.routine.notes)!;
++    if (m.totalRoutines != total ||
++        m.orderIndex < 0 ||
++        m.orderIndex >= total ||
++        !positions.add(m.orderIndex) ||
++        !days.add(m.routineSlug)) {
++      return null;
++    }
++  }
++  members.sort((a, b) => decodeProgramMembership(a.routine.notes)!
++      .orderIndex
++      .compareTo(decodeProgramMembership(b.routine.notes)!.orderIndex));
++  return members;
++}
++
++TrainingPlan planForRoutine(
++    HydratedRoutine routine, List<HydratedRoutine> library,
++    {bool repeat = false}) {
++  final membership = decodeProgramMembership(routine.routine.notes);
++  final valid = membership != null &&
++      orderedProgram(library, membership.programSlug) != null;
++  return TrainingPlan(
++      anchorId: routine.routine.id,
++      programSlug: valid && !repeat ? membership.programSlug : null);
++}
++
++final trainingPlanProvider =
++    StateNotifierProvider<TrainingPlanNotifier, AsyncValue<TrainingPlan?>>(
++        (ref) {
++  final notifier = TrainingPlanNotifier(ref.watch(authProvider)?.id ?? 'local',
++      () => ref.read(hydratedRoutinesProvider.future));
++  notifier.load();
++  return notifier;
++});
++
++class TrainingPlanNotifier extends StateNotifier<AsyncValue<TrainingPlan?>> {
++  TrainingPlanNotifier(this.account, this.library,
++      {Future<SharedPreferences> Function()? preferences})
++      : preferences = preferences ?? SharedPreferences.getInstance,
++        super(const AsyncLoading());
++  final String account;
++  final Future<List<HydratedRoutine>> Function() library;
++  final Future<SharedPreferences> Function() preferences;
++  String get key => 'training_plan:v1:$account';
++  int _request = 0;
++  Future<void> load() async {
++    final request = ++_request;
++    try {
++      final prefs = await preferences();
++      final encoded = prefs.getString(key);
++      TrainingPlan? plan;
++      if (encoded != null) {
++        plan = TrainingPlan.decode(encoded);
++      } else {
++        final legacy = prefs.getString('training_routine:$account');
++        if (legacy != null) {
++          final routines = await library();
++          HydratedRoutine? selected;
++          for (final r in routines) {
++            if (r.routine.id == legacy) selected = r;
++          }
++          if (selected == null) {
++            plan = TrainingPlan(anchorId: legacy, needsChoice: true);
++          } else {
++            final m = decodeProgramMembership(selected.routine.notes);
++            final ambiguous = (m != null &&
++                    orderedProgram(routines, m.programSlug) == null) ||
++                (m == null &&
++                    (selected.routine.sourceProgramName != null ||
++                        selected.routine.notes.contains(kProgramMetaTag)));
++            plan = ambiguous
++                ? TrainingPlan(anchorId: legacy, needsChoice: true)
++                : planForRoutine(selected, routines);
++            if (!ambiguous) {
++              if (!mounted || request != _request) return;
++              if (!await prefs.setString(key, plan.encode())) {
++                throw StateError('Training plan migration failed');
++              }
++            }
++          }
++        }
++      }
++      if (mounted && request == _request) state = AsyncData(plan);
++    } catch (e, stack) {
++      if (mounted && request == _request) state = AsyncError(e, stack);
++    }
++  }
++
++  Future<void> choose(HydratedRoutine routine, List<HydratedRoutine> routines,
++      {DateTime? startAfter, bool repeat = false}) async {
++    final request = ++_request;
++    final selected = planForRoutine(routine, routines, repeat: repeat);
++    final plan = TrainingPlan(
++        anchorId: selected.anchorId,
++        programSlug: selected.programSlug,
++        startAfter: startAfter);
++    final prefs = await preferences();
++    if (!mounted || request != _request) return;
++    if (!await prefs.setString(key, plan.encode())) {
++      throw StateError('Training plan write failed');
++    }
++    if (mounted && request == _request) state = AsyncData(plan);
++  }
++}
++
++final latestCompletedWorkoutsProvider =
++    StreamProvider<List<WorkoutSessionPreview>>((ref) {
++  final user = ref.watch(authProvider);
++  if (user == null) return Stream.value([]);
++  return ref
++      .watch(databaseProvider)
++      .workoutsDao
++      .watchLatestCompletedPreviews(user.id);
++});
++
++/// Fresh account-scoped lookup for choosing a program other than the current one.
++final trainingCompletionLookupProvider =
++    Provider<Future<List<WorkoutSessionPreview>> Function(List<String>)>((ref) {
++  final user = ref.watch(authProvider);
++  final dao = ref.watch(databaseProvider).workoutsDao;
++  return (ids) => user == null
++      ? Future.value([])
++      : dao.watchLatestCompletedPreviews(user.id, routineIds: ids).first;
++});
++
++final programCompletionsProvider =
++    StreamProvider<List<WorkoutSessionPreview>>((ref) {
++  final user = ref.watch(authProvider);
++  final plan = ref.watch(trainingPlanProvider).valueOrNull;
++  final routines = ref.watch(hydratedRoutinesProvider).valueOrNull;
++  if (user == null || plan?.programSlug == null || routines == null) {
++    return Stream.value([]);
++  }
++  final members = orderedProgram(routines, plan!.programSlug!);
++  return ref.watch(databaseProvider).workoutsDao.watchLatestCompletedPreviews(
++      user.id,
++      routineIds: members?.map((r) => r.routine.id).toList() ?? []);
++});
++
++class TrainingPlanResolution {
++  const TrainingPlanResolution(
++      {this.next,
++      this.programName,
++      this.reason,
++      this.problem,
++      this.following = false});
++  final HydratedRoutine? next;
++  final String? programName;
++  final String? reason;
++  final String? problem;
++  final bool following;
++}
++
++TrainingPlanResolution resolveTrainingPlan(TrainingPlan? plan,
++    List<HydratedRoutine> routines, List<WorkoutSessionPreview> completions) {
++  if (plan == null) return const TrainingPlanResolution();
++  HydratedRoutine? anchor;
++  for (final r in routines) {
++    if (r.routine.id == plan.anchorId) anchor = r;
++  }
++  if (plan.needsChoice || anchor == null) {
++    return const TrainingPlanResolution(
++        problem: 'Your saved training plan needs a choice.');
++  }
++  if (!plan.followsProgram) {
++    return TrainingPlanResolution(
++        next: anchor, reason: 'Repeating your chosen routine');
++  }
++  final members = orderedProgram(routines, plan.programSlug!);
++  if (members == null ||
++      !members.any((r) => r.routine.id == anchor!.routine.id)) {
++    return const TrainingPlanResolution(
++        problem: 'Saved program order is incomplete. Choose a training plan.');
++  }
++  final history = completions
++      .where((p) =>
++          p.session.endedAt != null &&
++          (plan.startAfter == null ||
++              p.session.endedAt!.isAfter(plan.startAfter!)) &&
++          members.any((r) => r.routine.id == p.session.routineId))
++      .toList()
++    ..sort((a, b) => b.session.endedAt!.compareTo(a.session.endedAt!));
++  if (history.length > 1 &&
++      history[0].session.endedAt == history[1].session.endedAt &&
++      history[0].session.routineId != history[1].session.routineId) {
++    return const TrainingPlanResolution(
++        problem:
++            'Two program workouts finished at the same time. Choose the next workout explicitly.');
++  }
++  final previous = history.isEmpty
++      ? null
++      : members
++          .firstWhere((r) => r.routine.id == history.first.session.routineId);
++  final next = previous == null
++      ? anchor
++      : members[(members.indexOf(previous) + 1) % members.length];
++  return TrainingPlanResolution(
++      next: next,
++      following: true,
++      programName:
++          decodeProgramMembership(members.first.routine.notes)!.programLabel,
++      reason: previous == null
++          ? 'Selected starting workout'
++          : 'After ${previous.routine.name} in your saved order');
++}
++
++final trainingPlanResolutionProvider =
++    Provider<AsyncValue<TrainingPlanResolution>>((ref) {
++  final plan = ref.watch(trainingPlanProvider);
++  final library = ref.watch(hydratedRoutinesProvider);
++  final completions = ref.watch(programCompletionsProvider);
++  for (final value in <AsyncValue<dynamic>>[
++    plan,
++    library,
++    if (plan.valueOrNull?.followsProgram == true) completions
++  ]) {
++    if (value.hasError) return AsyncError(value.error!, value.stackTrace!);
++    if (value.isLoading) return const AsyncLoading();
++  }
++  return AsyncData(resolveTrainingPlan(
++      plan.valueOrNull, library.requireValue, completions.valueOrNull ?? []));
++});
+diff --git a/lib/features/routines/presentation/widgets/routine_card.dart b/lib/features/routines/presentation/widgets/routine_card.dart
+index 77404a65..c12c2c4f 100644
+--- a/lib/features/routines/presentation/widgets/routine_card.dart
++++ b/lib/features/routines/presentation/widgets/routine_card.dart
+@@ -6,6 +6,8 @@ import 'package:gymlog/core/theme/dynamic_accent_theme.dart';
+ import '../../../../core/theme/app_colors.dart';
+ import '../../../../core/theme/app_text.dart';
+ import '../../../../shared/widgets/ui/start_button.dart';
++import '../../../../shared/widgets/ui/primary_button.dart';
++import '../providers/training_launch_provider.dart';
+ import '../../../../core/utils/tap_guard.dart';
+ import '../../../../core/utils/relative_time.dart';
+ import '../../../../core/providers/database_provider.dart';
+@@ -29,6 +31,7 @@ class RoutineCard extends ConsumerWidget {
+   final DateTime? lastTrained;
+   final VoidCallback onStartTap;
+   final bool workoutInProgress;
++  final bool isNext;
+ 
+   const RoutineCard({
+     super.key,
+@@ -39,6 +42,7 @@ class RoutineCard extends ConsumerWidget {
+     this.muscleTags = const [],
+     this.lastTrained,
+     this.workoutInProgress = false,
++    this.isNext = false,
+   });
+ 
+   Widget _tag(
+@@ -63,7 +67,7 @@ class RoutineCard extends ConsumerWidget {
+     final exLabel = count == 1 ? 'exercise' : 'exercises';
+     final meta = lastTrained == null
+         ? '$count $exLabel'
+-        : '$count $exLabel · ${relativeDay(lastTrained!)}';
++        : '$count $exLabel · ${relativeDay(lastTrained!, now: ref.watch(trainingClockProvider)())}';
+ 
+     final preview = exerciseNames.isEmpty
+         ? 'No exercises yet'
+@@ -106,15 +110,14 @@ class RoutineCard extends ConsumerWidget {
+                           child: Column(
+                             crossAxisAlignment: CrossAxisAlignment.start,
+                             children: [
+-                              Text(routineName,
+-                                  maxLines: 1,
+-                                  overflow: TextOverflow.ellipsis,
+-                                  style: AppText.cardTitle()),
++                              if (isNext) ...[
++                                Text('UP NEXT',
++                                    style: AppText.caption(color: accent.base)),
++                                const SizedBox(height: 6),
++                              ],
++                              Text(routineName, style: AppText.cardTitle()),
+                               const SizedBox(height: 3),
+-                              Text(meta,
+-                                  maxLines: 1,
+-                                  overflow: TextOverflow.ellipsis,
+-                                  style: AppText.caption()),
++                              Text(meta, style: AppText.caption()),
+                             ],
+                           ),
+                         ),
+@@ -158,39 +161,57 @@ class RoutineCard extends ConsumerWidget {
+                   // ── Footer: preview + Start pill ────────────────────
+                   Padding(
+                     padding: const EdgeInsets.only(top: 12),
+-                    child: Row(
+-                      children: [
+-                        Expanded(
+-                          child: Text(
+-                            preview,
+-                            maxLines: 1,
+-                            overflow: TextOverflow.ellipsis,
+-                            style: AppText.caption(),
++                    child: LayoutBuilder(builder: (context, constraints) {
++                      final stacked = isNext ||
++                          MediaQuery.textScalerOf(context).scale(14) >= 21;
++                      final start = isNext &&
++                              !workoutInProgress &&
++                              exerciseNames.isNotEmpty
++                          ? PrimaryButton(
++                              label: routineName.length > 45
++                                  ? 'Start workout'
++                                  : 'Start $routineName',
++                              onPressed: onStartTap,
++                              semanticLabel: 'Start $routineName')
++                          : StartButton(
++                              label: 'Start',
++                              enabled: !workoutInProgress &&
++                                  exerciseNames.isNotEmpty,
++                              onPressed: workoutInProgress
++                                  ? null
++                                  : () {
++                                      if (exerciseNames.isEmpty) {
++                                        showAppSnackBar(context,
++                                            message:
++                                                'Add exercises to this routine first');
++                                        return;
++                                      }
++                                      onStartTap();
++                                    });
++                      if (stacked) {
++                        return Column(
++                            crossAxisAlignment: CrossAxisAlignment.stretch,
++                            children: [
++                              Text(preview, style: AppText.caption()),
++                              const SizedBox(height: 12),
++                              start,
++                            ]);
++                      }
++                      return Row(
++                        children: [
++                          Expanded(
++                            child: Text(
++                              preview,
++                              maxLines: 1,
++                              overflow: TextOverflow.ellipsis,
++                              style: AppText.caption(),
++                            ),
+                           ),
+-                        ),
+-                        const SizedBox(width: 12),
+-                        StartButton(
+-                          label: 'Start',
+-                          enabled:
+-                              !workoutInProgress && exerciseNames.isNotEmpty,
+-                          onPressed: workoutInProgress
+-                              ? null
+-                              : () {
+-                                  // 0-exercise routine: don't silently no-op — tell
+-                                  // the user why nothing happened.
+-                                  if (exerciseNames.isEmpty) {
+-                                    showAppSnackBar(
+-                                      context,
+-                                      message:
+-                                          'Add exercises to this routine first',
+-                                    );
+-                                    return;
+-                                  }
+-                                  onStartTap();
+-                                },
+-                        ),
+-                      ],
+-                    ),
++                          const SizedBox(width: 12),
++                          start,
++                        ],
++                      );
++                    }),
+                   ),
+                 ],
+               ),
+diff --git a/lib/features/routines/presentation/widgets/training_launchpad.dart b/lib/features/routines/presentation/widgets/training_launchpad.dart
+index cc40b94c..f0a630a0 100644
+--- a/lib/features/routines/presentation/widgets/training_launchpad.dart
++++ b/lib/features/routines/presentation/widgets/training_launchpad.dart
+@@ -1,18 +1,21 @@
+ import 'package:flutter/material.dart';
++import 'package:flutter/services.dart';
++import 'package:gymlog/core/theme/app_colors.dart';
+ import 'package:flutter_riverpod/flutter_riverpod.dart';
+ import 'package:go_router/go_router.dart';
+ import 'package:gymlog/core/database/daos/routines_dao.dart';
+ import 'package:gymlog/core/database/daos/workouts_dao.dart';
+-import 'package:gymlog/core/models/measurement_type.dart';
+-import 'package:gymlog/core/providers/settings_provider.dart';
+-import 'package:gymlog/core/theme/app_colors.dart';
+ import 'package:gymlog/core/theme/app_text.dart';
+-import 'package:gymlog/features/home/presentation/providers/home_provider.dart';
+-import 'package:gymlog/features/workout/presentation/providers/active_workout_provider.dart';
++import 'package:gymlog/core/theme/dynamic_accent_theme.dart';
++import 'package:gymlog/shared/widgets/ui/app_card.dart';
++import 'package:gymlog/shared/widgets/ui/app_status_tag.dart';
+ import 'package:gymlog/shared/widgets/ui/primary_button.dart';
+ import 'package:gymlog/shared/widgets/ui/app_snack_bar.dart';
++import 'package:gymlog/features/workout/presentation/providers/active_workout_provider.dart';
+ import '../providers/routines_provider.dart';
+ import '../providers/training_launch_provider.dart';
++import '../providers/training_plan_provider.dart';
++import 'training_utility_button.dart';
+ 
+ Future<void> launchTraining(
+     BuildContext context, WidgetRef ref, String? id) async {
+@@ -38,13 +41,14 @@ Future<void> launchTraining(
+   }
+ }
+ 
+-Future<void> showTrainingChooser(BuildContext context) =>
++Future<void> showTrainingChooser(BuildContext context,
++        {bool forSession = false}) =>
+     showModalBottomSheet<void>(
+         context: context,
+         useSafeArea: true,
+         isScrollControlled: true,
+         backgroundColor: Colors.transparent,
+-        builder: (_) => const _TrainingChooser());
++        builder: (_) => _TrainingChooser(forSession: forSession));
+ 
+ class TrainingLaunchpad extends ConsumerStatefulWidget {
+   const TrainingLaunchpad(
+@@ -65,373 +69,190 @@ class _TrainingLaunchpadState extends ConsumerState<TrainingLaunchpad> {
+     if (mounted) setState(() => _starting = false);
+   }
+ 
+-  Widget _primary(String label, VoidCallback action, {Key? key}) =>
+-      PrimaryButton(
+-          key: key, label: label, isLoading: _starting, onPressed: action);
+-  Widget _change({bool primary = false}) {
+-    if (widget.compact) {
+-      return Text(primary ? 'Choose on Home.' : 'Chosen on Home',
+-          style: AppText.meta(color: context.surface.textSecondary));
+-    }
+-    return primary
+-        ? _primary('Choose routine', () => showTrainingChooser(context))
+-        : TextButton.icon(
+-            key: const ValueKey('change-training-routine'),
+-            onPressed: () => showTrainingChooser(context),
+-            style: TextButton.styleFrom(
+-                foregroundColor: context.surface.textSecondary,
+-                minimumSize: const Size(48, 48)),
+-            icon: const Icon(Icons.swap_horiz_rounded),
+-            label: const Text('Change'));
+-  }
+-
+   @override
+   Widget build(BuildContext context) {
+-    final library = ref.watch(hydratedRoutinesProvider);
+-    final choice = ref.watch(chosenRoutineProvider);
+-    final history = ref.watch(workoutHistoryProvider);
++    final resolution = ref.watch(trainingPlanResolutionProvider);
+     final active = ref.watch(activeWorkoutProvider);
+-    final now = ref.watch(trainingClockProvider)();
+-    final knownHistory = !history.isInitialLoad && !history.hasError;
+-    final returnAfterBreak =
+-        knownHistory && isInactiveReturn(history.items, now);
+     final s = context.surface;
+-    final freestyleLabel = knownHistory && history.items.isEmpty
+-        ? 'Start workout'
+-        : 'Log a different workout';
+-    Widget freestyle() =>
+-        TextButton(onPressed: () => _start(null), child: Text(freestyleLabel));
+-    Widget message(String title, String body, Widget action) =>
+-        Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+-          Text(title, style: AppText.titleLarge(color: s.textPrimary)),
+-          const SizedBox(height: AppSpacing.x3),
+-          Text(body, style: AppText.body(color: s.textSecondary)),
+-          const SizedBox(height: AppSpacing.x4),
+-          action,
++    final resolved = resolution.valueOrNull;
++    final next = resolved?.next;
++    final emptyLibrary =
++        ref.watch(hydratedRoutinesProvider).valueOrNull?.isEmpty == true;
++    final longLarge = next != null &&
++        next.routine.name.length > 45 &&
++        MediaQuery.textScalerOf(context).scale(14) >= 21;
++    final activeName = (active?.name ?? '').trim();
++    final resumeName = activeName.isEmpty ? 'workout' : activeName;
++    Widget primary(String label, VoidCallback action,
++            {Key? key, String? semanticLabel}) =>
++        PrimaryButton(
++            key: key,
++            label: label,
++            semanticLabel: semanticLabel,
++            onPressed: action,
++            isLoading: _starting);
++    final unavailable = next != null && next.exerciseIds.isEmpty;
++    Widget nextStart() => primary(
++        unavailable
++            ? 'Add exercises'
++            : next!.routine.name.length > 45
++                ? 'Start workout'
++                : 'Start ${next.routine.name}',
++        unavailable
++            ? () => context.push('/routines/edit?id=${next.routine.id}')
++            : () => _start(next.routine.id),
++        key: const ValueKey('chosen-routine-start'),
++        semanticLabel: unavailable
++            ? 'Add exercises to ${next.routine.name}'
++            : 'Start ${next.routine.name}');
++    return AppCard(
++        child:
++            Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
++      LayoutBuilder(builder: (context, constraints) {
++        final tag = AppStatusTag(
++            label: active == null ? 'Up next' : 'In progress',
++            backgroundColor: context.accent.muted,
++            textColor: context.accent.base);
++        final change = TextButton(
++            key: const ValueKey('change-training-routine'),
++            style: TextButton.styleFrom(
++                foregroundColor: s.textPrimary,
++                minimumSize: const Size(48, 48)),
++            onPressed: () => showTrainingChooser(context),
++            child: Text('Training plan', style: AppText.button()));
++        if (MediaQuery.textScalerOf(context).scale(14) >= 21 ||
++            constraints.maxWidth < 290) {
++          return Column(
++              crossAxisAlignment: CrossAxisAlignment.start,
++              children: [
++                tag,
++                if (!widget.compact)
++                  Align(alignment: Alignment.centerRight, child: change)
++              ]);
++        }
++        return Row(children: [
++          Expanded(child: Align(alignment: Alignment.centerLeft, child: tag)),
++          if (!widget.compact) change
+         ]);
+-    final routines = library.valueOrNull ?? <HydratedRoutine>[];
+-    final id = choice.valueOrNull;
+-    HydratedRoutine? chosen;
+-    for (final r in routines) {
+-      if (r.routine.id == id) chosen = r;
+-    }
+-    if (active != null) {
+-      final activeName = (active.name ?? '').trim();
+-      final name = activeName.isEmpty ? 'workout' : activeName;
+-      return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
++      }),
++      if (active != null) ...[
+         Text('Workout in progress',
+-            style: AppText.caption(color: s.textSecondary)),
+-        const SizedBox(height: AppSpacing.x2),
+-        Text(name, style: AppText.titleLarge(color: s.textPrimary)),
+-        const SizedBox(height: AppSpacing.x4),
+-        _primary('Resume $name', () => _start(null)),
+-        const SizedBox(height: AppSpacing.x4),
+-        Text('HOME ROUTINE · FOR LATER',
+-            style: AppText.caption(color: s.textSecondary)),
+-        if (chosen != null) ...[
+-          Row(children: [
+-            Expanded(
+-                child: Text(chosen.routine.name,
+-                    style: AppText.sheetTitle(color: s.textPrimary))),
+-            _change(),
+-          ]),
+-          Text(trainingAgeLabel(chosen.lastTrained, now),
+-              style: AppText.meta(color: s.textSecondary)),
+-          if (chosen.exerciseIds.isEmpty)
+-            Text('This routine has no exercises',
+-                style: AppText.body(color: s.textSecondary)),
+-        ] else if (!library.hasError && !library.isLoading) ...[
+-          if (id != null || choice.hasError)
+-            Text('Routine choice unavailable',
+-                style: AppText.meta(color: s.textSecondary)),
+-          if (widget.compact)
+-            _change(primary: true)
+-          else
+-            TextButton(
+-                onPressed: () => showTrainingChooser(context),
+-                child: const Text('Choose routine')),
+-        ],
+-        if (library.hasError)
+-          Semantics(
+-              liveRegion: true,
+-              child: Text("Couldn't load your routines",
+-                  style: AppText.body(color: s.textSecondary))),
+-        if (library.hasError)
+-          TextButton(
+-              onPressed: () => ref.invalidate(hydratedRoutinesProvider),
+-              child: const Text('Try again')),
+-        if (library.isLoading || choice.isLoading)
+-          Text('Loading your routine choice',
+-              style: AppText.meta(color: s.textSecondary)),
+-      ]);
+-    }
+-    if (library.isLoading || choice.isLoading) {
+-      return message(
+-          'Loading your training choice',
+-          'Your saved routine will appear when available.',
+-          Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+-            const LinearProgressIndicator(),
+-            if (widget.compact) freestyle(),
+-          ]));
+-    }
+-    if (library.hasError || choice.hasError) {
+-      if (widget.compact && !library.hasError) {
+-        return Semantics(
+-            liveRegion: true,
+-            child: Column(
+-                crossAxisAlignment: CrossAxisAlignment.stretch,
+-                children: [
+-                  Text("Home routine couldn't load",
+-                      style: AppText.meta(color: s.textSecondary)),
+-                  TextButton(
+-                      onPressed: () =>
+-                          ref.read(chosenRoutineProvider.notifier).load(),
+-                      child: const Text('Try again')),
+-                  freestyle(),
+-                ]));
+-      }
+-      return Semantics(
+-          liveRegion: true,
+-          child: message(
+-              library.hasError
+-                  ? "Couldn't load your routines"
+-                  : "Couldn't load your training choice",
+-              library.hasError
+-                  ? 'Try loading your saved routines again.'
+-                  : widget.compact
+-                      ? 'Choose your Home routine on Home, or try loading again.'
+-                      : 'Choose a routine to save a new choice, or try loading again.',
+-              Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+-                if (!library.hasError) _change(primary: true),
+-                if (library.hasError)
+-                  _primary('Try again',
+-                      () => ref.invalidate(hydratedRoutinesProvider))
+-                else
+-                  TextButton(
+-                      onPressed: () =>
+-                          ref.read(chosenRoutineProvider.notifier).load(),
+-                      child: const Text('Try again')),
+-                if (widget.compact) freestyle(),
+-              ])));
+-    }
+-    if (routines.isEmpty && id == null) {
+-      return message(
+-          knownHistory && history.items.isEmpty
+-              ? 'Your first session starts here'
+-              : 'No saved routine to start',
+-          'Log a workout, or add a routine to train from a plan.',
+-          Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+-            if (widget.compact)
+-              _primary(
+-                  'Browse programs',
+-                  widget.onBrowsePrograms ??
+-                      () => context.push('/routines/explore'))
+-            else
+-              _primary(freestyleLabel, () => _start(null)),
+-            TextButton(
+-                key: widget.browseKey,
+-                onPressed: widget.compact
+-                    ? () => _start(null)
+-                    : widget.onBrowsePrograms ??
+-                        () => context.push('/routines/explore'),
+-                child:
+-                    Text(widget.compact ? freestyleLabel : 'Browse programs')),
+-          ]));
+-    }
+-    if (chosen != null && chosen.exerciseIds.isEmpty) {
+-      final empty = chosen;
+-      return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+-        Row(children: [
+-          Expanded(
+-              child: Text('HOME ROUTINE',
+-                  style: AppText.caption(color: s.textSecondary))),
+-          if (!widget.compact) _change()
+-        ]),
+-        Text(empty.routine.name,
+-            style: AppText.titleLarge(color: s.textPrimary)),
+-        const SizedBox(height: AppSpacing.x2),
+-        Text(trainingAgeLabel(empty.lastTrained, now),
+             style: AppText.meta(color: s.textSecondary)),
+-        const SizedBox(height: AppSpacing.x4),
+-        Text('Your chosen routine has no exercises',
++        const SizedBox(height: 8),
++        Text(resumeName, style: AppText.titleLarge(color: s.textPrimary)),
++        const SizedBox(height: 16),
++        primary('Resume $resumeName', () => _start(null)),
++        const SizedBox(height: 20),
++        Align(
++            alignment: Alignment.centerLeft,
++            child: AppStatusTag(
++                label: 'For later',
++                backgroundColor: context.accent.muted,
++                textColor: context.accent.base)),
++        const SizedBox(height: 8),
++      ],
++      if (resolution.isLoading) ...[
++        Text('Loading your training plan',
+             style: AppText.sheetTitle(color: s.textPrimary)),
+-        const SizedBox(height: AppSpacing.x2),
+-        Text(
+-            widget.compact
+-                ? 'Add exercises to this routine, or choose another on Home.'
+-                : 'Add exercises to this routine, or choose another.',
++        const SizedBox(height: 12),
++        const LinearProgressIndicator(),
++      ] else if (resolution.hasError) ...[
++        Semantics(
++            liveRegion: true,
++            child: Text("Couldn't load your training plan",
++                style: AppText.sheetTitle(color: s.textPrimary))),
++        Text('Your plan has not changed. Try loading again.',
+             style: AppText.body(color: s.textSecondary)),
+-        const SizedBox(height: AppSpacing.x4),
+-        _primary('Add exercises',
+-            () => context.push('/routines/edit?id=${empty.routine.id}')),
+-        if (widget.compact) freestyle(),
+-      ]);
+-    }
+-    if (chosen == null) {
+-      if (widget.compact) {
+-        return Column(
+-            crossAxisAlignment: CrossAxisAlignment.stretch,
+-            children: [
+-              Text(
+-                  id == null
+-                      ? 'No Home routine chosen'
+-                      : 'Home routine unavailable',
+-                  style: AppText.meta(color: s.textSecondary)),
+-              Text('Choose on Home.',
+-                  style: AppText.meta(color: s.textSecondary)),
+-              if (!routines.any((r) => r.exerciseIds.isNotEmpty))
+-                TextButton(
+-                    key: widget.browseKey,
+-                    onPressed: widget.onBrowsePrograms ??
+-                        () => context.push('/routines/explore'),
+-                    child: const Text('Browse programs')),
+-              freestyle(),
+-            ]);
+-      }
+-      final title = id == null
+-          ? widget.compact
+-              ? 'No Home routine chosen'
+-              : 'Choose a routine for today'
+-          : widget.compact
+-              ? 'Home routine unavailable'
+-              : 'Chosen routine unavailable';
+-      return message(
+-          title,
+-          widget.compact
+-              ? 'Choose your Home routine on Home. You can start any saved routine below, or log a different workout.'
+-              : id == null
+-                  ? 'Choose a saved plan. Nothing is selected automatically.'
+-                  : 'Choose another saved routine, or log a different workout.',
+-          Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+-            if (routines.any((r) => r.exerciseIds.isNotEmpty))
+-              _change(primary: true),
+-            if (!routines.any((r) => r.exerciseIds.isNotEmpty))
+-              TextButton(
+-                  key: widget.browseKey,
+-                  onPressed: widget.onBrowsePrograms ??
+-                      () => context.push('/routines/explore'),
+-                  child: const Text('Browse programs')),
+-            if (widget.compact) freestyle(),
+-          ]));
+-    }
+-    final detail = ref.watch(routineDetailProvider(chosen.routine.id));
+-    final lastSets = ref.watch(routineLastSetsProvider(chosen.routine.id));
+-    final selected = chosen;
+-    final planned = detail.valueOrNull?.exercises.fold<int>(
+-        0,
+-        (sum, e) =>
+-            sum + (e.config.defaultSets > 0 ? e.config.defaultSets : 1));
+-    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+-      if (returnAfterBreak) ...[
+-        Text('Train at your own pace',
+-            style: AppText.body(color: s.textPrimary)),
+-        const SizedBox(height: AppSpacing.x2),
+-      ],
+-      if (widget.compact) ...[
+-        Row(children: [
+-          Expanded(
+-              child: Column(
+-                  crossAxisAlignment: CrossAxisAlignment.start,
+-                  children: [
+-                Text('HOME ROUTINE',
+-                    style: AppText.caption(color: s.textSecondary)),
+-                Text(chosen.routine.name,
+-                    style: AppText.sectionHeading(color: s.textPrimary)),
+-              ])),
+-          _change(),
+-        ]),
++        TextButton(
++            onPressed: () {
++              ref.invalidate(hydratedRoutinesProvider);
++              ref.invalidate(programCompletionsProvider);
++              ref.read(trainingPlanProvider.notifier).load();
++            },
++            child: const Text('Try again')),
++      ] else if (next != null) ...[
++        Text(next.routine.name,
++            style: longLarge
++                ? AppText.sheetTitle(color: s.textPrimary)
++                : AppText.titleLarge(color: s.textPrimary)),
++        if (longLarge && active == null) ...[
++          const SizedBox(height: 16),
++          nextStart(),
++          const SizedBox(height: 12),
++        ],
++        if (resolved?.programName != null) ...[
++          const SizedBox(height: 4),
++          Text(resolved!.programName!,
++              style: AppText.body(color: s.textSecondary)),
++        ],
++        const SizedBox(height: 8),
++        if (longLarge && resolved!.following)
++          Semantics(
++              label: resolved.reason,
++              child: ExcludeSemantics(
++                  child: Text('Next in your saved program order',
++                      style: AppText.body(color: s.textSecondary))))
++        else
++          Text(resolved!.reason!, style: AppText.body(color: s.textSecondary)),
++        const SizedBox(height: 8),
++        _PlannedCounts(routine: next),
++        const SizedBox(height: 16),
++        if (active == null && !longLarge) nextStart(),
+       ] else ...[
+-        Row(children: [
+-          Expanded(
+-              child: Text('HOME ROUTINE',
+-                  style: AppText.caption(color: s.textSecondary))),
+-          _change()
+-        ]),
+-        Text(chosen.routine.name,
+-            style: AppText.screenTitle(color: s.textPrimary)),
+-      ],
+-      if (!widget.compact &&
+-          (chosen.routine.sourceProgramName?.isNotEmpty ?? false)) ...[
+-        const SizedBox(height: AppSpacing.x2),
+-        Text(chosen.routine.sourceProgramName!,
+-            style: AppText.body(color: s.textSecondary)),
+-      ],
+-      if (!widget.compact) ...[
+-        const SizedBox(height: AppSpacing.x2),
+         Text(
+-            '${chosen.exerciseIds.length} ${chosen.exerciseIds.length == 1 ? 'exercise' : 'exercises'}${!widget.compact && planned != null ? ' · $planned planned ${planned == 1 ? 'set' : 'sets'}' : ''}',
++            resolved?.problem == null
++                ? 'Your next session starts here'
++                : 'Choose your next workout',
++            style: AppText.titleLarge(color: s.textPrimary)),
++        const SizedBox(height: 8),
++        Text(
++            resolved?.problem ??
++                'Follow a saved program, repeat a routine, or log a workout your way.',
+             style: AppText.body(color: s.textSecondary)),
++        const SizedBox(height: 16),
++        if (active == null)
++          emptyLibrary
++              ? primary('Start workout', () => _start(null))
++              : primary(
++                  'Choose training plan', () => showTrainingChooser(context)),
++        TextButton(
++            key: widget.browseKey,
++            onPressed: widget.onBrowsePrograms ??
++                () => context.push('/routines/explore'),
++            child: const Text('Browse programs')),
+       ],
+-      if (!widget.compact && chosen.muscleTags.isNotEmpty) ...[
+-        const SizedBox(height: AppSpacing.x2),
+-        Text(chosen.muscleTags.join(' · '),
+-            style: AppText.body(color: s.textPrimary)),
++      if (active == null && !emptyLibrary) ...[
++        const SizedBox(height: 12),
++        TrainingUtilityButton(
++            label: 'Train something else',
++            icon: Icons.swap_horiz_rounded,
++            onPressed: () => showTrainingChooser(context, forSession: true)),
+       ],
+-      const SizedBox(height: AppSpacing.x2),
+-      Text(trainingAgeLabel(chosen.lastTrained, now),
+-          style: AppText.meta(color: s.textSecondary)),
+-      if (!widget.compact) ...[
+-        const SizedBox(height: AppSpacing.x4),
+-        _previousContext(detail, lastSets),
+-      ],
+-      const SizedBox(height: AppSpacing.x4),
+-      _primary(
+-          'Start ${chosen.routine.name}', () => _start(selected.routine.id),
+-          key: const ValueKey('chosen-routine-start')),
+-    ]);
++    ]));
+   }
++}
+ 
+-  Widget _previousContext(AsyncValue<HydratedRoutineDetail?> detail,
+-      AsyncValue<Map<String, List<LastSessionSetData>>> sets) {
+-    final s = context.surface;
+-    String? result, spoken, exerciseName;
+-    if (detail.hasValue && sets.hasValue) {
+-      for (final e
+-          in detail.valueOrNull?.exercises ?? <HydratedRoutineExercise>[]) {
+-        final logged = sets.requireValue['${e.exercise.id}'] ?? [];
+-        if (logged.isEmpty) continue;
+-        final set = logged.firstWhere((s) => s.setType != 'warmup',
+-            orElse: () => logged.first);
+-        final type = MeasurementType.resolve(
+-            explicitValue: e.exercise.measurementType,
+-            equipment: e.exercise.equipment,
+-            exerciseName: e.exercise.name);
+-        final unit = ref.watch(exerciseUnitProvider(e.exercise.id));
+-        result = launchSetText(type, set, unit);
+-        if (result == null) continue;
+-        spoken = launchSetText(type, set, unit, spoken: true);
+-        exerciseName =
+-            '${e.exercise.name}${set.setType == 'warmup' ? ' · warm-up' : ''}';
+-        break;
+-      }
+-    }
+-    final text = detail.hasError || sets.hasError
+-        ? 'Previous-set context unavailable'
+-        : detail.isLoading || sets.isLoading
+-            ? 'Loading previous-set context'
+-            : result == null
+-                ? 'No previous logged set for this plan'
+-                : 'Logged set · $exerciseName';
+-    return Container(
+-        width: double.infinity,
+-        padding: const EdgeInsets.all(AppSpacing.x4),
+-        decoration:
+-            BoxDecoration(color: s.bgSurface, borderRadius: AppRadius.cardAll),
+-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+-          Text(text, style: AppText.meta(color: s.textSecondary)),
+-          if (result != null) ...[
+-            const SizedBox(height: AppSpacing.x2),
+-            Text(result,
+-                semanticsLabel: spoken,
+-                style: AppText.sheetTitle(color: s.textPrimary)
+-                    .copyWith(fontFeatures: kTabular)),
+-          ],
+-        ]));
++class _PlannedCounts extends ConsumerWidget {
++  const _PlannedCounts({required this.routine});
++  final HydratedRoutine routine;
++  @override
++  Widget build(BuildContext context, WidgetRef ref) {
++    final detail = ref.watch(routineDetailProvider(routine.routine.id));
++    final exercises = routine.exerciseIds.length;
++    final sets = exercises == 0
++        ? 0
++        : detail.valueOrNull?.exercises
++            .fold<int>(0, (n, e) => n + e.config.defaultSets);
++    return Text(
++        '$exercises ${exercises == 1 ? 'exercise' : 'exercises'}${sets == null ? '' : ' · $sets planned sets'}',
++        style: AppText.meta(color: context.surface.textSecondary)
++            .copyWith(fontFeatures: kTabular));
+   }
+ }
+ 
+ class _TrainingChooser extends ConsumerStatefulWidget {
+-  const _TrainingChooser();
++  const _TrainingChooser({required this.forSession});
++  final bool forSession;
+   @override
+   ConsumerState<_TrainingChooser> createState() => _TrainingChooserState();
+ }
+@@ -441,20 +262,70 @@ class _TrainingChooserState extends ConsumerState<_TrainingChooser> {
+   int _page = 0;
+   bool _saving = false;
+   String? _error;
+-  Future<void> _choose(String id) async {
++  bool? _repeatOverride;
++  Future<void> _choose(
++      HydratedRoutine? routine, List<HydratedRoutine> routines) async {
+     if (_saving) return;
+     setState(() {
+       _saving = true;
+       _error = null;
+     });
+     try {
+-      await ref.read(chosenRoutineProvider.notifier).choose(id);
+-      if (mounted) Navigator.pop(context);
++      if (widget.forSession) {
++        HapticFeedback.mediumImpact();
++        // Starting this workout never writes the persistent training preference.
++        final launcher = ref.read(trainingLauncherProvider);
++        final result = await (routine == null
++            ? launcher.startFreestyle()
++            : launcher.startRoutine(routine.routine.id));
++        if (!mounted) return;
++        if (result == LaunchResult.started || result == LaunchResult.resume) {
++          final router = GoRouter.of(context);
++          Navigator.pop(context);
++          router.push('/workout/active');
++        } else {
++          setState(() {
++            _saving = false;
++            _error = result == LaunchResult.busy
++                ? 'A workout is starting. Please wait.'
++                : 'This routine is unavailable. Choose another.';
++          });
++        }
++      } else {
++        final repeat = _repeatOverride ??
++            (ref.read(trainingPlanProvider).valueOrNull != null &&
++                ref.read(trainingPlanProvider).valueOrNull?.followsProgram ==
++                    false);
++        final notifier = ref.read(trainingPlanProvider.notifier);
++        final selected = planForRoutine(routine!, routines, repeat: repeat);
++        final members = selected.programSlug == null
++            ? null
++            : orderedProgram(routines, selected.programSlug!);
++        final completed = members == null
++            ? <WorkoutSessionPreview>[]
++            : await ref.read(trainingCompletionLookupProvider)(
++                members.map((r) => r.routine.id).toList());
++        if (!mounted) return;
++        if (!identical(notifier, ref.read(trainingPlanProvider.notifier))) {
++          throw StateError('Account changed during plan selection');
++        }
++        completed
++            .sort((a, b) => b.session.endedAt!.compareTo(a.session.endedAt!));
++        final tied = completed.length > 1 &&
++            completed[0].session.endedAt == completed[1].session.endedAt &&
++            completed[0].session.routineId != completed[1].session.routineId;
++        await notifier.choose(routine, routines,
++            repeat: repeat,
++            startAfter: tied ? completed[0].session.endedAt : null);
++        if (mounted) Navigator.pop(context);
++      }
+     } catch (_) {
+       if (mounted) {
+         setState(() {
+           _saving = false;
+-          _error = "Couldn't save your choice. Try again.";
++          _error = widget.forSession
++              ? "Couldn't start the workout. Try again."
++              : "Couldn't save your plan. Try again.";
+         });
+       }
+     }
+@@ -463,152 +334,286 @@ class _TrainingChooserState extends ConsumerState<_TrainingChooser> {
+   @override
+   Widget build(BuildContext context) {
+     final library = ref.watch(hydratedRoutinesProvider);
+-    if (library.isLoading || library.hasError) {
+-      return Material(
+-          color: context.surface.surface2,
+-          borderRadius: AppRadius.sheetTop,
+-          child: SafeArea(
+-              top: false,
+-              child: Padding(
+-                  padding: const EdgeInsets.all(16),
+-                  child: Column(
+-                      mainAxisSize: MainAxisSize.min,
+-                      crossAxisAlignment: CrossAxisAlignment.stretch,
+-                      children: [
+-                        Text(
+-                            library.hasError
+-                                ? 'Routine choices unavailable'
+-                                : 'Loading routine choices',
+-                            style: AppText.sectionHeading(
+-                                color: context.surface.textPrimary)),
+-                        if (library.hasError)
+-                          TextButton(
+-                              onPressed: () =>
+-                                  ref.invalidate(hydratedRoutinesProvider),
+-                              child: const Text('Try again')),
+-                        TextButton(
+-                            onPressed: () => Navigator.pop(context),
+-                            child: const Text('Close')),
+-                      ]))));
+-    }
+-    final routines = library.requireValue;
+-    final chosen = ref.watch(chosenRoutineProvider).valueOrNull;
+-    final history = ref.watch(workoutHistoryProvider);
+-    final suggestion =
+-        _query.isEmpty && !history.hasError && !history.isInitialLoad
+-            ? nextProgramSuggestion(routines, history.items, chosen)
+-            : null;
+-    final ordered = [...routines]..sort((a, b) =>
+-        (b.lastTrained ?? DateTime(0)).compareTo(a.lastTrained ?? DateTime(0)));
+-    final matches = ordered
++    final plan = ref.watch(trainingPlanProvider).valueOrNull;
++    final repeat = _repeatOverride ?? (plan != null && !plan.followsProgram);
++    final next = ref.watch(trainingPlanResolutionProvider).valueOrNull?.next;
++    final routines = library.valueOrNull ?? <HydratedRoutine>[];
++    final matches = routines
+         .where((r) => '${r.routine.name} ${r.routine.sourceProgramName ?? ''}'
+             .toLowerCase()
+             .contains(_query.toLowerCase()))
+         .toList();
+-    if (_query.isEmpty) {
+-      matches.sort((a, b) => (a.routine.id == suggestion?.routine.routine.id
+-              ? -2
+-              : a.routine.id == chosen
+-                  ? -1
+-                  : 0)
+-          .compareTo(b.routine.id == suggestion?.routine.routine.id
+-              ? -2
+-              : b.routine.id == chosen
+-                  ? -1
+-                  : 0));
+-    }
+     final page =
+         _page.clamp(0, matches.isEmpty ? 0 : (matches.length - 1) ~/ 4);
+-    final visible = matches.skip(page * 4).take(4);
+     final s = context.surface;
+-    return Container(
+-        constraints:
+-            BoxConstraints(maxHeight: MediaQuery.sizeOf(context).height * .88),
+-        padding: EdgeInsets.fromLTRB(
+-            16, 16, 16, 16 + MediaQuery.viewInsetsOf(context).bottom),
+-        decoration:
+-            BoxDecoration(color: s.surface2, borderRadius: AppRadius.sheetTop),
+-        child: SafeArea(
+-            top: false,
+-            child: SingleChildScrollView(
+-                child: Column(
+-                    crossAxisAlignment: CrossAxisAlignment.start,
+-                    children: [
+-                  Row(children: [
+-                    Expanded(
+-                        child: Text('Routine on Home',
+-                            style:
+-                                AppText.sectionHeading(color: s.textPrimary))),
+-                    IconButton(
+-                        onPressed: () => Navigator.pop(context),
+-                        tooltip: 'Close routine chooser',
+-                        icon: const Icon(Icons.close_rounded))
+-                  ]),
+-                  Text(
+-                      'Choose the routine shown on Home. Suggestions are optional.',
+-                      style: AppText.meta(color: s.textSecondary)),
+-                  const SizedBox(height: AppSpacing.x3),
+-                  TextField(
+-                      enabled: !_saving,
+-                      decoration: const InputDecoration(
+-                          labelText: 'Search your routines',
+-                          prefixIcon: Icon(Icons.search_rounded)),
+-                      onChanged: (value) => setState(() {
+-                            _query = value;
+-                            _page = 0;
+-                          })),
+-                  const SizedBox(height: AppSpacing.x2),
+-                  if (matches.isEmpty)
+-                    Text('No matching routines',
+-                        style: AppText.body(color: s.textSecondary)),
+-                  for (final r in visible) ...[
+-                    Material(
+-                        color: Colors.transparent,
+-                        child: ListTile(
+-                            key: ValueKey('choose-${r.routine.id}'),
+-                            contentPadding: EdgeInsets.zero,
+-                            enabled: !_saving && r.exerciseIds.isNotEmpty,
+-                            selected: r.routine.id == chosen,
+-                            leading: Icon(r.routine.id == chosen
+-                                ? Icons.radio_button_checked
+-                                : Icons.radio_button_unchecked),
+-                            title: Text(r.routine.name,
+-                                style:
+-                                    AppText.sheetTitle(color: s.textPrimary)),
+-                            subtitle: Text(
+-                                r.routine.id == suggestion?.routine.routine.id
+-                                    ? 'Next in your program · Follows ${suggestion!.previousRoutineName} in saved order'
+-                                    : r.exerciseIds.isEmpty
+-                                        ? 'Empty plan · add exercises first'
+-                                        : '${r.exerciseIds.length} ${r.exerciseIds.length == 1 ? 'exercise' : 'exercises'} · ${r.routine.sourceProgramName ?? trainingAgeLabel(r.lastTrained, ref.read(trainingClockProvider)())}',
+-                                style: AppText.meta(color: s.textSecondary)),
+-                            onTap: () => _choose(r.routine.id))),
+-                  ],
+-                  if (matches.length > 4)
++    return Padding(
++        padding:
++            EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom),
++        child: Container(
++            constraints: BoxConstraints(
++                maxHeight: (MediaQuery.sizeOf(context).height -
++                        MediaQuery.viewInsetsOf(context).bottom) *
++                    .9),
++            padding: const EdgeInsets.all(16),
++            decoration: BoxDecoration(
++                color: s.surface2, borderRadius: AppRadius.sheetTop),
++            child: SafeArea(
++              top: false,
++              child: Column(
++                  mainAxisSize: MainAxisSize.min,
++                  crossAxisAlignment: CrossAxisAlignment.stretch,
++                  children: [
+                     Row(children: [
+-                      Text(
+-                          '${page * 4 + 1} to ${(page * 4 + 4).clamp(0, matches.length)} of ${matches.length}',
+-                          style: AppText.meta(color: s.textSecondary)),
+-                      const Spacer(),
++                      Expanded(
++                          child: Text(
++                              widget.forSession
++                                  ? 'For this session'
++                                  : 'Training plan',
++                              style: AppText.sectionHeading(
++                                  color: s.textPrimary))),
+                       IconButton(
+-                          tooltip: 'Previous choices',
+-                          onPressed: page == 0 || _saving
+-                              ? null
+-                              : () => setState(() => _page = page - 1),
+-                          icon: const Icon(Icons.chevron_left_rounded)),
+-                      IconButton(
+-                          tooltip: 'More choices',
+-                          onPressed: (page + 1) * 4 >= matches.length || _saving
+-                              ? null
+-                              : () => setState(() => _page = page + 1),
+-                          icon: const Icon(Icons.chevron_right_rounded)),
++                          tooltip: 'Close routine chooser',
++                          onPressed:
++                              _saving ? null : () => Navigator.pop(context),
++                          icon: const Icon(Icons.close_rounded))
+                     ]),
+-                  if (_saving) const LinearProgressIndicator(),
+-                  if (_error != null)
+-                    Semantics(
+-                        liveRegion: true,
+-                        child: Text(_error!,
+-                            style: AppText.body(color: s.textPrimary))),
+-                ]))));
++                    Text(
++                        widget.forSession
++                            ? MediaQuery.viewInsetsOf(context).bottom > 0
++                                ? 'Your plan stays selected.'
++                                : 'For today only. Your training plan stays selected.'
++                            : MediaQuery.viewInsetsOf(context).bottom > 0
++                                ? 'Saved order follows completed workouts.'
++                                : 'Follow a program after each completed workout, or repeat a routine.',
++                        style: AppText.meta(color: s.textSecondary)),
++                    const SizedBox(height: 12),
++                    TextField(
++                        enabled: !_saving,
++                        decoration: const InputDecoration(
++                            labelText: 'Search your routines',
++                            prefixIcon: Icon(Icons.search_rounded)),
++                        onChanged: (value) => setState(() {
++                              _query = value;
++                              _page = 0;
++                            })),
++                    const SizedBox(height: 12),
++                    if (_saving) ...[
++                      Semantics(
++                          liveRegion: true,
++                          child: Text(
++                              widget.forSession
++                                  ? 'Starting workout'
++                                  : 'Saving training plan',
++                              style: AppText.meta(color: s.textSecondary))),
++                      const LinearProgressIndicator(),
++                      const SizedBox(height: 8),
++                    ],
++                    if (_error != null) ...[
++                      Semantics(
++                          liveRegion: true,
++                          child: Text(_error!,
++                              style: AppText.meta(color: s.textPrimary))),
++                      const SizedBox(height: 8),
++                    ],
++                    Flexible(
++                        child: SingleChildScrollView(
++                      keyboardDismissBehavior:
++                          ScrollViewKeyboardDismissBehavior.onDrag,
++                      child: Column(
++                          mainAxisSize: MainAxisSize.min,
++                          crossAxisAlignment: CrossAxisAlignment.stretch,
++                          children: [
++                            if (!widget.forSession &&
++                                routines.any((r) =>
++                                    planForRoutine(r, routines).followsProgram))
++                              Material(
++                                  color: Colors.transparent,
++                                  child: SwitchListTile.adaptive(
++                                      contentPadding: EdgeInsets.zero,
++                                      title: Text('Repeat one routine',
++                                          style: AppText.body(
++                                              color: s.textPrimary)),
++                                      subtitle: Column(
++                                          crossAxisAlignment:
++                                              CrossAxisAlignment.start,
++                                          children: [
++                                            Text(
++                                                repeat
++                                                    ? 'Routine choices repeat after completion.'
++                                                    : 'Program days follow saved order; standalone routines repeat.',
++                                                style: AppText.meta(
++                                                    color: s.textSecondary)),
++                                            Text(
++                                                'Tap a routine to save. Close without choosing to cancel.',
++                                                style: AppText.meta(
++                                                    color: s.textSecondary)),
++                                          ]),
++                                      thumbColor:
++                                          WidgetStatePropertyAll(s.textPrimary),
++                                      trackColor:
++                                          WidgetStatePropertyAll(s.surface3),
++                                      trackOutlineColor: WidgetStatePropertyAll(
++                                          s.textSecondary),
++                                      value: repeat,
++                                      onChanged: _saving
++                                          ? null
++                                          : (value) => setState(
++                                              () => _repeatOverride = value))),
++                            if (library.isLoading)
++                              const LinearProgressIndicator(),
++                            if (library.hasError) ...[
++                              Text('Routine choices unavailable',
++                                  style: AppText.body(color: s.textPrimary)),
++                              TextButton(
++                                  onPressed: () =>
++                                      ref.invalidate(hydratedRoutinesProvider),
++                                  child: const Text('Try again')),
++                            ],
++                            if (!library.isLoading &&
++                                !library.hasError &&
++                                matches.isEmpty)
++                              Text(
++                                  routines.isEmpty
++                                      ? 'No saved routines yet'
++                                      : 'No matching routines',
++                                  style: AppText.body(color: s.textSecondary)),
++                            if (!widget.forSession &&
++                                !library.isLoading &&
++                                !library.hasError &&
++                                routines.isEmpty)
++                              TrainingUtilityButton(
++                                  label: 'Browse programs',
++                                  icon: Icons.explore_rounded,
++                                  onPressed: () {
++                                    final router = GoRouter.of(context);
++                                    Navigator.pop(context);
++                                    router.push('/routines/explore');
++                                  }),
++                            for (final r in matches.skip(page * 4).take(4)) ...[
++                              _ChoiceRow(
++                                  key: ValueKey('choose-${r.routine.id}'),
++                                  startsWorkout: widget.forSession,
++                                  title: r.routine.name,
++                                  subtitle: r.exerciseIds.isEmpty
++                                      ? 'Empty routine · add exercises first'
++                                      : widget.forSession
++                                          ? '${r.exerciseIds.length} exercises · ${r.routine.id == next?.routine.id ? 'Up next' : 'For today only'}'
++                                          : planForRoutine(r, routines,
++                                                      repeat: repeat)
++                                                  .followsProgram
++                                              ? 'Follow ${r.routine.sourceProgramName ?? 'saved program'} · ${r.routine.id == next?.routine.id ? 'Up next' : 'saved order'}'
++                                              : 'Repeat this routine · ${r.exerciseIds.length} ${r.exerciseIds.length == 1 ? 'exercise' : 'exercises'}',
++                                  selected: !widget.forSession &&
++                                      r.routine.id == plan?.anchorId &&
++                                      repeat == !plan!.followsProgram,
++                                  onTap: _saving || r.exerciseIds.isEmpty
++                                      ? null
++                                      : () => _choose(r, routines)),
++                              const SizedBox(height: 8),
++                            ],
++                            if (matches.length > 4)
++                              Wrap(
++                                  alignment: WrapAlignment.spaceBetween,
++                                  crossAxisAlignment: WrapCrossAlignment.center,
++                                  children: [
++                                    Text(
++                                        '${page * 4 + 1} to ${(page * 4 + 4).clamp(0, matches.length)} of ${matches.length}',
++                                        style: AppText.meta(
++                                            color: s.textSecondary)),
++                                    Row(
++                                        mainAxisSize: MainAxisSize.min,
++                                        children: [
++                                          IconButton(
++                                              tooltip: 'Previous choices',
++                                              onPressed: page == 0 || _saving
++                                                  ? null
++                                                  : () => setState(
++                                                      () => _page = page - 1),
++                                              icon: const Icon(
++                                                  Icons.chevron_left_rounded)),
++                                          IconButton(
++                                              tooltip: 'More choices',
++                                              onPressed: (page + 1) * 4 >=
++                                                          matches.length ||
++                                                      _saving
++                                                  ? null
++                                                  : () => setState(
++                                                      () => _page = page + 1),
++                                              icon: const Icon(
++                                                  Icons.chevron_right_rounded)),
++                                        ]),
++                                  ]),
++                            if (widget.forSession) ...[
++                              const SizedBox(height: 12),
++                              Text(
++                                  'Completing a day from your program continues from that day. Other workouts leave its order unchanged.',
++                                  style: AppText.meta(color: s.textSecondary)),
++                              const SizedBox(height: 12),
++                              TrainingUtilityButton(
++                                  label: 'Start without a routine',
++                                  icon: Icons.add_rounded,
++                                  onPressed: _saving
++                                      ? null
++                                      : () => _choose(null, routines)),
++                            ],
++                          ]),
++                    )),
++                  ]),
++            )));
+   }
+ }
++
++class _ChoiceRow extends StatelessWidget {
++  const _ChoiceRow(
++      {super.key,
++      required this.title,
++      required this.subtitle,
++      required this.selected,
++      this.startsWorkout = false,
++      required this.onTap});
++  final String title, subtitle;
++  final bool selected;
++  final bool startsWorkout;
++  final VoidCallback? onTap;
++  @override
++  Widget build(BuildContext context) => Material(
++        color: context.surface.surface3,
++        borderRadius: AppRadius.cardAll,
++        child: InkWell(
++          onTap: onTap,
++          borderRadius: AppRadius.cardAll,
++          child: Semantics(
++            button: true,
++            label: startsWorkout ? 'Start this workout for this session' : null,
++            selected: selected,
++            enabled: onTap != null,
++            child: Padding(
++                padding: const EdgeInsets.all(16),
++                child: Row(children: [
++                  Icon(
++                      startsWorkout
++                          ? Icons.play_arrow_rounded
++                          : selected
++                              ? Icons.radio_button_checked
++                              : Icons.radio_button_unchecked,
++                      color: onTap == null
++                          ? context.surface.textDisabled
++                          : context.accent.base),
++                  const SizedBox(width: 12),
++                  Expanded(
++                      child: Column(
++                          crossAxisAlignment: CrossAxisAlignment.start,
++                          children: [
++                        Text(title,
++                            style: AppText.sheetTitle(
++                                color: context.surface.textPrimary)),
++                        const SizedBox(height: 4),
++                        Text(subtitle,
++                            style: AppText.meta(
++                                color: context.surface.textSecondary)),
++                      ])),
++                ])),
++          ),
++        ),
++      );
++}
+diff --git a/lib/features/routines/presentation/widgets/training_utility_button.dart b/lib/features/routines/presentation/widgets/training_utility_button.dart
+new file mode 100644
+index 00000000..6c7125f4
+--- /dev/null
++++ b/lib/features/routines/presentation/widgets/training_utility_button.dart
+@@ -0,0 +1,46 @@
++import 'package:flutter/material.dart';
++import 'package:gymlog/core/theme/app_colors.dart';
++import 'package:gymlog/core/theme/app_text.dart';
++import 'package:gymlog/core/theme/dynamic_accent_theme.dart';
++import 'package:gymlog/shared/widgets/motion/pressable_scale.dart';
++
++/// Raised utility action. Labels wrap rather than shrinking at large text.
++class TrainingUtilityButton extends StatelessWidget {
++  const TrainingUtilityButton(
++      {super.key, required this.label, required this.onPressed, this.icon});
++  final String label;
++  final VoidCallback? onPressed;
++  final IconData? icon;
++  @override
++  Widget build(BuildContext context) => PressableScale(
++        child: OutlinedButton(
++          onPressed: onPressed,
++          style: OutlinedButton.styleFrom(
++            backgroundColor: context.surface.surface3,
++            foregroundColor: context.surface.textPrimary,
++            minimumSize: const Size(double.infinity, 52),
++            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
++            side: BorderSide(color: context.surface.borderDefault),
++            shape: const RoundedRectangleBorder(
++                borderRadius: AppRadius.buttonPrimaryAll),
++          ),
++          child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
++            if (icon != null) ...[
++              Icon(icon,
++                  color: onPressed == null
++                      ? context.surface.textDisabled
++                      : context.accent.base,
++                  size: 20),
++              const SizedBox(width: 8),
++            ],
++            Flexible(
++                child: Text(label,
++                    textAlign: TextAlign.center,
++                    style: AppText.button(
++                        color: onPressed == null
++                            ? context.surface.textDisabled
++                            : context.surface.textPrimary))),
++          ]),
++        ),
++      );
++}
+diff --git a/lib/features/workout/presentation/screens/workout_screen.dart b/lib/features/workout/presentation/screens/workout_screen.dart
+index bfcf276e..47716a7e 100644
+--- a/lib/features/workout/presentation/screens/workout_screen.dart
++++ b/lib/features/workout/presentation/screens/workout_screen.dart
+@@ -5,6 +5,8 @@ import 'package:go_router/go_router.dart';
+ import 'package:gymlog/core/database/daos/routines_dao.dart';
+ import 'package:gymlog/core/database/daos/program_grouping.dart';
+ import 'package:gymlog/features/routines/presentation/widgets/training_launchpad.dart';
++import 'package:gymlog/features/routines/presentation/widgets/training_utility_button.dart';
++import 'package:gymlog/features/routines/presentation/providers/training_plan_provider.dart';
+ import 'package:gymlog/features/workout/presentation/providers/active_workout_provider.dart';
+ import '../../../../core/theme/app_colors.dart';
+ import '../../../../core/theme/app_text.dart';
+@@ -14,6 +16,7 @@ import '../../../../shared/providers/bottom_chrome_provider.dart';
+ import '../../../../shared/widgets/ui/action_bottom_sheet.dart';
+ import '../../../../shared/widgets/ui/app_card.dart';
+ import '../../../../shared/widgets/ui/skeleton.dart';
++import '../../../../shared/widgets/ui/primary_button.dart';
+ import '../../../routines/presentation/widgets/routine_card.dart';
+ import '../../../routines/presentation/providers/routines_provider.dart';
+ import 'package:gymlog/shared/layout/adaptive.dart';
+@@ -31,6 +34,56 @@ class WorkoutScreen extends ConsumerStatefulWidget {
+ }
+ 
+ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
++  final _scrollController = ScrollController();
++  final _routineKeys = <String, GlobalKey>{};
++  bool _locating = false;
++  @override
++  void dispose() {
++    _scrollController.dispose();
++    super.dispose();
++  }
++
++  Future<void> _viewNext(String id) async {
++    if (_locating || !_scrollController.hasClients) return;
++    _locating = true;
++    final original = _scrollController.offset;
++    try {
++      // Lazy slivers only expose mounted cards. Scan only on this explicit
++      // navigation action; data changes never move the reader's scroll position.
++      if (_routineKeys[id]?.currentContext == null) _scrollController.jumpTo(0);
++      while (mounted && _scrollController.hasClients) {
++        await WidgetsBinding.instance.endOfFrame;
++        if (!mounted ||
++            ref
++                    .read(trainingPlanResolutionProvider)
++                    .valueOrNull
++                    ?.next
++                    ?.routine
++                    .id !=
++                id) {
++          break;
++        }
++        final target = _routineKeys[id]?.currentContext;
++        if (target != null && target.mounted) {
++          await Scrollable.ensureVisible(target,
++              alignment: 0, duration: Duration.zero);
++          return;
++        }
++        final position = _scrollController.position;
++        if (position.pixels >= position.maxScrollExtent) break;
++        _scrollController.jumpTo(
++            (position.pixels + position.viewportDimension * .8)
++                .clamp(0, position.maxScrollExtent));
++      }
++      if (mounted && _scrollController.hasClients) {
++        _scrollController.jumpTo(
++            original.clamp(0, _scrollController.position.maxScrollExtent));
++      }
++    } finally {
++      _locating = false;
++    }
++  }
++
+   void _startRoutine(HydratedRoutine routine) =>
+       launchTraining(context, ref, routine.routine.id);
+ 
+@@ -75,6 +128,9 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
+   @override
+   Widget build(BuildContext context) {
+     final routinesAsync = ref.watch(hydratedRoutinesProvider);
++    final planState = ref.watch(trainingPlanResolutionProvider);
++    final resolution = planState.valueOrNull;
++    final nextId = resolution?.next?.routine.id;
+     final surface = context.surface;
+     // Reserve room for the nav bar and, when a session is live, the floating
+     // mini player. Replaces the old hardcoded 24dp bottom padding, which hid
+@@ -86,6 +142,8 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
+       body: AdaptiveContent(
+         child: SafeArea(
+           child: CustomScrollView(
++            key: const PageStorageKey('routine_library'),
++            controller: _scrollController,
+             slivers: [
+               // ── Identity header (replaces AppBar — matches Home's chrome) ──
+               SliverToBoxAdapter(
+@@ -96,11 +154,17 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
+                     children: [
+                       Semantics(
+                         header: true,
+-                        child: Text(
+-                          'Routines',
+-                          style: AppText.screenTitle(color: surface.textPrimary)
+-                              .copyWith(letterSpacing: -0.5),
+-                        ),
++                        child: LayoutBuilder(
++                            builder: (context, constraints) => Text('Routines',
++                                style: (constraints.maxWidth < 320 &&
++                                            MediaQuery.textScalerOf(context)
++                                                    .scale(14) >=
++                                                21
++                                        ? AppText.titleLarge(
++                                            color: surface.textPrimary)
++                                        : AppText.screenTitle(
++                                            color: surface.textPrimary))
++                                    .copyWith(letterSpacing: -0.5))),
+                       ),
+                       routinesAsync.maybeWhen(
+                         data: (routines) => routines.isEmpty
+@@ -122,25 +186,68 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
+               SliverToBoxAdapter(
+                   child: Padding(
+                       padding: const EdgeInsets.symmetric(horizontal: 16),
+-                      child: Wrap(spacing: AppSpacing.x4, children: [
+-                        TextButton(
+-                            onPressed: _openCreateRoutineSheet,
+-                            style: TextButton.styleFrom(
+-                                foregroundColor: surface.textSecondary),
+-                            child: const Text('New routine')),
+-                        TextButton(
+-                            onPressed: () => _push('/routines/explore'),
+-                            style: TextButton.styleFrom(
+-                                foregroundColor: surface.textSecondary),
+-                            child: const Text('Explore')),
+-                      ]))),
+-              const SliverToBoxAdapter(
+-                  child: Padding(
+-                      padding: EdgeInsets.all(16),
+-                      child: AppCard(
+-                          radius: AppRadius.card,
+-                          child: TrainingLaunchpad(compact: true)))),
++                      child: Padding(
++                          padding: const EdgeInsets.only(top: 16, bottom: 8),
++                          child: LayoutBuilder(builder: (context, constraints) {
++                            final Widget create = routinesAsync
++                                        .valueOrNull?.isEmpty ==
++                                    true
++                                ? PrimaryButton(
++                                    key: const ValueKey('library-New routine'),
++                                    label: 'New routine',
++                                    onPressed: _openCreateRoutineSheet)
++                                : TrainingUtilityButton(
++                                    key: const ValueKey('library-New routine'),
++                                    label: 'New routine',
++                                    icon: Icons.add_rounded,
++                                    onPressed: _openCreateRoutineSheet);
++                            final explore = TrainingUtilityButton(
++                                key: const ValueKey('library-Explore'),
++                                label: 'Explore',
++                                icon: Icons.explore_outlined,
++                                onPressed: () => _push('/routines/explore'));
++                            if (MediaQuery.textScalerOf(context).scale(14) >=
++                                    21 ||
++                                constraints.maxWidth < 320) {
++                              return Column(children: [
++                                create,
++                                const SizedBox(height: 8),
++                                explore
++                              ]);
++                            }
++                            return Row(children: [
++                              Expanded(child: create),
++                              const SizedBox(width: 12),
++                              Expanded(child: explore)
++                            ]);
++                          })))),
+ 
++              if (routinesAsync.hasValue &&
++                  routinesAsync.requireValue.isNotEmpty &&
++                  (planState.hasError || resolution?.problem != null))
++                SliverPadding(
++                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
++                    sliver: SliverToBoxAdapter(
++                        child: AppCard(
++                            child: Column(
++                                crossAxisAlignment: CrossAxisAlignment.stretch,
++                                children: [
++                          Semantics(
++                              liveRegion: true,
++                              child: Text('Training plan needs attention',
++                                  style: AppText.sheetTitle(
++                                      color: surface.textPrimary))),
++                          const SizedBox(height: 4),
++                          Text(
++                              'Your saved routines are available. Check the plan on Home.',
++                              style:
++                                  AppText.body(color: surface.textSecondary)),
++                          Align(
++                              alignment: Alignment.centerLeft,
++                              child: TextButton(
++                                  onPressed: () => context.go('/'),
++                                  child: const Text('View Home'))),
++                        ])))),
+               // Source-program groups and standalone saved plans.
+               ...routinesAsync.when(
+                 loading: () => [
+@@ -149,8 +256,26 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
+                     sliver: SliverToBoxAdapter(child: _RoutinesLoading()),
+                   ),
+                 ],
+-                // The launchpad already owns this read failure and its Retry action.
+-                error: (e, _) => [],
++                error: (e, _) => [
++                  SliverToBoxAdapter(
++                      child: Padding(
++                          padding: const EdgeInsets.all(16),
++                          child: AppCard(
++                              child: Column(
++                                  crossAxisAlignment:
++                                      CrossAxisAlignment.stretch,
++                                  children: [
++                                Semantics(
++                                    liveRegion: true,
++                                    child: Text("Couldn't load your routines",
++                                        style: AppText.sectionHeading(
++                                            color: surface.textPrimary))),
++                                TextButton(
++                                    onPressed: () => ref
++                                        .invalidate(hydratedRoutinesProvider),
++                                    child: const Text('Try again')),
++                              ]))))
++                ],
+                 data: (routines) {
+                   if (routines.isEmpty) {
+                     return [
+@@ -186,6 +311,30 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
+                                         'Source program · ${group.routines.length} saved routines',
+                                         style: AppText.meta(
+                                             color: surface.textSecondary)),
++                                    if (group.routines
++                                        .any((r) => r.id == nextId))
++                                      Wrap(
++                                          crossAxisAlignment:
++                                              WrapCrossAlignment.center,
++                                          spacing: 12,
++                                          children: [
++                                            Text(
++                                                resolution?.following == true
++                                                    ? 'Following on Home'
++                                                    : 'Chosen on Home',
++                                                style: AppText.meta(
++                                                    color:
++                                                        context.accent.base)),
++                                            TextButton(
++                                                style: TextButton.styleFrom(
++                                                    minimumSize:
++                                                        const Size(48, 48),
++                                                    foregroundColor:
++                                                        surface.textPrimary),
++                                                onPressed: () =>
++                                                    _viewNext(nextId!),
++                                                child: const Text('View next')),
++                                          ]),
+                                   ]))),
+                       _routineList(
+                           group.routines.map((r) => byId[r.id]!).toList()),
+@@ -194,9 +343,34 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
+                       SliverToBoxAdapter(
+                           child: Padding(
+                               padding: const EdgeInsets.all(16),
+-                              child: Text('Standalone routines',
+-                                  style: AppText.sectionHeading(
+-                                      color: surface.textPrimary)))),
++                              child: Column(
++                                  crossAxisAlignment: CrossAxisAlignment.start,
++                                  children: [
++                                    Text('Standalone routines',
++                                        style: AppText.sectionHeading(
++                                            color: surface.textPrimary)),
++                                    if (grouping.standalone
++                                        .any((r) => r.id == nextId))
++                                      Wrap(
++                                          spacing: 12,
++                                          crossAxisAlignment:
++                                              WrapCrossAlignment.center,
++                                          children: [
++                                            Text('Chosen on Home',
++                                                style: AppText.meta(
++                                                    color:
++                                                        context.accent.base)),
++                                            TextButton(
++                                                style: TextButton.styleFrom(
++                                                    minimumSize:
++                                                        const Size(48, 48),
++                                                    foregroundColor:
++                                                        surface.textPrimary),
++                                                onPressed: () =>
++                                                    _viewNext(nextId!),
++                                                child: const Text('View next')),
++                                          ]),
++                                  ]))),
+                       _routineList(
+                           grouping.standalone.map((r) => byId[r.id]!).toList()),
+                     ],
+@@ -219,6 +393,8 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
+               (context, i) => Padding(
+                   padding: const EdgeInsets.only(bottom: 12),
+                   child: RoutineCard(
++                      key: _routineKeys.putIfAbsent(
++                          routines[i].routine.id, GlobalKey.new),
+                       routineId: routines[i].routine.id,
+                       routineName: routines[i].routine.name,
+                       exerciseNames: routines[i].exerciseNames,
+@@ -226,6 +402,13 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
+                       lastTrained: routines[i].lastTrained,
+                       workoutInProgress:
+                           ref.watch(activeWorkoutProvider) != null,
++                      isNext: ref
++                              .watch(trainingPlanResolutionProvider)
++                              .valueOrNull
++                              ?.next
++                              ?.routine
++                              .id ==
++                          routines[i].routine.id,
+                       onStartTap: () => _startRoutine(routines[i]))),
+               childCount: routines.length)));
+ }
+diff --git a/lib/shared/providers/bottom_chrome_provider.dart b/lib/shared/providers/bottom_chrome_provider.dart
+index a5255609..8f3e248b 100644
+--- a/lib/shared/providers/bottom_chrome_provider.dart
++++ b/lib/shared/providers/bottom_chrome_provider.dart
+@@ -1,4 +1,6 @@
+ import 'package:flutter_riverpod/flutter_riverpod.dart';
++import 'package:flutter/material.dart';
++import '../../core/theme/app_text.dart';
+ import '../../features/workout/presentation/providers/active_workout_provider.dart';
+ import '../widgets/bottom_nav_bar.dart';
+ 
+@@ -33,6 +35,26 @@ import '../widgets/bottom_nav_bar.dart';
+ /// bar itself.
+ const double kActiveBarHeight = 56.0;
+ 
++/// Measure the two existing single-line text styles; keep the compact height
++/// when they fit and grow the floating bar for accessibility text scaling.
++double activeBarHeight(TextScaler scaler) {
++  double height(TextStyle style) {
++    final painter = TextPainter(
++        text: TextSpan(text: 'Ag', style: style),
++        textDirection: TextDirection.ltr,
++        textScaler: scaler,
++        maxLines: 1)
++      ..layout();
++    final result = painter.height;
++    painter.dispose();
++    return result;
++  }
++
++  final measured =
++      height(AppText.rowLabel()) + height(AppText.statLabel()) + 17;
++  return measured < kActiveBarHeight ? kActiveBarHeight : measured;
++}
++
+ /// Gap between the floating pill and the nav bar above which it docks.
+ const double kActiveBarGap = 8.0;
+ 
+diff --git a/lib/shared/widgets/active_workout_bar.dart b/lib/shared/widgets/active_workout_bar.dart
+index b863ab33..3f864c05 100644
+--- a/lib/shared/widgets/active_workout_bar.dart
++++ b/lib/shared/widgets/active_workout_bar.dart
+@@ -13,8 +13,8 @@ import 'motion/pressable_scale.dart';
+ /// Minimized "workout in progress" mini player.
+ ///
+ /// PLACEMENT CONTRACT: this widget FLOATS. It is positioned in [AppShell]'s
+-/// body Stack, [kActiveBarGap] above the nav bar, and is exactly
+-/// [kActiveBarHeight] tall. It must never be placed inside
++/// body Stack, [kActiveBarGap] above the nav bar, and is
++/// at least [kActiveBarHeight] tall, growing with text. It must never be placed inside
+ /// `bottomNavigationBar` again — doing that changes the height of the bottom
+ /// chrome when a session starts, which re-lays-out every tab and makes the nav
+ /// bar itself animate downward.
+@@ -73,7 +73,7 @@ class ActiveWorkoutBar extends ConsumerWidget {
+             if ((details.primaryVelocity ?? 0) < -180) _expand(context);
+           },
+           child: Container(
+-            height: kActiveBarHeight,
++            height: activeBarHeight(MediaQuery.textScalerOf(context)),
+             padding: const EdgeInsets.symmetric(horizontal: 10),
+             decoration: BoxDecoration(
+               color: context.chrome.activeBarBg,
+diff --git a/lib/shared/widgets/app_shell.dart b/lib/shared/widgets/app_shell.dart
+index 01f42188..85f28a49 100644
+--- a/lib/shared/widgets/app_shell.dart
++++ b/lib/shared/widgets/app_shell.dart
+@@ -248,7 +248,18 @@ class _AppShellState extends ConsumerState<AppShell> {
+                   child: ConstrainedBox(
+                     constraints: BoxConstraints(
+                         maxWidth: context.adaptive.contentMaxWidth),
+-                    child: widget.navigationShell,
++                    child: ProviderScope(
++                      overrides: [
++                        bottomChromeInsetProvider.overrideWithValue(
++                            BottomNavBar.height +
++                                (isWorkoutActive
++                                    ? activeBarHeight(
++                                            MediaQuery.textScalerOf(context)) +
++                                        kActiveBarGap
++                                    : 0))
++                      ],
++                      child: widget.navigationShell,
++                    ),
+                   ),
+                 ),
+               ),
+diff --git a/lib/shared/widgets/ui/primary_button.dart b/lib/shared/widgets/ui/primary_button.dart
+index 88327676..fcdc0132 100644
+--- a/lib/shared/widgets/ui/primary_button.dart
++++ b/lib/shared/widgets/ui/primary_button.dart
+@@ -12,6 +12,7 @@ import '../motion/pressable_scale.dart';
+ 
+ class PrimaryButton extends StatelessWidget {
+   final String label;
++  final String? semanticLabel;
+   final VoidCallback? onPressed;
+   final bool isFullWidth;
+   final IconData? icon;
+@@ -24,6 +25,7 @@ class PrimaryButton extends StatelessWidget {
+   const PrimaryButton({
+     super.key,
+     required this.label,
++    this.semanticLabel,
+     this.onPressed,
+     this.isFullWidth = true,
+     this.icon,
+@@ -118,7 +120,9 @@ class PrimaryButton extends StatelessWidget {
+       container: true,
+       button: true,
+       enabled: !disabled,
+-      label: isLoading ? '$label, in progress' : label,
++      label: isLoading
++          ? '${semanticLabel ?? label}, in progress'
++          : semanticLabel ?? label,
+       excludeSemantics: true,
+       onTap: handlePress,
+       child: button,
+diff --git a/test/upgrade/active_bar_large_text_test.dart b/test/upgrade/active_bar_large_text_test.dart
+new file mode 100644
+index 00000000..a57e239b
+--- /dev/null
++++ b/test/upgrade/active_bar_large_text_test.dart
+@@ -0,0 +1,48 @@
++import 'package:flutter/material.dart';
++import 'package:flutter_test/flutter_test.dart';
++import 'package:gymlog/core/theme/theme_palette.dart';
++import 'package:gymlog/shared/widgets/active_workout_bar.dart';
++import 'package:gymlog/features/workout/presentation/providers/workout_timer_provider.dart';
++import 'package:shared_preferences/shared_preferences.dart';
++import 'session_1_render_test.dart' show loadSessionFonts;
++import 'session_2_fixtures.dart';
++
++class FixedWorkoutTimer extends WorkoutTimer {
++  @override
++  String build() => '00:24:00';
++}
++
++void main() {
++  setUpAll(loadSessionFonts);
++  for (final scale in [1.6, 2.0]) {
++    testWidgets('real resume bar fits $scale text without overflow',
++        (tester) async {
++      SharedPreferences.setMockInitialValues({});
++      tester.view.physicalSize = const Size(390, 844);
++      tester.view.devicePixelRatio = 1;
++      addTearDown(tester.view.resetPhysicalSize);
++      addTearDown(tester.view.resetDevicePixelRatio);
++      await tester.pumpWidget(launchFixtureApp(
++        child: const Scaffold(
++            body: Padding(
++                padding: EdgeInsets.all(16),
++                child: Align(
++                    alignment: Alignment.bottomCenter,
++                    child: ActiveWorkoutBar()))),
++        palette: ThemePalette.higgsfield,
++        scale: scale,
++        screen: 'home',
++        fixtureState: LaunchState.returning,
++        activeWorkout: true,
++        overrides: [workoutTimerProvider.overrideWith(FixedWorkoutTimer.new)],
++        captureKey: const ValueKey('large-resume'),
++      ));
++      await tester.pump();
++      expect(tester.takeException(), isNull);
++      expect(find.text('00:24:00'), findsOneWidget);
++      expect(tester.getSize(find.byType(ActiveWorkoutBar)).height,
++          greaterThanOrEqualTo(56));
++      await tester.pumpWidget(const SizedBox.shrink());
++    });
++  }
++}
+diff --git a/test/upgrade/active_bar_shell_clearance_test.dart b/test/upgrade/active_bar_shell_clearance_test.dart
+new file mode 100644
+index 00000000..7e1f396f
+--- /dev/null
++++ b/test/upgrade/active_bar_shell_clearance_test.dart
+@@ -0,0 +1,71 @@
++import 'package:flutter/material.dart';
++import 'package:flutter_riverpod/flutter_riverpod.dart';
++import 'package:flutter_test/flutter_test.dart';
++import 'package:go_router/go_router.dart';
++import 'package:gymlog/core/theme/theme_palette.dart';
++import 'package:gymlog/shared/providers/bottom_chrome_provider.dart';
++import 'package:gymlog/shared/widgets/active_workout_bar.dart';
++import 'package:gymlog/shared/widgets/app_shell.dart';
++import 'package:gymlog/shared/widgets/bottom_nav_bar.dart';
++import 'package:gymlog/features/workout/presentation/providers/workout_timer_provider.dart';
++import 'package:shared_preferences/shared_preferences.dart';
++import 'active_bar_large_text_test.dart' show FixedWorkoutTimer;
++import 'session_1_render_test.dart' show loadSessionFonts;
++import 'session_2_fixtures.dart';
++
++class InsetReader extends ConsumerWidget {
++  const InsetReader({super.key});
++  @override
++  Widget build(BuildContext context, WidgetRef ref) => Scaffold(
++      body: Text(ref.watch(bottomChromeInsetProvider).toStringAsFixed(1),
++          key: const ValueKey('inset')));
++}
++
++void main() {
++  setUpAll(loadSessionFonts);
++  for (final scale in [1.0, 1.6, 2.0]) {
++    testWidgets(
++        'actual shell reserves scaled resume height at $scale without moving nav',
++        (tester) async {
++      SharedPreferences.setMockInitialValues({});
++      final router = GoRouter(routes: [
++        StatefulShellRoute.indexedStack(
++            builder: (_, state, shell) => AppShell(navigationShell: shell),
++            branches: [
++              for (final path in ['/', '/workout', '/profile'])
++                StatefulShellBranch(routes: [
++                  GoRoute(
++                      path: path, builder: (_, state) => const InsetReader())
++                ])
++            ])
++      ]);
++      addTearDown(router.dispose);
++      tester.view.physicalSize = const Size(390, 844);
++      tester.view.devicePixelRatio = 1;
++      addTearDown(tester.view.resetPhysicalSize);
++      addTearDown(tester.view.resetDevicePixelRatio);
++      await tester.pumpWidget(launchFixtureApp(
++          child: const SizedBox.shrink(),
++          router: router,
++          palette: ThemePalette.higgsfield,
++          scale: scale,
++          screen: 'home',
++          fixtureState: LaunchState.returning,
++          activeWorkout: true,
++          overrides: [workoutTimerProvider.overrideWith(FixedWorkoutTimer.new)],
++          captureKey: const ValueKey('shell')));
++      await tester.pump();
++      await tester.pump(const Duration(milliseconds: 400));
++      final height = tester.getSize(find.byType(ActiveWorkoutBar)).height;
++      expect(tester.widget<Text>(find.byKey(const ValueKey('inset'))).data,
++          (BottomNavBar.height + height + kActiveBarGap).toStringAsFixed(1));
++      final nav = tester.getRect(find.byType(BottomNavBar));
++      await tester.tap(find.text('Routines'));
++      await tester.pump(const Duration(milliseconds: 400));
++      expect(tester.getRect(find.byType(BottomNavBar)), nav);
++      expect(tester.takeException(), isNull);
++      await tester.pumpWidget(const SizedBox.shrink());
++      await tester.pump();
++    });
++  }
++}
+diff --git a/test/upgrade/home_routines_behavior_test.dart b/test/upgrade/home_routines_behavior_test.dart
+new file mode 100644
+index 00000000..789ca08f
+--- /dev/null
++++ b/test/upgrade/home_routines_behavior_test.dart
+@@ -0,0 +1,69 @@
++import 'package:flutter/material.dart';
++import 'package:flutter_test/flutter_test.dart';
++import 'package:gymlog/core/theme/theme_palette.dart';
++import 'package:shared_preferences/shared_preferences.dart';
++import 'session_1_render_test.dart' show loadSessionFonts;
++import 'session_2_fixtures.dart';
++
++void main() {
++  setUpAll(loadSessionFonts);
++  Future<void> render(WidgetTester tester, String screen,
++      {double scale = 1}) async {
++    SharedPreferences.setMockInitialValues({
++      'first_run_tour_step': -1,
++      'training_routine:local': 'sample-0',
++    });
++    tester.view.physicalSize = const Size(390, 844);
++    tester.view.devicePixelRatio = 1;
++    addTearDown(tester.view.resetPhysicalSize);
++    addTearDown(tester.view.resetDevicePixelRatio);
++    await tester.pumpWidget(launchFixtureApp(
++      child: currentLaunchScreen(screen),
++      palette: ThemePalette.higgsfield,
++      scale: scale,
++      screen: screen,
++      fixtureState: LaunchState.returning,
++      captureKey: const ValueKey('correction'),
++    ));
++    await tester.pumpAndSettle();
++  }
++
++  testWidgets('Home advances the chosen program after a completed Pull A',
++      (tester) async {
++    await render(tester, 'home');
++    expect(find.text('Start Legs A'), findsOneWidget);
++    expect(find.text('Last workout'), findsOneWidget);
++    expect(find.text('After Pull A in your saved order'), findsOneWidget);
++  });
++
++  testWidgets('Library has substantial utility buttons and one next marker',
++      (tester) async {
++    await render(tester, 'library');
++    expect(find.text('HOME ROUTINE'), findsNothing);
++    expect(find.text('Following on Home'), findsOneWidget);
++    for (final label in ['New routine', 'Explore']) {
++      expect(tester.getSize(find.text(label)).height, greaterThan(0));
++      final button = find.byKey(ValueKey('library-$label'));
++      expect(button, findsOneWidget);
++      expect(tester.getSize(button).height, greaterThanOrEqualTo(52));
++    }
++    expect(find.text('View next'), findsOneWidget);
++  });
++
++  testWidgets('one-session override is separate from persistent plan choice',
++      (tester) async {
++    await render(tester, 'home');
++    await tester.tap(find.text('Train something else'));
++    await tester.pumpAndSettle();
++    expect(find.text('For this session'), findsOneWidget);
++    expect(find.byType(TextField), findsOneWidget);
++    await tester.enterText(find.byType(TextField), 'Outdoor');
++    await tester.pumpAndSettle();
++    expect(find.text('Outdoor walk'), findsOneWidget);
++    expect(find.text('Push A'), findsNothing);
++    expect(
++        (await SharedPreferences.getInstance())
++            .getString('training_routine:local'),
++        'sample-0');
++  });
++}
+diff --git a/test/upgrade/home_routines_implemented_render_test.dart b/test/upgrade/home_routines_implemented_render_test.dart
+new file mode 100644
+index 00000000..62ecb144
+--- /dev/null
++++ b/test/upgrade/home_routines_implemented_render_test.dart
+@@ -0,0 +1,356 @@
++// Real production widgets; synthetic local data and illustrative OS keyboard.
++import 'dart:io';
++import 'dart:async';
++import 'dart:ui' as ui;
++import 'package:drift/drift.dart' show Value;
++import 'package:flutter/material.dart';
++import 'package:flutter/rendering.dart';
++import 'package:flutter_test/flutter_test.dart';
++import 'package:gymlog/core/database/daos/routines_dao.dart';
++import 'package:gymlog/core/database/daos/workouts_dao.dart';
++import 'package:gymlog/core/theme/app_colors.dart';
++import 'package:gymlog/core/theme/app_text.dart';
++import 'package:gymlog/core/theme/theme_palette.dart';
++import 'package:gymlog/features/workout/presentation/providers/workout_timer_provider.dart';
++import 'package:shared_preferences/shared_preferences.dart';
++import 'package:gymlog/features/routines/presentation/providers/training_plan_provider.dart';
++import 'active_bar_large_text_test.dart' show FixedWorkoutTimer;
++import 'session_1_render_test.dart' show loadSessionFonts;
++import 'session_2_fixtures.dart';
++import 'training_plan_test.dart' show FailedPreferences;
++
++class PendingPreferences extends FailedPreferences {
++  final Completer<bool> completion;
++  PendingPreferences(this.completion);
++  @override
++  Future<bool> setString(String key, String value) => completion.future;
++}
++
++void main() {
++  setUpAll(loadSessionFonts);
++  for (final palette in ThemePalette.values) {
++    for (final scale in [1.0, 1.6, 2.0]) {
++      for (final screen in ['home', 'library']) {
++        for (final state in [
++          'completed',
++          'long-name',
++          if (screen == 'home') ...['plan-repeat', 'plan-empty'],
++          if (scale == 2 && screen == 'home') ...['last-error', 'last-older'],
++          if (scale == 2 && screen == 'home') ...[
++            'repeat-committed',
++            'repeat-canceled',
++            'plan-saving',
++            'plan-save-error',
++            'empty-next'
++          ],
++          if (scale == 2 && screen == 'library') 'plan-error',
++          if (scale == 2) ...['ready', 'empty', 'error', 'active']
++        ]) {
++          testWidgets('$screen-$state-${palette.name}-${scale}x',
++              (tester) async {
++            await render(tester, screen, palette, scale, state);
++          });
++        }
++      }
++      for (final plan in [false, true]) {
++        testWidgets(
++            '${plan ? 'plan' : 'override'}-keyboard-${palette.name}-${scale}x',
++            (tester) async {
++          await render(tester, 'home', palette, scale,
++              plan ? 'plan-keyboard' : 'override-keyboard');
++        });
++      }
++      testWidgets('library-next-${palette.name}-${scale}x', (tester) async {
++        await render(tester, 'library', palette, scale, 'view-next');
++      });
++    }
++    for (final scale in [1.0, 2.0]) {
++      for (final screen in ['home', 'library']) {
++        testWidgets('$screen-narrow-ready-${palette.name}-${scale}x',
++            (tester) async {
++          await render(tester, screen, palette, scale, 'narrow-ready',
++              width: 320);
++        });
++      }
++    }
++  }
++}
++
++Future<void> render(WidgetTester tester, String screen, ThemePalette palette,
++    double scale, String name,
++    {double width = 390}) async {
++  tester.view.physicalSize = Size(width, 844);
++  tester.view.devicePixelRatio = 1;
++  addTearDown(tester.view.resetPhysicalSize);
++  addTearDown(tester.view.resetDevicePixelRatio);
++  addTearDown(tester.view.resetViewInsets);
++  final state = name == 'empty' || name == 'plan-empty'
++      ? LaunchState.empty
++      : name == 'error'
++          ? LaunchState.error
++          : LaunchState.returning;
++  SharedPreferences.setMockInitialValues({
++    'first_run_tour_step': -1,
++    if (state != LaunchState.empty)
++      'training_routine:local': name == 'plan-error' ? 7 : 'sample-0'
++  });
++  final key = ValueKey('implemented-$screen-$name-${palette.name}-${scale}x');
++  List<HydratedRoutine>? routines;
++  final pending = name == 'plan-saving' ? Completer<bool>() : null;
++  if (name == 'empty-next') {
++    routines = [
++      for (final r in sampleRoutines(state))
++        r.routine.id == 'sample-2'
++            ? HydratedRoutine(
++                routine: r.routine,
++                exerciseNames: const [],
++                exerciseIds: const [])
++            : r
++    ];
++  }
++  if (name == 'long-name') {
++    routines = [
++      for (final r in sampleRoutines(state))
++        HydratedRoutine(
++            routine: r.routine.copyWith(
++                name:
++                    '${r.routine.name} — Strength and conditioning with a very long full identity'),
++            exerciseNames: r.exerciseNames,
++            exerciseIds: r.exerciseIds,
++            muscleTags: r.muscleTags,
++            lastTrained: r.lastTrained)
++    ];
++  }
++  List<WorkoutSessionPreview>? completed;
++  if (name == 'last-older') {
++    final sample = sampleHistory(state).first;
++    completed = [
++      WorkoutSessionPreview(
++          session: sample.session
++              .copyWith(endedAt: Value(DateTime(2025, 9, 30, 12, 48))),
++          duration: sample.duration,
++          totalVolumeKg: sample.totalVolumeKg,
++          prCount: 0,
++          topExercises: sample.topExercises,
++          totalExerciseCount: sample.totalExerciseCount)
++    ];
++  }
++  if (name == 'completed') {
++    final sample = sampleHistory(state).first;
++    completed = [
++      WorkoutSessionPreview(
++          session: sample.session.copyWith(
++              name: const Value('Legs A'),
++              routineId: const Value('sample-2'),
++              endedAt: Value(session2Date)),
++          duration: sample.duration,
++          totalVolumeKg: sample.totalVolumeKg,
++          prCount: 0,
++          topExercises: sample.topExercises,
++          totalExerciseCount: sample.totalExerciseCount)
++    ];
++  }
++  await tester.pumpWidget(launchFixtureApp(
++      child: currentLaunchScreen(screen, miniPlayer: name == 'active'),
++      palette: palette,
++      scale: scale,
++      screen: screen,
++      fixtureState: state,
++      routines: routines,
++      activeWorkout: name == 'active',
++      completedStream: name == 'last-error'
++          ? Stream.error(StateError('Synthetic last-workout read failure'))
++          : completed == null
++              ? null
++              : Stream.value(completed),
++      programStream: completed == null ? null : Stream.value(completed),
++      overrides: [
++        workoutTimerProvider.overrideWith(FixedWorkoutTimer.new),
++        if (name == 'plan-saving' || name == 'plan-save-error')
++          trainingPlanProvider.overrideWith((ref) {
++            final n = TrainingPlanNotifier(
++                'local', () async => sampleRoutines(state),
++                preferences: () async => pending == null
++                    ? FailedPreferences()
++                    : PendingPreferences(pending));
++            n.load();
++            return n;
++          }),
++      ],
++      keyboardOverlay: const IllustrativeKeyboard(),
++      captureKey: key));
++  if (name == 'active') {
++    await tester.pump();
++    await tester.pump(const Duration(milliseconds: 300));
++  } else {
++    await tester.pumpAndSettle();
++  }
++  expect(tester.takeException(), isNull);
++  if (name == 'empty-next') {
++    expect(find.text('Add exercises'), findsOneWidget);
++    expect(find.text('0 exercises · 0 planned sets'), findsOneWidget);
++  }
++  if (['repeat-committed', 'repeat-canceled', 'plan-saving', 'plan-save-error']
++      .contains(name)) {
++    await tester.tap(find.byKey(const ValueKey('change-training-routine')));
++    await tester.pumpAndSettle();
++    if (name.startsWith('repeat-')) {
++      await tester.tap(find.text('Repeat one routine'));
++      await tester.pumpAndSettle();
++    }
++    if (name == 'repeat-canceled') {
++      await tester.tap(find.byTooltip('Close routine chooser'));
++      await tester.pumpAndSettle();
++      expect(find.text('Start Legs A'), findsOneWidget);
++      await tester.tap(find.byKey(const ValueKey('change-training-routine')));
++      await tester.pumpAndSettle();
++      expect(tester.widget<SwitchListTile>(find.byType(SwitchListTile)).value,
++          isFalse);
++    } else {
++      final choice = find.byKey(const ValueKey('choose-sample-0'));
++      await tester.ensureVisible(choice);
++      await tester.pumpAndSettle();
++      await tester.tap(choice);
++      if (pending == null) {
++        await tester.pumpAndSettle();
++      } else {
++        await tester.pump();
++        await tester.pump(const Duration(milliseconds: 300));
++        expect(find.text('Saving training plan').hitTestable(), findsOneWidget);
++      }
++      if (name == 'repeat-committed') {
++        expect(find.text('Start Push A'), findsOneWidget);
++      }
++      if (name == 'plan-save-error') {
++        expect(find.text("Couldn't save your plan. Try again.").hitTestable(),
++            findsOneWidget);
++      }
++    }
++  }
++  if (name == 'last-error' || name == 'last-older') {
++    await tester.ensureVisible(name == 'last-error'
++        ? find.text("Couldn't load your last workout")
++        : find.textContaining('30 Sep 2025'));
++    await tester.pumpAndSettle();
++  }
++  if (name == 'plan-repeat' || name == 'plan-empty') {
++    await tester.tap(find.byKey(const ValueKey('change-training-routine')));
++    await tester.pumpAndSettle();
++    if (name == 'plan-repeat') {
++      await tester.tap(find.text('Repeat one routine'));
++      await tester.pumpAndSettle();
++    } else {
++      expect(find.text('No saved routines yet'), findsOneWidget);
++      expect(find.text('Browse programs').last.hitTestable(), findsOneWidget);
++    }
++  }
++  if (name == 'completed' && screen == 'home') {
++    expect(find.text('Start Push A'), findsOneWidget);
++    expect(find.text('After Legs A in your saved order'), findsOneWidget);
++  }
++  if (name == 'view-next') {
++    await tester.tap(find.text('View next'));
++    await tester.pumpAndSettle();
++    expect(find.text('Start Legs A'), findsOneWidget);
++  }
++  if (name.endsWith('keyboard')) {
++    final open = name == 'plan-keyboard'
++        ? find.byKey(const ValueKey('change-training-routine'))
++        : find.text('Train something else');
++    await tester.ensureVisible(open);
++    await tester.tap(open);
++    await tester.pumpAndSettle();
++    tester.view.viewInsets = const FakeViewPadding(bottom: 280);
++    await tester.enterText(
++        find.byType(TextField), name == 'plan-keyboard' ? 'Pull' : 'Full');
++    await tester.pumpAndSettle();
++    final action = find.byKey(ValueKey(
++        name == 'plan-keyboard' ? 'choose-sample-1' : 'choose-sample-3'));
++    await tester.ensureVisible(action);
++    await tester.pumpAndSettle();
++    expect(tester.getRect(action).bottom, lessThanOrEqualTo(564));
++    expect(
++        tester.getRect(find.byType(TextField)).bottom, lessThanOrEqualTo(564));
++    expect(tester.getRect(action).top, greaterThanOrEqualTo(0));
++    expect(tester.getRect(find.byType(TextField)).top, greaterThanOrEqualTo(0));
++    expect(
++        tester
++            .getRect(find
++                .text(name == 'plan-keyboard'
++                    ? 'Training plan'
++                    : 'For this session')
++                .last)
++            .top,
++        greaterThanOrEqualTo(0));
++  }
++  expect(tester.takeException(), isNull);
++  await expectLater(
++      find.byKey(key),
++      matchesGoldenFile(
++          'goldens/home-routines-correction/$screen-$name-${palette.name}-${scale}x.png'));
++  if (Platform.environment['HOME_ROUTINES_SAVE_AFTER'] == '1') {
++    await tester.runAsync(() async {
++      final boundary =
++          tester.renderObject<RenderRepaintBoundary>(find.byKey(key));
++      final raster = await boundary.toImage(pixelRatio: 2);
++      final bytes = await raster.toByteData(format: ui.ImageByteFormat.png);
++      final file = File(
++          'docs/upgrade/renders/home-routines-correction/after/$screen-$name-${palette.name}-${scale}x.png');
++      await file.parent.create(recursive: true);
++      await file.writeAsBytes(bytes!.buffer.asUint8List());
++      raster.dispose();
++    });
++  }
++  if (pending != null) {
++    pending.complete(true);
++    await tester.pumpAndSettle();
++  }
++  await tester.pumpWidget(const SizedBox.shrink());
++  await tester.pump();
++}
++
++class IllustrativeKeyboard extends StatelessWidget {
++  const IllustrativeKeyboard({super.key});
++  @override
++  Widget build(BuildContext context) => MediaQuery.withNoTextScaling(
++      child: Material(
++          color: context.surface.surface2,
++          child: SizedBox(
++              height: 280,
++              child: Padding(
++                  padding: const EdgeInsets.all(8),
++                  child: Column(children: [
++                    const SizedBox(
++                        height: 32,
++                        child:
++                            Center(child: Text('Search keyboard · simulated'))),
++                    for (final row in ['qwertyuiop', 'asdfghjkl', 'zxcvbnm'])
++                      Expanded(
++                          child: Row(children: [
++                        for (final letter in row.split(''))
++                          Expanded(
++                              child: Container(
++                                  margin: const EdgeInsets.all(3),
++                                  decoration: BoxDecoration(
++                                      color: context.surface.surface3,
++                                      borderRadius: AppRadius.badgeAll),
++                                  alignment: Alignment.center,
++                                  child: Text(letter, style: AppText.body())))
++                      ])),
++                    Expanded(
++                        child: Row(children: [
++                      Expanded(
++                          flex: 4,
++                          child: Container(
++                              margin: const EdgeInsets.all(3),
++                              color: context.surface.surface3,
++                              child: const Center(child: Text('space')))),
++                      Expanded(
++                          child: Container(
++                              margin: const EdgeInsets.all(3),
++                              color: context.surface.surface3,
++                              child: const Center(
++                                  child: Icon(Icons.search_rounded))))
++                    ])),
++                  ])))));
++}
+diff --git a/test/upgrade/session_2_acceptance_render_test.dart b/test/upgrade/session_2_acceptance_render_test.dart
+index 056b8d86..1ef873e5 100644
+--- a/test/upgrade/session_2_acceptance_render_test.dart
++++ b/test/upgrade/session_2_acceptance_render_test.dart
+@@ -128,8 +128,13 @@ void main() {
+                   iteration);
+               await tester.enterText(find.byType(TextField), '');
+               await tester.pumpAndSettle();
++              await tester.ensureVisible(find.byTooltip('More choices'));
+               await tester.tap(find.byTooltip('More choices'));
+               await tester.pumpAndSettle();
++              expect(find.byKey(const ValueKey('choose-sample-4')),
++                  findsOneWidget);
++              expect(
++                  find.byKey(const ValueKey('choose-sample-0')), findsNothing);
+               await _compareCapture(
+                   tester,
+                   key,
+@@ -137,6 +142,7 @@ void main() {
+                   iteration);
+               await tester.tap(find.byTooltip('Close routine chooser'));
+               await tester.pumpAndSettle();
++              await tester.ensureVisible(find.text('History'));
+               await tester.tap(find.text('History'));
+               await tester.pumpAndSettle();
+               await _compareCapture(
+@@ -176,9 +182,10 @@ Future<void> _capture(WidgetTester tester, Key key, String id) async {
+   await tester.runAsync(() async {
+     final boundary =
+         tester.renderObject<RenderRepaintBoundary>(find.byKey(key));
+-    final image = await boundary.toImage();
++    final image = await boundary.toImage(pixelRatio: 2);
+     final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
+-    final file = File('docs/upgrade/renders/session-2/after/$id.png');
++    final file =
++        File('docs/upgrade/renders/home-routines-correction/after/$id.png');
+     await file.parent.create(recursive: true);
+     await file.writeAsBytes(bytes!.buffer.asUint8List());
+     image.dispose();
+diff --git a/test/upgrade/session_2_fixtures.dart b/test/upgrade/session_2_fixtures.dart
+index 9c38eb94..a69a143d 100644
+--- a/test/upgrade/session_2_fixtures.dart
++++ b/test/upgrade/session_2_fixtures.dart
+@@ -1,5 +1,7 @@
+ // Synthetic evidence for Session 2 exploration, not production launch logic.
+ import 'package:flutter/material.dart';
++import 'package:go_router/go_router.dart';
++import 'package:gymlog/shared/widgets/active_workout_bar.dart';
+ import 'package:flutter_riverpod/flutter_riverpod.dart';
+ import 'package:gymlog/core/database/database.dart';
+ import 'package:gymlog/core/database/daos/routines_dao.dart';
+@@ -13,6 +15,7 @@ import 'package:gymlog/features/home/presentation/screens/home_screen.dart';
+ import 'package:gymlog/features/profile/presentation/providers/profile_stats_provider.dart';
+ import 'package:gymlog/features/routines/presentation/providers/routines_provider.dart';
+ import 'package:gymlog/features/routines/presentation/providers/training_launch_provider.dart';
++import 'package:gymlog/features/routines/presentation/providers/training_plan_provider.dart';
+ import 'package:gymlog/features/workout/presentation/screens/workout_screen.dart';
+ import 'package:gymlog/features/workout/presentation/providers/active_workout_provider.dart';
+ import 'package:gymlog/features/workout/domain/active_workout_state.dart';
+@@ -185,13 +188,31 @@ Widget launchFixtureApp(
+     bool previousError = false,
+     bool routinesLoading = false,
+     bool activeWorkout = false,
++    List<Override> overrides = const [],
++    Stream<List<WorkoutSessionPreview>>? completedStream,
++    Stream<List<WorkoutSessionPreview>>? programStream,
++    GoRouter? router,
++    Widget? keyboardOverlay,
+     required Key captureKey}) {
+   return ProviderScope(
+       overrides: [
++        trainingCompletionLookupProvider.overrideWith((ref) => (_) async =>
++            List.of(await ref.read(programCompletionsProvider.future))),
+         authProvider.overrideWithValue(null),
+         activeWorkoutProvider
+             .overrideWith((ref) => _SampleActive(ref, activeWorkout)),
+         trainingClockProvider.overrideWithValue(() => session2Date),
++        latestCompletedWorkoutsProvider.overrideWith((ref) =>
++            completedStream ??
++            (fixtureState == LaunchState.error
++                ? Stream.error(StateError('Synthetic completion read failure'))
++                : Stream.value(sampleHistory(fixtureState)))),
++        programCompletionsProvider.overrideWith((ref) =>
++            programStream ??
++            (fixtureState == LaunchState.error
++                ? Stream.error(
++                    StateError('Synthetic program completion read failure'))
++                : Stream.value(sampleHistory(fixtureState)))),
+         routineDetailProvider.overrideWith(
+             (ref, id) => Stream.value(sampleRoutineDetail(id, fixtureState))),
+         routineLastSetsProvider.overrideWith((ref, id) => previousError
+@@ -228,23 +249,55 @@ Widget launchFixtureApp(
+                 ? 2
+                 : 0,
+             hasError: fixtureState == LaunchState.error)),
+-        bottomChromeInsetProvider.overrideWithValue(BottomNavBar.height),
++        bottomChromeInsetProvider.overrideWithValue(BottomNavBar.height +
++            (activeWorkout
++                ? activeBarHeight(TextScaler.linear(scale)) + kActiveBarGap
++                : 0)),
++        ...overrides,
+       ],
+       child: RepaintBoundary(
+           key: captureKey,
+-          child: MaterialApp(
+-            debugShowCheckedModeBanner: false,
+-            theme: buildAppTheme(palette.tokens, palette: palette),
+-            builder: (context, child) => MediaQuery(
+-                data: MediaQuery.of(context)
+-                    .copyWith(textScaler: TextScaler.linear(scale)),
+-                child: child!),
+-            home: child,
+-          )));
++          child: router == null
++              ? MaterialApp(
++                  debugShowCheckedModeBanner: false,
++                  theme: buildAppTheme(palette.tokens, palette: palette),
++                  builder: (context, child) => MediaQuery(
++                      data: MediaQuery.of(context)
++                          .copyWith(textScaler: TextScaler.linear(scale)),
++                      child: Stack(children: [
++                        child!,
++                        if (keyboardOverlay != null &&
++                            MediaQuery.viewInsetsOf(context).bottom > 0)
++                          Positioned(
++                              left: 0,
++                              right: 0,
++                              bottom: 0,
++                              child: keyboardOverlay)
++                      ])),
++                  home: child,
++                )
++              : MaterialApp.router(
++                  debugShowCheckedModeBanner: false,
++                  routerConfig: router,
++                  theme: buildAppTheme(palette.tokens, palette: palette),
++                  builder: (context, child) => MediaQuery(
++                      data: MediaQuery.of(context)
++                          .copyWith(textScaler: TextScaler.linear(scale)),
++                      child: child!),
++                )));
+ }
+ 
+-Widget currentLaunchScreen(String screen) => Scaffold(
+-      body: screen == 'home' ? const HomeScreen() : const WorkoutScreen(),
++Widget currentLaunchScreen(String screen, {bool miniPlayer = false}) =>
++    Scaffold(
++      body: Stack(children: [
++        screen == 'home' ? const HomeScreen() : const WorkoutScreen(),
++        if (miniPlayer)
++          const Positioned(
++              left: 16,
++              right: 16,
++              bottom: kActiveBarGap,
++              child: ActiveWorkoutBar())
++      ]),
+       bottomNavigationBar:
+           BottomNavBar(currentIndex: screen == 'home' ? 0 : 1, onTap: (_) {}),
+     );
+diff --git a/test/upgrade/session_2_launchpad_test.dart b/test/upgrade/session_2_launchpad_test.dart
+index 13c0fec4..ca0c7061 100644
+--- a/test/upgrade/session_2_launchpad_test.dart
++++ b/test/upgrade/session_2_launchpad_test.dart
+@@ -1,16 +1,22 @@
+-import 'package:flutter/material.dart';
++// Session 2 regression coverage revised for the owner-approved correction.
+ import 'dart:async';
+-import 'dart:ui' as ui;
+-import 'package:gymlog/shared/widgets/ui/primary_button.dart';
+-import 'package:gymlog/core/database/daos/routines_dao.dart';
++import 'package:flutter/material.dart';
++import 'package:flutter_riverpod/flutter_riverpod.dart';
+ import 'package:flutter_test/flutter_test.dart';
++import 'package:drift/drift.dart' hide isNull, isNotNull;
++import 'package:gymlog/core/database/daos/routines_dao.dart';
++import 'package:gymlog/core/database/daos/workouts_dao.dart';
++import 'package:gymlog/core/providers/settings_provider.dart';
+ import 'package:gymlog/core/theme/theme_palette.dart';
++import 'package:gymlog/features/routines/presentation/providers/training_plan_provider.dart';
++import 'package:gymlog/features/routines/presentation/widgets/routine_card.dart';
++import 'package:gymlog/features/routines/presentation/widgets/training_launchpad.dart';
++import 'package:gymlog/shared/widgets/ui/primary_button.dart';
++import 'package:gymlog/shared/widgets/ui/start_button.dart';
+ import 'package:shared_preferences/shared_preferences.dart';
+ import 'session_2_fixtures.dart';
+ import 'session_1_render_test.dart' show loadSessionFonts;
+-import 'package:gymlog/features/routines/presentation/widgets/routine_card.dart';
+-import 'package:gymlog/shared/widgets/ui/start_button.dart';
+-import 'package:gymlog/features/routines/presentation/widgets/training_launchpad.dart';
++import 'training_plan_test.dart' show FailedPreferences;
+ 
+ void main() {
+   setUpAll(loadSessionFonts);
+@@ -22,12 +28,15 @@ void main() {
+       bool activeWorkout = false,
+       ValueNotifier<String>? screenSelection,
+       double scale = 1,
++      List<Override> overrides = const [],
++      Stream<List<WorkoutSessionPreview>>? completedStream,
++      Stream<List<WorkoutSessionPreview>>? programStream,
+       LaunchState state = LaunchState.returning}) async {
+     await tester.pumpWidget(const SizedBox.shrink());
+     await tester.pumpAndSettle();
+     SharedPreferences.setMockInitialValues({
+       'first_run_tour_step': -1,
+-      if (chosen != null) 'training_routine:local': chosen,
++      if (chosen != null) 'training_routine:local': chosen
+     });
+     tester.view.physicalSize = const Size(390, 844);
+     tester.view.devicePixelRatio = 1;
+@@ -47,6 +56,9 @@ void main() {
+         routineStream: routineStream,
+         previousError: previousError,
+         activeWorkout: activeWorkout,
++        overrides: overrides,
++        completedStream: completedStream,
++        programStream: programStream,
+         captureKey: const ValueKey('launchpad-test')));
+     if (routineStream == null) {
+       await tester.pumpAndSettle();
+@@ -56,380 +68,377 @@ void main() {
+   }
+ 
+   testWidgets(
+-      'Home chooser explains its setting and scopes the suggestion to one row',
++      'Home chooser explains following once and has four searchable choices',
+       (tester) async {
+     await render(tester, 'home');
+     await tester.tap(find.byKey(const ValueKey('change-training-routine')));
+     await tester.pumpAndSettle();
+-    expect(find.text('Routine on Home'), findsOneWidget);
+     expect(
+         find.text(
+-            'Choose the routine shown on Home. Suggestions are optional.'),
+-        findsOneWidget);
+-    expect(
+-        find.descendant(
+-            of: find.byKey(const ValueKey('choose-sample-2')),
+-            matching: find.textContaining('Next in your program')),
++            'Follow a program after each completed workout, or repeat a routine.'),
+         findsOneWidget);
++    expect(find.byKey(const ValueKey('choose-sample-0')), findsOneWidget);
++    expect(find.byKey(const ValueKey('choose-sample-4')), findsNothing);
++    await tester.enterText(find.byType(TextField), 'Outdoor');
++    await tester.pumpAndSettle();
++    expect(find.byKey(const ValueKey('choose-sample-4')), findsOneWidget);
+   });
+-
+-  testWidgets(
+-      'Library has no second routine chooser in ready or recovery states',
++  testWidgets('Library never creates a second persistent chooser',
+       (tester) async {
+     for (final active in [false, true]) {
+       for (final choice in ['sample-0', null, 'deleted', 7]) {
+         await render(tester, 'library', chosen: choice, activeWorkout: active);
++        expect(find.byType(TrainingLaunchpad), findsNothing);
+         expect(find.byKey(const ValueKey('change-training-routine')),
+             findsNothing);
+-        expect(find.widgetWithText(TextButton, 'Choose routine'), findsNothing);
+         expect(
+-            find.widgetWithText(PrimaryButton, 'Choose routine'), findsNothing);
+-        expect(find.byType(ListTile), findsNothing);
++            find.byKey(const ValueKey('library-New routine')), findsOneWidget);
+       }
+     }
+   });
+-
+   testWidgets(
+-      'Home selection updates the same read-only Library marker without remounting state',
++      'explicit repeat of a program member persists across chooser reopening',
++      (tester) async {
++    await render(tester, 'home');
++    await tester.tap(find.byKey(const ValueKey('change-training-routine')));
++    await tester.pumpAndSettle();
++    await tester.tap(find.text('Repeat one routine'));
++    await tester.pumpAndSettle();
++    await tester.tap(find.byKey(const ValueKey('choose-sample-0')));
++    await tester.pumpAndSettle();
++    expect(find.text('Start Push A'), findsOneWidget);
++    expect(find.text('Repeating your chosen routine'), findsOneWidget);
++    final prefs = await SharedPreferences.getInstance();
++    final saved =
++        TrainingPlan.decode(prefs.getString('training_plan:v1:local')!);
++    expect(saved.followsProgram, isFalse);
++    expect(saved.anchorId, 'sample-0');
++    await tester.tap(find.byKey(const ValueKey('change-training-routine')));
++    await tester.pumpAndSettle();
++    expect(tester.widget<SwitchListTile>(find.byType(SwitchListTile)).value,
++        isTrue);
++    expect(find.text('Repeat this routine · 4 exercises'), findsWidgets);
++  });
++  testWidgets('persistent selection updates Home and the actual Library card',
+       (tester) async {
+     final screen = ValueNotifier('home');
+     addTearDown(screen.dispose);
+     await render(tester, 'home', screenSelection: screen);
+-    expect(find.text('HOME ROUTINE'), findsOneWidget);
++    expect(find.text('Start Legs A'), findsOneWidget);
+     await tester.tap(find.byKey(const ValueKey('change-training-routine')));
+     await tester.pumpAndSettle();
+-    await tester.tap(find.byKey(const ValueKey('choose-sample-2')));
++    await tester.ensureVisible(find.byKey(const ValueKey('choose-sample-3')));
++    await tester.tap(find.byKey(const ValueKey('choose-sample-3')));
+     await tester.pumpAndSettle();
+-    expect(find.text('Start Legs A'), findsOneWidget);
++    expect(find.text('Start Full Body'), findsOneWidget);
++    final persisted = (await SharedPreferences.getInstance())
++        .getString('training_plan:v1:local');
++    expect(TrainingPlan.decode(persisted!).anchorId, 'sample-3');
+     screen.value = 'library';
+     await tester.pumpAndSettle();
+-    expect(find.text('HOME ROUTINE'), findsOneWidget);
+-    expect(find.text('Start Legs A'), findsOneWidget);
+-    expect(find.byKey(const ValueKey('change-training-routine')), findsNothing);
+-    expect(find.text('Chosen on Home'), findsOneWidget);
++    await tester.scrollUntilVisible(find.text('Start Full Body'), 240);
++    final card = tester.widget<RoutineCard>(find.ancestor(
++        of: find.text('Start Full Body'), matching: find.byType(RoutineCard)));
++    expect(card.routineId, 'sample-3');
++    expect(card.isNext, isTrue);
+     screen.value = 'home';
+     await tester.pumpAndSettle();
+-    expect(find.text('Start Legs A'), findsOneWidget);
++    expect(find.text('Start Full Body'), findsOneWidget);
+   });
+-
+-  for (final screen in ['home', 'library']) {
+-    testWidgets('$screen first-session logging has an explicit start label',
+-        (tester) async {
+-      await render(tester, screen, chosen: null, state: LaunchState.empty);
+-      expect(find.text('Start workout'), findsOneWidget);
+-      expect(find.text('Log a different workout'), findsNothing);
+-    });
+-    testWidgets(
+-        '$screen prioritizes the actual active workout in fallback states',
+-        (tester) async {
+-      for (final state in [
+-        LaunchState.returning,
+-        LaunchState.empty,
+-        LaunchState.error
+-      ]) {
+-        await render(tester, screen,
+-            activeWorkout: true,
+-            state: state,
+-            chosen: state == LaunchState.empty ? null : 'sample-0');
+-        expect(find.widgetWithText(PrimaryButton, 'Resume Pull A'),
+-            findsOneWidget);
+-        expect(find.text('Resume workout'), findsNothing);
+-        expect(find.text('Workout in progress'), findsOneWidget);
+-        expect(find.text('Log a different workout'), findsNothing);
+-        expect(find.text('Start Push A'), findsNothing);
+-        if (screen == 'library') {
+-          for (final button
+-              in tester.widgetList<StartButton>(find.byType(StartButton))) {
+-            expect(button.label, 'Start');
+-            expect(button.enabled, isFalse);
+-            expect(button.onPressed, isNull);
+-          }
+-        }
+-      }
+-    });
+-    testWidgets('$screen labels a one-set plan in the singular',
+-        (tester) async {
+-      await render(tester, screen,
+-          chosen: 'sample-4', state: LaunchState.lowData);
+-      if (screen == 'home') {
+-        expect(
+-            find.descendant(
+-                of: find.byType(TrainingLaunchpad),
+-                matching: find.text('1 exercise · 1 planned set')),
+-            findsOneWidget);
+-      } else {
+-        expect(find.text('1 exercise'), findsOneWidget);
+-      }
+-    });
+-    testWidgets('$screen guards an emptied chosen plan', (tester) async {
+-      final plans = sampleRoutines(LaunchState.returning);
+-      await render(tester, screen, routines: [
+-        HydratedRoutine(
+-            routine: plans.first.routine,
+-            lastTrained: plans.first.lastTrained,
+-            exerciseNames: [],
+-            exerciseIds: []),
+-        ...plans.skip(1)
+-      ]);
+-      expect(find.text('Your chosen routine has no exercises'), findsOneWidget);
+-      expect(find.byKey(const ValueKey('chosen-routine-start')), findsNothing);
+-      expect(find.text('Add exercises'), findsOneWidget);
+-      expect(find.text('Push A'), findsWidgets);
+-      expect(find.text('Last trained 4 days ago'), findsWidgets);
+-    });
+-    testWidgets('$screen choice read failure is distinct from no choice',
+-        (tester) async {
+-      await render(tester, screen, chosen: 7);
+-      expect(
+-          find.text(screen == 'library'
+-              ? "Home routine couldn't load"
+-              : "Couldn't load your training choice"),
+-          findsOneWidget);
+-      expect(find.text('Choose a routine for today'), findsNothing);
+-    });
+-    testWidgets(
+-        '$screen repairs a damaged saved choice through explicit selection',
+-        (tester) async {
+-      await render(tester, screen, chosen: 7);
+-      if (screen == 'library') {
+-        expect(find.text("Home routine couldn't load"), findsOneWidget);
+-        expect(find.text('Try again'), findsOneWidget);
+-        expect(
+-            find.widgetWithText(PrimaryButton, 'Choose routine'), findsNothing);
+-        return;
+-      }
+-      await tester.tap(find.text('Choose routine'));
+-      await tester.pumpAndSettle();
+-      await tester.tap(find.byKey(const ValueKey('choose-sample-0')));
+-      await tester.pumpAndSettle();
+-      expect(find.text('Start Push A'), findsOneWidget);
+-      final prefs = await SharedPreferences.getInstance();
+-      expect(prefs.getString('training_routine:local'), 'sample-0');
+-    });
+-    testWidgets(
+-        '$screen keeps Resume primary when choice is missing or damaged',
+-        (tester) async {
+-      for (final chosen in [null, 'deleted', 7]) {
+-        await render(tester, screen, chosen: chosen, activeWorkout: true);
+-        expect(find.widgetWithText(PrimaryButton, 'Resume Pull A'),
+-            findsOneWidget);
+-        expect(find.byType(PrimaryButton), findsOneWidget);
+-        expect(
+-            find.text(screen == 'home' ? 'Choose routine' : 'Choose on Home.'),
+-            findsOneWidget);
+-      }
+-    });
+-    testWidgets('$screen uses explicit choice and one-tap Change',
+-        (tester) async {
+-      await render(tester, screen);
+-      expect(find.text('Start Push A'), findsWidgets);
+-      expect(find.text('Last trained 4 days ago'), findsWidgets);
+-      if (screen == 'library') {
+-        expect(find.text('HOME ROUTINE'), findsOneWidget);
+-        expect(find.byKey(const ValueKey('change-training-routine')),
+-            findsNothing);
+-        return;
+-      }
+-      expect(find.byKey(const ValueKey('change-training-routine')),
+-          findsOneWidget);
+-      await tester.tap(find.byKey(const ValueKey('change-training-routine')));
+-      await tester.pumpAndSettle();
+-      expect(find.text('Routine on Home'), findsOneWidget);
+-      expect(find.text('Next in your program · Follows Pull A in saved order'),
+-          findsOneWidget);
+-    });
+-
+-    testWidgets('$screen never chooses the first routine by inference',
+-        (tester) async {
+-      await render(tester, screen, chosen: null);
+-      expect(
+-          find.text(screen == 'home'
+-              ? 'Choose a routine for today'
+-              : 'No Home routine chosen'),
+-          findsOneWidget);
+-      expect(find.byKey(const ValueKey('chosen-routine-start')), findsNothing);
+-      expect(find.text('Next in your program'), findsNothing);
+-    });
+-
+-    testWidgets('$screen shows a deleted choice without replacing it',
+-        (tester) async {
+-      await render(tester, screen, chosen: 'deleted');
+-      expect(
+-          find.text(screen == 'home'
+-              ? 'Chosen routine unavailable'
+-              : 'Home routine unavailable'),
+-          findsOneWidget);
+-      expect(find.byKey(const ValueKey('chosen-routine-start')), findsNothing);
+-    });
+-
+-    testWidgets('$screen new user has a designed first-session entry',
+-        (tester) async {
+-      await render(tester, screen, chosen: null, state: LaunchState.empty);
+-      expect(find.text('Your first session starts here'), findsOneWidget);
+-      expect(find.byKey(const ValueKey('chosen-routine-start')), findsNothing);
+-    });
+-  }
+-
+   testWidgets(
+-      'Library keeps a routine Start reachable below a compact choice at 1.6x',
++      'pending repeat mode explains saving and closing cancels its draft',
+       (tester) async {
+-    await render(tester, 'library', scale: 1.6);
+-    final firstCard = find.byType(RoutineCard).first;
+-    final button =
+-        find.descendant(of: firstCard, matching: find.byType(StartButton));
+-    expect(tester.getRect(button).bottom, lessThanOrEqualTo(772));
++    await render(tester, 'home');
++    final prefs = await SharedPreferences.getInstance();
++    final before = prefs.getString('training_plan:v1:local');
++    await tester.tap(find.byKey(const ValueKey('change-training-routine')));
++    await tester.pumpAndSettle();
++    await tester.tap(find.text('Repeat one routine'));
++    await tester.pumpAndSettle();
++    expect(
++        find.text('Tap a routine to save. Close without choosing to cancel.'),
++        findsOneWidget);
++    await tester.tap(find.byTooltip('Close routine chooser'));
++    await tester.pumpAndSettle();
++    expect(prefs.getString('training_plan:v1:local'), before);
++    expect(find.text('Start Legs A'), findsOneWidget);
++    await tester.tap(find.byKey(const ValueKey('change-training-routine')));
++    await tester.pumpAndSettle();
++    expect(tester.widget<SwitchListTile>(find.byType(SwitchListTile)).value,
++        isFalse);
++    expect(
++        find.text(
++            'Program days follow saved order; standalone routines repeat.'),
++        findsOneWidget);
+   });
+-  for (final choice in <Object?>[null, 'deleted', 7]) {
+-    testWidgets('Library recovery $choice keeps saved Start visible at 1.6x',
+-        (tester) async {
+-      await render(tester, 'library', chosen: choice, scale: 1.6);
+-      final firstCard = find.byType(RoutineCard).first;
+-      final start =
+-          find.descendant(of: firstCard, matching: find.byType(StartButton));
+-      expect(tester.getRect(start).bottom, lessThanOrEqualTo(772));
+-      expect(find.text('Choose your Home routine on Home.'), findsNothing);
+-    });
+-  }
+-  testWidgets('Deleted Library choice exposes the logging action it describes',
++  testWidgets('save failure is visible above choices while intent is retained',
+       (tester) async {
+-    await render(tester, 'library', chosen: 'deleted');
+-    expect(find.text('Log a different workout'), findsOneWidget);
++    await render(tester, 'home', chosen: null, overrides: [
++      trainingPlanProvider.overrideWith((ref) {
++        final n = TrainingPlanNotifier(
++            'local', () async => sampleRoutines(LaunchState.returning),
++            preferences: () async => FailedPreferences());
++        n.load();
++        return n;
++      })
++    ]);
++    await tester.tap(find.byKey(const ValueKey('change-training-routine')));
++    await tester.pumpAndSettle();
++    await tester.tap(find.byKey(const ValueKey('choose-sample-0')));
++    await tester.pumpAndSettle();
++    final error = find.text("Couldn't save your plan. Try again.");
++    expect(error.hitTestable(), findsOneWidget);
++    expect(tester.getRect(error).bottom, lessThan(780));
+   });
+-  testWidgets('Empty Library plan uses one clear Home ownership label at 1.6x',
++  testWidgets('narrow large-text Library title stays on one line',
+       (tester) async {
+-    final plans = sampleRoutines(LaunchState.returning);
+-    await render(tester, 'library', scale: 1.6, routines: [
+-      HydratedRoutine(
+-          routine: plans.first.routine,
+-          lastTrained: plans.first.lastTrained,
+-          exerciseNames: [],
+-          exerciseIds: []),
+-      ...plans.skip(1)
+-    ]);
+-    expect(find.text('HOME ROUTINE'), findsOneWidget);
+-    expect(find.text('Chosen on Home'), findsNothing);
+-    expect(find.text('Your chosen routine has no exercises'), findsOneWidget);
+-    expect(
+-        find.text('Add exercises to this routine, or choose another on Home.'),
+-        findsOneWidget);
+-    expect(find.text('Add exercises'), findsOneWidget);
+-    expect(find.byKey(const ValueKey('chosen-routine-start')), findsNothing);
++    await render(tester, 'library', scale: 2);
++    tester.view.physicalSize = const Size(320, 844);
++    await tester.pumpAndSettle();
++    expect(tester.getSize(find.text('Routines').first).height, lessThan(80));
+   });
+-  testWidgets('Library announces arriving read errors', (tester) async {
+-    await render(tester, 'library', state: LaunchState.error);
+-    final regions = find.byWidgetPredicate(
+-        (w) => w is Semantics && w.properties.liveRegion == true);
+-    expect(
+-        find.descendant(
+-            of: regions, matching: find.text("Couldn't load your routines")),
+-        findsOneWidget);
++  testWidgets('no choice never infers a program from unrelated history',
++      (tester) async {
++    await render(tester, 'home', chosen: null);
++    expect(find.text('Choose training plan'), findsOneWidget);
++    expect(find.text('Start Legs A'), findsNothing);
++    expect(find.text('Last workout'), findsOneWidget);
+   });
+-  testWidgets('Home explains the weekly counted unit visually and in speech',
++  testWidgets(
++      'choosing a new program resolves tied imported completions explicitly',
+       (tester) async {
+-    await render(tester, 'home');
+-    expect(find.text('Training days this week'), findsOneWidget);
+-    expect(
+-        find.byWidgetPredicate((w) =>
+-            w is Semantics &&
+-            (w.properties.label?.contains('2 of 3 training days') ?? false)),
+-        findsOneWidget);
++    final history = sampleHistory(LaunchState.returning);
++    final end = history.first.session.endedAt!;
++    final tied = WorkoutSessionPreview(
++        session: history.last.session.copyWith(endedAt: Value(end)),
++        duration: history.last.duration,
++        totalVolumeKg: history.last.totalVolumeKg,
++        prCount: 0,
++        topExercises: history.last.topExercises,
++        totalExerciseCount: history.last.totalExerciseCount);
++    await render(tester, 'home',
++        chosen: 'sample-3', programStream: Stream.value([history.first, tied]));
++    await tester.tap(find.byKey(const ValueKey('change-training-routine')));
++    await tester.pumpAndSettle();
++    await tester.tap(find.text('Repeat one routine'));
++    await tester.pumpAndSettle();
++    await tester.ensureVisible(find.byKey(const ValueKey('choose-sample-0')));
++    await tester.tap(find.byKey(const ValueKey('choose-sample-0')));
++    await tester.pumpAndSettle();
++    expect(find.text('Start Push A'), findsOneWidget);
++    final saved = TrainingPlan.decode((await SharedPreferences.getInstance())
++        .getString('training_plan:v1:local')!);
++    expect(saved.startAfter?.isAtSameMomentAs(end), isTrue);
+   });
+-
+-  testWidgets('Empty Library prioritizes browsing and avoids duplicate errors',
++  testWidgets(
++      'deleted and corrupt choices recover explicitly and preserve stored intent',
+       (tester) async {
+-    await render(tester, 'library', chosen: null, state: LaunchState.empty);
++    await render(tester, 'home', chosen: 'deleted');
+     expect(
+-        find.widgetWithText(PrimaryButton, 'Browse programs'), findsOneWidget);
+-    await render(tester, 'library', state: LaunchState.error);
++        find.text('Your saved training plan needs a choice.'), findsOneWidget);
++    expect(find.text('Start Legs A'), findsNothing);
++    expect(
++        (await SharedPreferences.getInstance())
++            .getString('training_routine:local'),
++        'deleted');
++    await render(tester, 'home', chosen: 7);
++    expect(find.text("Couldn't load your training plan"), findsOneWidget);
+     expect(find.text('Try again'), findsOneWidget);
+   });
+-  testWidgets('Change exposes the selected choice to assistive technology',
++  testWidgets('active Home resumes actual identity and has no competing start',
+       (tester) async {
+-    final handle = tester.ensureSemantics();
+-    try {
+-      await render(tester, 'home');
+-      await tester.tap(find.byKey(const ValueKey('change-training-routine')));
+-      await tester.pumpAndSettle();
++    for (final choice in ['sample-0', null, 'deleted', 7]) {
++      await render(tester, 'home', chosen: choice, activeWorkout: true);
+       expect(
+-          tester
+-              .getSemantics(find.byKey(const ValueKey('choose-sample-0')))
+-              .flagsCollection
+-              .isSelected,
+-          ui.Tristate.isTrue);
+-    } finally {
+-      handle.dispose();
++          find.widgetWithText(PrimaryButton, 'Resume Pull A'), findsOneWidget);
++      expect(find.text('Start Legs A'), findsNothing);
++      expect(find.text('Train something else'), findsNothing);
+     }
+   });
+-
+   testWidgets(
+-      'Home preserves freestyle during library read failure and deleted-only state',
++      'active Library leaves routine controls disabled and utility actions available',
+       (tester) async {
+-    await render(tester, 'home', state: LaunchState.error);
+-    expect(find.text('Log a different workout'), findsOneWidget);
+-    await render(tester, 'home', chosen: 'deleted', routines: []);
+-    expect(find.text('Log a different workout'), findsOneWidget);
++    await render(tester, 'library', activeWorkout: true);
++    expect(find.byType(PrimaryButton), findsNothing);
++    for (final button
++        in tester.widgetList<StartButton>(find.byType(StartButton))) {
++      expect(button.enabled, isFalse);
++      expect(button.onPressed, isNull);
++    }
++    expect(find.byKey(const ValueKey('library-Explore')), findsOneWidget);
+   });
+-
+-  testWidgets(
+-      'Change uses bounded searchable choices and preserves choice on read failure',
++  testWidgets('empty Library offers New routine as the single primary action',
+       (tester) async {
+-    final stream = StreamController<List<HydratedRoutine>>.broadcast();
+-    addTearDown(stream.close);
+-    await render(tester, 'home', routineStream: stream.stream);
+-    stream.add(sampleRoutines(LaunchState.returning));
+-    await tester.pumpAndSettle();
+-    await tester.tap(find.byKey(const ValueKey('change-training-routine')));
+-    await tester.pumpAndSettle();
+-    expect(find.byType(ListTile), findsNWidgets(4));
+-    await tester.enterText(find.byType(TextField), 'Outdoor');
++    await render(tester, 'library', chosen: null, state: LaunchState.empty);
++    expect(find.widgetWithText(PrimaryButton, 'New routine'), findsOneWidget);
++    expect(find.text('Explore'), findsOneWidget);
++    await tester.tap(find.text('New routine'));
+     await tester.pumpAndSettle();
+-    expect(find.byType(ListTile), findsOneWidget);
+-    expect(find.byKey(const ValueKey('choose-sample-4')), findsOneWidget);
+-    stream.addError(StateError('read failed'));
++    expect(find.text('Create from Scratch'), findsOneWidget);
++    expect(find.text('AI Import from Image or Text'), findsOneWidget);
++  });
++  testWidgets(
++      'Library explains missing plan markers while preserving saved routines',
++      (tester) async {
++    for (final choice in ['deleted', 7]) {
++      await render(tester, 'library', chosen: choice);
++      expect(find.text('Training plan needs attention'), findsOneWidget);
++      expect(find.text('View Home'), findsOneWidget);
++      expect(find.byKey(const ValueKey('library-New routine')), findsOneWidget);
++      expect(find.text('Push A'), findsOneWidget);
++      expect(find.text('Following on Home'), findsNothing);
++    }
++  });
++  testWidgets('older last-workout dates include the year', (tester) async {
++    final sample = sampleHistory(LaunchState.returning).first;
++    final previousYear = WorkoutSessionPreview(
++        session: sample.session
++            .copyWith(endedAt: Value(DateTime(2025, 9, 30, 12, 48))),
++        duration: sample.duration,
++        totalVolumeKg: sample.totalVolumeKg,
++        prCount: 0,
++        topExercises: sample.topExercises,
++        totalExerciseCount: sample.totalExerciseCount);
++    await render(tester, 'home', completedStream: Stream.value([previousYear]));
++    expect(find.textContaining('30 Sep 2025'), findsOneWidget);
++  });
++  testWidgets(
++      'an empty next day offers editing instead of starting an empty routine',
++      (tester) async {
++    final plans = sampleRoutines(LaunchState.returning);
++    final empty = [
++      for (final r in plans)
++        r.routine.id != 'sample-2'
++            ? r
++            : HydratedRoutine(
++                routine: r.routine,
++                exerciseNames: const [],
++                exerciseIds: const [])
++    ];
++    await render(tester, 'home', routines: empty);
++    expect(find.text('Add exercises'), findsOneWidget);
++    expect(find.text('0 exercises · 0 planned sets'), findsOneWidget);
++    expect(find.text('Start Legs A'), findsNothing);
++  });
++  testWidgets(
++      'Library read failure exposes one announced retry and creation stays usable',
++      (tester) async {
++    await render(tester, 'library', state: LaunchState.error);
++    expect(find.text("Couldn't load your routines"), findsOneWidget);
++    expect(find.text('Try again'), findsOneWidget);
++    final regions = find.byWidgetPredicate(
++        (w) => w is Semantics && w.properties.liveRegion == true);
++    expect(
++        find.descendant(
++            of: regions, matching: find.text("Couldn't load your routines")),
++        findsOneWidget);
++  });
++  testWidgets(
++      'Home keeps the session override available during routine read failures',
++      (tester) async {
++    await render(tester, 'home', state: LaunchState.error);
++    expect(find.text('Train something else'), findsOneWidget);
++    await tester.tap(find.text('Train something else'));
+     await tester.pumpAndSettle();
+     expect(find.text('Routine choices unavailable'), findsOneWidget);
++    expect(find.text('Start without a routine'), findsOneWidget);
+   });
+-
+   testWidgets(
+-      'Previous-set read failure does not invent no history or block Start',
++      'last workout is global and non-weight activity does not fabricate volume',
+       (tester) async {
+-    await render(tester, 'home', previousError: true);
+-    expect(find.text('Previous-set context unavailable'), findsOneWidget);
+-    expect(find.text('No previous logged set for this plan'), findsNothing);
+-    expect(find.text('Start Push A'), findsOneWidget);
++    final sample = sampleHistory(LaunchState.returning).first;
++    final walk = WorkoutSessionPreview(
++        session: sample.session.copyWith(
++            name: const Value('Outdoor walk'),
++            routineId: const Value('sample-4')),
++        duration: const Duration(minutes: 45),
++        totalVolumeKg: 0,
++        prCount: 0,
++        topExercises: const [],
++        totalExerciseCount: 1);
++    await render(tester, 'home', completedStream: Stream.value([walk]));
++    expect(find.text('Start Legs A'), findsOneWidget);
++    expect(find.text('Outdoor walk'), findsOneWidget);
++    expect(find.text('1 exercise'), findsOneWidget);
++    expect(find.textContaining('0 kg volume'), findsNothing);
+   });
+-
+-  testWidgets('Home keeps freestyle and History secondary and accessible',
++  testWidgets(
++      'last workout converts stored kg volume once to the selected unit',
+       (tester) async {
+-    await render(tester, 'home');
+-    expect(find.text('Log a different workout'), findsOneWidget);
+-    expect(find.text('History'), findsWidgets);
++    await render(tester, 'home',
++        overrides: [weightUnitProvider.overrideWithValue('lbs')]);
++    expect(find.text('8,487.8 lbs volume'), findsOneWidget);
+   });
+-
+-  testWidgets('Home has no guilt language on an inactive return',
++  testWidgets(
++      'previous-set failure cannot block next Start or invent first-session history',
+       (tester) async {
+-    await render(tester, 'home', state: LaunchState.inactive);
+-    expect(find.text('Train at your own pace'), findsOneWidget);
+-    expect(find.textContaining('lost'), findsNothing);
+-    expect(find.text('Start Push A'), findsOneWidget);
++    await render(tester, 'home', previousError: true);
++    expect(find.text('Start Legs A'), findsOneWidget);
++    expect(find.text('No previous logged set for this plan'), findsNothing);
+   });
+-
+-  testWidgets('Change selection updates both launch surfaces and persists',
++  testWidgets('Home retains weekly day counts and the full History shortcut',
+       (tester) async {
+     await render(tester, 'home');
+-    await tester.tap(find.byKey(const ValueKey('change-training-routine')));
++    expect(find.text('Training days this week'), findsOneWidget);
++    expect(
++        find.byWidgetPredicate((w) =>
++            w is Semantics &&
++            (w.properties.label?.contains('2 of 3 training days') ?? false)),
++        findsOneWidget);
++    await tester.tap(find.text('History'));
+     await tester.pumpAndSettle();
+-    await tester.tap(find.byKey(const ValueKey('choose-sample-2')));
++    expect(tester.getRect(find.text('Workout History')).top, lessThan(600));
++  });
++  testWidgets(
++      'View next navigates to the actual card while preserving program order',
++      (tester) async {
++    await render(tester, 'library', scale: 1.6);
++    await tester.ensureVisible(find.text('View next'));
++    await tester.tap(find.text('View next'));
+     await tester.pumpAndSettle();
+     expect(find.text('Start Legs A'), findsOneWidget);
+-    final prefs = await SharedPreferences.getInstance();
+-    expect(prefs.getString('training_routine:local'), 'sample-2');
+-  });
+-
+-  testWidgets('Library groups the program and quiets creation', (tester) async {
+-    await render(tester, 'library');
+-    expect(find.byKey(const ValueKey('program-sample-ppl')), findsOneWidget);
+-    expect(find.widgetWithText(TextButton, 'New routine'), findsOneWidget);
+-    expect(find.byKey(const ValueKey('chosen-routine-start')), findsOneWidget);
++    expect(tester.getRect(find.text('Start Legs A')).bottom, lessThan(780));
++    expect(
++        tester
++            .widgetList<RoutineCard>(find.byType(RoutineCard))
++            .any((r) => r.routineId == 'sample-2' && r.isNext),
++        isTrue);
+   });
++  for (final scale in [1.6, 2.0]) {
++    testWidgets('Home and Library wrap identities and utilities at $scale',
++        (tester) async {
++      final plans = sampleRoutines(LaunchState.returning);
++      final long = [
++        for (final r in plans)
++          HydratedRoutine(
++              routine: r.routine.copyWith(
++                  name:
++                      '${r.routine.name} — Strength and conditioning with a very long full identity'),
++              exerciseNames: r.exerciseNames,
++              exerciseIds: r.exerciseIds)
++      ];
++      for (final screen in ['home', 'library']) {
++        await render(tester, screen, scale: scale, routines: long);
++        expect(tester.takeException(), isNull);
++        final identities = tester.widgetList<Text>(find.byWidgetPredicate((w) =>
++            w is Text &&
++            (w.data?.contains('very long full identity') ?? false)));
++        expect(identities, isNotEmpty);
++        if (screen == 'home') {
++          expect(find.text('Start workout').hitTestable(), findsOneWidget);
++          expect(
++              tester.getRect(find.text('Start workout')).bottom, lessThan(780));
++          expect(
++              find.byWidgetPredicate((w) =>
++                  w is Semantics &&
++                  w.properties.button == true &&
++                  w.properties.label == 'Start ${long[2].routine.name}'),
++              findsOneWidget);
++        }
++        for (final text in identities) {
++          expect(text.maxLines, isNull);
++        }
++      }
++    });
++  }
+ }
+diff --git a/test/upgrade/training_completion_dao_test.dart b/test/upgrade/training_completion_dao_test.dart
+new file mode 100644
+index 00000000..575212c0
+--- /dev/null
++++ b/test/upgrade/training_completion_dao_test.dart
+@@ -0,0 +1,103 @@
++import 'dart:async';
++import 'dart:ffi';
++import 'dart:io';
++import 'package:drift/drift.dart' hide isNull, isNotNull;
++import 'package:drift/native.dart';
++import 'package:flutter_test/flutter_test.dart';
++import 'package:gymlog/core/database/database.dart';
++import 'package:sqlite3/open.dart';
++
++void main() {
++  late AppDatabase db;
++  setUpAll(() {
++    if (Platform.isLinux) {
++      open.overrideFor(
++          OperatingSystem.linux, () => DynamicLibrary.open('libsqlite3.so.0'));
++    }
++  });
++  setUp(() => db = AppDatabase.forTesting(NativeDatabase.memory()));
++  tearDown(() => db.close());
++  Future<void> insert(String id, DateTime start, DateTime? end,
++          {String user = 'owner', String? routine = 'push'}) =>
++      db.workoutsDao.insertSession(WorkoutSessionsCompanion(
++        id: Value(id),
++        userId: Value(user),
++        routineId: Value(routine),
++        name: Value(id),
++        startedAt: Value(start),
++        endedAt: Value(end),
++      ));
++  test(
++      'completed-only, account-scoped latest queries use endedAt rather than feed order',
++      () async {
++    await insert('long', DateTime(2026, 1), DateTime(2026, 10, 4));
++    await insert('new-start', DateTime(2026, 10, 3), DateTime(2026, 10, 3, 1),
++        routine: 'pull');
++    await insert('unfinished', DateTime(2026, 10, 5), null);
++    await insert(
++        'another-account', DateTime(2026, 10, 6), DateTime(2026, 10, 6, 1),
++        user: 'other');
++    final rows =
++        await db.workoutsDao.watchLatestCompletedPreviews('owner').first;
++    expect(rows.map((p) => p.session.id), ['long', 'new-start']);
++    expect(
++        await db.workoutsDao
++            .watchLatestCompletedPreviews('owner', routineIds: []).first,
++        isEmpty);
++  });
++  test('program completion outside first history page remains available',
++      () async {
++    await insert('program', DateTime(2026, 1), DateTime(2026, 1, 1, 1),
++        routine: 'pull');
++    for (var i = 0; i < 15; i++) {
++      await insert(
++          'outside-$i', DateTime(2026, 2, i + 1), DateTime(2026, 2, i + 1, 1),
++          routine: null);
++    }
++    final feed = await db.workoutsDao
++        .getSessionPreviewsForUser('owner', limit: 10, offset: 0);
++    expect(feed.any((p) => p.session.id == 'program'), isFalse);
++    final selected = await db.workoutsDao.watchLatestCompletedPreviews('owner',
++        routineIds: ['push', 'pull']).first;
++    expect(selected.single.session.id, 'program');
++    expect(
++        (await db.workoutsDao.watchLatestCompletedPreviews('owner').first)
++            .first
++            .session
++            .id,
++        'outside-14');
++  });
++  test('persisted edit, deletion and sync import recompute the narrow stream',
++      () async {
++    await insert('older', DateTime(2026, 1), DateTime(2026, 1, 1, 1));
++    final queue =
++        StreamIterator(db.workoutsDao.watchLatestCompletedPreviews('owner'));
++    addTearDown(queue.cancel);
++    expect(await queue.moveNext(), isTrue);
++    expect(queue.current.single.session.id, 'older');
++    await insert('synced', DateTime(2025, 1), DateTime(2026, 10, 4),
++        routine: 'pull');
++    expect(await queue.moveNext(), isTrue);
++    expect(queue.current.first.session.id, 'synced');
++    await (db.update(db.workoutSessions)..where((t) => t.id.equals('older')))
++        .write(WorkoutSessionsCompanion(
++            endedAt: Value(DateTime(2026, 10, 5)),
++            name: const Value('Renamed')));
++    expect(await queue.moveNext(), isTrue);
++    expect(queue.current.first.session.name, 'Renamed');
++    await (db.delete(db.workoutSessions)..where((t) => t.id.equals('older')))
++        .go();
++    expect(await queue.moveNext(), isTrue);
++    expect(queue.current.first.session.id, 'synced');
++  });
++  test('duplicate same-day records cannot hide an ambiguous tied program day',
++      () async {
++    final end = DateTime(2026, 10, 4);
++    await insert('a-push', DateTime(2026, 10, 3), end);
++    await insert('b-push', DateTime(2026, 10, 3), end);
++    await insert('z-pull', DateTime(2026, 10, 3), end, routine: 'pull');
++    final rows = await db.workoutsDao.watchLatestCompletedPreviews('owner',
++        routineIds: ['push', 'pull']).first;
++    expect(rows.map((p) => p.session.routineId).toSet(), {'push', 'pull'});
++  });
++}
+diff --git a/test/upgrade/training_override_actions_test.dart b/test/upgrade/training_override_actions_test.dart
+new file mode 100644
+index 00000000..68133dff
+--- /dev/null
++++ b/test/upgrade/training_override_actions_test.dart
+@@ -0,0 +1,132 @@
++import 'dart:async';
++import 'package:flutter/material.dart';
++import 'package:flutter_test/flutter_test.dart';
++import 'package:go_router/go_router.dart';
++import 'package:gymlog/core/theme/theme_palette.dart';
++import 'package:gymlog/features/routines/presentation/providers/training_launch_provider.dart';
++import 'package:shared_preferences/shared_preferences.dart';
++import 'session_1_render_test.dart' show loadSessionFonts;
++import 'session_2_fixtures.dart';
++
++class RecordingLauncher implements TrainingLauncher {
++  final calls = <String?>[];
++  final Completer<LaunchResult>? completion;
++  RecordingLauncher([this.completion]);
++  @override
++  Future<LaunchResult> startRoutine(String id) async {
++    calls.add(id);
++    return completion == null ? LaunchResult.started : await completion!.future;
++  }
++
++  @override
++  Future<LaunchResult> startFreestyle() async {
++    calls.add(null);
++    return LaunchResult.started;
++  }
++}
++
++void main() {
++  setUpAll(loadSessionFonts);
++  Future<void> render(WidgetTester tester, RecordingLauncher launcher,
++      {bool empty = false}) async {
++    SharedPreferences.setMockInitialValues({
++      'first_run_tour_step': -1,
++      if (!empty) 'training_routine:local': 'sample-0'
++    });
++    final router = GoRouter(routes: [
++      GoRoute(path: '/', builder: (_, state) => currentLaunchScreen('home')),
++      GoRoute(
++          path: '/workout/active',
++          builder: (_, state) => const Scaffold(body: Text('Active route'))),
++      GoRoute(
++          path: '/workout/detail/:id',
++          builder: (_, state) =>
++              Scaffold(body: Text('Detail ${state.pathParameters['id']}'))),
++    ]);
++    addTearDown(router.dispose);
++    tester.view.physicalSize = const Size(390, 844);
++    tester.view.devicePixelRatio = 1;
++    addTearDown(tester.view.resetPhysicalSize);
++    addTearDown(tester.view.resetDevicePixelRatio);
++    await tester.pumpWidget(launchFixtureApp(
++        child: const SizedBox.shrink(),
++        router: router,
++        palette: ThemePalette.higgsfield,
++        scale: 1,
++        screen: 'home',
++        fixtureState: empty ? LaunchState.empty : LaunchState.returning,
++        captureKey: const ValueKey('actions'),
++        overrides: [trainingLauncherProvider.overrideWithValue(launcher)]));
++    await tester.pumpAndSettle();
++  }
++
++  testWidgets(
++      'empty Home starts the first workout directly without saving a plan',
++      (tester) async {
++    final launcher = RecordingLauncher();
++    await render(tester, launcher, empty: true);
++    final start = find.text('Start workout');
++    expect(start.hitTestable(), findsOneWidget);
++    expect(find.text('Browse programs'), findsOneWidget);
++    await tester.tap(start);
++    await tester.pumpAndSettle();
++    expect(launcher.calls, [null]);
++    expect(find.text('Active route'), findsOneWidget);
++    expect(
++        (await SharedPreferences.getInstance())
++            .getString('training_plan:v1:local'),
++        isNull);
++  });
++
++  for (final freestyle in [false, true]) {
++    testWidgets(
++        'one-session ${freestyle ? 'freestyle' : 'routine'} launches without changing saved plan',
++        (tester) async {
++      final launcher = RecordingLauncher();
++      await render(tester, launcher);
++      final prefs = await SharedPreferences.getInstance();
++      final before = prefs.getString('training_plan:v1:local');
++      await tester.tap(find.text('Train something else'));
++      await tester.pumpAndSettle();
++      final target = freestyle
++          ? find.text('Start without a routine')
++          : find.byKey(const ValueKey('choose-sample-1'));
++      await tester.ensureVisible(target);
++      await tester.tap(target);
++      await tester.pumpAndSettle();
++      expect(launcher.calls, [freestyle ? null : 'sample-1']);
++      expect(find.text('Active route'), findsOneWidget);
++      expect(prefs.getString('training_plan:v1:local'), before);
++      expect(tester.takeException(), isNull);
++    });
++  }
++  testWidgets(
++      'double-tapping an override issues one launch; failure leaves choices retryable',
++      (tester) async {
++    final completion = Completer<LaunchResult>();
++    final launcher = RecordingLauncher(completion);
++    await render(tester, launcher);
++    await tester.tap(find.text('Train something else'));
++    await tester.pumpAndSettle();
++    final choice = find.byKey(const ValueKey('choose-sample-0'));
++    await tester.tap(choice);
++    await tester.tap(choice);
++    expect(launcher.calls, ['sample-0']);
++    completion.complete(LaunchResult.unavailable);
++    await tester.pumpAndSettle();
++    expect(find.text('This routine is unavailable. Choose another.'),
++        findsOneWidget);
++    expect(find.text('For this session'), findsOneWidget);
++    expect(
++        (await SharedPreferences.getInstance())
++            .getString('training_routine:local'),
++        'sample-0');
++  });
++  testWidgets('last-workout card opens the persisted global session detail',
++      (tester) async {
++    await render(tester, RecordingLauncher());
++    await tester.tap(find.text('Pull A').first);
++    await tester.pumpAndSettle();
++    expect(find.text('Detail sample-session-1'), findsOneWidget);
++  });
++}
+diff --git a/test/upgrade/training_plan_test.dart b/test/upgrade/training_plan_test.dart
+new file mode 100644
+index 00000000..503cbe2f
+--- /dev/null
++++ b/test/upgrade/training_plan_test.dart
+@@ -0,0 +1,245 @@
++import 'dart:async';
++import 'package:flutter_riverpod/flutter_riverpod.dart';
++import 'package:drift/drift.dart' hide isNull, isNotNull;
++import 'package:flutter_test/flutter_test.dart';
++import 'package:gymlog/core/database/daos/routines_dao.dart';
++import 'package:gymlog/core/database/daos/workouts_dao.dart';
++import 'package:gymlog/core/database/database.dart';
++import 'package:gymlog/features/routines/presentation/providers/training_plan_provider.dart';
++import 'package:shared_preferences/shared_preferences.dart';
++import 'session_2_fixtures.dart';
++
++extension PreviewFixture on WorkoutSessionPreview {
++  WorkoutSessionPreview copyForTest(WorkoutSession value) =>
++      WorkoutSessionPreview(
++          session: value,
++          duration: duration,
++          totalVolumeKg: totalVolumeKg,
++          prCount: prCount,
++          topExercises: topExercises,
++          totalExerciseCount: totalExerciseCount);
++}
++
++class FailedPreferences implements SharedPreferences {
++  @override
++  Future<bool> setString(String key, String value) async => false;
++  @override
++  String? getString(String key) => null;
++  @override
++  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
++}
++
++void main() {
++  final routines = sampleRoutines(LaunchState.returning);
++  final history = sampleHistory(LaunchState.returning);
++  final plan = planForRoutine(routines.first, routines);
++  setUp(() => SharedPreferences.setMockInitialValues({}));
++
++  test(
++      'program uses latest completion, wraps, and never persists a next cursor',
++      () {
++    expect(
++        resolveTrainingPlan(plan, routines, []).next?.routine.id, 'sample-0');
++    expect(resolveTrainingPlan(plan, routines, history).next?.routine.id,
++        'sample-2');
++    final legs =
++        history.first.session.copyWith(routineId: const Value('sample-2'));
++    expect(
++        resolveTrainingPlan(plan, routines, [history.first.copyForTest(legs)])
++            .next
++            ?.routine
++            .id,
++        'sample-0');
++    expect(plan.encode(), isNot(contains('next')));
++  });
++  test(
++      'start, unfinished, discard, save failure and rest day have no completed evidence',
++      () {
++    final unfinished =
++        history.first.session.copyWith(endedAt: const Value(null));
++    expect(
++        resolveTrainingPlan(
++                plan, routines, [history.first.copyForTest(unfinished)])
++            .next
++            ?.routine
++            .id,
++        'sample-0');
++    for (final unchanged in [[], history]) {
++      expect(
++          resolveTrainingPlan(plan, routines, unchanged.cast())
++              .next
++              ?.routine
++              .id,
++          unchanged.isEmpty ? 'sample-0' : 'sample-2');
++    }
++  });
++  test(
++      'outside-program and freestyle completions do not advance chosen program',
++      () {
++    for (final id in ['sample-4', null]) {
++      final other = history.first
++          .copyForTest(history.first.session.copyWith(routineId: Value(id)));
++      expect(resolveTrainingPlan(plan, routines, [other]).next?.routine.id,
++          'sample-0');
++    }
++  });
++  test('same-program override continues after the day actually completed', () {
++    final push = history.first.copyForTest(
++        history.first.session.copyWith(routineId: const Value('sample-0')));
++    expect(resolveTrainingPlan(plan, routines, [push]).next?.routine.id,
++        'sample-1');
++  });
++  test(
++      'completion chronology overrides start-date order and ignores older imported history',
++      () {
++    final completedLater = history.last.copyForTest(history.last.session
++        .copyWith(
++            startedAt: DateTime(2026, 1),
++            endedAt: Value(DateTime(2026, 10, 3))));
++    expect(
++        resolveTrainingPlan(plan, routines, [history.first, completedLater])
++            .next
++            ?.routine
++            .id,
++        'sample-1');
++  });
++  test('missing, duplicate, conflicting program metadata requires choice', () {
++    expect(
++        resolveTrainingPlan(plan, routines.take(2).toList(), history).problem,
++        isNotNull);
++    final duplicate = HydratedRoutine(
++        routine: routines.first.routine.copyWith(id: 'duplicate'),
++        exerciseNames: routines.first.exerciseNames,
++        exerciseIds: routines.first.exerciseIds);
++    expect(resolveTrainingPlan(plan, [...routines, duplicate], history).problem,
++        isNotNull);
++    expect(resolveTrainingPlan(plan, routines.skip(1).toList(), history).next,
++        isNull);
++  });
++  test(
++      'tied latest program days require explicit choice; same-day duplicate does not',
++      () {
++    final tied = history.last.copyForTest(history.last.session
++        .copyWith(endedAt: Value(history.first.session.endedAt)));
++    expect(resolveTrainingPlan(plan, routines, [history.first, tied]).problem,
++        isNotNull);
++    final sameDay = tied
++        .copyForTest(tied.session.copyWith(routineId: const Value('sample-1')));
++    expect(
++        resolveTrainingPlan(plan, routines, [history.first, sameDay])
++            .next
++            ?.routine
++            .id,
++        'sample-2');
++  });
++  test('repeat mode stays on its chosen routine and rename preserves identity',
++      () {
++    final repeat = planForRoutine(routines[3], routines);
++    expect(repeat.followsProgram, isFalse);
++    expect(resolveTrainingPlan(repeat, routines, history).next?.routine.id,
++        'sample-3');
++    final renamed = [
++      for (final r in routines)
++        HydratedRoutine(
++            routine: r.routine.copyWith(name: '${r.routine.name} renamed'),
++            exerciseNames: r.exerciseNames,
++            exerciseIds: r.exerciseIds)
++    ];
++    expect(resolveTrainingPlan(plan, renamed, history).next?.routine.name,
++        'Legs A renamed');
++  });
++  test(
++      'explicit starting day resolves a tied import without marking skipped days completed',
++      () {
++    final end = history.first.session.endedAt!;
++    final tied = history.last
++        .copyForTest(history.last.session.copyWith(endedAt: Value(end)));
++    final explicit = TrainingPlan(
++        anchorId: 'sample-0', programSlug: 'sample-ppl', startAfter: end);
++    expect(
++        resolveTrainingPlan(explicit, routines, [history.first, tied])
++            .next
++            ?.routine
++            .id,
++        'sample-0');
++    final newCompletion = history.first.copyForTest(history.first.session
++        .copyWith(endedAt: Value(end.add(const Duration(days: 1)))));
++    expect(
++        resolveTrainingPlan(explicit, routines, [newCompletion, tied])
++            .next
++            ?.routine
++            .id,
++        'sample-2');
++  });
++  test(
++      'legacy complete program migrates durably and account choice is isolated',
++      () async {
++    SharedPreferences.setMockInitialValues(
++        {'training_routine:owner': 'sample-0'});
++    final notifier = TrainingPlanNotifier('owner', () async => routines);
++    addTearDown(notifier.dispose);
++    await notifier.load();
++    expect(notifier.state.requireValue?.programSlug, 'sample-ppl');
++    final restarted = TrainingPlanNotifier(
++        'owner', () async => throw StateError('not needed'));
++    addTearDown(restarted.dispose);
++    await restarted.load();
++    expect(restarted.state.requireValue?.anchorId, 'sample-0');
++    final other = TrainingPlanNotifier('another', () async => routines);
++    addTearDown(other.dispose);
++    await other.load();
++    expect(other.state.requireValue, isNull);
++  });
++  test(
++      'legacy standalone repeats; partial/deleted choices do not become guessed programs',
++      () async {
++    for (final id in ['sample-3', 'sample-0', 'deleted']) {
++      SharedPreferences.setMockInitialValues({'training_routine:owner': id});
++      final n = TrainingPlanNotifier(
++          'owner', () async => routines.take(2).toList() + [routines[3]]);
++      await n.load();
++      expect(n.state.requireValue?.needsChoice, id != 'sample-3');
++      expect(n.state.requireValue?.followsProgram, isFalse);
++      n.dispose();
++    }
++  });
++  test(
++      'malformed preferences surface a retryable error without deleting old choice',
++      () async {
++    for (final value in [7, '{bad json}', '{"version": 99}']) {
++      SharedPreferences.setMockInitialValues({'training_plan:v1:owner': value});
++      final n = TrainingPlanNotifier('owner', () async => routines);
++      await n.load();
++      expect(n.state.hasError, isTrue);
++      expect(
++          (await SharedPreferences.getInstance()).get('training_plan:v1:owner'),
++          value);
++      n.dispose();
++    }
++  });
++  test('failed preference write does not publish or claim a saved plan',
++      () async {
++    final n = TrainingPlanNotifier('owner', () async => routines,
++        preferences: () async => FailedPreferences());
++    addTearDown(n.dispose);
++    await n.load();
++    await expectLater(n.choose(routines.first, routines), throwsStateError);
++    expect(n.state.requireValue, isNull);
++  });
++  test('disposed account migration cannot finish writing obsolete intent',
++      () async {
++    SharedPreferences.setMockInitialValues(
++        {'training_routine:owner': 'sample-0'});
++    final library = Completer<List<HydratedRoutine>>();
++    final n = TrainingPlanNotifier('owner', () => library.future);
++    final loading = n.load();
++    await Future<void>.delayed(Duration.zero);
++    n.dispose();
++    library.complete(routines);
++    await loading;
++    expect(
++        (await SharedPreferences.getInstance())
++            .getString('training_plan:v1:owner'),
++        isNull);
++  });
++}

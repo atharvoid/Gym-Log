@@ -401,17 +401,17 @@ class _RoutineEditorScreenState extends ConsumerState<RoutineEditorScreen> {
                             filled: true,
                             fillColor: surface.surface2,
                             border: OutlineInputBorder(
-                              borderRadius: AppRadius.cardAll,
+                              borderRadius: AppRadius.inputAll,
                               borderSide:
                                   BorderSide(color: surface.borderSubtle),
                             ),
                             enabledBorder: OutlineInputBorder(
-                              borderRadius: AppRadius.cardAll,
+                              borderRadius: AppRadius.inputAll,
                               borderSide:
                                   BorderSide(color: surface.borderSubtle),
                             ),
                             focusedBorder: OutlineInputBorder(
-                              borderRadius: AppRadius.cardAll,
+                              borderRadius: AppRadius.inputAll,
                               borderSide:
                                   BorderSide(color: accent.base, width: 1.5),
                             ),

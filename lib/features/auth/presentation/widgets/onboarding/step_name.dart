@@ -108,11 +108,11 @@ class _StepNameState extends ConsumerState<StepName> {
                 contentPadding:
                     const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                 enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.zero,
+                  borderRadius: AppRadius.inputAll,
                   borderSide: BorderSide(color: surface.borderSubtle, width: 1),
                 ),
                 focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.zero,
+                  borderRadius: AppRadius.inputAll,
                   borderSide: BorderSide(color: accent.light, width: 1),
                 ),
               ),

@@ -1,0 +1,159 @@
+// Review-only theme override. Production source remains unchanged.
+import 'dart:io';
+import 'dart:ui' as ui;
+
+import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:gymlog/core/theme/app_text.dart';
+import 'package:gymlog/core/theme/app_theme.dart';
+import 'package:gymlog/core/theme/theme_palette.dart';
+import 'package:gymlog/features/routines/presentation/screens/ai_routine_import_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import 'home_routines_implemented_render_test.dart' show IllustrativeKeyboard;
+import 'session_1_render_test.dart' show loadSessionFonts;
+import 'session_2_fixtures.dart';
+
+ThemeData inputReviewTheme(ThemePalette palette, bool proposed) {
+  final theme = buildAppTheme(palette.tokens, palette: palette);
+  if (!proposed) return theme;
+  InputBorder rounded(InputBorder border) =>
+      (border as OutlineInputBorder).copyWith(borderRadius: AppRadius.cardAll);
+  final input = theme.inputDecorationTheme;
+  return theme.copyWith(
+    inputDecorationTheme: input.copyWith(
+      border: rounded(input.border!),
+      enabledBorder: rounded(input.enabledBorder!),
+      focusedBorder: rounded(input.focusedBorder!),
+    ),
+  );
+}
+
+void main() {
+  setUpAll(loadSessionFonts);
+  for (final palette in [ThemePalette.higgsfield, ThemePalette.neonPurple]) {
+    for (final scale in [1.0, 1.6, 2.0]) {
+      for (final proposed in [false, true]) {
+        for (final screen in ['chooser', 'ai-paste']) {
+          final name = '$screen-${palette.name}-${scale}x';
+          testWidgets('${proposed ? 'proposed' : 'before'}-$name',
+              (tester) async {
+            tester.view.physicalSize = const Size(390, 844);
+            tester.view.devicePixelRatio = 1;
+            addTearDown(tester.view.resetPhysicalSize);
+            addTearDown(tester.view.resetDevicePixelRatio);
+            addTearDown(tester.view.resetViewInsets);
+            SharedPreferences.setMockInitialValues({
+              'first_run_tour_step': -1,
+              'training_routine:local': 'sample-0',
+            });
+            final key = ValueKey(name);
+            if (screen == 'chooser') {
+              final fixture = launchFixtureApp(
+                child: currentLaunchScreen('home'),
+                palette: palette,
+                scale: scale,
+                screen: 'home',
+                fixtureState: LaunchState.returning,
+                keyboardOverlay: const IllustrativeKeyboard(),
+                captureKey: key,
+              ) as ProviderScope;
+              final boundary = fixture.child! as RepaintBoundary;
+              final original = boundary.child! as MaterialApp;
+              await tester.pumpWidget(ProviderScope(
+                overrides: fixture.overrides,
+                child: RepaintBoundary(
+                  key: key,
+                  child: MaterialApp(
+                    debugShowCheckedModeBanner: false,
+                    theme: inputReviewTheme(palette, proposed),
+                    home: original.home,
+                    builder: original.builder,
+                  ),
+                ),
+              ));
+              await tester.pumpAndSettle();
+              await tester
+                  .tap(find.byKey(const ValueKey('change-training-routine')));
+              await tester.pumpAndSettle();
+            } else {
+              await tester.pumpWidget(ProviderScope(
+                child: RepaintBoundary(
+                  key: key,
+                  child: MaterialApp(
+                    debugShowCheckedModeBanner: false,
+                    theme: inputReviewTheme(palette, proposed),
+                    home: const AiRoutineImportScreen(),
+                    builder: (context, child) => MediaQuery(
+                      data: MediaQuery.of(context).copyWith(
+                        textScaler: TextScaler.linear(scale),
+                      ),
+                      child: Stack(children: [
+                        child!,
+                        if (MediaQuery.viewInsetsOf(context).bottom > 0)
+                          const Positioned(
+                            left: 0,
+                            right: 0,
+                            bottom: 0,
+                            child: IllustrativeKeyboard(),
+                          ),
+                      ]),
+                    ),
+                  ),
+                ),
+              ));
+              await tester.pumpAndSettle();
+              await tester.tap(find.text('Paste Text'));
+              await tester.pumpAndSettle();
+            }
+            tester.view.viewInsets = const FakeViewPadding(bottom: 280);
+            await tester.enterText(
+                find.byType(TextField),
+                screen == 'chooser'
+                    ? 'Pull'
+                    : 'Push Day A:\nBench Press 3x8\nCable Row 3x10');
+            await tester.ensureVisible(find.byType(TextField));
+            await tester.pumpAndSettle();
+            if (screen == 'chooser') {
+              await tester
+                  .ensureVisible(find.byKey(const ValueKey('choose-sample-1')));
+              await tester.pumpAndSettle();
+            }
+            final decorator =
+                tester.widget<InputDecorator>(find.byType(InputDecorator));
+            final decoration = decorator.decoration;
+            expect(
+                (decoration.enabledBorder! as OutlineInputBorder).borderRadius,
+                proposed ? AppRadius.cardAll : AppRadius.inputAll);
+            expect(
+                (decoration.focusedBorder! as OutlineInputBorder).borderRadius,
+                proposed ? AppRadius.cardAll : AppRadius.inputAll);
+            expect(decoration.filled, isTrue);
+            if (screen == 'chooser') {
+              expect(find.text('Pull A').hitTestable(), findsOneWidget);
+              expect(tester.getRect(find.byType(TextField)).bottom,
+                  lessThanOrEqualTo(564));
+            }
+            expect(tester.takeException(), isNull);
+            await tester.runAsync(() async {
+              final boundary =
+                  tester.renderObject<RenderRepaintBoundary>(find.byKey(key));
+              final capture = await boundary.toImage(pixelRatio: 2);
+              final bytes =
+                  await capture.toByteData(format: ui.ImageByteFormat.png);
+              capture.dispose();
+              final target = File(
+                  'docs/upgrade/renders/input-consistency/${proposed ? 'proposed' : 'before'}/$name.png');
+              await target.parent.create(recursive: true);
+              await target.writeAsBytes(bytes!.buffer.asUint8List());
+            });
+            await tester.pumpWidget(const SizedBox.shrink());
+            await tester.pumpAndSettle();
+          });
+        }
+      }
+    }
+  }
+}
